@@ -30,14 +30,17 @@ type explanation =
   |Rightmost_pivot 
   |Fork of int * int * int ;;
 
-type mold = M of (solution list) * extension_data ;;
-
-type diagnosis =
-  Missing_treatment of point_with_breadth 
- |Incomplete_treatment of point_with_breadth 
- |Missing_links of point_with_breadth * (int list)
- |Finished of mold;;   
-
 type helper = 
-    Help_with_solution of point_with_breadth * solution 
-   |Help_with_links of point_with_breadth * (int list) ;; 
+  Help_with_solution of point_with_breadth * solution 
+ |Help_with_links of point_with_breadth * (int list) ;; 
+
+type crude_mold = CM of (solution list) * extension_data ;;
+
+type medium_mold = MM of (solution list) * extension_data ;;    
+
+type medium_diagnosis  = 
+      Missing_treatment of point_with_breadth 
+     |Incomplete_treatment of point_with_breadth 
+     |Missing_links of point_with_breadth * (int list)
+     |Finished of medium_mold;;   
+

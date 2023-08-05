@@ -34,9 +34,15 @@ type helper = Sz3_types.helper =
    Help_with_solution of point_with_breadth * solution 
   |Help_with_links of point_with_breadth * (int list) ;; 
 
-type mold = Sz3_types.mold = M of (solution list) * extension_data ;;    
+type crude_mold = Sz3_types.crude_mold = CM of (solution list) * extension_data ;;  
 
+type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data ;;    
 
+type medium_diagnosis = Sz3_types.medium_diagnosis = 
+      Missing_treatment of point_with_breadth 
+     |Incomplete_treatment of point_with_breadth 
+     |Missing_links of point_with_breadth * (int list)
+     |Finished of medium_mold;;   
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -97,23 +103,23 @@ end ;;
 
 module Mold = struct 
 
-let discrete domain = M([domain],domain) ;;   
+let discrete domain = CM([domain],domain) ;;   
 
-let forced_elements (M(_sols, ext))= ext ;; 
+let forced_elements (CM(_sols, ext))= ext ;; 
 
-let of_solutions sols = M(sols,[]) ;; 
+let of_solutions sols = CM(sols,[]) ;; 
 
-let of_solutions_and_forced_elements sols ext= M(sols,ext) ;;  
+let of_solutions_and_forced_elements sols ext= CM(sols,ext) ;;  
 
-let translate d (M(sols, ext)) =
+let translate d (CM(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
-    M(Image.image tr sols,tr ext) ;; 
+    CM(Image.image tr sols,tr ext) ;; 
 
-let measure (M(sols, _ext)) = List.length(List.hd sols) ;; 
+let measure (CM(sols, _ext)) = List.length(List.hd sols) ;; 
 
-let solutions (M(sols, _ext))= sols ;; 
+let solutions (CM(sols, _ext))= sols ;; 
 
-let solutions_and_forced_elements (M(sols, ext))= (sols,ext) ;;  
+let solutions_and_forced_elements (CM(sols, ext))= (sols,ext) ;;  
 
 end ;;
 
@@ -306,7 +312,7 @@ module Crude_analysis_on_bare_point = struct
    
 
   type partial_result =
-    P_Finished_computation of (explanation option) * mold  
+    P_Finished_computation of (explanation option) * crude_mold  
    |P_Unfinished_computation of point list ;;
 
   type inner_walker = IW of 
@@ -322,7 +328,7 @@ module Crude_analysis_on_bare_point = struct
   exception Compute_strictly_exn ;; 
   exception Pusher_for_needed_subcomputations1_exn ;; 
 
-  let main_hashtbl =   ((Hashtbl.create 50) : (point, mold) Hashtbl.t) ;; 
+  let main_hashtbl =   ((Hashtbl.create 50) : (point, crude_mold) Hashtbl.t) ;; 
   let explanation_hashtbl =   ((Hashtbl.create 50) : (point, explanation) Hashtbl.t) ;; 
 
 let translate_shadow d = 
@@ -773,13 +779,7 @@ let standard_solution = Private.standard_solution ;;
 
 end ;;   
 
-type medium_mold = MM of (solution list) * extension_data ;;    
-
-type medium_diagnosis  = 
-   Missing_treatment of point_with_breadth 
-  |Incomplete_treatment of point_with_breadth 
-  |Missing_links of point_with_breadth * (int list)
-  |Finished of medium_mold;;     
+  
 
 
   module Medium_mold = struct 
