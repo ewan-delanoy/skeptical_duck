@@ -811,6 +811,8 @@ type medium_diagnosis  =
 
     let add_links (MM(sols,ext)) links = MM(sols,i_merge links ext) ;;
 
+    let add_solution (MM(sols,ext)) new_sol = MM(il_insert new_sol sols,ext) ;;
+
     let discrete domain = MM([domain],domain) ;;   
     
     let forced_elements (MM(_sols, ext))= ext ;; 
@@ -862,9 +864,7 @@ let with_links  pwb old_mold data_for_links  =
    let m = Medium_mold.measure(old_mold) in 
    if List.length(new_sol)<>m
    then raise(False_solution_exn(pwb,new_sol)) 
-   else
-   let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements   old_mold in 
-   Medium_mold.constructor (il_insert new_sol old_sols) old_ext;;
+   else Medium_mold.add_solution old_mold  new_sol;;
 
 
 end ;;   
