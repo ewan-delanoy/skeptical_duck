@@ -813,14 +813,20 @@ type medium_diagnosis  =
 
     let add_solution (MM(sols,ext)) new_sol = MM(il_insert new_sol sols,ext) ;;
 
+    let constructor sols ext= MM(sols,ext) ;;  
+
     let discrete domain = MM([domain],domain) ;;   
     
     let forced_elements (MM(_sols, ext))= ext ;; 
     
     let of_solutions sols = MM(sols,[]) ;; 
     
-    let constructor sols ext= MM(sols,ext) ;;  
+    let rightmost_overflow (MM(sols,_ext)) = MM(sols,[]) ;;
     
+    let rightmost_pivot (MM(_sols,ext)) n (new_sols:solution list) = MM(new_sols,i_insert n ext) ;;
+
+    let select (MM(_sols,ext)) (new_sols:solution list) = MM(new_sols,ext) ;;
+
     let translate d (MM(sols, ext)) =
         let tr = (fun x->Image.image(fun t->t+d) x) in 
         MM(Image.image tr sols,tr ext) ;; 
@@ -919,34 +925,34 @@ module Store = struct
         Some easy_answer -> (Some easy_answer,false)
        |None ->(
           let n = Point_with_breadth.max pwb in 
-          let simpler_pwb = Point_with_breadth.remove_element pwb n in 
-            match no_expansions_opt simpler_pwb with 
+          let left_pwb = Point_with_breadth.remove_element pwb n in 
+            match no_expansions_opt left_pwb with 
              None -> (None,false) 
-            |Some(old_mold) ->
-                  let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements old_mold in 
-                  let new_ext = i_insert n old_ext in 
-                  if (not  (Point_with_breadth.subset_is_admissible pwb new_ext))
-                    then (Some(Medium_mold.of_solutions old_sols),true)
-                    else
+            |Some(left_mold) ->
+                  let (left_sols,left_ext) = Medium_mold.solutions_and_forced_elements left_mold in 
+                  let new_ext = i_insert n left_ext in 
+                  if (not (Point_with_breadth.subset_is_admissible pwb new_ext))
+                  then (Some(Medium_mold.rightmost_overflow left_mold),true)
+                  else
                   let new_sols = List.filter_map (fun old_sol->
                     let new_sol = i_insert n old_sol in 
                      if Point_with_breadth.subset_is_admissible pwb new_sol
                      then Some new_sol
                      else None 
-                  ) old_sols in 
+                  ) left_sols in 
                   if new_sols <> []
-                  then (Some(Medium_mold.constructor new_sols new_ext),true)
+                  then (Some(Medium_mold.rightmost_pivot left_mold n new_sols),true)
                 else (
                   match Point_with_breadth.usual_decomposition_opt pwb with 
                    None -> (None,false)
-                   | Some(simpler_pwb,_) ->
-                match no_expansions_opt simpler_pwb with 
+                   | Some(prec_pwb,_) ->
+                match no_expansions_opt prec_pwb with 
                 None -> (None,false)
-                | Some(old_mold) ->  
-                  let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements old_mold in 
-                  let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) old_sols in 
+                | Some(prec_mold) ->  
+                  let prec_sols = Medium_mold.solutions prec_mold in 
+                  let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
                   if new_sols <> []
-                  then (Some(Medium_mold.constructor new_sols old_ext),true)
+                  then (Some(Medium_mold.select prec_mold new_sols),true)
                   else (None,false)
                 )      
              ) ;;
