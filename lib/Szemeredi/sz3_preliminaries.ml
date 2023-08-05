@@ -777,15 +777,27 @@ end ;;
 
 module Crude_handle = struct 
 
-let translate d mold = match mold with  
+let translate d handle = match handle with  
     Cr_Discrete
-  | Cr_Rightmost_pivot -> mold
+  | Cr_Rightmost_pivot -> handle
   | Cr_Select (i,j,k) -> Cr_Select (i+d,j+d,k+d)
   | Cr_Fork (i,j,k) -> Cr_Fork (i+d,j+d,k+d) ;; 
 
 end ;;  
 
+module Medium_handle = struct 
+
+let translate d handle = match handle with  
+  Discrete
+| Overflow
+| Rightmost_pivot -> handle
+| Select (i,j,k) -> Select (i+d,j+d,k+d)
+| Fork (i,j,k) -> Fork (i+d,j+d,k+d)
+| Imported_from_crude (crude_handle) -> Imported_from_crude (Crude_handle.translate d crude_handle) ;; 
   
+end ;;  
+  
+
 type medium_mold = AA of (solution list) * extension_data ;;  
 
 type medium_diagnosis  = 
