@@ -101,11 +101,9 @@ end ;;
 
 
 
-module Mold = struct 
+module Crude_mold = struct 
 
 let discrete domain = CM([domain],domain) ;;   
-
-let forced_elements (CM(_sols, ext))= ext ;; 
 
 let of_solutions sols = CM(sols,[]) ;; 
 
@@ -114,8 +112,6 @@ let of_solutions_and_forced_elements sols ext= CM(sols,ext) ;;
 let translate d (CM(sols, ext)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
     CM(Image.image tr sols,tr ext) ;; 
-
-let measure (CM(sols, _ext)) = List.length(List.hd sols) ;; 
 
 let solutions (CM(sols, _ext))= sols ;; 
 
@@ -268,7 +264,7 @@ module Width_one = struct
         |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
         |r -> raise(Bad_remainder_by_three(r)) 
     ) intervals in 
-    Mold.of_solutions_and_forced_elements 
+    Crude_mold.of_solutions_and_forced_elements 
       [List.flatten sol_components] (List.flatten forced_elements);;
 
 end ;;   
@@ -356,7 +352,7 @@ let seek_non_translated_obvious_access helper point =
           let (P(fis,_upper_bound)) = point in 
           let domain = Finite_int_set.to_usual_int_list fis in 
           if Point.subset_is_admissible point domain 
-          then  P_Finished_computation(None,Mold.discrete domain)
+          then  P_Finished_computation(None,Crude_mold.discrete domain)
            else 
             (
               match Precomputed.compute_opt point with 
@@ -374,7 +370,7 @@ let seek_translated_obvious_access helper point =
     |P_Finished_computation(translated_sh,translated_mold)
     -> 
       P_Finished_computation(translated_sh,
-      Mold.translate d translated_mold);;
+      Crude_mold.translate d translated_mold);;
 
 let reduce_by_removing_forbidden_elements pt (pt5,ext5) =
     let domain=List.rev(Point.supporting_set pt5) in 
@@ -399,7 +395,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
                  (helper,Some bulky,to_be_treated)
           else 
           if Point.subset_is_admissible pt whole 
-          then let pair = (pt,(Some(Lucky(pt2,ext2)),Mold.of_solutions [whole])) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),Crude_mold.of_solutions [whole])) in  
                (pair::helper,None,to_be_treated) 
           else     
           let m3=List.length(List.hd sols3) in 
@@ -415,7 +411,7 @@ let long_case_in_inner_pusher_for_needed_subcomputations
               else None    
             ) sols3 in  
           if sols4 <> []
-          then let pair = (pt,(Some(Lucky(pt2,ext2)),Mold.of_solutions sols4)) in  
+          then let pair = (pt,(Some(Lucky(pt2,ext2)),Crude_mold.of_solutions sols4)) in  
                (pair::helper,None,to_be_treated) 
           else 
           let n2 = Point.max pt2 in 
@@ -436,7 +432,7 @@ let inner_pusher_for_needed_subcomputations
       helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated =
       match hopes with 
       [] -> let pair = (pt,(Some(Disjunction(failures)),
-             Mold.of_solutions sols_for_preceding_point )) in  
+             Crude_mold.of_solutions sols_for_preceding_point )) in  
             (pair::helper,None,to_be_treated) 
      |(pt2,ext2,goal)::other_hopes ->
        (
@@ -444,7 +440,7 @@ let inner_pusher_for_needed_subcomputations
         P_Unfinished_computation(l) ->
            (helper,None,l@(pt::to_be_treated))
         |(P_Finished_computation(_,mold3)) -> 
-          let sols3 = Mold.solutions mold3 in 
+          let sols3 = Crude_mold.solutions mold3 in 
           long_case_in_inner_pusher_for_needed_subcomputations
           helper (IW((pt,sols_for_preceding_point),(failures,hopes))) to_be_treated 
               (pt2,ext2,goal) other_hopes sols3
@@ -463,10 +459,10 @@ let first_analysis_on_new_item helper pt other_items=
       P_Unfinished_computation(l) ->
          (helper,None,l@(pt::other_items))
       |P_Finished_computation(_,mold) -> 
-          let (sols,ext) = Mold.solutions_and_forced_elements mold in 
+          let (sols,ext) = Crude_mold.solutions_and_forced_elements mold in 
           let ext2 = i_insert n ext in 
           if not(Point.subset_is_admissible pt ext2) 
-          then let pair = (pt,(Some(Early_stop(pt2,n)),Mold.of_solutions sols)) in 
+          then let pair = (pt,(Some(Early_stop(pt2,n)),Crude_mold.of_solutions sols)) in 
               (pair::helper,None,other_items)
           else
           let sols2 = List.filter_map (fun sol->
@@ -477,7 +473,7 @@ let first_analysis_on_new_item helper pt other_items=
           ) sols in  
           if sols2 <> [] 
           then let pair = (pt,(Some(Early_increase(pt2,n)),
-               Mold.of_solutions_and_forced_elements sols2 (i_insert n ext))) in 
+               Crude_mold.of_solutions_and_forced_elements sols2 (i_insert n ext))) in 
                (pair::helper,None,other_items)
           else let goal = List.length(List.hd sols)+1 in 
                (helper,Some(IW((pt,sols),([],[(pt2,[n],goal)]))),other_items)
@@ -622,7 +618,7 @@ let measure = Memoized.recursive (fun
      let stays_admissible = (fun z->List.for_all (
         fun (C cstr)->not(i_is_included_in cstr z)
      ) l_cstr) in 
-     let trial1 = Mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
+     let trial1 = Crude_mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
      if List.exists stays_admissible  trial1 
      then List.length(List.hd trial1)
      else 
