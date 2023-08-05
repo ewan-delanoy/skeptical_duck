@@ -798,7 +798,7 @@ let translate d handle = match handle with
 end ;;  
   
 
-type medium_mold = AA of (solution list) * extension_data ;;  
+type medium_mold = MM of (solution list) * extension_data ;;  
 
 type medium_diagnosis  = 
       Missing_treatment of point_with_breadth 
@@ -809,25 +809,25 @@ type medium_diagnosis  =
 
   module Medium_mold = struct 
 
-    
+    let add_links (MM(sols,ext)) links = MM(sols,i_merge links ext) ;;
 
-    let discrete domain = AA([domain],domain) ;;   
+    let discrete domain = MM([domain],domain) ;;   
     
-    let forced_elements (AA(_sols, ext))= ext ;; 
+    let forced_elements (MM(_sols, ext))= ext ;; 
     
-    let of_solutions sols = AA(sols,[]) ;; 
+    let of_solutions sols = MM(sols,[]) ;; 
     
-    let constructor sols ext= AA(sols,ext) ;;  
+    let constructor sols ext= MM(sols,ext) ;;  
     
-    let translate d (AA(sols, ext)) =
+    let translate d (MM(sols, ext)) =
         let tr = (fun x->Image.image(fun t->t+d) x) in 
-        AA(Image.image tr sols,tr ext) ;; 
+        MM(Image.image tr sols,tr ext) ;; 
     
-    let measure (AA(sols, _ext)) = List.length(List.hd sols) ;; 
+    let measure (MM(sols, _ext)) = List.length(List.hd sols) ;; 
     
-    let solutions (AA(sols, _ext))= sols ;; 
+    let solutions (MM(sols, _ext))= sols ;; 
     
-    let solutions_and_forced_elements (AA(sols, ext))= (sols,ext) ;;  
+    let solutions_and_forced_elements (MM(sols, ext))= (sols,ext) ;;  
     
   end ;;
 
@@ -855,9 +855,8 @@ let with_links  pwb old_mold data_for_links  =
    if counterexamples<>[]
    then raise(False_links_exn(pwb,Image.image fst counterexamples)) 
    else
-   let (old_sols,old_ext) = Medium_mold.solutions_and_forced_elements old_mold in 
    let links = Image.image fst data_for_links in 
-   Medium_mold.constructor old_sols (i_merge old_ext links);;
+   Medium_mold.add_links old_mold links;;
   
   let with_solution  pwb old_mold new_sol  =
    let m = Medium_mold.measure(old_mold) in 
