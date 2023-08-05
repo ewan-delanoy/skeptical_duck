@@ -24,7 +24,7 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
-type explanation = Sz3_types.explanation = 
+type crude_handle = Sz3_types.crude_handle = 
     Discrete
    |Select of int * int * int 
    |Rightmost_pivot 
