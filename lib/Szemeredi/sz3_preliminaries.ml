@@ -775,6 +775,16 @@ let standard_solution = Private.standard_solution ;;
 
 end ;;   
 
+module Crude_handle = struct 
+
+let translate d mold = match mold with  
+    Cr_Discrete
+  | Cr_Rightmost_pivot -> mold
+  | Cr_Select (i,j,k) -> Cr_Select (i+d,j+d,k+d)
+  | Cr_Fork (i,j,k) -> Cr_Fork (i+d,j+d,k+d) ;; 
+
+end ;;  
+
   
 type medium_mold = AA of (solution list) * extension_data ;;  
 
@@ -1296,8 +1306,3 @@ module Initialization = struct
 
 end ;;   
   
-
-
-
-
-
