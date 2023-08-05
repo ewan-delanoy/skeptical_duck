@@ -745,8 +745,6 @@ end ;;
 
 module Analysis_with_breadth = struct 
 
-exception Explain_exn of point_with_breadth ;;
-
 module Private = struct
 
 let standard_solution = Memoized.make(fun pwb->
@@ -757,20 +755,34 @@ let measure = Memoized.make(fun pwb->
   Analysis_with_extra_constraints.measure (Point_with_breadth.to_extra_constraints pwb)
 )  ;;
 
+let test_for_individual_rightmost_overflow left_pwb m (u,v) = 
+    List.for_all (fun t->measure(Point_with_breadth.remove_element left_pwb t)=m-1) [u;v] ;;
+
+let test_for_rightmost_overflow pwb m =
+    let pairs =  Point_with_breadth.complementary_pairs pwb 
+    and left_pwb = Point_with_breadth.remove_element pwb (Point_with_breadth.max pwb) in 
+    List.find_opt (test_for_individual_rightmost_overflow left_pwb m) pairs ;; 
+   
+
 let compute_crude_handle = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> Cr_Discrete
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
-        if measure pwb = measure preceding_pwb 
+        let m = measure pwb in 
+        if measure preceding_pwb = m
         then Cr_Select(nth 1,nth 2,nth 3)
-        else (
+        else 
           let pwc = Point_with_breadth.to_extra_constraints pwb in 
           if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
           then Cr_Rightmost_pivot
-          else Cr_Fork(nth 1,nth 2,nth 3)
-        )    
-    )  ;; 
+          else 
+          (  
+          (* match test_for_rightmost_overflow pwb m with 
+          (Some(u,v))->Cr_Fork(u,v,Point_with_breadth.max pwb)
+          |None ->   *)
+          Cr_Fork(nth 1,nth 2,nth 3)    
+    ))  ;; 
    
 
 end ;; 
@@ -956,7 +968,7 @@ module Store = struct
                 )      
              ) ;;
         
-  let select_case_opt pwb = 
+  let test_for_select_case pwb = 
       match Point_with_breadth.usual_decomposition_opt pwb with 
         None -> raise(Select_case_opt_exn(pwb))
       |Some(prec_pwb,_) ->
@@ -990,7 +1002,7 @@ module Store = struct
     *)
 
 
-    let rightmost_pivot_case_opt pwb = 
+    let test_for_rightmost_pivot_case pwb = 
         let n = Point_with_breadth.max pwb in 
         let left_pwb = Point_with_breadth.remove_element pwb n in 
           match no_expansions_opt left_pwb with 
@@ -1018,7 +1030,7 @@ module Store = struct
 
   exception Try_direct_fork_case_exn of point_with_breadth ;;
   
-  let fork_case_opt pwb = 
+  let test_for_fork_case pwb = 
     match Point_with_breadth.usual_decomposition_opt pwb with 
     None -> raise(Fork_case_opt_exn(pwb))
   |Some(prec_pwb,C cstr) ->
@@ -1054,13 +1066,13 @@ module Store = struct
       Some mold -> Some(mold,is_new)
      |None -> 
         (
-          match select_case_opt pwb with 
+          match test_for_select_case pwb with 
             Finished(mold2) -> Some (mold2,true)
            |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
-              match rightmost_pivot_case_opt pwb with 
+              match test_for_rightmost_pivot_case pwb with 
               Finished(mold3) -> Some (mold3,true)
              |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
-              match fork_case_opt pwb with 
+              match test_for_fork_case pwb with 
                 Finished(mold4) -> Some (mold4,true)
                |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
                             None
@@ -1095,9 +1107,9 @@ module Store = struct
   end ;;
 
   
-  let select_case_opt pwb = 
+  let test_for_select_case pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-    let diag = Without_translations.select_case_opt translated_pwb in 
+    let diag = Without_translations.test_for_select_case translated_pwb in 
     match diag with 
     Missing_treatment (_)
   | Incomplete_treatment (_)
@@ -1106,9 +1118,9 @@ module Store = struct
       Finished(Medium_mold.translate d translated_mold);;
 
   
-  let rightmost_pivot_case_opt pwb = 
+  let test_for_rightmost_pivot_case pwb = 
     let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-    let diag = Without_translations.rightmost_pivot_case_opt translated_pwb in 
+    let diag = Without_translations.test_for_rightmost_pivot_case translated_pwb in 
     match diag with 
     Missing_treatment (_)
   | Incomplete_treatment (_)
@@ -1117,9 +1129,9 @@ module Store = struct
       Finished(Medium_mold.translate d translated_mold);;      
   
    
-  let fork_case_opt pwb = 
+  let test_for_fork_case pwb = 
         let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-        let diag = Without_translations.fork_case_opt translated_pwb in 
+        let diag = Without_translations.test_for_fork_case translated_pwb in 
         match diag with 
         Missing_treatment (_)
       | Incomplete_treatment (_)
@@ -1152,11 +1164,11 @@ module Store = struct
   
    
   let compute_opt = Private.compute_opt ;;
-  let fork_case_opt = Private.fork_case_opt ;;  
-  let rightmost_pivot_case_opt = Private.rightmost_pivot_case_opt ;;  
+  let test_for_fork_case = Private.test_for_fork_case ;;  
+  let test_for_rightmost_pivot_case = Private.test_for_rightmost_pivot_case ;;  
   let reset_all = Private.reset_all ;;
   let reset_low_level = Private.reset_low_level ;;
-  let select_case_opt = Private.select_case_opt ;;
+  let test_for_select_case = Private.test_for_select_case ;;
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
   let unsafe_triple_level_add = Private.unsafe_triple_level_add ;; 
@@ -1170,20 +1182,20 @@ module Medium_analysis = struct
     module Private = struct
     
       let try_to_compute_in_select_case pwb = 
-        let direct =Store.select_case_opt pwb in 
+        let direct =Store.test_for_select_case pwb in 
         match direct with 
         Finished(mold3) -> (Some mold3,None)
         |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
     
     
     let try_to_compute_in_rightmost_pivot_case pwb = 
-      let direct =Store.rightmost_pivot_case_opt pwb in 
+      let direct =Store.test_for_rightmost_pivot_case pwb in 
       match direct with 
       Finished(mold3) -> (Some mold3,None)
       |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
     
     let try_to_compute_in_fork_case pwb = 
-        let direct =Store.fork_case_opt pwb in 
+        let direct =Store.test_for_fork_case pwb in 
         match direct with 
         Finished(mold3) -> (Some mold3,None)
         |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
