@@ -751,7 +751,7 @@ let measure = Memoized.make(fun pwb->
   Analysis_with_extra_constraints.measure (Point_with_breadth.to_extra_constraints pwb)
 )  ;;
 
-let explain = Memoized.make(fun pwb->
+let compute_crude_handle = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> Cr_Discrete
        |Some(preceding_pwb,C cstr) ->
@@ -769,7 +769,7 @@ let explain = Memoized.make(fun pwb->
 
 end ;; 
 
-let explain = Private.explain ;;
+let compute_crude_handle = Private.compute_crude_handle ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;;
 
@@ -1136,7 +1136,7 @@ module Medium_analysis = struct
       Some (mold,is_new) -> ((Some(mold),None),is_new)
       |None -> 
         (
-          match Analysis_with_breadth.explain pwb with 
+          match Analysis_with_breadth.compute_crude_handle pwb with 
           Cr_Discrete -> (* this should never happen, the discrete case
                           is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
@@ -1170,7 +1170,7 @@ module Medium_analysis = struct
     
       end ;;     
     
-      let force_compute pwb = (Analysis_with_breadth.explain pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
+      let force_compute pwb = (Analysis_with_breadth.compute_crude_handle pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
       let try_to_compute = Private.try_to_compute ;;
       let walk_scale = Private.walk_scale ;; 
     
