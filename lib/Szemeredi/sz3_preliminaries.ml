@@ -36,14 +36,6 @@ type helper = Sz3_types.helper =
 
 type crude_mold = Sz3_types.crude_mold = CM of (solution list) * extension_data ;;  
 
-type medium_handle = Sz3_types.medium_handle = 
-     Discrete
-    |Overflow 
-    |Rightmost_pivot
-    |Select of int * int * int  
-    |Fork of int * int * int 
-    |Imported_from_crude of crude_handle ;;   
-
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -785,17 +777,6 @@ let translate d handle = match handle with
 
 end ;;  
 
-module Medium_handle = struct 
-
-let translate d handle = match handle with  
-  Discrete
-| Overflow
-| Rightmost_pivot -> handle
-| Select (i,j,k) -> Select (i+d,j+d,k+d)
-| Fork (i,j,k) -> Fork (i+d,j+d,k+d)
-| Imported_from_crude (crude_handle) -> Imported_from_crude (Crude_handle.translate d crude_handle) ;; 
-  
-end ;;  
   
 
 type medium_mold = MM of (solution list) * extension_data ;;  

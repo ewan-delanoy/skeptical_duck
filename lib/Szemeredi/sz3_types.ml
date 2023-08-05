@@ -26,7 +26,7 @@ type point_with_breadth = PWB of point * int ;;
 
 type crude_handle = 
    Cr_Discrete
-  |Cr_Select of int * int * int 
+  |Cr_Select of int * int * int  
   |Cr_Rightmost_pivot 
   |Cr_Fork of int * int * int ;;
 
@@ -35,14 +35,6 @@ type helper =
  |Help_with_links of point_with_breadth * (int list) ;; 
 
 type crude_mold = CM of (solution list) * extension_data ;;
-
-type medium_handle = 
-     Discrete
-    |Overflow 
-    |Rightmost_pivot
-    |Select of int * int * int  
-    |Fork of int * int * int 
-    |Imported_from_crude of crude_handle ;; 
 
 type medium_mold = MM of (solution list) * extension_data  ;;    
 
