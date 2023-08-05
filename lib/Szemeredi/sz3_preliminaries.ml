@@ -25,10 +25,10 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 type crude_handle = Sz3_types.crude_handle = 
-    Discrete
-   |Select of int * int * int 
-   |Rightmost_pivot 
-   |Fork of int * int * int ;;
+    Cr_Discrete
+   |Cr_Select of int * int * int 
+   |Cr_Rightmost_pivot 
+   |Cr_Fork of int * int * int ;;
 
 type helper = Sz3_types.helper = 
    Help_with_solution of point_with_breadth * solution 
@@ -753,16 +753,16 @@ let measure = Memoized.make(fun pwb->
 
 let explain = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
-       None -> Discrete
+       None -> Cr_Discrete
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
         if measure pwb = measure preceding_pwb 
-        then Select(nth 1,nth 2,nth 3)
+        then Cr_Select(nth 1,nth 2,nth 3)
         else (
           let pwc = Point_with_breadth.to_extra_constraints pwb in 
           if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
-          then Rightmost_pivot
-          else Fork(nth 1,nth 2,nth 3)
+          then Cr_Rightmost_pivot
+          else Cr_Fork(nth 1,nth 2,nth 3)
         )    
     )  ;; 
    
@@ -1137,12 +1137,12 @@ module Medium_analysis = struct
       |None -> 
         (
           match Analysis_with_breadth.explain pwb with 
-           Discrete -> (* this should never happen, the discrete case
+          Cr_Discrete -> (* this should never happen, the discrete case
                           is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
-          |Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
-          |Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
-          |Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
+          |Cr_Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
+          |Cr_Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
+          |Cr_Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
         ) ;; 
     
       let try_to_compute pwb =
