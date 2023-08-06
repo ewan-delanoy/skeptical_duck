@@ -981,25 +981,36 @@ module Store = struct
               then Incomplete_treatment(prec_pwb)
               else Finished(Medium_mold.select prec_mold new_sols);;    
       
-    (*          
-    let easy_rightmost_overflow_case_opt pwb = 
-        let n = Point_with_breadth.max pwb in 
-        let left_pwb = Point_with_breadth.remove_element pwb n in 
-          match no_expansions_opt left_pwb with 
-          None -> None
-         |Some(left_mold) ->
-          let left_ext = Medium_mold.solutions left_mold in 
-                  let new_sols = List.filter_map (
-                          fun sol -> 
-                            let new_sol = i_insert n sol in 
-                            if Point_with_breadth.subset_is_admissible pwb new_sol 
-                            then Some new_sol
-                            else None  
-                  ) left_sols in 
-                  if new_sols = []
-                  then Incomplete_treatment(left_pwb)
-                  else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;            
-    *)
+            
+  let test_for_easy_rightmost_overflow_case pwb = 
+    let n = Point_with_breadth.max pwb in 
+    let left_pwb = Point_with_breadth.remove_element pwb n in 
+    match no_expansions_opt left_pwb with 
+      None -> None
+    |Some(left_mold) ->
+      let left_ext = Medium_mold.forced_elements left_mold 
+      and complements = Point_with_breadth.complementary_pairs pwb in 
+      match List.find_opt (fun (u,v)->i_is_included_in [u;v] left_ext) complements with
+       None -> None
+      |Some(u0,v0) -> Some((u0,v0),Medium_mold.rightmost_overflow left_mold) ;;            
+  
+  let test_for_rightmost_overflow_case pwb (u,v,n) = 
+    let left_pwb = Point_with_breadth.remove_element pwb n in 
+    match no_expansions_opt left_pwb with 
+      None -> Missing_treatment(left_pwb)
+    |Some(left_mold) ->
+        let left_ext = Medium_mold.forced_elements left_mold in 
+        let forgotten_links = i_setminus [u;v] left_ext in 
+        if forgotten_links = []
+        then Finished(Medium_mold.rightmost_overflow left_mold)
+        else 
+        let offshoots = Image.image (fun t->
+           let pwb2 = Point_with_breadth.remove_element left_pwb t in
+           snd(Point_with_breadth.decompose_wrt_translation pwb2)
+           ) [u;v] in
+        match List.find_opt (fun pwb3->no_expansions_opt pwb3=None) offshoots with 
+         None -> Missing_links(left_pwb,[u;v]) 
+         |Some pwb4 -> Missing_treatment pwb4  ;;            
 
 
     let test_for_rightmost_pivot_case pwb = 
@@ -1018,15 +1029,7 @@ module Store = struct
           ) left_sols in 
           if new_sols = []
           then Incomplete_treatment(left_pwb)
-          else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;  
-
-
-  
-  let no_expansions_but_allow_translations_opt pwb = 
-    let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-      match no_expansions_opt translated_pwb with 
-      None -> None              
-      |Some translated_mold -> Some(Medium_mold.translate d translated_mold);;  
+          else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;    
 
   exception Try_direct_fork_case_exn of point_with_breadth ;;
   
@@ -1072,8 +1075,11 @@ module Store = struct
               match test_for_rightmost_pivot_case pwb with 
               Finished(mold3) -> Some (mold3,true)
              |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
+               match test_for_easy_rightmost_overflow_case pwb with 
+                Some(_,mold4) -> Some (mold4,true)
+               |None -> 
               match test_for_fork_case pwb with 
-                Finished(mold4) -> Some (mold4,true)
+                Finished(mold5) -> Some (mold5,true)
                |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) ->
                             None
           ) ;;             
@@ -1128,6 +1134,15 @@ module Store = struct
   | Finished (translated_mold) ->
       Finished(Medium_mold.translate d translated_mold);;      
   
+  let test_for_rightmost_overflow_case pwb (u,v,n)= 
+      let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+      let diag = Without_translations.test_for_rightmost_overflow_case translated_pwb (u-d,v-d,n-d) in 
+      match diag with 
+      Missing_treatment (_)
+    | Incomplete_treatment (_)
+    | Missing_links (_,_) -> diag
+    | Finished (translated_mold) ->
+        Finished(Medium_mold.translate d translated_mold);;      
    
   let test_for_fork_case pwb = 
         let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
@@ -1164,11 +1179,12 @@ module Store = struct
   
    
   let compute_opt = Private.compute_opt ;;
-  let test_for_fork_case = Private.test_for_fork_case ;;  
-  let test_for_rightmost_pivot_case = Private.test_for_rightmost_pivot_case ;;  
   let reset_all = Private.reset_all ;;
   let reset_low_level = Private.reset_low_level ;;
   let test_for_select_case = Private.test_for_select_case ;;
+  let test_for_fork_case = Private.test_for_fork_case ;;  
+  let test_for_rightmost_overflow_case = Private.test_for_rightmost_overflow_case ;;
+  let test_for_rightmost_pivot_case = Private.test_for_rightmost_pivot_case ;; 
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
   let unsafe_triple_level_add = Private.unsafe_triple_level_add ;; 
