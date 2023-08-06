@@ -24,7 +24,7 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
-type crude_handle = Sz3_types.crude_handle = 
+type handle = Sz3_types.handle = 
    Discrete
   |Select of int * int * int   
   |Rightmost_overflow of int * int * int 
@@ -766,7 +766,7 @@ let test_for_rightmost_overflow pwb m =
     List.find_opt (test_for_individual_rightmost_overflow left_pwb m) pairs ;; 
    
 
-let compute_crude_handle = Memoized.make(fun pwb->
+let handle = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
        None -> Discrete
        |Some(preceding_pwb,C cstr) ->
@@ -789,7 +789,7 @@ let compute_crude_handle = Memoized.make(fun pwb->
 
 end ;; 
 
-let compute_crude_handle = Private.compute_crude_handle ;;
+let handle = Private.handle ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;;
 
@@ -1233,7 +1233,7 @@ module Medium_analysis = struct
       Some (mold,is_new) -> ((Some(mold),None),is_new)
       |None -> 
         (
-          match Analysis_with_breadth.compute_crude_handle pwb with 
+          match Analysis_with_breadth.handle pwb with 
            Discrete -> (* this should never happen, the discrete case
                           is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
@@ -1268,7 +1268,7 @@ module Medium_analysis = struct
     
       end ;;     
     
-      let force_compute pwb = (Analysis_with_breadth.compute_crude_handle pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
+      let force_compute pwb = (Analysis_with_breadth.handle pwb, Option.get(fst(Private.try_to_compute pwb))) ;;
       let try_to_compute = Private.try_to_compute ;;
       let walk_scale = Private.walk_scale ;; 
     

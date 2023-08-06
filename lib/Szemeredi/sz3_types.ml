@@ -24,7 +24,7 @@ type point_with_extra_constraints = PEC of point * (constraint_t list);;
 
 type point_with_breadth = PWB of point * int ;; 
 
-type crude_handle = 
+type handle = 
      Discrete
     |Select of int * int * int   
     |Rightmost_overflow of int * int * int 
