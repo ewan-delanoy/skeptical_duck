@@ -1210,6 +1210,12 @@ module Medium_analysis = struct
       Finished(mold3) -> (Some mold3,None)
       |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
     
+    let try_to_compute_in_rightmost_overflow_case pwb (u,v,n)= 
+        let direct =Store.test_for_rightmost_overflow_case pwb (u,v,n) in 
+        match direct with 
+        Finished(mold3) -> (Some mold3,None)
+        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+
     let try_to_compute_in_fork_case pwb = 
         let direct =Store.test_for_fork_case pwb in 
         match direct with 
@@ -1229,6 +1235,9 @@ module Medium_analysis = struct
                           is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
           |Cr_Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
+          (*
+          |Rightmost_overflow(u,v,n)->(try_to_compute_in_rightmost_overflow_case pwb (u,v,n),true) 
+          *)
           |Cr_Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
           |Cr_Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
         ) ;; 
@@ -1325,53 +1334,6 @@ end ;;
 
 module Initialization = struct 
 
-  let tf1 =(fun r n->
-    let m = min(n/3)(r) in
-    let end_part =Int_range.range (3*m+1) n 
-    and beginning = List.flatten (Int_range.scale (fun j->[3*j-2;3*j-1]) 1 m) in 
-    Medium_mold.constructor [beginning@end_part] end_part     
-  ) ;;
   
-  let tf2 b n = tf1 (Basic.frac_ceiling b 3) n ;; 
-
-  Safe_initialization.pair_level_add (W 0,[]) tf2 ;;  
-
-  exception Bad_remainder_by_three of int;;
-
-  let tf3 =(fun n->
-    let r = n mod 3 in 
-    let core = List.filter (fun j->(j mod 3)<>0)(Int_range.range 1 n) in
-    let end_part =(
-      match r with 
-      0 -> [] | 1->[n] |2 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
-    )   in 
-    Medium_mold.constructor [core] end_part     
-  ) ;;
-
-  let tf4 _b n = tf3 n ;; 
- 
-  Safe_initialization.pair_level_add (W 1,[]) tf4 ;;   
-  Safe_initialization.triple_level_add (W 2,[],0) tf3 ;;
-
-  let tf5 =(fun n->
-    match List.assoc_opt n 
-    [
-       1, Medium_mold.constructor  [[1]] [1];
-       2, Medium_mold.constructor  [[1;2]] [1;2];
-       3, Medium_mold.constructor  [[1;2]] [];     
-    ] with
-    Some answer -> answer
-    |None ->
-    let r = n mod 3 in 
-    let core = [1;2]@(List.filter (fun j->(j mod 3)<>1)(Int_range.range 5 n)) in
-    let end_part =(
-      match r with 
-      1 -> [] | 2->[n] |0 ->[n-1;n] |_->raise(Bad_remainder_by_three(r))
-    )   in 
-    Medium_mold.constructor [core] end_part   
-  ) ;;
-  
-  Safe_initialization.triple_level_add (W 2,[4],0) tf5 ;;
-
 end ;;   
   
