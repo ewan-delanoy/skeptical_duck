@@ -38,6 +38,18 @@ type helper = Sz3_types.helper =
 
 type crude_mold = Sz3_types.crude_mold = CM of (solution list) * extension_data ;;  
 
+
+type extra_info = Sz3_types.extra_info = Info of string ;; 
+
+type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * extra_info ;;    
+
+type medium_diagnosis = Sz3_types.medium_diagnosis = 
+  Missing_treatment of point_with_breadth 
+ |Incomplete_treatment of point_with_breadth 
+ |Missing_links of point_with_breadth * (int list)
+ |Finished of medium_mold;;   
+
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -818,34 +830,48 @@ let standard_solution = Private.standard_solution ;;
 end ;;   
   
 
-type medium_mold = MM of (solution list) * extension_data * string ;;  
+module Extra_info = struct 
 
-type medium_diagnosis  = 
-      Missing_treatment of point_with_breadth 
-     |Incomplete_treatment of point_with_breadth 
-     |Missing_links of point_with_breadth * (int list)
-     |Finished of medium_mold;;   
+let discrete domain = 
+    let rev_domain = List.rev domain in 
+    if List.length(rev_domain)<2
+    then Info "" 
+    else if (List.nth rev_domain 1)=(List.nth rev_domain 0)-1
+         then Info "DD"
+         else Info "" ;;
 
+let rightmost_overflow (Info info) = 
+  if List.mem info ["DD";"PP"]
+  then Info(info^"O")  
+  else Info "";;
 
-  module Medium_mold = struct 
+let rightmost_pivot (Info info) = 
+  if List.mem info ["";"P";"DDO";"PPO"]
+  then Info(info^"P")  
+  else Info "P";;    
+
+end ;;   
+
+     
+module Medium_mold = struct 
 
     let add_links (MM(sols,ext,extra_info)) links = MM(sols,i_merge links ext,extra_info) ;;
 
     let add_solution (MM(sols,ext,extra_info)) new_sol = MM(il_insert new_sol sols,ext,extra_info) ;;
 
-    let discrete domain = MM([domain],domain,"") ;;   
+    let discrete domain = MM([domain],domain,Extra_info.discrete domain) ;;   
     
     let fork (MM(_sols1,ext1,_),MM(_sols2,ext2,_),MM(sols3,ext3,_)) =
       let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-      MM(sols3,final_ext,"");;   ;;
+      MM(sols3,final_ext,Info "");;   ;;
 
     let forced_elements (MM(_sols, ext,_))= ext ;; 
     
-    let rightmost_overflow (MM(sols,_ext,info)) = MM(sols,[],info^"O") ;;
+    let rightmost_overflow (MM(sols,_ext,info)) = MM(sols,[],Extra_info.rightmost_overflow info) ;;
     
-    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = MM(new_sols,i_insert n ext,info^"P") ;;
+    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
 
-    let select (MM(_sols,ext,_)) (new_sols:solution list) = MM(new_sols,ext,"") ;;
+    let select (MM(_sols,ext,_)) (new_sols:solution list) = MM(new_sols,ext,Info "") ;;
 
     let translate d (MM(sols, ext,extra_info)) =
         let tr = (fun x->Image.image(fun t->t+d) x) in 
