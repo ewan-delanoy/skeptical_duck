@@ -728,7 +728,7 @@ let usual_decomposition_opt pwb =
             let u = n-2*w and v=n-w in 
            if not(i_is_included_in [u;v] domain) then None else
            if w<=max_w then Some(u,v) else 
-           if v<=b then Some(u,v) else None  
+           if u<=b then Some(u,v) else None  
      ) candidates ;;
 
 end ;;  
