@@ -764,7 +764,28 @@ let test_for_rightmost_overflow pwb m =
     let pairs =  Point_with_breadth.complementary_pairs pwb 
     and left_pwb = Point_with_breadth.remove_element pwb (Point_with_breadth.max pwb) in 
     List.find_opt (test_for_individual_rightmost_overflow left_pwb m) pairs ;; 
-   
+
+let decompose = Memoized.make(fun pwb->
+      match Point_with_breadth.usual_decomposition_opt pwb with 
+          None -> (Discrete,PWB(P(FIS(0,[]),W 0),0))
+          |Some(preceding_pwb,C cstr) ->
+           let nth = (fun k->List.nth cstr (k-1)) in 
+           let m = measure pwb in 
+           if measure preceding_pwb = m
+           then (Select(nth 1,nth 2,nth 3),preceding_pwb)
+           else 
+             let n = Point_with_breadth.max pwb in
+             let left_pwb = Point_with_breadth.remove_element pwb n in 
+             let pwc = Point_with_breadth.to_extra_constraints pwb in 
+             if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
+             then (Rightmost_pivot,left_pwb)
+             else 
+             (  
+             match test_for_rightmost_overflow pwb m with 
+             (Some(u,v))->(Rightmost_overflow(u,v,n),left_pwb)
+             |None ->   
+             (Fork(nth 1,nth 2,nth 3),preceding_pwb)    
+))  ;;     
 
 let handle = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
@@ -789,23 +810,12 @@ let handle = Memoized.make(fun pwb->
 
 end ;; 
 
-let handle = Private.handle ;;
+let decompose = Private.decompose 
+let handle pwb = fst(Private.decompose pwb) ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;;
 
 end ;;   
-
-module Handle = struct 
-
-let translate d handle = match handle with  
-    Discrete
-  | Rightmost_pivot -> handle
-  | Rightmost_overflow (i,j,k) -> Rightmost_overflow (i+d,j+d,k+d)
-  | Select (i,j,k) -> Select (i+d,j+d,k+d)
-  | Fork (i,j,k) -> Fork (i+d,j+d,k+d) ;; 
-
-end ;;  
-
   
 
 type medium_mold = MM of (solution list) * extension_data * string ;;  
