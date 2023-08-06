@@ -840,7 +840,8 @@ let discrete domain =
          then Info "DD"
          else Info "" ;;
 
-let rightmost_overflow (Info info) = 
+let rightmost_overflow (u,v,_n) (Info info) = 
+  if v-u<>1 then Info "" else
   if List.mem info ["DD";"PP"]
   then Info(info^"O")  
   else Info "";;
@@ -866,22 +867,34 @@ module Medium_mold = struct
       MM(sols3,final_ext,Info "");;   ;;
 
     let forced_elements (MM(_sols, ext,_))= ext ;; 
+
+    let last_minute_deduction pwb mold = 
+      let (MM(sols,ext,Info info)) = mold in 
+      if not(List.mem info ["DDOP";"PPOP"])
+      then mold  
+      else let n = Point_with_breadth.max pwb in 
+           MM(sols,i_insert (n-3) ext,Info info) ;; 
+
     
-    let rightmost_overflow (MM(sols,_ext,info)) = MM(sols,[],Extra_info.rightmost_overflow info) ;;
+    let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
+
+    let rightmost_overflow (u,v,n) (MM(sols,_ext,info)) = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) info) ;;
     
     let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
 
     let select (MM(_sols,ext,_)) (new_sols:solution list) = MM(new_sols,ext,Info "") ;;
 
+    let solutions (MM(sols, _ext,_))= sols ;; 
+    
+    let solutions_and_forced_elements (MM(sols, ext,_))= (sols,ext) ;;  
+
     let translate d (MM(sols, ext,extra_info)) =
         let tr = (fun x->Image.image(fun t->t+d) x) in 
         MM(Image.image tr sols,tr ext,extra_info) ;; 
     
-    let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
     
-    let solutions (MM(sols, _ext,_))= sols ;; 
     
-    let solutions_and_forced_elements (MM(sols, ext,_))= (sols,ext) ;;  
+    
     
   end ;;
 
@@ -976,31 +989,31 @@ module Store = struct
              None -> (None,false) 
             |Some(left_mold) ->
                   let (left_sols,left_ext) = Medium_mold.solutions_and_forced_elements left_mold in 
-                  let new_ext = i_insert n left_ext in 
-                  if (not (Point_with_breadth.subset_is_admissible pwb new_ext))
-                  then (Some(Medium_mold.rightmost_overflow left_mold),true)
-                  else
-                  let new_sols = List.filter_map (fun old_sol->
-                    let new_sol = i_insert n old_sol in 
-                     if Point_with_breadth.subset_is_admissible pwb new_sol
-                     then Some new_sol
-                     else None 
-                  ) left_sols in 
-                  if new_sols <> []
-                  then (Some(Medium_mold.rightmost_pivot left_mold n new_sols),true)
-                else (
-                  match Point_with_breadth.usual_decomposition_opt pwb with 
-                   None -> (None,false)
-                   | Some(prec_pwb,_) ->
-                match no_expansions_opt prec_pwb with 
-                None -> (None,false)
-                | Some(prec_mold) ->  
-                  let prec_sols = Medium_mold.solutions prec_mold in 
-                  let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
-                  if new_sols <> []
-                  then (Some(Medium_mold.select prec_mold new_sols),true)
-                  else (None,false)
-                )      
+                  let complements = Point_with_breadth.complementary_pairs pwb in 
+                    match List.find_opt (fun (u,v)->i_is_included_in [u;v] left_ext) complements with
+                    (Some(u,v)) -> (Some(Medium_mold.rightmost_overflow (u,v,n) left_mold),true)
+                    |None ->
+                      let new_sols = List.filter_map (fun old_sol->
+                        let new_sol = i_insert n old_sol in 
+                        if Point_with_breadth.subset_is_admissible pwb new_sol
+                        then Some new_sol
+                        else None 
+                      ) left_sols in 
+                      if new_sols <> []
+                      then (Some(Medium_mold.rightmost_pivot left_mold n new_sols),true)
+                      else (
+                        match Point_with_breadth.usual_decomposition_opt pwb with 
+                          None -> (None,false)
+                        | Some(prec_pwb,_) ->
+                          match no_expansions_opt prec_pwb with 
+                            None -> (None,false)
+                          | Some(prec_mold) ->  
+                            let prec_sols = Medium_mold.solutions prec_mold in 
+                            let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
+                            if new_sols <> []
+                            then (Some(Medium_mold.select prec_mold new_sols),true)
+                            else (None,false)
+                      )      
              ) ;;
         
   let test_for_select_case pwb = 
@@ -1027,7 +1040,7 @@ module Store = struct
       and complements = Point_with_breadth.complementary_pairs pwb in 
       match List.find_opt (fun (u,v)->i_is_included_in [u;v] left_ext) complements with
        None -> None
-      |Some(u0,v0) -> Some((u0,v0),Medium_mold.rightmost_overflow left_mold) ;;            
+      |Some(u0,v0) -> Some((u0,v0),Medium_mold.rightmost_overflow (u0,v0,n) left_mold) ;;            
   
   let test_for_rightmost_overflow_case pwb (u,v,n) = 
     let left_pwb = Point_with_breadth.remove_element pwb n in 
@@ -1037,7 +1050,7 @@ module Store = struct
         let left_ext = Medium_mold.forced_elements left_mold in 
         let forgotten_links = i_setminus [u;v] left_ext in 
         if forgotten_links = []
-        then Finished(Medium_mold.rightmost_overflow left_mold)
+        then Finished(Medium_mold.rightmost_overflow (u,v,n) left_mold)
         else 
         let offshoots = Image.image (fun t->
            let pwb2 = Point_with_breadth.remove_element left_pwb t in
@@ -1133,7 +1146,7 @@ module Store = struct
                    Help.with_links pwb pre_answer links_with_data
          ;;
 
-   let compute_opt pwb = 
+   let without_any_last_minute_deduction pwb = 
       match without_helpers_opt pwb with 
       None -> None 
      |Some (pre_answer,is_new) ->
@@ -1144,6 +1157,12 @@ module Store = struct
                Some(apply_helper helper pwb pre_answer,is_new)
                );;    
 
+
+    let compute_opt pwb = 
+       match without_any_last_minute_deduction pwb with 
+        None -> None 
+       |Some (pre_answer,is_new) -> Some(Medium_mold.last_minute_deduction pwb pre_answer,is_new);;                 
+  
 
   end ;;
 
