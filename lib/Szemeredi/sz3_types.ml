@@ -25,10 +25,11 @@ type point_with_extra_constraints = PEC of point * (constraint_t list);;
 type point_with_breadth = PWB of point * int ;; 
 
 type crude_handle = 
-   Cr_Discrete
-  |Cr_Select of int * int * int  
-  |Cr_Rightmost_pivot 
-  |Cr_Fork of int * int * int ;;
+     Discrete
+    |Select of int * int * int   
+    |Rightmost_overflow of int * int * int 
+    |Rightmost_pivot
+    |Fork of int * int * int ;;
 
 type helper = 
   Help_with_solution of point_with_breadth * solution 

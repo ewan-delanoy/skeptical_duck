@@ -25,10 +25,12 @@ type point_with_extra_constraints = Sz3_types.point_with_extra_constraints =
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 type crude_handle = Sz3_types.crude_handle = 
-    Cr_Discrete
-   |Cr_Select of int * int * int 
-   |Cr_Rightmost_pivot 
-   |Cr_Fork of int * int * int ;;
+   Discrete
+  |Select of int * int * int   
+  |Rightmost_overflow of int * int * int 
+  |Rightmost_pivot
+  |Fork of int * int * int ;;
+
 
 type helper = Sz3_types.helper = 
    Help_with_solution of point_with_breadth * solution 
@@ -766,22 +768,22 @@ let test_for_rightmost_overflow pwb m =
 
 let compute_crude_handle = Memoized.make(fun pwb->
    match Point_with_breadth.usual_decomposition_opt pwb with 
-       None -> Cr_Discrete
+       None -> Discrete
        |Some(preceding_pwb,C cstr) ->
         let nth = (fun k->List.nth cstr (k-1)) in 
         let m = measure pwb in 
         if measure preceding_pwb = m
-        then Cr_Select(nth 1,nth 2,nth 3)
+        then Select(nth 1,nth 2,nth 3)
         else 
           let pwc = Point_with_breadth.to_extra_constraints pwb in 
           if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
-          then Cr_Rightmost_pivot
+          then Rightmost_pivot
           else 
           (  
-          (* match test_for_rightmost_overflow pwb m with 
-          (Some(u,v))->Cr_Fork(u,v,Point_with_breadth.max pwb)
-          |None ->   *)
-          Cr_Fork(nth 1,nth 2,nth 3)    
+          match test_for_rightmost_overflow pwb m with 
+          (Some(u,v))->Rightmost_overflow(u,v,Point_with_breadth.max pwb)
+          |None ->   
+          Fork(nth 1,nth 2,nth 3)    
     ))  ;; 
    
 
@@ -793,13 +795,14 @@ let standard_solution = Private.standard_solution ;;
 
 end ;;   
 
-module Crude_handle = struct 
+module Handle = struct 
 
 let translate d handle = match handle with  
-    Cr_Discrete
-  | Cr_Rightmost_pivot -> handle
-  | Cr_Select (i,j,k) -> Cr_Select (i+d,j+d,k+d)
-  | Cr_Fork (i,j,k) -> Cr_Fork (i+d,j+d,k+d) ;; 
+    Discrete
+  | Rightmost_pivot -> handle
+  | Rightmost_overflow (i,j,k) -> Rightmost_overflow (i+d,j+d,k+d)
+  | Select (i,j,k) -> Select (i+d,j+d,k+d)
+  | Fork (i,j,k) -> Fork (i+d,j+d,k+d) ;; 
 
 end ;;  
 
@@ -1231,15 +1234,13 @@ module Medium_analysis = struct
       |None -> 
         (
           match Analysis_with_breadth.compute_crude_handle pwb with 
-          Cr_Discrete -> (* this should never happen, the discrete case
+           Discrete -> (* this should never happen, the discrete case
                           is already treated elsewhere *) 
                       raise(Try_to_compute_exn(pwb))
-          |Cr_Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
-          (*
+          |Rightmost_pivot->(try_to_compute_in_rightmost_pivot_case pwb,true) 
           |Rightmost_overflow(u,v,n)->(try_to_compute_in_rightmost_overflow_case pwb (u,v,n),true) 
-          *)
-          |Cr_Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
-          |Cr_Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
+          |Select(_,_,_)->(try_to_compute_in_select_case pwb,true) 
+          |Fork(_,_,_)->(try_to_compute_in_fork_case pwb,true)            
         ) ;; 
     
       let try_to_compute pwb =
