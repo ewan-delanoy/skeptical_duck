@@ -808,7 +808,7 @@ end ;;
 
   
 
-type medium_mold = MM of (solution list) * extension_data ;;  
+type medium_mold = MM of (solution list) * extension_data * string ;;  
 
 type medium_diagnosis  = 
       Missing_treatment of point_with_breadth 
@@ -819,37 +819,33 @@ type medium_diagnosis  =
 
   module Medium_mold = struct 
 
-    let add_links (MM(sols,ext)) links = MM(sols,i_merge links ext) ;;
+    let add_links (MM(sols,ext,extra_info)) links = MM(sols,i_merge links ext,extra_info) ;;
 
-    let add_solution (MM(sols,ext)) new_sol = MM(il_insert new_sol sols,ext) ;;
+    let add_solution (MM(sols,ext,extra_info)) new_sol = MM(il_insert new_sol sols,ext,extra_info) ;;
 
-    let constructor sols ext= MM(sols,ext) ;;  
-
-    let discrete domain = MM([domain],domain) ;;   
+    let discrete domain = MM([domain],domain,"") ;;   
     
-    let fork (MM(_sols1,ext1),MM(_sols2,ext2),MM(sols3,ext3)) =
+    let fork (MM(_sols1,ext1,_),MM(_sols2,ext2,_),MM(sols3,ext3,_)) =
       let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-      MM(sols3,final_ext);;   ;;
+      MM(sols3,final_ext,"");;   ;;
 
-    let forced_elements (MM(_sols, ext))= ext ;; 
+    let forced_elements (MM(_sols, ext,_))= ext ;; 
     
-    let of_solutions sols = MM(sols,[]) ;; 
+    let rightmost_overflow (MM(sols,_ext,info)) = MM(sols,[],info^"O") ;;
     
-    let rightmost_overflow (MM(sols,_ext)) = MM(sols,[]) ;;
-    
-    let rightmost_pivot (MM(_sols,ext)) n (new_sols:solution list) = MM(new_sols,i_insert n ext) ;;
+    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = MM(new_sols,i_insert n ext,info^"P") ;;
 
-    let select (MM(_sols,ext)) (new_sols:solution list) = MM(new_sols,ext) ;;
+    let select (MM(_sols,ext,_)) (new_sols:solution list) = MM(new_sols,ext,"") ;;
 
-    let translate d (MM(sols, ext)) =
+    let translate d (MM(sols, ext,extra_info)) =
         let tr = (fun x->Image.image(fun t->t+d) x) in 
-        MM(Image.image tr sols,tr ext) ;; 
+        MM(Image.image tr sols,tr ext,extra_info) ;; 
     
-    let measure (MM(sols, _ext)) = List.length(List.hd sols) ;; 
+    let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
     
-    let solutions (MM(sols, _ext))= sols ;; 
+    let solutions (MM(sols, _ext,_))= sols ;; 
     
-    let solutions_and_forced_elements (MM(sols, ext))= (sols,ext) ;;  
+    let solutions_and_forced_elements (MM(sols, ext,_))= (sols,ext) ;;  
     
   end ;;
 
