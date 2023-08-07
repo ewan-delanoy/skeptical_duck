@@ -39,7 +39,7 @@ type helper = Sz3_types.helper =
 type crude_mold = Sz3_types.crude_mold = CM of (solution list) * extension_data ;;  
 
 
-type extra_info = Sz3_types.extra_info = Info of string ;; 
+type extra_info = Sz3_types.extra_info = I of int ;; 
 
 type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * extra_info ;;    
 
@@ -832,24 +832,33 @@ end ;;
 
 module Extra_info = struct 
 
-let discrete domain = 
-    let rev_domain = List.rev domain in 
-    if List.length(rev_domain)<2
-    then Info "" 
-    else if (List.nth rev_domain 1)=(List.nth rev_domain 0)-1
-         then Info "DD"
-         else Info "" ;;
+(*
 
-let rightmost_overflow (u,v,_n) (Info info) = 
-  if v-u<>1 then Info "" else
-  if List.mem info ["DD";"PP"]
-  then Info(info^"O")  
-  else Info "";;
+I 0 : default state, nothing particular
+I 1 : Either [n-2;n-1], [n-2;n] or [n-1;n] are contained in a solution 
+I 2 : n is forced, and either [n-3;n-2], [n-3;n-1] or [n-2;n-1] are contained in a solution 
+I 3 : n is forced, and either [n-3;n-2] or [n-3;n-1] are contained in a solution 
 
-let rightmost_pivot (Info info) = 
-  if List.mem info ["";"P";"DDO";"PPO"]
-  then Info(info^"P")  
-  else Info "P";;    
+*)
+
+let default = I 0 ;;
+
+let discrete _domain = default ;;
+
+let rightmost_overflow (_u,_v,n) left_ext (I _old_i) = 
+   if i_is_included_in [n-2;n-1] left_ext 
+   then  I 1 
+   else default ;;
+
+let rightmost_pivot (I old_info) =
+  if  (old_info=1)
+  then  I 2 
+  else default ;;    
+
+let select (x,y,z) n (I old_info) = 
+  if ((x,y,z)=(n-2,n-1,n)) && (old_info=2)
+  then  I 3 
+  else default ;;
 
 end ;;   
 
@@ -864,25 +873,28 @@ module Medium_mold = struct
     
     let fork (MM(_sols1,ext1,_),MM(_sols2,ext2,_),MM(sols3,ext3,_)) =
       let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-      MM(sols3,final_ext,Info "");;   ;;
+      MM(sols3,final_ext,Extra_info.default);;   ;;
 
     let forced_elements (MM(_sols, ext,_))= ext ;; 
 
     let last_minute_deduction pwb mold = 
-      let (MM(sols,ext,Info info)) = mold in 
-      if not(List.mem info ["DDOP";"PPOP"])
+      let (MM(sols,ext,I info)) = mold in 
+      if info <> 3
       then mold  
       else let n = Point_with_breadth.max pwb in 
-           MM(sols,i_insert (n-3) ext,Info info) ;; 
+           MM(sols,i_insert (n-3) ext,I info) ;;
 
     
     let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
 
-    let rightmost_overflow (u,v,n) (MM(sols,_ext,info)) = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) info) ;;
+    let rightmost_overflow (u,v,n) (MM(sols,left_ext,info)) 
+           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n)left_ext info) ;;
     
-    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
+    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = 
+          MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
 
-    let select (MM(_sols,ext,_)) (new_sols:solution list) = MM(new_sols,ext,Info "") ;;
+    let select (i,j,k) n (MM(_sols,ext,info)) (new_sols:solution list) = 
+          MM(new_sols,ext,Extra_info.select (i,j,k) n info) ;;
 
     let solutions (MM(sols, _ext,_))= sols ;; 
     
@@ -1004,14 +1016,16 @@ module Store = struct
                       else (
                         match Point_with_breadth.usual_decomposition_opt pwb with 
                           None -> (None,false)
-                        | Some(prec_pwb,_) ->
+                        | Some(prec_pwb,C cstr) ->
                           match no_expansions_opt prec_pwb with 
                             None -> (None,false)
                           | Some(prec_mold) ->  
                             let prec_sols = Medium_mold.solutions prec_mold in 
                             let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
                             if new_sols <> []
-                            then (Some(Medium_mold.select prec_mold new_sols),true)
+                            then  let nth = (fun k->List.nth cstr (k-1)) in  
+                                  let i=nth 1 and j=nth 2 and k=nth 3 in 
+                                  (Some(Medium_mold.select (i,j,k) n prec_mold new_sols),true)
                             else (None,false)
                       )      
              ) ;;
@@ -1019,7 +1033,7 @@ module Store = struct
   let test_for_select_case pwb = 
       match Point_with_breadth.usual_decomposition_opt pwb with 
         None -> raise(Select_case_opt_exn(pwb))
-      |Some(prec_pwb,_) ->
+      |Some(prec_pwb,C cstr) ->
           match no_expansions_opt prec_pwb with 
             None -> Missing_treatment(prec_pwb)
           |Some(prec_mold) ->
@@ -1027,7 +1041,10 @@ module Store = struct
              let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
               if new_sols = []
               then Incomplete_treatment(prec_pwb)
-              else Finished(Medium_mold.select prec_mold new_sols);;    
+              else let nth = (fun k->List.nth cstr (k-1)) in  
+                   let i=nth 1 and j=nth 2 and k=nth 3 in 
+                   let n = Point_with_breadth.max prec_pwb in 
+                   Finished(Medium_mold.select (i,j,k) n prec_mold new_sols);;    
       
             
   let test_for_easy_rightmost_overflow_case pwb = 

@@ -37,7 +37,7 @@ type helper =
 
 type crude_mold = CM of (solution list) * extension_data ;;
 
-type extra_info = Info of string ;; 
+type extra_info = I of int ;; 
 
 type medium_mold = MM of (solution list) * extension_data * extra_info ;;    
 
