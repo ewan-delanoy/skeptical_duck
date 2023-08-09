@@ -4,6 +4,8 @@
 
 *)
 
+exception Shift_indentation_in_line_exn of int * string ;;
+
 
 module Private = struct 
 
@@ -125,7 +127,55 @@ module Private = struct
      let old_text=Io.read_whole_file fn in
      let new_text=change_indentation_in_interval_in_string ~indent (i,j) ~text:old_text   in
      Io.overwrite_with fn new_text;;     
-   
+ 
+    let indentation_decomposition line =
+        let n = String.length line in 
+        match List.find_opt(fun j->
+            not(List.mem (String.get line (j-1)) [' ';'\t']) 
+          )(Int_range.range 1 n) with 
+        None -> (line,"")
+        |Some (j0) -> (Cull_string.beginning (j0-1) line,Cull_string.cobeginning (j0-1) line) ;;
+
+    (*
+    
+    indentation_decomposition "abc";;
+    indentation_decomposition "\t \tabc";;
+
+    *)
+
+
+    let shift_indentation_in_line line ~shift_amplitude ~forced =
+        if shift_amplitude>=0 
+        then (String.make shift_amplitude ' ')^line 
+        else 
+        let (indent,bare_text) = indentation_decomposition line in 
+        let m = String.length indent in 
+        if m>=shift_amplitude
+        then (Cull_string.cobeginning shift_amplitude indent)^bare_text
+        else     
+        if forced 
+        then bare_text 
+        else raise(Shift_indentation_in_line_exn(shift_amplitude,line)) ;;  
+
+
+
+
+    let shift_indentation_in_interval_in_string_with (i,j) ~text ~shift_amplitude ~forced =
+      let old_lines = indexed_lines text  in 
+      let new_lines = Image.image (
+          fun (k,line) -> 
+            if (k<i)||(k>j)
+            then line
+           else shift_indentation_in_line line ~shift_amplitude ~forced
+      ) old_lines in 
+      String.concat "\n" new_lines ;;
+  
+  (* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
+  
+  let shift_indentation_in_interval_in_file_with (i,j) fn ~shift_amplitude ~forced=
+     let old_text=Io.read_whole_file fn in
+     let new_text=shift_indentation_in_interval_in_string_with (i,j) ~text:old_text ~shift_amplitude ~forced  in
+     Io.overwrite_with fn new_text;;     
 
   end ;;   
 
@@ -158,23 +208,7 @@ let change_indentation_in_interval_in_file = Private.change_indentation_in_inter
   
   *)
 
-  let indent_interval_in_string_with (i,j) ~text ~tab_width =
-    let old_lines = indexed_lines text 
-    and tab = String.make tab_width ' ' in 
-    let new_lines = Image.image (
-        fun (k,line) -> 
-          if (k<i)||(k>j)
-          then line
-         else tab^line
-    ) old_lines in 
-    String.concat "\n" new_lines ;;
-
-(* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
-
-let indent_interval_in_file_with (i,j) fn ~tab_width=
-   let old_text=Io.read_whole_file fn in
-   let new_text=indent_interval_in_string_with (i,j) ~text:old_text ~tab_width  in
-   Io.overwrite_with fn new_text;;   
+ 
 
 let interval = Private.interval ;;
 
@@ -217,6 +251,9 @@ let findreplace_in_interval_in_file (x,y) fn i j=
   
 
 (* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
+let shift_indentation_in_interval_in_file_with = Private.shift_indentation_in_interval_in_file_with ;;
+let shift_indentation_in_interval_in_string_with = Private.shift_indentation_in_interval_in_string_with ;;
 
 let suppress_linebreaks_in_interval s i j=
     let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
