@@ -123,7 +123,7 @@ module Private = struct
      ) old_lines in 
      String.concat "\n" new_lines ;;
    
-   let change_indentation_in_interval_in_file ~indent (i,j) fn =
+   let impose_fixed_indentation_in_interval_in_file ~indent (i,j) fn =
      let old_text=Io.read_whole_file fn in
      let new_text=change_indentation_in_interval_in_string ~indent (i,j) ~text:old_text   in
      Io.overwrite_with fn new_text;;     
@@ -179,7 +179,7 @@ module Private = struct
 
   end ;;   
 
-let change_indentation_in_interval_in_file = Private.change_indentation_in_interval_in_file ;;   
+let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
 
   let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
