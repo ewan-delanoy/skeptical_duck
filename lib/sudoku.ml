@@ -23,6 +23,8 @@ type cell_state =
 
 type bare_grid = BG of cell_state list * (deduction list);; 
 
+type inverse = IV of box * int ;; 
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -294,6 +296,19 @@ module Bare_Grid = struct
       Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 ;; 
 
     let deduce_several bg cells = List.fold_left deduce bg cells ;;   
+
+    let possibilities_for_inverse bg (IV(box,v)) = 
+        List.filter (fun cell->List.mem v (possibilities bg cell)) ( Box.content box) ;;
+ 
+    let analysis_for_double_inverse bg (iv1,iv2) = 
+        let (IV(_box1,v1)) = iv1 in 
+        let cases = Image.image (
+          fun cell -> 
+            let new_bg = assume bg cell v1 in 
+            (cell,possibilities_for_inverse new_bg iv2)
+        ) (possibilities_for_inverse bg iv1) in 
+        (Cell.fold_merge (Image.image snd cases),cases);;
+
 
 end ;;   
 
