@@ -99,7 +99,9 @@ let update_list updater l_to_be_updated =
     let (D(cell,_,_)) = updater in 
     List.filter (fun (D(cell2,_,_))->cell2<>cell) l_to_be_updated ;;
 
-    
+let to_string (D(cell,v0,_)) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
+let list_to_string l = String.concat " , " (Image.image to_string l) ;; 
+
 end ;;  
 
 module Cell_state = struct 
@@ -240,7 +242,10 @@ module Bare_Grid = struct
       
         end ;;  
       
-      let to_string = Display.large_grid ;;   
+        let easy_deductions (BG(_,deds)) = deds ;;    
+
+      let to_string bg = (Display.large_grid bg)^"\n\n"^
+             (Deduction.list_to_string(easy_deductions bg));;   
       
       let show bg = print_string("\n\n\n"^(to_string bg)^"\n\n\n");flush stdout ;;  
 
@@ -259,7 +264,7 @@ module Bare_Grid = struct
          let _ = List.iter apply temp2 in 
          !walker ;;  
                 
-      let easy_deductions (BG(_,deds)) = deds ;;    
+      
 
 end ;;   
 
