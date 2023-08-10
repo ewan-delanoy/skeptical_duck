@@ -57,6 +57,13 @@ let fold_merge ll =
     let temp1 = Image.image (Image.image single_index) ll in 
     Image.image at_single_index (i_fold_merge temp1) ;; 
 
+let possibilities  l= 
+   let temp1 = Int_range.index_everything l in 
+   List.filter_map (
+     fun (v,opt)-> match opt with 
+      None -> Some v 
+     |Some _ -> None
+   ) temp1 ;;      
 
 end ;;
 
@@ -138,13 +145,7 @@ module Cell_state = struct
    Initialized(v2)->[v2]
   |Assumed(v3)->[v3]
   |Deduced(ded)->[Deduction.vaalue ded]
-  |Usual(l)->
-  let temp1 = Int_range.index_everything l in 
-  List.filter_map (
-    fun (v,opt)-> match opt with 
-     None -> Some v 
-    |Some _ -> None
-  ) temp1 ;;  
+  |Usual(l)-> Cell.possibilities l ;;  
 
   let to_deduction_opt cell0 = function 
      Initialized(_)
@@ -271,7 +272,19 @@ module Bare_Grid = struct
          !walker ;;  
                 
     let print_out (fmt:Format.formatter) bg=
-         Format.fprintf fmt "@[%s@]" (to_surrounded_string bg);;
+      Format.fprintf fmt "@[%s@]" (to_surrounded_string bg);;
+
+    let minimizers (BG(states,_))=
+      let temp1 = List.combine Cell.all states in 
+      let temp2 = List.filter_map (fun (cell,state)->
+          match state with   
+          Initialized(_)
+         |Assumed(_)
+         |Deduced(_)-> None
+         |Usual(l)-> Some(cell,Cell.possibilities l)
+      ) temp1 in 
+      Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 ;; 
+
 
 end ;;   
 
