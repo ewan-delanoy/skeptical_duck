@@ -247,7 +247,7 @@ module Bare_Grid = struct
       let to_string bg = (Display.large_grid bg)^"\n\n"^
              (Deduction.list_to_string(easy_deductions bg));;   
       
-      let show bg = print_string("\n\n\n"^(to_string bg)^"\n\n\n");flush stdout ;;  
+      let to_surrounded_string bg = "\n\n\n"^(to_string bg)^"\n\n\n" ;;  
 
       let origin = 
           let common = Usual (Int_range.scale (fun _->None) 1 9) in 
@@ -264,7 +264,8 @@ module Bare_Grid = struct
          let _ = List.iter apply temp2 in 
          !walker ;;  
                 
-      
+    let print_out (fmt:Format.formatter) bg=
+         Format.fprintf fmt "@[%s@]" (to_surrounded_string bg);;
 
 end ;;   
 
