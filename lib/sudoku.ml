@@ -102,6 +102,12 @@ let update_list updater l_to_be_updated =
 let to_string (D(cell,v0,_)) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
 let list_to_string l = String.concat " , " (Image.image to_string l) ;; 
 
+let push_if_necessary updater l_to_be_updated =
+  let (D(cell,_,_)) = updater in 
+  if List.exists (fun (D(cell2,_,_))->cell2=cell) l_to_be_updated 
+  then l_to_be_updated
+  else updater :: l_to_be_updated ;;
+
 end ;;  
 
 module Cell_state = struct 
@@ -187,7 +193,8 @@ module Bare_Grid = struct
             let new_state = Cell_state.new_state v0 prereqs0 state in   
             let _ =(match Cell_state.to_deduction_opt cell new_state with 
                 None -> ()
-                |Some new_ded ->  ref_for_new_deds:=new_ded::(!ref_for_new_deds)
+                |Some new_ded ->  ref_for_new_deds:=
+                  Deduction.push_if_necessary  new_ded (!ref_for_new_deds)
             ) in 
              new_state  
        ) indexed_old_states in
