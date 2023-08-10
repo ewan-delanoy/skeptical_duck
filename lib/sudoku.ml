@@ -106,7 +106,7 @@ let push_if_necessary updater l_to_be_updated =
   let (D(cell,_,_)) = updater in 
   if List.exists (fun (D(cell2,_,_))->cell2=cell) l_to_be_updated 
   then l_to_be_updated
-  else updater :: l_to_be_updated ;;
+  else l_to_be_updated@[updater] ;;
 
 end ;;  
 
@@ -180,7 +180,7 @@ module Bare_Grid = struct
 
    let assign_and_update (BG (old_states,old_deds)) cell0 v0 object0 prereqs0 =
        let indexed_old_states = Int_range.index_everything old_states 
-       and ref_for_new_deds=ref[] in 
+       and ref_for_deds=ref old_deds in 
        let new_states = Image.image (
          fun (idx,state) ->
             let cell = Cell.at_single_index idx in 
@@ -193,13 +193,12 @@ module Bare_Grid = struct
             let new_state = Cell_state.new_state v0 prereqs0 state in   
             let _ =(match Cell_state.to_deduction_opt cell new_state with 
                 None -> ()
-                |Some new_ded ->  ref_for_new_deds:=
-                  Deduction.push_if_necessary  new_ded (!ref_for_new_deds)
+                |Some new_ded ->  ref_for_deds:=
+                  Deduction.push_if_necessary  new_ded (!ref_for_deds)
             ) in 
              new_state  
        ) indexed_old_states in
-       let new_deds = old_deds @ (List.rev(!ref_for_new_deds)) in 
-       BG(new_states,new_deds) ;; 
+       BG(new_states,(!ref_for_deds)) ;; 
    
     let initialize_single_cell grid cell0 v0 =
         if check_before_assignment grid cell0 v0
