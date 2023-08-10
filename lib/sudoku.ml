@@ -14,9 +14,9 @@ type box =
 type inverse = IV of box * int ;; 
 
 type deduction_explanation =
-     Direct of cell list 
-    |Inverse of inverse 
-    |Inverse_for_inverse of inverse * inverse ;; 
+     Direct_ded of cell list 
+    |Inverse_ded of inverse 
+    |Inverse_for_inverse_ded of inverse * inverse ;; 
 
 type cell_state =
     Initialized of int 
@@ -26,7 +26,11 @@ type cell_state =
 
 type direct_deduction = DD of cell * int * (cell list) ;;    
 
-type bare_grid = BG of cell_state list * (direct_deduction list);; 
+type bare_grid = VBG of cell_state list ;; 
+
+type grid_with_deductions = BG of cell_state list * (direct_deduction list)  ;;
+
+
 
 
 
@@ -174,7 +178,7 @@ module Cell_state = struct
 end ;;  
 
 
-module Bare_Grid = struct 
+module Grid_with_deductions = struct 
 
   let possibilities (BG (states,_)) cell= 
      let idx = Cell.single_index cell in 
@@ -234,7 +238,7 @@ module Bare_Grid = struct
        None -> fail_during_deduction grid cell0
       |Some(ded) ->
           let (DD(_,v0,prereqs0)) = ded in  
-          let formal_ded = Deduced(cell0,v0,Direct(prereqs0)) in 
+          let formal_ded = Deduced(cell0,v0,Direct_ded(prereqs0)) in 
           let (BG(states,old_direct_deds))=assign_and_update grid cell0 v0 formal_ded prereqs0 in 
           let new_direct_deds = Direct_deduction.update_list cell0 old_direct_deds  in 
           BG(states,new_direct_deds);;
@@ -319,6 +323,24 @@ module Bare_Grid = struct
         ) (possibilities_for_inverse bg iv1) in 
         (Cell.fold_merge (Image.image snd cases),cases);;
 
+    let check_before_inverse_deduction bg iv = 
+          let l = possibilities_for_inverse bg iv in 
+          if List.length(l)<>1
+          then let msg = "Incorrect inverse deduction attempt " in 
+               let _ = (print_string msg;flush stdout) in 
+               false
+          else true ;;       
+
+    (*      
+    let deduce_using_inverse bg iv =
+       if not(check_before_inverse_deduction bg iv)
+       then bg 
+       else 
+       let(IV(box1,v1)) = iv in 
+       let cell1 = List.hd(possibilities_for_inverse bg iv) in 
+       let formal_ded=Deduced(cell1,v1,Inverse_ded(iv)) in
+       assign_and_update bg cell1 v1 formal_ded prereqs1 ;; 
+    *)
 
 end ;;   
 
