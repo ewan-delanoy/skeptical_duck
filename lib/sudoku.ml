@@ -293,6 +293,7 @@ module Bare_Grid = struct
       let _=(print_string msg;flush stdout) in
       Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 ;; 
 
+    let deduce_several bg cells = List.fold_left deduce bg cells ;;   
 
 end ;;   
 
