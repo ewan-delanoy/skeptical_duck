@@ -11,14 +11,21 @@ type box =
    |Column of int 
    |Square of int ;; 
    
+
+
+type deduction = D of cell * int * (cell list) ;; 
+
 type cell_state =
     Initialized of int 
    |Assumed of int 
-   |Deduced of int * (cell list)
+   |Deduced of deduction
    |Usual of ((cell list) option) list ;;
 
-type bare_grid = BG of cell_state list ;; 
+type bare_grid = BG of cell_state list * (deduction list);; 
 
+
+let i_order = Total_ordering.for_integers ;;
+let i_fold_merge = Ordered.fold_merge i_order ;;
 
 module Cell = struct 
 
@@ -46,6 +53,10 @@ let first_in_given_square square_idx = List.find (fun c->square_coordinate(c)=sq
 let single_index (C(i,j)) = j+9*(i-1) ;;
 let at_single_index idx = let q = (idx-1)/9 in C(q+1,idx-9*q);;
 let to_short_string (C(i,j)) = "("^(string_of_int i)^","^(string_of_int j)^")" ;;
+let fold_merge ll =
+    let temp1 = Image.image (Image.image single_index) ll in 
+    Image.image at_single_index (i_fold_merge temp1) ;; 
+
 
 end ;;
 
@@ -70,44 +81,98 @@ module Box = struct
 
 end ;;   
 
+
+module Deduction = struct 
+
+let vaalue (D(_,v0,_)) = v0 ;; 
+
+let of_usual_list_opt cell0 l =
+  let temp1 = Int_range.index_everything l in 
+  let (poss,imposs)=List.partition (fun (_v,opt)-> opt = None) temp1 in 
+  if List.length(poss)<>1
+  then None
+  else 
+  let v0=fst(List.hd poss) in 
+  Some(D(cell0,v0,Cell.fold_merge(Image.image(fun (_v,opt)->Option.get opt) imposs)));;
+
+let update_list updater l_to_be_updated =
+    let (D(cell,_,_)) = updater in 
+    List.filter (fun (D(cell2,_,_))->cell2<>cell) l_to_be_updated ;;
+
+    
+end ;;  
+
 module Cell_state = struct 
 
-    let display = function
-      Initialized(v)->string_of_int v
-     |Assumed(v)->string_of_int v
-     |Deduced(v,_)->string_of_int v
-     |Usual(_)->" ";;
+  let display = function
+    Initialized(v)->string_of_int v
+   |Assumed(v)->string_of_int v
+   |Deduced(D(_,v,_))->string_of_int v
+   |Usual(_)->" ";;
 
+  let new_state v0 prereqs0 state =   
+    match state with 
+    Initialized _
+   |Assumed _ 
+   |Deduced(_)-> state 
+   |Usual(l) ->
+      let indexed_l = Int_range.index_everything l in 
+      Usual(Image.image (
+        fun (v1,opt1)->
+          if v1<>v0 
+          then opt1
+          else match opt1 with 
+               Some(_)->opt1
+              |None -> Some prereqs0 
+      ) indexed_l);;
+
+  let possibilities = function 
+   Initialized(v2)->[v2]
+  |Assumed(v3)->[v3]
+  |Deduced(ded)->[Deduction.vaalue ded]
+  |Usual(l)->
+  let temp1 = Int_range.index_everything l in 
+  List.filter_map (
+    fun (v,opt)-> match opt with 
+     None -> Some v 
+    |Some _ -> None
+  ) temp1 ;;  
+
+  let to_deduction_opt cell0 = function 
+     Initialized(_)
+    |Assumed(_)
+    |Deduced(_)-> None
+    |Usual(l)->  Deduction.of_usual_list_opt cell0 l;;
+
+  let update_list_of_deductions updater l_to_be_updated = match updater with 
+    Initialized(_)
+   |Assumed(_)
+   |Usual(_)-> l_to_be_updated
+   |Deduced(ded)-> Deduction.update_list ded l_to_be_updated ;;
+  
 
 end ;;  
 
+
 module Bare_Grid = struct 
 
-  let possibilities (BG states) cell= 
+  let possibilities (BG (states,_)) cell= 
      let idx = Cell.single_index cell in 
-     match List.nth states (idx-1) with
-      Initialized(v2)->[v2]
-     |Assumed(v3)->[v3]
-     |Deduced(v4,_)->[v4]
-     |Usual(l)->
-     let temp1 = Int_range.index_everything l in 
-     List.filter_map (
-       fun (v,opt)-> match opt with 
-        None -> Some v 
-       |Some _ -> None
-     ) temp1 ;;
+     Cell_state.possibilities (List.nth states (idx-1));;
 
-   let check_before_assignment (BG states) cell v = 
-     let possible_values = possibilities (BG states) cell in 
+   let check_before_assignment bg cell v = 
+     let possible_values = possibilities bg cell in 
      if not(List.mem v  possible_values)
      then let msg = "Incorrect assignment attempt at "^(Cell.to_short_string cell) in 
           let _ = (print_string msg;flush stdout) in 
           false
      else true ;;   
      
-    
-   let assign_and_update (BG old_states) cell0 v0 object0 prereqs0=
-       let indexed_old_states = Int_range.index_everything old_states in 
+   
+
+   let assign_and_update (BG (old_states,old_deds)) cell0 v0 object0 prereqs0 =
+       let indexed_old_states = Int_range.index_everything old_states 
+       and ref_for_new_deds=ref[] in 
        let new_states = Image.image (
          fun (idx,state) ->
             let cell = Cell.at_single_index idx in 
@@ -117,24 +182,17 @@ module Bare_Grid = struct
             if (cell=cell0)||(not(Cell.test_for_neighborhood cell0 cell)) 
             then state
             else
-             match state with 
-              Initialized _
-             |Assumed _ 
-             |Deduced(_,_)-> state 
-             |Usual(l) ->
-                let indexed_l = Int_range.index_everything l in 
-                Usual(Image.image (
-                  fun (v1,opt1)->
-                    if v1<>v0 
-                    then opt1
-                    else match opt1 with 
-                         Some(_)->opt1
-                        |None -> Some prereqs0 
-                ) indexed_l)  
+            let new_state = Cell_state.new_state v0 prereqs0 state in   
+            let _ =(match Cell_state.to_deduction_opt cell new_state with 
+                None -> ()
+                |Some new_ded ->  ref_for_new_deds:=new_ded::(!ref_for_new_deds)
+            ) in 
+             new_state  
        ) indexed_old_states in
-       BG(new_states) ;; 
+       let new_deds = old_deds @ (List.rev(!ref_for_new_deds)) in 
+       BG(new_states,new_deds) ;; 
    
-    let initialize grid cell0 v0 =
+    let initialize_single_cell grid cell0 v0 =
         if check_before_assignment grid cell0 v0
         then assign_and_update grid cell0 v0 (Initialized v0) [cell0]
         else grid;;  
@@ -150,29 +208,19 @@ module Bare_Grid = struct
       grid;;   
 
     let deduce grid cell0 =
-      let (BG(states)) = grid in 
+      let (BG(states,_)) = grid in 
       let idx = Cell.single_index cell0 in 
-      match List.nth states (idx-1) with
-       Initialized(_)
-      |Assumed(_)
-      |Deduced(_,_)-> fail_during_deduction grid cell0
-      |Usual(l)->  
-        let temp1 = Int_range.index_everything l in 
-        let (poss,imposs)=List.partition (fun (_v,opt)-> opt = None) temp1 in 
-        if List.length(poss)<>1
-        then fail_during_deduction grid cell0
-        else 
-        let v0=fst(List.hd poss) 
-        and pre_prereqs0 = List.flatten(Image.image (fun (_v,opt)->
-            Image.image Cell.single_index (Option.get opt) ) imposs) in 
-        let prereqs0 = List.filter_map (
-           fun idx->if List.mem idx pre_prereqs0 then Some(Cell.at_single_index idx) else None
-        ) (Int_range.range 1 81) in 
-        assign_and_update grid cell0 v0 (Deduced(v0,prereqs0)) prereqs0 ;;
+      match Cell_state.to_deduction_opt cell0 (List.nth states (idx-1)) with
+       None -> fail_during_deduction grid cell0
+      |Some(ded) ->
+          let (D(_,v0,prereqs0)) = ded in  
+          let (BG(states,old_deds))=assign_and_update grid cell0 v0 (Deduced(ded)) prereqs0 in 
+          let new_deds = Deduction.update_list ded old_deds  in 
+          BG(states,new_deds);;
 
         module Display = struct 
 
-          let eval_small_grid_using_matrix_coordinates (BG(states)) (i,j) = 
+          let eval_small_grid_using_matrix_coordinates (BG(states,_)) (i,j) = 
              let idx = Cell.single_index (Cell.from_matrix_coordinates i j) in 
              Cell_state.display(List.nth states (idx-1));;
           
@@ -198,7 +246,19 @@ module Bare_Grid = struct
 
       let origin = 
           let common = Usual (Int_range.scale (fun _->None) 1 9) in 
-          BG(Int_range.scale (fun _->common) 1 81);;
+          BG(Int_range.scale (fun _->common) 1 81,[]);;
+
+      let initialize_with l =
+         let temp1 = Int_range.index_everything l in 
+         let temp2 = List.filter(fun (_idx,v)->(v>=1)&&(v<=9)) temp1
+         and walker = ref origin in 
+         let apply=(fun (idx,v)->
+            let cell = Cell.at_single_index idx in
+            walker:=initialize_single_cell (!walker) cell v
+          ) in 
+         let _ = List.iter apply temp2 in 
+         !walker ;;  
+                
 
 end ;;   
 
