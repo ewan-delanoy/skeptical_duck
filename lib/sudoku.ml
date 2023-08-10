@@ -229,32 +229,36 @@ module Bare_Grid = struct
 
         module Display = struct 
 
-          let eval_small_grid_using_matrix_coordinates (BG(states,_)) (i,j) = 
+          let eval_small_grid_using_matrix_coordinates (BG(states,_)) special_cells (i,j) = 
+             let cell = Cell.from_matrix_coordinates i j in 
+             if List.mem cell special_cells 
+             then "#"
+             else 
              let idx = Cell.single_index (Cell.from_matrix_coordinates i j) in 
              Cell_state.display(List.nth states (idx-1));;
           
-          let eval_large_grid_using_matrix bg large_i large_j =
+          let eval_large_grid_using_matrix bg special_cells large_i large_j =
               let small_i =  List_again.find_index_of_in large_i [2;3;4;6;7;8;10;11;12]
               and small_j =  List_again.find_index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
           if (small_i<0)||(small_j<0)
           then "*"
-          else eval_small_grid_using_matrix_coordinates bg (small_i,small_j);;
+          else eval_small_grid_using_matrix_coordinates bg special_cells (small_i,small_j);;
           
-          let large_line vg large_i = String.concat "" 
-            (Int_range.scale(eval_large_grid_using_matrix vg large_i) 1 13) ;;
+          let large_line vg special_cells large_i = String.concat "" 
+            (Int_range.scale(eval_large_grid_using_matrix vg special_cells  large_i) 1 13) ;;
             
-          let large_lines vg = Int_range.scale (large_line vg) 1 13 ;;
+          let large_lines vg special_cells  = Int_range.scale (large_line vg special_cells ) 1 13 ;;
       
-          let large_grid vg = (String.concat "\n" (large_lines vg));;  
+          let large_grid vg special_cells  = (String.concat "\n" (large_lines vg special_cells ));;  
       
         end ;;  
       
         let easy_deductions (BG(_,deds)) = deds ;;    
 
-      let to_string bg = (Display.large_grid bg)^"\n\n"^
+      let to_string bg special_cells = (Display.large_grid bg special_cells)^"\n\n"^
              (Deduction.list_to_string(easy_deductions bg));;   
       
-      let to_surrounded_string bg = "\n\n\n"^(to_string bg)^"\n\n\n" ;;  
+      let to_surrounded_string bg special_cells = "\n\n\n"^(to_string bg special_cells)^"\n\n\n" ;;  
 
       let origin = 
           let common = Usual (Int_range.scale (fun _->None) 1 9) in 
@@ -272,9 +276,10 @@ module Bare_Grid = struct
          !walker ;;  
                 
     let print_out (fmt:Format.formatter) bg=
-      Format.fprintf fmt "@[%s@]" (to_surrounded_string bg);;
+      Format.fprintf fmt "@[%s@]" (to_surrounded_string bg []);;
 
-    let minimizers (BG(states,_))=
+    let minimizers bg = 
+      let  (BG(states,_)) = bg in 
       let temp1 = List.combine Cell.all states in 
       let temp2 = List.filter_map (fun (cell,state)->
           match state with   
@@ -283,6 +288,9 @@ module Bare_Grid = struct
          |Deduced(_)-> None
          |Usual(l)-> Some(cell,Cell.possibilities l)
       ) temp1 in 
+      let (_,sols) = Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 in 
+      let msg = to_surrounded_string bg (Image.image fst sols) in 
+      let _=(print_string msg;flush stdout) in
       Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 ;; 
 
 
