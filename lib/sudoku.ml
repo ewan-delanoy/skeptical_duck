@@ -259,6 +259,7 @@ module Bare_Grid = struct
          let _ = List.iter apply temp2 in 
          !walker ;;  
                 
+      let easy_deductions (BG(_,deds)) = deds ;;    
 
 end ;;   
 
