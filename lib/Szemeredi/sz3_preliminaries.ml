@@ -949,7 +949,7 @@ module Store = struct
   let low_level_ref = ref [] ;;
   
 
-    let no_expansions_opt pwb = 
+    let no_expansions_on_grounded_point_opt pwb = 
       if Point_with_breadth.is_discrete pwb 
       then let domain = Point_with_breadth.supporting_set pwb in 
            Some(Medium_mold.discrete domain) 
@@ -969,12 +969,39 @@ module Store = struct
           Some (answer) -> Some answer
         | None -> None
            ) ;;    
+    
+    let no_expansion_on_translatable_point pwb =
+      let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+      match no_expansions_on_grounded_point_opt translated_pwb with
+       None -> (None,Some translated_pwb)
+      |Some(sol) -> (Some(Medium_mold.translate d sol),None);;    
+                
+    let no_expansion_on_translatable_removal pwb t =
+      no_expansion_on_translatable_point (Point_with_breadth.remove_element pwb t) ;;
+
+    let no_expansion_on_translatable_removals pwb elts =
+       let rec tempf = (fun
+          (treated,to_be_treated) -> match to_be_treated with 
+           [] -> (Some (List.rev treated),None) 
+          |elt :: other_elts ->
+            (
+              let (opt_good,opt_bad) = no_expansion_on_translatable_removal pwb elt in 
+              match opt_good with 
+               None -> (None,opt_bad)
+              |Some mold -> tempf ((elt,mold)::treated,other_elts)
+            )
+       ) in 
+       tempf ([],elts) ;; 
+    
+
+           
+
            
   let explore_select_possibility_on_grounded_point pwb = 
     match Point_with_breadth.usual_decomposition_opt pwb with 
       None -> raise(Select_case_opt_exn(pwb))
     |Some(prec_pwb,C cstr) ->
-        match no_expansions_opt prec_pwb with 
+        match no_expansions_on_grounded_point_opt prec_pwb with 
           None -> Missing_treatment(prec_pwb)
         |Some(prec_mold) ->
           let prec_sols = Medium_mold.solutions prec_mold in 
@@ -988,7 +1015,7 @@ module Store = struct
     
                  let explore_rightmost_overflow_possibility_on_grounded_point pwb (u,v,n) = 
                   let left_pwb = Point_with_breadth.remove_element pwb n in 
-                  match no_expansions_opt left_pwb with 
+                  match no_expansions_on_grounded_point_opt left_pwb with 
                     None -> Missing_treatment(left_pwb)
                   |Some(left_mold) ->
                       let left_ext = Medium_mold.forced_elements left_mold in 
@@ -996,19 +1023,16 @@ module Store = struct
                       if forgotten_links = []
                       then Finished(Medium_mold.rightmost_overflow (u,v,n) left_mold)
                       else 
-                      let offshoots = Image.image (fun t->
-                         let pwb2 = Point_with_breadth.remove_element left_pwb t in
-                         snd(Point_with_breadth.decompose_wrt_translation pwb2)
-                         ) [u;v] in
-                      match List.find_opt (fun pwb3->no_expansions_opt pwb3=None) offshoots with 
-                       None -> Missing_links(left_pwb,[u;v]) 
+                      let (_opt_good,opt_bad) = no_expansion_on_translatable_removals left_pwb [u;v] in   
+                      match opt_bad with 
+                       None -> Missing_links(left_pwb,forgotten_links) 
                        |Some pwb4 -> Missing_treatment pwb4  ;;            
               
               
   let explore_rightmost_pivot_possibility_on_grounded_point pwb = 
       let n = Point_with_breadth.max pwb in 
       let left_pwb = Point_with_breadth.remove_element pwb n in 
-        match no_expansions_opt left_pwb with 
+        match no_expansions_on_grounded_point_opt left_pwb with 
         None -> Missing_treatment(left_pwb)
       |Some(left_mold) ->
         let left_sols = Medium_mold.solutions left_mold in 
@@ -1029,30 +1053,21 @@ module Store = struct
         match Point_with_breadth.usual_decomposition_opt pwb with 
         None -> raise(Fork_case_opt_exn(pwb))
        |Some(prec_pwb,C cstr) ->
-          match no_expansions_opt prec_pwb with 
+          match no_expansions_on_grounded_point_opt prec_pwb with 
            None -> Missing_treatment(prec_pwb)
           |Some(prec_mold) -> 
             let prec_ext = Medium_mold.forced_elements prec_mold in  
             let nth = (fun k->List.nth cstr (k-1)) in  
             let i=nth 1 and j=nth 2 and k=nth 3 in 
-            let offshoots = Image.image (fun t->
-            let pwb2=Point_with_breadth.remove_element prec_pwb t in 
-            let (d,core_pwb2) = Point_with_breadth.decompose_wrt_translation pwb2 in 
-                let core_opt = no_expansions_opt core_pwb2 in
-                let opt = Option.map (Medium_mold.translate d) core_opt in
-                (pwb2,core_pwb2,opt)
-            ) [i;j;k] in
-            match List.find_opt (fun (_,_,opt)->opt=None) offshoots with
-              Some(_,core_pwb3,_)-> Missing_treatment core_pwb3
+            let forgotten_links=i_setminus [i;j;k] prec_ext in 
+            if forgotten_links<>[]
+            then Missing_links(prec_pwb,forgotten_links) 
+            else     
+            let (opt_good,opt_bad) = no_expansion_on_translatable_removals prec_pwb [i;j;k] in 
+            match opt_bad with
+              Some(grounded_pwb2)-> Missing_treatment grounded_pwb2
             |None ->
-              let forgotten_links=i_setminus [i;j;k] prec_ext in 
-              if forgotten_links<>[]
-              then Missing_links(prec_pwb,forgotten_links) 
-              else     
-              let offshoots2 = Image.image (
-                             fun (_,_,opt)->Option.get opt
-              ) offshoots in 
-              let mth = (fun k->List.nth offshoots2 (k-1)) in  
+              let mth = (fun k->snd(List.nth (Option.get opt_good) (k-1))) in  
               Finished(Medium_mold.fork (mth 1,mth 2,mth 3));;               
 
     let diagnosis_to_opt = function 
@@ -1061,7 +1076,7 @@ module Store = struct
       
 
     let minimal_expansions_opt pwb = 
-        match no_expansions_opt pwb with  
+        match no_expansions_on_grounded_point_opt pwb with  
         Some easy_answer -> (Some easy_answer,false)
       |None ->(  
         match Point_with_breadth.usual_decomposition_opt pwb with 
@@ -1105,7 +1120,7 @@ module Store = struct
            Help_with_solution(_,sol) -> Help.with_solution pwb pre_answer sol
           |Help_with_links(_,links) ->  
              let temp1 = Image.image (fun t->
-               (t,no_expansions_opt(Point_with_breadth.remove_element pwb t))
+               (t,no_expansions_on_grounded_point_opt(Point_with_breadth.remove_element pwb t))
               ) links in 
               let (bad_links,good_links) = List.partition (fun (_t,opt)->opt=None) temp1 in
               if bad_links<>[]
@@ -1174,6 +1189,11 @@ module Medium_analysis = struct
     
     module Private = struct
     
+      let diagnosis_to_option_pair direct = 
+        match direct with 
+        Finished(mold3) -> (Some mold3,None)
+        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+
       let try_to_compute_in_select_case pwb = 
         let direct =Store.explore_select_possibility_on_grounded_point pwb in 
         match direct with 
@@ -1202,7 +1222,7 @@ module Medium_analysis = struct
       
     exception Try_to_compute_exn of point_with_breadth;;
     
-    let try_to_compute_without_using_translations pwb =
+    let try_to_compute_on_grounded_point pwb =
       match Store.compute_opt pwb with 
       Some (mold,is_new) -> ((Some(mold),None),is_new)
       |None -> 
@@ -1219,7 +1239,7 @@ module Medium_analysis = struct
     
       let try_to_compute pwb =
         let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-        let ((opt_mold,extra_info),is_new) = try_to_compute_without_using_translations translated_pwb in 
+        let ((opt_mold,extra_info),is_new) = try_to_compute_on_grounded_point translated_pwb in 
         match opt_mold with 
          None -> (None,extra_info)
         |Some(translated_mold) -> 
