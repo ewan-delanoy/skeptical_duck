@@ -196,6 +196,9 @@ module Bare_Grid = struct
       
       let show bg = print_string("\n\n\n"^(to_string bg)^"\n\n\n");flush stdout ;;  
 
+      let origin = 
+          let common = Usual (Int_range.scale (fun _->None) 1 9) in 
+          BG(Int_range.scale (fun _->common) 1 81);;
 
 end ;;   
 
