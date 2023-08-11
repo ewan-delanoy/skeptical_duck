@@ -16,7 +16,8 @@ type inverse = IV of box * int ;;
 type deductor =
      Direct_ded of cell
     |Inverse_ded of inverse 
-    |Inverse_for_inverse_ded of inverse * inverse ;; 
+    |Inverse_for_inverse_ded of inverse * inverse 
+    |Inverse_for_direct_ded of inverse * cell;; 
 
 type cell_state =
     Initialized of int 
@@ -111,8 +112,9 @@ let to_short_string = function
     Direct_ded (cell)-> "Direct_ded("^(Cell.to_short_string cell)^")"
   |Inverse_ded (iv) -> "Inverse_ded("^(Inverse.to_short_string iv)^")"
   |Inverse_for_inverse_ded(iv1,iv2) ->  
-    "Inverse_for_inverse_ded("^(Inverse.to_short_string iv1)^","^(Inverse.to_short_string iv2)^")";; 
-
+    "Inverse_for_inverse_ded("^(Inverse.to_short_string iv1)^","^(Inverse.to_short_string iv2)^")" 
+  |Inverse_for_direct_ded(iv,cell) ->  
+      "Inverse_for_direct_ded("^(Inverse.to_short_string iv)^","^(Cell.to_short_string cell)^")";; 
 
 end ;;  
 
@@ -309,12 +311,25 @@ module Possibilities = struct
 
   let for_double_inverse bg iv1 iv2 = fst(analysis_for_double_inverse bg iv1 iv2) ;; 
 
+  let analysis_for_ifd bg iv1 cell2 = 
+    let (IV(_box1,v1)) = iv1 in 
+    let cases = Image.image (
+      fun cell -> 
+        let new_bg = Bare_grid.assign_and_update bg cell v1 (Assumed v1) in 
+        (cell,for_cell new_bg cell2)
+    ) (for_inverse bg iv1) in 
+  (i_fold_merge (Image.image snd cases),cases);;
+
+  let for_ifd bg iv1 cell2 = fst(analysis_for_ifd bg iv1 cell2) ;;
+
   let for_deductor bg = function 
     Direct_ded (cell) -> Image.image (fun v->(cell,v)) (for_cell bg cell)
   |Inverse_ded (iv) -> let (IV(_,v))=iv in Image.image (fun cell->(cell,v)) (for_inverse bg iv) 
   |Inverse_for_inverse_ded (iv1,iv2) -> 
     let (IV(_,v2))=iv2 in Image.image (fun cell->(cell,v2)) (for_double_inverse bg iv1 iv2)
-    ;; 
+  |Inverse_for_direct_ded (iv1,cell2) ->  
+    Image.image (fun v2->(cell2,v2)) (for_ifd bg iv1 cell2)
+  ;; 
 
   end ;;
   
@@ -434,6 +449,8 @@ let all_helpers =
     (Image.image (fun cell->Direct_ded(cell)) Cell.all) 
     @ (Image.image (fun iv->Inverse_ded(iv)) all_inverses) ;;
 
+
+
 let base1 gwd = List.filter_map
     (fun helper->
       let poss = Grid.possibilities_for_deductor gwd helper in 
@@ -446,7 +463,28 @@ let base1 gwd = List.filter_map
 
 let level0 gwd = Min.minimize_it_with_care (fun (_,l)->List.length l) (base1 gwd);;
 
+let use_one_shield_step_1 gwd helped (helper,poss)  =
+  let cases = Image.image (
+    fun (cell,v) -> 
+      let new_gwd = Grid.assume gwd cell v  in 
+      (cell,Grid.possibilities_for_deductor new_gwd helped)
+  ) poss in 
+(helper,Ordered.sort Total_ordering.standard (List.flatten(Image.image snd cases)),cases);;      
+
+let use_one_shield_step_2 (gwd,base1_for_gwd) helped =
+   let temp1 = Image.image (use_one_shield_step_1 gwd helped) base1_for_gwd in 
+   List.hd(snd(Min.minimize_it_with_care (fun (_,l,_)->List.length l) temp1)) ;;
+
+let base2 gwd = 
+   let base1_for_gwd = base1 gwd in 
+   Image.image (
+     fun (helped,_) -> (helped,use_one_shield_step_2 (gwd,base1_for_gwd) helped)
+   ) base1_for_gwd ;;
        
+let level1 gwd = 
+    let (m,temp1) = Min.minimize_it_with_care (fun (_,(_,l,_))->List.length l) (base2 gwd) in 
+     (m,Image.image (fun (h1,(h2,_,_))->(h1,h2)) temp1);;   
+    
 
 end ;;   
 
