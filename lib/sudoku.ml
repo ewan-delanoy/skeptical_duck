@@ -160,6 +160,14 @@ module Cell_state = struct
     let v0=fst(List.hd poss) in 
     Some(cell0,v0);; 
 
+  let to_breakdown_opt cell0 = function 
+    Initialized(_)
+   |Assumed(_)
+   |Deduced(_,_,_)-> None
+   |Usual(l)->  
+   if List.exists(fun opt-> opt <> None) l
+   then None
+   else Some(cell0);;   
 
 end ;;  
 
@@ -251,10 +259,15 @@ module Bare_grid = struct
       let (_,sols) = Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 in 
       (Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2,sols) ;; 
 
+      let compute_breakdowns bg = 
+        let base= List.combine Cell.all (states_in_bare_grid bg) in 
+         List.filter_map (fun (cell,state)->Cell_state.to_breakdown_opt cell state) base ;; 
+
     end ;;  
 
     let assign_and_update= Private.assign_and_update ;; 
     let compute_easy_deductions = Private.compute_easy_deductions ;; 
+    let compute_breakdowns = Private.compute_breakdowns ;; 
     let minimizers= Private.minimizers ;; 
     let origin = Private.origin ;; 
     let states_in_bare_grid = Private.states_in_bare_grid ;;
