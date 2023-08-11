@@ -165,9 +165,15 @@ module Cell_state = struct
    |Assumed(_)
    |Deduced(_,_,_)-> None
    |Usual(l)->  
-   if List.exists(fun opt-> opt <> None) l
+   if List.exists(fun opt-> opt = None) l
    then None
    else Some(cell0);;   
+
+   let is_yet_undecided = function 
+   Initialized(_)
+  |Assumed(_)
+  |Deduced(_,_,_)-> false
+  |Usual(_)->  true;;
 
 end ;;  
 
@@ -263,11 +269,15 @@ module Bare_grid = struct
         let base= List.combine Cell.all (states_in_bare_grid bg) in 
          List.filter_map (fun (cell,state)->Cell_state.to_breakdown_opt cell state) base ;; 
 
+      let get_state bg cell = 
+         List.nth (states_in_bare_grid bg) ((Cell.single_index cell)-1);;   
+
     end ;;  
 
     let assign_and_update= Private.assign_and_update ;; 
     let compute_easy_deductions = Private.compute_easy_deductions ;; 
     let compute_breakdowns = Private.compute_breakdowns ;; 
+    let get_state = Private.get_state ;; 
     let minimizers= Private.minimizers ;; 
     let origin = Private.origin ;; 
     let states_in_bare_grid = Private.states_in_bare_grid ;;
@@ -398,11 +408,14 @@ module Grid = struct
         let deds = Image.image (fun cell->Direct_ded cell) cells in 
         deduce_several gwd deds ;;
      
+    let get_state gwd cell = Bare_grid.get_state (grid gwd) cell ;; 
+
     end ;; 
     
     let assume = Private.assume ;; 
     let deduce_several = Private.deduce_several ;;
     let deduce_several_directly = Private.deduce_several_directly ;;
+    let get_state = Private.get_state ;; 
     let initialize_with = Private.initialize_with ;;
     let minimizers = Private.minimizers ;; 
     let possibilities gwd cell = Possibilities.for_cell (Private.grid gwd) cell ;;
@@ -411,7 +424,31 @@ module Grid = struct
 
 end ;;   
 
+module Helper = struct 
 
+let all_inverses = 
+   let base = Cartesian.product Box.all (Int_range.range 1 9) in 
+   Image.image (fun (box,k)->IV(box,k)) base;;  
+
+let all_helpers =
+    (Image.image (fun cell->Direct_ded(cell)) Cell.all) 
+    @ (Image.image (fun iv->Inverse_ded(iv)) all_inverses) ;;
+
+let base1 gwd = List.filter_map
+    (fun helper->
+      let poss = Grid.possibilities_for_deductor gwd helper in 
+      if List.length(poss)<>1
+      then Some(helper,poss)
+      else let (cell,_) = List.hd poss in 
+           if Cell_state.is_yet_undecided(Grid.get_state gwd cell)
+           then Some(helper,poss)        
+          else None) all_helpers ;;
+
+let level0 gwd = Min.minimize_it_with_care (fun (_,l)->List.length l) (base1 gwd);;
+
+       
+
+end ;;   
 
 
 
