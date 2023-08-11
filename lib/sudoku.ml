@@ -26,9 +26,9 @@ type cell_state =
 
 type direct_deduction = DD of cell * int * (cell list) ;;    
 
-type bare_grid = VBG of cell_state list ;; 
+type bare_grid = BG of cell_state list ;; 
 
-type grid_with_deductions = BG of cell_state list * (direct_deduction list)  ;;
+type grid_with_deductions = GWD of bare_grid * (direct_deduction list)  ;;
 
 
 
@@ -177,10 +177,13 @@ module Cell_state = struct
 
 end ;;  
 
+module Bare_grid = struct 
 
-module Grid_with_deductions = struct 
+  let constructor l= BG l ;; 
+  let states_in_bare_grid (BG l) = l;;
 
-  let possibilities (BG (states,_)) cell= 
+  let possibilities bg cell= 
+    let states= states_in_bare_grid bg in 
      let idx = Cell.single_index cell in 
      Cell_state.possibilities (List.nth states (idx-1));;
 
@@ -194,9 +197,10 @@ module Grid_with_deductions = struct
      
    
 
-   let assign_and_update (BG (old_states,old_deds)) cell0 v0 object0 prereqs0 =
+   let assign_and_update bg cell0 v0 object0 prereqs0 = 
+       let old_states = states_in_bare_grid bg in 
        let indexed_old_states = Int_range.index_everything old_states 
-       and ref_for_deds=ref old_deds in 
+       and ref_for_deds=ref [] in 
        let new_states = Image.image (
          fun (idx,state) ->
             let cell = Cell.at_single_index idx in 
@@ -207,45 +211,31 @@ module Grid_with_deductions = struct
             then state
             else
             let new_state = Cell_state.new_state v0 prereqs0 state in   
-            let _ =(match Cell_state.to_direct_deduction_opt cell new_state with 
+            let _ =(
+                if ((Cell_state.to_direct_deduction_opt cell state)=None)
+                then  
+               match Cell_state.to_direct_deduction_opt cell new_state with 
                 None -> ()
-                |Some new_ded ->  ref_for_deds:=
-                  Direct_deduction.push_if_necessary  new_ded (!ref_for_deds)
+                |Some new_ded ->  ref_for_deds:= new_ded :: (!ref_for_deds)
             ) in 
              new_state  
        ) indexed_old_states in
-       BG(new_states,(!ref_for_deds)) ;; 
+       (constructor new_states,List.rev (!ref_for_deds)) ;; 
    
-    let initialize_single_cell grid cell0 v0 =
-        if check_before_assignment grid cell0 v0
-        then assign_and_update grid cell0 v0 (Initialized v0) [cell0]
-        else grid;;  
+    let initialize_single_cell bg cell0 v0 =
+        if check_before_assignment bg cell0 v0
+        then assign_and_update bg cell0 v0 (Initialized v0) [cell0]
+        else (bg,[]);;  
 
-    let assume grid cell0 v0 =
-        if check_before_assignment grid cell0 v0
-        then assign_and_update grid cell0 v0 (Assumed v0) [cell0]
-        else grid;;  
-
-    let fail_during_deduction grid cell = 
-      let msg = "Incorrect deduction attempt at "^(Cell.to_short_string cell) in 
-      let _ = (print_string msg;flush stdout) in 
-      grid;;   
-
-    let deduce_directly grid cell0 =
-      let (BG(states,_)) = grid in 
-      let idx = Cell.single_index cell0 in 
-      match Cell_state.to_direct_deduction_opt cell0 (List.nth states (idx-1)) with
-       None -> fail_during_deduction grid cell0
-      |Some(ded) ->
-          let (DD(_,v0,prereqs0)) = ded in  
-          let formal_ded = Deduced(cell0,v0,Direct_ded(prereqs0)) in 
-          let (BG(states,old_direct_deds))=assign_and_update grid cell0 v0 formal_ded prereqs0 in 
-          let new_direct_deds = Direct_deduction.update_list cell0 old_direct_deds  in 
-          BG(states,new_direct_deds);;
+    let assume bg cell0 v0 =
+        if check_before_assignment bg cell0 v0
+        then assign_and_update bg cell0 v0 (Assumed v0) [cell0]
+        else (bg,[]);;  
 
         module Display = struct 
 
-          let eval_small_grid_using_matrix_coordinates (BG(states,_)) special_cells (i,j) = 
+          let eval_small_grid_using_matrix_coordinates bg special_cells (i,j) = 
+             let states = states_in_bare_grid bg in 
              let cell = Cell.from_matrix_coordinates i j in 
              if List.mem cell special_cells 
              then "#"
@@ -260,42 +250,23 @@ module Grid_with_deductions = struct
           then "*"
           else eval_small_grid_using_matrix_coordinates bg special_cells (small_i,small_j);;
           
-          let large_line vg special_cells large_i = String.concat "" 
-            (Int_range.scale(eval_large_grid_using_matrix vg special_cells  large_i) 1 13) ;;
+          let large_line bg special_cells large_i = String.concat "" 
+            (Int_range.scale(eval_large_grid_using_matrix bg special_cells  large_i) 1 13) ;;
             
-          let large_lines vg special_cells  = Int_range.scale (large_line vg special_cells ) 1 13 ;;
+          let large_lines bg special_cells  = Int_range.scale (large_line bg special_cells ) 1 13 ;;
       
-          let large_grid vg special_cells  = (String.concat "\n" (large_lines vg special_cells ));;  
+          let large_grid bg special_cells  = (String.concat "\n" (large_lines bg special_cells ));;  
       
         end ;;  
-      
-        let easy_deductions (BG(_,deds)) = deds ;;    
 
-      let to_string bg special_cells = (Display.large_grid bg special_cells)^"\n\n"^
-             (Direct_deduction.list_to_string(easy_deductions bg));;   
-      
-      let to_surrounded_string bg special_cells = "\n\n\n"^(to_string bg special_cells)^"\n\n\n" ;;  
+      let to_string bg special_cells = (Display.large_grid bg special_cells);;    
 
       let origin = 
           let common = Usual (Int_range.scale (fun _->None) 1 9) in 
-          BG(Int_range.scale (fun _->common) 1 81,[]);;
-
-      let initialize_with l =
-         let temp1 = Int_range.index_everything l in 
-         let temp2 = List.filter(fun (_idx,v)->(v>=1)&&(v<=9)) temp1
-         and walker = ref origin in 
-         let apply=(fun (idx,v)->
-            let cell = Cell.at_single_index idx in
-            walker:=initialize_single_cell (!walker) cell v
-          ) in 
-         let _ = List.iter apply temp2 in 
-         !walker ;;  
-                
-    let print_out (fmt:Format.formatter) bg=
-      Format.fprintf fmt "@[%s@]" (to_surrounded_string bg []);;
+          constructor(Int_range.scale (fun _->common) 1 81);;
 
     let minimizers bg = 
-      let  (BG(states,_)) = bg in 
+      let states = states_in_bare_grid bg in 
       let temp1 = List.combine Cell.all states in 
       let temp2 = List.filter_map (fun (cell,state)->
           match state with   
@@ -305,11 +276,7 @@ module Grid_with_deductions = struct
          |Usual(l)-> Some(cell,Cell.possibilities l)
       ) temp1 in 
       let (_,sols) = Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 in 
-      let msg = to_surrounded_string bg (Image.image fst sols) in 
-      let _=(print_string msg;flush stdout) in
-      Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 ;; 
-
-    let deduce_directly_several bg cells = List.fold_left deduce_directly bg cells ;;   
+      (Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2,sols) ;; 
 
     let possibilities_for_inverse bg (IV(box,v)) = 
         List.filter (fun cell->List.mem v (possibilities bg cell)) ( Box.content box) ;;
@@ -318,7 +285,7 @@ module Grid_with_deductions = struct
         let (IV(_box1,v1)) = iv1 in 
         let cases = Image.image (
           fun cell -> 
-            let new_bg = assume bg cell v1 in 
+            let (new_bg,_) = assume bg cell v1 in 
             (cell,possibilities_for_inverse new_bg iv2)
         ) (possibilities_for_inverse bg iv1) in 
         (Cell.fold_merge (Image.image snd cases),cases);;
@@ -331,16 +298,82 @@ module Grid_with_deductions = struct
                false
           else true ;;       
 
-    (*      
-    let deduce_using_inverse bg iv =
-       if not(check_before_inverse_deduction bg iv)
-       then bg 
-       else 
-       let(IV(box1,v1)) = iv in 
-       let cell1 = List.hd(possibilities_for_inverse bg iv) in 
-       let formal_ded=Deduced(cell1,v1,Inverse_ded(iv)) in
-       assign_and_update bg cell1 v1 formal_ded prereqs1 ;; 
-    *)
+    
 
 end ;;   
+
+
+module Grid_with_deductions = struct 
+
+    let grid (GWD(bg,_)) = bg ;;
+    let easy_deductions (GWD(_,deds)) = deds ;;
+    let constructor bg deds = GWD(bg,deds) ;;
+
+    let fail_during_deduction gwd cell = 
+      let msg = "Incorrect deduction attempt at "^(Cell.to_short_string cell) in 
+      let _ = (print_string msg;flush stdout) in 
+      gwd;;   
+
+    let deduce_directly gwd cell0 =
+      let old_grid = grid gwd  in 
+      let states = Bare_grid.states_in_bare_grid old_grid in 
+      let idx = Cell.single_index cell0 in 
+      match Cell_state.to_direct_deduction_opt cell0 (List.nth states (idx-1)) with
+       None -> fail_during_deduction gwd cell0
+      |Some(ded) ->
+          let (DD(_,v0,prereqs0)) = ded in  
+          let formal_ded = Deduced(cell0,v0,Direct_ded(prereqs0)) in 
+          let (new_grid,new_direct_deds)=Bare_grid.assign_and_update old_grid cell0 v0 formal_ded prereqs0 in 
+          constructor new_grid ((easy_deductions gwd)@(new_direct_deds));;
+
+      let initialize_single_cell gwd cell0 v0 = 
+        let old_grid = grid gwd in
+        let (new_grid,new_direct_deds)=Bare_grid.initialize_single_cell old_grid cell0 v0  in 
+        constructor new_grid ((easy_deductions gwd)@(new_direct_deds));; 
+    
+      let assume gwd cell0 v0 = 
+          let old_grid = grid gwd in
+          let (new_grid,new_direct_deds)=Bare_grid.assume old_grid cell0 v0  in 
+          constructor new_grid ((easy_deductions gwd)@(new_direct_deds));;   
+
+      let to_string gwd special_cells = (Bare_grid.to_string (grid gwd) special_cells)^"\n\n"^
+             (Direct_deduction.list_to_string(easy_deductions gwd));;   
+      
+      let to_surrounded_string gwd special_cells = "\n\n\n"^(to_string gwd special_cells)^"\n\n\n" ;;  
+
+      let print_out (fmt:Format.formatter) bg=
+      Format.fprintf fmt "@[%s@]" (to_surrounded_string bg []);;
+
+      let origin = constructor  Bare_grid.origin [] ;; 
+        
+
+      let initialize_with l =
+         let temp1 = Int_range.index_everything l in 
+         let temp2 = List.filter(fun (_idx,v)->(v>=1)&&(v<=9)) temp1
+         and walker = ref origin in 
+         let apply=(fun (idx,v)->
+            let cell = Cell.at_single_index idx in
+            walker:=initialize_single_cell (!walker) cell v
+          ) in 
+         let _ = List.iter apply temp2 in 
+         !walker ;;  
+                
+    
+
+    let minimizers gwd = 
+      let grid = grid gwd in 
+      let (answer,sols) = Bare_grid.minimizers grid in 
+      let msg = to_surrounded_string gwd (Image.image fst sols) in 
+      let _=(print_string msg;flush stdout) in
+      answer ;; 
+
+    let deduce_directly_several bg cells = List.fold_left deduce_directly bg cells ;;   
+
+
+end ;;   
+
+
+
+
+
 
