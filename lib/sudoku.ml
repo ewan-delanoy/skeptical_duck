@@ -13,27 +13,20 @@ type box =
    
 type inverse = IV of box * int ;; 
 
-type deduction_explanation =
-     Direct_ded of cell list 
+type deductor =
+     Direct_ded of cell
     |Inverse_ded of inverse 
     |Inverse_for_inverse_ded of inverse * inverse ;; 
 
 type cell_state =
     Initialized of int 
    |Assumed of int 
-   |Deduced of cell * int * deduction_explanation
-   |Usual of ((cell list) option) list ;;
-
-type direct_deduction = DD of cell * int * (cell list) ;;    
+   |Deduced of cell * int * deductor
+   |Usual of (cell option) list ;;
 
 type bare_grid = BG of cell_state list ;; 
 
-type grid_with_deductions = GWD of bare_grid * (direct_deduction list)  ;;
-
-
-
-
-
+type grid_with_deductions = GWD of bare_grid * ((cell * int) list)  ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -99,37 +92,6 @@ module Box = struct
 
 end ;;   
 
-module Direct_deduction = struct 
-
-  
-
-  let of_usual_list_opt cell0 l =
-    let temp1 = Int_range.index_everything l in 
-    let (poss,imposs)=List.partition (fun (_v,opt)-> opt = None) temp1 in 
-    if List.length(poss)<>1
-    then None
-    else 
-    let v0=fst(List.hd poss) in 
-    Some(DD(cell0,v0,Cell.fold_merge(Image.image(fun (_v,opt)->Option.get opt) imposs)));;  
-
-let update_list cell l_to_be_updated =
-    List.filter (fun (DD(cell2,_,_))->cell2<>cell) l_to_be_updated ;;
-
-let push_if_necessary updater l_to_be_updated =
-      let (DD(cell,_,_)) = updater in 
-      if List.exists (fun (DD(cell2,_,_))->cell2=cell) l_to_be_updated 
-      then l_to_be_updated
-      else l_to_be_updated@[updater] ;;
-
-let to_string (DD(cell,v0,_)) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
-let list_to_string l = String.concat " , " (Image.image to_string l) ;; 
-
-end ;; 
-
-module Deduction_category = struct 
-
-
-end ;; 
 
 
 module Cell_state = struct 
@@ -140,7 +102,7 @@ module Cell_state = struct
    |Deduced(_,v,_)->string_of_int v
    |Usual(_)->" ";;
 
-  let new_state v0 prereqs0 state =   
+  let new_state v0 acting_cell state =   
     match state with 
     Initialized _
    |Assumed _ 
@@ -153,7 +115,7 @@ module Cell_state = struct
           then opt1
           else match opt1 with 
                Some(_)->opt1
-              |None -> Some prereqs0 
+              |None -> Some acting_cell 
       ) indexed_l);;
 
   let possibilities = function 
@@ -166,14 +128,15 @@ module Cell_state = struct
      Initialized(_)
     |Assumed(_)
     |Deduced(_,_,_)-> None
-    |Usual(l)->  Direct_deduction.of_usual_list_opt cell0 l;;
+    |Usual(l)->  
+      let temp1 = Int_range.index_everything l in 
+    let poss=List.filter (fun (_v,opt)-> opt = None) temp1 in 
+    if List.length(poss)<>1
+    then None
+    else 
+    let v0=fst(List.hd poss) in 
+    Some(cell0,v0);; 
 
-  let update_list_of_direct_deductions updater l_to_be_updated = match updater with 
-    Initialized(_)
-   |Assumed(_)
-   |Usual(_)-> l_to_be_updated
-   |Deduced(cell,_,_)-> Direct_deduction.update_list cell l_to_be_updated ;;
-  
 
 end ;;  
 
@@ -197,7 +160,7 @@ module Bare_grid = struct
      
    
 
-   let assign_and_update bg cell0 v0 object0 prereqs0 = 
+   let assign_and_update bg cell0 v0 object0 = 
        let old_states = states_in_bare_grid bg in 
        let indexed_old_states = Int_range.index_everything old_states 
        and ref_for_deds=ref [] in 
@@ -210,13 +173,13 @@ module Bare_grid = struct
             if (cell=cell0)||(not(Cell.test_for_neighborhood cell0 cell)) 
             then state
             else
-            let new_state = Cell_state.new_state v0 prereqs0 state in   
+            let new_state = Cell_state.new_state v0 cell state in   
             let _ =(
                 if ((Cell_state.to_direct_deduction_opt cell state)=None)
                 then  
                match Cell_state.to_direct_deduction_opt cell new_state with 
                 None -> ()
-                |Some new_ded ->  ref_for_deds:= new_ded :: (!ref_for_deds)
+                |Some (cell1,v1) ->  ref_for_deds:= (cell1,v1) :: (!ref_for_deds)
             ) in 
              new_state  
        ) indexed_old_states in
@@ -224,12 +187,12 @@ module Bare_grid = struct
    
     let initialize_single_cell bg cell0 v0 =
         if check_before_assignment bg cell0 v0
-        then assign_and_update bg cell0 v0 (Initialized v0) [cell0]
+        then assign_and_update bg cell0 v0 (Initialized v0) 
         else (bg,[]);;  
 
     let assume bg cell0 v0 =
         if check_before_assignment bg cell0 v0
-        then assign_and_update bg cell0 v0 (Assumed v0) [cell0]
+        then assign_and_update bg cell0 v0 (Assumed v0) 
         else (bg,[]);;  
 
         module Display = struct 
@@ -320,10 +283,9 @@ module Grid_with_deductions = struct
       let idx = Cell.single_index cell0 in 
       match Cell_state.to_direct_deduction_opt cell0 (List.nth states (idx-1)) with
        None -> fail_during_deduction gwd cell0
-      |Some(ded) ->
-          let (DD(_,v0,prereqs0)) = ded in  
-          let formal_ded = Deduced(cell0,v0,Direct_ded(prereqs0)) in 
-          let (new_grid,new_direct_deds)=Bare_grid.assign_and_update old_grid cell0 v0 formal_ded prereqs0 in 
+      |Some(cell0,v0) ->
+          let formal_ded = Deduced(cell0,v0,Direct_ded(cell0)) in 
+          let (new_grid,new_direct_deds)=Bare_grid.assign_and_update old_grid cell0 v0 formal_ded in 
           constructor new_grid ((easy_deductions gwd)@(new_direct_deds));;
 
       let initialize_single_cell gwd cell0 v0 = 
@@ -336,8 +298,17 @@ module Grid_with_deductions = struct
           let (new_grid,new_direct_deds)=Bare_grid.assume old_grid cell0 v0  in 
           constructor new_grid ((easy_deductions gwd)@(new_direct_deds));;   
 
+      module Display = struct 
+
+        let to_string (cell,v0) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
+        let list_to_string l = String.concat " , " (Image.image to_string l) ;; 
+            
+      end ;; 
+            
+
+
       let to_string gwd special_cells = (Bare_grid.to_string (grid gwd) special_cells)^"\n\n"^
-             (Direct_deduction.list_to_string(easy_deductions gwd));;   
+             (Display.list_to_string(easy_deductions gwd));;   
       
       let to_surrounded_string gwd special_cells = "\n\n\n"^(to_string gwd special_cells)^"\n\n\n" ;;  
 
