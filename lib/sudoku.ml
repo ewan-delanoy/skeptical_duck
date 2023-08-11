@@ -388,6 +388,7 @@ module Grid = struct
     let initialize_with = Private.initialize_with ;;
     let possibilities gwd cell = Possibilities.for_cell (Private.grid gwd) cell ;;
     let possibilities_for_deductor gwd ded= Possibilities.for_deductor (Private.grid gwd) ded ;;
+    let print_out = Private.print_out ;; 
 
 end ;;   
 
