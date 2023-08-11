@@ -386,6 +386,7 @@ module Grid = struct
     let deduce_several = Private.deduce_several ;;
     let deduce_several_directly = Private.deduce_several_directly ;;
     let initialize_with = Private.initialize_with ;;
+    let minimizers = Private.minimizers ;; 
     let possibilities gwd cell = Possibilities.for_cell (Private.grid gwd) cell ;;
     let possibilities_for_deductor gwd ded= Possibilities.for_deductor (Private.grid gwd) ded ;;
     let print_out = Private.print_out ;; 
