@@ -26,7 +26,7 @@ type cell_state =
 
 type bare_grid = BG of cell_state list ;; 
 
-type grid_with_deductions = GWD of bare_grid * ((cell * int) list)  ;;
+type grid_with_deductions = GWD of bare_grid * ((cell * int) list) * (cell list) ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -318,9 +318,10 @@ module Grid = struct
 
     module Private = struct 
 
-    let grid (GWD(bg,_)) = bg ;;
-    let easy_deductions (GWD(_,deds)) = deds ;;
-    let constructor bg = GWD(bg,Bare_grid.compute_easy_deductions bg) ;;
+    let grid (GWD(bg,_,_)) = bg ;;
+    let easy_deductions (GWD(_,deds,_)) = deds ;;
+    let breakdowns (GWD(_,_,bks)) = bks ;;
+    let constructor bg = GWD(bg,Bare_grid.compute_easy_deductions bg,Bare_grid.compute_breakdowns bg) ;;
       
       let assign_and_update gwd cell0 v0 explanation0= 
         let old_grid = grid gwd in
@@ -336,14 +337,18 @@ module Grid = struct
       module Display = struct 
 
         let to_string (cell,v0) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
-        let list_to_string l = String.concat " , " (Image.image to_string l) ;; 
-            
+        let pair_list_to_string l = String.concat " , " (Image.image to_string l) ;; 
+        let cell_list_to_string cells =
+           if cells = [] then "" else 
+           "\n Contradictions : "^(String.concat "," (Image.image Cell.to_short_string cells)) ;;    
+
       end ;; 
             
 
 
       let to_string gwd special_cells = (Bare_grid.to_string (grid gwd) special_cells)^"\n\n"^
-             (Display.list_to_string(easy_deductions gwd));;   
+             (Display.pair_list_to_string(easy_deductions gwd))^
+            (Display.cell_list_to_string(breakdowns gwd));;   
       
       let to_surrounded_string gwd special_cells = "\n\n\n"^(to_string gwd special_cells)^"\n\n\n" ;;  
 
