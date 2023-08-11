@@ -145,20 +145,18 @@ module Bare_grid = struct
   let constructor l= BG l ;; 
   let states_in_bare_grid (BG l) = l;;
 
-  let possibilities bg cell= 
+  let possibilities_for_cell bg cell= 
     let states= states_in_bare_grid bg in 
      let idx = Cell.single_index cell in 
      Cell_state.possibilities (List.nth states (idx-1));;
 
    let check_before_assignment bg cell v = 
-     let possible_values = possibilities bg cell in 
+     let possible_values = possibilities_for_cell bg cell in 
      if not(List.mem v  possible_values)
      then let msg = "Incorrect assignment attempt at "^(Cell.to_short_string cell) in 
           let _ = (print_string msg;flush stdout) in 
           false
      else true ;;   
-     
-   
 
    let assign_and_update bg cell0 v0 object0 = 
        let old_states = states_in_bare_grid bg in 
@@ -241,29 +239,45 @@ module Bare_grid = struct
       let (_,sols) = Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 in 
       (Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2,sols) ;; 
 
-    let possibilities_for_inverse bg (IV(box,v)) = 
-        List.filter (fun cell->List.mem v (possibilities bg cell)) ( Box.content box) ;;
- 
-    let analysis_for_double_inverse bg (iv1,iv2) = 
+end ;;   
+
+
+module Possibilities = struct 
+
+  module Private = struct 
+
+  let for_cell bg cell= 
+    let states= Bare_grid.states_in_bare_grid bg in 
+     let idx = Cell.single_index cell in 
+     Cell_state.possibilities (List.nth states (idx-1));;
+
+  let for_inverse bg (IV(box,v)) = 
+      List.filter (fun cell->List.mem v (for_cell bg cell)) ( Box.content box) ;;
+
+  let analysis_for_double_inverse bg iv1 iv2 = 
         let (IV(_box1,v1)) = iv1 in 
         let cases = Image.image (
           fun cell -> 
-            let (new_bg,_) = assume bg cell v1 in 
-            (cell,possibilities_for_inverse new_bg iv2)
-        ) (possibilities_for_inverse bg iv1) in 
-        (Cell.fold_merge (Image.image snd cases),cases);;
+            let (new_bg,_) = Bare_grid.assume bg cell v1 in 
+            (cell,for_inverse new_bg iv2)
+        ) (for_inverse bg iv1) in 
+    (Cell.fold_merge (Image.image snd cases),cases);;
 
-    let check_before_inverse_deduction bg iv = 
-          let l = possibilities_for_inverse bg iv in 
-          if List.length(l)<>1
-          then let msg = "Incorrect inverse deduction attempt " in 
-               let _ = (print_string msg;flush stdout) in 
-               false
-          else true ;;       
+  let for_double_inverse bg iv1 iv2 = fst(analysis_for_double_inverse bg iv1 iv2) ;; 
 
-    
+  let for_deductor bg = function 
+    Direct_ded (cell) -> Image.image (fun v->(cell,v)) (for_cell bg cell)
+  |Inverse_ded (iv) -> let (IV(_,v))=iv in Image.image (fun cell->(cell,v)) (for_inverse bg iv) 
+  |Inverse_for_inverse_ded (iv1,iv2) -> 
+    let (IV(_,v2))=iv2 in Image.image (fun cell->(cell,v2)) (for_double_inverse bg iv1 iv2)
+    ;; 
 
-end ;;   
+  end ;;
+  
+  let for_cell = Private.for_cell ;;
+  let for_deductor = Private.for_deductor ;; 
+
+end ;;  
 
 
 module Grid_with_deductions = struct 
