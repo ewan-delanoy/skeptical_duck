@@ -301,7 +301,7 @@ module Possibilities = struct
 end ;;  
 
 
-module Grid_with_deductions = struct 
+module Grid = struct 
 
     module Private = struct 
 
