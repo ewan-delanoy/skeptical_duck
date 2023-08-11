@@ -183,6 +183,10 @@ module Bare_grid = struct
        ) indexed_old_states in
        (constructor new_states,List.rev (!ref_for_deds)) ;; 
    
+    let compute_easy_deductions bg = 
+      let base= List.combine Cell.all (states_in_bare_grid bg) in 
+       List.filter_map (fun (cell,state)->Cell_state.to_direct_deduction_opt cell state) base ;; 
+
     let initialize_single_cell bg cell0 v0 =
         if check_before_assignment bg cell0 v0
         then assign_and_update bg cell0 v0 (Initialized v0) 
