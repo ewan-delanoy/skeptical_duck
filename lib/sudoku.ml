@@ -499,6 +499,7 @@ module Grid = struct
     end ;; 
     
     let assume = Private.assume ;; 
+    let compute_minimizers_inside = Private.compute_minimizers_if_necessary ;;
     let deduce_several = Private.deduce_several ;;
     let deduce_several_directly = Private.deduce_several_directly ;;
     let get_state = Private.get_state ;; 
