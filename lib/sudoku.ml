@@ -103,6 +103,10 @@ module Inverse = struct
 
 let to_short_string (IV(box,v))="IV("^(Box.to_short_string box)^","^(string_of_int v)^")";; 
 
+let all = 
+  let base = Cartesian.product Box.all (Int_range.range 1 9) in 
+  Image.image (fun (box,k)->IV(box,k)) base;;  
+
 end ;;  
 
 module Deductor = struct 
@@ -115,6 +119,12 @@ let to_short_string = function
     "Inverse_for_inverse_ded("^(Inverse.to_short_string iv1)^","^(Inverse.to_short_string iv2)^")" 
   |Inverse_for_direct_ded(iv,cell) ->  
       "Inverse_for_direct_ded("^(Inverse.to_short_string iv)^","^(Cell.to_short_string cell)^")";; 
+
+let all_direct_deductors =
+        (Image.image (fun cell->Direct_ded(cell)) Cell.all) 
+        @ (Image.image (fun iv->Inverse_ded(iv)) Inverse.all) ;;
+    
+    
 
 end ;;  
 
@@ -441,16 +451,6 @@ end ;;
 
 module Helper = struct 
 
-let all_inverses = 
-   let base = Cartesian.product Box.all (Int_range.range 1 9) in 
-   Image.image (fun (box,k)->IV(box,k)) base;;  
-
-let all_helpers =
-    (Image.image (fun cell->Direct_ded(cell)) Cell.all) 
-    @ (Image.image (fun iv->Inverse_ded(iv)) all_inverses) ;;
-
-
-
 let base1 gwd = List.filter_map
     (fun helper->
       let poss = Grid.possibilities_for_deductor gwd helper in 
@@ -459,7 +459,7 @@ let base1 gwd = List.filter_map
       else let (cell,_) = List.hd poss in 
            if Cell_state.is_yet_undecided(Grid.get_state gwd cell)
            then Some(helper,poss)        
-          else None) all_helpers ;;
+          else None) Deductor.all_direct_deductors ;;
 
 let level0 gwd = Min.minimize_it_with_care (fun (_,l)->List.length l) (base1 gwd);;
 
