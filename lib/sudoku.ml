@@ -289,11 +289,14 @@ module Minimizer_data = struct
 
   let immediate_deductions (MD(m,messengers)) = 
     if m<>1 then [] else 
-    let temp1 = Image.image (fun (_,l)->List.hd l) messengers in 
+    let temp1 = Image.image (fun (ded,l)->
+       let (cell,v)=List.hd l in
+         (cell,(v,ded))
+       ) messengers in 
     List.filter_map (fun cell->
        match List.assoc_opt cell temp1 with 
         None -> None
-       |Some v -> Some(cell,v)  
+       |Some (v,ded) -> Some(cell,v,ded)  
     ) Cell.all ;;   
 
   let contradictions (MD(m,messengers)) = 
@@ -414,8 +417,8 @@ module Grid = struct
 
       module Display = struct 
 
-        let to_string (cell,v0) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
-        let deductions_to_string l = String.concat " , " (Image.image to_string l) ;; 
+        let deduction_to_string (cell,v0,_) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
+        let deductions_to_string l = String.concat " , " (Image.image deduction_to_string l) ;; 
         let breakdowns_to_string cells =
            if cells = [] then "" else 
            "\n Contradictions : "^(String.concat "," (Image.image Deductor.atomic_to_short_string cells)) ;;    
@@ -476,7 +479,15 @@ module Grid = struct
      
     let get_state gwd cell = Bare_grid.get_state (grid gwd) cell ;; 
 
-    end ;; 
+    let immediate_deductions gwd =  Minimizer_data.immediate_deductions (minimizers gwd) ;;
+
+    let make_all_immediate_deductions gwd =
+       let md = minimizers gwd in
+       let imds = Minimizer_data.immediate_deductions md in 
+       deduce_several gwd (Image.image (fun (_,_,ded)->ded) imds) ;;
+      
+
+  end ;; 
     
     let assume = Private.assume ;; 
     let compute_minimizers_inside = Private.compute_minimizers_if_necessary ;;
@@ -484,6 +495,7 @@ module Grid = struct
     let deduce_several_directly = Private.deduce_several_directly ;;
     let get_state = Private.get_state ;; 
     let initialize_with = Private.initialize_with ;;
+    let make_all_immediate_deductions = Private.make_all_immediate_deductions ;; 
     let minimizers = Private.minimizers ;; 
     let possibilities gwd cell = Possibilities.for_cell (Private.grid gwd) cell ;;
     let possibilities_for_deductor gwd ded= Possibilities.for_deductor (Private.grid gwd) ded ;;
