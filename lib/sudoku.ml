@@ -29,7 +29,7 @@ type bare_grid = BG of cell_state list ;;
 
 type minimizer_data = MD of int * (deductor * (cell * int) list) list ;; 
 
-type grid_with_deductions = GWD of bare_grid * ((cell * int) list) * (cell list) ;;
+type grid_with_deductions = GWD of bare_grid * (minimizer_data option) ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -401,12 +401,25 @@ end ;;
 
 module Grid = struct 
 
+    exception Minimizers_exn ;;
+
     module Private = struct 
 
-    let grid (GWD(bg,_,_)) = bg ;;
-    let easy_deductions (GWD(_,deds,_)) = deds ;;
-    let breakdowns (GWD(_,_,bks)) = bks ;;
-    let constructor bg = GWD(bg,Bare_grid.compute_easy_deductions bg,Bare_grid.compute_breakdowns bg) ;;
+    let grid (GWD(bg,_)) = bg ;;
+    let minimizers_opt (GWD(_,md_opt)) = md_opt ;;
+    let constructor bg = GWD(bg,None) ;;
+
+    let compute_minimizers_if_necessary gwd =
+         let (GWD(bg,md_opt)) = gwd in 
+          match md_opt with 
+          Some(_)->gwd 
+         |None ->
+           let md=Possibilities.minimizers bg in 
+           GWD(bg,Some md) ;;
+
+      let minimizers (GWD(_,md_opt)) = match md_opt with 
+          None -> raise(Minimizers_exn)
+         |Some md -> md ;;
       
       let assign_and_update gwd cell0 v0 explanation0= 
         let old_grid = grid gwd in
@@ -422,18 +435,25 @@ module Grid = struct
       module Display = struct 
 
         let to_string (cell,v0) = (Cell.to_short_string(cell))^" -> "^(string_of_int v0) ;;
-        let pair_list_to_string l = String.concat " , " (Image.image to_string l) ;; 
-        let cell_list_to_string cells =
+        let deductions_to_string l = String.concat " , " (Image.image to_string l) ;; 
+        let breakdowns_to_string cells =
            if cells = [] then "" else 
-           "\n Contradictions : "^(String.concat "," (Image.image Cell.to_short_string cells)) ;;    
+           "\n Contradictions : "^(String.concat "," (Image.image Deductor.atomic_to_short_string cells)) ;;    
+
+        let minimized_data_to_string md =
+            (deductions_to_string(Minimizer_data.immediate_deductions md))^
+            (breakdowns_to_string(Minimizer_data.contradictions md));;   
+
+        let minimized_data_opt_to_string = function 
+          None -> "Minimizers have not been computed for this grid." 
+          |Some(md)-> minimized_data_to_string md ;;   
 
       end ;; 
             
 
 
       let to_string gwd special_cells = (Bare_grid.to_string (grid gwd) special_cells)^"\n\n"^
-             (Display.pair_list_to_string(easy_deductions gwd))^
-            (Display.cell_list_to_string(breakdowns gwd));;   
+             (Display.minimized_data_opt_to_string(minimizers_opt gwd));;   
       
       let to_surrounded_string gwd special_cells = "\n\n\n"^(to_string gwd special_cells)^"\n\n\n" ;;  
 
@@ -453,16 +473,7 @@ module Grid = struct
           ) in 
          let _ = List.iter apply temp2 in 
          !walker ;;  
-                
-    
-
-    let minimizers gwd = 
-      let grid = grid gwd in 
-      let (answer,sols) = Bare_grid.minimizers grid in 
-      let msg = to_surrounded_string gwd (Image.image fst sols) in 
-      let _=(print_string msg;flush stdout) in
-      answer ;; 
-
+         
     let fail_during_deduction gwd ded = 
         let msg = "Incorrect deduction attempt. "^(Deductor.to_short_string ded) in 
         let _ = (print_string msg;flush stdout) in 
