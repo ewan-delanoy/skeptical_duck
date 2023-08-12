@@ -187,15 +187,7 @@ module Cell_state = struct
     let v0=fst(List.hd poss) in 
     Some(cell0,v0);; 
 
-  let to_breakdown_opt cell0 = function 
-    Initialized(_)
-   |Assumed(_)
-   |Deduced(_,_,_)-> None
-   |Usual(l)->  
-   if List.exists(fun opt-> opt = None) l
-   then None
-   else Some(cell0);;   
-
+  
    let is_yet_undecided = function 
    Initialized(_)
   |Assumed(_)
@@ -279,23 +271,6 @@ module Bare_grid = struct
           let common = Usual (Int_range.scale (fun _->None) 1 9) in 
           constructor(Int_range.scale (fun _->common) 1 81);;
 
-    let minimizers bg = 
-      let states = states_in_bare_grid bg in 
-      let temp1 = List.combine Cell.all states in 
-      let temp2 = List.filter_map (fun (cell,state)->
-          match state with   
-          Initialized(_)
-         |Assumed(_)
-         |Deduced(_)-> None
-         |Usual(l)-> Some(cell,Cell.possibilities l)
-      ) temp1 in 
-      let (_,sols) = Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2 in 
-      (Min.minimize_it_with_care (fun (_cell,l)->List.length l) temp2,sols) ;; 
-
-      let compute_breakdowns bg = 
-        let base= List.combine Cell.all (states_in_bare_grid bg) in 
-         List.filter_map (fun (cell,state)->Cell_state.to_breakdown_opt cell state) base ;; 
-
       let get_state bg cell = 
          List.nth (states_in_bare_grid bg) ((Cell.single_index cell)-1);;   
 
@@ -303,9 +278,7 @@ module Bare_grid = struct
 
     let assign_and_update= Private.assign_and_update ;; 
     let compute_easy_deductions = Private.compute_easy_deductions ;; 
-    let compute_breakdowns = Private.compute_breakdowns ;; 
     let get_state = Private.get_state ;; 
-    let minimizers= Private.minimizers ;; 
     let origin = Private.origin ;; 
     let states_in_bare_grid = Private.states_in_bare_grid ;;
     let to_string = Private.to_string ;; 
@@ -324,7 +297,7 @@ module Minimizer_data = struct
     ) Cell.all ;;   
 
   let contradictions (MD(m,messengers)) = 
-    if m<>1 then [] else 
+    if m<>0 then [] else 
     Image.image fst messengers;;  
 
   let minimizing_cells (MD(_m,messengers)) =
@@ -382,8 +355,15 @@ module Possibilities = struct
   ;; 
 
   let minimizers bg =
-       let temp1 = Image.image (
-           fun ded ->(ded,for_deductor bg ded)
+       let temp1 =List.filter_map (
+           fun ded ->
+            let l=for_deductor bg ded in 
+            if List.length(l)<>1
+            then Some (ded,l)
+            else let (cell,_v) = List.hd l in 
+                 if Cell_state.is_yet_undecided(Bare_grid.get_state bg cell)
+                 then Some (ded,l)
+                 else None
        ) Deductor.all_atomic_deductors in 
        let (m,l)=Min.minimize_it_with_care (fun (_,l)->List.length l) temp1 in
       MD(m,l) ;; 
