@@ -27,6 +27,8 @@ type cell_state =
 
 type bare_grid = BG of cell_state list ;; 
 
+type minimizer_data = MD of int * (deductor * (cell * int) list) list ;; 
+
 type grid_with_deductions = GWD of bare_grid * ((cell * int) list) * (cell list) ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -111,6 +113,19 @@ end ;;
 
 module Deductor = struct 
 
+let to_cell_opt = function 
+     Direct_ded (cell)-> Some cell
+    |Inverse_ded (_) 
+    |Inverse_for_inverse_ded(_,_) 
+    |Inverse_for_direct_ded(_,_) -> None;; 
+
+let atomic_to_short_string = function
+    Direct_ded (cell)-> (Cell.to_short_string cell)
+  |Inverse_ded (iv) -> (Inverse.to_short_string iv)
+  |Inverse_for_inverse_ded(_,_)
+  |Inverse_for_direct_ded(_,_) -> "...";; 
+
+
 let to_short_string = function
 
     Direct_ded (cell)-> "Direct_ded("^(Cell.to_short_string cell)^")"
@@ -120,7 +135,7 @@ let to_short_string = function
   |Inverse_for_direct_ded(iv,cell) ->  
       "Inverse_for_direct_ded("^(Inverse.to_short_string iv)^","^(Cell.to_short_string cell)^")";; 
 
-let all_direct_deductors =
+let all_atomic_deductors =
         (Image.image (fun cell->Direct_ded(cell)) Cell.all) 
         @ (Image.image (fun iv->Inverse_ded(iv)) Inverse.all) ;;
     
@@ -297,6 +312,31 @@ module Bare_grid = struct
 
 end ;;   
 
+module Minimizer_data = struct 
+
+  let immediate_deductions (MD(m,messengers)) = 
+    if m<>1 then [] else 
+    let temp1 = Image.image (fun (_,l)->List.hd l) messengers in 
+    List.filter_map (fun cell->
+       match List.assoc_opt cell temp1 with 
+        None -> None
+       |Some v -> Some(cell,v)  
+    ) Cell.all ;;   
+
+  let contradictions (MD(m,messengers)) = 
+    if m<>1 then [] else 
+    Image.image fst messengers;;  
+
+  let minimizing_cells (MD(_m,messengers)) =
+     List.filter_map (
+        fun (deductor,data)->
+           match Deductor.to_cell_opt deductor with 
+            None -> None
+           |Some(cell)->Some(cell,Image.image snd data)
+     ) messengers ;;  
+
+end ;;  
+
 
 module Possibilities = struct 
 
@@ -341,10 +381,20 @@ module Possibilities = struct
     Image.image (fun v2->(cell2,v2)) (for_ifd bg iv1 cell2)
   ;; 
 
+  let minimizers bg =
+       let temp1 = Image.image (
+           fun ded ->(ded,for_deductor bg ded)
+       ) Deductor.all_atomic_deductors in 
+       let (m,l)=Min.minimize_it_with_care (fun (_,l)->List.length l) temp1 in
+      MD(m,l) ;; 
+        
+
+
   end ;;
   
   let for_cell = Private.for_cell ;;
   let for_deductor = Private.for_deductor ;; 
+  let minimizers = Private.minimizers ;; 
 
 end ;;  
 
@@ -459,7 +509,7 @@ let base1 gwd = List.filter_map
       else let (cell,_) = List.hd poss in 
            if Cell_state.is_yet_undecided(Grid.get_state gwd cell)
            then Some(helper,poss)        
-          else None) Deductor.all_direct_deductors ;;
+          else None) Deductor.all_atomic_deductors ;;
 
 let level0 gwd = Min.minimize_it_with_care (fun (_,l)->List.length l) (base1 gwd);;
 
