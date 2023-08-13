@@ -29,7 +29,7 @@ type handle = Sz3_types.handle =
   |Select of int * int * int   
   |Rightmost_overflow of int * int * int 
   |Rightmost_pivot
-  |Fork of int * int * int ;;
+  |Fork of int * int * int ;;  
 
 
 type helper = Sz3_types.helper = 
@@ -43,11 +43,17 @@ type extra_info = Sz3_types.extra_info = I of int ;;
 
 type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * extra_info ;;    
 
-type medium_diagnosis = Sz3_types.medium_diagnosis = 
+type medium_diagnosis  = Sz3_types.medium_diagnosis  = 
   Missing_treatment of point_with_breadth 
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
- |Finished of medium_mold;;   
+ |Finished of (handle option) * medium_mold * bool ;; 
+
+type old_medium_diagnosis = Sz3_types.old_medium_diagnosis = 
+  Omd_Missing_treatment of point_with_breadth 
+ |Omd_Incomplete_treatment of point_with_breadth 
+ |Omd_Missing_links of point_with_breadth * (int list)
+ |Omd_Finished of medium_mold;;   
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -1002,38 +1008,38 @@ module Store = struct
       None -> raise(Select_case_opt_exn(pwb))
     |Some(prec_pwb,C cstr) ->
         match no_expansions_on_grounded_point_opt prec_pwb with 
-          None -> Missing_treatment(prec_pwb)
+          None -> Omd_Missing_treatment(prec_pwb)
         |Some(prec_mold) ->
           let prec_sols = Medium_mold.solutions prec_mold in 
            let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
             if new_sols = []
-            then Incomplete_treatment(prec_pwb)
+            then Omd_Incomplete_treatment(prec_pwb)
             else let nth = (fun k->List.nth cstr (k-1)) in  
                  let i=nth 1 and j=nth 2 and k=nth 3 in 
                  let n = Point_with_breadth.max prec_pwb in 
-                 Finished(Medium_mold.select (i,j,k) n prec_mold new_sols);;   
+                 Omd_Finished(Medium_mold.select (i,j,k) n prec_mold new_sols);;   
     
                  let explore_rightmost_overflow_possibility_on_grounded_point pwb (u,v,n) = 
                   let left_pwb = Point_with_breadth.remove_element pwb n in 
                   match no_expansions_on_grounded_point_opt left_pwb with 
-                    None -> Missing_treatment(left_pwb)
+                    None -> Omd_Missing_treatment(left_pwb)
                   |Some(left_mold) ->
                       let left_ext = Medium_mold.forced_elements left_mold in 
                       let forgotten_links = i_setminus [u;v] left_ext in 
                       if forgotten_links = []
-                      then Finished(Medium_mold.rightmost_overflow (u,v,n) left_mold)
+                      then Omd_Finished(Medium_mold.rightmost_overflow (u,v,n) left_mold)
                       else 
                       let (_opt_good,opt_bad) = no_expansion_on_translatable_removals left_pwb [u;v] in   
                       match opt_bad with 
-                       None -> Missing_links(left_pwb,forgotten_links) 
-                       |Some pwb4 -> Missing_treatment pwb4  ;;            
+                       None -> Omd_Missing_links(left_pwb,forgotten_links) 
+                       |Some pwb4 -> Omd_Missing_treatment pwb4  ;;            
               
               
   let explore_rightmost_pivot_possibility_on_grounded_point pwb = 
       let n = Point_with_breadth.max pwb in 
       let left_pwb = Point_with_breadth.remove_element pwb n in 
         match no_expansions_on_grounded_point_opt left_pwb with 
-        None -> Missing_treatment(left_pwb)
+        None -> Omd_Missing_treatment(left_pwb)
       |Some(left_mold) ->
         let left_sols = Medium_mold.solutions left_mold in 
         let new_sols = List.filter_map (
@@ -1044,8 +1050,8 @@ module Store = struct
                                 else None  
         ) left_sols in 
         if new_sols = []
-        then Incomplete_treatment(left_pwb)
-        else Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;    
+        then Omd_Incomplete_treatment(left_pwb)
+        else Omd_Finished(Medium_mold.rightmost_pivot left_mold n new_sols);;    
             
     exception Explore_fork_possibility_exn of point_with_breadth ;;
                 
@@ -1054,25 +1060,25 @@ module Store = struct
         None -> raise(Fork_case_opt_exn(pwb))
        |Some(prec_pwb,C cstr) ->
           match no_expansions_on_grounded_point_opt prec_pwb with 
-           None -> Missing_treatment(prec_pwb)
+           None -> Omd_Missing_treatment(prec_pwb)
           |Some(prec_mold) -> 
             let prec_ext = Medium_mold.forced_elements prec_mold in  
             let nth = (fun k->List.nth cstr (k-1)) in  
             let i=nth 1 and j=nth 2 and k=nth 3 in 
             let forgotten_links=i_setminus [i;j;k] prec_ext in 
             if forgotten_links<>[]
-            then Missing_links(prec_pwb,forgotten_links) 
+            then Omd_Missing_links(prec_pwb,forgotten_links) 
             else     
             let (opt_good,opt_bad) = no_expansion_on_translatable_removals prec_pwb [i;j;k] in 
             match opt_bad with
-              Some(grounded_pwb2)-> Missing_treatment grounded_pwb2
+              Some(grounded_pwb2)-> Omd_Missing_treatment grounded_pwb2
             |None ->
               let mth = (fun k->snd(List.nth (Option.get opt_good) (k-1))) in  
-              Finished(Medium_mold.fork (mth 1,mth 2,mth 3));;               
+              Omd_Finished(Medium_mold.fork (mth 1,mth 2,mth 3));;               
 
     let diagnosis_to_opt = function 
-     Finished(mold2) -> Some (mold2)
-    |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> None ;;
+    Omd_Finished(mold2) -> Some (mold2)
+    |Omd_Missing_treatment(_) |Omd_Incomplete_treatment(_) |Omd_Missing_links(_,_) -> None ;;
       
 
     let minimal_expansions_opt pwb = 
@@ -1185,39 +1191,27 @@ module Store = struct
  
 module Medium_analysis = struct 
 
-  exception Walk_scale_exn of int * medium_diagnosis ;; 
+  exception Walk_scale_exn of int * old_medium_diagnosis ;; 
     
     module Private = struct
     
       let diagnosis_to_option_pair direct = 
         match direct with 
-        Finished(mold3) -> (Some mold3,None)
-        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+        Omd_Finished(mold3) -> (Some mold3,None)
+        |Omd_Missing_treatment(_) |Omd_Incomplete_treatment(_) |Omd_Missing_links(_,_) -> (None,Some direct) ;; 
 
       let try_to_compute_in_select_case pwb = 
-        let direct =Store.explore_select_possibility_on_grounded_point pwb in 
-        match direct with 
-        Finished(mold3) -> (Some mold3,None)
-        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+        diagnosis_to_option_pair(Store.explore_select_possibility_on_grounded_point pwb) ;; 
     
     
     let try_to_compute_in_rightmost_pivot_case pwb = 
-      let direct =Store.explore_rightmost_pivot_possibility_on_grounded_point pwb in 
-      match direct with 
-      Finished(mold3) -> (Some mold3,None)
-      |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+      diagnosis_to_option_pair(Store.explore_rightmost_pivot_possibility_on_grounded_point pwb) ;; 
     
     let try_to_compute_in_rightmost_overflow_case pwb (u,v,n)= 
-        let direct =Store.explore_rightmost_overflow_possibility_on_grounded_point pwb (u,v,n) in 
-        match direct with 
-        Finished(mold3) -> (Some mold3,None)
-        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+    diagnosis_to_option_pair(Store.explore_rightmost_overflow_possibility_on_grounded_point pwb (u,v,n)) ;; 
 
     let try_to_compute_in_fork_case pwb = 
-        let direct =Store.explore_fork_possibility_on_grounded_point pwb in 
-        match direct with 
-        Finished(mold3) -> (Some mold3,None)
-        |Missing_treatment(_) |Incomplete_treatment(_) |Missing_links(_,_) -> (None,Some direct) ;; 
+      diagnosis_to_option_pair(Store.explore_fork_possibility_on_grounded_point pwb) ;; 
       
       
     exception Try_to_compute_exn of point_with_breadth;;
@@ -1271,7 +1265,7 @@ module Medium_analysis = struct
       
 module Safe_initialization = struct 
 
-exception Undefined_during_check_exn of point_with_breadth * medium_diagnosis ;;   
+exception Undefined_during_check_exn of point_with_breadth * old_medium_diagnosis ;;   
 exception Unequal_during_check_exn of (point_with_breadth * medium_mold * medium_mold) ;;
 
 
