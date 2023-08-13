@@ -485,7 +485,7 @@ module Grid = struct
        let md = minimizers gwd in
        let imds = Minimizer_data.immediate_deductions md in 
        deduce_several gwd (Image.image (fun (_,_,ded)->ded) imds) ;;
-      
+
 
   end ;; 
     
@@ -502,6 +502,7 @@ module Grid = struct
     let print_out = Private.print_out ;; 
 
 end ;;   
+
 
 module Helper = struct 
 
@@ -537,11 +538,158 @@ let base2 gwd =
        
 let level1 gwd = 
     let (m,temp1) = Min.minimize_it_with_care (fun (_,(_,l,_))->List.length l) (base2 gwd) in 
-     (m,Image.image (fun (h1,(h2,_,_))->(h1,h2)) temp1);;   
-    
+     (m,Image.image (fun (h1,(h2,_,_))->(h1,h2)) temp1);;     
 
 end ;;   
 
 
+(*
 
+open Sudoku ;; 
+open Helper ;;
+
+
+
+let cm = Grid.compute_minimizers_inside ;; 
+
+let original_g0 = cm(Grid.initialize_with 
+
+[
+   0;8;0;  1;0;5;  0;2;3;
+   0;0;0;  0;2;0;  0;0;0; 
+   9;0;0;  0;0;8;  0;4;0; 
+
+   0;0;0;  0;8;0;  0;0;2;
+   0;6;0;  0;7;0;  0;0;0;
+   0;0;4;  2;0;6;  0;3;0;
+
+   0;5;0;  6;0;3;  0;0;1;
+   0;0;0;  8;5;7;  3;0;0;
+   0;0;8;  0;0;0;  5;0;0;
+
+] );; 
+
+
+
+let g0 = cm(Grid.deduce_several original_g0
+     [Inverse_for_inverse_ded(IV(Square 5,3),IV(Square 2,3));
+      Direct_ded(C(3,4));
+      Inverse_ded(IV(Square 2,6));
+      Direct_ded(C(1,3));Direct_ded(C(1,1));Direct_ded(C(1,7));
+      Inverse_ded(IV(Column 6,2));Inverse_ded(IV(Column 7,2));
+      Inverse_for_direct_ded (IV (Column 6, 1), C (6, 5));
+      Inverse_ded(IV(Column 6,9));Inverse_ded(IV(Square 8,9));
+      Direct_ded(C(2,4));
+      Inverse_ded(IV(Square 8,1));
+      Direct_ded(C(7,1));Direct_ded(C(7,3));Direct_ded(C(7,5));Direct_ded(C(7,8));
+      Inverse_ded(IV(Column 2,9));Inverse_ded(IV(Column 2,7));
+      ] );; 
+
+let g1 = cm(Grid.assume g0 (C(2,2)) 1) ;;
+let g2 = cm(Grid.make_all_immediate_deductions g1) ;;
+let g3 = cm(Grid.make_all_immediate_deductions g2) ;;
+let g4 = cm(Grid.make_all_immediate_deductions g3) ;;
+
+*)
+
+(*
+
+
+let pre_g1 = Grid.assume g0 (C(2,2)) 1 ;;
+let g1 = Grid.deduce_several pre_g1
+     [
+      Direct_ded(C(3,2));Direct_ded(C(8,2));Direct_ded(C(9,2));
+      Direct_ded(C(9,1));Direct_ded(C(9,8));Direct_ded(C(9,9));
+      Inverse_ded(IV(Row 3,1));Direct_ded(C(6,7));
+      Direct_ded(C(5,7));Direct_ded(C(6,9));Direct_ded(C(3,9));
+      Direct_ded(C(8,9));
+      ] ;; 
+
+
+Grid.possibilities_for_deductor g0 ded ;; 
+Grid.minimizers g0;;
+Grid.possibilities g0 (C(5,9)) ;; 
+
+
+let pre1_g1 = Grid.assume g0 (C(2,1)) 1;;
+let g1 = Grid.deduce_several_directly pre1_g1
+     [C(2,2);C(3,2)] ;; 
+
+let pre1_g2 = Grid.assume g1 (C(2,3)) 5;;
+let g2 = Grid.deduce_several_directly pre1_g2
+     [C(3,3);C(3,7);C(3,9)] ;; 
+
+let pre1_g3 = Grid.assume g2 (C(2,4)) 4;;
+let g3 = Grid.deduce_several_directly pre1_g3
+          [C(2,6);C(9,4)] ;; 
+
+let pre1_g4 = Grid.assume g3 (C(4,4)) 3;;
+let g4 = Grid.deduce_several_directly pre1_g4
+                    [C(5,4)] ;; 
+
+let pre1_g5 = Grid.assume g4 (C(4,6)) 1;;
+let g5 = Grid.deduce_several_directly pre1_g5
+            [C(4,3);C(5,6);C(6,5);
+            C(4,2);C(5,7);C(9,6);
+            C(4,1);C(6,2);C(6,7);
+            C(2,7);C(4,8);C(6,1);C(9,2);
+            C(4,7);C(8,2);C(9,5);
+            C(7,5);C(7,7);C(8,8);C(9,8);
+            C(2,8);C(5,8);C(7,1);C(7,3);C(8,3);C(9,9);
+            C(2,9);C(5,3);C(5,9);C(8,1);C(8,9);C(9,1);
+            C(5,1);
+            ] ;; 
+
+
+
+let g2 = Grid.assume g1 (C(1,3)) 6;;
+
+let see1 = Grid.possibilities g0 (C(2,1)) ;; 
+let see2 = Grid.minimizers g3 ;; 
+
+let pre1_g1 = Bare_Grid.assume g0 (C(1,1)) 4;;
+let g1 = Bare_Grid.deduce_several pre1_g1
+     [C(1,6);C(2,6)] ;; 
+
+let pre1_g2 = Bare_Grid.assume g1 (C(2,4)) 3;;
+let g2 = Bare_Grid.deduce_several pre1_g2 [C(3,4);C(3,5);C(3,7);C(3,9)] ;; 
+
+let pre1_g3 = Bare_Grid.assume g2 (C(1,3)) 6;;
+let g3 = Bare_Grid.deduce_several pre1_g3 [C(1,7)] ;; 
+
+let g4 = Bare_Grid.assume g3 (C(2,2)) 1;;
+
+let pre1_g5 = Bare_Grid.assume g4 (C(2,1)) 5;;
+let g5 = Bare_Grid.deduce_several pre1_g5 [C(2,3)] ;; 
+
+let pre1_g6 = Bare_Grid.assume g5 (C(3,2)) 2;;
+let g6 = Bare_Grid.deduce_several pre1_g6 [C(3,3)] ;; 
+
+let pre1_g7 = Bare_Grid.assume g6 (C(4,6)) 1;;
+let pre2_g7 = Bare_Grid.deduce_several pre1_g7 [C(5,6);C(6,5);C(9,6)] ;; 
+
+*)
+
+
+(*
+   
+let zeroes = 
+   
+
+[
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0; 
+   0;0;0;  0;0;0;  0;0;0; 
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+
+] ;; 
+
+*)
 
