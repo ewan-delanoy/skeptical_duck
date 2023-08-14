@@ -148,10 +148,11 @@ module Private = struct
         if shift_amplitude>=0 
         then (String.make shift_amplitude ' ')^line 
         else 
-        let (indent,bare_text) = indentation_decomposition line in 
+        let positive_amplitude = (-shift_amplitude) 
+        and (indent,bare_text) = indentation_decomposition line in 
         let m = String.length indent in 
-        if m>=shift_amplitude
-        then (Cull_string.cobeginning shift_amplitude indent)^bare_text
+        if m>=positive_amplitude
+        then (Cull_string.cobeginning positive_amplitude indent)^bare_text
         else     
         if forced 
         then bare_text 
