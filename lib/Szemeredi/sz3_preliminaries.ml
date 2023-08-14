@@ -1254,6 +1254,7 @@ module Store = struct
 module Medium_analysis = struct 
 
   exception Walk_scale_exn of int * medium_diagnosis ;; 
+  exception Nonstandard_handler_exn of point_with_breadth * handle * medium_mold ;;
     
     module Private = struct
     
@@ -1262,7 +1263,12 @@ module Medium_analysis = struct
         let _ =(match diag with 
          Missing_treatment(_) |Incomplete_treatment (_) |Missing_links (_,_) -> ()
         |Finished(handler,mold,is_new)->
-          if is_new then  Store.unsafe_low_level_add pwb (handler,mold)
+          if is_new 
+          then  (
+                if handler<>Analysis_with_breadth.handle pwb
+                then raise(Nonstandard_handler_exn(pwb,handler,mold))
+                else Store.unsafe_low_level_add pwb (handler,mold)
+              )
         ) in 
         diag ;; 
 
