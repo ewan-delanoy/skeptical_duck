@@ -41,15 +41,9 @@ type extra_info = I of int ;;
 
 type medium_mold = MM of (solution list) * extension_data * extra_info ;;    
 
-type old_medium_diagnosis  = 
-  Omd_Missing_treatment of point_with_breadth 
- |Omd_Incomplete_treatment of point_with_breadth 
- |Omd_Missing_links of point_with_breadth * (int list)
- |Omd_Finished of medium_mold  ;;   
-
 type medium_diagnosis  = 
  Missing_treatment of point_with_breadth 
 |Incomplete_treatment of point_with_breadth 
 |Missing_links of point_with_breadth * (int list)
-|Finished of (handle option) * medium_mold * bool ;;    
+|Finished of handle  * medium_mold * bool ;;    
  
