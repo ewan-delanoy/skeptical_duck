@@ -1007,24 +1007,24 @@ module Store = struct
 
            
   let explore_select_possibility_on_grounded_point pwb prec_pwb cstr prec_mold= 
-          let prec_sols = Medium_mold.solutions prec_mold in 
-           let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
-            if new_sols = []
-            then Incomplete_treatment(prec_pwb)
-            else let nth = (fun k->List.nth cstr (k-1)) in  
-                 let i=nth 1 and j=nth 2 and k=nth 3 in 
-                 let n = Point_with_breadth.max prec_pwb in 
-                 Finished(Select(i,j,k),Medium_mold.select (i,j,k) n prec_mold new_sols,true);;   
+    let prec_sols = Medium_mold.solutions prec_mold in 
+    let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
+    if new_sols = []
+    then Incomplete_treatment(prec_pwb)
+    else let nth = (fun k->List.nth cstr (k-1)) in  
+         let i=nth 1 and j=nth 2 and k=nth 3 in 
+         let n = Point_with_breadth.max prec_pwb in 
+         Finished(Select(i,j,k),Medium_mold.select (i,j,k) n prec_mold new_sols,true);;   
     
-                let explore_rightmost_overflow_possibility_on_grounded_point left_pwb left_mold left_ext (u,v,n) =
-                      let forgotten_links = i_setminus [u;v] left_ext in 
-                      if forgotten_links = []
-                      then Finished(Rightmost_overflow(u,v,n),Medium_mold.rightmost_overflow (u,v,n) left_mold,true)
-                      else 
-                      let (_opt_good,opt_bad) = no_expansion_on_translatable_removals left_pwb [u;v] in   
-                      match opt_bad with 
-                       None -> Missing_links(left_pwb,forgotten_links) 
-                       |Some pwb4 -> Missing_treatment pwb4  ;;            
+  let explore_rightmost_overflow_possibility_on_grounded_point left_pwb left_mold left_ext (u,v,n) =
+    let forgotten_links = i_setminus [u;v] left_ext in 
+    if forgotten_links = []
+    then Finished(Rightmost_overflow(u,v,n),Medium_mold.rightmost_overflow (u,v,n) left_mold,true)
+    else 
+    let (_opt_good,opt_bad) = no_expansion_on_translatable_removals left_pwb [u;v] in   
+    match opt_bad with 
+     None -> Missing_links(left_pwb,forgotten_links) 
+     |Some pwb4 -> Missing_treatment pwb4  ;;            
               
               
   let explore_rightmost_pivot_possibility_on_grounded_point pwb left_pwb left_mold left_sols n = 
@@ -1276,7 +1276,7 @@ module Medium_analysis = struct
       let try_to_compute pwb =     
         let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
         let  translated_diag = try_to_compute_on_grounded_point translated_pwb in 
-        Diagnosis.translate (-d) translated_diag;;
+        Diagnosis.translate d translated_diag;;
 
       let walk_scale (w,scr,b) bound = 
          let base = Int_range.range 1 bound in 
