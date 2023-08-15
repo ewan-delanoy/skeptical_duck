@@ -685,26 +685,27 @@ let to_extra_constraints (PWB(pt,b)) =
     )  all_constraints in 
     PEC(pt,meaningful_constraints) ;;    
 
-let small_standardization_opt pwb =
-    let (PWB(pt,b)) = pwb in 
-    if b<>0
-    then Some pwb 
-    else 
-      let (P(fis,_)) = pt in 
+let small_standardization pwb =
+    let (PWB(pt,b)) = pwb in
+    let (P(fis,W w)) = pt in 
+    let support = Point.supporting_set pt in 
+    match List.find_opt (fun t->i_is_included_in [t;t+(w+1);t+2*(w+1)] support) (List.rev(Int_range.range 1 b)) with
+    Some(t0)->PWB(pt,b0)
+    |None ->
     match Point.highest_constraint_opt pt with  
-     None -> None
+     None -> PWB(P(fis,W 0),0)
     |Some(C cstr) -> 
       let nth = (fun k->List.nth cstr (k-1)) in 
       let w = W((nth 2)-(nth 1)-1) in 
-      Some(PWB(P(fis,w),nth 1));;
+      PWB(P(fis,w),nth 1);;
     ;; 
 
 let usual_decomposition_opt pwb =
-   match small_standardization_opt pwb with 
-    None -> None 
-   |Some(PWB(pt,b)) -> 
-      let (W w) = Point.width pt in 
-      Some(PWB(pt,b-1),C[b;b+(w+1);b+2*(w+1)]);;
+  let (PWB(pt,b)) = small_standardization pwb in 
+  let (P(fis,W w)) = pt in 
+  if b=0
+  then None 
+  else Some(small_standardization(PWB(pt,b-1)),C[b;b+(w+1);b+2*(w+1)]);;
 
   (* when d<0, this opeartion makes sense 
   only if the lowest element is >|d|. *)    
@@ -801,7 +802,7 @@ let decompose = Memoized.make(fun pwb->
 
 end ;; 
 
-let decompose = Private.decompose 
+let decompose = Private.decompose ;;
 let handle pwb = fst(Private.decompose pwb) ;;
 let measure = Private.measure ;;
 let standard_solution = Private.standard_solution ;;
