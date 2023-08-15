@@ -851,7 +851,10 @@ let rightmost_pivot (I old_info) =
 let select (x,y,z) n (I old_info) = 
   match List.assoc_opt ((x,y,z),old_info) [(((n-2,n-1,n),2),3);(((n-3,n-2,n-1),4),5);(((n-2,n-1,n),5),6);(((n-2,n-1,n),8),9)] with 
   Some(new_info) -> I new_info
-  |None -> default ;;   
+  |None -> default ;;
+  
+let last_minute_deduction (I info) n =
+    List.assoc_opt info [3,[n-3];5,[n-4];9,[n-6;n-3]] ;;  
 
 end ;;   
 
@@ -871,11 +874,12 @@ module Medium_mold = struct
     let forced_elements (MM(_sols, ext,_))= ext ;; 
 
     let last_minute_deduction pwb mold = 
-      let (MM(sols,ext,I info)) = mold in 
-      if info <> 3
-      then mold  
-      else let n = Point_with_breadth.max pwb in 
-           MM(sols,i_insert (n-3) ext,I info) ;;
+      let n = Point_with_breadth.max pwb in 
+      let (MM(sols,ext,info)) = mold in 
+      match Extra_info.last_minute_deduction info n with 
+      None -> mold 
+      |Some extra_forced_elements->
+           MM(sols,i_merge extra_forced_elements ext,info) ;;
 
     
     let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
