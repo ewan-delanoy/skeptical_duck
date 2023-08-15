@@ -835,12 +835,12 @@ let default = I 0 ;;
 let discrete _domain = default ;;
 
 let rightmost_overflow (u,v,n) left_ext (I old_info) = 
+  match List.assoc_opt ((u,v),old_info) [(((n-2,n-1),6),7)] with 
+  Some(new_info) -> I new_info
+ |None -> 
    if ((u,v)=(n-2,n-1))&&(i_is_included_in [n-2;n-1] left_ext) 
    then  I 1 
-   else 
-    match List.assoc_opt ((u,v),old_info) [(((n-2,n-1),6),7)] with 
-    Some(new_info) -> I new_info
-   |None -> default ;;   
+   else default ;;   
     
 
 let rightmost_pivot (I old_info) =
