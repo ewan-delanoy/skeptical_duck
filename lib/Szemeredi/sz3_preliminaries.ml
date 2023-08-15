@@ -744,7 +744,7 @@ let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
-let remove_element (PWB(pt,b)) elt = PWB(Point.remove_element pt elt,b);;
+let remove_element (PWB(pt,b)) elt = Private.small_standardization(PWB(Point.remove_element pt elt,b));;
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
 let subset_is_admissible pwb subset = 
      Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
