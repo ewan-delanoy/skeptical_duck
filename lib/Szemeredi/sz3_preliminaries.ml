@@ -731,6 +731,18 @@ let usual_decomposition_opt pwb =
            if u<=b then Some(u,v) else None  
      ) candidates ;;
 
+   let obstructions (PWB(P(FIS(n,_scr),W wmax),b)) = 
+     let obstructions_for_width = (fun w->Int_range.scale(fun t->[t;t+w;t+2*w]) 1 (n-2*w)) in 
+       List.flatten((Int_range.scale obstructions_for_width 1 wmax)@
+       [Int_range.scale(fun t->[t;t+(wmax+1);t+2*(wmax+1)]) 1 b]);;
+
+   let solutions pwb offset =
+      let temp1 = il_sort(List_again.power_set (supporting_set pwb)) in 
+      let obstrs = obstructions pwb in
+      let temp2 = List.filter (fun y->List.for_all (fun obs->not(i_is_included_in obs y))obstrs) temp1 in 
+      let m = List.length(List.hd(List.rev temp2)) in 
+      List.filter (fun y->List.length(y)=m-offset) temp2 ;; 
+
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -745,7 +757,8 @@ let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra
 let max (PWB(pt,_b)) = Point.max pt ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element (PWB(pt,b)) elt = Private.small_standardization(PWB(Point.remove_element pt elt,b));;
-let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;  
+let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
+let solutions = Private.solutions ;;  
 let subset_is_admissible pwb subset = 
      Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
 
