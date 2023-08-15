@@ -690,7 +690,7 @@ let small_standardization pwb =
     let (P(fis,W w)) = pt in 
     let support = Point.supporting_set pt in 
     match List.find_opt (fun t->i_is_included_in [t;t+(w+1);t+2*(w+1)] support) (List.rev(Int_range.range 1 b)) with
-    Some(t0)->PWB(pt,b0)
+    Some(b0)->PWB(pt,b0)
     |None ->
     match Point.highest_constraint_opt pt with  
      None -> PWB(P(fis,W 0),0)
@@ -702,7 +702,7 @@ let small_standardization pwb =
 
 let usual_decomposition_opt pwb =
   let (PWB(pt,b)) = small_standardization pwb in 
-  let (P(fis,W w)) = pt in 
+  let (P(_,W w)) = pt in 
   if b=0
   then None 
   else Some(small_standardization(PWB(pt,b-1)),C[b;b+(w+1);b+2*(w+1)]);;
