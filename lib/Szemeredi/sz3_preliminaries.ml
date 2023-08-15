@@ -815,9 +815,18 @@ module Extra_info = struct
 (*
 
 I 0 : default state, nothing particular
-I 1 : Either [n-2;n-1], [n-2;n] or [n-1;n] are contained in a solution 
-I 2 : n is forced, and either [n-3;n-2], [n-3;n-1] or [n-2;n-1] are contained in a solution 
-I 3 : n is forced, and either [n-3;n-2] or [n-3;n-1] are contained in a solution 
+I 1 : L0 -> [n-2;n-1], [n-2;n], [n-1;n] 
+I 2 : L0 -> [n-3;n-2;n], [n-3;n-1;n], [n-2;n-1;n] 
+I 3 : L0 -> [n-3;n-2;n], [n-3;n-1;n] 
+I 4 : L0 -> [n-4;n-3;n-1;n], [n-4;n-2;n-1;n], [n-3;n-2;n-1;n]
+      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n-3;n-2;n-1], [n]
+I 5 : L0 -> [n-4;n-3;n-1;n], [n-4;n-2;n-1;n]
+      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n]
+I 6 : L0 -> [n-4;n-3;n-1;n]
+      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n]  
+I 7 : L0 -> [n-5;n-4;n-2;n-1], [n-5;n-4;n-2;n], [n-5;n-3;n-2;n], [n-1;n]         
+I 8 : L0 -> [n-6;n-5;n-3;n-2;n], [n-6;n-5;n-3;n-1;n], [n-6;n-4;n-3;n-1;n], [n-2;n-1;n] 
+I 9 : L0 -> [n-6;n-5;n-3;n-2;n], [n-6;n-5;n-3;n-1;n], [n-6;n-4;n-3;n-1;n]
 
 *)
 
@@ -825,20 +834,24 @@ let default = I 0 ;;
 
 let discrete _domain = default ;;
 
-let rightmost_overflow (_u,_v,n) left_ext (I _old_i) = 
-   if i_is_included_in [n-2;n-1] left_ext 
+let rightmost_overflow (u,v,n) left_ext (I old_info) = 
+   if ((u,v)=(n-2,n-1))&&(i_is_included_in [n-2;n-1] left_ext) 
    then  I 1 
-   else default ;;
+   else 
+    match List.assoc_opt ((u,v),old_info) [(((n-2,n-1),6),7)] with 
+    Some(new_info) -> I new_info
+   |None -> default ;;   
+    
 
 let rightmost_pivot (I old_info) =
-  if  (old_info=1)
-  then  I 2 
-  else default ;;    
+  match List.assoc_opt old_info [1,2;2,4;7,8] with 
+  Some(new_info) -> I new_info
+  |None -> default ;;    
 
 let select (x,y,z) n (I old_info) = 
-  if ((x,y,z)=(n-2,n-1,n)) && (old_info=2)
-  then  I 3 
-  else default ;;
+  match List.assoc_opt ((x,y,z),old_info) [(((n-2,n-1,n),2),3);(((n-3,n-2,n-1),4),5);(((n-2,n-1,n),5),6);(((n-2,n-1,n),8),9)] with 
+  Some(new_info) -> I new_info
+  |None -> default ;;   
 
 end ;;   
 
@@ -868,7 +881,7 @@ module Medium_mold = struct
     let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
 
     let rightmost_overflow (u,v,n) (MM(sols,left_ext,info)) 
-           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n)left_ext info) ;;
+           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) left_ext info) ;;
     
     let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = 
           MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
