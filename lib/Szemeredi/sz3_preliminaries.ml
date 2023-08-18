@@ -831,49 +831,35 @@ end ;;
 
 module Extra_info = struct 
 
-(*
+let table_for_rightmost_overflow = ref [] ;; 
+let table_for_rightmost_pivot = ref [] ;;    
+let table_for_select = ref [] ;;    
+let table_for_last_minute_deductions = ref [] ;; 
 
-I 0 : default state, nothing particular
-I 1 : L0 -> [n-2;n-1], [n-2;n], [n-1;n] 
-I 2 : L0 -> [n-3;n-2;n], [n-3;n-1;n], [n-2;n-1;n] 
-I 3 : L0 -> [n-3;n-2;n], [n-3;n-1;n] 
-I 4 : L0 -> [n-4;n-3;n-1;n], [n-4;n-2;n-1;n], [n-3;n-2;n-1;n]
-      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n-3;n-2;n-1], [n]
-I 5 : L0 -> [n-4;n-3;n-1;n], [n-4;n-2;n-1;n]
-      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n]
-I 6 : L0 -> [n-4;n-3;n-1;n]
-      L1 -> [n-4;n-3;n-1], [n-4;n-2;n-1], [n]  
-I 7 : L0 -> [n-5;n-4;n-2;n-1], [n-5;n-4;n-2;n], [n-5;n-3;n-2;n], [n-1;n]         
-I 8 : L0 -> [n-6;n-5;n-3;n-2;n], [n-6;n-5;n-3;n-1;n], [n-6;n-4;n-3;n-1;n], [n-2;n-1;n] 
-I 9 : L0 -> [n-6;n-5;n-3;n-2;n], [n-6;n-5;n-3;n-1;n], [n-6;n-4;n-3;n-1;n]
+let unregistered = I 0 ;;
 
-*)
+let discrete _domain = unregistered  ;;
 
-let default = I 0 ;;
-
-let discrete _domain = default ;;
-
-let rightmost_overflow (u,v,n) left_ext (I old_info) = 
-  match List.assoc_opt ((u,v),old_info) [(((n-2,n-1),6),7)] with 
+let rightmost_overflow (u,v,_n) (I old_info) = 
+  match List.assoc_opt (old_info,(u,v)) (!table_for_rightmost_overflow) with 
   Some(new_info) -> I new_info
- |None -> 
-   if ((u,v)=(n-2,n-1))&&(i_is_included_in [n-2;n-1] left_ext) 
-   then  I 1 
-   else default ;;   
+ |None -> unregistered ;;   
     
 
-let rightmost_pivot (I old_info) =
-  match List.assoc_opt old_info [1,2;2,4;7,8] with 
+let rightmost_pivot (W w) (I old_info) =
+  match List.assoc_opt (old_info,W w) (!table_for_rightmost_pivot) with 
   Some(new_info) -> I new_info
-  |None -> default ;;    
+  |None -> unregistered ;;    
 
 let select (x,y,z) n (I old_info) = 
-  match List.assoc_opt ((x,y,z),old_info) [(((n-2,n-1,n),2),3);(((n-3,n-2,n-1),4),5);(((n-2,n-1,n),5),6);(((n-2,n-1,n),8),9)] with 
+  match List.assoc_opt ((x-n,y-n,z-n),old_info) (!table_for_select) with 
   Some(new_info) -> I new_info
-  |None -> default ;;
+  |None -> unregistered ;;
   
 let last_minute_deduction (I info) n =
-    List.assoc_opt info [3,[n-3];5,[n-4];9,[n-6;n-3]] ;;  
+    match List.assoc_opt info (!table_for_last_minute_deductions) with 
+    None -> None
+   |Some f-> f n ;;  
 
 end ;;   
 
@@ -888,7 +874,7 @@ module Medium_mold = struct
     
     let fork (MM(_sols1,ext1,_),MM(_sols2,ext2,_),MM(sols3,ext3,_)) =
       let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-      MM(sols3,final_ext,Extra_info.default);;   ;;
+      MM(sols3,final_ext,Extra_info.unregistered);;   ;;
 
     let forced_elements (MM(_sols, ext,_))= ext ;; 
 
@@ -903,11 +889,11 @@ module Medium_mold = struct
     
     let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
 
-    let rightmost_overflow (u,v,n) (MM(sols,left_ext,info)) 
-           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) left_ext info) ;;
+    let rightmost_overflow (u,v,n) (MM(sols,_left_ext,info)) 
+           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) info) ;;
     
-    let rightmost_pivot (MM(_sols,ext,info)) n (new_sols:solution list) = 
-          MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot info) ;;
+    let rightmost_pivot w (MM(_sols,ext,info)) n (new_sols:solution list) = 
+          MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot w info) ;;
 
     let select (i,j,k) n (MM(_sols,ext,info)) (new_sols:solution list) = 
           MM(new_sols,ext,Extra_info.select (i,j,k) n info) ;;
@@ -1074,7 +1060,8 @@ module Store = struct
         ) left_sols in 
         if new_sols = []
         then Incomplete_treatment(left_pwb)
-        else Finished(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),Medium_mold.rightmost_pivot left_mold n new_sols,true);;    
+        else Finished(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
+            Medium_mold.rightmost_pivot (Point_with_breadth.rightmost_largest_width pwb) left_mold n new_sols,true);;    
             
     exception Explore_fork_possibility_exn of point_with_breadth ;;
                 
