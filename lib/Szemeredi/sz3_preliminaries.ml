@@ -28,7 +28,7 @@ type handle = Sz3_types.handle =
    Discrete
   |Select of int * int * int   
   |Rightmost_overflow of int * int * int 
-  |Rightmost_pivot
+  |Rightmost_pivot of width
   |Fork of int * int * int ;;  
 
 
@@ -743,6 +743,11 @@ let usual_decomposition_opt pwb =
       let m = List.length(List.hd(List.rev temp2)) in 
       List.filter (fun y->List.length(y)=m-offset) temp2 ;; 
 
+   let rightmost_largest_width (PWB(P(FIS(n,_scr),W w),b)) =
+      if b>=(n-2*(w+1))
+      then W(w+1)
+      else W(w) ;;   
+
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -757,6 +762,7 @@ let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra
 let max (PWB(pt,_b)) = Point.max pt ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element (PWB(pt,b)) elt = Private.small_standardization(PWB(Point.remove_element pt elt,b));;
+let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
 let subset_is_admissible pwb subset = 
@@ -803,7 +809,7 @@ let decompose = Memoized.make(fun pwb->
              let left_pwb = Point_with_breadth.remove_element pwb n in 
              let pwc = Point_with_breadth.to_extra_constraints pwb in 
              if Analysis_with_extra_constraints.test_for_rightmost_pivot pwc 
-             then (Rightmost_pivot,left_pwb)
+             then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),left_pwb)
              else 
              (  
              match test_for_rightmost_overflow pwb m with 
@@ -926,7 +932,7 @@ module Handle = struct
 let translate d handle = 
    match handle with 
   Discrete
-| Rightmost_pivot -> handle 
+| Rightmost_pivot(_) -> handle 
 | Select (i,j,k) -> Select (i+d,j+d,k+d)
 | Rightmost_overflow (i,j,k) -> Rightmost_overflow (i+d,j+d,k+d)
 | Fork (i,j,k) -> Fork(i+d,j+d,k+d) ;; 
@@ -1068,7 +1074,7 @@ module Store = struct
         ) left_sols in 
         if new_sols = []
         then Incomplete_treatment(left_pwb)
-        else Finished(Rightmost_pivot,Medium_mold.rightmost_pivot left_mold n new_sols,true);;    
+        else Finished(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),Medium_mold.rightmost_pivot left_mold n new_sols,true);;    
             
     exception Explore_fork_possibility_exn of point_with_breadth ;;
                 
@@ -1180,7 +1186,7 @@ module Store = struct
     Discrete -> (* this should never happen, the discrete case is already treated above *) 
                  raise(With_outside_help_exn(pwb))
    |Select(_,_,_)->select_case_with_outside_help pwb prec_pwb cstr          
-   |Rightmost_pivot->rightmost_pivot_with_outside_help pwb
+   |Rightmost_pivot(_)->rightmost_pivot_with_outside_help pwb
    |Rightmost_overflow(u,v,n)->rightmost_overflow_with_outside_help pwb (u,v,n)
    |Fork(_,_,_)->fork_case_with_outside_help prec_pwb cstr);;
 

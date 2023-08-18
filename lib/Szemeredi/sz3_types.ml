@@ -28,7 +28,7 @@ type handle =
      Discrete
     |Select of int * int * int   
     |Rightmost_overflow of int * int * int 
-    |Rightmost_pivot
+    |Rightmost_pivot of width
     |Fork of int * int * int ;;
 
 type helper = 
