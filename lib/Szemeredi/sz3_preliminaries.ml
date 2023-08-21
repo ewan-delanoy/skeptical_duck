@@ -778,6 +778,17 @@ let width (PWB(pt,_b))= Point.width pt ;;
 end ;;  
 
 
+module Fan = struct 
+
+  let constructor ll =
+    let sorted_ll = il_sort ll in 
+    F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
+
+  let select selector (F ll) =
+      F(List.filter (fun z->not(i_is_included_in selector z)) ll);;  
+
+end ;;   
+
 module Analysis_with_breadth = struct 
 
 module Private = struct
