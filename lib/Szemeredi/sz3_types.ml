@@ -47,3 +47,4 @@ type medium_diagnosis  =
 |Missing_links of point_with_breadth * (int list)
 |Finished of handle  * medium_mold * bool ;;    
  
+type fan = F of int list list ;; 

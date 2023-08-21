@@ -49,6 +49,8 @@ type medium_diagnosis  = Sz3_types.medium_diagnosis  =
  |Missing_links of point_with_breadth * (int list)
  |Finished of handle * medium_mold * bool ;; 
 
+type fan = F of int list list ;; 
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
