@@ -787,6 +787,8 @@ module Fan = struct
   let select selector (F ll) =
       F(List.filter (fun z->not(i_is_included_in selector z)) ll);;  
 
+  let rightmost_overflow n (F ll)= constructor([n]::ll);; 
+
   let rightmost_pivot (complements,n) (F ll)=
    let test =(fun z -> List.for_all (fun (u,v)->not(i_is_included_in [u;v] z)) complements) in 
    F(List.filter_map (fun z->if test z then Some(i_insert n z) else None) ll);;
