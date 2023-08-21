@@ -791,6 +791,7 @@ module Fan = struct
    let test =(fun z -> List.for_all (fun (u,v)->not(i_is_included_in [u;v] z)) complements) in 
    F(List.filter_map (fun z->if test z then Some(i_insert n z) else None) ll);;
 
+  let union (F ll1) (F ll2) = constructor(ll1@ll2) ;;  
 
 end ;;   
 
