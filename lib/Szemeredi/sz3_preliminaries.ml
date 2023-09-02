@@ -758,7 +758,7 @@ let usual_decomposition_opt pwb =
    let atomic_test_for_non_isolation wmax b domain x w = 
        if w>wmax+1 then false else 
         let incl_test = inclusion_test_for_non_isolation wmax b domain w in 
-       (incl_test [x-2*w;x;x-w])
+       (incl_test [x-2*w;x-w;x])
        || 
        (incl_test [x-w;x;x+w]) 
        ||
