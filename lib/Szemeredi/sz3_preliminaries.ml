@@ -750,6 +750,29 @@ let usual_decomposition_opt pwb =
       then W(w+1)
       else W(w) ;;   
 
+    let inclusion_test_for_non_isolation wmax b domain w candidate =
+        if w=wmax+1
+        then (i_is_included_in candidate domain) && (List.hd(candidate)<=b)
+        else i_is_included_in candidate domain  ;;
+
+   let atomic_test_for_non_isolation wmax b domain x w = 
+       if w>wmax+1 then false else 
+        let incl_test = inclusion_test_for_non_isolation wmax b domain w in 
+       (incl_test [x-2*w;x;x-w])
+       || 
+       (incl_test [x-w;x;x+w]) 
+       ||
+       (incl_test [x;x+w;x+2*w]) ;; 
+
+
+   let individual_test_for_non_isolation wmax b domain x=
+       List.exists(atomic_test_for_non_isolation wmax b domain x) (Int_range.range 1 (wmax+1)) ;;
+
+    let nonisolated_version (PWB(P(fis,W wmax),b)) = 
+       let domain = Finite_int_set.to_usual_int_list fis in 
+       let (non_isolated,isolated) = List.partition (individual_test_for_non_isolation wmax b domain) domain in 
+       let new_fis = Finite_int_set.of_usual_int_list non_isolated in 
+       (PWB(P(new_fis,W wmax),b),isolated);;
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -762,6 +785,7 @@ let decompose_wrt_translation pwb =
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
+let nonisolated_version = Private.nonisolated_version ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element (PWB(pt,b)) elt = Private.small_standardization(PWB(Point.remove_element pt elt,b));;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
@@ -982,7 +1006,7 @@ module Store = struct
   module Private = struct
 
   let helpers_ref = ref [
-
+       Help_with_links(PWB(P(FIS(7,[]), W 1),3),[1;4])
   ] ;; 
 
   let pair_level_ref = ref [
