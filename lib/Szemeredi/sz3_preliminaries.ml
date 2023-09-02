@@ -1356,14 +1356,22 @@ module Medium_analysis = struct
             let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
             (n,Diagnosis.to_bare_answer(try_to_compute pwb))
             ) base ;;  
-    
+
+      let walk_inner_web n (w,scr) =
+        Image.image (fun k->walk_scale (w,scr,k) n) (Int_range.range 0 n);;
+
+      let walk_web n data =
+         let data2 = List.flatten(Image.image (fun (width,l)->Image.image(fun scr->(width,scr)) l) data) in 
+         let _ = Image.image (walk_inner_web n) data2 in 
+         () ;; 
     
       end ;;     
     
       let force_compute pwb =Diagnosis.to_bare_answer(Private.try_to_compute pwb);;
       let try_to_compute = Private.try_to_compute ;;
       let walk_scale = Private.walk_scale ;; 
-    
+      let walk_web = Private.walk_web ;; 
+
     end ;;  
     
       
