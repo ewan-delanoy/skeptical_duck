@@ -1275,7 +1275,10 @@ module Store = struct
          |(Some helper) -> apply_helper_to_mold helper pwb mold ;;
 
          let apply_both_help_and_last_minute_deductions_on_mold pwb mold =
-          Medium_mold.last_minute_deduction pwb (apply_current_helplist_to_mold pwb mold);; 
+          let mold2 = Medium_mold.last_minute_deduction pwb (apply_current_helplist_to_mold pwb mold) in 
+          let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb in 
+          Medium_mold.add_links mold2 isolated_points ;; 
+
 
          let apply_both_help_and_last_minute_deductions_on_diagnosis pwb diag =
              match diag with 
