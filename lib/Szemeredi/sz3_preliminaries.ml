@@ -140,11 +140,18 @@ module Find_highest_constraint = struct
   
   let rec for_maximal_width (W w,domain) =
    match for_exact_width (W w,domain,List.rev domain) with 
-   Some (breadth_max) -> Some(breadth_max)
+   Some (cstr) -> Some(cstr)
    |None ->
       if w<2 then None else 
       for_maximal_width (W (w-1),domain) ;;  
   
+  let below_width_bound_pair (W w,bound) domain =
+    match List.find_opt(fun b->
+      i_is_included_in [b;b+(w+1);b+2*(w+1)] domain
+      ) (List.rev(Int_range.range 1 bound)) with 
+    Some bmax ->  Some (C[bmax;bmax+(w+1);bmax+2*(w+1)])
+    | None -> for_maximal_width (W w,domain) ;; 
+
   end ;;
 
 module Finite_int_set = struct 
