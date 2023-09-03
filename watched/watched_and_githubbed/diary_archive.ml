@@ -1,14 +1,87 @@
 (************************************************************************************************************************
-Snippet 124 : 
+Snippet 125 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 123 : Find/replace on two files
+Snippet 124 : 
 ************************************************************************************************************************)
 
+module Snip124=struct
+
+  let maxx x =if x=[] then (-1) else Max.list x ;;
+
+  let mil_order = ((fun x y->
+    let trial1 = Total_ordering.for_integers (maxx x) (maxx y) in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else
+      Total_ordering.silex_for_intlists x y
+    ) : int list Total_ordering_t.t) ;; 
+  
+  let mil_sort = Ordered.sort mil_order ;;
+  
+  let ip =Memoized.make(fun n->
+    mil_sort(List_again.power_set(Int_range.range 1 n)));;
+  
+  let indexed_sums needed_sum_op needed_zero l=
+    let n = List.length l in 
+    let indices = ip n in 
+    Image.image (fun ind->
+      let subset = Image.image (fun t->List.nth l (t-1)) ind in 
+      (ind,List.fold_left needed_sum_op needed_zero subset)) indices ;;
+  
+  let l3_sum (x1,x2,x3) (y1,y2,y3) =  (x1+y1,x2+y2,x3+y3) ;;
+  let l3_zero = (0,0,0) ;;
+  
+  let base3 = [
+    (-1,-1,-1);(-1,-1,1); (-1,1,-1);(-1,1,1);
+    (1,-1,-1);(1,-1,1); (1,1,-1);(1,1,1);
+   ]  ;; 
+  
+  let l1 = [
+    (-1,-1,-1);(-1,-1,1); (-1,1,-1);(-1,1,1);
+    (1,-1,0);(1,0,1); (1,1,0);(1,1,0);
+   ]  ;; 
+  
+  
+  let pre_res1 = indexed_sums l3_sum l3_zero l1 ;;
+  let res1 = List.filter (fun (ind,u)->(ind <> [])&&(u=l3_zero)) pre_res1 ;; 
+  
+  let l2 = [
+    (0,0,-1);(0,-1,1);
+    (-1,1,-1);(-1,1,1);
+    (1,1,-1);(1,1,1);
+   ]  ;; 
+  
+  let pre_res2 = indexed_sums l3_sum l3_zero l2 ;;
+  let res2 = List.filter (fun (ind,u)->(ind <> [])&&(u=l3_zero)) pre_res2 ;; 
+  
+  let l4_sum (x1,x2,x3,x4) (y1,y2,y3,y4) =  (x1+y1,x2+y2,x3+y3,x4+y4) ;;
+  let l4_zero = (0,0,0,0) ;;
+  
+  let base4 = [
+    (-1,-1,-1);(-1,-1,1); (-1,1,-1);(-1,1,1);
+    (1,-1,-1);(1,-1,1); (1,1,-1);(1,1,1);
+   ]  ;; 
+  
+  let l3 = [
+    (0,1,-1,-1);(0,1,-1,1);(0,1,1,-1);(0,1,1,1);
+    (1,-1,-1,-1);(1,-1,-1,1);(1,-1,1,-1);(1,-1,1,1);
+    (1,1,-1,-1);(1,1,-1,1);(1,1,1,-1);(1,1,1,1)
+   ]  ;; 
+  
+  let pre_res3 = indexed_sums l4_sum l4_zero l3 ;;
+  let res3 = List.filter (fun (ind,u)->(ind <> [])&&(u=l4_zero)) pre_res3 ;; 
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 123 : Find/replace on two files
+************************************************************************************************************************)
 module Snip123=struct
 
   let ap1 = Absolute_path.of_string "lib/Szemeredi/sz3_types.ml";;

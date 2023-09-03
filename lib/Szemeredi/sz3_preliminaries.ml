@@ -783,6 +783,17 @@ let usual_decomposition_opt pwb =
        let (non_isolated,isolated) = List.partition (individual_test_for_non_isolation wmax b domain) domain in 
        let new_fis = Finite_int_set.of_usual_int_list non_isolated in 
        (PWB(P(new_fis,W wmax),b),isolated);;
+    
+    let remove_element (PWB(P(fis,W wmax),b)) elt = 
+      let new_fis = Finite_int_set.remove_element fis elt in 
+      let new_domain = Finite_int_set.to_usual_int_list new_fis in 
+      match Find_highest_constraint.below_width_bound_pair (W wmax,b) new_domain with
+      None -> PWB(P(new_fis,W 0),0)
+      |Some(C cstr)->
+        let nth = (fun k->List.nth cstr (k-1)) in 
+        let new_wmax = (nth 2)-(nth 1)-1 in 
+        PWB(P(new_fis,W new_wmax),nth 1);;
+
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -797,7 +808,7 @@ let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let to_extra_constraints = Private.to_extra_constraints ;; 
-let remove_element (PWB(pt,b)) elt = Private.small_standardization(PWB(Point.remove_element pt elt,b));;
+let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
