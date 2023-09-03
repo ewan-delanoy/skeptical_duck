@@ -180,21 +180,24 @@ module Finite_int_set = struct
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
-  let remove_element (FIS(n,scrappers)) k=
-       let new_scrappers = i_insert k scrappers in 
-       if k <> n then FIS(n,new_scrappers) else 
-       if scrappers = Int_range.range 1 (n-1)
-       then empty_set
-       else   
-       let new_z =  Private.to_usual_int_list (FIS(n-1,new_scrappers)) in 
-       let new_max = List.hd(List.rev new_z) in 
-       FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
+  let remove_element fis k=
+    let (FIS(n,scrappers)) = fis in 
+    if (k>n)||(k<1) then fis else 
+    let new_scrappers = i_insert k scrappers in 
+    if k <> n then FIS(n,new_scrappers) else 
+    if scrappers = Int_range.range 1 (n-1)
+    then empty_set
+    else   
+    let new_z =  Private.to_usual_int_list (FIS(n-1,scrappers)) in 
+    let new_max = List.hd(List.rev new_z) in 
+    FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
 
   (*
   
   remove_element (FIS(10,[3;7;8;9])) 10 ;;
   remove_element (FIS(3,[])) 3 ;;
   remove_element (FIS(1,[])) 1 ;;
+  remove_element (FIS(1,[])) 4 ;;
 
   *)
 
@@ -1006,7 +1009,8 @@ module Store = struct
   module Private = struct
 
   let helpers_ref = ref [
-       Help_with_links(PWB(P(FIS(7,[]), W 1),3),[1;4])
+       Help_with_links(PWB(P(FIS(7,[]), W 1),3),[1;4]);
+       Help_with_links(PWB(P(FIS(7,[2]), W 1),3),[4]);
   ] ;; 
 
   let pair_level_ref = ref [
@@ -1017,8 +1021,6 @@ module Store = struct
   ] ;;
   let low_level_ref = ref [] ;;
   
-    
-
     let translate_pair d (handle,mold) =
          (Handle.translate d handle,Medium_mold.translate d mold);;
 
