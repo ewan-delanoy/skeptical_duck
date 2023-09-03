@@ -129,28 +129,28 @@ end ;;
 
 module Find_highest_constraint = struct
 
-  let rec for_exact_width (W w,domain,to_be_treated) =
+  let rec for_exact_width (W w) domain to_be_treated =
     match to_be_treated with 
     [] -> None 
     |p::others ->
        if p<=2*w then None else 
        if i_is_included_in [p-2*w;p-w] domain 
        then Some (C[p-2*w;p-w;p])
-       else for_exact_width (W w,domain,others) ;;     
+       else for_exact_width (W w) domain others ;;     
   
-  let rec for_maximal_width (W w,domain) =
-   match for_exact_width (W w,domain,List.rev domain) with 
+  let rec below_maximal_width (W w) domain =
+   match for_exact_width (W w) domain (List.rev domain) with 
    Some (cstr) -> Some(cstr)
    |None ->
       if w<2 then None else 
-      for_maximal_width (W (w-1),domain) ;;  
+      below_maximal_width (W (w-1)) domain ;;  
   
   let below_width_bound_pair (W w,bound) domain =
     match List.find_opt(fun b->
       i_is_included_in [b;b+(w+1);b+2*(w+1)] domain
       ) (List.rev(Int_range.range 1 bound)) with 
     Some bmax ->  Some (C[bmax;bmax+(w+1);bmax+2*(w+1)])
-    | None -> for_maximal_width (W w,domain) ;; 
+    | None -> below_maximal_width (W w) domain ;; 
 
   end ;;
 
@@ -227,21 +227,21 @@ module Point = struct
 
   let highest_constraint_opt (P(fis,W w)) = 
     if w<1 then None else
-    Find_highest_constraint.for_maximal_width 
-      (W w,Finite_int_set.to_usual_int_list fis);;
+    Find_highest_constraint.below_maximal_width 
+      (W w) (Finite_int_set.to_usual_int_list fis);;
 
   let is_discrete pt = (highest_constraint_opt(pt)=None) ;; 
 
   let is_nontrivial (P(fis,w)) =
     let domain = Finite_int_set.to_usual_int_list fis in
-    ((Find_highest_constraint.for_maximal_width (w,domain)) <> None);;
+    ((Find_highest_constraint.below_maximal_width w domain) <> None);;
 
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
 
   let remove_element (P(fis,w)) pivot = 
     let new_fis = Finite_int_set.remove_element fis pivot in 
     let new_w = (
-      match Find_highest_constraint.for_maximal_width (w,Finite_int_set.to_usual_int_list new_fis) with
+      match Find_highest_constraint.below_maximal_width w (Finite_int_set.to_usual_int_list new_fis) with
       None -> 0
       |Some(C(l))->(List.nth l 1)-(List.nth l 0)
     ) in 
@@ -252,7 +252,7 @@ module Point = struct
   let supporting_set (P(fis,_)) = Finite_int_set.to_usual_int_list fis ;; 
 
   let subset_is_admissible (P(_,w)) subset =
-      ((Find_highest_constraint.for_maximal_width (w,subset)) =None);;
+      ((Find_highest_constraint.below_maximal_width w subset) =None);;
 
   let translate d (P(fis,w)) = 
       P(Finite_int_set.translate d fis,w);;
