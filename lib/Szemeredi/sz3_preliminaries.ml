@@ -1199,22 +1199,7 @@ module Store = struct
          else Some diag
       ;;
 
-    let minimal_expansions_opt_without_outside_help pwb = 
-      let opt1 = no_expansions_on_grounded_point_opt pwb in
-      if opt1<>None
-      then let (handle,mold) = Option.get opt1 in CD_Finished(handle,Medium_mold.to_crude_mold mold,false)
-      else
-      let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
-      if opt2 = None 
-      then let domain = Point_with_breadth.supporting_set pwb in CD_Finished(Discrete,Crude_mold.discrete domain,false)
-      else
-      let (prec_pwb,C cstr) = Option.get opt2 in 
-      let opt3 = no_expansions_on_grounded_point_opt prec_pwb in 
-      if opt3 = None
-      then CD_Missing_treatment(prec_pwb)
-      else 
-      let (_,medium_prec_mold) = Option.get opt3 in 
-      let prec_mold = Medium_mold.to_crude_mold medium_prec_mold in 
+    let minimal_expansions_opt_without_outside_help pwb prec_pwb prec_mold (C cstr)= 
       let trial1 =  explore_select_possibility_on_grounded_point pwb prec_pwb cstr prec_mold in 
       if not(Crude_diagnosis.is_unfinished trial1)
       then trial1
@@ -1278,26 +1263,18 @@ module Store = struct
               explore_fork_possibility_on_grounded_point prec_pwb cstr prec_ext;;  
 
 
-  let minimal_expansions_opt_with_outside_help pwb handle = 
-    match no_expansions_on_grounded_point_opt pwb with  
-        Some(handle,mold) -> CD_Finished(handle,Medium_mold.to_crude_mold mold,false)
-       |None ->
-        (match Point_with_breadth.usual_decomposition_opt pwb with 
-          None -> let domain = Point_with_breadth.supporting_set pwb in 
-                  CD_Finished(Discrete,Crude_mold.discrete domain,false)
-          |Some(prec_pwb,C cstr) -> 
+  let minimal_expansions_opt_with_outside_help pwb prec_pwb (C cstr) handle = 
     match handle with
-    Discrete -> (* this should never happen, the discrete case is already treated above *) 
-                 raise(With_outside_help_exn(pwb))
+    Discrete -> CD_Finished(Discrete,Crude_mold.discrete (Point_with_breadth.supporting_set pwb),false)
    |Select(_,_,_)->select_case_with_outside_help pwb prec_pwb cstr          
    |Rightmost_pivot(_)->rightmost_pivot_with_outside_help pwb
    |Rightmost_overflow(u,v,n)->rightmost_overflow_with_outside_help pwb (u,v,n)
-   |Fork(_,_,_)->fork_case_with_outside_help prec_pwb cstr);;
+   |Fork(_,_,_)->fork_case_with_outside_help prec_pwb cstr;;
 
-  let minimal_expansions_opt pwb ~use_outside_help =
+  let minimal_expansions_opt pwb prec_pwb prec_mold (C cstr)~use_outside_help =
       if use_outside_help
-      then minimal_expansions_opt_with_outside_help pwb (Analysis_with_breadth.handle pwb)
-      else minimal_expansions_opt_without_outside_help pwb ;;
+      then minimal_expansions_opt_with_outside_help pwb prec_pwb (C cstr) (Analysis_with_breadth.handle pwb)
+      else minimal_expansions_opt_without_outside_help pwb prec_pwb prec_mold (C cstr);;
 
       module Help = struct 
 
@@ -1370,15 +1347,16 @@ module Store = struct
         (
           match no_expansions_on_grounded_point_opt prec_pwb with  
              None -> Missing_treatment(prec_pwb)
-            |Some(_handle,prec_mold) -> 
-              match Help.apply_help_on_diagnosis pwb (minimal_expansions_opt pwb ~use_outside_help) with 
+            |Some(_handle,medium_prec_mold) -> 
+              let prec_mold = Medium_mold.to_crude_mold medium_prec_mold in 
+              match Help.apply_help_on_diagnosis pwb (minimal_expansions_opt pwb prec_pwb prec_mold (C cstr) ~use_outside_help) with 
               CD_Missing_treatment(pwb2) ->  Missing_treatment(pwb2)
               |CD_Incomplete_treatment (pwb2) ->  Incomplete_treatment (pwb2)
               |CD_Missing_links (pwb2,links) -> Missing_links (pwb2,links)
               |CD_Finished(handler,old_mold,is_new) -> 
                   let (sols,ext) = Crude_mold.solutions_and_forced_elements old_mold 
-                  and old_torsion = Medium_mold.torsion prec_mold in 
-                  let m1 = Crude_mold.measure (Medium_mold.to_crude_mold prec_mold)
+                  and old_torsion = Medium_mold.torsion medium_prec_mold in 
+                  let m1 = Crude_mold.measure (Medium_mold.to_crude_mold medium_prec_mold)
                   and m2 = Crude_mold.measure old_mold in 
                   let update_is_a_selection = (m1=m2) in 
                   let new_torsion = Extra_info.update_torsion 
