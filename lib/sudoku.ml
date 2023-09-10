@@ -440,7 +440,7 @@ module Grid = struct
       
       let to_surrounded_string gwd special_cells = "\n\n\n"^(to_string gwd special_cells)^"\n\n\n" ;;  
 
-      let print_out (fmt:Format.formatter) bg=
+      let hidden_print_out (fmt:Format.formatter) bg=
       Format.fprintf fmt "@[%s@]" (to_surrounded_string bg []);;
 
       let origin = constructor  Bare_grid.origin  ;; 
@@ -499,7 +499,7 @@ module Grid = struct
     let minimizers = Private.minimizers ;; 
     let possibilities gwd cell = Possibilities.for_cell (Private.grid gwd) cell ;;
     let possibilities_for_deductor gwd ded= Possibilities.for_deductor (Private.grid gwd) ded ;;
-    let print_out = Private.print_out ;; 
+    let hidden_print_out = Private.hidden_print_out ;; 
 
 end ;;   
 
