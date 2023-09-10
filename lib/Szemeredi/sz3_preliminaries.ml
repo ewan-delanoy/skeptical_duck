@@ -44,7 +44,7 @@ type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * ex
 
 type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
-type medium_diagnosis  = Sz3_types.medium_diagnosis  = 
+type diagnosis  = Sz3_types.diagnosis  = 
   Missing_treatment of point_with_breadth 
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
@@ -986,7 +986,7 @@ module Diagnosis = struct
   | Missing_links(_,_) -> diag 
   | Finished(handle,mold,is_new) -> Finished(Handle.translate d handle,Medium_mold.translate d mold,is_new) ;; 
   
-  exception To_bare_answer_exn of medium_diagnosis ;; 
+  exception To_bare_answer_exn of diagnosis ;; 
 
   let to_bare_answer  diag = match diag with
     Missing_treatment(_) 
@@ -1346,7 +1346,7 @@ module Store = struct
 
 module Medium_analysis = struct 
 
-  exception Walk_scale_exn of int * medium_diagnosis ;; 
+  exception Walk_scale_exn of int * diagnosis ;; 
   exception Nonstandard_handler_exn of point_with_breadth * handle * medium_mold ;;
     
     module Private = struct
@@ -1398,7 +1398,7 @@ module Medium_analysis = struct
       
 module Safe_initialization = struct 
 
-exception Undefined_during_check_exn of point_with_breadth * medium_diagnosis ;;   
+exception Undefined_during_check_exn of point_with_breadth * diagnosis ;;   
 exception Unequal_during_check_exn of (point_with_breadth * (handle * medium_mold) * (handle * medium_mold)) ;;
 
 

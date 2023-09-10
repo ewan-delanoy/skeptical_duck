@@ -43,7 +43,7 @@ type torsionfree_mold = TFM of (solution list) * extension_data ;;
 
 type medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
-type medium_diagnosis  = 
+type diagnosis  = 
  Missing_treatment of point_with_breadth 
 |Incomplete_treatment of point_with_breadth 
 |Missing_links of point_with_breadth * (int list)
