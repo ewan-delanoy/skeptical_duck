@@ -137,11 +137,11 @@ let constructor sols ext= CM(sols,ext) ;;
 
 let measure (CM(sols, _ext)) = List.length(List.hd sols) ;; 
 
-let rightmost_overflow (CM(sols,ext)) = CM(sols,[]) ;; 
+let rightmost_overflow (CM(sols,_ext)) = CM(sols,[]) ;; 
 
 let rightmost_pivot (CM(_old_sols,ext)) n (new_sols:solution list) = CM(new_sols,i_insert n ext) ;;
 
-let select (CM(sols,ext)) new_sols = CM(new_sols,ext);;
+let select (CM(_sols,ext)) new_sols = CM(new_sols,ext);;
 
 let solutions (CM(sols, _ext))= sols ;; 
 
@@ -932,14 +932,12 @@ end ;;
 
 let discrete _domain = Private.unregistered  ;;
 
-let translate (d:int) (I k) = (I k) ;;  
+let translate (_d:int) (I k) = (I k) ;;  
 
 let update_torsion
-  ~preceding_point:point ~preceding_torsion:old_torsion 
-  ~current_point:point cstr (update_is_a_selection:bool) = 
+  ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:extra_info) 
+  ~current_point:(_pwb:point_with_breadth) (_cstr:constraint_t) (_update_is_a_selection:bool) = 
   Private.unregistered  ;;
-     
-
 
 end ;;   
 
@@ -953,7 +951,7 @@ module Medium_mold = struct
 
   let to_crude_mold (MM(sols,ext,_torsion)) = CM(sols,ext) ;; 
 
-  let torsion (MM(sols, ext,torsion)) = torsion ;; 
+  let torsion (MM(_sols, _ext,torsion)) = torsion ;; 
 
   let translate d (MM(sols, ext,torsion)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
@@ -1379,13 +1377,13 @@ module Store = struct
               |CD_Missing_links (pwb2,links) -> Missing_links (pwb2,links)
               |CD_Finished(handler,old_mold,is_new) -> 
                   let (sols,ext) = Crude_mold.solutions_and_forced_elements old_mold 
-                  and old_torsion = Medium_mold.torsion in 
+                  and old_torsion = Medium_mold.torsion prec_mold in 
                   let m1 = Crude_mold.measure (Medium_mold.to_crude_mold prec_mold)
                   and m2 = Crude_mold.measure old_mold in 
                   let update_is_a_selection = (m1=m2) in 
                   let new_torsion = Extra_info.update_torsion 
                   ~preceding_point:prec_pwb
-                    ~preceding_torsion:old_torsion ~current_point:pwb cstr update_is_a_selection in 
+                    ~preceding_torsion:old_torsion ~current_point:pwb (C cstr) update_is_a_selection in 
                   Finished(handler,Medium_mold.constructor sols ext new_torsion,is_new)        
         ) );; 
 
