@@ -35,9 +35,11 @@ type helper =
   Help_with_solution of point_with_breadth * solution 
  |Help_with_links of point_with_breadth * (int list) ;; 
 
-type crude_mold = CM of (solution list) * extension_data ;;
+type fan = F of int list list ;; 
 
 type torsion = I of int ;; 
+
+type torsionfree_mold = TFM of (solution list) * extension_data ;;
 
 type medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
@@ -47,4 +49,3 @@ type medium_diagnosis  =
 |Missing_links of point_with_breadth * (int list)
 |Finished of handle  * medium_mold * bool ;;    
  
-type fan = F of int list list ;; 
