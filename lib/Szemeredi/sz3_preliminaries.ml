@@ -44,22 +44,11 @@ type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * ex
 
 type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
-type crude_diagnosis   = 
-    CD_Missing_treatment of point_with_breadth 
-   |CD_Incomplete_treatment of point_with_breadth 
-   |CD_Missing_links of point_with_breadth * (int list)
-   |CD_Finished of handle * torsionfree_mold * bool ;; 
-
 type medium_diagnosis  = Sz3_types.medium_diagnosis  = 
   Missing_treatment of point_with_breadth 
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
  |Finished of handle * medium_mold * bool ;; 
-
-
-
-
-
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -965,27 +954,10 @@ module Medium_mold = struct
     
 end ;;
 
-module Crude_diagnosis = struct 
- 
-  let is_unfinished  = function
-  CD_Missing_treatment(_) 
-| CD_Incomplete_treatment (_) 
-| CD_Missing_links(_,_) -> true
-| CD_Finished(_,_,_) -> false ;;  
-    
-end ;;  
+(*
 
 
-module Medium_diagnosis = struct 
-  
-let to_crude_diagnosis = function   
-  Missing_treatment(pwb) ->  CD_Missing_treatment(pwb)
-|Incomplete_treatment(pwb) -> CD_Incomplete_treatment(pwb)
-|Missing_links(pwb,links) -> CD_Missing_links(pwb,links)
-|Finished (handle,medium,is_new) -> CD_Finished (handle,Medium_mold.to_torsionfree_mold medium,is_new) ;; 
-
-
-end ;;  
+  *)
 
 
 module Handle = struct 
@@ -1048,6 +1020,31 @@ module Store = struct
   ] ;;
   let low_level_ref = ref [] ;;
   
+  type crude_diagnosis   = 
+    CD_Missing_treatment of point_with_breadth 
+   |CD_Incomplete_treatment of point_with_breadth 
+   |CD_Missing_links of point_with_breadth * (int list)
+   |CD_Finished of handle * torsionfree_mold * bool ;; 
+
+   module Crude_diagnosis = struct 
+ 
+    let is_unfinished  = function
+    CD_Missing_treatment(_) 
+  | CD_Incomplete_treatment (_) 
+  | CD_Missing_links(_,_) -> true
+  | CD_Finished(_,_,_) -> false ;;  
+  
+   let of_medium_diagnosis = function 
+     Missing_treatment(pwb) ->  CD_Missing_treatment(pwb)
+  |Incomplete_treatment(pwb) -> CD_Incomplete_treatment(pwb)
+  |Missing_links(pwb,links) -> CD_Missing_links(pwb,links)
+  |Finished (handle,medium,is_new) -> CD_Finished (handle,Medium_mold.to_torsionfree_mold medium,is_new) ;; 
+  
+      
+  end ;;  
+  
+
+
     let translate_pair d (handle,mold) =
          (Handle.translate d handle,Torsionfree_mold.translate d mold);;
 
