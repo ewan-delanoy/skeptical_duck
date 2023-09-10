@@ -37,9 +37,9 @@ type helper =
 
 type crude_mold = CM of (solution list) * extension_data ;;
 
-type extra_info = I of int ;; 
+type torsion = I of int ;; 
 
-type medium_mold = MM of (solution list) * extension_data * extra_info ;;    
+type medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
 type medium_diagnosis  = 
  Missing_treatment of point_with_breadth 

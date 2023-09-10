@@ -39,9 +39,9 @@ type helper = Sz3_types.helper =
 type crude_mold = Sz3_types.crude_mold = CM of (solution list) * extension_data ;;  
 
 
-type extra_info = Sz3_types.extra_info = I of int ;; 
+type torsion = Sz3_types.torsion = I of int ;; 
 
-type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * extra_info ;;    
+type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * torsion ;;    
 
 type crude_diagnosis   = 
     CD_Missing_treatment of point_with_breadth 
@@ -922,7 +922,7 @@ let standard_solution = Private.standard_solution ;;
 end ;;   
   
 
-module Extra_info = struct 
+module Torsion = struct 
 
 module Private = struct 
 
@@ -932,10 +932,12 @@ end ;;
 
 let discrete _domain = Private.unregistered  ;;
 
+let extra_links (I _k) = [] ;;
+
 let translate (_d:int) (I k) = (I k) ;;  
 
 let update_torsion
-  ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:extra_info) 
+  ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:torsion) 
   ~current_point:(_pwb:point_with_breadth) (_cstr:constraint_t) (_update_is_a_selection:bool) = 
   Private.unregistered  ;;
 
@@ -945,9 +947,12 @@ end ;;
 module Medium_mold = struct 
 
 
-  let constructor sols ext torsion = MM(sols,ext,torsion) ;; 
+  let constructor pwb sols ext torsion = 
+    let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
+    and extra_links = Torsion.extra_links torsion in 
+    MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion) ;; 
 
-  let discrete domain = MM([domain],domain,Extra_info.discrete domain) ;;  
+  let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
   let to_crude_mold (MM(sols,ext,_torsion)) = CM(sols,ext) ;; 
 
@@ -955,50 +960,9 @@ module Medium_mold = struct
 
   let translate d (MM(sols, ext,torsion)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
-    MM(Image.image tr sols,tr ext,torsion) ;; 
-
-    (* 
-    let add_links (MM(sols,ext,extra_info)) links = MM(sols,i_merge links ext,extra_info) ;;
-
-    let add_solution (MM(sols,ext,extra_info)) new_sol = MM(il_insert new_sol sols,ext,extra_info) ;;
-
-    let discrete domain = MM([domain],domain,Extra_info.discrete domain) ;;   
+    MM(Image.image tr sols,tr ext,torsion) ;;  
     
-    let fork (MM(_sols1,ext1,_),MM(_sols2,ext2,_),MM(sols3,ext3,_)) =
-      let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-      MM(sols3,final_ext,Extra_info.unregistered);;   ;;
-
-    let forced_elements (MM(_sols, ext,_))= ext ;; 
-
-    let last_minute_deduction pwb mold = 
-      let n = Point_with_breadth.max pwb in 
-      let (MM(sols,ext,info)) = mold in 
-      match Extra_info.last_minute_deduction info n with 
-      None -> mold 
-      |Some extra_forced_elements->
-           MM(sols,i_merge extra_forced_elements ext,info) ;;
-
-    
-    let measure (MM(sols, _ext,_)) = List.length(List.hd sols) ;; 
-
-    let rightmost_overflow (u,v,n) (MM(sols,_left_ext,info)) 
-           = MM(sols,[],Extra_info.rightmost_overflow (u,v,n) info) ;;
-    
-    let rightmost_pivot w (MM(_sols,ext,info)) n (new_sols:solution list) = 
-          MM(new_sols,i_insert n ext,Extra_info.rightmost_pivot w info) ;;
-
-    let select (i,j,k) n (MM(_sols,ext,info)) (new_sols:solution list) = 
-          MM(new_sols,ext,Extra_info.select (i,j,k) n info) ;;
-
-    let solutions (MM(sols, _ext,_))= sols ;; 
-    
-    let solutions_and_forced_elements (MM(sols, ext,_))= (sols,ext) ;;  
-    
-    *)
-    
-    
-    
-  end ;;
+end ;;
 
 module Crude_diagnosis = struct 
  
@@ -1323,16 +1287,11 @@ module Store = struct
           None -> mold
          |(Some helper) -> apply_helper_to_mold helper pwb mold ;;
 
-         let apply_help_on_mold pwb mold = 
-          let mold2 = apply_current_helplist_to_mold pwb mold in 
-          let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb in 
-          Crude_mold.add_links mold2 isolated_points ;; 
-
-         let apply_help_on_diagnosis pwb diag =
+         let apply_current_helplist_on_diagnosis pwb diag =
              match diag with 
               CD_Missing_treatment(_) |CD_Incomplete_treatment (_) |CD_Missing_links (_,_) -> diag
              |CD_Finished(handler,mold,is_new) -> 
-              CD_Finished(handler,apply_help_on_mold pwb mold,is_new) ;;
+              CD_Finished(handler,apply_current_helplist_to_mold pwb mold,is_new) ;;
 
       end ;;   
         
@@ -1349,7 +1308,7 @@ module Store = struct
              None -> Missing_treatment(prec_pwb)
             |Some(_handle,medium_prec_mold) -> 
               let prec_mold = Medium_mold.to_crude_mold medium_prec_mold in 
-              match Help.apply_help_on_diagnosis pwb (minimal_expansions_opt pwb prec_pwb prec_mold (C cstr) ~use_outside_help) with 
+              match Help.apply_current_helplist_on_diagnosis pwb (minimal_expansions_opt pwb prec_pwb prec_mold (C cstr) ~use_outside_help) with 
               CD_Missing_treatment(pwb2) ->  Missing_treatment(pwb2)
               |CD_Incomplete_treatment (pwb2) ->  Incomplete_treatment (pwb2)
               |CD_Missing_links (pwb2,links) -> Missing_links (pwb2,links)
@@ -1359,10 +1318,10 @@ module Store = struct
                   let m1 = Crude_mold.measure (Medium_mold.to_crude_mold medium_prec_mold)
                   and m2 = Crude_mold.measure old_mold in 
                   let update_is_a_selection = (m1=m2) in 
-                  let new_torsion = Extra_info.update_torsion 
+                  let new_torsion = Torsion.update_torsion 
                   ~preceding_point:prec_pwb
                     ~preceding_torsion:old_torsion ~current_point:pwb (C cstr) update_is_a_selection in 
-                  Finished(handler,Medium_mold.constructor sols ext new_torsion,is_new)        
+                  Finished(handler,Medium_mold.constructor pwb sols ext new_torsion,is_new)        
         ) );; 
 
   let compute_opt pwb ~use_outside_help=
