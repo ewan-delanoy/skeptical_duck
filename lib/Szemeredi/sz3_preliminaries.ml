@@ -1006,6 +1006,17 @@ module Diagnosis = struct
 
   end ;;  
 
+module Grocery = struct 
+
+let empty_one = {
+  helpers = [];
+  pair_level = [];
+  triple_level  = [];
+  low_level = [];
+}  ;;  
+
+end ;;  
+
 module Store = struct 
 
   exception Select_case_opt_exn of point_with_breadth ;;
@@ -1348,7 +1359,9 @@ module Store = struct
   
    
   let compute_opt = Private.compute_opt ;;
+  let get_low_level () = (!(Private.low_level_ref)) ;; 
   let reset_low_level = Private.reset_low_level ;;
+  let set_low_level v = (Private.low_level_ref:=v) ;; 
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
   let unsafe_triple_level_add = Private.unsafe_triple_level_add ;; 
@@ -1421,7 +1434,7 @@ module Private = struct
    let counterexamples_ref = ref [];;
 
   let check_for_triple (w,scr,b) f must_return_to_old_state= 
-    let old_state = (!(Store.Private.low_level_ref)) in 
+    let old_state = Store.get_low_level () in 
      let analize =(fun n->
        let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
        let diag = Medium_analysis.try_to_compute pwb in 
@@ -1435,7 +1448,7 @@ module Private = struct
      let _ = (
        for k= 1 to max_size do analize k done;
        if must_return_to_old_state 
-       then Store.Private.low_level_ref:=old_state
+       then Store.set_low_level old_state
      ) in 
      let counterexamples = (!counterexamples_ref) in 
      if counterexamples <> []
@@ -1443,10 +1456,10 @@ module Private = struct
      else () ;;
       
    let check_for_pair (w,scr) g = 
-    let old_state = (!(Store.Private.low_level_ref)) in 
+    let old_state = Store.get_low_level () in 
     (
     for b= 0 to max_breadth do check_for_triple (w,scr,b) (g b) false done;
-    Store.Private.low_level_ref:=old_state
+    Store.set_low_level old_state
     )
   ;;
        
