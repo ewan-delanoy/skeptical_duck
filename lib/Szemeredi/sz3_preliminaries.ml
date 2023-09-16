@@ -1029,6 +1029,8 @@ module Store = struct
 
   module Private = struct
 
+  let grocery_ref = ref (Grocery.empty_one);;  
+
   let helpers_ref = ref [
     (*
        Help_with_links(PWB(P(FIS(7,[]), W 1),3),[1;4]);
