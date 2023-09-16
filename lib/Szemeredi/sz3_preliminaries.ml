@@ -1025,6 +1025,7 @@ module Store = struct
   
   exception With_outside_help_exn of point_with_breadth ;;
   exception Missing_prelude_to_link_exn of point_with_breadth * point_with_breadth ;;
+  exception Impatient_eval_exn of point_with_breadth ;;
 
   module Private = struct
 
@@ -1355,11 +1356,19 @@ module Store = struct
        );;
     let reset_low_level () = (low_level_ref:=[]) ;;
 
+  let impatient_eval pwb =
+     match compute_opt pwb ~use_outside_help:false with 
+     Finished(_,mold,_)-> mold 
+    |Missing_treatment(_)
+    |Incomplete_treatment(_)
+    | Missing_links(_,_) -> raise(Impatient_eval_exn(pwb));;
+
   end ;;     
   
    
-  let compute_opt = Private.compute_opt ;;
+  let experimental_eval pwb = Private.compute_opt pwb ~use_outside_help:true ;;
   let get_low_level () = (!(Private.low_level_ref)) ;; 
+  let impatient_eval = Private.impatient_eval ;;
   let reset_low_level = Private.reset_low_level ;;
   let set_low_level v = (Private.low_level_ref:=v) ;; 
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
@@ -1377,7 +1386,7 @@ module Medium_analysis = struct
     module Private = struct
     
       let try_to_compute_on_grounded_point pwb = 
-        let diag = Store.compute_opt pwb ~use_outside_help:true in 
+        let diag = Store.experimental_eval pwb  in 
         let _ =(match diag with 
          Missing_treatment(_) |Incomplete_treatment (_) |Missing_links (_,_) -> ()
         |Finished(handler,mold,is_new)->
