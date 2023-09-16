@@ -37,7 +37,7 @@ type helper =
 
 type fan = F of int list list ;; 
 
-type torsion = I of int ;; 
+type torsion = T of (int*fan) list ;; 
 
 type torsionfree_mold = TFM of (solution list) * extension_data ;;
 
@@ -49,3 +49,9 @@ type diagnosis  =
 |Missing_links of point_with_breadth * (int list)
 |Finished of handle  * mold * bool ;;    
  
+type grocery = {
+  helpers : helper list;
+  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
+  low_level : (point_with_breadth * (handle * mold)) list;
+} ;; 

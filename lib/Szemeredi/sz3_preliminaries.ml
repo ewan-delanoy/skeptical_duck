@@ -36,9 +36,9 @@ type helper = Sz3_types.helper =
    Help_with_solution of point_with_breadth * solution 
   |Help_with_links of point_with_breadth * (int list) ;; 
 
-type fan = F of int list list ;; 
+type fan = Sz3_types.fan = F of int list list ;; 
 
-type torsion = Sz3_types.torsion = I of int ;;   
+type torsion = Sz3_types.torsion = T of (int*fan) list ;;   
 
 type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * extension_data ;;  
 
@@ -49,6 +49,14 @@ type diagnosis  = Sz3_types.diagnosis  =
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
  |Finished of handle * mold * bool ;; 
+
+type grocery =  Sz3_types.grocery = {
+  helpers : helper list;
+  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
+  low_level : (point_with_breadth * (handle * mold)) list;
+} ;; 
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -846,8 +854,11 @@ module Fan = struct
     let sorted_ll = il_sort ll in 
     F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
 
+  let core (F ll) = i_fold_intersect ll ;; 
+
   let impose (C cstr) (F rays) =  F(List.filter (fun ray->not(i_is_included_in cstr ray)) rays);;
   
+  let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
 end ;;   
 
@@ -908,15 +919,22 @@ module Torsion = struct
 
 module Private = struct 
 
-let unregistered = I 0 ;;
+let unregistered = T [] ;;
 
 end ;;   
 
 let discrete _domain = Private.unregistered  ;;
 
-let extra_links (I _k) = [] ;;
+let extra_links (T data) = 
+  match data with 
+   [] -> []
+  |(idx1,fan1) :: _ ->
+     if idx1 = 0 
+     then Fan.core fan1
+     else []  ;;
 
-let translate (_d:int) (I k) = (I k) ;;  
+let translate (d:int) (T data) = 
+    (T (Image.image (fun (idx,fan)->(idx,Fan.translate d fan)) data)) ;;  
 
 let update_torsion
   ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:torsion) 
