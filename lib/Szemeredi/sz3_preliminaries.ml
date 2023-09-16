@@ -42,13 +42,13 @@ type torsion = Sz3_types.torsion = I of int ;;
 
 type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * extension_data ;;  
 
-type medium_mold = Sz3_types.medium_mold = MM of (solution list) * extension_data * torsion ;;    
+type mold = Sz3_types.mold = MM of (solution list) * extension_data * torsion ;;    
 
 type diagnosis  = Sz3_types.diagnosis  = 
   Missing_treatment of point_with_breadth 
  |Incomplete_treatment of point_with_breadth 
  |Missing_links of point_with_breadth * (int list)
- |Finished of handle * medium_mold * bool ;; 
+ |Finished of handle * mold * bool ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -846,16 +846,8 @@ module Fan = struct
     let sorted_ll = il_sort ll in 
     F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
 
-  let select selector (F ll) =
-      F(List.filter (fun z->not(i_is_included_in selector z)) ll);;  
-
-  let rightmost_overflow n (F ll)= constructor([n]::ll);; 
-
-  let rightmost_pivot (complements,n) (F ll)=
-   let test =(fun z -> List.for_all (fun (u,v)->not(i_is_included_in [u;v] z)) complements) in 
-   F(List.filter_map (fun z->if test z then Some(i_insert n z) else None) ll);;
-
-  let union (F ll1) (F ll2) = constructor(ll1@ll2) ;;  
+  let impose (C cstr) (F rays) =  F(List.filter (fun ray->not(i_is_included_in cstr ray)) rays);;
+  
 
 end ;;   
 
@@ -1008,8 +1000,10 @@ module Store = struct
   module Private = struct
 
   let helpers_ref = ref [
+    (*
        Help_with_links(PWB(P(FIS(7,[]), W 1),3),[1;4]);
        Help_with_links(PWB(P(FIS(7,[2]), W 1),3),[4]);
+    *)   
   ] ;; 
 
   let pair_level_ref = ref [
@@ -1347,7 +1341,7 @@ module Store = struct
 module Medium_analysis = struct 
 
   exception Walk_scale_exn of int * diagnosis ;; 
-  exception Nonstandard_handler_exn of point_with_breadth * handle * medium_mold ;;
+  exception Nonstandard_handler_exn of point_with_breadth * handle * mold ;;
     
     module Private = struct
     
@@ -1399,7 +1393,7 @@ module Medium_analysis = struct
 module Safe_initialization = struct 
 
 exception Undefined_during_check_exn of point_with_breadth * diagnosis ;;   
-exception Unequal_during_check_exn of (point_with_breadth * (handle * medium_mold) * (handle * medium_mold)) ;;
+exception Unequal_during_check_exn of (point_with_breadth * (handle * mold) * (handle * mold)) ;;
 
 
 module Private = struct 
