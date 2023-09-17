@@ -1015,6 +1015,31 @@ let empty_one = {
   low_level = [];
 }  ;;  
 
+let immediate_eval_opt grc_ref pwb = 
+  if Point_with_breadth.is_discrete pwb 
+  then let domain = Point_with_breadth.supporting_set pwb in 
+       Some(Discrete,Medium_mold.discrete domain) 
+  else     
+  let (PWB(P(FIS(n,scr),w),b)) = pwb in  
+  let wpair = (w,scr) in
+  match List.assoc_opt wpair (!grc_ref).pair_level with 
+  Some (f) -> let (handle,mold) =f b n in 
+              Some(handle,mold)    
+| None ->
+  let wtriple = (w,scr,b) 
+  and n =  Point_with_breadth.size  pwb  in 
+  match List.assoc_opt wtriple (!grc_ref).triple_level with 
+    Some (f) -> let (handle,mold) =f n in 
+                Some(handle,mold)    
+  | None ->
+     (  
+      match List.assoc_opt pwb (!grc_ref).low_level with 
+      Some (answer) -> let (handle,mold) =answer in 
+                       Some(handle,mold)    
+    | None -> None
+       ) ;;    
+
+
 end ;;  
 
 module Store = struct 
