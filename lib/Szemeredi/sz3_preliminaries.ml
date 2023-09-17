@@ -1042,8 +1042,9 @@ let immediate_eval_opt grc_ref pwb =
 
 end ;;  
 
-module Store = struct 
 
+module Store = struct 
+  
   exception Select_case_opt_exn of point_with_breadth ;;
   exception Fork_case_opt_exn of point_with_breadth ;;
   exception Missing_links_in_store_exn of point_with_breadth * (int list);;
@@ -1063,13 +1064,7 @@ module Store = struct
     *)   
   ] ;; 
 
-  let pair_level_ref = ref [
-     
-  ] ;;
-  let triple_level_ref = ref [
-     (* (W 1,[],0),(fun n->Width_one.compute(FIS(n,[]))) *)
-  ] ;;
-  let low_level_ref = ref [] ;;
+
   
   type torsionfree_diagnosis   = 
     TFD_Missing_treatment of point_with_breadth 
@@ -1094,28 +1089,8 @@ module Store = struct
 
 
     let no_expansions_on_grounded_point_opt pwb = 
-      if Point_with_breadth.is_discrete pwb 
-      then let domain = Point_with_breadth.supporting_set pwb in 
-           Some(Discrete,Medium_mold.discrete domain) 
-      else     
-      let (PWB(P(FIS(n,scr),w),b)) = pwb in  
-      let wpair = (w,scr) in
-      match List.assoc_opt wpair (!pair_level_ref) with 
-      Some (f) -> let (handle,mold) =f b n in 
-                  Some(handle,mold)    
-    | None ->
-      let wtriple = (w,scr,b) 
-      and n =  Point_with_breadth.size  pwb  in 
-      match List.assoc_opt wtriple (!triple_level_ref) with 
-        Some (f) -> let (handle,mold) =f n in 
-                    Some(handle,mold)    
-      | None ->
-         (  
-          match List.assoc_opt pwb (!low_level_ref) with 
-          Some (answer) -> let (handle,mold) =answer in 
-                           Some(handle,mold)    
-        | None -> None
-           ) ;;    
+      Grocery.immediate_eval_opt grocery_ref pwb ;;
+     
     
     let no_expansion_on_translatable_point pwb =
       let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
@@ -1371,17 +1346,44 @@ module Store = struct
     Diagnosis.translate d (compute_on_grounded_point_opt translated_pwb ~use_outside_help);;    
   
 
-   let unsafe_low_level_add pwb mold = (low_level_ref:=(pwb,mold)::(!low_level_ref));;  
-   let unsafe_pair_level_add pair f = (pair_level_ref:=(pair,f)::(!pair_level_ref));;  
-   let unsafe_triple_level_add triple f = (triple_level_ref:=(triple,f)::(!triple_level_ref));;  
+   let unsafe_low_level_add pwb mold = 
+      let old_grocery = (!grocery_ref) in 
+      let new_grocery = {
+          old_grocery with 
+          low_level=(pwb,mold)::(old_grocery.low_level)
+      } in 
+      grocery_ref:=new_grocery ;;
+    
+    let unsafe_pair_level_add pair f = 
+        let old_grocery = (!grocery_ref) in 
+        let new_grocery = {
+            old_grocery with 
+            pair_level=(pair,f)::(old_grocery.pair_level)
+        } in 
+        grocery_ref:=new_grocery ;;   
 
-   let reset_all () =
-       (
-         low_level_ref:=[];
-         pair_level_ref:=[];
-         triple_level_ref:=[];
-       );;
-    let reset_low_level () = (low_level_ref:=[]) ;;
+     let unsafe_triple_level_add triple f = 
+          let old_grocery = (!grocery_ref) in 
+          let new_grocery = {
+              old_grocery with 
+              triple_level=(triple,f)::(old_grocery.triple_level)
+          } in 
+          grocery_ref:=new_grocery ;;     
+
+   let reset_all () = grocery_ref := Grocery.empty_one ;;
+   
+   let set_low_level v = 
+    let old_grocery = (!grocery_ref) in 
+      let new_grocery = {
+          old_grocery with 
+          low_level=v
+      } in 
+      grocery_ref:=new_grocery ;;
+
+   let reset_low_level () = set_low_level [] ;; 
+    
+
+
 
   let impatient_eval pwb =
      match compute_opt pwb ~use_outside_help:false with 
@@ -1394,10 +1396,10 @@ module Store = struct
   
    
   let experimental_eval pwb = Private.compute_opt pwb ~use_outside_help:true ;;
-  let get_low_level () = (!(Private.low_level_ref)) ;; 
+  let get_low_level () = (!(Private.grocery_ref)).low_level ;; 
   let impatient_eval = Private.impatient_eval ;;
   let reset_low_level = Private.reset_low_level ;;
-  let set_low_level v = (Private.low_level_ref:=v) ;; 
+  let set_low_level v = Private.set_low_level v;; 
   let unsafe_low_level_add = Private.unsafe_low_level_add ;; 
   let unsafe_pair_level_add = Private.unsafe_pair_level_add ;; 
   let unsafe_triple_level_add = Private.unsafe_triple_level_add ;; 
