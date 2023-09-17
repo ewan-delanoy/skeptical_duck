@@ -870,6 +870,8 @@ module Fan = struct
 
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
+  let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
+
 end ;;   
 
 module Analysis_with_breadth = struct 
@@ -942,6 +944,21 @@ let extra_links (T data) =
      if idx1 = 0 
      then Fan.core fan1
      else []  ;;
+
+
+(* let rightmost_pivot pwb (T data) = 
+    let c_pairs = Point_with_breadth.complementary_pairs pwb 
+    and n = Point_with_breadth.max pwb in 
+    let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
+    let old_range = Image.image fst data in 
+    let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
+    let usual = Fan.impose_and_distribute (c_constraints,[n]) 
+    and get = (fun i->List.assoc i data) in 
+    T(Image.image (
+      fun i->
+         if i=0 then (i,usual(get 0)) else
+         (i,Fan.union (usual(get i)) (get(i-1))) 
+    )  new_range) ;;     *)
 
 let translate (d:int) (T data) = 
     (T (Image.image (fun (idx,fan)->(idx,Fan.translate d fan)) data)) ;;  
