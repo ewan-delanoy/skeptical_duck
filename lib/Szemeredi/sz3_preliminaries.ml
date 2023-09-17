@@ -946,7 +946,7 @@ let extra_links (T data) =
      else []  ;;
 
 
-(* let rightmost_pivot pwb (T data) = 
+let rightmost_pivot pwb (T data) = 
     let c_pairs = Point_with_breadth.complementary_pairs pwb 
     and n = Point_with_breadth.max pwb in 
     let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
@@ -958,7 +958,7 @@ let extra_links (T data) =
       fun i->
          if i=0 then (i,usual(get 0)) else
          (i,Fan.union (usual(get i)) (get(i-1))) 
-    )  new_range) ;;     *)
+    )  new_range) ;;     
 
 let translate (d:int) (T data) = 
     (T (Image.image (fun (idx,fan)->(idx,Fan.translate d fan)) data)) ;;  
