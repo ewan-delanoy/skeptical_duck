@@ -849,6 +849,12 @@ end ;;
 
 
 module Fan = struct 
+  
+  module Private = struct
+
+  let distribute (F rays) addendum= F(Image.image (i_merge addendum) rays) ;;  
+
+  end ;;  
 
   let constructor ll =
     let sorted_ll = il_sort ll in 
@@ -856,8 +862,12 @@ module Fan = struct
 
   let core (F ll) = i_fold_intersect ll ;; 
 
-  let impose (C cstr) (F rays) =  F(List.filter (fun ray->not(i_is_included_in cstr ray)) rays);;
+  let impose l_cstr (F rays) =  F(List.filter 
+    (fun ray->List.for_all( fun (C cstr) ->not(i_is_included_in cstr ray)) l_cstr ) rays);;
   
+  let impose_and_distribute  (l_cstr,addendum) fan = 
+      Private.distribute ( impose l_cstr fan) addendum ;;
+
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
 end ;;   
