@@ -1563,6 +1563,19 @@ type 'a small_advance =
   | SA_Missing_links of point_with_breadth * int list
   | SA_Finished of 'a ;;   
   
+let explore_immediate_opt_on_grounded_point grc grounded_pwb = 
+   match Grocery.immediate_eval_opt grc grounded_pwb with 
+    None ->  SA_Missing_treatment(grounded_pwb) 
+   |Some(answer) -> SA_Finished(answer) ;;  
 
-  
+let explore_immediate_opt grc pwb =  
+   let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+   let temp = explore_immediate_opt_on_grounded_point grc grounded_pwb in 
+    match temp with 
+     SA_Missing_treatment(_) | SA_Incomplete_treatment(_) | SA_Missing_links(_) -> temp
+    |SA_Finished(handle,mold) -> SA_Finished(Handle.translate d handle,Medium_mold.translate d mold) ;; 
+
+    
+    
+
 end ;;   
