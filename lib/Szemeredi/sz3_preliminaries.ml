@@ -995,6 +995,11 @@ module Medium_mold = struct
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
+  let select (MM(_sols,ext,old_torsion)) selected_sols (i,j,k) = 
+      MM(selected_sols,ext,Torsion.select (i,j,k) old_torsion) ;; 
+      
+      
+
   let to_torsionfree_mold (MM(sols,ext,_torsion)) = TFM(sols,ext) ;; 
 
   let torsion (MM(_sols, _ext,torsion)) = torsion ;; 
@@ -1575,7 +1580,20 @@ let explore_immediate_opt grc pwb =
      SA_Missing_treatment(_) | SA_Incomplete_treatment(_) | SA_Missing_links(_) -> temp
     |SA_Finished(handle,mold) -> SA_Finished(Handle.translate d handle,Medium_mold.translate d mold) ;; 
 
-    
-    
+  
+(*    
+let explore_shallow_select grc pwb =
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> SA_Finished(None)
+   |Some(prec_pwb,cstr) ->
+      match Grocery.immediate_eval_opt grc prec_pwb with 
+        None -> SA_Missing_treatment(prec_pwb)
+       |Some(_,prec_mold) -> 
+              let (MM(sols,ext,torsion)) = prec_mold in 
+              let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
+              if new_sols<>[]
+              then SA_Finished(Some(MM(sols,ext,torsion)))
+              else ;;   
+*)              
 
 end ;;   
