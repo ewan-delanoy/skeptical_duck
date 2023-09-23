@@ -1005,10 +1005,6 @@ module Medium_mold = struct
     
 end ;;
 
-(*
-
-
-  *)
 
 
 module Handle = struct 
@@ -1559,7 +1555,14 @@ let triple_level_add (w,scr,b) f=
 
 end ;;  
 
-module Initialization = struct 
+module More = struct 
+
+type 'a small_advance =
+    SA_Missing_treatment of point_with_breadth
+  | SA_Incomplete_treatment of point_with_breadth
+  | SA_Missing_links of point_with_breadth * int list
+  | SA_Finished of 'a ;;   
+  
 
   
 end ;;   
