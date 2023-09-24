@@ -953,19 +953,36 @@ let fork (i,j,k) (T data) =
            Some(i-1,Fan.impose c_constraints old_indication) 
   )  data) ;;       
 
-let rightmost_pivot full_pwb (T data) = 
+
+let rightmost_overflow full_pwb (T old_data) = 
+  let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
+  and n = Point_with_breadth.max full_pwb in 
+  let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
+  let old_range = Image.image fst old_data in 
+  let new_range = List.filter (fun i->(i_mem (i+1) old_range)) old_range in   
+  let usual = Fan.impose_and_distribute (c_constraints,[n]) 
+  and get = (fun i->List.assoc i old_data) in 
+  T(Image.image (
+    fun i->
+       (i,Fan.union (usual(get (i+1))) (get(i))) 
+  )  new_range) ;;     
+
+let rightmost_pivot full_pwb (T old_data) = 
     let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
     and n = Point_with_breadth.max full_pwb in 
     let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
-    let old_range = Image.image fst data in 
+    let old_range = Image.image fst old_data in 
     let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
     let usual = Fan.impose_and_distribute (c_constraints,[n]) 
-    and get = (fun i->List.assoc i data) in 
+    and get = (fun i->List.assoc i old_data) in 
     T(Image.image (
       fun i->
          if i=0 then (i,usual(get 0)) else
          (i,Fan.union (usual(get i)) (get(i-1))) 
     )  new_range) ;;     
+
+
+
 
 let select (i,j,k) (T data) = 
       let c_constraints = [C[i;j;k]] in  
