@@ -1564,6 +1564,52 @@ let triple_level_add (w,scr,b) f=
 
 end ;;  
 
+module Impatient = struct 
+
+ let immediate_opt grc pwb =  
+    let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+     match Grocery.immediate_eval_opt grc grounded_pwb with 
+      None -> None
+     |Some(handle,mold) -> Some(Handle.translate d handle,Medium_mold.translate d mold) ;; 
+ 
+ let select_opt grc pwb =
+     match Point_with_breadth.usual_decomposition_opt pwb with 
+     None -> None
+    |Some(prec_pwb,C cstr) ->
+       match immediate_opt grc prec_pwb with 
+       None -> None
+     | Some(_,prec_mold) -> 
+           let (MM(sols,_ext,_torsion)) = prec_mold in 
+           let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
+           if new_sols<>[]
+           then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+                let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+                Some(Medium_mold.select prec_mold new_sols ijk)
+           else None;;   
+              
+ let rightmost_pivot_opt grc pwb  = 
+   let n = Point_with_breadth.max pwb in 
+   let left_pwb = Point_with_breadth.remove_element pwb n in 
+   match immediate_opt grc left_pwb with 
+       None -> None
+     | Some(_,left_mold) -> 
+   let (MM(left_sols,_,_)) = left_mold in   
+   let new_sols = List.filter_map (
+                         fun sol -> 
+                           let new_sol = i_insert n sol in 
+                           if Point_with_breadth.subset_is_admissible pwb new_sol 
+                           then Some new_sol
+                           else None  
+   ) left_sols in 
+   if new_sols = []
+   then None
+   else Some(Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
+ 
+     
+
+
+end ;;  
+
 
 (*
 
