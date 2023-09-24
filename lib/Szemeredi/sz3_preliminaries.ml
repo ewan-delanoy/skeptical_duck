@@ -1012,12 +1012,15 @@ module Medium_mold = struct
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
+  let rightmost_overflow pwb (MM(sols,_ext,old_torsion)) = 
+    constructor pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
+
   let rightmost_pivot pwb (MM(_sols,ext,old_torsion)) new_sols= 
      let n = Point_with_breadth.max pwb in 
-     MM(new_sols,i_insert n ext,Torsion.rightmost_pivot pwb old_torsion);; 
+     constructor pwb new_sols (i_insert n ext) (Torsion.rightmost_pivot pwb old_torsion);; 
 
-  let select (MM(_sols,ext,old_torsion)) selected_sols (i,j,k) = 
-      MM(selected_sols,ext,Torsion.select (i,j,k) old_torsion) ;; 
+  let select pwb (MM(_sols,ext,old_torsion)) selected_sols (i,j,k) = 
+    constructor pwb selected_sols ext (Torsion.select (i,j,k) old_torsion) ;; 
       
       
 
@@ -1601,9 +1604,26 @@ module Impatient = struct
            if new_sols<>[]
            then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
                 let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
-                Some(Medium_mold.select prec_mold new_sols ijk)
+                let (i,j,k) = ijk in 
+                Some(Select(i,j,k),Medium_mold.select pwb prec_mold new_sols ijk)
            else None;;   
-              
+           
+let rightmost_overflow_opt grc pwb  = 
+ let n = Point_with_breadth.max pwb in 
+ let left_pwb = Point_with_breadth.remove_element pwb n in 
+ match immediate_opt grc left_pwb with 
+     None -> None
+   | Some(_,left_mold) -> 
+  let (MM(_left_sols,left_ext,_left_torsion)) = left_mold 
+  and complements = Point_with_breadth.complementary_pairs pwb in  
+  match List.find_opt  (
+              fun (u,v) -> i_is_included_in [u;v] left_ext 
+    ) complements with
+    None -> None 
+   |Some(u,v) -> Some(Rightmost_overflow(u,v,n),Medium_mold.rightmost_overflow pwb left_mold) ;;
+
+           
+
  let rightmost_pivot_opt grc pwb  = 
    let n = Point_with_breadth.max pwb in 
    let left_pwb = Point_with_breadth.remove_element pwb n in 
@@ -1620,7 +1640,8 @@ module Impatient = struct
    ) left_sols in 
    if new_sols = []
    then None
-   else Some(Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
+   else Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
+          Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
  
      
 
@@ -1628,68 +1649,3 @@ module Impatient = struct
 end ;;  
 
 
-(*
-
-module More = struct 
-
-type 'a small_advance =
-    SA_Missing_treatment of point_with_breadth
-  | SA_Incomplete_treatment of point_with_breadth * point_with_breadth * string
-  | SA_Missing_links of point_with_breadth * int list
-  | SA_Finished of 'a ;;   
-  
-let explore_immediate_opt_on_grounded_point grc grounded_pwb = 
-   match Grocery.immediate_eval_opt grc grounded_pwb with 
-    None ->  SA_Missing_treatment(grounded_pwb) 
-   |Some(answer) -> SA_Finished(answer) ;;  
-
-let explore_immediate grc pwb =  
-   let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-   let temp = explore_immediate_opt_on_grounded_point grc grounded_pwb in 
-    match temp with 
-     SA_Missing_treatment(_) | SA_Incomplete_treatment(_) | SA_Missing_links(_) -> temp
-    |SA_Finished(handle,mold) -> SA_Finished(Handle.translate d handle,Medium_mold.translate d mold) ;; 
-
-let explore_shallow_select grc pwb =
-    match Point_with_breadth.usual_decomposition_opt pwb with 
-    None -> SA_Finished(None)
-   |Some(prec_pwb,C cstr) ->
-      match explore_immediate grc prec_pwb with 
-      SA_Missing_treatment(data1) -> SA_Missing_treatment(data1) 
-    | SA_Incomplete_treatment(data2,data5,data6) -> SA_Incomplete_treatment(data2,data5,data6) 
-    | SA_Missing_links(data3,data4) -> SA_Missing_links(data3,data4)
-    | SA_Finished(_,prec_mold) -> 
-          let (MM(sols,_ext,_torsion)) = prec_mold in 
-          let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
-          if new_sols<>[]
-          then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
-               let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
-               SA_Finished(Some(Medium_mold.select prec_mold new_sols ijk))
-          else SA_Finished(None);;   
-             
-let explore_shallow_rightmost_pivot grc pwb  = 
-  let n = Point_with_breadth.max pwb in 
-  let left_pwb = Point_with_breadth.remove_element pwb n in 
-  match explore_immediate grc left_pwb with 
-      SA_Missing_treatment(data1) -> SA_Missing_treatment(data1) 
-    | SA_Incomplete_treatment(data2,data5,data6) -> SA_Incomplete_treatment(data2,data5,data6) 
-    | SA_Missing_links(data3,data4) -> SA_Missing_links(data3,data4)
-    | SA_Finished(_,left_mold) -> 
-  let (MM(left_sols,_,_)) = left_mold in   
-  let new_sols = List.filter_map (
-                        fun sol -> 
-                          let new_sol = i_insert n sol in 
-                          if Point_with_breadth.subset_is_admissible pwb new_sol 
-                          then Some new_sol
-                          else None  
-  ) left_sols in 
-  if new_sols = []
-  then SA_Incomplete_treatment(left_pwb,pwb,"Rightmost_pivot")
-  else SA_Finished(Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
-
-  
-
-
-end ;;   
-
-*)
