@@ -953,9 +953,9 @@ let fork (i,j,k) (T data) =
            Some(i-1,Fan.impose c_constraints old_indication) 
   )  data) ;;       
 
-let rightmost_pivot left_pwb (T data) = 
-    let c_pairs = Point_with_breadth.complementary_pairs left_pwb 
-    and n = Point_with_breadth.max left_pwb in 
+let rightmost_pivot full_pwb (T data) = 
+    let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
+    and n = Point_with_breadth.max full_pwb in 
     let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
     let old_range = Image.image fst data in 
     let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
@@ -994,6 +994,10 @@ module Medium_mold = struct
     MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion) ;; 
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
+
+  let rightmost_pivot pwb (MM(_sols,ext,old_torsion)) new_sols= 
+     let n = Point_with_breadth.max pwb in 
+     MM(new_sols,i_insert n ext,Torsion.rightmost_pivot pwb old_torsion);; 
 
   let select (MM(_sols,ext,old_torsion)) selected_sols (i,j,k) = 
       MM(selected_sols,ext,Torsion.select (i,j,k) old_torsion) ;; 
@@ -1564,7 +1568,7 @@ module More = struct
 
 type 'a small_advance =
     SA_Missing_treatment of point_with_breadth
-  | SA_Incomplete_treatment of point_with_breadth
+  | SA_Incomplete_treatment of point_with_breadth * point_with_breadth * string
   | SA_Missing_links of point_with_breadth * int list
   | SA_Finished of 'a ;;   
   
@@ -1573,7 +1577,7 @@ let explore_immediate_opt_on_grounded_point grc grounded_pwb =
     None ->  SA_Missing_treatment(grounded_pwb) 
    |Some(answer) -> SA_Finished(answer) ;;  
 
-let explore_immediate_opt grc pwb =  
+let explore_immediate grc pwb =  
    let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
    let temp = explore_immediate_opt_on_grounded_point grc grounded_pwb in 
     match temp with 
@@ -1584,9 +1588,9 @@ let explore_shallow_select grc pwb =
     match Point_with_breadth.usual_decomposition_opt pwb with 
     None -> SA_Finished(None)
    |Some(prec_pwb,C cstr) ->
-      match explore_immediate_opt grc prec_pwb with 
+      match explore_immediate grc prec_pwb with 
       SA_Missing_treatment(data1) -> SA_Missing_treatment(data1) 
-    | SA_Incomplete_treatment(data2) -> SA_Incomplete_treatment(data2) 
+    | SA_Incomplete_treatment(data2,data5,data6) -> SA_Incomplete_treatment(data2,data5,data6) 
     | SA_Missing_links(data3,data4) -> SA_Missing_links(data3,data4)
     | SA_Finished(_,prec_mold) -> 
           let (MM(sols,_ext,_torsion)) = prec_mold in 
@@ -1597,5 +1601,25 @@ let explore_shallow_select grc pwb =
                SA_Finished(Some(Medium_mold.select prec_mold new_sols ijk))
           else SA_Finished(None);;   
              
+let explore_shallow_rightmost_pivot grc pwb  = 
+  let n = Point_with_breadth.max pwb in 
+  let left_pwb = Point_with_breadth.remove_element pwb n in 
+  match explore_immediate grc left_pwb with 
+      SA_Missing_treatment(data1) -> SA_Missing_treatment(data1) 
+    | SA_Incomplete_treatment(data2,data5,data6) -> SA_Incomplete_treatment(data2,data5,data6) 
+    | SA_Missing_links(data3,data4) -> SA_Missing_links(data3,data4)
+    | SA_Finished(_,left_mold) -> 
+  let (MM(left_sols,_,_)) = left_mold in   
+  let new_sols = List.filter_map (
+                        fun sol -> 
+                          let new_sol = i_insert n sol in 
+                          if Point_with_breadth.subset_is_admissible pwb new_sol 
+                          then Some new_sol
+                          else None  
+  ) left_sols in 
+  if new_sols = []
+  then SA_Incomplete_treatment(left_pwb,pwb,"Rightmost_pivot")
+  else SA_Finished(Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
+
 
 end ;;   
