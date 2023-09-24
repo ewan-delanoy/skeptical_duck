@@ -1564,6 +1564,9 @@ let triple_level_add (w,scr,b) f=
 
 end ;;  
 
+
+(*
+
 module More = struct 
 
 type 'a small_advance =
@@ -1621,5 +1624,9 @@ let explore_shallow_rightmost_pivot grc pwb  =
   then SA_Incomplete_treatment(left_pwb,pwb,"Rightmost_pivot")
   else SA_Finished(Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
 
+  
+
 
 end ;;   
+
+*)
