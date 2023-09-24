@@ -1580,20 +1580,22 @@ let explore_immediate_opt grc pwb =
      SA_Missing_treatment(_) | SA_Incomplete_treatment(_) | SA_Missing_links(_) -> temp
     |SA_Finished(handle,mold) -> SA_Finished(Handle.translate d handle,Medium_mold.translate d mold) ;; 
 
-  
-(*    
 let explore_shallow_select grc pwb =
     match Point_with_breadth.usual_decomposition_opt pwb with 
     None -> SA_Finished(None)
-   |Some(prec_pwb,cstr) ->
-      match Grocery.immediate_eval_opt grc prec_pwb with 
-        None -> SA_Missing_treatment(prec_pwb)
-       |Some(_,prec_mold) -> 
-              let (MM(sols,ext,torsion)) = prec_mold in 
-              let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
-              if new_sols<>[]
-              then SA_Finished(Some(MM(sols,ext,torsion)))
-              else ;;   
-*)              
+   |Some(prec_pwb,C cstr) ->
+      match explore_immediate_opt grc prec_pwb with 
+      SA_Missing_treatment(data1) -> SA_Missing_treatment(data1) 
+    | SA_Incomplete_treatment(data2) -> SA_Incomplete_treatment(data2) 
+    | SA_Missing_links(data3,data4) -> SA_Missing_links(data3,data4)
+    | SA_Finished(_,prec_mold) -> 
+          let (MM(sols,_ext,_torsion)) = prec_mold in 
+          let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
+          if new_sols<>[]
+          then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+               let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+               SA_Finished(Some(Medium_mold.select prec_mold new_sols ijk))
+          else SA_Finished(None);;   
+             
 
 end ;;   
