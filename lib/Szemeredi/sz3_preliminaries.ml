@@ -1012,15 +1012,18 @@ module Medium_mold = struct
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
+  let fork pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
+    constructor pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
+
   let rightmost_overflow pwb (MM(sols,_ext,old_torsion)) = 
     constructor pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
 
-  let rightmost_pivot pwb (MM(_sols,ext,old_torsion)) new_sols= 
+  let rightmost_pivot pwb (MM(_left_sols,left_ext,left_torsion)) new_sols= 
      let n = Point_with_breadth.max pwb in 
-     constructor pwb new_sols (i_insert n ext) (Torsion.rightmost_pivot pwb old_torsion);; 
+     constructor pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
 
-  let select pwb (MM(_sols,ext,old_torsion)) selected_sols (i,j,k) = 
-    constructor pwb selected_sols ext (Torsion.select (i,j,k) old_torsion) ;; 
+  let select pwb (MM(_prec_sols,prec_ext,prec_torsion)) selected_sols (i,j,k) = 
+    constructor pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
       
       
 
@@ -1592,21 +1595,44 @@ module Impatient = struct
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Medium_mold.translate d mold) ;; 
  
- let select_opt grc pwb =
-     match Point_with_breadth.usual_decomposition_opt pwb with 
+
+let fork_opt grc pwb =
+  match Point_with_breadth.usual_decomposition_opt pwb with 
+  None -> None
+ |Some(prec_pwb,C cstr) ->
+    match immediate_opt grc prec_pwb with 
+    None -> None
+  | Some(_,prec_mold) -> 
+        let (MM(_sols,ext,_torsion)) = prec_mold in 
+        let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+        let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+        let (i,j,k) = ijk in 
+        if not(i_is_included_in [i;j;k] ext)
+        then 
+              let n = Point_with_breadth.max pwb in 
+              let left_pwb = Point_with_breadth.remove_element pwb n in 
+              (match immediate_opt grc left_pwb with 
+                None -> None
+              | Some(_,left_mold) -> 
+                  Some(Select(i,j,k),Medium_mold.fork pwb prec_mold left_mold ijk)
+              )
+        else None;;   
+
+let select_opt grc pwb =
+   match Point_with_breadth.usual_decomposition_opt pwb with 
+   None -> None
+  |Some(prec_pwb,C cstr) ->
+     match immediate_opt grc prec_pwb with 
      None -> None
-    |Some(prec_pwb,C cstr) ->
-       match immediate_opt grc prec_pwb with 
-       None -> None
-     | Some(_,prec_mold) -> 
-           let (MM(sols,_ext,_torsion)) = prec_mold in 
-           let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
-           if new_sols<>[]
-           then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
-                let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
-                let (i,j,k) = ijk in 
-                Some(Select(i,j,k),Medium_mold.select pwb prec_mold new_sols ijk)
-           else None;;   
+   | Some(_,prec_mold) -> 
+         let (MM(sols,_ext,_torsion)) = prec_mold in 
+         let new_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) sols in 
+         if new_sols<>[]
+         then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+              let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+              let (i,j,k) = ijk in 
+              Some(Select(i,j,k),Medium_mold.select pwb prec_mold new_sols ijk)
+         else None;;   
            
 let rightmost_overflow_opt grc pwb  = 
  let n = Point_with_breadth.max pwb in 
