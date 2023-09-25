@@ -839,7 +839,7 @@ let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
 let subset_is_admissible pwb subset = 
      Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
-
+let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
 let supporting_set = Private.supporting_set ;; 
 let translate = Private.translate ;; 
 let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
@@ -1094,6 +1094,16 @@ let empty_one = {
   triple_level  = [];
   low_level = [];
 }  ;;  
+
+let add_to_low_level grc pwb pair = {
+   grc with 
+   low_level = (pwb,pair) ::(grc.low_level);
+} ;;
+
+let add_to_low_level_if_nondiscrete grc pwb pair =
+  if Point_with_breadth.is_discrete pwb 
+  then add_to_low_level grc pwb pair
+  else grc;;
 
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.is_discrete pwb 
@@ -1687,7 +1697,13 @@ let select_opt grc pwb =
              );;        
 
 let eval_opt grc pwb =
-  match rightmost_pivot_opt grc pwb with 
+  match immediate_opt grc pwb with 
+  Some(answer0) -> Some answer0
+ | None -> 
+  if Point_with_breadth.is_discrete pwb 
+  then Some(Discrete,Medium_mold.discrete(Point_with_breadth.supporting_set pwb))
+  else    
+  (match rightmost_pivot_opt grc pwb with 
    Some(answer1) -> Some answer1
   | None -> 
     (
@@ -1699,13 +1715,44 @@ let eval_opt grc pwb =
             Some(answer3) -> Some answer3
           | None -> fork_opt grc pwb
         )     
-    ) ;;
+    )
+   ) ;;
     
+  let update_opt grc pwb =  
+     match immediate_opt grc pwb with 
+     Some _ -> (true,grc) 
+     | None -> 
+      (
+        match eval_opt grc pwb with 
+       Some pair -> (true,Grocery.add_to_low_level_if_nondiscrete grc pwb pair) 
+     | None -> (false,grc)
+      ) ;;
+
   end ;;  
 
   let eval_opt = Private.eval_opt ;;
   let immediate_opt = Private.immediate_opt ;;
+  let update_opt = Private.update_opt ;; 
 
 end ;;  
 
+module Painstaking = struct 
 
+type  small_advance =
+    Missing of point_with_breadth 
+   |Found of grocery * (point_with_breadth list);; 
+
+exception Push_exn ;; 
+
+let pusher (grc,to_be_treated) = match to_be_treated with 
+   [] -> raise Push_exn 
+  | pwb :: others ->
+  let opt1 = Impatient.immediate_opt grc pwb in 
+  if opt1<>None then (grc,others) else 
+  let opt2 = Impatient.eval_opt grc pwb in 
+  if opt2<>None then (Grocery.add_to_low_level_if_nondiscrete grc pwb (Option.get opt2),others) else 
+  raise Push_exn
+  ;;
+
+
+end ;;   
