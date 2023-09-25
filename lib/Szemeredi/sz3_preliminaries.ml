@@ -1600,9 +1600,11 @@ end ;;
 
 module Impatient = struct 
 
+  module Private = struct
+
  let immediate_opt grc pwb =  
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match Grocery.immediate_eval_opt grc grounded_pwb with 
+     match Grocery.immediate_eval_opt (ref grc) grounded_pwb with 
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Medium_mold.translate d mold) ;; 
  
@@ -1684,6 +1686,25 @@ let select_opt grc pwb =
                    |Some mold -> Some(Select(i,j,k),mold) 
              );;        
 
+let eval_opt grc pwb =
+  match rightmost_pivot_opt grc pwb with 
+   Some(answer1) -> Some answer1
+  | None -> 
+    (
+      match rightmost_overflow_opt grc pwb with 
+        Some(answer2) -> Some answer2
+      | None -> 
+        (
+          match select_opt grc pwb with 
+            Some(answer3) -> Some answer3
+          | None -> fork_opt grc pwb
+        )     
+    ) ;;
+    
+  end ;;  
+
+  let eval_opt = Private.eval_opt ;;
+  let immediate_opt = Private.immediate_opt ;;
 
 end ;;  
 
