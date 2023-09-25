@@ -994,6 +994,8 @@ let select (i,j,k) (T data) =
 let translate (d:int) (T data) = 
     (T (Image.image (fun (idx,fan)->(idx,Fan.translate d fan)) data)) ;;  
 
+let unregistered = Private.unregistered  ;;
+
 let update_torsion
   ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:torsion) 
   ~current_point:(_pwb:point_with_breadth) (_cstr:constraint_t) (_update_is_a_selection:bool) = 
@@ -1036,7 +1038,7 @@ module Medium_mold = struct
     let selected_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
     constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
       
-      
+  let shallow sols = MM(sols,[],Torsion.unregistered ) ;;      
 
   let to_torsionfree_mold (MM(sols,ext,_torsion)) = TFM(sols,ext) ;; 
 
@@ -1045,7 +1047,8 @@ module Medium_mold = struct
   let translate d (MM(sols, ext,torsion)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
     MM(Image.image tr sols,tr ext,torsion) ;;  
-    
+
+
 end ;;
 
 
@@ -1718,21 +1721,21 @@ let eval_opt grc pwb =
     )
    ) ;;
     
-  let update_opt grc pwb =  
+  let update_if_possible grc pwb =  
      match immediate_opt grc pwb with 
-     Some _ -> (true,grc) 
+     Some pair1 -> (Some pair1,grc) 
      | None -> 
       (
         match eval_opt grc pwb with 
-       Some pair -> (true,Grocery.add_to_low_level_if_nondiscrete grc pwb pair) 
-     | None -> (false,grc)
+       Some pair2 -> (Some pair2,Grocery.add_to_low_level_if_nondiscrete grc pwb pair2) 
+     | None -> (None,grc)
       ) ;;
 
   end ;;  
 
   let eval_opt = Private.eval_opt ;;
   let immediate_opt = Private.immediate_opt ;;
-  let update_opt = Private.update_opt ;; 
+  let update_if_possible = Private.update_if_possible ;; 
 
 end ;;  
 
@@ -1744,15 +1747,34 @@ type  small_advance =
 
 exception Push_exn ;; 
 
+exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
+
 let pusher (grc,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let opt1 = Impatient.immediate_opt grc pwb in 
-  if opt1<>None then (grc,others) else 
-  let opt2 = Impatient.eval_opt grc pwb in 
-  if opt2<>None then (Grocery.add_to_low_level_if_nondiscrete grc pwb (Option.get opt2),others) else 
-  raise Push_exn
-  ;;
+  let (opt_pair1,grc1) = Impatient.update_if_possible grc pwb in 
+  if opt_pair1<>None then (grc1,others) else 
+  let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
+  if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
+  let (_,C cstr) = Option.get opt2 in 
+  let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+  let (i,j,k)=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+  let pwb_i = Point_with_breadth.remove_element pwb i 
+  and pwb_j = Point_with_breadth.remove_element pwb j 
+  and pwb_k = Point_with_breadth.remove_element pwb k in 
+  let (opt_pair3,grc3) = Impatient.update_if_possible grc1 pwb_i in 
+  if opt_pair3=None then (grc3,pwb_i::to_be_treated) else
+  let (_,mold_i) = Option.get opt_pair3 in 
+  let (opt_pair4,grc4) = Impatient.update_if_possible grc3 pwb_j in 
+  if opt_pair4=None then (grc4,pwb_j::to_be_treated) else
+  let (_,mold_j) = Option.get opt_pair4 in 
+  let (opt_pair5,grc5) = Impatient.update_if_possible grc4 pwb_k in 
+  if opt_pair5=None then (grc5,pwb_k::to_be_treated) else
+  let (_,mold_k) = Option.get opt_pair5 in  
+  let candidates = List.flatten(Image.image (fun (MM(sols,_,_))->sols) [mold_i;mold_j;mold_k]) in 
+  let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
+  let answer=(Fork(i,j,k),Medium_mold.shallow final_sols) in
+  (Grocery.add_to_low_level grc5 pwb answer,others) ;;
 
 
 end ;;   
