@@ -1005,25 +1005,27 @@ end ;;
 module Medium_mold = struct 
 
 
-  let constructor pwb sols ext torsion = 
+  let constructor_opt pwb sols ext torsion = 
     let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
     and extra_links = Torsion.extra_links torsion in 
-    MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion) ;; 
+    if sols<>[]
+    then Some(MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion))
+    else None ;; 
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
-  let fork pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
-    constructor pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
+  let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
+    constructor_opt pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
 
-  let rightmost_overflow pwb (MM(sols,_ext,old_torsion)) = 
-    constructor pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
+  let rightmost_overflow_opt pwb (MM(sols,_ext,old_torsion)) = 
+    constructor_opt pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
 
-  let rightmost_pivot pwb (MM(_left_sols,left_ext,left_torsion)) new_sols= 
+  let rightmost_pivot_opt pwb (MM(_left_sols,left_ext,left_torsion)) new_sols= 
      let n = Point_with_breadth.max pwb in 
-     constructor pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
+     constructor_opt pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
 
-  let select pwb (MM(_prec_sols,prec_ext,prec_torsion)) selected_sols (i,j,k) = 
-    constructor pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
+  let select_opt pwb (MM(_prec_sols,prec_ext,prec_torsion)) selected_sols (i,j,k) = 
+    constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
       
       
 
@@ -1407,7 +1409,7 @@ module Store = struct
                   let new_torsion = Torsion.update_torsion 
                   ~preceding_point:prec_pwb
                     ~preceding_torsion:old_torsion ~current_point:pwb (C cstr) update_is_a_selection in 
-                  Finished(handler,Medium_mold.constructor pwb sols ext new_torsion,is_new)        
+                  Finished(handler,Option.get(Medium_mold.constructor_opt pwb sols ext new_torsion),is_new)        
         ) );; 
 
   let compute_opt pwb ~use_outside_help=
@@ -1614,7 +1616,11 @@ let fork_opt grc pwb =
               (match immediate_opt grc left_pwb with 
                 None -> None
               | Some(_,left_mold) -> 
-                  Some(Select(i,j,k),Medium_mold.fork pwb prec_mold left_mold ijk)
+                 (
+                  match Medium_mold.fork_opt pwb prec_mold left_mold ijk with 
+                     None -> None 
+                    |Some mold -> Some(Fork(i,j,k),mold) 
+                 )
               )
         else None;;   
 
@@ -1631,7 +1637,11 @@ let select_opt grc pwb =
          then let nth_cstr = (fun k->List.nth cstr (k-1)) in 
               let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
               let (i,j,k) = ijk in 
-              Some(Select(i,j,k),Medium_mold.select pwb prec_mold new_sols ijk)
+              (
+                  match Medium_mold.select_opt pwb prec_mold new_sols ijk with 
+                     None -> None 
+                    |Some mold -> Some(Select(i,j,k),mold) 
+                 )
          else None;;   
            
 let rightmost_overflow_opt grc pwb  = 
@@ -1646,7 +1656,13 @@ let rightmost_overflow_opt grc pwb  =
               fun (u,v) -> i_is_included_in [u;v] left_ext 
     ) complements with
     None -> None 
-   |Some(u,v) -> Some(Rightmost_overflow(u,v,n),Medium_mold.rightmost_overflow pwb left_mold) ;;
+   |Some(u,v) ->
+      (
+        match Medium_mold.rightmost_overflow_opt pwb left_mold with 
+           None -> None 
+          |Some mold -> Some(Rightmost_overflow(u,v,n),mold) 
+       )
+    ;;
 
            
 
@@ -1666,8 +1682,11 @@ let rightmost_overflow_opt grc pwb  =
    ) left_sols in 
    if new_sols = []
    then None
-   else Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
-          Medium_mold.rightmost_pivot pwb left_mold new_sols);;  
+   else (
+            match Medium_mold.rightmost_pivot_opt pwb left_mold new_sols with 
+               None -> None 
+              |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
+        )    ;;  
  
      
 
