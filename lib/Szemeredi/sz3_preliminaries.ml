@@ -1021,6 +1021,9 @@ end ;;
      
 module Medium_mold = struct 
 
+  let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
+      let add = i_merge isolated_set in 
+      MM(Image.image add sols,add ext,Torsion.unregistered) ;; 
 
   let constructor_opt pwb sols ext torsion = 
     let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
