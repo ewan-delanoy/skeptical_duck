@@ -1796,6 +1796,14 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   | pwb :: others ->
   let (opt_pair1,grc1) = Impatient.update_if_possible grc pwb in 
   if opt_pair1<>None then (grc1,others) else 
+  let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
+  if isolated_elts<>[]
+  then let (opt_pair6,grc6) = Impatient.update_if_possible grc1 nonisolated_pwb in 
+       if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
+        let (_handle,nonisolated_mold) = Option.get opt_pair6 in
+        let mold = Medium_mold.add_isolated_set nonisolated_mold isolated_elts in 
+       (Grocery.add_to_low_level grc6 pwb (Rightmost_pivot(W 0),mold),others) 
+  else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
   let (_,C cstr) = Option.get opt2 in 
