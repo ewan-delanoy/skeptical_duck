@@ -1650,6 +1650,9 @@ let triple_level_add (w,scr,b) f=
 
 end ;;  
 
+
+module Generic = struct 
+
 module Impatient = struct 
 
   module Private = struct
@@ -1780,10 +1783,6 @@ end ;;
 
 module Painstaking = struct 
 
-type  small_advance =
-    Missing of point_with_breadth 
-   |Found of grocery * (point_with_breadth list);; 
-
 exception Push_exn ;; 
 
 exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
@@ -1815,5 +1814,42 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let answer=(Fork(i,j,k),Medium_mold.shallow final_sols) in
   (Grocery.add_to_low_level grc5 pwb answer,others) ;;
 
+let rec iterator (grc,to_be_treated) =
+    if to_be_treated = [] 
+    then grc
+    else iterator(pusher (grc,to_be_treated)) ;;
+    
+let eval grc_ref pwb =
+    let new_grc = iterator (!grc_ref,[pwb]) in 
+    let _ = (grc_ref:=new_grc) in 
+    Option.get(Impatient.immediate_opt new_grc pwb);;    
+
 
 end ;;   
+
+end ;; 
+
+module Impatient = struct 
+
+  module Private = struct
+    let impatient_ref = ref Grocery.empty_one ;;
+  end ;;
+
+  let eval_opt = Generic.Impatient.eval_opt (!(Private.impatient_ref)) ;; 
+  let immediate_opt = Generic.Impatient.immediate_opt (!(Private.impatient_ref)) ;; 
+  let update_if_possible pwb =
+     let (opt_answer,new_grc) = Generic.Impatient.update_if_possible (!(Private.impatient_ref)) pwb in 
+     let _ = (Private.impatient_ref:=new_grc) in 
+     opt_answer ;; 
+
+end ;;
+
+module Painstaking = struct 
+
+  module Private = struct
+    let painstaking_ref = ref Grocery.empty_one ;;
+  end ;;
+
+  let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
+  
+end ;;
