@@ -90,12 +90,12 @@ let fis_order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
       Total_ordering.silex_for_intlists scr1 scr2
   ): finite_int_set Total_ordering_t.t);;
 
-let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
+(* let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
     let trial1 = i_order w1 w2 in 
     if trial1<>Total_ordering_result_t.Equal then trial1 else 
     fis_order fis1 fis2
   ): point Total_ordering_t.t);;
-let point_insert = Ordered.insert point_order ;;
+let point_insert = Ordered.insert point_order ;; *)
 
 let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
   let trial1 = i_order w1 w2 in 
@@ -262,6 +262,12 @@ module Point = struct
     ((Find_highest_constraint.below_maximal_width w domain) <> None);;
 
   let max (P(fis,_w)) = Finite_int_set.max fis  ;; 
+
+  let order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
+    let trial1 = i_order w1 w2 in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else 
+    fis_order fis1 fis2
+  ): point Total_ordering_t.t);;
 
   let remove_element (P(fis,w)) pivot = 
     let new_fis = Finite_int_set.remove_element fis pivot in 
