@@ -825,6 +825,13 @@ let usual_decomposition_opt pwb =
         let new_wmax = (nth 2)-(nth 1)-1 in 
         PWB(P(new_fis,W new_wmax),nth 1);;
 
+
+    let order = ((fun (PWB(pt1,b1)) (PWB(pt2,b2)) ->
+          let trial1 = Point.order pt1 pt2 in 
+          if trial1<>Total_ordering_result_t.Equal then trial1 else 
+          i_order b1 b2
+        ): point_with_breadth Total_ordering_t.t);;    
+
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -838,6 +845,7 @@ let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;
 let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
+let order = Private.order ;; 
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
@@ -1097,6 +1105,31 @@ module Diagnosis = struct
 
 module Grocery = struct 
 
+ module Low_level = struct 
+
+  let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
+  ): handle Total_ordering_t.t);; 
+
+  let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
+  ): mold Total_ordering_t.t);; 
+
+  let hm_order = Total_ordering.product handle_order mold_order ;;
+ 
+  let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
+ 
+  let rec get_opt key = function 
+   [] -> None 
+   | (key2,val2) :: others ->
+      match Point_with_breadth.order key key2 with 
+       Total_ordering_result_t.Lower -> None
+      |Total_ordering_result_t.Greater -> get_opt key others  
+      |Total_ordering_result_t.Equal -> Some val2 ;;  
+    
+  let insert new_key data = Ordered.insert order new_key data ;; 
+  
+
+ end ;; 
+
 let empty_one = {
   helpers = [];
   pair_level = [];
@@ -1106,7 +1139,7 @@ let empty_one = {
 
 let add_to_low_level grc pwb pair = {
    grc with 
-   low_level = (pwb,pair) ::(grc.low_level);
+   low_level = Low_level.insert (pwb,pair) (grc.low_level);
 } ;;
 
 let add_to_low_level_if_nondiscrete grc pwb pair =
@@ -1132,7 +1165,7 @@ let immediate_eval_opt grc_ref pwb =
                 Some(handle,mold)    
   | None ->
      (  
-      match List.assoc_opt pwb (!grc_ref).low_level with 
+      match Low_level.get_opt pwb (!grc_ref).low_level with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
