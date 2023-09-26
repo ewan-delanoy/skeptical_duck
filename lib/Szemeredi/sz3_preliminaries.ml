@@ -846,6 +846,7 @@ let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
+let projection pwb = snd(decompose_wrt_translation pwb);;
 let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
