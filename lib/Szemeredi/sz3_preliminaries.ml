@@ -1145,8 +1145,8 @@ let add_to_low_level grc pwb pair = {
 
 let add_to_low_level_if_nondiscrete grc pwb pair =
   if Point_with_breadth.is_discrete pwb 
-  then add_to_low_level grc pwb pair
-  else grc;;
+  then grc
+  else add_to_low_level grc pwb pair;;
 
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.is_discrete pwb 
@@ -1802,15 +1802,15 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
   let (opt_pair3,grc3) = Impatient.update_if_possible grc1 pwb_i in 
-  if opt_pair3=None then (grc3,pwb_i::to_be_treated) else
+  if opt_pair3=None then (grc3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
   let (opt_pair4,grc4) = Impatient.update_if_possible grc3 pwb_j in 
-  if opt_pair4=None then (grc4,pwb_j::to_be_treated) else
+  if opt_pair4=None then (grc4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
   let (opt_pair5,grc5) = Impatient.update_if_possible grc4 pwb_k in 
-  if opt_pair5=None then (grc5,pwb_k::to_be_treated) else
+  if opt_pair5=None then (grc5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
-  let candidates = List.flatten(Image.image (fun (MM(sols,_,_))->sols) [mold_i;mold_j;mold_k]) in 
+  let candidates = il_fold_merge(Image.image (fun (MM(sols,_,_))->sols) [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Medium_mold.shallow final_sols) in
   (Grocery.add_to_low_level grc5 pwb answer,others) ;;
