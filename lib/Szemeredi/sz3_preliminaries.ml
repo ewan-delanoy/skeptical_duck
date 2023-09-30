@@ -2036,3 +2036,73 @@ module Decompose = struct
   let decompose = Private.decompose ;; 
   
   end ;;
+
+  module Diagnose = struct 
+
+    type temporarily_new_diagnosis =
+       Missing_forced_elements of (int list) * point_with_breadth 
+      |Missing_solution of solution * point_with_breadth 
+      |Missing_subcomputation_for_fork of point_with_breadth 
+      |Missing_switch_in_fork of int * point_with_breadth ;;
+      
+    exception Nothing_to_diagnose_exn ;;
+    exception Discrete_not_diagnosable_exn ;; 
+    exception Missing_in_diagnose_rightmost_overflow_exn of point_with_breadth ;;
+      
+
+    
+    module Private = struct
+    
+    let find_precedent pwb = 
+       let temp1 = (Image.image snd (Decompose.chain pwb))@[pwb] in
+        match List.find_map (fun pwb2->
+           match  Impatient.update_if_possible pwb2 with 
+           Some _ -> None 
+           |None -> Some(pwb2)
+        ) temp1   with 
+        None -> raise(Nothing_to_diagnose_exn) 
+        |Some precedent -> precedent ;; 
+    
+      let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
+         match  Impatient.immediate_opt left_pwb with 
+         None -> raise(Missing_in_diagnose_rightmost_overflow_exn(left_pwb))
+         |Some (_,MM(_sols,ext,_torsion)) -> 
+           Missing_forced_elements(i_setminus [u;v] ext,left_pwb) ;; 
+    
+     let diagnose_rightmost_pivot pwb left_pwb = 
+        let the_sol = Compute_Standard_solution.compute pwb 
+        and n = Point_with_breadth.max pwb in
+        Missing_solution(i_outsert n the_sol,left_pwb) ;; 
+    
+      let diagnose_select pwb prec_pwb = 
+          let the_sol = Compute_Standard_solution.compute pwb in
+          Missing_solution(the_sol,prec_pwb) ;;  
+    
+      let diagnose_fork (i,j,k) pwb = 
+        let the_sol = Compute_Standard_solution.compute pwb in 
+        let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
+        let shorter_pwb = Point_with_breadth.remove_element pwb l in 
+        match  Impatient.immediate_opt shorter_pwb with 
+         None -> Missing_subcomputation_for_fork(shorter_pwb)
+         |Some (_,MM(sols,_ext,_torsion)) -> 
+           if not(List.mem the_sol sols)
+           then Missing_solution(the_sol,shorter_pwb)
+           else Missing_switch_in_fork(l,pwb) ;;  
+          
+    
+    let diagnose_precedent pwb =
+      let (handle,pwb2) = Decompose.decompose pwb in 
+        match handle with
+         Discrete -> raise(Discrete_not_diagnosable_exn)
+        |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow (u,v,n) pwb2
+        |Rightmost_pivot(_) -> diagnose_rightmost_pivot pwb pwb2
+        |Select (_,_,_) -> diagnose_select pwb pwb2 
+        |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb ;;  
+    
+    end ;;
+    
+    let diagnose pwb =
+        let precedent = Private.find_precedent pwb in 
+        (precedent,Private.diagnose_precedent precedent) ;; 
+    
+    end ;;
