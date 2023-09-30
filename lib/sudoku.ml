@@ -4,9 +4,7 @@
 
 *)
 
-(*
-#install_printer Display.print_out_grid ;;
-*)
+
 
 type cell = C of int * int ;;
 
@@ -15,11 +13,16 @@ type box =
    |Column of int 
    |Square of int ;; 
 
-type grid = G of (int list) list;;
+type grid = G of (cell * ((int list) * bool)) list;;
+
+type deduction =
+    Simple of cell
+   |Indirect of box * int ;; 
 
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
+let i_mem = Ordered.mem i_order ;;
 let i_outsert = Ordered.outsert i_order ;;
 
 module Cell = struct 
@@ -81,28 +84,32 @@ end ;;
 module Grid = struct 
 
 exception Assign_exn of cell ;;  
+exception Repeated_assignment_exn of cell ;;  
+
 
 module Private = struct
 
 let origin = 
   let small_base = Int_range.range 1 9 in 
-  G(Int_range.scale (fun t->small_base) 1 81) ;;
+  G(Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
 
-let possibilities_at_cell (G l) cell = List.nth l ((Cell.single_index cell)-1) ;;  
+let possibilities_at_cell (G l) cell = fst(List.assoc cell l) ;;  
 
 let uncurried_assign (G l) (cell,v) = 
-   let possibilities = possibilities_at_cell (G l) cell  in 
-   if not(List.mem v possibilities)
+   let (possibilities,is_old) = List.assoc cell l  in 
+   if (not(List.mem v possibilities))
    then raise(Assign_exn(cell))
    else 
-   let combined_l = List.combine Cell.all l in 
+   if (not(List.mem v possibilities))||is_old
+   then raise(Repeated_assignment_exn(cell))
+   else  
    let new_l = Image.image (
-     fun (cell2,poss)->
-        if cell2=cell then [v] else 
+     fun (cell2,(poss,is_old))->
+        if cell2=cell then (cell2,([v],true)) else 
         if Cell.test_for_neighborhood cell cell2 
-        then i_outsert v poss
-        else poss       
-   ) combined_l in 
+        then (cell2,(i_outsert v poss,is_old))
+        else (cell2,(poss,is_old))       
+   ) l in 
    G new_l ;;  
 
 end ;;
@@ -112,9 +119,11 @@ let assign gr cell v = Private.uncurried_assign gr (cell,v) ;;
 let assign_several gr assignments = 
      List.fold_left  Private.uncurried_assign gr assignments ;; 
 
+let assoc (G l) cell = List.assoc cell l ;;  
+
 let initialize_with l =
     let temp1 = List.combine Cell.all l in 
-    let temp2 = List.filter (fun (cell,v)->v<>0) temp1 in 
+    let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
     assign_several Private.origin temp2 ;; 
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
@@ -127,10 +136,10 @@ module Private = struct
 
       let eval_small_grid_using_matrix_coordinates gr (i,j) = 
          let cell = Cell.from_matrix_coordinates i j in 
-         let poss = Grid.possibilities_at_cell gr cell in 
+         let (poss,is_old) = Grid.assoc gr cell in 
          let m = List.length poss in 
          if m = 0 then "B" else 
-         if m = 1 then  string_of_int(List.hd poss) else
+         if (m = 1)&&is_old then  string_of_int(List.hd poss) else
          " " ;; 
 
       let eval_large_grid_using_matrix gr large_i large_j =
@@ -163,15 +172,74 @@ let grid_to_string = Private.to_string ;;
 
 end ;;  
 
+module Deduce = struct 
+
+module Private = struct  
+
+let test_for_indirect_deduction gr (box,v)=
+  let cells = Box.content box in 
+  let temp1 = List.filter_map 
+    (fun cell->
+        let poss = Grid.possibilities_at_cell gr cell in 
+        if i_mem v poss
+        then Some cell  
+        else None) cells in
+  if List.length(temp1)=1
+  then ( let cell = List.hd temp1 in 
+       let (_,is_old) = Grid.assoc gr cell in 
+       if is_old
+       then None  
+       else Some(box,v,List.hd temp1) )
+  else None ;;         
+     
+type walker = W of  grid * deduction list * cell option * bool ;;
+
+exception Treat_simple_deduction_exn ;;   
+
+let treat_simple_deduction  (W(gr,older_deds,_impossible_cell_opt,_end_reached)) cell0 poss0 = 
+  let m0 = List.length(poss0) in 
+  if m0=0 then (W(gr,older_deds,Some cell0,false)) else
+  if m0=1 
+  then let v0 = List.hd poss0 in 
+     (W(Grid.assign gr cell0 v0,(Simple cell0)::older_deds,None,false)) 
+  else raise(Treat_simple_deduction_exn) ;; 
 
 
-(*
+let pusher walker =
+  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
+  if end_reached then walker else
+  if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
+  let (G l)=gr in 
+  match List.find_opt (fun (_cell,(poss,is_old))->
+         (List.length(poss)<=1)&&(not is_old)) l with 
+  Some(cell0,(poss0,_))-> treat_simple_deduction walker cell0 poss0 
+  |None ->
+     let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
+     (match List.find_map (test_for_indirect_deduction gr) proposals with 
+       (Some(box1,v1,cell1)) ->
+        W(Grid.assign gr cell1 v1,(Indirect(box1,v1))::older_deds,None,false) 
+       | None -> W(gr,older_deds,None,true) 
+     );;
+       
+let rec iterator walker =
+  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
+  if end_reached then (gr,impossible_cell_opt,List.rev older_deds) else
+  iterator(pusher(walker)) ;;  
 
-let cm = Grid.compute_minimizers_inside ;; 
+end ;;
 
+let deduce_easily_as_much_as_possible gr = 
+    Private.iterator(Private.W(gr,[],None,false))
+;;  
+
+end ;;   
+
+(* 
+
+open Sudoku ;; 
+#install_printer Display.print_out_grid ;;
 
 let g0 = Grid.initialize_with 
-
 [
    0;0;0;  0;5;0;  0;0;0;
    8;4;0;  6;0;0;  3;0;0; 
@@ -187,7 +255,42 @@ let g0 = Grid.initialize_with
 
 ];; 
 
-let g0 = Grid.make_all_immediate_deductions original_g0 ;; 
+let (g1,contr_opt,deds) = Deduce.deduce_easily_as_much_as_possible g0 ;; 
+
+let w0 = Deduce.Private.W(g0,[],None,false) ;;
+
+let ff = Memoized.small Deduce.Private.pusher w0;;
+
+let w1 = Deduce.Private.pusher w0 ;; 
+let w2 = Deduce.Private.pusher w1 ;; 
+
+let w37= ff 37;;
+
+let (Deduce.Private.W((G l37),_,_,_)) = w37 ;; 
+
+let bad1 = Deduce.Private.pusher w7 ;; 
+
+let (Deduce.Private.W(gr,older_deds,impossible_cell_opt,end_reached)) = w7 ;;  
+
+
+let pusher walker =
+  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
+  if end_reached then walker else
+  if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
+  let (G l)=gr in 
+  match List.find_opt (fun (_cell,(poss,is_old))->
+         (List.length(poss)<=1)&&(not is_old)) l with 
+  Some(cell0,(poss0,_))-> treat_simple_deduction walker cell0 poss0 
+  |None ->
+     let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
+     (match List.find_map (test_for_indirect_deduction gr) proposals with 
+       (Some(box1,v1,cell1)) ->
+        W(Grid.assign gr cell1 v1,(Indirect(box1,v1))::older_deds,None,false) 
+       | None ->  
+           W(gr,older_deds,None,Grid.is_finished gr) 
+     );;
+
+List.filter (fun k->ff(k)=ff(k+1)) (Int_range.range 1 50);;
 
 *)
 
