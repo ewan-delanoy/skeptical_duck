@@ -1967,6 +1967,7 @@ module Extra_constraints = struct
 
   let of_point_with_breadth = Private.pwb_to_extra_constraints ;;   
   let measure = Private.measure_for_pwc ;;  
+  let remove = Private.remove_element_on_pwc ;; 
   let standard_solution = Private.standard_solution_for_pwc ;;  
   
 
