@@ -1866,3 +1866,106 @@ module Painstaking = struct
   let measure pwb = let (_,MM(sols,_,_)) = eval pwb in List.length(List.hd sols) ;; 
 
 end ;;
+
+module Compute_Standard_solution = struct 
+
+  module Private = struct
+  
+  type paint_with_extra_constraints = PAC of point * constraint_t list ;;
+  
+  let usual_decomposition_for_bare_point_opt_for_pwc pt =
+    match Point.highest_constraint_opt pt with 
+     None -> None 
+    |Some (C l)-> 
+      let current_b = List.nth l 0 in 
+      let effective_w=(List.nth l 1)-current_b in 
+      let candidates=Int_range.descending_scale (
+          fun b->C[b;b+effective_w;b+2*effective_w]
+      ) 1 (current_b-1) in 
+      let (P(fis,_)) = pt in 
+      let domain = Finite_int_set.to_usual_int_list fis in 
+      let selected_candidates = List.filter (
+         fun (C l)->i_is_included_in l domain
+      ) candidates in 
+      Some(PAC(P(fis,W(effective_w-1)),selected_candidates), C l)
+      ;;  
+  
+    let usual_decomposition_opt_for_pwc (PAC(pt,l_cstr)) = 
+        match l_cstr with 
+      [] -> usual_decomposition_for_bare_point_opt_for_pwc pt 
+    |highest :: others -> Some(PAC(pt,others),highest) ;; 
+  
+  
+  let pwc_is_discrete pwc = ((usual_decomposition_opt_for_pwc pwc)=None);;
+  
+  
+  let pwc_remove_element (PAC(pt,l_cstr)) t =
+    let smaller_pt = Point.remove_element pt t in 
+    PAC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+  
+  let remove_rightmost_element_on_pwc pt_with_constraints =
+    let (PAC(pt,_)) = pt_with_constraints in 
+    pwc_remove_element  pt_with_constraints (Point.max pt) ;; 
+  
+  let remove_rightmost_element_but_keep_constraints_on_pwc (PAC(pt,l_cstr)) =
+     let (W w) = Point.width pt and n=Point.max pt in 
+     let smaller_pt = Point.remove_element pt n in
+     let constraints1 = 
+        (Int_range.descending_scale (fun d->[n-(2*d);n-d]) w 1)@
+        (Image.image (fun (C l)->i_outsert n l) l_cstr) in
+     let constraints2 = Ordered_misc.minimal_elts_wrt_inclusion constraints1 in 
+     let (singletons,constraints3) = List.partition (fun cstr->List.length(cstr)=1) constraints2 in
+     let removable_subset = List.flatten singletons in 
+     let final_pt = Point.remove_elements smaller_pt removable_subset 
+     and final_constraints = Image.image (fun l->C l) constraints3 in 
+     PAC(final_pt,final_constraints) ;;  
+  
+  
+     let measure_for_pwc = Memoized.recursive (fun 
+     old_f pwc-> 
+       let (PAC(pt,l_cstr)) = pwc in 
+       let stays_admissible = (fun z->List.for_all (
+          fun (C cstr)->not(i_is_included_in cstr z)
+       ) l_cstr) in 
+       let trial1 = Torsionfree_mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
+       if List.exists stays_admissible  trial1 
+       then List.length(List.hd trial1)
+       else 
+       let pwc2 = remove_rightmost_element_on_pwc pwc
+       and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
+       max(old_f pwc2)((old_f pwc3)+1)
+  );;
+  
+  let standard_solution_for_pwc  = Memoized.recursive (fun 
+    old_f pwc-> 
+    let (PAC(pt,_l_cstr)) = pwc in 
+    if pwc_is_discrete pwc 
+    then Point.supporting_set pt 
+    else  
+    let pwc2 = remove_rightmost_element_on_pwc pwc
+    and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
+    if (measure_for_pwc pwc2)>=((measure_for_pwc pwc3)+1)
+    then old_f(pwc2)
+    else (old_f(pwc3))@[Point.max pt]  
+  );;
+  
+  let pwb_to_extra_constraints (PWB(pt,b)) =
+    if b = 0 then PAC(pt,[]) else 
+    let (W w)=Point.width pt 
+    and domain = Point.supporting_set pt in 
+    let all_constraints = Int_range.descending_scale 
+       (fun k->C[k;k+(w+1);k+2*(w+1)]) b 1 in 
+    let meaningful_constraints = List.filter(
+      fun (C cstr) -> i_is_included_in cstr domain
+    )  all_constraints in 
+    PAC(pt,meaningful_constraints) ;;
+  
+    end ;;
+  
+  let compute = Memoized.make(fun pwb->
+    Private.standard_solution_for_pwc 
+       (Private.pwb_to_extra_constraints pwb)
+  )  ;;
+  
+  end;;
+  
