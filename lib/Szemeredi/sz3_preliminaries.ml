@@ -1867,12 +1867,13 @@ module Painstaking = struct
 
 end ;;
 
-module Compute_Standard_solution = struct 
 
-  module Private = struct
+module Extra_constraints = struct
   
   type paint_with_extra_constraints = PAC of point * constraint_t list ;;
   
+  module Private = struct
+
   let usual_decomposition_for_bare_point_opt_for_pwc pt =
     match Point.highest_constraint_opt pt with 
      None -> None 
@@ -1961,11 +1962,19 @@ module Compute_Standard_solution = struct
     PAC(pt,meaningful_constraints) ;;
   
     end ;;
-  
+
+
+  let of_point_with_breadth = Private.pwb_to_extra_constraints ;;   
+  let standard_solution = Private.standard_solution_for_pwc ;;  
+
+  end ;;    
+
+module Compute_Standard_solution = struct 
+
   let compute = Memoized.make(fun pwb->
-    Private.standard_solution_for_pwc 
-       (Private.pwb_to_extra_constraints pwb)
+    Extra_constraints.standard_solution
+       (Extra_constraints.of_point_with_breadth pwb)
   )  ;;
   
-  end;;
+end;;
   
