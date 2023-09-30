@@ -1900,13 +1900,13 @@ module Extra_constraints = struct
   let pwc_is_discrete pwc = ((usual_decomposition_opt_for_pwc pwc)=None);;
   
   
-  let pwc_remove_element (PAC(pt,l_cstr)) t =
+  let remove_element_on_pwc (PAC(pt,l_cstr)) t =
     let smaller_pt = Point.remove_element pt t in 
     PAC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
   
   let remove_rightmost_element_on_pwc pt_with_constraints =
     let (PAC(pt,_)) = pt_with_constraints in 
-    pwc_remove_element  pt_with_constraints (Point.max pt) ;; 
+    remove_element_on_pwc  pt_with_constraints (Point.max pt) ;; 
   
   let remove_rightmost_element_but_keep_constraints_on_pwc (PAC(pt,l_cstr)) =
      let (W w) = Point.width pt and n=Point.max pt in 
@@ -1960,12 +1960,15 @@ module Extra_constraints = struct
       fun (C cstr) -> i_is_included_in cstr domain
     )  all_constraints in 
     PAC(pt,meaningful_constraints) ;;
-  
+
+
     end ;;
 
 
   let of_point_with_breadth = Private.pwb_to_extra_constraints ;;   
+  let measure = Private.measure_for_pwc ;;  
   let standard_solution = Private.standard_solution_for_pwc ;;  
+  
 
   end ;;    
 
