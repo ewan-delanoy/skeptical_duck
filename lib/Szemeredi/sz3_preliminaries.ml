@@ -1863,5 +1863,6 @@ module Painstaking = struct
   end ;;
 
   let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
-  
+  let measure pwb = let (_,MM(sols,_,_)) = eval pwb in List.length(List.hd sols) ;; 
+
 end ;;
