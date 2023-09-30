@@ -1982,3 +1982,57 @@ module Compute_Standard_solution = struct
   
 end;;
   
+module Decompose = struct 
+
+  module Private = struct
+  
+  let test_for_individual_rightmost_overflow left_pwb m (u,v) = 
+        List.for_all (fun t->Painstaking.measure(Point_with_breadth.remove_element left_pwb t)=m-1) [u;v] ;;
+    
+  let test_for_rightmost_overflow pwb m =
+        let pairs =  Point_with_breadth.complementary_pairs pwb 
+        and left_pwb = Point_with_breadth.remove_element pwb (Point_with_breadth.max pwb) in 
+        List.find_opt (test_for_individual_rightmost_overflow left_pwb m) pairs ;; 
+  
+  
+  let decompose = Memoized.make(fun pwb->
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+        None -> (Discrete,PWB(P(FIS(0,[]),W 0),0))
+        |Some(prec_pwb,C cstr) -> 
+          let n = Point_with_breadth.max pwb in
+          let left_pwb = Point_with_breadth.remove_element pwb n in 
+          let pwc = Extra_constraints.of_point_with_breadth pwb in  
+          if Extra_constraints.measure(Extra_constraints.remove pwc n)=
+            Extra_constraints.measure(pwc)-1   
+          then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),left_pwb)
+          else   
+          let m = Painstaking.measure pwb in   
+            ( match test_for_rightmost_overflow pwb m with 
+           (Some(u,v))->(Rightmost_overflow(u,v,n),left_pwb)
+           |None ->   
+         
+         let nth = (fun k->List.nth cstr (k-1)) in 
+         if Painstaking.measure prec_pwb = m
+         then 
+              (Select(nth 1,nth 2,nth 3),prec_pwb)
+         else (Fork(nth 1,nth 2,nth 3),prec_pwb)   
+  ))  ;;     
+  
+  let rec iterator_for_chain (treated,pwb_to_be_treated) =
+     let (handle,prec_pwb) = decompose pwb_to_be_treated in 
+     let newly_treated = (handle,prec_pwb) :: treated in 
+     if handle = Discrete 
+     then newly_treated
+     else  iterator_for_chain (newly_treated,prec_pwb) ;;   
+  
+       ;;
+        
+  
+  
+  end ;;
+  
+  
+  let chain pwb = Private.iterator_for_chain ([],pwb) ;; 
+  let decompose = Private.decompose ;; 
+  
+  end ;;
