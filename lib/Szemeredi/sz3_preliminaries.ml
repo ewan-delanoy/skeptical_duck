@@ -495,7 +495,7 @@ let update_torsion
 end ;;   
 
      
-module Medium_mold = struct 
+module Mold = struct 
 
   let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
       let add = i_merge isolated_set in 
@@ -604,7 +604,7 @@ let add_to_low_level_if_nondiscrete grc pwb pair =
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.is_discrete pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
-       Some(Discrete,Medium_mold.discrete domain) 
+       Some(Discrete,Mold.discrete domain) 
   else     
   let (PWB(P(FIS(n,scr),w),b)) = pwb in  
   let wpair = (w,scr) in
@@ -641,7 +641,7 @@ module Impatient = struct
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
      match Grocery.immediate_eval_opt (ref grc) grounded_pwb with 
       None -> None
-     |Some(handle,mold) -> Some(Handle.translate d handle,Medium_mold.translate d mold) ;; 
+     |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
 
 let fork_opt grc pwb =
@@ -663,7 +663,7 @@ let fork_opt grc pwb =
                 None -> None
               | Some(_,left_mold) -> 
                  (
-                  match Medium_mold.fork_opt pwb prec_mold left_mold ijk with 
+                  match Mold.fork_opt pwb prec_mold left_mold ijk with 
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )
@@ -686,7 +686,7 @@ let rightmost_overflow_opt grc pwb  =
     None -> None 
    |Some(u,v) ->
       (
-        match Medium_mold.rightmost_overflow_opt pwb left_mold with 
+        match Mold.rightmost_overflow_opt pwb left_mold with 
            None -> None 
           |Some mold -> Some(Rightmost_overflow(u,v,n),mold) 
        )
@@ -700,7 +700,7 @@ let rightmost_overflow_opt grc pwb  =
    match immediate_opt grc left_pwb with 
        None -> None
      | Some(_,left_mold) -> 
-     (match Medium_mold.rightmost_pivot_opt pwb left_mold with 
+     (match Mold.rightmost_pivot_opt pwb left_mold with 
        None -> None 
       |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
      )    ;;  
@@ -716,7 +716,7 @@ let select_opt grc pwb =
              let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
              let (i,j,k) = ijk in 
              (
-                 match Medium_mold.select_opt pwb prec_mold ijk with 
+                 match Mold.select_opt pwb prec_mold ijk with 
                     None -> None 
                    |Some mold -> Some(Select(i,j,k),mold) 
              );;        
@@ -726,7 +726,7 @@ let eval_opt grc pwb =
   Some(answer0) -> Some answer0
  | None -> 
   if Point_with_breadth.is_discrete pwb 
-  then Some(Discrete,Medium_mold.discrete(Point_with_breadth.supporting_set pwb))
+  then Some(Discrete,Mold.discrete(Point_with_breadth.supporting_set pwb))
   else    
   (match rightmost_pivot_opt grc pwb with 
    Some(answer1) -> Some answer1
@@ -796,7 +796,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   then let (opt_pair6,grc6) = Impatient.update_if_possible grc1 nonisolated_pwb in 
        if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
-        let mold = Medium_mold.add_isolated_set nonisolated_mold isolated_elts in 
+        let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
        (Grocery.add_to_low_level grc6 pwb (Rightmost_pivot(W 0),mold),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
@@ -818,7 +818,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image (fun (MM(sols,_,_))->sols) [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
-  let answer=(Fork(i,j,k),Medium_mold.shallow final_sols) in
+  let answer=(Fork(i,j,k),Mold.shallow final_sols) in
   (Grocery.add_to_low_level grc5 pwb answer,others) ;;
 
 let rec iterator (grc,to_be_treated) =
