@@ -37,4 +37,3 @@ type fan = F of int list list ;;
 
 type torsion = T of (int*fan) list ;; 
 
-type mold = MM of (solution list) * extension_data * torsion ;;    
