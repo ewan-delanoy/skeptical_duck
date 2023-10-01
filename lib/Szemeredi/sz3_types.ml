@@ -38,10 +38,3 @@ type fan = F of int list list ;;
 type torsion = T of (int*fan) list ;; 
 
 type mold = MM of (solution list) * extension_data * torsion ;;    
-
-type grocery = {
-  helpers : helper list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  low_level : (point_with_breadth * (handle * mold)) list;
-} ;; 
