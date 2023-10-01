@@ -35,7 +35,6 @@ type helper = Sz3_types.helper =
 
 type fan = Sz3_types.fan = F of int list list ;; 
 
-type torsion = Sz3_types.torsion = T of (int*fan) list ;;   
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -411,6 +410,8 @@ end ;;
 
 module Torsion = struct 
 
+  type t = T of (int * fan) list ;;
+
 module Private = struct 
 
 let unregistered = T [] ;;
@@ -478,17 +479,13 @@ let translate (d:int) (T data) =
 
 let unregistered = Private.unregistered  ;;
 
-let update_torsion
-  ~preceding_point:(_prec_pwb:point_with_breadth) ~preceding_torsion:(_old_torsion:torsion) 
-  ~current_point:(_pwb:point_with_breadth) (_cstr:constraint_t) (_update_is_a_selection:bool) = 
-  Private.unregistered  ;;
 
 end ;;   
 
      
 module Mold = struct 
 
-  type t = MM of (solution list) * extension_data * torsion ;;    
+  type t = MM of (solution list) * extension_data * Torsion.t ;;    
 
   let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
       let add = i_merge isolated_set in 
