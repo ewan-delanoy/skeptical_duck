@@ -88,6 +88,11 @@ let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
 
 module Constraint = struct 
 
+let select_in_list  l_cstr candidates =  
+   List.filter (fun candidate->List.for_all( fun (C cstr) ->not(i_is_included_in cstr candidate)) l_cstr ) 
+     candidates;;
+
+
 let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
