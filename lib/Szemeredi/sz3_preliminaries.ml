@@ -438,144 +438,97 @@ module Small_mold = struct
 end ;;
  
 
-
-     
 module Mold = struct 
 
-   
-
-module Torsion = struct 
-
-  type t = T of (int * fan) list ;;
-
-module Private = struct 
-
-let unregistered = T [] ;;
-
-end ;;   
-
-let discrete _domain = Private.unregistered  ;;
-
-let extra_links (T data) = 
-  match data with 
-   [] -> []
-  |(idx1,fan1) :: _ ->
-     if idx1 = 0 
-     then Fan.core fan1
-     else []  ;;
-
-let fork (i,j,k) (T data) = 
-  let c_constraints = [C[i;j;k]] in  
-  T(List.filter_map (
-        fun (i,old_indication)->
-           if i=0 then None else
-           Some(i-1,Fan.impose c_constraints old_indication) 
-  )  data) ;;       
-
-
-let rightmost_overflow full_pwb (T old_data) = 
-  let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
-  and n = Point_with_breadth.max full_pwb in 
-  let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
-  let old_range = Image.image fst old_data in 
-  let new_range = List.filter (fun i->(i_mem (i+1) old_range)) old_range in   
-  let usual = Fan.impose_and_distribute (c_constraints,[n]) 
-  and get = (fun i->List.assoc i old_data) in 
-  T(Image.image (
-    fun i->
-       (i,Fan.union (usual(get (i+1))) (get(i))) 
-  )  new_range) ;;     
-
-let rightmost_pivot full_pwb (T old_data) = 
-    let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
-    and n = Point_with_breadth.max full_pwb in 
-    let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
-    let old_range = Image.image fst old_data in 
-    let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
-    let usual = Fan.impose_and_distribute (c_constraints,[n]) 
-    and get = (fun i->List.assoc i old_data) in 
-    T(Image.image (
-      fun i->
-         if i=0 then (i,usual(get 0)) else
-         (i,Fan.union (usual(get i)) (get(i-1))) 
-    )  new_range) ;;     
-
-
-
-
-let select (i,j,k) (T data) = 
-      let c_constraints = [C[i;j;k]] in  
-      T(Image.image (
-            fun (i,old_indication)->
-               (i-1,Fan.impose c_constraints old_indication) 
-      )  data) ;;    
-
-let translate (d:int) (T data) = 
-    (T (Image.image (fun (idx,fan)->(idx,Fan.translate d fan)) data)) ;;  
-
-let unregistered = Private.unregistered  ;;
-
-
-end ;;   
-
-
-  type t = MM of (solution list) * extension_data * Torsion.t ;;    
-
+  type t = BM of extension_data * (int * small_mold) list ;;
+  
   module Private = struct 
-
-    let constructor_opt pwb sols ext torsion = 
-      let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
-      and extra_links = Torsion.extra_links torsion in 
-      if sols<>[]
-      then Some(MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion))
-      else None ;;   
-
-  end ;;   
-
-  let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
-      let add = i_merge isolated_set in 
-      MM(Image.image add sols,add ext,Torsion.unregistered) ;; 
-
-
-  let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
-
-  let forced_elements (MM(_sols,ext,_torsion)) = ext ;; 
-
-  let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(pointed_sols,_,_)) (i,j,k) = 
-    Private.constructor_opt pwb pointed_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
-
-  let rightmost_overflow_opt pwb (MM(sols,_ext,old_torsion)) = 
-    Private.constructor_opt pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
-
-  let rightmost_pivot_opt pwb (MM(left_sols,left_ext,left_torsion)) = 
-    let n = Point_with_breadth.max pwb in 
-    let new_sols = List.filter_map (
-                         fun sol -> 
-                           let new_sol = i_insert n sol in 
-                           if Point_with_breadth.subset_is_admissible pwb new_sol 
-                           then Some new_sol
-                           else None  
-    ) left_sols in 
-    Private.constructor_opt pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
-
-  let select_opt pwb prec_mold (i,j,k) = 
-    let (MM(prec_sols,prec_ext,prec_torsion)) = prec_mold in 
-    let selected_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
-    Private.constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
-      
-  let shallow sols = MM(sols,[],Torsion.unregistered ) ;;      
-
-  let solutions (MM(sols, _ext,_torsion)) = sols ;; 
-
-
-  let translate d (MM(sols, ext,torsion)) =
-    let tr = (fun x->Image.image(fun t->t+d) x) in 
-    MM(Image.image tr sols,tr ext,torsion) ;;  
-
-
-end ;;
-
-
+  
+  let constructor_opt forced_elts l = 
+      let (SM(sols,_)) = List.assoc 0 l in 
+      if sols <> [] 
+      then Some(BM(forced_elts,l))
+      else None ;;
+  
+  
+  end ;;  
+  
+  let add_isolated_set (BM(forced_elts,l)) isolated_set =
+     let add = i_merge isolated_set in
+     let tip = List.assoc 0 l in  
+     BM(add forced_elts,[0,Small_mold.add_isolated_set tip isolated_set]) ;;
+  
+  let discrete domain = BM(domain,[0,SM([domain],Fan.constructor [domain])]) ;; 
+  
+  let forced_elements (BM(ext,_)) = ext ;; 
+  
+  let fork_opt _pwb (BM(_prec_ext,prec_l)) (BM(_pointed_ext,pointed_l)) (i,j,k) = 
+      let c_constraints = [C[i;j;k]] 
+      and SM(pointed_sols,_) = List.assoc 0 pointed_l in  
+      let new_l= (0,SM(pointed_sols,Fan.empty_one))::(List.filter_map (
+            fun (i,old_indication)->
+               if i=0 then None else
+               Some(i-1,Small_mold.impose c_constraints old_indication) 
+      )  prec_l) in
+     Private.constructor_opt [] new_l ;; 
+  
+  let rightmost_overflow_opt full_pwb (BM(_old_ext,old_data)) = 
+      let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
+      and n = Point_with_breadth.max full_pwb in 
+      let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
+      let old_range = Image.image fst old_data in 
+      let new_range = List.filter (fun i->(i_mem (i+1) old_range)) old_range in   
+      let get = (fun i->List.assoc i old_data) in 
+      let small_mold_at_level1 = (
+         if List.mem 1 old_range then get 1 else Small_mold.empty_one
+      ) in
+      let get_next_one = (fun i->
+         if i=0 then small_mold_at_level1 else get(i+1)
+      ) in
+      let new_l = Image.image (
+        fun i->
+           (i,Small_mold.typical_union (c_constraints,[n]) (get_next_one i) (get i)) 
+      )  (i_insert 0 new_range) in 
+      Private.constructor_opt [] new_l ;;     
+  
+  let rightmost_pivot_opt full_pwb (BM(old_ext,old_data)) = 
+        let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
+        and n = Point_with_breadth.max full_pwb in 
+        let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
+        let old_range = Image.image fst old_data in 
+        let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
+        let  get = (fun i->List.assoc i old_data) in 
+        let get_preceding_one = (fun i->
+          if i=0 then Small_mold.empty_one else get(i-1)
+       ) in
+        let new_l = Image.image (
+          fun i->
+           (i,Small_mold.typical_union (c_constraints,[n]) (get 0) (get_preceding_one i)
+            ) 
+        )  new_range in 
+        Private.constructor_opt (i_insert n old_ext) new_l  ;;         
+  
+        let select_opt _pwb (BM(prec_ext,prec_l)) (i,j,k) = 
+          let new_l = Image.image (
+          fun (t,old_data_for_t)->
+           (t,Small_mold.typical_union ([C[i;j;k]],[]) old_data_for_t Small_mold.empty_one
+            ) 
+        )  prec_l in 
+        Private.constructor_opt prec_ext new_l  ;; 
+  
+        let shallow sols = 
+          BM([],[0,SM(sols,Fan.empty_one)])  ;; 
+  
+       let solutions (BM(_,l)) = 
+         let (SM(sols,_)) = List.assoc 0 l in sols ;;        
+  
+       let translate d (BM(ext,l)) = 
+             BM(Image.image(fun t->t+d) ext,
+              Image.image (fun (i,data)->(i,Small_mold.translate d data)) l
+             );;
+  
+  
+  end ;;    
 
 module Handle = struct 
 
