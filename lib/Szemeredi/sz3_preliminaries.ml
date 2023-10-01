@@ -1083,30 +1083,6 @@ let translate d handle =
 
 end ;;  
 
-module Diagnosis = struct 
-
-  let is_unfinished  = function
-    Missing_treatment(_) 
-  | Incomplete_treatment (_) 
-  | Missing_links(_,_) -> true
-  | Finished(_,_,_) -> false ;;
-
-  let translate d  diag = match diag with   
-    Missing_treatment(_) 
-  | Incomplete_treatment (_) 
-  | Missing_links(_,_) -> diag 
-  | Finished(handle,mold,is_new) -> Finished(Handle.translate d handle,Medium_mold.translate d mold,is_new) ;; 
-  
-  exception To_bare_answer_exn of diagnosis ;; 
-
-  let to_bare_answer  diag = match diag with
-    Missing_treatment(_) 
-  | Incomplete_treatment (_) 
-  | Missing_links(_,_) -> raise(To_bare_answer_exn(diag))
-  | Finished(handle,mold,_) -> (handle,mold) ;;
-
-  end ;;  
-
 module Grocery = struct 
 
  module Low_level = struct 
