@@ -503,6 +503,8 @@ module Mold = struct
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
+  let forced_elements (MM(_sols,ext,_torsion)) = ext ;; 
+
   let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
     constructor_opt pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
 
