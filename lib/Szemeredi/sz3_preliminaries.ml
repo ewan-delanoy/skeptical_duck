@@ -413,7 +413,32 @@ module Fan = struct
 
 end ;;   
 
+module Small_mold = struct 
+
+  let add_isolated_set (SM(sols,fan)) isolated_set =
+    let add = i_merge isolated_set in 
+    SM(Image.image add sols,Fan.impose_and_distribute ([],isolated_set) fan) ;;
+
+  let empty_one = SM([],Fan.empty_one);;
+
+  let impose l_cstr (SM(sols,fan)) =
+     SM(Constraint.select_in_list l_cstr sols,Fan.impose l_cstr fan) ;; 
+
+  let translate d (SM(sols,fan))  = 
+    SM(Image.image (Image.image (fun t->t+d)) sols,Fan.translate d fan) ;;  
+
+  let typical_union (complements,automatically_distributed) (SM(sols1,fan1)) (SM(sols2,fan2))= 
+    let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
+        (Constraint.select_in_list complements sols))
+    and for_a_fan = Fan.impose_and_distribute (complements,automatically_distributed) in 
+    SM(il_merge (for_a_solution_set sols1) sols2,
+       Fan.union (for_a_fan fan1) fan2  
+      ) ;;
+
+end ;;
  
+
+
      
 module Mold = struct 
 
