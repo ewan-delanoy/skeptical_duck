@@ -795,7 +795,7 @@ let decompose_wrt_translation pwb =
   (d,Private.translate (-d) pwb);; 
 
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
-let is_discrete pwb = Point_with_extra_constraints.is_discrete (Private.to_extra_constraints pwb) ;; 
+let is_discrete pwb = (Private.usual_decomposition_opt pwb=None) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
