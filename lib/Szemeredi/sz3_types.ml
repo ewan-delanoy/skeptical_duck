@@ -35,4 +35,4 @@ type helper =
 
 type fan = F of int list list ;; 
 
-
+type small_mold = SM of (solution list) * fan ;; 

@@ -35,6 +35,7 @@ type helper = Sz3_types.helper =
 
 type fan = Sz3_types.fan = F of int list list ;; 
 
+type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;; 
 
 
 let i_order = Total_ordering.for_integers ;;
