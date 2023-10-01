@@ -40,8 +40,6 @@ type fan = Sz3_types.fan = F of int list list ;;
 
 type torsion = Sz3_types.torsion = T of (int*fan) list ;;   
 
-type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * extension_data ;;  
-
 type mold = Sz3_types.mold = MM of (solution list) * extension_data * torsion ;;    
 
 type grocery =  Sz3_types.grocery = {

@@ -20,8 +20,6 @@ type solution = int list ;;
 
 type point = P of finite_int_set * width ;; 
 
-type point_with_extra_constraints = PEC of point * (constraint_t list);;
-
 type point_with_breadth = PWB of point * int ;; 
 
 type handle = 
@@ -39,16 +37,8 @@ type fan = F of int list list ;;
 
 type torsion = T of (int*fan) list ;; 
 
-type torsionfree_mold = TFM of (solution list) * extension_data ;;
-
 type mold = MM of (solution list) * extension_data * torsion ;;    
 
-type diagnosis  = 
- Missing_treatment of point_with_breadth 
-|Incomplete_treatment of point_with_breadth 
-|Missing_links of point_with_breadth * (int list)
-|Finished of handle  * mold * bool ;;    
- 
 type grocery = {
   helpers : helper list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
