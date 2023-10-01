@@ -529,6 +529,8 @@ module Mold = struct
       
   let shallow sols = MM(sols,[],Torsion.unregistered ) ;;      
 
+  let solutions (MM(sols, _ext,_torsion)) = sols ;; 
+
   let torsion (MM(_sols, _ext,torsion)) = torsion ;; 
 
   let translate d (MM(sols, ext,torsion)) =
@@ -654,7 +656,7 @@ let fork_opt grc pwb =
     match immediate_opt grc prec_pwb with 
     None -> None
   | Some(_,prec_mold) -> 
-        let (MM(_sols,ext,_torsion)) = prec_mold in 
+        let ext = Mold.forced_elements prec_mold in 
         let nth_cstr = (fun k->List.nth cstr (k-1)) in 
         let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
         let (i,j,k) = ijk in 
@@ -681,7 +683,7 @@ let rightmost_overflow_opt grc pwb  =
  match immediate_opt grc left_pwb with 
      None -> None
    | Some(_,left_mold) -> 
-  let (MM(_left_sols,left_ext,_left_torsion)) = left_mold 
+  let left_ext = Mold.forced_elements left_mold 
   and complements = Point_with_breadth.complementary_pairs pwb in  
   match List.find_opt  (
               fun (u,v) -> i_is_included_in [u;v] left_ext 
@@ -1060,8 +1062,8 @@ module Decompose = struct
       let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
          match  Impatient.immediate_opt left_pwb with 
          None -> raise(Missing_in_diagnose_rightmost_overflow_exn(left_pwb))
-         |Some (_,MM(_sols,ext,_torsion)) -> 
-           Missing_forced_elements(i_setminus [u;v] ext,left_pwb) ;; 
+         |Some (_,mold) -> 
+           Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
     
      let diagnose_rightmost_pivot pwb left_pwb = 
         let the_sol = Compute_Standard_solution.compute pwb 
