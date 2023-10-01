@@ -777,6 +777,14 @@ let usual_decomposition_opt pwb =
           i_order b1 b2
         ): point_with_breadth Total_ordering_t.t);;    
 
+    let subset_is_admissible (PWB(pt,b)) subset =
+      if not(Point.subset_is_admissible pt subset)
+      then false 
+      else 
+        let (P(_,W w)) = pt in 
+        List.for_all (fun t->not(i_is_included_in [t;t+(w+1);t+2*(w+1)] subset)) (Int_range.range 1 b);;    
+
+
 end ;;  
 
 let breadth (PWB(_pt,b))= b ;;
@@ -797,8 +805,7 @@ let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
-let subset_is_admissible pwb subset = 
-     Point_with_extra_constraints.subset_is_admissible (Private.to_extra_constraints pwb) subset;; 
+let subset_is_admissible= Private.subset_is_admissible ;; 
 let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
 let supporting_set = Private.supporting_set ;; 
 let translate = Private.translate ;; 
