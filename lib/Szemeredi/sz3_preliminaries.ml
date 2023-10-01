@@ -37,8 +37,6 @@ type fan = Sz3_types.fan = F of int list list ;;
 
 type torsion = Sz3_types.torsion = T of (int*fan) list ;;   
 
-type mold = Sz3_types.mold = MM of (solution list) * extension_data * torsion ;;    
-
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -490,6 +488,8 @@ end ;;
      
 module Mold = struct 
 
+  type t = MM of (solution list) * extension_data * torsion ;;    
+
   let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
       let add = i_merge isolated_set in 
       MM(Image.image add sols,add ext,Torsion.unregistered) ;; 
@@ -558,9 +558,9 @@ module Grocery = struct
 
   type t = {
       helpers : helper list;
-      pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-      triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-      low_level : (point_with_breadth * (handle * mold)) list;
+      pair_level : ((width * int list) * (int -> int -> handle * Mold.t)) list;
+      triple_level : ((width * int list * int) * (int -> handle * Mold.t)) list;
+      low_level : (point_with_breadth * (handle * Mold.t)) list;
     } ;;
 
 
@@ -570,7 +570,7 @@ module Grocery = struct
   ): handle Total_ordering_t.t);; 
 
   let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
-  ): mold Total_ordering_t.t);; 
+  ): Mold.t Total_ordering_t.t);; 
 
   let hm_order = Total_ordering.product handle_order mold_order ;;
  
