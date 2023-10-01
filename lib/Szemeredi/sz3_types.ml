@@ -35,5 +35,4 @@ type helper =
 
 type fan = F of int list list ;; 
 
-type torsion = T of (int*fan) list ;; 
 
