@@ -821,7 +821,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let (opt_pair5,grc5) = Impatient.update_if_possible grc4 pwb_k in 
   if opt_pair5=None then (grc5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
-  let candidates = il_fold_merge(Image.image (fun (MM(sols,_,_))->sols) [mold_i;mold_j;mold_k]) in 
+  let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
   (Grocery.add_to_low_level grc5 pwb answer,others) ;;
@@ -867,7 +867,7 @@ module Painstaking = struct
   end ;;
 
   let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
-  let measure pwb = let (_,MM(sols,_,_)) = eval pwb in List.length(List.hd sols) ;; 
+  let measure pwb = let (_,mold) = eval pwb in List.length(List.hd (Mold.solutions mold)) ;; 
 
 end ;;
 
@@ -1080,7 +1080,8 @@ module Decompose = struct
         let shorter_pwb = Point_with_breadth.remove_element pwb l in 
         match  Impatient.immediate_opt shorter_pwb with 
          None -> Missing_subcomputation_for_fork(shorter_pwb)
-         |Some (_,MM(sols,_ext,_torsion)) -> 
+         |Some (_,mold) -> 
+           let sols = Mold.solutions mold in 
            if not(List.mem the_sol sols)
            then Missing_solution(the_sol,shorter_pwb)
            else Missing_switch_in_fork(l,pwb) ;;  
