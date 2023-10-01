@@ -36,3 +36,6 @@ type helper =
 type fan = F of int list list ;; 
 
 type small_mold = SM of (solution list) * fan ;; 
+
+type mold = BM of extension_data * (int * small_mold) list ;;
+  

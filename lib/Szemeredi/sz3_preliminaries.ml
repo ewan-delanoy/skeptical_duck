@@ -37,6 +37,8 @@ type fan = Sz3_types.fan = F of int list list ;;
 
 type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;; 
 
+type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -440,7 +442,7 @@ end ;;
 
 module Mold = struct 
 
-  type t = BM of extension_data * (int * small_mold) list ;;
+  
   
   module Private = struct 
   
@@ -546,9 +548,9 @@ module Grocery = struct
 
   type t = {
       helpers : helper list;
-      pair_level : ((width * int list) * (int -> int -> handle * Mold.t)) list;
-      triple_level : ((width * int list * int) * (int -> handle * Mold.t)) list;
-      low_level : (point_with_breadth * (handle * Mold.t)) list;
+      pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+      triple_level : ((width * int list * int) * (int -> handle * mold)) list;
+      low_level : (point_with_breadth * (handle * mold)) list;
     } ;;
 
 
@@ -558,7 +560,7 @@ module Grocery = struct
   ): handle Total_ordering_t.t);; 
 
   let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
-  ): Mold.t Total_ordering_t.t);; 
+  ): mold Total_ordering_t.t);; 
 
   let hm_order = Total_ordering.product handle_order mold_order ;;
  
