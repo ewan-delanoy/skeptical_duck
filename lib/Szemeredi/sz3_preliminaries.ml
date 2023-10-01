@@ -489,26 +489,31 @@ end ;;
 
   type t = MM of (solution list) * extension_data * Torsion.t ;;    
 
+  module Private = struct 
+
+    let constructor_opt pwb sols ext torsion = 
+      let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
+      and extra_links = Torsion.extra_links torsion in 
+      if sols<>[]
+      then Some(MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion))
+      else None ;;   
+
+  end ;;   
+
   let add_isolated_set (MM(sols,ext,_torsion)) isolated_set =
       let add = i_merge isolated_set in 
       MM(Image.image add sols,add ext,Torsion.unregistered) ;; 
 
-  let constructor_opt pwb sols ext torsion = 
-    let (_,isolated_points) = Point_with_breadth.nonisolated_version pwb 
-    and extra_links = Torsion.extra_links torsion in 
-    if sols<>[]
-    then Some(MM(sols,i_fold_merge [ext; isolated_points ; extra_links],torsion))
-    else None ;; 
 
   let discrete domain = MM([domain],domain,Torsion.discrete domain) ;;  
 
   let forced_elements (MM(_sols,ext,_torsion)) = ext ;; 
 
   let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
-    constructor_opt pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
+    Private.constructor_opt pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
 
   let rightmost_overflow_opt pwb (MM(sols,_ext,old_torsion)) = 
-    constructor_opt pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
+    Private.constructor_opt pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
 
   let rightmost_pivot_opt pwb (MM(left_sols,left_ext,left_torsion)) = 
     let n = Point_with_breadth.max pwb in 
@@ -519,18 +524,17 @@ end ;;
                            then Some new_sol
                            else None  
     ) left_sols in 
-    constructor_opt pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
+    Private.constructor_opt pwb new_sols (i_insert n left_ext) (Torsion.rightmost_pivot pwb left_torsion);; 
 
   let select_opt pwb prec_mold (i,j,k) = 
     let (MM(prec_sols,prec_ext,prec_torsion)) = prec_mold in 
     let selected_sols = List.filter (Point_with_breadth.subset_is_admissible pwb) prec_sols in 
-    constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
+    Private.constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
       
   let shallow sols = MM(sols,[],Torsion.unregistered ) ;;      
 
   let solutions (MM(sols, _ext,_torsion)) = sols ;; 
 
-  let torsion (MM(_sols, _ext,torsion)) = torsion ;; 
 
   let translate d (MM(sols, ext,torsion)) =
     let tr = (fun x->Image.image(fun t->t+d) x) in 
