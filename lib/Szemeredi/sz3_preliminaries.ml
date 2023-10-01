@@ -662,17 +662,6 @@ module Point_with_breadth = struct
 
 module Private = struct
 
-let to_extra_constraints (PWB(pt,b)) =
-    if b = 0 then PEC(pt,[]) else 
-    let (W w)=Point.width pt 
-    and domain = Point.supporting_set pt in 
-    let all_constraints = Int_range.descending_scale 
-       (fun k->C[k;k+(w+1);k+2*(w+1)]) b 1 in 
-    let meaningful_constraints = List.filter(
-      fun (C cstr) -> i_is_included_in cstr domain
-    )  all_constraints in 
-    PEC(pt,meaningful_constraints) ;;    
-
 let small_standardization pwb =
     let (PWB(pt,b)) = pwb in
     let (P(fis,W w)) = pt in 
@@ -705,7 +694,7 @@ let usual_decomposition_opt pwb =
     let new_b = max(0)(b+d) in
       PWB(Point.translate d pwc,new_b) ;;
 
-  let supporting_set pwb = Point_with_extra_constraints.supporting_set (to_extra_constraints pwb) ;;     
+    let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;     
 
    let complementary_pairs pwb =
      let (PWB(P(FIS(n,_scr),W max_w),b)) = pwb 
@@ -800,7 +789,6 @@ let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
 let projection pwb = snd(decompose_wrt_translation pwb);;
-let to_extra_constraints = Private.to_extra_constraints ;; 
 let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
