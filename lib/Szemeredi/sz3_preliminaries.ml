@@ -656,62 +656,7 @@ module Point_with_extra_constraints = struct
 end ;;   
 
 
-module Analysis_with_extra_constraints = struct 
 
-module Private = struct
-
-let measure = Memoized.recursive (fun 
-   old_f pwc-> 
-     let (PEC(pt,l_cstr)) = pwc in 
-     let stays_admissible = (fun z->List.for_all (
-        fun (C cstr)->not(i_is_included_in cstr z)
-     ) l_cstr) in 
-     let trial1 = Torsionfree_mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
-     if List.exists stays_admissible  trial1 
-     then List.length(List.hd trial1)
-     else 
-     let pwc2 = Point_with_extra_constraints.remove_rightmost_element pwc
-     and pwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints pwc in 
-     max(old_f pwc2)((old_f pwc3)+1)
-);;
-
-let standard_solution  = Memoized.recursive (fun 
-  old_f pwc-> 
-  let (PEC(pt,_l_cstr)) = pwc in 
-  if Point_with_extra_constraints.is_discrete pwc 
-  then Point.supporting_set pt 
-  else  
-  let pwc2 = Point_with_extra_constraints.remove_rightmost_element pwc
-  and pwc3 = Point_with_extra_constraints.remove_rightmost_element_but_keep_constraints pwc in 
-  if (measure pwc2)>=((measure pwc3)+1)
-  then old_f(pwc2)
-  else (old_f(pwc3))@[Point.max pt]  
-);;
-
-let look_for_pivot  pwc = 
-    let (PEC(pt,_l_cstr)) = pwc in 
-    let domain = List.rev (Point.supporting_set pt) 
-    and m = measure(pwc)-1 in  
-    List.find_opt (
-       fun p -> measure(Point_with_extra_constraints.remove_element pwc p)=m
-    )  domain;;
-
-let test_for_rightmost_pivot pwc = 
-  let (PEC(pt,_l_cstr)) = pwc in 
-  let n = Point.max pt in 
-  measure(Point_with_extra_constraints.remove_element pwc n)=
-    measure(pwc)-1 ;; 
-
-
-
-end ;; 
-
-
-let measure = Private.measure ;;
-let standard_solution = Private.standard_solution ;; 
-let test_for_rightmost_pivot = Private.test_for_rightmost_pivot ;; 
-
-end ;;  
 
 module Point_with_breadth = struct 
 
