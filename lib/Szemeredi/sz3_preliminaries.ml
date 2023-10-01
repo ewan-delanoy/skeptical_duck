@@ -1870,7 +1870,7 @@ end ;;
 
 module Extra_constraints = struct
   
-  type paint_with_extra_constraints = PAC of point * constraint_t list ;;
+  type paint_with_extra_constraints = PWEC of point * constraint_t list ;;
   
   module Private = struct
 
@@ -1888,27 +1888,27 @@ module Extra_constraints = struct
       let selected_candidates = List.filter (
          fun (C l)->i_is_included_in l domain
       ) candidates in 
-      Some(PAC(P(fis,W(effective_w-1)),selected_candidates), C l)
+      Some(PWEC(P(fis,W(effective_w-1)),selected_candidates), C l)
       ;;  
   
-    let usual_decomposition_opt_for_pwc (PAC(pt,l_cstr)) = 
+    let usual_decomposition_opt_for_pwc (PWEC(pt,l_cstr)) = 
         match l_cstr with 
       [] -> usual_decomposition_for_bare_point_opt_for_pwc pt 
-    |highest :: others -> Some(PAC(pt,others),highest) ;; 
+    |highest :: others -> Some(PWEC(pt,others),highest) ;; 
   
   
   let pwc_is_discrete pwc = ((usual_decomposition_opt_for_pwc pwc)=None);;
   
   
-  let remove_element_on_pwc (PAC(pt,l_cstr)) t =
+  let remove_element_on_pwc (PWEC(pt,l_cstr)) t =
     let smaller_pt = Point.remove_element pt t in 
-    PAC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
+    PWEC(smaller_pt,List.filter (fun (C l)->not(i_mem t l)) l_cstr) ;; 
   
   let remove_rightmost_element_on_pwc pt_with_constraints =
-    let (PAC(pt,_)) = pt_with_constraints in 
+    let (PWEC(pt,_)) = pt_with_constraints in 
     remove_element_on_pwc  pt_with_constraints (Point.max pt) ;; 
   
-  let remove_rightmost_element_but_keep_constraints_on_pwc (PAC(pt,l_cstr)) =
+  let remove_rightmost_element_but_keep_constraints_on_pwc (PWEC(pt,l_cstr)) =
      let (W w) = Point.width pt and n=Point.max pt in 
      let smaller_pt = Point.remove_element pt n in
      let constraints1 = 
@@ -1919,12 +1919,12 @@ module Extra_constraints = struct
      let removable_subset = List.flatten singletons in 
      let final_pt = Point.remove_elements smaller_pt removable_subset 
      and final_constraints = Image.image (fun l->C l) constraints3 in 
-     PAC(final_pt,final_constraints) ;;  
+     PWEC(final_pt,final_constraints) ;;  
   
   
      let measure_for_pwc = Memoized.recursive (fun 
      old_f pwc-> 
-       let (PAC(pt,l_cstr)) = pwc in 
+       let (PWEC(pt,l_cstr)) = pwc in 
        let stays_admissible = (fun z->List.for_all (
           fun (C cstr)->not(i_is_included_in cstr z)
        ) l_cstr) in 
@@ -1939,7 +1939,7 @@ module Extra_constraints = struct
   
   let standard_solution_for_pwc  = Memoized.recursive (fun 
     old_f pwc-> 
-    let (PAC(pt,_l_cstr)) = pwc in 
+    let (PWEC(pt,_l_cstr)) = pwc in 
     if pwc_is_discrete pwc 
     then Point.supporting_set pt 
     else  
@@ -1951,7 +1951,7 @@ module Extra_constraints = struct
   );;
   
   let pwb_to_extra_constraints (PWB(pt,b)) =
-    if b = 0 then PAC(pt,[]) else 
+    if b = 0 then PWEC(pt,[]) else 
     let (W w)=Point.width pt 
     and domain = Point.supporting_set pt in 
     let all_constraints = Int_range.descending_scale 
@@ -1959,7 +1959,7 @@ module Extra_constraints = struct
     let meaningful_constraints = List.filter(
       fun (C cstr) -> i_is_included_in cstr domain
     )  all_constraints in 
-    PAC(pt,meaningful_constraints) ;;
+    PWEC(pt,meaningful_constraints) ;;
 
 
     end ;;
