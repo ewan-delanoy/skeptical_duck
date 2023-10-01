@@ -399,6 +399,8 @@ module Fan = struct
 
   let core (F ll) = i_fold_intersect ll ;; 
 
+  let empty_one = F [[]] ;;
+
   let impose l_cstr (F rays) =  F(Constraint.select_in_list l_cstr rays);;
   
   let impose_and_distribute  (l_cstr,addendum) fan = 
