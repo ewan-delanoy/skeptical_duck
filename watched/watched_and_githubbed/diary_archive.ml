@@ -6373,9 +6373,12 @@ Snippet 61 : Removing indentation in a paragraph in a file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
-Lines_in_string.shift_indentation_in_interval_in_file_with 
+let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with 
 (41,45) (Absolute_path.of_string "watched/watched_not_githubbed/jug.ml")
  ~shift_amplitude:(-12) ~forced:false ;; 
+
+let act2 () = Lines_in_string.remove_interval_in_file 
+ (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 1182 1543 ;; 
 
 (************************************************************************************************************************
 Snippet 60 : Intertwining prints for debugging purposes
