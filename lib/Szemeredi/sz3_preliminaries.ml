@@ -44,12 +44,6 @@ type torsionfree_mold = Sz3_types.torsionfree_mold = TFM of (solution list) * ex
 
 type mold = Sz3_types.mold = MM of (solution list) * extension_data * torsion ;;    
 
-type diagnosis  = Sz3_types.diagnosis  = 
-  Missing_treatment of point_with_breadth 
- |Incomplete_treatment of point_with_breadth 
- |Missing_links of point_with_breadth * (int list)
- |Finished of handle * mold * bool ;; 
-
 type grocery =  Sz3_types.grocery = {
   helpers : helper list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
@@ -544,8 +538,6 @@ module Medium_mold = struct
     constructor_opt pwb selected_sols prec_ext (Torsion.select (i,j,k) prec_torsion) ;; 
       
   let shallow sols = MM(sols,[],Torsion.unregistered ) ;;      
-
-  let to_torsionfree_mold (MM(sols,ext,_torsion)) = TFM(sols,ext) ;; 
 
   let torsion (MM(_sols, _ext,torsion)) = torsion ;; 
 
