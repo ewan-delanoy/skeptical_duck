@@ -19,9 +19,6 @@ type solution = Sz3_types.solution ;;
 
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
-type point_with_extra_constraints = Sz3_types.point_with_extra_constraints = 
-  PEC of point * (constraint_t list);;
-
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 type handle = Sz3_types.handle = 
@@ -756,11 +753,30 @@ let eval_opt grc pwb =
      | None -> (None,grc)
       ) ;;
 
+  let rec iterator_for_scale_walking (treated,grc,to_be_treated) =
+    match to_be_treated with 
+     [] ->(None,Some(treated),grc)
+    |pwb :: others ->
+        let (answer_opt,new_grc) = update_if_possible grc pwb in 
+        match answer_opt with  
+           None -> (Some pwb,None,grc)
+          |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_grc,others) ;;
+
+  let generic_scale_walker grc to_be_treated = iterator_for_scale_walking ([],grc,to_be_treated) ;;
+
+  let conventional_bound = 25 ;;
+
+  let walk_scale grc scr w = generic_scale_walker grc (Int_range.scale (
+      fun n->PWB(P(FIS(n,scr),w),0)
+  ) 1 conventional_bound) ;; 
+
+
   end ;;  
 
   let eval_opt = Private.eval_opt ;;
   let immediate_opt = Private.immediate_opt ;;
   let update_if_possible = Private.update_if_possible ;; 
+  let walk_scale = Private.walk_scale ;; 
 
 end ;;  
 
@@ -832,6 +848,10 @@ module Impatient = struct
      let (opt_answer,new_grc) = Generic.Impatient.update_if_possible (!(Private.impatient_ref)) pwb in 
      let _ = (Private.impatient_ref:=new_grc) in 
      opt_answer ;; 
+  let walk_scale scr w = 
+    let (opt_counterexample,opt_list,new_grc) = Generic.Impatient.walk_scale (!(Private.impatient_ref)) scr w in 
+    let _ = (Private.impatient_ref:=new_grc) in 
+    (opt_counterexample,opt_list) ;;   
 
 end ;;
 
@@ -933,7 +953,7 @@ module Extra_constraints = struct
     PWEC(pt,meaningful_constraints) ;;
 
 
-    end ;;
+  end ;;
 
 
   let of_point_with_breadth = Private.pwb_to_extra_constraints ;;   
