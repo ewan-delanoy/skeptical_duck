@@ -39,13 +39,6 @@ type torsion = Sz3_types.torsion = T of (int*fan) list ;;
 
 type mold = Sz3_types.mold = MM of (solution list) * extension_data * torsion ;;    
 
-type grocery =  Sz3_types.grocery = {
-  helpers : helper list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  low_level : (point_with_breadth * (handle * mold)) list;
-} ;; 
-
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -558,6 +551,14 @@ let translate d handle =
 end ;;  
 
 module Grocery = struct 
+
+  type t = {
+      helpers : helper list;
+      pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+      triple_level : ((width * int list * int) * (int -> handle * mold)) list;
+      low_level : (point_with_breadth * (handle * mold)) list;
+    } ;;
+
 
  module Low_level = struct 
 
