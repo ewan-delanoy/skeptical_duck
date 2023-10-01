@@ -113,45 +113,6 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
-
-
-module Torsionfree_mold = struct 
-
-let add_links (TFM(sols,ext)) links = TFM(sols,i_merge links ext) ;;
-
-let add_solution (TFM(sols,ext)) new_sol = TFM(il_insert new_sol sols,ext) ;;
-
-let discrete domain = TFM([domain],domain) ;;   
-
-let forced_elements (TFM(_sols, ext))= ext ;; 
-
-let fork (TFM(_sols1,ext1),TFM(_sols2,ext2),TFM(sols3,ext3)) =
-  let final_ext = i_fold_intersect [ext1;ext2;ext3] in 
-  TFM(sols3,final_ext);;  
-
-let of_solutions sols = TFM(sols,[]) ;; 
-
-let constructor sols ext= TFM(sols,ext) ;;  
-
-let measure (TFM(sols, _ext)) = List.length(List.hd sols) ;; 
-
-let rightmost_overflow (TFM(sols,_ext)) = TFM(sols,[]) ;; 
-
-let rightmost_pivot (TFM(_old_sols,ext)) n (new_sols:solution list) = TFM(new_sols,i_insert n ext) ;;
-
-let select (TFM(_sols,ext)) new_sols = TFM(new_sols,ext);;
-
-let solutions (TFM(sols, _ext))= sols ;; 
-
-let solutions_and_forced_elements (TFM(sols, ext))= (sols,ext) ;;  
-
-let translate d (TFM(sols, ext)) =
-  let tr = (fun x->Image.image(fun t->t+d) x) in 
-  TFM(Image.image tr sols,tr ext) ;; 
-
-end ;;
-
-
 module Find_highest_constraint = struct
 
   let rec for_exact_width (W w) domain to_be_treated =
