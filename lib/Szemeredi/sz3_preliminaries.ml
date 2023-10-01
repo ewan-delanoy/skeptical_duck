@@ -293,59 +293,6 @@ module Point = struct
 
 end ;;   
 
-module Width_one = struct 
-  
-  exception Bad_remainder_by_three of int ;; 
-  
-  let compute fis =
-    let domain = Finite_int_set.to_usual_int_list fis in 
-    let intervals = Arithmetic_list.decompose_into_connected_components domain in 
-    let sol_components = Image.image (
-      fun (a,b) ->
-        List.filter(fun k->((k-a+1) mod 3)<>0)(Int_range.range a b)
-    ) intervals 
-    and forced_elements = Image.image (
-      fun (a,b) ->
-        match ((b-a+1) mod 3) with 
-         0 -> []
-        |1 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1])(Int_range.range a b)
-        |2 -> List.filter(fun k->List.mem ((k-a+1) mod 3) [1;2])(Int_range.range a b)
-        |r -> raise(Bad_remainder_by_three(r)) 
-    ) intervals in 
-    Torsionfree_mold.constructor 
-      [List.flatten sol_components] (List.flatten forced_elements);;
-
-end ;;   
-
-module Precomputed = struct 
-
-  module Private = struct
-
-  
-
-  let treated_widths = [
-     W 1, Width_one.compute
-  ] ;; 
-
-
-  let precomputations_for_width_opt w = List.assoc_opt w treated_widths ;;
-  
-end ;;   
-  
-
-  let compute_opt pt =  
-      let (P(fis,W w)) = pt in     
-      match Private.precomputations_for_width_opt (W w) with 
-        Some f -> Some(f fis)
-      | None -> None ;;  
-
-  
-end ;;  
-  
-
-
-
-
 
 
 module Point_with_breadth = struct 
@@ -1005,14 +952,6 @@ module Extra_constraints = struct
   
      let measure_for_pwc = Memoized.recursive (fun 
      old_f pwc-> 
-       let (PWEC(pt,l_cstr)) = pwc in 
-       let stays_admissible = (fun z->List.for_all (
-          fun (C cstr)->not(i_is_included_in cstr z)
-       ) l_cstr) in 
-       let trial1 = Torsionfree_mold.solutions(Crude_analysis_on_bare_point.compute pt) in 
-       if List.exists stays_admissible  trial1 
-       then List.length(List.hd trial1)
-       else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
        max(old_f pwc2)((old_f pwc3)+1)
