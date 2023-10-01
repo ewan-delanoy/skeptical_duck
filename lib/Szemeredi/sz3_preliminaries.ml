@@ -406,7 +406,11 @@ module Fan = struct
 
 end ;;   
 
-  
+ 
+     
+module Mold = struct 
+
+   
 
 module Torsion = struct 
 
@@ -482,8 +486,6 @@ let unregistered = Private.unregistered  ;;
 
 end ;;   
 
-     
-module Mold = struct 
 
   type t = MM of (solution list) * extension_data * Torsion.t ;;    
 
