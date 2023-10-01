@@ -6378,7 +6378,7 @@ let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with
  ~shift_amplitude:(-12) ~forced:false ;; 
 
 let act2 () = Lines_in_string.remove_interval_in_file 
- (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 582 656 ;; 
+ (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 346 580 ;; 
 
 (************************************************************************************************************************
 Snippet 60 : Intertwining prints for debugging purposes
