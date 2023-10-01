@@ -1543,58 +1543,6 @@ module Store = struct
   end ;;  
  
 
-module Medium_analysis = struct 
-
-  exception Walk_scale_exn of int * diagnosis ;; 
-  exception Nonstandard_handler_exn of point_with_breadth * handle * mold ;;
-    
-    module Private = struct
-    
-      let try_to_compute_on_grounded_point pwb = 
-        let diag = Store.experimental_eval pwb  in 
-        let _ =(match diag with 
-         Missing_treatment(_) |Incomplete_treatment (_) |Missing_links (_,_) -> ()
-        |Finished(handler,mold,is_new)->
-          if is_new 
-          then  (
-                if handler<>Analysis_with_breadth.handle pwb
-                then raise(Nonstandard_handler_exn(pwb,handler,mold))
-                else Store.unsafe_low_level_add pwb (handler,mold)
-              )
-        ) in 
-        diag ;; 
-
-
-      let try_to_compute pwb =     
-        let (d,translated_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-        let  translated_diag = try_to_compute_on_grounded_point translated_pwb in 
-        Diagnosis.translate d translated_diag;;
-
-      let walk_scale (w,scr,b) bound = 
-         let base = Int_range.range 1 bound in 
-          Image.image (fun n->
-            let pwb = PWB(P(Finite_int_set.constructor n scr,w),b) in 
-            (n,Diagnosis.to_bare_answer(try_to_compute pwb))
-            ) base ;;  
-
-      let walk_inner_web n (w,scr) =
-        Image.image (fun k->walk_scale (w,scr,k) n) (Int_range.range 0 n);;
-
-      let walk_web n data =
-         let data2 = List.flatten(Image.image (fun (width,l)->Image.image(fun scr->(width,scr)) l) data) in 
-         let _ = Image.image (walk_inner_web n) data2 in 
-         () ;; 
-    
-      end ;;     
-    
-      let force_compute pwb =Diagnosis.to_bare_answer(Private.try_to_compute pwb);;
-      let try_to_compute = Private.try_to_compute ;;
-      let walk_scale = Private.walk_scale ;; 
-      let walk_web = Private.walk_web ;; 
-
-    end ;;  
-    
- 
 module Generic = struct 
 
 module Impatient = struct 
