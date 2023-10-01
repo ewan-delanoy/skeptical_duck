@@ -515,8 +515,8 @@ end ;;
 
   let forced_elements (MM(_sols,ext,_torsion)) = ext ;; 
 
-  let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(left_sols,_left_ext,_left_torsion)) (i,j,k) = 
-    Private.constructor_opt pwb left_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
+  let fork_opt pwb (MM(_prec_sols,_prec_ext,prec_torsion)) (MM(pointed_sols,_,_)) (i,j,k) = 
+    Private.constructor_opt pwb pointed_sols [] (Torsion.fork (i,j,k) prec_torsion) ;; 
 
   let rightmost_overflow_opt pwb (MM(sols,_ext,old_torsion)) = 
     Private.constructor_opt pwb sols [] (Torsion.rightmost_overflow pwb old_torsion);; 
@@ -671,13 +671,12 @@ let fork_opt grc pwb =
         let (i,j,k) = ijk in 
         if not(i_is_included_in [i;j;k] ext)
         then 
-              let n = Point_with_breadth.max pwb in 
-              let left_pwb = Point_with_breadth.remove_element pwb n in 
-              (match immediate_opt grc left_pwb with 
+              let pointed_pwb = Point_with_breadth.remove_element pwb k in 
+              (match immediate_opt grc pointed_pwb with 
                 None -> None
-              | Some(_,left_mold) -> 
+              | Some(_,pointed_mold) -> 
                  (
-                  match Mold.fork_opt pwb prec_mold left_mold ijk with 
+                  match Mold.fork_opt pwb prec_mold pointed_mold ijk with 
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )
