@@ -35,12 +35,22 @@ type helper =
 
 type fan = F of int list list ;; 
 
+type piece_of_help = {
+   beneficiary : point_with_breadth ;
+   extra_solutions : solution list;
+   imposed_fan : fan option;
+   extra_groove_for_fork : int list;
+} ;; 
+
+
+
+
 type small_mold = SM of (solution list) * fan ;; 
 
 type mold = BM of extension_data * (int * small_mold) list ;;
 
 type grocery = {
-  helpers : helper list;
+  helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   triple_level : ((width * int list * int) * (int -> handle * mold)) list;
   low_level : (point_with_breadth * (handle * mold)) list;

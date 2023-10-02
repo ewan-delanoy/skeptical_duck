@@ -28,19 +28,21 @@ type handle = Sz3_types.handle =
   |Rightmost_pivot of width
   |Fork of int * int * int ;;  
 
-
-type helper = Sz3_types.helper = 
-   Help_with_solution of point_with_breadth * solution 
-  |Help_with_links of point_with_breadth * (int list) ;; 
-
 type fan = Sz3_types.fan = F of int list list ;; 
+
+type piece_of_help = Sz3_types.piece_of_help = {
+   beneficiary : point_with_breadth ;
+   extra_solutions : solution list;
+   imposed_fan : fan option;
+   extra_groove_for_fork : int list;
+} ;; 
 
 type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;; 
 
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
 
 type grocery = Sz3_types.grocery = {
-  helpers : helper list;
+  helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   triple_level : ((width * int list * int) * (int -> handle * mold)) list;
   low_level : (point_with_breadth * (handle * mold)) list;
