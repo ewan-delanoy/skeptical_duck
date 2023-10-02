@@ -32,8 +32,8 @@ type fan = Sz3_types.fan = F of int list list ;;
 
 type piece_of_help = Sz3_types.piece_of_help = {
    beneficiary : point_with_breadth ;
-   extra_solutions : solution list;
-   imposed_fan : fan option;
+   extra_solutions : (int * solution list) list;
+   imposed_fans : (int *fan) list;
    extra_groove_for_fork : int list;
 } ;; 
 
@@ -531,6 +531,11 @@ module Mold = struct
         let shallow sols = 
           BM([],[0,SM(sols,Fan.empty_one)])  ;; 
   
+     let small_mold_at_index (BM(_,l)) i =
+         match List.assoc_opt i l with 
+          Some small_mold -> small_mold 
+         |None -> SM([],Fan.empty_one) ;; 
+
        let solutions (BM(_,l)) = 
          let (SM(sols,_)) = List.assoc 0 l in sols ;;        
   
@@ -553,6 +558,37 @@ let translate d handle =
 | Fork (i,j,k) -> Fork(i+d,j+d,k+d) ;; 
 
 end ;;  
+
+module Help = struct 
+
+(* let apply_individual_help_except_extra_groove help (BM(ext,old_data)) = 
+    let old_range = Image.image fst old_data in
+    let new_range = i_merge old_range (Image.image fst help.imposed_fans) in 
+    let new_data = Image.image (
+      fun i->
+         let sols_for_i = (
+           let old_sols =  (
+            match List.assoc_opt i old_data 
+            Some old_fan -> old_fan 
+            |None -> Fan.empty_one
+          )
+         )
+         and fan_for_i = (
+           match List.assoc_opt i help.imposed_fans with 
+            Some imposed_fan -> imposed_fan 
+            |None -> (
+                       match List.assoc_opt i old_data 
+                       Some (SM(_,old_fan)) -> old_fan 
+                       |None -> Fan.empty_one
+                     )
+         ) in 
+         (i,SM(sols_for_i,fan_for_i))
+    ) new_range in 
+    BM(ext,new_data) ;; *)
+    
+
+end ;;  
+
 
 module Grocery = struct 
 

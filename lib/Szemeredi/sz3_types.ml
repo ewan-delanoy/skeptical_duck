@@ -37,8 +37,8 @@ type fan = F of int list list ;;
 
 type piece_of_help = {
    beneficiary : point_with_breadth ;
-   extra_solutions : solution list;
-   imposed_fan : fan option;
+   extra_solutions : (int * solution list) list;
+   imposed_fans : (int *fan) list;
    extra_groove_for_fork : int list;
 } ;; 
 
