@@ -462,6 +462,11 @@ module Mold = struct
       then Some(BM(forced_elts,l))
       else None ;;
   
+  let small_mold_at_index (BM(_,l)) i =
+      match List.assoc_opt i l with 
+     Some small_mold -> small_mold 
+    |None -> SM([],Fan.empty_one) ;; 
+
   let solutions (BM(_,l)) = 
       let (SM(sols,_)) = List.assoc 0 l in sols ;;     
   
@@ -476,10 +481,13 @@ module Mold = struct
   
   let forced_elements (BM(ext,_)) = ext ;; 
   
-  let fork_opt (BM(_prec_ext,prec_l)) pointed_ones (i,j,k) = 
+  let fork_opt prec_mold pointed_ones (i,j,k) = 
+      let (BM(_prec_ext,prec_l)) = prec_mold in 
       let c_constraints = [C[i;j;k]] 
-      and sols = il_fold_merge(Image.image Private.solutions pointed_ones) in  
-      let new_l= (0,SM(sols,Fan.empty_one))::(List.filter_map (
+      and sols = il_fold_merge(Image.image Private.solutions pointed_ones) in 
+      let (SM(_,old_fan1)) = Private.small_mold_at_index prec_mold 1 in 
+      let first_fan = Fan.impose c_constraints old_fan1 in  
+      let new_l= (0,SM(sols,first_fan))::(List.filter_map (
             fun (i,old_indication)->
                if i=0 then None else
                Some(i-1,Small_mold.impose c_constraints old_indication) 
