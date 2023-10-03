@@ -704,6 +704,17 @@ module Impatient = struct
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
+ let rec immediate_for_several_opt grc (treated,to_be_treated) = 
+    match to_be_treated with 
+    [] -> Some(List.rev treated) 
+    | pwb :: others ->
+     (
+      match immediate_opt grc pwb with 
+        None -> None 
+        |Some (_,mold) -> immediate_for_several_opt grc (mold::treated,others)
+     )
+
+
 
 let fork_opt grc pwb =
   match Point_with_breadth.usual_decomposition_opt pwb with 
@@ -718,12 +729,13 @@ let fork_opt grc pwb =
         let (i,j,k) = ijk in 
         if not(i_is_included_in [i;j;k] ext)
         then 
-              let pointed_pwb = Point_with_breadth.remove_element pwb k in 
-              (match immediate_opt grc pointed_pwb with 
+              let grooves = i_insert k (Help.extra_grooves grc.helpers pwb) in 
+              let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
+              (match immediate_for_several_opt grc ([],pointed_pwbs) with 
                 None -> None
-              | Some(_,pointed_mold) -> 
+              | Some(pointed_molds) -> 
                  (
-                  match Mold.fork_opt prec_mold [pointed_mold] ijk with 
+                  match Mold.fork_opt prec_mold pointed_molds ijk with 
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )
