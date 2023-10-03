@@ -456,7 +456,10 @@ module Mold = struct
   
   module Private = struct 
   
-  let constructor_opt forced_elts l = 
+  let constructor_opt pwb naive_forced_elts l = 
+      let (_,isolated_elts) = Point_with_breadth.nonisolated_version pwb 
+      and (SM(_,first_fan)) = List.assoc 0 l in 
+      let forced_elts = i_fold_merge [naive_forced_elts;isolated_elts;Fan.core first_fan] in  
       let (SM(sols,_)) = List.assoc 0 l in 
       if sols <> [] 
       then Some(BM(forced_elts,l))
@@ -481,7 +484,7 @@ module Mold = struct
   
   let forced_elements (BM(ext,_)) = ext ;; 
   
-  let fork_opt prec_mold pointed_ones (i,j,k) = 
+  let fork_opt pwb prec_mold pointed_ones (i,j,k) = 
       let (BM(_prec_ext,prec_l)) = prec_mold in 
       let c_constraints = [C[i;j;k]] 
       and sols = il_fold_merge(Image.image Private.solutions pointed_ones) in 
@@ -492,7 +495,7 @@ module Mold = struct
                if i=0 then None else
                Some(i-1,Small_mold.impose c_constraints old_indication) 
       )  prec_l) in
-     Private.constructor_opt [] new_l ;; 
+     Private.constructor_opt pwb [] new_l ;; 
   
   let rightmost_overflow_opt full_pwb (BM(_old_ext,old_data)) = 
       let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
@@ -511,7 +514,7 @@ module Mold = struct
         fun i->
            (i,Small_mold.typical_union (c_constraints,[n]) (get_next_one i) (get i)) 
       )  (i_insert 0 new_range) in 
-      Private.constructor_opt [] new_l ;;     
+      Private.constructor_opt full_pwb [] new_l ;;     
   
   let rightmost_pivot_opt full_pwb (BM(old_ext,old_data)) = 
         let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
@@ -528,15 +531,15 @@ module Mold = struct
            (i,Small_mold.typical_union (c_constraints,[n]) (get 0) (get_preceding_one i)
             ) 
         )  new_range in 
-        Private.constructor_opt (i_insert n old_ext) new_l  ;;         
+        Private.constructor_opt full_pwb (i_insert n old_ext) new_l  ;;         
   
-        let select_opt _pwb (BM(prec_ext,prec_l)) (i,j,k) = 
+        let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
           let new_l = Image.image (
           fun (t,old_data_for_t)->
            (t,Small_mold.typical_union ([C[i;j;k]],[]) old_data_for_t Small_mold.empty_one
             ) 
         )  prec_l in 
-        Private.constructor_opt prec_ext new_l  ;; 
+        Private.constructor_opt pwb prec_ext new_l  ;; 
   
         let shallow sols = 
           BM([],[0,SM(sols,Fan.empty_one)])  ;; 
@@ -735,7 +738,7 @@ let fork_opt grc pwb =
                 None -> None
               | Some(pointed_molds) -> 
                  (
-                  match Mold.fork_opt prec_mold pointed_molds ijk with 
+                  match Mold.fork_opt pwb prec_mold pointed_molds ijk with 
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )
