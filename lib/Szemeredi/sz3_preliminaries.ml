@@ -601,9 +601,16 @@ let apply_help_except_extra_grooves helpers pwb mold =
       None -> mold 
      |Some help -> apply_individual_help_except_extra_grooves help mold ;; 
 
+let extra_grooves helpers pwb = 
+  match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
+      None -> []
+     |Some help -> help.extra_grooves_for_fork ;; 
+  
+
 end ;;
 
 let apply_help_except_extra_grooves = Private.apply_help_except_extra_grooves ;; 
+let extra_grooves = Private.extra_grooves ;;
 
 end ;;  
 
