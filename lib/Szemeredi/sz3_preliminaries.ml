@@ -34,7 +34,7 @@ type piece_of_help = Sz3_types.piece_of_help = {
    beneficiary : point_with_breadth ;
    extra_solutions : (int * solution list) list;
    imposed_fans : (int *fan) list;
-   extra_groove_for_fork : int list;
+   extra_grooves_for_fork : int list;
 } ;; 
 
 type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;; 
@@ -462,6 +462,8 @@ module Mold = struct
       then Some(BM(forced_elts,l))
       else None ;;
   
+  let solutions (BM(_,l)) = 
+      let (SM(sols,_)) = List.assoc 0 l in sols ;;     
   
   end ;;  
   
@@ -474,10 +476,10 @@ module Mold = struct
   
   let forced_elements (BM(ext,_)) = ext ;; 
   
-  let fork_opt _pwb (BM(_prec_ext,prec_l)) (BM(_pointed_ext,pointed_l)) (i,j,k) = 
+  let fork_opt (BM(_prec_ext,prec_l)) pointed_ones (i,j,k) = 
       let c_constraints = [C[i;j;k]] 
-      and SM(pointed_sols,_) = List.assoc 0 pointed_l in  
-      let new_l= (0,SM(pointed_sols,Fan.empty_one))::(List.filter_map (
+      and sols = il_fold_merge(Image.image Private.solutions pointed_ones) in  
+      let new_l= (0,SM(sols,Fan.empty_one))::(List.filter_map (
             fun (i,old_indication)->
                if i=0 then None else
                Some(i-1,Small_mold.impose c_constraints old_indication) 
@@ -536,8 +538,7 @@ module Mold = struct
           Some small_mold -> small_mold 
          |None -> SM([],Fan.empty_one) ;; 
 
-       let solutions (BM(_,l)) = 
-         let (SM(sols,_)) = List.assoc 0 l in sols ;;        
+       let solutions = Private.solutions ;;        
   
        let translate d (BM(ext,l)) = 
              BM(Image.image(fun t->t+d) ext,
@@ -707,7 +708,7 @@ let fork_opt grc pwb =
                 None -> None
               | Some(_,pointed_mold) -> 
                  (
-                  match Mold.fork_opt pwb prec_mold pointed_mold ijk with 
+                  match Mold.fork_opt prec_mold [pointed_mold] ijk with 
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )

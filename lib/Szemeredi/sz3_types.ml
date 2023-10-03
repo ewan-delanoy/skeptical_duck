@@ -39,7 +39,7 @@ type piece_of_help = {
    beneficiary : point_with_breadth ;
    extra_solutions : (int * solution list) list;
    imposed_fans : (int *fan) list;
-   extra_groove_for_fork : int list;
+   extra_grooves_for_fork : int list;
 } ;; 
 
 
