@@ -561,31 +561,40 @@ end ;;
 
 module Help = struct 
 
-(* let apply_individual_help_except_extra_groove help (BM(ext,old_data)) = 
+module Private = struct
+
+let extra_solutions_at_index help i = 
+    match List.assoc_opt i help.extra_solutions with 
+    (Some extra_sols) -> extra_sols 
+    | None -> [] ;; 
+
+let imposed_fan_at_index help i = List.assoc_opt i  help.imposed_fans ;; 
+
+let replace_perhaps original replacer_opt = match replacer_opt with 
+  None -> original 
+  |Some replacer -> replacer ;;
+
+let apply_individual_help_except_extra_grooves help mold =
+    let (BM(ext,old_data)) = mold in 
     let old_range = Image.image fst old_data in
     let new_range = i_merge old_range (Image.image fst help.imposed_fans) in 
     let new_data = Image.image (
       fun i->
-         let sols_for_i = (
-           let old_sols =  (
-            match List.assoc_opt i old_data 
-            Some old_fan -> old_fan 
-            |None -> Fan.empty_one
-          )
-         )
-         and fan_for_i = (
-           match List.assoc_opt i help.imposed_fans with 
-            Some imposed_fan -> imposed_fan 
-            |None -> (
-                       match List.assoc_opt i old_data 
-                       Some (SM(_,old_fan)) -> old_fan 
-                       |None -> Fan.empty_one
-                     )
-         ) in 
-         (i,SM(sols_for_i,fan_for_i))
+         let (SM(old_sols,old_fan)) = Mold.small_mold_at_index mold i in 
+         (i,SM(
+           il_merge old_sols (extra_solutions_at_index help i ),
+           replace_perhaps old_fan (imposed_fan_at_index help i) ))
     ) new_range in 
-    BM(ext,new_data) ;; *)
+    BM(ext,new_data) ;; 
     
+let apply_help_except_extra_grooves helpers pwb mold =
+   match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
+      None -> mold 
+     |Some help -> apply_individual_help_except_extra_grooves help mold ;; 
+
+end ;;
+
+let apply_help_except_extra_grooves = Private.apply_help_except_extra_grooves ;; 
 
 end ;;  
 
