@@ -648,7 +648,8 @@ let add_to_low_level_if_nondiscrete grc pwb pair =
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.is_discrete pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
-       Some(Discrete,Mold.discrete domain) 
+       Some(Discrete,
+         Help.apply_help_except_extra_grooves ((!grc_ref).helpers) pwb (Mold.discrete domain)) 
   else     
   let (PWB(P(FIS(n,scr),w),b)) = pwb in  
   let wpair = (w,scr) in
