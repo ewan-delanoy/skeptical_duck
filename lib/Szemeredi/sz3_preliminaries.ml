@@ -259,9 +259,9 @@ module Private = struct
 
 let small_standardization pwb =
     let (PWB(pt,b)) = pwb in
-    let (P(fis,W w)) = pt in 
+    let (P(fis,W old_w)) = pt in 
     let support = Point.supporting_set pt in 
-    match List.find_opt (fun t->i_is_included_in [t;t+(w+1);t+2*(w+1)] support) (List.rev(Int_range.range 1 b)) with
+    match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) (List.rev(Int_range.range 1 b)) with
     Some(b0)->PWB(pt,b0)
     |None ->
     match Point.highest_constraint_opt pt with  
@@ -388,6 +388,7 @@ let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
+let standardize = Private.small_standardization ;;
 let subset_is_admissible= Private.subset_is_admissible ;; 
 let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
 let supporting_set = Private.supporting_set ;; 
