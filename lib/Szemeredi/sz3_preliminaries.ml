@@ -992,7 +992,8 @@ module Extra_constraints = struct
     let (PWEC(pt,_)) = pt_with_constraints in 
     remove_element_on_pwc  pt_with_constraints (Point.max pt) ;; 
   
-  let remove_rightmost_element_but_keep_constraints_on_pwc (PWEC(pt,l_cstr)) =
+  let remove_rightmost_element_but_keep_constraints_on_pwc (PWEC(possibly_nonstandard_pt,l_cstr)) =
+     let pt = Point.standardize possibly_nonstandard_pt in 
      let (W w) = Point.width pt and n=Point.max pt in 
      let smaller_pt = Point.remove_element pt n in
      let constraints1 = 
