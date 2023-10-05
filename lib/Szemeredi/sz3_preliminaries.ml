@@ -1009,6 +1009,10 @@ module Extra_constraints = struct
   
      let measure_for_pwc = Memoized.recursive (fun 
      old_f pwc-> 
+       let (PWEC(pt,l_cstr)) = pwc in 
+       if l_cstr = []
+       then Painstaking.measure(PWB(pt,0))
+       else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
        max(old_f pwc2)((old_f pwc3)+1)
