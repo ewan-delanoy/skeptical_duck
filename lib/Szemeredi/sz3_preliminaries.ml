@@ -838,6 +838,19 @@ let eval_opt grc pwb =
      | None -> (None,grc)
       ) ;;
 
+  let rec iterator_for_multiple_update grc treated to_be_treated  =
+     match to_be_treated with 
+     [] -> (Some(List.rev treated),grc) 
+     |pwb :: others ->
+        let (opt_result,new_grc) = update_if_possible grc pwb in 
+       (
+        match opt_result with 
+         None -> (None, grc)
+        |Some answer -> iterator_for_multiple_update new_grc (answer::treated) others
+       )
+
+  let update_several grc pwbs =  iterator_for_multiple_update grc [] pwbs ;; 
+
   let rec iterator_for_scale_walking (treated,grc,to_be_treated) =
     match to_be_treated with 
      [] ->(None,Some(treated),grc)
@@ -847,13 +860,7 @@ let eval_opt grc pwb =
            None -> (Some pwb,None,grc)
           |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_grc,others) ;;
 
-  let generic_scale_walker grc to_be_treated = iterator_for_scale_walking ([],grc,to_be_treated) ;;
-
-  let conventional_bound = 25 ;;
-
-  let walk_scale grc scr w = generic_scale_walker grc (Int_range.scale (
-      fun n->PWB(P(FIS(n,scr),w),0)
-  ) 1 conventional_bound) ;; 
+  let walk_scale grc to_be_treated = iterator_for_scale_walking ([],grc,to_be_treated) ;;
 
 
   end ;;  
@@ -861,6 +868,7 @@ let eval_opt grc pwb =
   let eval_opt = Private.eval_opt ;;
   let immediate_opt = Private.immediate_opt ;;
   let update_if_possible = Private.update_if_possible ;; 
+  let update_several = Private.update_several ;; 
   let walk_scale = Private.walk_scale ;; 
 
 end ;;  
@@ -932,9 +940,10 @@ module Impatient = struct
   let update_if_possible pwb =
      let (opt_answer,new_grc) = Generic.Impatient.update_if_possible (!(Private.impatient_ref)) pwb in 
      let _ = (Private.impatient_ref:=new_grc) in 
-     opt_answer ;; 
-  let walk_scale scr w = 
-    let (opt_counterexample,opt_list,new_grc) = Generic.Impatient.walk_scale (!(Private.impatient_ref)) scr w in 
+     opt_answer ;;   
+  let walk_scale scale = 
+    let (opt_counterexample,opt_list,new_grc) 
+       = Generic.Impatient.walk_scale (!(Private.impatient_ref)) scale in 
     let _ = (Private.impatient_ref:=new_grc) in 
     (opt_counterexample,opt_list) ;;   
 
@@ -1133,14 +1142,13 @@ module Decompose = struct
 
     
     module Private = struct
+
+    let chain pwb = (Image.image snd (Decompose.chain pwb))@[pwb] ;; 
     
     let find_precedent pwb = 
-       let temp1 = (Image.image snd (Decompose.chain pwb))@[pwb] in
-        match List.find_map (fun pwb2->
-           match  Impatient.update_if_possible pwb2 with 
-           Some _ -> None 
-           |None -> Some(pwb2)
-        ) temp1   with 
+       let temp1 = chain pwb  in 
+       let (opt_counterexample,opt_list) = Impatient.walk_scale temp1 in 
+        match opt_counterexample  with 
         None -> raise(Nothing_to_diagnose_exn) 
         |Some precedent -> precedent ;; 
     
