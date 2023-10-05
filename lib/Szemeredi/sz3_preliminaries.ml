@@ -1185,11 +1185,11 @@ module Decompose = struct
     end ;;
     
     let inspect pwb = 
-      let (opt_counterexample,_opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
-       let opt_diagnosis = (match opt_counterexample  with 
-       None -> None
-       |Some precedent -> Some (Private.diagnose_precedent precedent) ) in
-       (opt_counterexample,opt_diagnosis)
+      let (opt_counterexample,opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
+       let (opt_diagnosis,opt_result) = (match opt_counterexample  with 
+       None -> (None,opt_list)
+       |Some precedent -> (Some (Private.diagnose_precedent precedent),None )) in
+       (opt_counterexample,opt_diagnosis,opt_result)
       ;; 
 
 
