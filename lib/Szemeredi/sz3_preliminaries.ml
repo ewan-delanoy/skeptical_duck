@@ -238,6 +238,16 @@ module Point = struct
 
   let remove_elements pt pivots = List.fold_left remove_element pt pivots ;;   
 
+  let standardize pt =
+     let (P(fis,_)) = pt in 
+      match highest_constraint_opt pt with  
+      None -> P(fis,W 0)
+    |Some(C cstr) -> 
+      let nth = (fun k->List.nth cstr (k-1)) in 
+      let w = W((nth 2)-(nth 1)-1) in 
+      P(fis,w);;
+ ;; 
+
   let supporting_set (P(fis,_)) = Finite_int_set.to_usual_int_list fis ;; 
 
   let subset_is_admissible (P(_,w)) subset =
@@ -388,7 +398,6 @@ let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
-let standardize = Private.small_standardization ;;
 let subset_is_admissible= Private.subset_is_admissible ;; 
 let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
 let supporting_set = Private.supporting_set ;; 
