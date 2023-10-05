@@ -1118,11 +1118,13 @@ module Decompose = struct
        ;;
         
   
-  
+  let chain_of_pairs pwb = iterator_for_chain ([],pwb) ;; 
+
   end ;;
   
   
-  let chain pwb = Private.iterator_for_chain ([],pwb) ;; 
+  let chain pwb =  (Image.image snd (Private.chain_of_pairs pwb))@[pwb] ;; 
+  let chain_of_pairs = Private.chain_of_pairs ;; 
   let decompose = Private.decompose ;; 
   
   end ;;
@@ -1142,15 +1144,6 @@ module Decompose = struct
 
     
     module Private = struct
-
-    let chain pwb = (Image.image snd (Decompose.chain pwb))@[pwb] ;; 
-    
-    let find_precedent pwb = 
-       let temp1 = chain pwb  in 
-       let (opt_counterexample,opt_list) = Impatient.walk_scale temp1 in 
-        match opt_counterexample  with 
-        None -> raise(Nothing_to_diagnose_exn) 
-        |Some precedent -> precedent ;; 
     
       let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
          match  Impatient.immediate_opt left_pwb with 
@@ -1191,8 +1184,14 @@ module Decompose = struct
     
     end ;;
     
-    let diagnose pwb =
-        let precedent = Private.find_precedent pwb in 
-        (precedent,Private.diagnose_precedent precedent) ;; 
+    let inspect pwb = 
+      let (opt_counterexample,_opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
+       let opt_diagnosis = (match opt_counterexample  with 
+       None -> None
+       |Some precedent -> Some (Private.diagnose_precedent precedent) ) in
+       (opt_counterexample,opt_diagnosis)
+      ;; 
+
+
     
     end ;;
