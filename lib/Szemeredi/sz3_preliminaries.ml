@@ -1168,7 +1168,13 @@ module Decompose = struct
         |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb ;;  
     
     
-    
+    let half_impatient_eval_opt pwb = 
+      let (_opt_counterexample,opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
+       match opt_list  with 
+      None -> None
+      |Some data -> List.assoc_opt pwb data ;;
+        
+
     let inspect_along_chain pwb = 
       let (opt_counterexample,opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
        let (opt_diagnosis,opt_result) = (match opt_counterexample  with 
@@ -1179,6 +1185,7 @@ module Decompose = struct
     
     end ;;
 
+   let half_impatient_eval_opt = Private.half_impatient_eval_opt ;;   
    let inspect_along_chain = Private.inspect_along_chain ;; 
   
   end ;;
