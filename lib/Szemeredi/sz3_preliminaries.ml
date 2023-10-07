@@ -838,18 +838,7 @@ let eval_opt grc pwb =
      | None -> (None,grc)
       ) ;;
 
-  let rec iterator_for_multiple_update grc treated to_be_treated  =
-     match to_be_treated with 
-     [] -> (Some(List.rev treated),grc) 
-     |pwb :: others ->
-        let (opt_result,new_grc) = update_if_possible grc pwb in 
-       (
-        match opt_result with 
-         None -> (None, grc)
-        |Some answer -> iterator_for_multiple_update new_grc (answer::treated) others
-       )
-
-  let update_several grc pwbs =  iterator_for_multiple_update grc [] pwbs ;; 
+  
 
   let rec iterator_for_scale_walking (treated,grc,to_be_treated) =
     match to_be_treated with 
@@ -868,7 +857,6 @@ let eval_opt grc pwb =
   let eval_opt = Private.eval_opt ;;
   let immediate_opt = Private.immediate_opt ;;
   let update_if_possible = Private.update_if_possible ;; 
-  let update_several = Private.update_several ;; 
   let walk_scale = Private.walk_scale ;; 
 
 end ;;  
