@@ -64,7 +64,7 @@ else if f(a)
   then true
   else exists f (a+1) b;;	 
 
-let rec find_it f a b=
+let rec find_opt f a b=
 if (a>b) 
 then None
 else if f(a)
