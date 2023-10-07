@@ -69,7 +69,7 @@ if (a>b)
 then None
 else if f(a)
   then Some(a)
-  else find_it f (a+1) b;;	  
+  else find_opt f (a+1) b;;	  
 
 let find_and_stop f a b=
 let rec find_and_stop0=(function

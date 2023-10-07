@@ -1112,7 +1112,6 @@ module Decompose = struct
   
   
   let chain pwb =  (Image.image snd (Private.chain_of_pairs pwb))@[pwb] ;; 
-  let chain_of_pairs = Private.chain_of_pairs ;; 
   let decompose = Private.decompose ;; 
   
   end ;;
