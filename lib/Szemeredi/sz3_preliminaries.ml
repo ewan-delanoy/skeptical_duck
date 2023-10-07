@@ -244,7 +244,7 @@ module Point = struct
       None -> P(fis,W 0)
     |Some(C cstr) -> 
       let nth = (fun k->List.nth cstr (k-1)) in 
-      let w = W((nth 2)-(nth 1)-1) in 
+      let w = W((nth 2)-(nth 1)) in 
       P(fis,w);;
  ;; 
 
@@ -1051,7 +1051,7 @@ module Extra_constraints = struct
 
   end ;;    
 
-module Compute_Standard_solution = struct 
+module Compute_standard_solution = struct 
 
   let compute = Memoized.make(fun pwb->
     Extra_constraints.standard_solution
@@ -1137,16 +1137,16 @@ module Decompose = struct
            Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
     
      let diagnose_rightmost_pivot pwb left_pwb = 
-        let the_sol = Compute_Standard_solution.compute pwb 
+        let the_sol = Compute_standard_solution.compute pwb 
         and n = Point_with_breadth.max pwb in
         Missing_solution(i_outsert n the_sol,left_pwb) ;; 
     
       let diagnose_select pwb prec_pwb = 
-          let the_sol = Compute_Standard_solution.compute pwb in
+          let the_sol = Compute_standard_solution.compute pwb in
           Missing_solution(the_sol,prec_pwb) ;;  
     
       let diagnose_fork (i,j,k) pwb = 
-        let the_sol = Compute_Standard_solution.compute pwb in 
+        let the_sol = Compute_standard_solution.compute pwb in 
         let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
         let shorter_pwb = Point_with_breadth.remove_element pwb l in 
         match  Impatient.immediate_opt shorter_pwb with 
