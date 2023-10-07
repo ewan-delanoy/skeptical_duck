@@ -930,7 +930,7 @@ module Impatient = struct
      let _ = (Private.impatient_ref:=new_grc) in 
      opt_answer ;;   
   let walk_scale scale = 
-    let (opt_counterexample,opt_list,new_grc) 
+    let (opt_counterexample,opt_list,_new_grc) 
        = Generic.Impatient.walk_scale (!(Private.impatient_ref)) scale in 
     (* let _ = (Private.impatient_ref:=new_grc) in *) 
     (opt_counterexample,opt_list) ;;   
