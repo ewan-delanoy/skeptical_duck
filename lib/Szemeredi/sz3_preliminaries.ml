@@ -1121,20 +1121,18 @@ module Decompose = struct
     type temporarily_new_diagnosis =
        Missing_forced_elements of (int list) * point_with_breadth 
       |Missing_solution of solution * point_with_breadth 
+      |Missing_subcomputation_for_rightmost_overflow of point_with_breadth 
       |Missing_subcomputation_for_fork of point_with_breadth 
       |Missing_switch_in_fork of int * point_with_breadth ;;
       
     exception Nothing_to_diagnose_exn ;;
     exception Discrete_not_diagnosable_exn ;; 
-    exception Missing_in_diagnose_rightmost_overflow_exn of point_with_breadth ;;
-      
-
     
     module Private = struct
     
       let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
          match  Impatient.immediate_opt left_pwb with 
-         None -> raise(Missing_in_diagnose_rightmost_overflow_exn(left_pwb))
+         None -> Missing_subcomputation_for_rightmost_overflow(left_pwb)
          |Some (_,mold) -> 
            Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
     
@@ -1169,16 +1167,18 @@ module Decompose = struct
         |Select (_,_,_) -> diagnose_select pwb pwb2 
         |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb ;;  
     
-    end ;;
     
-    let inspect pwb = 
+    
+    let inspect_along_chain pwb = 
       let (opt_counterexample,opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
        let (opt_diagnosis,opt_result) = (match opt_counterexample  with 
        None -> (None,opt_list)
-       |Some precedent -> (Some (Private.diagnose_precedent precedent),None )) in
+       |Some precedent -> (Some (diagnose_precedent precedent),None )) in
        (opt_counterexample,opt_diagnosis,opt_result)
       ;; 
-
-
     
     end ;;
+
+   let inspect_along_chain = Private.inspect_along_chain ;; 
+  
+  end ;;
