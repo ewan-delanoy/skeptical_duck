@@ -267,37 +267,44 @@ module Point_with_breadth = struct
 
 module Private = struct
 
-let small_standardization pwb =
-    let (PWB(pt,b)) = pwb in
-    let (P(fis,W old_w)) = pt in 
-    let support = Point.supporting_set pt in 
-    match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) (List.rev(Int_range.range 1 b)) with
-    Some(b0)->PWB(pt,b0)
-    |None ->
-    match Point.highest_constraint_opt pt with  
-     None -> PWB(P(fis,W 0),0)
-    |Some(C cstr) -> 
-      let nth = (fun k->List.nth cstr (k-1)) in 
-      let w = W((nth 2)-(nth 1)-1) in 
-      PWB(P(fis,w),nth 1);;
-    ;; 
+let constructor n scr (W old_w) b =  
+  let fis = FIS(n,scr) in
+  let pt = P(fis,W old_w) in 
+  let support = Point.supporting_set pt in 
+  match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) (List.rev(Int_range.range 1 b)) with
+  Some(b0)->PWB(pt,b0)
+  |None ->
+  match Point.highest_constraint_opt pt with  
+   None -> PWB(P(fis,W 0),0)
+  |Some(C cstr) -> 
+    let nth = (fun k->List.nth cstr (k-1)) in 
+    let w = W((nth 2)-(nth 1)-1) in 
+    PWB(P(fis,w),nth 1);;
+  ;; 
+
+let constructor_for_two (P(FIS(n,scr),w)) b = constructor n scr w b ;;    
+
+let constructor_for_three (FIS(n,scr)) w b = constructor n scr w b ;; 
+
+let full_point pt = constructor_for_two pt 0 ;; 
+
 
 let usual_decomposition_opt pwb =
-  let (PWB(pt,b)) = small_standardization pwb in 
+  let (PWB(pt,b)) = pwb in 
   let (P(_,W w)) = pt in 
   if b=0
   then None 
-  else Some(small_standardization(PWB(pt,b-1)),C[b;b+(w+1);b+2*(w+1)]);;
+  else Some(constructor_for_two pt (b-1),C[b;b+(w+1);b+2*(w+1)]);;
 
   (* when d<0, this opeartion makes sense 
   only if the lowest element is >|d|. *)    
-  let translate d (PWB(pwc,b)) = 
+  let translate d (PWB(pt,b)) = 
     (*
       when b+d<0, there is no extra constraint, 
       and this is equivalent to setting the new b to 0S    
     *) 
     let new_b = max(0)(b+d) in
-      PWB(Point.translate d pwc,new_b) ;;
+      PWB(Point.translate d pt,new_b) ;;
 
     let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;     
 
@@ -352,7 +359,7 @@ let usual_decomposition_opt pwb =
        let domain = Finite_int_set.to_usual_int_list fis in 
        let (non_isolated,isolated) = List.partition (individual_test_for_non_isolation wmax b domain) domain in 
        let new_fis = Finite_int_set.of_usual_int_list non_isolated in 
-       (PWB(P(new_fis,W wmax),b),isolated);;
+       (constructor_for_three new_fis (W wmax) b,isolated);;
     
     let remove_element (PWB(P(fis,W wmax),b)) elt = 
       let new_fis = Finite_int_set.remove_element fis elt in 
@@ -362,7 +369,7 @@ let usual_decomposition_opt pwb =
       |Some(C cstr)->
         let nth = (fun k->List.nth cstr (k-1)) in 
         let new_wmax = (nth 2)-(nth 1)-1 in 
-        PWB(P(new_fis,W new_wmax),nth 1);;
+        constructor_for_three new_fis (W new_wmax) (nth 1);;
 
 
     let order = ((fun (PWB(pt1,b1)) (PWB(pt2,b2)) ->
@@ -381,7 +388,9 @@ let usual_decomposition_opt pwb =
 
 end ;;  
 
+let absurd = PWB(P(FIS(0,[]),W 0),0) ;; 
 let breadth (PWB(_pt,b))= b ;;
+let constructor = Private.constructor ;; 
 let complementary_pairs = Private.complementary_pairs ;;
 let decompose_wrt_translation pwb = 
   let (PWB(pt,_b)) = pwb in 
@@ -389,18 +398,20 @@ let decompose_wrt_translation pwb =
   (d,Private.translate (-d) pwb);; 
 
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
+let full_point = Private.full_point ;; 
 let is_discrete pwb = (Private.usual_decomposition_opt pwb=None) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
+let point (PWB(pt,_b)) = pt ;;  
 let projection pwb = snd(decompose_wrt_translation pwb);;
 let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;; 
 let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
 let solutions = Private.solutions ;;  
 let subset_is_admissible= Private.subset_is_admissible ;; 
+let support (PWB(P(fis,_),_)) = fis ;; 
 let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
-let supporting_set = Private.supporting_set ;; 
 let translate = Private.translate ;; 
 let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
 let width (PWB(pt,_b))= Point.width pt ;;
@@ -680,7 +691,9 @@ let immediate_eval_opt grc_ref pwb =
        Some(Discrete,
          Help.apply_help_except_extra_grooves ((!grc_ref).helpers) pwb (Mold.discrete domain)) 
   else     
-  let (PWB(P(FIS(n,scr),w),b)) = pwb in  
+  let (FIS(n,scr)) = Point_with_breadth.support pwb 
+  and w = Point_with_breadth.width pwb 
+  and b = Point_with_breadth.breadth pwb in 
   let wpair = (w,scr) in
   match List.assoc_opt wpair (!grc_ref).pair_level with 
   Some (f) -> let (handle,mold) =f b n in 
@@ -1008,7 +1021,7 @@ module Extra_constraints = struct
      old_f pwc-> 
        let (PWEC(pt,l_cstr)) = pwc in 
        if l_cstr = []
-       then Painstaking.measure(PWB(pt,0))
+       then Painstaking.measure(Point_with_breadth.full_point pt)
        else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
@@ -1028,7 +1041,9 @@ module Extra_constraints = struct
     else (old_f(pwc3))@[Point.max pt]  
   );;
   
-  let pwb_to_extra_constraints (PWB(pt,b)) =
+  let pwb_to_extra_constraints pwb = 
+    let pt = Point_with_breadth.point pwb 
+    and b = Point_with_breadth.breadth pwb in 
     if b = 0 then PWEC(pt,[]) else 
     let (W w)=Point.width pt 
     and domain = Point.supporting_set pt in 
@@ -1075,7 +1090,7 @@ module Decompose = struct
   
   let decompose = Memoized.make(fun pwb->
     match Point_with_breadth.usual_decomposition_opt pwb with 
-        None -> (Discrete,PWB(P(FIS(0,[]),W 0),0))
+        None -> (Discrete,Point_with_breadth.absurd)
         |Some(prec_pwb,C cstr) -> 
           let n = Point_with_breadth.max pwb in
           let left_pwb = Point_with_breadth.remove_element pwb n in 
@@ -1110,7 +1125,11 @@ module Decompose = struct
    
    module Private = struct 
 
-    let hints = ref ([]: (point_with_breadth * point_with_breadth list) list) ;; 
+    let hints = ref ([
+      (Point_with_breadth.constructor 7 [] (W 3) 0,
+       [Point_with_breadth.constructor 7 [] (W 3) 0]  
+      )
+    ]: (point_with_breadth * point_with_breadth list) list) ;; 
     
     let main_hashtbl = ((Hashtbl.create 100): (point_with_breadth, point_with_breadth list) Hashtbl.t) ;; 
    
