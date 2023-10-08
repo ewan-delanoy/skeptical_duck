@@ -1118,11 +1118,10 @@ module Decompose = struct
 
   module Diagnose = struct 
 
-    type temporarily_new_diagnosis =
+    type diagnosis =
        Missing_forced_elements of (int list) * point_with_breadth 
       |Missing_solution of solution * point_with_breadth 
-      |Missing_subcomputation_for_rightmost_overflow of point_with_breadth 
-      |Missing_subcomputation_for_fork of point_with_breadth 
+      |Missing_subcomputation of string * point_with_breadth 
       |Missing_switch_in_fork of int * point_with_breadth ;;
       
     exception Nothing_to_diagnose_exn ;;
@@ -1132,7 +1131,7 @@ module Decompose = struct
     
       let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
          match  Impatient.immediate_opt left_pwb with 
-         None -> Missing_subcomputation_for_rightmost_overflow(left_pwb)
+         None -> Missing_subcomputation("rightmost_overflow",left_pwb)
          |Some (_,mold) -> 
            Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
     
@@ -1145,12 +1144,19 @@ module Decompose = struct
           let the_sol = Compute_standard_solution.compute pwb in
           Missing_solution(the_sol,prec_pwb) ;;  
     
-      let diagnose_fork (i,j,k) pwb = 
+      let diagnose_fork (i,j,k) pwb prec_pwb = 
+        match  Impatient.immediate_opt prec_pwb with 
+         None -> Missing_subcomputation("fork",prec_pwb)
+         |Some (_,prec_mold) -> 
+        let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
+        if missing_forced_elts <> []
+        then Missing_forced_elements(missing_forced_elts,prec_pwb)   
+        else   
         let the_sol = Compute_standard_solution.compute pwb in 
         let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
         let shorter_pwb = Point_with_breadth.remove_element pwb l in 
         match  Impatient.immediate_opt shorter_pwb with 
-         None -> Missing_subcomputation_for_fork(shorter_pwb)
+         None -> Missing_subcomputation("fork",shorter_pwb)
          |Some (_,mold) -> 
            let sols = Mold.solutions mold in 
            if not(List.mem the_sol sols)
@@ -1165,7 +1171,7 @@ module Decompose = struct
         |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow (u,v,n) pwb2
         |Rightmost_pivot(_) -> diagnose_rightmost_pivot pwb pwb2
         |Select (_,_,_) -> diagnose_select pwb pwb2 
-        |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb ;;  
+        |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb pwb2 ;;  
     
     
     let half_impatient_eval_opt pwb = 
@@ -1174,14 +1180,16 @@ module Decompose = struct
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
         
+    type chain_inspection_result =
+       Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
+       |Counterexample_found of point_with_breadth * diagnosis ;; 
 
     let inspect_along_chain pwb = 
       let (opt_counterexample,opt_list) = Impatient.walk_scale (Decompose.chain pwb) in 
-       let (opt_diagnosis,opt_result) = (match opt_counterexample  with 
-       None -> (None,opt_list)
-       |Some precedent -> (Some (diagnose_precedent precedent),None )) in
-       (opt_counterexample,opt_diagnosis,opt_result)
-      ;; 
+       match opt_counterexample  with 
+       None -> let data = Option.get(opt_list) in 
+               Smooth(List.assoc pwb data,(fun ()->data))
+       |Some precedent -> Counterexample_found(precedent,diagnose_precedent precedent);; 
     
     end ;;
 
