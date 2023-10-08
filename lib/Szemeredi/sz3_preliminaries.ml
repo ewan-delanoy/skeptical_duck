@@ -741,7 +741,8 @@ let fork_opt grc pwb =
         let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
         let (i,j,k) = ijk in 
         if not(i_is_included_in [i;j;k] ext)
-        then 
+        then None
+        else
               let grooves = i_insert k (Help.extra_grooves grc.helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
               (match immediate_for_several_opt grc ([],pointed_pwbs) with 
@@ -752,8 +753,7 @@ let fork_opt grc pwb =
                      None -> None 
                     |Some mold -> Some(Fork(i,j,k),mold) 
                  )
-              )
-        else None;;   
+              );;   
 
 
            
