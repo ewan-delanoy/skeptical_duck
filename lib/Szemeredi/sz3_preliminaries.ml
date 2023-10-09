@@ -22,7 +22,7 @@ type point = Sz3_types.point = P of finite_int_set * width ;;
 type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
 
 type handle = Sz3_types.handle = 
-   Discrete
+   Has_no_constraints
   |Select of int * int * int   
   |Rightmost_overflow of int * int * int 
   |Rightmost_pivot of width
@@ -584,7 +584,7 @@ module Handle = struct
 
 let translate d handle = 
    match handle with 
-  Discrete
+  Has_no_constraints
 | Rightmost_pivot(_) -> handle 
 | Select (i,j,k) -> Select (i+d,j+d,k+d)
 | Rightmost_overflow (i,j,k) -> Rightmost_overflow (i+d,j+d,k+d)
@@ -688,7 +688,7 @@ let add_to_low_level_if_nondiscrete grc pwb pair =
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.has_no_constraint pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
-       Some(Discrete,
+       Some(Has_no_constraints,
          Help.apply_help_except_extra_grooves ((!grc_ref).helpers) pwb (Mold.discrete domain)) 
   else     
   let (FIS(n,scr)) = Point_with_breadth.support pwb 
@@ -824,7 +824,7 @@ let eval_opt grc pwb =
   Some(answer0) -> Some answer0
  | None -> 
   if Point_with_breadth.has_no_constraint pwb 
-  then Some(Discrete,Mold.discrete(Point_with_breadth.supporting_set pwb))
+  then Some(Has_no_constraints,Mold.discrete(Point_with_breadth.supporting_set pwb))
   else    
   (match rightmost_pivot_opt grc pwb with 
    Some(answer1) -> Some answer1
@@ -1090,7 +1090,7 @@ module Decompose = struct
   
   let decompose = Memoized.make(fun pwb->
     match Point_with_breadth.usual_decomposition_opt pwb with 
-        None -> (Discrete,Point_with_breadth.absurd)
+        None -> (Has_no_constraints,Point_with_breadth.absurd)
         |Some(prec_pwb,C cstr) -> 
           let n = Point_with_breadth.max pwb in
           let left_pwb = Point_with_breadth.remove_element pwb n in 
@@ -1154,7 +1154,7 @@ module Decompose = struct
 
      let rec compute_chain pwb = 
       let (handle,prec_pwb) = Decompose.decompose pwb in 
-      if handle = Discrete 
+      if handle = Has_no_constraints 
       then [pwb]
       else
        match Hashtbl.find_opt main_hashtbl pwb with 
@@ -1197,7 +1197,7 @@ module Decompose = struct
       |Missing_switch_in_fork of int * point_with_breadth ;;
       
     exception Nothing_to_diagnose_exn ;;
-    exception Discrete_not_diagnosable_exn ;; 
+    exception Has_no_constraints_not_diagnosable_exn ;; 
     
     module Private = struct
     
@@ -1239,7 +1239,7 @@ module Decompose = struct
     let diagnose_precedent pwb =
       let (handle,pwb2) = Decompose.decompose pwb in 
         match handle with
-         Discrete -> raise(Discrete_not_diagnosable_exn)
+         Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
         |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow (u,v,n) pwb2
         |Rightmost_pivot(_) -> diagnose_rightmost_pivot pwb pwb2
         |Select (_,_,_) -> diagnose_select pwb pwb2 

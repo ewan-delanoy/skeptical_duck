@@ -23,7 +23,7 @@ type point = P of finite_int_set * width ;;
 type point_with_breadth = PWB of point * int ;; 
 
 type handle = 
-     Discrete
+     Has_no_constraints
     |Select of int * int * int   
     |Rightmost_overflow of int * int * int 
     |Rightmost_pivot of width
