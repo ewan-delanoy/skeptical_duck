@@ -213,7 +213,7 @@ module Point = struct
     Find_highest_constraint.below_maximal_width 
       (W w) (Finite_int_set.to_usual_int_list fis);;
 
-  let is_discrete pt = (highest_constraint_opt(pt)=None) ;; 
+  let has_no_constraint pt = (highest_constraint_opt(pt)=None) ;; 
 
   let is_nontrivial (P(fis,w)) =
     let domain = Finite_int_set.to_usual_int_list fis in
@@ -399,7 +399,7 @@ let decompose_wrt_translation pwb =
 
 let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
 let full_point = Private.full_point ;; 
-let is_discrete pwb = (Private.usual_decomposition_opt pwb=None) ;; 
+let has_no_constraint pwb = (Private.usual_decomposition_opt pwb=None) ;; 
 let max (PWB(pt,_b)) = Point.max pt ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
@@ -681,12 +681,12 @@ let add_to_low_level grc pwb pair = {
 } ;;
 
 let add_to_low_level_if_nondiscrete grc pwb pair =
-  if Point_with_breadth.is_discrete pwb 
+  if Point_with_breadth.has_no_constraint pwb 
   then grc
   else add_to_low_level grc pwb pair;;
 
 let immediate_eval_opt grc_ref pwb = 
-  if Point_with_breadth.is_discrete pwb 
+  if Point_with_breadth.has_no_constraint pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
        Some(Discrete,
          Help.apply_help_except_extra_grooves ((!grc_ref).helpers) pwb (Mold.discrete domain)) 
@@ -823,7 +823,7 @@ let eval_opt grc pwb =
   match immediate_opt grc pwb with 
   Some(answer0) -> Some answer0
  | None -> 
-  if Point_with_breadth.is_discrete pwb 
+  if Point_with_breadth.has_no_constraint pwb 
   then Some(Discrete,Mold.discrete(Point_with_breadth.supporting_set pwb))
   else    
   (match rightmost_pivot_opt grc pwb with 
@@ -991,7 +991,7 @@ module Extra_constraints = struct
     |highest :: others -> Some(PWEC(pt,others),highest) ;; 
   
   
-  let pwc_is_discrete pwc = ((usual_decomposition_opt_for_pwc pwc)=None);;
+  let pwc_has_no_constraint pwc = ((usual_decomposition_opt_for_pwc pwc)=None);;
   
   
   let remove_element_on_pwc (PWEC(pt,l_cstr)) t =
@@ -1031,7 +1031,7 @@ module Extra_constraints = struct
   let standard_solution_for_pwc  = Memoized.recursive (fun 
     old_f pwc-> 
     let (PWEC(pt,_l_cstr)) = pwc in 
-    if pwc_is_discrete pwc 
+    if pwc_has_no_constraint pwc 
     then Point.supporting_set pt 
     else  
     let pwc2 = remove_rightmost_element_on_pwc pwc
