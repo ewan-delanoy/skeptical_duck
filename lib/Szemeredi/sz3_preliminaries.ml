@@ -48,6 +48,11 @@ type grocery = Sz3_types.grocery = {
   low_level : (point_with_breadth * (handle * mold)) list;
 } ;;
   
+type diagnosis = Sz3_types.diagnosis =
+   Missing_forced_elements of (int list) * point_with_breadth 
+  |Missing_solution of solution * point_with_breadth 
+  |Missing_subcomputation of string * point_with_breadth 
+  |Missing_switch_in_fork of int * point_with_breadth ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -1189,12 +1194,6 @@ module Decompose = struct
 
 
   module Diagnose = struct 
-
-    type diagnosis =
-       Missing_forced_elements of (int list) * point_with_breadth 
-      |Missing_solution of solution * point_with_breadth 
-      |Missing_subcomputation of string * point_with_breadth 
-      |Missing_switch_in_fork of int * point_with_breadth ;;
       
     exception Nothing_to_diagnose_exn ;;
     exception Has_no_constraints_not_diagnosable_exn ;; 

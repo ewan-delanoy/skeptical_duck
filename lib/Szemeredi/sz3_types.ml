@@ -56,3 +56,9 @@ type grocery = {
   low_level : (point_with_breadth * (handle * mold)) list;
 } ;;
   
+type diagnosis =
+   Missing_forced_elements of (int list) * point_with_breadth 
+  |Missing_solution of solution * point_with_breadth 
+  |Missing_subcomputation of string * point_with_breadth 
+  |Missing_switch_in_fork of int * point_with_breadth ;;
+      
