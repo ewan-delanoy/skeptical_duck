@@ -19,6 +19,11 @@ type solution = Sz3_types.solution ;;
 
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
+type quantify_constraints = Sz3_types.quantify_constraints =
+    Qc_some_constraints
+    |Qc_all_constraints ;; 
+
+
 type point_with_breadth = Sz3_types.point_with_breadth = 
      No_constraint of finite_int_set
     |Usual of point * int 

@@ -20,6 +20,10 @@ type solution = int list ;;
 
 type point = P of finite_int_set * width ;; 
 
+type quantify_constraints =
+    Qc_some_constraints
+    |Qc_all_constraints ;; 
+
 type point_with_breadth = 
   No_constraint of finite_int_set
  |Usual of point * int 
