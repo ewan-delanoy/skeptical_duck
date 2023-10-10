@@ -19,7 +19,10 @@ type solution = Sz3_types.solution ;;
 
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
-type point_with_breadth = Sz3_types.point_with_breadth = PWB of point * int ;; 
+type point_with_breadth = Sz3_types.point_with_breadth = 
+     No_constraint of finite_int_set
+    |Usual of point * int 
+    |All_constraints of point * int ;; 
 
 type handle = Sz3_types.handle = 
    Has_no_constraints
@@ -79,20 +82,7 @@ let il_merge = Ordered.merge il_order ;;
 let il_sort = Ordered.sort il_order ;;
 
 
-let fis_order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
-    let trial1 = i_order n1 n2 in 
-    if trial1<>Total_ordering_result_t.Equal then trial1 else 
-    let trial2 = i_order (List.length scr2) (List.length scr1) in 
-    if trial2<>Total_ordering_result_t.Equal then trial2 else
-      Total_ordering.silex_for_intlists scr1 scr2
-  ): finite_int_set Total_ordering_t.t);;
 
-(* let point_order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
-    let trial1 = i_order w1 w2 in 
-    if trial1<>Total_ordering_result_t.Equal then trial1 else 
-    fis_order fis1 fis2
-  ): point Total_ordering_t.t);;
-let point_insert = Ordered.insert point_order ;; *)
 
 let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
   let trial1 = i_order w1 w2 in 
@@ -144,6 +134,8 @@ module Find_highest_constraint = struct
 
 module Finite_int_set = struct 
 
+  exception Translation_goes_negative of int * finite_int_set ;; 
+
   module Private = struct
 
   let to_usual_int_list (FIS(n,scrappers)) = i_setminus (Int_range.range 1 n) scrappers ;; 
@@ -152,6 +144,10 @@ module Finite_int_set = struct
        if domain = [] then FIS(0,[]) else 
        let n = List.hd(List.rev domain) in 
        FIS(n,i_setminus (Int_range.range 1 n) domain) ;;   
+
+  let translation_goes_negative d = function 
+    [] -> false
+    | m :: _ -> m+d<0 ;;      
 
   end ;;
 
@@ -174,6 +170,14 @@ module Finite_int_set = struct
   let max (FIS(n,_)) = n ;; 
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
+
+  let order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
+    let trial1 = i_order n1 n2 in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else 
+    let trial2 = i_order (List.length scr2) (List.length scr1) in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else
+      Total_ordering.silex_for_intlists scr1 scr2
+  ): finite_int_set Total_ordering_t.t);;
 
   let remove_element fis k=
     let (FIS(n,scrappers)) = fis in 
@@ -199,7 +203,10 @@ module Finite_int_set = struct
   let to_usual_int_list = Private.to_usual_int_list ;; 
 
   let translate d fis = 
-    let domain = Private.to_usual_int_list fis in
+    let domain = Private.to_usual_int_list fis in 
+    if Private.translation_goes_negative d domain 
+    then raise(Translation_goes_negative(d,fis))   
+    else  
     let translated_domain =  Image.image (fun t->t+d) domain in 
     Private.of_usual_int_list translated_domain;; 
 
@@ -229,7 +236,7 @@ module Point = struct
   let order = ((fun (P(fis1,W w1)) (P(fis2,W w2)) ->
     let trial1 = i_order w1 w2 in 
     if trial1<>Total_ordering_result_t.Equal then trial1 else 
-    fis_order fis1 fis2
+    Finite_int_set.order fis1 fis2
   ): point Total_ordering_t.t);;
 
   let remove_element (P(fis,w)) pivot = 
@@ -270,51 +277,83 @@ end ;;
 
 module Point_with_breadth = struct 
 
+exception No_constraint_no_point_no_breadth_exn of finite_int_set ;;   
+
 module Private = struct
 
 let constructor n scr (W old_w) b =  
   let fis = FIS(n,scr) in
   let pt = P(fis,W old_w) in 
   let support = Point.supporting_set pt in 
-  match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) (List.rev(Int_range.range 1 b)) with
-  Some(b0)->PWB(pt,b0)
+  let possible_breadths = List.rev(Int_range.range 1 b) in 
+  match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) possible_breadths with
+  Some(b0)->(
+               if b0= n - 2*(old_w+1)
+               then All_constraints(pt,b0) 
+               else Usual(pt,b0)  
+            )
   |None ->
   match Point.highest_constraint_opt pt with  
-   None -> PWB(P(fis,W 0),0)
+   None -> No_constraint(fis)
   |Some(C cstr) -> 
     let nth = (fun k->List.nth cstr (k-1)) in 
-    let w = W((nth 2)-(nth 1)-1) in 
-    PWB(P(fis,w),nth 1);;
-  ;; 
+    let new_b = nth 1
+    and new_w = (nth 2)-(nth 1)-1 in 
+    if new_b= n - 2*(new_w+1)
+    then All_constraints(P(fis,W new_w),new_b) 
+    else Usual(P(fis,W new_w),new_b) ;;   
+
 
 let constructor_for_two (P(FIS(n,scr),w)) b = constructor n scr w b ;;    
 
 let constructor_for_three (FIS(n,scr)) w b = constructor n scr w b ;; 
 
-let full_point pt = constructor_for_two pt 0 ;; 
+let all_constraints pt = constructor_for_two pt 0 ;; 
 
 
-let usual_decomposition_opt pwb =
-  let (PWB(pt,b)) = pwb in 
-  let (P(_,W w)) = pt in 
-  if b=0
-  then None 
-  else Some(constructor_for_two pt (b-1),C[b;b+(w+1);b+2*(w+1)]);;
+let usual_decomposition_opt = function 
+    (No_constraint _fis) -> None
+   |All_constraints(pt,b)
+   |Usual(pt,b) ->  
+    let (P(_,W w)) = pt in 
+    if b=0
+    then None 
+    else Some(constructor_for_two pt (b-1),C[b;b+(w+1);b+2*(w+1)]);;
 
-  (* when d<0, this opeartion makes sense 
-  only if the lowest element is >|d|. *)    
-  let translate d (PWB(pt,b)) = 
-    (*
+  
+  let translate d  = function 
+     (No_constraint fis) -> (No_constraint (Finite_int_set.translate d fis))
+      (*
       when b+d<0, there is no extra constraint, 
-      and this is equivalent to setting the new b to 0S    
+      and this is equivalent to setting the new b to 0  
     *) 
-    let new_b = max(0)(b+d) in
-      PWB(Point.translate d pt,new_b) ;;
+    |All_constraints(pt,b) ->
+      let new_b = max(0)(b+d) in
+      constructor_for_two(Point.translate d pt) new_b 
+    |Usual(pt,b) ->  
+      let new_b = max(0)(b+d) in
+      constructor_for_two(Point.translate d pt) new_b ;;
 
-    let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;     
+    let support = function 
+    (No_constraint fis) -> fis
+    |All_constraints(P(fis,_w),_b) -> fis
+    |Usual(P(fis,_w),_b) -> fis  ;;
 
-   let complementary_pairs pwb =
-     let (PWB(P(FIS(n,_scr),W max_w),b)) = pwb 
+    let supporting_set pwb = Finite_int_set.to_usual_int_list (support pwb) ;;    
+    
+    let point_and_breadth = function 
+    (No_constraint fis) -> raise(No_constraint_no_point_no_breadth_exn(fis))
+    |All_constraints(pt,b) -> (pt,b)
+    |Usual(pt,b) -> (pt,b)  ;;
+
+  let has_no_constraint = function 
+    (No_constraint _fis) -> true
+    |All_constraints(_pt,_b) 
+    |Usual(_pt,_b) -> false  ;; 
+
+   let complementary_pairs pwb = 
+    if has_no_constraint pwb then [] else 
+     let (P(FIS(n,_scr),W max_w),b) = point_and_breadth pwb 
      and domain = supporting_set pwb in 
      let candidates = Int_range.range 1 (max_w+1) in 
      List.filter_map (
@@ -325,7 +364,9 @@ let usual_decomposition_opt pwb =
            if u<=b then Some(u,v) else None  
      ) candidates ;;
 
-   let obstructions (PWB(P(FIS(n,_scr),W wmax),b)) = 
+   let obstructions pwb =
+     if has_no_constraint pwb then [] else 
+     let (P(FIS(n,_scr),W wmax),b) = point_and_breadth pwb in 
      let obstructions_for_width = (fun w->Int_range.scale(fun t->[t;t+w;t+2*w]) 1 (n-2*w)) in 
        List.flatten((Int_range.scale obstructions_for_width 1 wmax)@
        [Int_range.scale(fun t->[t;t+(wmax+1);t+2*(wmax+1)]) 1 b]);;
@@ -337,7 +378,8 @@ let usual_decomposition_opt pwb =
       let m = List.length(List.hd(List.rev temp2)) in 
       List.filter (fun y->List.length(y)=m-offset) temp2 ;; 
 
-   let rightmost_largest_width (PWB(P(FIS(n,_scr),W w),b)) =
+   let rightmost_largest_width pwb =
+      let (P(FIS(n,_scr),W w),b) = point_and_breadth pwb in 
       if b>=(n-2*(w+1))
       then W(w+1)
       else W(w) ;;   
@@ -360,66 +402,103 @@ let usual_decomposition_opt pwb =
    let individual_test_for_non_isolation wmax b domain x=
        List.exists(atomic_test_for_non_isolation wmax b domain x) (Int_range.range 1 (wmax+1)) ;;
 
-    let nonisolated_version (PWB(P(fis,W wmax),b)) = 
+    let nonisolated_version pwb =
+       if has_no_constraint pwb 
+       then let fis = support pwb in 
+            (No_constraint Finite_int_set.empty_set,Finite_int_set.to_usual_int_list fis) 
+       else let (P(fis,W wmax),b) = point_and_breadth pwb in 
        let domain = Finite_int_set.to_usual_int_list fis in 
        let (non_isolated,isolated) = List.partition (individual_test_for_non_isolation wmax b domain) domain in 
        let new_fis = Finite_int_set.of_usual_int_list non_isolated in 
        (constructor_for_three new_fis (W wmax) b,isolated);;
     
-    let remove_element (PWB(P(fis,W wmax),b)) elt = 
+    let remove_element pwb elt = 
+      if has_no_constraint pwb 
+      then let fis = support pwb in 
+             (No_constraint (Finite_int_set.remove_element fis elt)) 
+      else let (P(fis,W wmax),b) = point_and_breadth pwb in 
       let new_fis = Finite_int_set.remove_element fis elt in 
       let new_domain = Finite_int_set.to_usual_int_list new_fis in 
       match Find_highest_constraint.below_width_bound_pair (W wmax,b) new_domain with
-      None -> PWB(P(new_fis,W 0),0)
+      None -> No_constraint(new_fis)
       |Some(C cstr)->
         let nth = (fun k->List.nth cstr (k-1)) in 
         let new_wmax = (nth 2)-(nth 1)-1 in 
         constructor_for_three new_fis (W new_wmax) (nth 1);;
 
+    let compare_pbs pt1 b1 pt2 b2 =
+      let trial1 = Point.order pt1 pt2 in 
+      if trial1<>Total_ordering_result_t.Equal then trial1 else 
+      i_order b1 b2;;
 
-    let order = ((fun (PWB(pt1,b1)) (PWB(pt2,b2)) ->
-          let trial1 = Point.order pt1 pt2 in 
-          if trial1<>Total_ordering_result_t.Equal then trial1 else 
-          i_order b1 b2
+    let compare_in_no_constraints_case fis1 = function 
+      (No_constraint fis2) -> Finite_int_set.order fis1 fis2
+      |All_constraints(_pt,_b) 
+      |Usual(_pt,_b) -> Total_ordering_result_t.Lower  ;; 
+
+    let compare_in_all_constraints_case pt1 b1 = function 
+      (No_constraint _fis2) -> Total_ordering_result_t.Greater
+      |All_constraints(pt2,b2) -> compare_pbs pt1 b1 pt2 b2 
+      |Usual(_pt,_b) -> Total_ordering_result_t.Lower  ;;   
+
+    let compare_in_usual_case pt1 b1 = function 
+      (No_constraint _fis2) -> Total_ordering_result_t.Greater
+      |All_constraints(_pt,_b) -> Total_ordering_result_t.Greater
+      |Usual(pt2,b2) -> compare_pbs pt1 b1 pt2 b2   ;;   
+
+    let order = ((fun pwb1 pwb2 ->
+          match pwb1 with 
+          (No_constraint fis1) -> compare_in_no_constraints_case fis1 pwb2
+        |All_constraints(pt1,b1) -> compare_in_all_constraints_case pt1 b1 pwb2
+      |Usual(pt1,b1) -> compare_in_usual_case pt1 b1 pwb2
         ): point_with_breadth Total_ordering_t.t);;    
 
-    let subset_is_admissible (PWB(pt,b)) subset =
+    let subset_is_admissible pwb subset = 
+      if has_no_constraint pwb 
+      then true
+     else
+     let (pt,b) = point_and_breadth pwb in    
       if not(Point.subset_is_admissible pt subset)
       then false 
       else 
         let (P(_,W w)) = pt in 
         List.for_all (fun t->not(i_is_included_in [t;t+(w+1);t+2*(w+1)] subset)) (Int_range.range 1 b);;    
 
+    let decompose_wrt_translation pwb = match pwb with
+        (No_constraint fis) -> 
+            let (d,translated_fis) = Finite_int_set.decompose_wrt_translation fis in 
+            (d,No_constraint translated_fis)
+        |All_constraints(_pt,_b) 
+        |Usual(_pt,_b) -> 
+          let (pt,_b) = point_and_breadth pwb in 
+          let (d,_) = Point.decompose_wrt_translation pt in 
+          (d,translate (-d) pwb);; 
 
 end ;;  
 
-let absurd = PWB(P(FIS(0,[]),W 0),0) ;; 
-let breadth (PWB(_pt,b))= b ;;
+let absurd = No_constraint Finite_int_set.empty_set ;; 
+let breadth pwb =snd(Private.point_and_breadth pwb);;
 let constructor = Private.constructor ;; 
 let complementary_pairs = Private.complementary_pairs ;;
-let decompose_wrt_translation pwb = 
-  let (PWB(pt,_b)) = pwb in 
-  let (d,_) = Point.decompose_wrt_translation pt in 
-  (d,Private.translate (-d) pwb);; 
-
-let everything_but_the_size (PWB(P(FIS(_n,scr),w),b)) = (w,scr,b) ;;  
-let full_point = Private.full_point ;; 
+let decompose_wrt_translation = Private.decompose_wrt_translation ;;   
+let all_constraints = Private.all_constraints ;; 
 let has_no_constraint pwb = (Private.usual_decomposition_opt pwb=None) ;; 
-let max (PWB(pt,_b)) = Point.max pt ;;
+let max pwb = Finite_int_set.max (Private.support pwb) ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
-let point (PWB(pt,_b)) = pt ;;  
+let point pwb = fst(Private.point_and_breadth pwb) ;;  
 let projection pwb = snd(decompose_wrt_translation pwb);;
 let remove_element = Private.remove_element ;;
-let rightmost_largest_width = Private.rightmost_largest_width ;; 
-let size (PWB(P(FIS(n,_scr),_w),_b)) = n ;;
+let rightmost_largest_width = Private.rightmost_largest_width ;;
 let solutions = Private.solutions ;;  
 let subset_is_admissible= Private.subset_is_admissible ;; 
-let support (PWB(P(fis,_),_)) = fis ;; 
-let supporting_set (PWB(pt,_)) = Point.supporting_set pt ;;
+let support  = Private.support ;; 
+let supporting_set  = Private.supporting_set ;;
 let translate = Private.translate ;; 
 let usual_decomposition_opt = Private.usual_decomposition_opt ;; 
-let width (PWB(pt,_b))= Point.width pt ;;
+let width pwb =
+    let (pt,_b) = Private.point_and_breadth pwb in 
+    Point.width pt ;;
 
 end ;;  
 
@@ -705,7 +784,7 @@ let immediate_eval_opt grc_ref pwb =
               Some(handle,mold)    
 | None ->
   let wtriple = (w,scr,b) 
-  and n =  Point_with_breadth.size  pwb  in 
+  and n =  Point_with_breadth.max  pwb  in 
   match List.assoc_opt wtriple (!grc_ref).triple_level with 
     Some (f) -> let (handle,mold) =f n in 
                 Some(handle,mold)    
@@ -1026,7 +1105,7 @@ module Extra_constraints = struct
      old_f pwc-> 
        let (PWEC(pt,l_cstr)) = pwc in 
        if l_cstr = []
-       then Painstaking.measure(Point_with_breadth.full_point pt)
+       then Painstaking.measure(Point_with_breadth.all_constraints pt)
        else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 

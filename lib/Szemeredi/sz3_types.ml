@@ -20,7 +20,11 @@ type solution = int list ;;
 
 type point = P of finite_int_set * width ;; 
 
-type point_with_breadth = PWB of point * int ;; 
+type point_with_breadth = 
+  No_constraint of finite_int_set
+ |Usual of point * int 
+ |All_constraints of point * int ;; 
+  
 
 type handle = 
      Has_no_constraints
