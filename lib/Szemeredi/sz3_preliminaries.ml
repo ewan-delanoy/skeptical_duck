@@ -1022,6 +1022,80 @@ let eval grc_ref pwb =
 end ;;   
 
 
+module Diagnose = struct 
+      
+  exception Nothing_to_diagnose_exn ;;
+  exception Has_no_constraints_not_diagnosable_exn ;; 
+  
+  module Private = struct
+  
+    let diagnose_rightmost_overflow grc (u,v,_n)  left_pwb = 
+       match Impatient.immediate_opt grc left_pwb with 
+       None -> Missing_subcomputation("rightmost_overflow",left_pwb)
+       |Some (_,mold) -> 
+         Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
+  
+   let diagnose_rightmost_pivot std_sol_computer grc pwb left_pwb = 
+    match Impatient.immediate_opt grc left_pwb with 
+    None -> Missing_subcomputation("rightmost_pivot",left_pwb)
+    |Some (_,_) ->
+      let the_sol = std_sol_computer pwb 
+      and n = Point_with_breadth.max pwb in
+      Missing_solution("rightmost_pivot",i_outsert n the_sol,left_pwb) ;; 
+  
+    let diagnose_select std_sol_computer grc pwb prec_pwb = 
+      match Impatient.immediate_opt grc prec_pwb with 
+    None -> Missing_subcomputation("select",prec_pwb)
+    |Some (_,_) ->
+        let the_sol = std_sol_computer pwb in
+        Missing_solution("select",the_sol,prec_pwb) ;;  
+  
+    let diagnose_fork std_sol_computer grc (i,j,k) pwb prec_pwb = 
+      match Impatient.immediate_opt grc prec_pwb with 
+       None -> Missing_subcomputation("fork",prec_pwb)
+       |Some (_,prec_mold) -> 
+      let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
+      if missing_forced_elts <> []
+      then Missing_forced_elements(missing_forced_elts,prec_pwb)   
+      else   
+      let the_sol = std_sol_computer pwb in 
+      let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
+      let shorter_pwb = Point_with_breadth.remove_element pwb l in 
+      match  Impatient.immediate_opt grc shorter_pwb with 
+       None -> Missing_subcomputation("fork",shorter_pwb)
+       |Some (_,mold) -> 
+         let sols = Mold.solutions mold in 
+         if not(List.mem the_sol sols)
+         then Missing_solution("fork",the_sol,shorter_pwb)
+         else Missing_switch_in_fork(l,pwb) ;;  
+        
+  
+  let diagnose_precedent (std_sol_computer,decomposer) grc pwb =
+    let (handle,pwb2) = decomposer pwb in 
+      match handle with
+       Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
+      |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow grc (u,v,n) pwb2
+      |Rightmost_pivot(_) -> diagnose_rightmost_pivot std_sol_computer grc pwb pwb2
+      |Select (_,_,_) -> diagnose_select std_sol_computer grc pwb pwb2 
+      |Fork (i,j,k) -> diagnose_fork std_sol_computer grc (i,j,k) pwb pwb2 ;;  
+  
+
+  
+  let inspect_along_chain (std_sol_computer,decomposer,chain_computer) grc pwb = 
+    let (opt_counterexample,opt_list,new_grc) =Impatient.walk_scale grc (chain_computer pwb) in 
+     match opt_counterexample  with 
+     None -> let data = Option.get(opt_list) in 
+             Smooth(List.assoc pwb data,(fun ()->data))
+     |Some precedent -> Counterexample_found(precedent,
+       diagnose_precedent (std_sol_computer,decomposer) new_grc precedent);; 
+  
+  end ;;
+
+   
+ let inspect_along_chain = Private.inspect_along_chain ;; 
+
+end ;;
+
 
 end ;; 
 
