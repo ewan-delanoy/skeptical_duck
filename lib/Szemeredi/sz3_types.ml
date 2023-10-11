@@ -65,7 +65,10 @@ type grocery = {
   
 type diagnosis =
    Missing_forced_elements of (int list) * point_with_breadth 
-  |Missing_solution of solution * point_with_breadth 
+  |Missing_solution of string * solution * point_with_breadth 
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
       
+type chain_inspection_result =
+  Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
+  |Counterexample_found of point_with_breadth * diagnosis ;; 

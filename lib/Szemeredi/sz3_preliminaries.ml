@@ -57,9 +57,13 @@ type grocery = Sz3_types.grocery = {
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_forced_elements of (int list) * point_with_breadth 
-  |Missing_solution of solution * point_with_breadth 
+  |Missing_solution of string * solution * point_with_breadth 
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
+
+type chain_inspection_result = Sz3_types.chain_inspection_result =
+  Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
+  |Counterexample_found of point_with_breadth * diagnosis ;; 
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -1299,11 +1303,11 @@ module Decompose = struct
      let diagnose_rightmost_pivot pwb left_pwb = 
         let the_sol = Compute_standard_solution.compute pwb 
         and n = Point_with_breadth.max pwb in
-        Missing_solution(i_outsert n the_sol,left_pwb) ;; 
+        Missing_solution("rightmost_pivot",i_outsert n the_sol,left_pwb) ;; 
     
       let diagnose_select pwb prec_pwb = 
           let the_sol = Compute_standard_solution.compute pwb in
-          Missing_solution(the_sol,prec_pwb) ;;  
+          Missing_solution("select",the_sol,prec_pwb) ;;  
     
       let diagnose_fork (i,j,k) pwb prec_pwb = 
         match  Impatient.immediate_opt prec_pwb with 
@@ -1321,7 +1325,7 @@ module Decompose = struct
          |Some (_,mold) -> 
            let sols = Mold.solutions mold in 
            if not(List.mem the_sol sols)
-           then Missing_solution(the_sol,shorter_pwb)
+           then Missing_solution("fork",the_sol,shorter_pwb)
            else Missing_switch_in_fork(l,pwb) ;;  
           
     
@@ -1341,10 +1345,6 @@ module Decompose = struct
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
         
-    type chain_inspection_result =
-       Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
-       |Counterexample_found of point_with_breadth * diagnosis ;; 
-
     let inspect_along_chain pwb = 
       let (opt_counterexample,opt_list) = Impatient.walk_scale (Chain.chain pwb) in 
        match opt_counterexample  with 
