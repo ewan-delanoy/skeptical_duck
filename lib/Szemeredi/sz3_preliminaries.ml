@@ -20,14 +20,13 @@ type solution = Sz3_types.solution ;;
 type point = Sz3_types.point = P of finite_int_set * width ;; 
 
 type quantify_constraints = Sz3_types.quantify_constraints =
-    Qc_some_constraints
-    |Qc_all_constraints ;; 
+    Some_constraints
+    |All_constraints ;; 
 
 
 type point_with_breadth = Sz3_types.point_with_breadth = 
      No_constraint of finite_int_set
-    |Usual of point * int 
-    |All_constraints of point * int ;; 
+    |Usual of quantify_constraints * point * int ;; 
 
 type handle = Sz3_types.handle = 
    Has_no_constraints
@@ -286,17 +285,22 @@ exception No_constraint_no_point_no_breadth_exn of finite_int_set ;;
 
 module Private = struct
 
+let last_step_in_constructor pt b =
+  let n = Point.max pt and (W w) = Point.width pt in 
+  let qc = (
+     if b= n - 2*(w+1)
+     then All_constraints
+     else Some_constraints
+  ) in 
+  Usual(qc,pt,b) ;; 
+
 let constructor n scr (W old_w) b =  
   let fis = FIS(n,scr) in
   let pt = P(fis,W old_w) in 
   let support = Point.supporting_set pt in 
   let possible_breadths = List.rev(Int_range.range 1 b) in 
   match List.find_opt (fun t->i_is_included_in [t;t+(old_w+1);t+2*(old_w+1)] support) possible_breadths with
-  Some(b0)->(
-               if b0= n - 2*(old_w+1)
-               then All_constraints(pt,b0) 
-               else Usual(pt,b0)  
-            )
+  Some(b0)-> last_step_in_constructor pt b0
   |None ->
   match Point.highest_constraint_opt pt with  
    None -> No_constraint(fis)
@@ -304,9 +308,7 @@ let constructor n scr (W old_w) b =
     let nth = (fun k->List.nth cstr (k-1)) in 
     let new_b = nth 1
     and new_w = (nth 2)-(nth 1)-1 in 
-    if new_b= n - 2*(new_w+1)
-    then All_constraints(P(fis,W new_w),new_b) 
-    else Usual(P(fis,W new_w),new_b) ;;   
+    last_step_in_constructor (P(fis,W new_w)) new_b;;   
 
 
 let constructor_for_two (P(FIS(n,scr),w)) b = constructor n scr w b ;;    
@@ -318,12 +320,9 @@ let all_constraints pt = constructor_for_two pt 0 ;;
 
 let usual_decomposition_opt = function 
     (No_constraint _fis) -> None
-   |All_constraints(pt,b)
-   |Usual(pt,b) ->  
+   |Usual(_qc,pt,b) ->  
     let (P(_,W w)) = pt in 
-    if b=0
-    then None 
-    else Some(constructor_for_two pt (b-1),C[b;b+(w+1);b+2*(w+1)]);;
+    Some(constructor_for_two pt (b-1),C[b;b+(w+1);b+2*(w+1)]);;
 
   
   let translate d  = function 
@@ -332,29 +331,23 @@ let usual_decomposition_opt = function
       when b+d<0, there is no extra constraint, 
       and this is equivalent to setting the new b to 0  
     *) 
-    |All_constraints(pt,b) ->
-      let new_b = max(0)(b+d) in
-      constructor_for_two(Point.translate d pt) new_b 
-    |Usual(pt,b) ->  
+    |Usual(_qc,pt,b) ->  
       let new_b = max(0)(b+d) in
       constructor_for_two(Point.translate d pt) new_b ;;
 
     let support = function 
     (No_constraint fis) -> fis
-    |All_constraints(P(fis,_w),_b) -> fis
-    |Usual(P(fis,_w),_b) -> fis  ;;
+    |Usual(_qc,P(fis,_w),_b) -> fis  ;;
 
     let supporting_set pwb = Finite_int_set.to_usual_int_list (support pwb) ;;    
     
     let point_and_breadth = function 
     (No_constraint fis) -> raise(No_constraint_no_point_no_breadth_exn(fis))
-    |All_constraints(pt,b) -> (pt,b)
-    |Usual(pt,b) -> (pt,b)  ;;
+    |Usual(_qc,pt,b) -> (pt,b)  ;;
 
   let has_no_constraint = function 
     (No_constraint _fis) -> true
-    |All_constraints(_pt,_b) 
-    |Usual(_pt,_b) -> false  ;; 
+    |Usual(_qc,_pt,_b) -> false  ;; 
 
    let complementary_pairs pwb = 
     if has_no_constraint pwb then [] else 
@@ -438,24 +431,32 @@ let usual_decomposition_opt = function
 
     let compare_in_no_constraints_case fis1 = function 
       (No_constraint fis2) -> Finite_int_set.order fis1 fis2
-      |All_constraints(_pt,_b) 
-      |Usual(_pt,_b) -> Total_ordering_result_t.Lower  ;; 
+      |Usual(_qc,_pt,_b) -> Total_ordering_result_t.Lower  ;; 
 
     let compare_in_all_constraints_case pt1 b1 = function 
       (No_constraint _fis2) -> Total_ordering_result_t.Greater
-      |All_constraints(pt2,b2) -> compare_pbs pt1 b1 pt2 b2 
-      |Usual(_pt,_b) -> Total_ordering_result_t.Lower  ;;   
+      |Usual(qc,pt2,b2) -> (
+        match qc with 
+         All_constraints -> compare_pbs pt1 b1 pt2 b2
+        |Some_constraints -> Total_ordering_result_t.Lower  
+      )   ;;   
 
-    let compare_in_usual_case pt1 b1 = function 
-      (No_constraint _fis2) -> Total_ordering_result_t.Greater
-      |All_constraints(_pt,_b) -> Total_ordering_result_t.Greater
-      |Usual(pt2,b2) -> compare_pbs pt1 b1 pt2 b2   ;;   
+    let compare_in_some_constraints_case pt1 b1 = function 
+      (No_constraint _fis2) -> Total_ordering_result_t.Greater 
+      |Usual(qc,pt2,b2) -> (
+        match qc with 
+         All_constraints -> Total_ordering_result_t.Greater
+        |Some_constraints -> compare_pbs pt1 b1 pt2 b2 
+      )   ;;  
 
     let order = ((fun pwb1 pwb2 ->
           match pwb1 with 
-          (No_constraint fis1) -> compare_in_no_constraints_case fis1 pwb2
-        |All_constraints(pt1,b1) -> compare_in_all_constraints_case pt1 b1 pwb2
-      |Usual(pt1,b1) -> compare_in_usual_case pt1 b1 pwb2
+          (No_constraint fis1) -> compare_in_no_constraints_case fis1 pwb2 
+          |Usual(qc1,pt1,b1) -> (
+            match qc1 with 
+             All_constraints -> compare_in_all_constraints_case pt1 b1 pwb2
+            |Some_constraints -> compare_in_some_constraints_case pt1 b1 pwb2 
+          )  
         ): point_with_breadth Total_ordering_t.t);;    
 
     let subset_is_admissible pwb subset = 
@@ -473,8 +474,7 @@ let usual_decomposition_opt = function
         (No_constraint fis) -> 
             let (d,translated_fis) = Finite_int_set.decompose_wrt_translation fis in 
             (d,No_constraint translated_fis)
-        |All_constraints(_pt,_b) 
-        |Usual(_pt,_b) -> 
+        |Usual(_qc,_pt,_b) -> 
           let (pt,_b) = point_and_breadth pwb in 
           let (d,_) = Point.decompose_wrt_translation pt in 
           (d,translate (-d) pwb);; 
@@ -1017,6 +1017,8 @@ let eval grc_ref pwb =
 
 end ;;   
 
+
+
 end ;; 
 
 module Impatient = struct 
@@ -1275,6 +1277,10 @@ module Decompose = struct
  let chain = Private.compute_chain ;; 
 
   end ;;   
+
+
+
+
 
 
   module Diagnose = struct 
