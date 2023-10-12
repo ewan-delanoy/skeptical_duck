@@ -485,7 +485,6 @@ let usual_decomposition_opt = function
 
 end ;;  
 
-let absurd = No_constraint Finite_int_set.empty_set ;; 
 let breadth pwb =snd(Private.point_and_breadth pwb);;
 let constructor = Private.constructor ;; 
 let complementary_pairs = Private.complementary_pairs ;;
@@ -1071,7 +1070,10 @@ module Diagnose = struct
         
   
   let diagnose_precedent (std_sol_computer,decomposer) grc pwb =
-    let (handle,pwb2) = decomposer pwb in 
+    let (handle,pwb2_opt) = decomposer pwb in 
+    let pwb2=(match pwb2_opt with 
+       Some pwb3 -> pwb3
+       | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
       match handle with
        Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
       |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow grc (u,v,n) pwb2
@@ -1259,25 +1261,26 @@ module Decompose = struct
   
   let decompose = Memoized.make(fun pwb->
     match Point_with_breadth.usual_decomposition_opt pwb with 
-        None -> (Has_no_constraints,Point_with_breadth.absurd)
+        None -> (Has_no_constraints,None)
         |Some(prec_pwb,C cstr) -> 
           let n = Point_with_breadth.max pwb in
           let left_pwb = Point_with_breadth.remove_element pwb n in 
           let pwc = Extra_constraints.of_point_with_breadth pwb in  
           if Extra_constraints.measure(Extra_constraints.remove pwc n)=
             Extra_constraints.measure(pwc)-1   
-          then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),left_pwb)
+          then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
+                Some left_pwb)
           else   
           let m = Painstaking.measure pwb in   
             ( match test_for_rightmost_overflow pwb m with 
-           (Some(u,v))->(Rightmost_overflow(u,v,n),left_pwb)
+           (Some(u,v))->(Rightmost_overflow(u,v,n), Some left_pwb)
            |None ->   
          
          let nth = (fun k->List.nth cstr (k-1)) in 
          if Painstaking.measure prec_pwb = m
          then 
-              (Select(nth 1,nth 2,nth 3),prec_pwb)
-         else (Fork(nth 1,nth 2,nth 3),prec_pwb)   
+              (Select(nth 1,nth 2,nth 3),Some prec_pwb)
+         else (Fork(nth 1,nth 2,nth 3),Some prec_pwb)   
   ))  ;;     
   
  
@@ -1322,10 +1325,11 @@ module Decompose = struct
     let needed_extras pwb = adhoc_assoc pwb (!hints) ;; 
 
      let rec compute_chain pwb = 
-      let (handle,prec_pwb) = Decompose.decompose pwb in 
+      let (handle,prec_pwb_opt) = Decompose.decompose pwb in 
       if handle = Has_no_constraints 
       then [pwb]
       else
+      let  prec_pwb = Option.get prec_pwb_opt in   
        match Hashtbl.find_opt main_hashtbl pwb with 
        (Some old_answer) -> old_answer
        |None ->
