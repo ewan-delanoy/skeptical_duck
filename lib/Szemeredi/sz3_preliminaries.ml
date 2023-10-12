@@ -1298,9 +1298,11 @@ module Decompose = struct
    module Private = struct 
 
     let hints = ref ([
+      (*
       (Point_with_breadth.constructor 7 [] (W 3) 0,
        [Point_with_breadth.constructor 7 [] (W 3) 0]  
       )
+      *)
     ]: (point_with_breadth * point_with_breadth list) list) ;; 
     
     let main_hashtbl = ((Hashtbl.create 100): (point_with_breadth, point_with_breadth list) Hashtbl.t) ;; 
@@ -1333,7 +1335,7 @@ module Decompose = struct
        match Hashtbl.find_opt main_hashtbl pwb with 
        (Some old_answer) -> old_answer
        |None ->
-      let ancestors = prec_pwb :: (needed_extras pwb) in 
+      let ancestors = Ordered.sort pwb_order (prec_pwb :: (needed_extras pwb)) in 
       let temp1 = Image.image compute_chain ancestors in 
       let temp2 = Ordered.fold_merge pwb_order temp1 in 
       let final_answer = Ordered.insert pwb_order pwb temp2 in 
