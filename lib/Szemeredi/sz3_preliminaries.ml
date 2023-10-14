@@ -638,6 +638,8 @@ module Mold = struct
   
   let discrete domain = BM(domain,[0,SM([domain],Fan.constructor [domain])]) ;; 
   
+  let fan_at_index mold i = Small_mold.fan(Private.small_mold_at_index mold i) ;;
+  
   let forced_elements (BM(ext,_)) = ext ;; 
   
   let fork_opt pwb prec_mold pointed_ones (i,j,k) = 
@@ -700,10 +702,7 @@ module Mold = struct
         let shallow sols = 
           BM([],[0,SM(sols,Fan.empty_one)])  ;; 
   
-     let small_mold_at_index (BM(_,l)) i =
-         match List.assoc_opt i l with 
-          Some small_mold -> small_mold 
-         |None -> SM([],Fan.empty_one) ;; 
+     let small_mold_at_index = Private.small_mold_at_index ;; 
 
        let solutions = Private.solutions ;;        
   
