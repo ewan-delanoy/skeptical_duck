@@ -1489,7 +1489,7 @@ module Fan_related_requirement = struct
    let pull_and_adjust pwb old_frr  = 
       let (handle,pwb_before_opt) = Decompose.decompose pwb in 
       let pwb_before = Option.get pwb_before_opt in 
-      let n = Point_with_breadth.max pwb_before in 
+      let n = Point_with_breadth.max pwb in 
       let possibly_not_adjusted_reqs = pull_on_several_requirements old_frr n handle in 
       let adjusted_reqs = Image.image (
         fun (level_in_mold,fan) ->
