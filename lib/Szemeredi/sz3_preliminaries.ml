@@ -742,16 +742,26 @@ let translate d handle =
 
 end ;;  
 
+module Piece_of_help = struct 
+
+module Private = struct 
+
+end ;;  
+
+let extra_solutions_at_level help i = 
+  match List.assoc_opt i help.extra_solutions with 
+  (Some extra_sols) -> extra_sols 
+  | None -> [] ;; 
+
+let imposed_fan_at_level help i = List.assoc_opt i  help.imposed_fans ;; 
+
+
+end ;;  
+
 module Help = struct 
 
 module Private = struct
 
-let extra_solutions_at_index help i = 
-    match List.assoc_opt i help.extra_solutions with 
-    (Some extra_sols) -> extra_sols 
-    | None -> [] ;; 
-
-let imposed_fan_at_index help i = List.assoc_opt i  help.imposed_fans ;; 
 
 let replace_perhaps original replacer_opt = match replacer_opt with 
   None -> original 
@@ -765,8 +775,8 @@ let apply_individual_help_except_extra_grooves help mold =
       fun i->
          let (SM(old_sols,old_fan)) = Mold.small_mold_at_index mold i in 
          (i,SM(
-           il_merge old_sols (extra_solutions_at_index help i ),
-           replace_perhaps old_fan (imposed_fan_at_index help i) ))
+           il_merge old_sols (Piece_of_help.extra_solutions_at_level help i ),
+           replace_perhaps old_fan (Piece_of_help.imposed_fan_at_level help i) ))
     ) new_range in 
     BM(ext,new_data) ;; 
     
@@ -1172,7 +1182,7 @@ end ;;
 module Impatient = struct 
 
   module Friend = struct
-    let impatient_ref = ref Grocery.empty_one ;;
+    let impatient_ref = ref Grocery.reasonable_one ;;
   end ;;
 
   let eval_opt = Generic.Impatient.eval_opt (!(Friend.impatient_ref)) ;; 
@@ -1192,7 +1202,7 @@ end ;;
 module Painstaking = struct 
 
   module Private = struct
-    let painstaking_ref = ref Grocery.empty_one ;;
+    let painstaking_ref = ref Grocery.reasonable_one ;;
   end ;;
 
   let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
