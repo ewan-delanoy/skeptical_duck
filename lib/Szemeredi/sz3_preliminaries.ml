@@ -1476,7 +1476,7 @@ module Fan_related_requirement = struct
   let pull_on_several_requirements (FRR(old_requirements)) pair handle = 
      let temp1 = List.flatten(Image.image (pull_on_single_requirement pair handle) old_requirements) in 
      let indices = i_sort(Image.image fst temp1) in 
-     Image.image (
+     List.filter_map (
        fun level_in_mold ->
         let requirements =List.filter_map (
            fun (level_in_mold2,fan) ->
@@ -1484,7 +1484,10 @@ module Fan_related_requirement = struct
              then Some fan
             else None  
         ) temp1 in 
-        (level_in_mold,Fan.combine_conditions requirements)
+        let final_fan = Fan.combine_conditions requirements in 
+        if final_fan = []
+        then None  
+        else Some(level_in_mold,Fan.combine_conditions requirements)
      ) indices ;;
   
    let pull_and_adjust pwb old_frr  = 
