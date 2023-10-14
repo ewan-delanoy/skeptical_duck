@@ -95,6 +95,20 @@ let combine=((fun ~tried_first ~tried_second->
           then ty
           else h z1 z2
  ): ('a*'b*'c) Total_ordering_t.t);;
+
+ let quadruple_product (f:'a Total_ordering_t.t) (g:'b Total_ordering_t.t) (h:'c Total_ordering_t.t) (i:'d Total_ordering_t.t)=
+  ((fun (x1,y1,z1,t1) (x2,y2,z2,t2)->
+     let tx=f(x1)(x2) in
+     if tx<>Total_ordering_result_t.Equal 
+     then tx
+     else let ty=g(y1)(y2) in
+          if ty<>Total_ordering_result_t.Equal 
+          then ty
+          else let tz=h(z1)(z2) in
+               if tz<>Total_ordering_result_t.Equal 
+               then tz
+               else i t1 t2
+ ): ('a*'b*'c*'d) Total_ordering_t.t);;
  
  let lex_compare (f:'a Total_ordering_t.t)=
   let rec tempf=(
@@ -344,6 +358,7 @@ let from_list = Private.from_list ;;
 let lex_compare = Private.lex_compare ;;
 let lex_for_strings = Private.lex_for_strings ;;
 let product = Private.product ;;
+let quadruple_product = Private.quadruple_product ;;
 let silex_compare = Private.silex_compare ;;
 let silex_for_strings = Private.silex_for_strings ;;
 let silex_for_intlists = Private.silex_compare for_integers ;;
