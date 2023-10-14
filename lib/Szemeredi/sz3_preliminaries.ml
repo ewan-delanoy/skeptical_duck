@@ -587,6 +587,8 @@ module Small_mold = struct
 
   let empty_one = SM([],Fan.empty_one);;
 
+  let fan (SM(_sols,fan_inside)) = fan_inside ;;
+
   let impose l_cstr (SM(sols,fan)) =
      SM(Constraint.select_in_list l_cstr sols,Fan.impose l_cstr fan) ;; 
 
