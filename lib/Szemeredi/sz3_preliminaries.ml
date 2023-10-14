@@ -560,6 +560,8 @@ module Fan = struct
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
 
+    
+
   end ;;  
 
   let canonical_container = Private.canonical_container ;; 
@@ -580,6 +582,11 @@ module Fan = struct
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
   let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
+
+  let with_or_without (F(ll)) n=
+      let (with_n,without_n)=List.partition (i_mem n) ll in 
+      let with_n_removed = Image.image (i_outsert n) with_n in 
+      (constructor(with_n_removed@without_n),without_n) ;;   
 
 end ;;   
 
