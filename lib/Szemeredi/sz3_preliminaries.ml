@@ -562,6 +562,8 @@ module Fan = struct
 
   end ;;  
 
+  let canonical_container = Private.canonical_container ;; 
+
   let combine_two_conditions = Private.combine_two_conditions ;; 
 
   let constructor = Private.constructor ;;
