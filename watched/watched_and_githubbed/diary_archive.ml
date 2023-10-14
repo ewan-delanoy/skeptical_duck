@@ -1,14 +1,89 @@
 (************************************************************************************************************************
-Snippet 126 : 
+Snippet 127 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 125 : For sudoku study 
+Snippet 126 : Bijections with finite difference set
 ************************************************************************************************************************)
 
+module Snip126=struct
+
+  let i_order = Total_ordering.for_integers ;;
+  let i_insert = Ordered.insert i_order ;;
+  let i_mem = Ordered.mem i_order ;;
+  let i_sort = Ordered.sort i_order ;;
+  
+  type state = S of int * (int list) * (int list);;
+  type larger_state = LS of state * ((int list) list) ;; 
+  
+  let u1 = [6;10;15] ;; 
+  let u2 = (List.rev_map (fun x->(-x)) u1) @ u1 ;; 
+  
+  let insert_opt new_elt (S(a,others,diffs)) =
+      if (new_elt<0) || (new_elt=a) || (i_mem new_elt others)
+      then None
+      else Some(S(new_elt,i_insert a others,(new_elt-a)::diffs)) ;;
+      
+  let descendants_for_one state =
+    let (S(a,others,diffs)) = state in 
+    List.filter_map (fun t->insert_opt (a+t) state) u2 ;; 
+  
+  let descendants_for_several states = List.flatten (Image.image descendants_for_one states) ;;
+  
+  let rec quest states goal =
+     match List.find_opt (fun (S(a,others,diffs))->a=goal) states with 
+     Some solution -> solution
+     | None -> let new_states = descendants_for_several states in 
+               quest new_states goal ;; 
+  
+  
+  
+  let rec iterator_for_next_goal i l = match l with
+    [] -> i
+    | j :: others -> if j=i then iterator_for_next_goal (i+1) others else i ;; 
+  
+  let next_goal (S(new_elt,others,diffs)) = iterator_for_next_goal 0 (i_insert new_elt others) ;; 
+  
+  let push_state st = quest [st] (next_goal st) ;; 
+  
+  let push_larger_state (LS(old_state,addenda)) =
+      let new_state = push_state old_state in 
+      let (S(_,_,old_diffs)) = old_state 
+      and (S(_,_,new_diffs)) = new_state in 
+      let d= List.length(new_diffs)-List.length(old_diffs) in 
+      LS(new_state,(List_again.long_head d new_diffs) :: addenda);;    
+  
+  let initial_state = S(0,[],[]) ;;   
+  let initial_large_state = LS(initial_state,[]);;  
+  
+  let ff = Memoized.small push_larger_state initial_large_state ;; 
+  
+  
+  let g1 = descendants_for_several [initial_state] ;;
+  let g2 = next_goal initial_state ;; 
+  
+  let g3 = ff 132 ;; 
+  let (LS(_,g4)) = g3 ;; 
+  let g5 = Image.image List.length g4 ;;
+  
+  let nth k = List.nth g4 (k-1) ;; 
+  let uu k = (nth(k+1),nth(k+2),nth(k+3),nth(k+4)) ;; 
+  let n4 = List.length g4 ;; 
+  
+  let g5 = List.filter (fun t->if t>n4-1 then false else nth(t+1)=nth(1)) (Int_range.range 1 n4) ;; 
+  let g6 = List.filter (fun t->if t>n4-2 then false else nth(t+2)=nth(2)) g5 ;; 
+  let g7 = List.filter (fun t->if t>n4-3 then false else nth(t+3)=nth(3)) g6 ;; 
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 125 : For sudoku study 
+************************************************************************************************************************)
 module Snip125=struct
 
   type cell = C of int * int ;;
