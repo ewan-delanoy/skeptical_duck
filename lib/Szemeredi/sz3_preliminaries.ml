@@ -1074,7 +1074,8 @@ module Diagnose = struct
        match Impatient.immediate_opt grc left_pwb with 
        None -> Missing_subcomputation("rightmost_overflow",left_pwb)
        |Some (_,mold) -> 
-         Missing_forced_elements(i_setminus [u;v] (Mold.forced_elements mold),left_pwb) ;; 
+        let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
+        Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
   
    let diagnose_rightmost_pivot std_sol_computer grc pwb left_pwb = 
     match Impatient.immediate_opt grc left_pwb with 
@@ -1097,7 +1098,7 @@ module Diagnose = struct
        |Some (_,prec_mold) -> 
       let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
       if missing_forced_elts <> []
-      then Missing_forced_elements(missing_forced_elts,prec_pwb)   
+      then Missing_fan("rightmost_overflow",prec_pwb,0,F[missing_forced_elts])   
       else   
       let the_sol = std_sol_computer pwb in 
       let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
