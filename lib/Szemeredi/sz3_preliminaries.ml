@@ -1485,14 +1485,12 @@ module Fan_related_requirement = struct
             else None  
         ) temp1 in 
         let final_fan = Fan.combine_conditions requirements in 
-        if final_fan = []
+        if final_fan = Fan.empty_one
         then None  
         else Some(level_in_mold,Fan.combine_conditions requirements)
      ) indices ;;
   
-   let pull_and_adjust pwb old_frr  = 
-      let (handle,pwb_before_opt) = Decompose.decompose pwb in 
-      let pwb_before = Option.get pwb_before_opt in 
+   let pull_and_adjust pwb handle pwb_before old_frr  = 
       let n = Point_with_breadth.max pwb 
       and comps = Point_with_breadth.complementary_pairs pwb in 
       let possibly_not_adjusted_reqs = pull_on_several_requirements old_frr (n,comps) handle in 
@@ -1502,12 +1500,29 @@ module Fan_related_requirement = struct
       ) possibly_not_adjusted_reqs in 
       FRR adjusted_reqs ;;  
 
-   
+    let rec iterator_for_fan_pulling (pwb,handle,pwb_before,frr,treated) = 
+      let frr_before = pull_and_adjust pwb handle  pwb_before frr 
+      and (handle_before,pwb_much_before_opt) = Decompose.decompose pwb_before in 
+      let updated = (pwb_before,frr_before)::treated in 
+      match pwb_much_before_opt with 
+       None -> List.rev(updated)
+      |Some(pwb_much_before) -> iterator_for_fan_pulling (pwb_before,handle_before,pwb_much_before,frr_before,updated) ;;
+          
+    let pull_all_fans pwb original_required_fan =
+      let frr=FRR[0,adjust_required_fan pwb 0 original_required_fan]
+      and (handle,pwb_before_opt) = Decompose.decompose pwb in 
+      match pwb_before_opt with 
+      None -> [pwb,frr]
+     |Some(pwb_before) -> iterator_for_fan_pulling (pwb,handle,pwb_before,frr,[pwb,frr]) ;; 
+
 end ;;
 
 let constructor pwb level_in_mold original_required_fan = 
      FRR[0,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
-let pull = Private.pull_and_adjust ;; 
-
+let pull pwb old_frr  = 
+      let (handle,pwb_before_opt) = Decompose.decompose pwb in 
+     let pwb_before = Option.get pwb_before_opt in 
+    Private.pull_and_adjust pwb handle pwb_before old_frr ;; 
+let pull_all_fans = Private.pull_all_fans ;; 
 
 end ;;   
