@@ -80,6 +80,7 @@ let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_length_preserving_sort = Ordered.length_preserving_sort i_order ;;
 let i_outsert = Ordered.outsert i_order ;;
 let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 
 let il_order = Total_ordering.silex_for_intlists ;;
@@ -568,6 +569,8 @@ module Fan = struct
   let canonical_container = Private.canonical_container ;; 
 
   let combine_two_conditions = Private.combine_two_conditions ;; 
+
+  let combine_conditions = Private.combine_conditions ;;  
 
   let constructor = Private.constructor ;;
 
@@ -1439,13 +1442,60 @@ module Decompose = struct
   
   end ;;
 
-module Pullback = struct 
 
-let adjust_required_fan pwb level_in_mold original_required_fan = 
-  let mold = snd(Option.get(Diagnose.half_impatient_eval_opt pwb)) in 
-  let older_fan = Mold.fan_at_index mold level_in_mold in 
-  let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
-  let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
-  Fan.canonical_container all_sols pre_adjusted_requirement;;
+module Fan_related_requirement = struct 
 
-end ;;  
+  exception No_pullback_without_a_constraint_exn ;; 
+
+  module Private = struct
+
+    let adjust_required_fan pwb level_in_mold original_required_fan = 
+      let mold = snd(Option.get(Diagnose.half_impatient_eval_opt pwb)) in 
+      let older_fan = Mold.fan_at_index mold level_in_mold in 
+      let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
+      let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
+      Fan.canonical_container all_sols pre_adjusted_requirement;;
+
+  let pull_on_single_requirement _n handle (_level_in_mold,_required_fan)= 
+     match handle with  
+    Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
+  | Rightmost_pivot(_) -> failwith("aaa")
+  | Select (_i,_j,_k) ->  failwith("bbb")
+  | Rightmost_overflow (_i,_j,_k) -> failwith("ccc")
+  | Fork (_i,_j,_k) -> failwith("ddd") ;; 
+      
+  let pull_on_several_requirements (FRR(old_requirements)) n handle = 
+     let temp1 = List.flatten(Image.image (pull_on_single_requirement n handle) old_requirements) in 
+     let indices = i_sort(Image.image fst temp1) in 
+     Image.image (
+       fun level_in_mold ->
+        let requirements =List.filter_map (
+           fun (level_in_mold2,fan) ->
+             if level_in_mold2 = level_in_mold 
+             then Some fan
+            else None  
+        ) temp1 in 
+        (level_in_mold,Fan.combine_conditions requirements)
+     ) indices ;;
+  
+   let pull_and_adjust old_frr handle pwb_before = 
+      let n = Point_with_breadth.max pwb_before in 
+      let possibly_not_adjusted_reqs = pull_on_several_requirements old_frr n handle in 
+      let adjusted_reqs = Image.image (
+        fun (level_in_mold,fan) ->
+           (level_in_mold,adjust_required_fan pwb_before level_in_mold fan)
+      ) possibly_not_adjusted_reqs in 
+      FRR adjusted_reqs ;;  
+
+   
+
+  
+
+end ;;
+
+let constructor pwb level_in_mold original_required_fan = 
+     FRR[0,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
+let pull = Private.pull_and_adjust ;; 
+
+
+end ;;   
