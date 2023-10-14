@@ -72,3 +72,5 @@ type diagnosis =
 type chain_inspection_result =
   Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
   |Counterexample_found of point_with_breadth * diagnosis ;; 
+
+type fan_related_requirement = FRR of (int * fan) list ;;   
