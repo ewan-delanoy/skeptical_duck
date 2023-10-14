@@ -793,8 +793,10 @@ module Grocery = struct
 
 
 
- module Low_level = struct 
+ module Private = struct 
 
+  module Low_level = struct
+  
   let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
   ): handle Total_ordering_t.t);; 
 
@@ -815,19 +817,26 @@ module Grocery = struct
     
   let insert new_key data = Ordered.insert order new_key data ;; 
   
+   end ;;
+
+  let empty_one = {
+    helpers = [];
+    pair_level = [];
+    triple_level  = [];
+    low_level = [];
+  }  ;;  
+
+  let ref_for_reasonable_one = ref empty_one ;;
 
  end ;; 
 
-let empty_one = {
-  helpers = [];
-  pair_level = [];
-  triple_level  = [];
-  low_level = [];
-}  ;;  
+let empty_one = Private.empty_one;;  
+let reasonable_one =(!(Private.ref_for_reasonable_one)) ;; 
+
 
 let add_to_low_level grc pwb pair = {
    grc with 
-   low_level = Low_level.insert (pwb,pair) (grc.low_level);
+   low_level = Private.Low_level.insert (pwb,pair) (grc.low_level);
 } ;;
 
 let add_to_low_level_if_nondiscrete grc pwb pair =
@@ -856,7 +865,7 @@ let immediate_eval_opt grc_ref pwb =
                 Some(handle,mold)    
   | None ->
      (  
-      match Low_level.get_opt pwb (!grc_ref).low_level with 
+      match Private.Low_level.get_opt pwb (!grc_ref).low_level with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
