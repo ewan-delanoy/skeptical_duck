@@ -562,6 +562,8 @@ module Fan = struct
 
   end ;;  
 
+  let combine_two_conditions = Private.combine_two_conditions ;; 
+
   let constructor = Private.constructor ;;
 
   let core (F ll) = i_fold_intersect ll ;; 
@@ -639,7 +641,7 @@ module Mold = struct
   let discrete domain = BM(domain,[0,SM([domain],Fan.constructor [domain])]) ;; 
   
   let fan_at_index mold i = Small_mold.fan(Private.small_mold_at_index mold i) ;;
-  
+
   let forced_elements (BM(ext,_)) = ext ;; 
   
   let fork_opt pwb prec_mold pointed_ones (i,j,k) = 
