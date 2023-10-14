@@ -65,6 +65,7 @@ type grocery = {
   
 type diagnosis =
    Missing_forced_elements of (int list) * point_with_breadth 
+  |Missing_fan of string * fan * point_with_breadth 
   |Missing_solution of string * solution * point_with_breadth 
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
