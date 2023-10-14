@@ -1416,22 +1416,12 @@ module Decompose = struct
 
   module Diagnose = struct 
       
-    
-    
-    module Private = struct
-    
-      
-    
     let half_impatient_eval_opt pwb = 
       let (_opt_counterexample,opt_list) = Impatient.walk_scale (Chain.chain pwb) in 
        match opt_list  with 
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
-        
-    
-    end ;;
 
-   let half_impatient_eval_opt = Private.half_impatient_eval_opt ;;   
    let inspect_along_chain = 
     Generic.Diagnose.inspect_along_chain 
     (Compute_standard_solution.compute,
@@ -1440,3 +1430,14 @@ module Decompose = struct
       
   
   end ;;
+
+module Pullback = struct 
+
+let adjust_required_fan pwb level_in_mold original_required_fan = 
+  let mold = snd(Option.get(Diagnose.half_impatient_eval_opt pwb)) in 
+  let older_fan = Mold.fan_at_index mold level_in_mold in 
+  let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
+  let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
+  Fan.canonical_container all_sols pre_adjusted_requirement;;
+
+end ;;  
