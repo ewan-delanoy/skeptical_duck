@@ -590,7 +590,7 @@ module Fan = struct
   let with_or_without (F(ll)) n=
       let (with_n,without_n)=List.partition (i_mem n) ll in 
       let with_n_removed = Image.image (i_outsert n) with_n in 
-      (constructor(with_n_removed@without_n),without_n) ;;   
+      (constructor(with_n_removed@without_n),F(without_n)) ;;   
 
 end ;;   
 
@@ -1456,13 +1456,21 @@ module Fan_related_requirement = struct
       let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
       Fan.canonical_container all_sols pre_adjusted_requirement;;
 
-  let pull_on_single_requirement _n handle (_level_in_mold,_required_fan)= 
+  let pull_on_single_requirement n handle (level_in_mold,required_fan)= 
+   let draft = (
      match handle with  
     Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
-  | Rightmost_pivot(_) -> failwith("aaa")
-  | Select (_i,_j,_k) ->  failwith("bbb")
-  | Rightmost_overflow (_i,_j,_k) -> failwith("ccc")
-  | Fork (_i,_j,_k) -> failwith("ddd") ;; 
+  | Rightmost_pivot(_) -> let (with_n,without_n) = Fan.with_or_without required_fan n in 
+                          [level_in_mold,with_n;level_in_mold-1,without_n]
+  | Rightmost_overflow (_,_,_) -> 
+                          let (with_n,without_n) = Fan.with_or_without required_fan n in 
+                          [level_in_mold+1,with_n;level_in_mold,without_n]
+  | Select (i,j,k) ->  let relaxed_fan = Fan.union required_fan (F[[i;j;k]])   in
+                        [level_in_mold,relaxed_fan]
+  | Fork (i,j,k) -> let relaxed_fan = Fan.union required_fan (F[[i;j;k]])   in
+                        [level_in_mold+1,relaxed_fan]
+    ) in
+    List.filter (fun (level,_fan)->level>=0) draft  ;; 
       
   let pull_on_several_requirements (FRR(old_requirements)) n handle = 
      let temp1 = List.flatten(Image.image (pull_on_single_requirement n handle) old_requirements) in 
@@ -1478,7 +1486,9 @@ module Fan_related_requirement = struct
         (level_in_mold,Fan.combine_conditions requirements)
      ) indices ;;
   
-   let pull_and_adjust old_frr handle pwb_before = 
+   let pull_and_adjust pwb old_frr  = 
+      let (handle,pwb_before_opt) = Decompose.decompose pwb in 
+      let pwb_before = Option.get pwb_before_opt in 
       let n = Point_with_breadth.max pwb_before in 
       let possibly_not_adjusted_reqs = pull_on_several_requirements old_frr n handle in 
       let adjusted_reqs = Image.image (
@@ -1488,9 +1498,6 @@ module Fan_related_requirement = struct
       FRR adjusted_reqs ;;  
 
    
-
-  
-
 end ;;
 
 let constructor pwb level_in_mold original_required_fan = 
