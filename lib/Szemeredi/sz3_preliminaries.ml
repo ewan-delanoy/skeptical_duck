@@ -1505,7 +1505,7 @@ module Fan_related_requirement = struct
       and (handle_before,pwb_much_before_opt) = Decompose.decompose pwb_before in 
       let updated = (pwb_before,frr_before)::treated in 
       match pwb_much_before_opt with 
-       None -> List.rev(updated)
+       None -> updated
       |Some(pwb_much_before) -> iterator_for_fan_pulling (pwb_before,handle_before,pwb_much_before,frr_before,updated) ;;
           
     let pull_all_fans pwb original_required_fan =
