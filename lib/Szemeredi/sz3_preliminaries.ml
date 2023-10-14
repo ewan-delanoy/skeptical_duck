@@ -57,8 +57,8 @@ type grocery = Sz3_types.grocery = {
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_forced_elements of (int list) * point_with_breadth 
-  |Missing_fan of string * fan * point_with_breadth 
-  |Missing_solution of string * solution * point_with_breadth 
+  |Missing_fan of string * point_with_breadth * int * fan 
+  |Missing_solution of string * point_with_breadth * solution 
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
 
@@ -1082,14 +1082,14 @@ module Diagnose = struct
     |Some (_,_) ->
       let the_sol = std_sol_computer pwb 
       and n = Point_with_breadth.max pwb in
-      Missing_solution("rightmost_pivot",i_outsert n the_sol,left_pwb) ;; 
+      Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
   
     let diagnose_select std_sol_computer grc pwb prec_pwb = 
       match Impatient.immediate_opt grc prec_pwb with 
     None -> Missing_subcomputation("select",prec_pwb)
     |Some (_,_) ->
         let the_sol = std_sol_computer pwb in
-        Missing_solution("select",the_sol,prec_pwb) ;;  
+        Missing_solution("select",prec_pwb,the_sol) ;;  
   
     let diagnose_fork std_sol_computer grc (i,j,k) pwb prec_pwb = 
       match Impatient.immediate_opt grc prec_pwb with 
@@ -1107,7 +1107,7 @@ module Diagnose = struct
        |Some (_,mold) -> 
          let sols = Mold.solutions mold in 
          if not(List.mem the_sol sols)
-         then Missing_solution("fork",the_sol,shorter_pwb)
+         then Missing_solution("fork",shorter_pwb,the_sol)
          else Missing_switch_in_fork(l,pwb) ;;  
         
   
