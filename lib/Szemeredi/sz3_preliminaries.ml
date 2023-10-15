@@ -884,12 +884,18 @@ module Fixed_grocery = struct
                   Some(handle,mold)    
     | None -> None ;;    
   
-  
+    let institute_fan fixed_grc pwb frr =
+      {
+        fixed_grc with
+        helpers = (Help.institute_fan (fixed_grc.helpers) pwb frr)
+      } ;; 
+
 
   end ;; 
 
  let main_ref = ref Private.empty_one ;; 
  let immediate_eval_opt = Private.immediate_eval_opt ;; 
+ let institute_fan = Private.institute_fan ;;
 
 end ;;  
 
@@ -951,37 +957,17 @@ module Grocery = struct
 
   let ref_for_reasonable_one = ref empty_one ;;
 
-  let institute_fan fixed_grc pwb frr =
-      {
-        fixed_grc with
-        helpers = (Help.institute_fan (fixed_grc.helpers) pwb frr)
-      } ;; 
-
+ 
  end ;; 
 
 
 let empty_one = Private.empty_one;;  
 
 let immediate_eval_opt grc pwb = 
-  if Point_with_breadth.has_no_constraint pwb 
-  then let domain = Point_with_breadth.supporting_set pwb in 
-       Some(Has_no_constraints,
-         Help.apply_help_except_extra_grooves ((fst(grc)).helpers) pwb (Mold.discrete domain)) 
-  else     
-  let (FIS(n,scr)) = Point_with_breadth.support pwb 
-  and w = Point_with_breadth.width pwb 
-  and b = Point_with_breadth.breadth pwb in 
-  let wpair = (w,scr) in
-  match List.assoc_opt wpair (fst(grc)).pair_level with 
-  Some (f) -> let (handle,mold) =f b n in 
-              Some(handle,mold)    
-| None ->
-  let wtriple = (w,scr,b) 
-  and n =  Point_with_breadth.max  pwb  in 
-  match List.assoc_opt wtriple (fst(grc)).triple_level with 
-    Some (f) -> let (handle,mold) =f n in 
-                Some(handle,mold)    
-  | None ->
+  match Fixed_grocery.immediate_eval_opt (fst(grc)) pwb  with 
+  Some (answer) -> let (handle,mold) =answer in 
+                   Some(handle,mold)    
+| None -> 
      (  
       match Flexible_grocery.get_opt pwb (snd(grc)) with 
       Some (answer) -> let (handle,mold) =answer in 
@@ -989,7 +975,7 @@ let immediate_eval_opt grc pwb =
     | None -> None
        ) ;;    
 
-let institute_fan = Private.institute_fan ;;
+
 
 let reasonable_one =(!(Private.ref_for_reasonable_one)) ;;        
 
