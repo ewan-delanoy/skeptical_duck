@@ -951,24 +951,6 @@ end ;;
 
 module Grocery = struct 
 
-
-
- module Private = struct 
-
-  let empty_one = ({
-    helpers = [];
-    pair_level = [];
-    triple_level  = []
-  }, Flg([])) ;;  
-
-  let ref_for_reasonable_one = ref empty_one ;;
-
- 
- end ;; 
-
-
-let empty_one = Private.empty_one;;  
-
 let immediate_eval_opt grc pwb = 
   match Fixed_grocery.immediate_eval_opt (fst(grc)) pwb  with 
   Some (answer) -> let (handle,mold) =answer in 
@@ -981,10 +963,6 @@ let immediate_eval_opt grc pwb =
     | None -> None
        ) ;;    
 
-
-
-let reasonable_one =(!(Private.ref_for_reasonable_one)) ;;        
-
 end ;;  
 
 
@@ -996,29 +974,29 @@ module Impatient = struct
 
   module Private = struct
 
- let immediate_opt grc pwb =  
+ let immediate_opt low_level pwb =  
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match Grocery.immediate_eval_opt grc grounded_pwb with 
+     match Grocery.immediate_eval_opt (!(Instituted_fixed_grocery.main_ref),low_level) grounded_pwb with 
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
- let rec immediate_for_several_opt grc (treated,to_be_treated) = 
+ let rec immediate_for_several_opt low_level (treated,to_be_treated) = 
     match to_be_treated with 
     [] -> Some(List.rev treated) 
     | pwb :: others ->
      (
-      match immediate_opt grc pwb with 
+      match immediate_opt low_level pwb with 
         None -> None 
-        |Some (_,mold) -> immediate_for_several_opt grc (mold::treated,others)
-     )
+        |Some (_,mold) -> immediate_for_several_opt low_level (mold::treated,others)
+     ) ;;
 
 
 
-let fork_opt grc pwb =
+let fork_opt low_level pwb =
   match Point_with_breadth.usual_decomposition_opt pwb with 
   None -> None
  |Some(prec_pwb,C cstr) ->
-    match immediate_opt grc prec_pwb with 
+    match immediate_opt low_level prec_pwb with 
     None -> None
   | Some(_,prec_mold) -> 
         let ext = Mold.forced_elements prec_mold in 
@@ -1028,9 +1006,9 @@ let fork_opt grc pwb =
         if not(i_is_included_in [i;j;k] ext)
         then None
         else
-              let grooves = i_insert k (Help.extra_grooves (fst grc).helpers pwb) in 
+              let grooves = i_insert k (Help.extra_grooves (!(Instituted_fixed_grocery.main_ref)).helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
-              (match immediate_for_several_opt grc ([],pointed_pwbs) with 
+              (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
                 None -> None
               | Some(pointed_molds) -> 
                  (
@@ -1042,10 +1020,10 @@ let fork_opt grc pwb =
 
 
            
-let rightmost_overflow_opt grc pwb  = 
+let rightmost_overflow_opt low_level pwb  = 
  let n = Point_with_breadth.max pwb in 
  let left_pwb = Point_with_breadth.remove_element pwb n in 
- match immediate_opt grc left_pwb with 
+ match immediate_opt low_level left_pwb with 
      None -> None
    | Some(_,left_mold) -> 
   let left_ext = Mold.forced_elements left_mold 
@@ -1064,10 +1042,10 @@ let rightmost_overflow_opt grc pwb  =
 
            
 
- let rightmost_pivot_opt grc pwb  = 
+ let rightmost_pivot_opt low_level pwb  = 
    let n = Point_with_breadth.max pwb in 
    let left_pwb = Point_with_breadth.remove_element pwb n in 
-   match immediate_opt grc left_pwb with 
+   match immediate_opt low_level left_pwb with 
        None -> None
      | Some(_,left_mold) -> 
      (match Mold.rightmost_pivot_opt pwb left_mold with 
@@ -1075,11 +1053,11 @@ let rightmost_overflow_opt grc pwb  =
       |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
      )    ;;  
  
-let select_opt grc pwb =
+let select_opt low_level pwb =
   match Point_with_breadth.usual_decomposition_opt pwb with 
   None -> None
  |Some(prec_pwb,C cstr) ->
-    match immediate_opt grc prec_pwb with 
+    match immediate_opt low_level prec_pwb with 
     None -> None
   | Some(_,prec_mold) -> 
              let nth_cstr = (fun k->List.nth cstr (k-1)) in 
@@ -1091,50 +1069,50 @@ let select_opt grc pwb =
                    |Some mold -> Some(Select(i,j,k),mold) 
              );;        
 
-let eval_opt grc pwb =
-  match immediate_opt grc pwb with 
+let eval_opt low_level pwb =
+  match immediate_opt low_level pwb with 
   Some(answer0) -> Some answer0
  | None -> 
   if Point_with_breadth.has_no_constraint pwb 
   then Some(Has_no_constraints,Mold.discrete(Point_with_breadth.supporting_set pwb))
   else    
-  (match rightmost_pivot_opt grc pwb with 
+  (match rightmost_pivot_opt low_level pwb with 
    Some(answer1) -> Some answer1
   | None -> 
     (
-      match rightmost_overflow_opt grc pwb with 
+      match rightmost_overflow_opt low_level pwb with 
         Some(answer2) -> Some answer2
       | None -> 
         (
-          match select_opt grc pwb with 
+          match select_opt low_level pwb with 
             Some(answer3) -> Some answer3
-          | None -> fork_opt grc pwb
+          | None -> fork_opt low_level pwb
         )     
     )
    ) ;;
     
-  let update_if_possible grc pwb =  
-     match immediate_opt grc pwb with 
-     Some pair1 -> (Some pair1,grc) 
+  let update_if_possible low_level pwb =  
+     match immediate_opt low_level pwb with 
+     Some pair1 -> (Some pair1,low_level) 
      | None -> 
       (
-        match eval_opt grc pwb with 
-       Some pair2 -> (Some pair2,(fst grc,Flexible_grocery.add_if_it_has_constraints (snd grc) pwb pair2)) 
-     | None -> (None,grc)
+        match eval_opt low_level pwb with 
+       Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
+     | None -> (None,low_level)
       ) ;;
 
   
 
-  let rec iterator_for_scale_walking (treated,grc,to_be_treated) =
+  let rec iterator_for_scale_walking (treated,low_level,to_be_treated) =
     match to_be_treated with 
-     [] ->(None,Some(treated),grc)
+     [] ->(None,Some(treated),low_level)
     |pwb :: others ->
-        let (answer_opt,new_grc) = update_if_possible grc pwb in 
+        let (answer_opt,new_low_level) = update_if_possible low_level pwb in 
         match answer_opt with  
-           None -> (Some pwb,None,grc)
-          |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_grc,others) ;;
+           None -> (Some pwb,None,low_level)
+          |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_low_level,others) ;;
 
-  let walk_scale grc to_be_treated = iterator_for_scale_walking ([],grc,to_be_treated) ;;
+  let walk_scale low_level to_be_treated = iterator_for_scale_walking ([],low_level,to_be_treated) ;;
 
 
   end ;;  
@@ -1154,18 +1132,18 @@ exception Push_exn ;;
 
 exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
 
-let pusher (grc,to_be_treated) = match to_be_treated with 
+let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let (opt_pair1,grc1) = Impatient.update_if_possible grc pwb in 
-  if opt_pair1<>None then (grc1,others) else 
+  let (opt_pair1,low_level1) = Impatient.update_if_possible low_level pwb in 
+  if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,grc6) = Impatient.update_if_possible grc1 nonisolated_pwb in 
+  then let (opt_pair6,grc6) = Impatient.update_if_possible low_level1 nonisolated_pwb in 
        if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
-       ((fst grc6,Flexible_grocery.add (snd grc6) pwb (Rightmost_pivot(W 0),mold)),others) 
+       (Flexible_grocery.add grc6 pwb (Rightmost_pivot(W 0),mold),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
@@ -1175,7 +1153,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,grc3) = Impatient.update_if_possible grc1 pwb_i in 
+  let (opt_pair3,grc3) = Impatient.update_if_possible low_level1 pwb_i in 
   if opt_pair3=None then (grc3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
   let (opt_pair4,grc4) = Impatient.update_if_possible grc3 pwb_j in 
@@ -1187,17 +1165,17 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
-  ((fst grc5,Flexible_grocery.add  (snd grc5) pwb answer),others) ;;
+  (Flexible_grocery.add  grc5 pwb answer,others) ;;
 
-let rec iterator (grc,to_be_treated) =
+let rec iterator (low_level,to_be_treated) =
     if to_be_treated = [] 
-    then grc
-    else iterator(pusher (grc,to_be_treated)) ;;
+    then low_level
+    else iterator(pusher (low_level,to_be_treated)) ;;
     
-let eval grc_ref pwb =
-    let new_grc = iterator (!grc_ref,[pwb]) in 
-    let _ = (grc_ref:=new_grc) in 
-    Option.get(Impatient.immediate_opt new_grc pwb);;    
+let eval low_level_ref pwb =
+    let new_low_level = iterator (!low_level_ref,[pwb]) in 
+    let _ = (low_level_ref:=new_low_level) in 
+    Option.get(Impatient.immediate_opt new_low_level pwb);;    
 
 
 end ;;   
@@ -1289,7 +1267,7 @@ end ;;
 module Impatient = struct 
 
   module Friend = struct
-    let impatient_ref = ref Grocery.reasonable_one ;;
+    let impatient_ref = ref (Flg[]) ;;
   end ;;
 
   let eval_opt = Generic.Impatient.eval_opt (!(Friend.impatient_ref)) ;; 
@@ -1309,7 +1287,7 @@ end ;;
 module Painstaking = struct 
 
   module Private = struct
-    let painstaking_ref = ref Grocery.reasonable_one ;;
+    let painstaking_ref = ref (Flg[]) ;;
   end ;;
 
   let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
