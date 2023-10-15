@@ -63,14 +63,6 @@ type fixed_grocery  = {
 } ;;
 
 type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
-
-
-type grocery = {
-  helpers : piece_of_help list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  low_level : (point_with_breadth * (handle * mold)) list;
-} ;;
   
 type diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
