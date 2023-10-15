@@ -945,6 +945,302 @@ let reasonable_one =(!(Private.ref_for_reasonable_one)) ;;
 end ;;  
 
 
+
+module Very_Generic = struct 
+
+  module Impatient = struct 
+  
+    module Private = struct
+  
+   let immediate_opt grc pwb =  
+      let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+       match Grocery.immediate_eval_opt (ref grc) grounded_pwb with 
+        None -> None
+       |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
+   
+   let rec immediate_for_several_opt grc (treated,to_be_treated) = 
+      match to_be_treated with 
+      [] -> Some(List.rev treated) 
+      | pwb :: others ->
+       (
+        match immediate_opt grc pwb with 
+          None -> None 
+          |Some (_,mold) -> immediate_for_several_opt grc (mold::treated,others)
+       )
+  
+  
+  
+  let fork_opt grc pwb =
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> None
+   |Some(prec_pwb,C cstr) ->
+      match immediate_opt grc prec_pwb with 
+      None -> None
+    | Some(_,prec_mold) -> 
+          let ext = Mold.forced_elements prec_mold in 
+          let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+          let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+          let (i,j,k) = ijk in 
+          if not(i_is_included_in [i;j;k] ext)
+          then None
+          else
+                let grooves = i_insert k (Help.extra_grooves (fst grc).helpers pwb) in 
+                let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
+                (match immediate_for_several_opt grc ([],pointed_pwbs) with 
+                  None -> None
+                | Some(pointed_molds) -> 
+                   (
+                    match Mold.fork_opt pwb prec_mold pointed_molds ijk with 
+                       None -> None 
+                      |Some mold -> Some(Fork(i,j,k),mold) 
+                   )
+                );;   
+  
+  
+             
+  let rightmost_overflow_opt grc pwb  = 
+   let n = Point_with_breadth.max pwb in 
+   let left_pwb = Point_with_breadth.remove_element pwb n in 
+   match immediate_opt grc left_pwb with 
+       None -> None
+     | Some(_,left_mold) -> 
+    let left_ext = Mold.forced_elements left_mold 
+    and complements = Point_with_breadth.complementary_pairs pwb in  
+    match List.find_opt  (
+                fun (u,v) -> i_is_included_in [u;v] left_ext 
+      ) complements with
+      None -> None 
+     |Some(u,v) ->
+        (
+          match Mold.rightmost_overflow_opt pwb left_mold with 
+             None -> None 
+            |Some mold -> Some(Rightmost_overflow(u,v,n),mold) 
+         )
+      ;;
+  
+             
+  
+   let rightmost_pivot_opt grc pwb  = 
+     let n = Point_with_breadth.max pwb in 
+     let left_pwb = Point_with_breadth.remove_element pwb n in 
+     match immediate_opt grc left_pwb with 
+         None -> None
+       | Some(_,left_mold) -> 
+       (match Mold.rightmost_pivot_opt pwb left_mold with 
+         None -> None 
+        |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
+       )    ;;  
+   
+  let select_opt grc pwb =
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> None
+   |Some(prec_pwb,C cstr) ->
+      match immediate_opt grc prec_pwb with 
+      None -> None
+    | Some(_,prec_mold) -> 
+               let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+               let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+               let (i,j,k) = ijk in 
+               (
+                   match Mold.select_opt pwb prec_mold ijk with 
+                      None -> None 
+                     |Some mold -> Some(Select(i,j,k),mold) 
+               );;        
+  
+  let eval_opt grc pwb =
+    match immediate_opt grc pwb with 
+    Some(answer0) -> Some answer0
+   | None -> 
+    if Point_with_breadth.has_no_constraint pwb 
+    then Some(Has_no_constraints,Mold.discrete(Point_with_breadth.supporting_set pwb))
+    else    
+    (match rightmost_pivot_opt grc pwb with 
+     Some(answer1) -> Some answer1
+    | None -> 
+      (
+        match rightmost_overflow_opt grc pwb with 
+          Some(answer2) -> Some answer2
+        | None -> 
+          (
+            match select_opt grc pwb with 
+              Some(answer3) -> Some answer3
+            | None -> fork_opt grc pwb
+          )     
+      )
+     ) ;;
+      
+    let update_if_possible grc pwb =  
+       match immediate_opt grc pwb with 
+       Some pair1 -> (Some pair1,grc) 
+       | None -> 
+        (
+          match eval_opt grc pwb with 
+         Some pair2 -> (Some pair2,(fst grc,Grocery.add_to_low_level_if_nondiscrete (snd grc) pwb pair2)) 
+       | None -> (None,grc)
+        ) ;;
+  
+    
+  
+    let rec iterator_for_scale_walking (treated,grc,to_be_treated) =
+      match to_be_treated with 
+       [] ->(None,Some(treated),grc)
+      |pwb :: others ->
+          let (answer_opt,new_grc) = update_if_possible grc pwb in 
+          match answer_opt with  
+             None -> (Some pwb,None,grc)
+            |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_grc,others) ;;
+  
+    let walk_scale grc to_be_treated = iterator_for_scale_walking ([],grc,to_be_treated) ;;
+  
+  
+    end ;;  
+  
+    let eval_opt = Private.eval_opt ;;
+    let immediate_opt = Private.immediate_opt ;;
+    let update_if_possible = Private.update_if_possible ;; 
+    let walk_scale = Private.walk_scale ;; 
+  
+  end ;;  
+  
+  
+  
+  module Painstaking = struct 
+  
+  exception Push_exn ;; 
+  
+  exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
+  
+  let pusher (grc,to_be_treated) = match to_be_treated with 
+     [] -> raise Push_exn 
+    | pwb :: others ->
+    let (opt_pair1,grc1) = Impatient.update_if_possible grc pwb in 
+    if opt_pair1<>None then (grc1,others) else 
+    let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
+    if isolated_elts<>[]
+    then let (opt_pair6,grc6) = Impatient.update_if_possible grc1 nonisolated_pwb in 
+         if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
+          let (_handle,nonisolated_mold) = Option.get opt_pair6 in
+          let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
+         ((fst grc6,Grocery.add_to_low_level (snd grc6) pwb (Rightmost_pivot(W 0),mold)),others) 
+    else
+    let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
+    if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
+    let (_,C cstr) = Option.get opt2 in 
+    let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+    let (i,j,k)=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+    let pwb_i = Point_with_breadth.remove_element pwb i 
+    and pwb_j = Point_with_breadth.remove_element pwb j 
+    and pwb_k = Point_with_breadth.remove_element pwb k in 
+    let (opt_pair3,grc3) = Impatient.update_if_possible grc1 pwb_i in 
+    if opt_pair3=None then (grc3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
+    let (_,mold_i) = Option.get opt_pair3 in 
+    let (opt_pair4,grc4) = Impatient.update_if_possible grc3 pwb_j in 
+    if opt_pair4=None then (grc4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
+    let (_,mold_j) = Option.get opt_pair4 in 
+    let (opt_pair5,grc5) = Impatient.update_if_possible grc4 pwb_k in 
+    if opt_pair5=None then (grc5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
+    let (_,mold_k) = Option.get opt_pair5 in  
+    let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
+    let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
+    let answer=(Fork(i,j,k),Mold.shallow final_sols) in
+    ((fst grc5,Grocery.add_to_low_level (snd grc5) pwb answer),others) ;;
+  
+  let rec iterator (grc,to_be_treated) =
+      if to_be_treated = [] 
+      then grc
+      else iterator(pusher (grc,to_be_treated)) ;;
+      
+  let eval grc_ref pwb =
+      let new_grc = iterator (!grc_ref,[pwb]) in 
+      let _ = (grc_ref:=new_grc) in 
+      Option.get(Impatient.immediate_opt new_grc pwb);;    
+  
+  
+  end ;;   
+  
+  
+  module Diagnose = struct 
+        
+    exception Nothing_to_diagnose_exn ;;
+    exception Has_no_constraints_not_diagnosable_exn ;; 
+    
+    module Private = struct
+    
+      let diagnose_rightmost_overflow grc (u,v,_n)  left_pwb = 
+         match Impatient.immediate_opt grc left_pwb with 
+         None -> Missing_subcomputation("rightmost_overflow",left_pwb)
+         |Some (_,mold) -> 
+          let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
+          Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
+    
+     let diagnose_rightmost_pivot std_sol_computer grc pwb left_pwb = 
+      match Impatient.immediate_opt grc left_pwb with 
+      None -> Missing_subcomputation("rightmost_pivot",left_pwb)
+      |Some (_,_) ->
+        let the_sol = std_sol_computer pwb 
+        and n = Point_with_breadth.max pwb in
+        Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
+    
+      let diagnose_select std_sol_computer grc pwb prec_pwb = 
+        match Impatient.immediate_opt grc prec_pwb with 
+      None -> Missing_subcomputation("select",prec_pwb)
+      |Some (_,_) ->
+          let the_sol = std_sol_computer pwb in
+          Missing_solution("select",prec_pwb,the_sol) ;;  
+    
+      let diagnose_fork std_sol_computer grc (i,j,k) pwb prec_pwb = 
+        match Impatient.immediate_opt grc prec_pwb with 
+         None -> Missing_subcomputation("fork",prec_pwb)
+         |Some (_,prec_mold) -> 
+        let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
+        if missing_forced_elts <> []
+        then Missing_fan("rightmost_overflow",prec_pwb,0,F[missing_forced_elts])   
+        else   
+        let the_sol = std_sol_computer pwb in 
+        let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
+        let shorter_pwb = Point_with_breadth.remove_element pwb l in 
+        match  Impatient.immediate_opt grc shorter_pwb with 
+         None -> Missing_subcomputation("fork",shorter_pwb)
+         |Some (_,mold) -> 
+           let sols = Mold.solutions mold in 
+           if not(List.mem the_sol sols)
+           then Missing_solution("fork",shorter_pwb,the_sol)
+           else Missing_switch_in_fork(l,pwb) ;;  
+          
+    
+    let diagnose_precedent (std_sol_computer,decomposer) grc pwb =
+      let (handle,pwb2_opt) = decomposer pwb in 
+      let pwb2=(match pwb2_opt with 
+         Some pwb3 -> pwb3
+         | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
+        match handle with
+         Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
+        |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow grc (u,v,n) pwb2
+        |Rightmost_pivot(_) -> diagnose_rightmost_pivot std_sol_computer grc pwb pwb2
+        |Select (_,_,_) -> diagnose_select std_sol_computer grc pwb pwb2 
+        |Fork (i,j,k) -> diagnose_fork std_sol_computer grc (i,j,k) pwb pwb2 ;;  
+    
+  
+    
+    let inspect_along_chain (std_sol_computer,decomposer,chain_computer) grc pwb = 
+      let (opt_counterexample,opt_list,new_grc) =Impatient.walk_scale grc (chain_computer pwb) in 
+       match opt_counterexample  with 
+       None -> let data = Option.get(opt_list) in 
+               Smooth(List.assoc pwb data,(fun ()->data))
+       |Some precedent -> Counterexample_found(precedent,
+         diagnose_precedent (std_sol_computer,decomposer) new_grc precedent);; 
+    
+    end ;;
+  
+     
+   let inspect_along_chain = Private.inspect_along_chain ;; 
+  
+  end ;;
+  
+  
+  end ;; 
+  
+  
  
 
 module Generic = struct 
