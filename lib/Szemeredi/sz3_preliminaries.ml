@@ -891,11 +891,13 @@ module Grocery = struct
 
   let ref_for_reasonable_one = ref empty_one ;;
 
+  let institute_fan grc pwb frr =
+      {
+        grc with
+        helpers = (Help.institute_fan (grc.helpers) pwb frr)
+      } ;; 
+
  end ;; 
-
-let empty_one = Private.empty_one;;  
-let reasonable_one =(!(Private.ref_for_reasonable_one)) ;; 
-
 
 let add_to_low_level grc pwb pair = {
    grc with 
@@ -906,6 +908,8 @@ let add_to_low_level_if_nondiscrete grc pwb pair =
   if Point_with_breadth.has_no_constraint pwb 
   then grc
   else add_to_low_level grc pwb pair;;
+
+let empty_one = Private.empty_one;;  
 
 let immediate_eval_opt grc_ref pwb = 
   if Point_with_breadth.has_no_constraint pwb 
@@ -934,6 +938,9 @@ let immediate_eval_opt grc_ref pwb =
     | None -> None
        ) ;;    
 
+let institute_fan = Private.institute_fan ;;
+
+let reasonable_one =(!(Private.ref_for_reasonable_one)) ;;        
 
 end ;;  
 
