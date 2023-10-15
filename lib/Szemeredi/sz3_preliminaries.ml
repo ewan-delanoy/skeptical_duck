@@ -871,8 +871,42 @@ end ;;
 
 module Flexible_grocery = struct 
 
-
+  module Private = struct
   
+    let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
+    ): handle Total_ordering_t.t);; 
+  
+    let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
+    ): mold Total_ordering_t.t);; 
+  
+    let hm_order = Total_ordering.product handle_order mold_order ;;
+   
+    let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
+   
+    let rec get_opt key (Flg l) = match l with 
+     [] -> None 
+     | (key2,val2) :: others ->
+        match Point_with_breadth.order key key2 with 
+         Total_ordering_result_t.Lower -> None
+        |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
+        |Total_ordering_result_t.Equal -> Some val2 ;;  
+      
+    let insert new_key data = Ordered.insert order new_key data ;; 
+    
+     end ;;
+  
+  let add (Flg l) pwb pair = 
+    Flg(Private.insert (pwb,pair) l) ;;
+   
+  
+  let add_if_it_has_constraints flg pwb pair =
+    if Point_with_breadth.has_no_constraint pwb 
+    then flg
+    else add flg pwb pair;;
+  
+  let get_opt = Private.get_opt ;;   
+
+
 end ;;
 
 
@@ -883,30 +917,6 @@ module Grocery = struct
 
 
  module Private = struct 
-
-  module Low_level = struct
-  
-  let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
-  ): handle Total_ordering_t.t);; 
-
-  let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
-  ): mold Total_ordering_t.t);; 
-
-  let hm_order = Total_ordering.product handle_order mold_order ;;
- 
-  let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
- 
-  let rec get_opt key (Flg l) = match l with 
-   [] -> None 
-   | (key2,val2) :: others ->
-      match Point_with_breadth.order key key2 with 
-       Total_ordering_result_t.Lower -> None
-      |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
-      |Total_ordering_result_t.Equal -> Some val2 ;;  
-    
-  let insert new_key data = Ordered.insert order new_key data ;; 
-  
-   end ;;
 
   let empty_one = ({
     helpers = [];
@@ -924,14 +934,6 @@ module Grocery = struct
 
  end ;; 
 
-let add_to_low_level (Flg l) pwb pair = 
-  Flg(Private.Low_level.insert (pwb,pair) l) ;;
- 
-
-let add_to_low_level_if_nondiscrete flg pwb pair =
-  if Point_with_breadth.has_no_constraint pwb 
-  then flg
-  else add_to_low_level flg pwb pair;;
 
 let empty_one = Private.empty_one;;  
 
@@ -956,7 +958,7 @@ let immediate_eval_opt grc_ref pwb =
                 Some(handle,mold)    
   | None ->
      (  
-      match Private.Low_level.get_opt pwb (snd(!grc_ref)) with 
+      match Flexible_grocery.get_opt pwb (snd(!grc_ref)) with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
@@ -1100,7 +1102,7 @@ let eval_opt grc pwb =
      | None -> 
       (
         match eval_opt grc pwb with 
-       Some pair2 -> (Some pair2,(fst grc,Grocery.add_to_low_level_if_nondiscrete (snd grc) pwb pair2)) 
+       Some pair2 -> (Some pair2,(fst grc,Flexible_grocery.add_if_it_has_constraints (snd grc) pwb pair2)) 
      | None -> (None,grc)
       ) ;;
 
@@ -1146,7 +1148,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
        if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
-       ((fst grc6,Grocery.add_to_low_level (snd grc6) pwb (Rightmost_pivot(W 0),mold)),others) 
+       ((fst grc6,Flexible_grocery.add (snd grc6) pwb (Rightmost_pivot(W 0),mold)),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
@@ -1168,7 +1170,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
-  ((fst grc5,Grocery.add_to_low_level (snd grc5) pwb answer),others) ;;
+  ((fst grc5,Flexible_grocery.add  (snd grc5) pwb answer),others) ;;
 
 let rec iterator (grc,to_be_treated) =
     if to_be_treated = [] 
