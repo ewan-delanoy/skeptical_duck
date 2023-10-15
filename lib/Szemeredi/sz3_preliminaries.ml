@@ -817,11 +817,37 @@ let extra_grooves helpers pwb =
       None -> []
      |Some help -> help.extra_grooves_for_fork ;; 
   
+let rec get_opt pwb = function 
+  [] -> None 
+  | piece :: others ->
+    match Point_with_breadth.order pwb piece.beneficiary with 
+    Total_ordering_result_t.Lower -> None
+   |Total_ordering_result_t.Greater -> get_opt pwb others  
+   |Total_ordering_result_t.Equal -> Some piece ;;  
+
+let institute_fan helpers pwb (FRR l) =
+    match get_opt pwb helpers with 
+    None -> let piece = { 
+              beneficiary = pwb;
+              extra_solutions = [];
+              imposed_fans  = l;
+              extra_grooves_for_fork = [];
+            } in 
+            Ordered.insert Piece_of_help.order piece helpers
+   | Some old_piece ->
+     let new_piece = {
+          old_piece with 
+          imposed_fans = l
+     } in 
+     Image.image (fun piece -> if piece.beneficiary=pwb then new_piece else piece) helpers ;;
+
+     
 
 end ;;
 
 let apply_help_except_extra_grooves = Private.apply_help_except_extra_grooves ;; 
 let extra_grooves = Private.extra_grooves ;;
+let institute_fan = Private.institute_fan ;; 
 
 end ;;  
 
