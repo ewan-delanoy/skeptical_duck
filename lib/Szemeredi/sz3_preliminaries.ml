@@ -893,9 +893,15 @@ module Fixed_grocery = struct
 
   end ;; 
 
- let main_ref = ref Private.empty_one ;; 
+ let empty_one =  Private.empty_one ;; 
  let immediate_eval_opt = Private.immediate_eval_opt ;; 
  let institute_fan = Private.institute_fan ;;
+
+end ;;  
+
+module Instituted_fixed_grocery = struct
+
+  let main_ref = ref Fixed_grocery.empty_one ;; 
 
 end ;;  
 
