@@ -746,6 +746,32 @@ module Piece_of_help = struct
 
 module Private = struct 
 
+  let order_for_extra_solutions =((fun
+    (v1:((int * solution list) list)) (v2:((int * solution list) list)) ->
+        Total_ordering.standard v1 v2
+  ): ((int * solution list) list) Total_ordering_t.t) ;; 
+
+  let order_for_imposed_fans =((fun
+    (v1:((int * fan) list)) (v2:((int * fan) list)) ->
+        Total_ordering.standard v1 v2
+  ): ((int * fan) list) Total_ordering_t.t) ;; 
+
+  let order_for_extra_grooves =((fun
+    (v1:(int list)) (v2:(int list)) ->
+        Total_ordering.standard v1 v2
+  ): (int list) Total_ordering_t.t) ;; 
+
+  let order_for_fourtuples =
+      Total_ordering.quadruple_product 
+        Point_with_breadth.order  order_for_extra_solutions  order_for_imposed_fans  order_for_extra_grooves ;; 
+  
+  let to_uple gr = (gr.beneficiary,gr.extra_solutions,gr.imposed_fans,gr.extra_grooves_for_fork)
+
+  let order =((fun
+    (v1:piece_of_help) (v2:piece_of_help) ->
+      order_for_fourtuples (to_uple v1) (to_uple v2)
+  ): piece_of_help Total_ordering_t.t) ;; 
+
 end ;;  
 
 let extra_solutions_at_level help i = 
@@ -755,6 +781,7 @@ let extra_solutions_at_level help i =
 
 let imposed_fan_at_level help i = List.assoc_opt i  help.imposed_fans ;; 
 
+let order = Private.order ;; 
 
 end ;;  
 
