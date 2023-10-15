@@ -945,6 +945,21 @@ let reasonable_one =(!(Private.ref_for_reasonable_one)) ;;
 end ;;  
 
 
+module Fixed_grocery = struct
+  
+   module Private = struct 
+
+    let empty_one = {
+    helpers = [];
+    pair_level = [];
+    triple_level  = []
+    } ;;
+
+   end ;; 
+
+  let main_ref = ref Private.empty_one ;; 
+
+end ;;  
  
 
 module Generic = struct 
