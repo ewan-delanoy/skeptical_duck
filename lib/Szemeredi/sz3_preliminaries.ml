@@ -937,28 +937,28 @@ module Grocery = struct
 
 let empty_one = Private.empty_one;;  
 
-let immediate_eval_opt grc_ref pwb = 
+let immediate_eval_opt grc pwb = 
   if Point_with_breadth.has_no_constraint pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
        Some(Has_no_constraints,
-         Help.apply_help_except_extra_grooves ((fst(!grc_ref)).helpers) pwb (Mold.discrete domain)) 
+         Help.apply_help_except_extra_grooves ((fst(grc)).helpers) pwb (Mold.discrete domain)) 
   else     
   let (FIS(n,scr)) = Point_with_breadth.support pwb 
   and w = Point_with_breadth.width pwb 
   and b = Point_with_breadth.breadth pwb in 
   let wpair = (w,scr) in
-  match List.assoc_opt wpair (fst(!grc_ref)).pair_level with 
+  match List.assoc_opt wpair (fst(grc)).pair_level with 
   Some (f) -> let (handle,mold) =f b n in 
               Some(handle,mold)    
 | None ->
   let wtriple = (w,scr,b) 
   and n =  Point_with_breadth.max  pwb  in 
-  match List.assoc_opt wtriple (fst(!grc_ref)).triple_level with 
+  match List.assoc_opt wtriple (fst(grc)).triple_level with 
     Some (f) -> let (handle,mold) =f n in 
                 Some(handle,mold)    
   | None ->
      (  
-      match Flexible_grocery.get_opt pwb (snd(!grc_ref)) with 
+      match Flexible_grocery.get_opt pwb (snd(grc)) with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
@@ -981,7 +981,7 @@ module Impatient = struct
 
  let immediate_opt grc pwb =  
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match Grocery.immediate_eval_opt (ref grc) grounded_pwb with 
+     match Grocery.immediate_eval_opt grc grounded_pwb with 
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
