@@ -946,7 +946,7 @@ end ;;
 
 
 
-module Very_Generic = struct 
+module Generic = struct 
 
   module Impatient = struct 
   
