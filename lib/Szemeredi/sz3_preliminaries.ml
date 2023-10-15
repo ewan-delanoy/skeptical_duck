@@ -56,13 +56,6 @@ type fixed_grocery  = {
 
 type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
 
-
-type grocery = Sz3_types.grocery = {
-  helpers : piece_of_help list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  low_level : (point_with_breadth * (handle * mold)) list;
-} ;;
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
@@ -879,44 +872,42 @@ module Grocery = struct
  
   let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
  
-  let rec get_opt key = function 
+  let rec get_opt key (Flg l) = match l with 
    [] -> None 
    | (key2,val2) :: others ->
       match Point_with_breadth.order key key2 with 
        Total_ordering_result_t.Lower -> None
-      |Total_ordering_result_t.Greater -> get_opt key others  
+      |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
       |Total_ordering_result_t.Equal -> Some val2 ;;  
     
   let insert new_key data = Ordered.insert order new_key data ;; 
   
    end ;;
 
-  let empty_one = {
+  let empty_one = ({
     helpers = [];
     pair_level = [];
-    triple_level  = [];
-    low_level = [];
-  }  ;;  
+    triple_level  = []
+  }, Flg([])) ;;  
 
   let ref_for_reasonable_one = ref empty_one ;;
 
-  let institute_fan grc pwb frr =
+  let institute_fan fixed_grc pwb frr =
       {
-        grc with
-        helpers = (Help.institute_fan (grc.helpers) pwb frr)
+        fixed_grc with
+        helpers = (Help.institute_fan (fixed_grc.helpers) pwb frr)
       } ;; 
 
  end ;; 
 
-let add_to_low_level grc pwb pair = {
-   grc with 
-   low_level = Private.Low_level.insert (pwb,pair) (grc.low_level);
-} ;;
+let add_to_low_level (Flg l) pwb pair = 
+  Flg(Private.Low_level.insert (pwb,pair) l) ;;
+ 
 
-let add_to_low_level_if_nondiscrete grc pwb pair =
+let add_to_low_level_if_nondiscrete flg pwb pair =
   if Point_with_breadth.has_no_constraint pwb 
-  then grc
-  else add_to_low_level grc pwb pair;;
+  then flg
+  else add_to_low_level flg pwb pair;;
 
 let empty_one = Private.empty_one;;  
 
@@ -924,24 +915,24 @@ let immediate_eval_opt grc_ref pwb =
   if Point_with_breadth.has_no_constraint pwb 
   then let domain = Point_with_breadth.supporting_set pwb in 
        Some(Has_no_constraints,
-         Help.apply_help_except_extra_grooves ((!grc_ref).helpers) pwb (Mold.discrete domain)) 
+         Help.apply_help_except_extra_grooves ((fst(!grc_ref)).helpers) pwb (Mold.discrete domain)) 
   else     
   let (FIS(n,scr)) = Point_with_breadth.support pwb 
   and w = Point_with_breadth.width pwb 
   and b = Point_with_breadth.breadth pwb in 
   let wpair = (w,scr) in
-  match List.assoc_opt wpair (!grc_ref).pair_level with 
+  match List.assoc_opt wpair (fst(!grc_ref)).pair_level with 
   Some (f) -> let (handle,mold) =f b n in 
               Some(handle,mold)    
 | None ->
   let wtriple = (w,scr,b) 
   and n =  Point_with_breadth.max  pwb  in 
-  match List.assoc_opt wtriple (!grc_ref).triple_level with 
+  match List.assoc_opt wtriple (fst(!grc_ref)).triple_level with 
     Some (f) -> let (handle,mold) =f n in 
                 Some(handle,mold)    
   | None ->
      (  
-      match Private.Low_level.get_opt pwb (!grc_ref).low_level with 
+      match Private.Low_level.get_opt pwb (snd(!grc_ref)) with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
@@ -994,7 +985,7 @@ let fork_opt grc pwb =
         if not(i_is_included_in [i;j;k] ext)
         then None
         else
-              let grooves = i_insert k (Help.extra_grooves grc.helpers pwb) in 
+              let grooves = i_insert k (Help.extra_grooves (fst grc).helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
               (match immediate_for_several_opt grc ([],pointed_pwbs) with 
                 None -> None
@@ -1085,7 +1076,7 @@ let eval_opt grc pwb =
      | None -> 
       (
         match eval_opt grc pwb with 
-       Some pair2 -> (Some pair2,Grocery.add_to_low_level_if_nondiscrete grc pwb pair2) 
+       Some pair2 -> (Some pair2,(fst grc,Grocery.add_to_low_level_if_nondiscrete (snd grc) pwb pair2)) 
      | None -> (None,grc)
       ) ;;
 
@@ -1112,6 +1103,8 @@ let eval_opt grc pwb =
 
 end ;;  
 
+
+
 module Painstaking = struct 
 
 exception Push_exn ;; 
@@ -1129,7 +1122,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
        if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
-       (Grocery.add_to_low_level grc6 pwb (Rightmost_pivot(W 0),mold),others) 
+       ((fst grc6,Grocery.add_to_low_level (snd grc6) pwb (Rightmost_pivot(W 0),mold)),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
@@ -1151,7 +1144,7 @@ let pusher (grc,to_be_treated) = match to_be_treated with
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
-  (Grocery.add_to_low_level grc5 pwb answer,others) ;;
+  ((fst grc5,Grocery.add_to_low_level (snd grc5) pwb answer),others) ;;
 
 let rec iterator (grc,to_be_treated) =
     if to_be_treated = [] 
@@ -1616,3 +1609,6 @@ let pull pwb old_frr  =
 let pull_all_fans = Private.pull_all_fans ;; 
 
 end ;;   
+
+
+
