@@ -437,35 +437,23 @@ let usual_decomposition_opt = function
       if trial1<>Total_ordering_result_t.Equal then trial1 else 
       i_order b1 b2;;
 
+  
+
     let compare_in_no_constraints_case fis1 = function 
       (No_constraint fis2) -> Finite_int_set.order fis1 fis2
       |Usual(_qc,_pt,_b) -> Total_ordering_result_t.Lower  ;; 
 
-    let compare_in_all_constraints_case pt1 b1 = function 
+    let compare_in_usual_case pt1 b1 = function 
       (No_constraint _fis2) -> Total_ordering_result_t.Greater
-      |Usual(qc,pt2,b2) -> (
-        match qc with 
-         All_constraints -> compare_pbs pt1 b1 pt2 b2
-        |Some_constraints -> Total_ordering_result_t.Lower  
-      )   ;;   
+      |Usual(_qc2,pt2,b2) -> compare_pbs pt1 b1 pt2 b2  ;;   
 
-    let compare_in_some_constraints_case pt1 b1 = function 
-      (No_constraint _fis2) -> Total_ordering_result_t.Greater 
-      |Usual(qc,pt2,b2) -> (
-        match qc with 
-         All_constraints -> Total_ordering_result_t.Greater
-        |Some_constraints -> compare_pbs pt1 b1 pt2 b2 
-      )   ;;  
+    
 
     let order = ((fun pwb1 pwb2 ->
           match pwb1 with 
           (No_constraint fis1) -> compare_in_no_constraints_case fis1 pwb2 
-          |Usual(qc1,pt1,b1) -> (
-            match qc1 with 
-             All_constraints -> compare_in_all_constraints_case pt1 b1 pwb2
-            |Some_constraints -> compare_in_some_constraints_case pt1 b1 pwb2 
-          )  
-        ): point_with_breadth Total_ordering_t.t);;    
+          |Usual(_qc1,pt1,b1) -> compare_in_usual_case pt1 b1 pwb2
+          ): point_with_breadth Total_ordering_t.t);;    
 
     let subset_is_admissible pwb subset = 
       if has_no_constraint pwb 
