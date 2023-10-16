@@ -505,8 +505,6 @@ end ;;
 
 
 module Fan = struct 
-
-  exception Two_empty_fans_cannot_be_united_exn ;; 
   
   module Private = struct
 
@@ -586,17 +584,6 @@ module Fan = struct
     let with_n_removed = Image.image (i_outsert n) with_n in 
     (constructor(with_n_removed@without_n@rays_for_n),F(without_n)) ;;   
 
-  let careful_union fan1_opt fan2_opt = match fan1_opt with 
-    None -> (
-              match fan2_opt with 
-                None -> raise(Two_empty_fans_cannot_be_united_exn)
-                |Some fan2 -> fan2
-            )
-   |(Some fan1) ->  (
-                      match fan2_opt with 
-                  None -> raise(Two_empty_fans_cannot_be_united_exn)
-                 |Some fan2 -> union fan1 fan2
-                )  ;;      
 
 end ;;   
 
@@ -615,6 +602,13 @@ module Small_mold = struct
 
   let translate d (SM(sols,fan))  = 
     SM(Image.image (Image.image (fun t->t+d)) sols,Fan.translate d fan) ;;  
+
+  let typical_selection (complements,automatically_distributed) (SM(sols1,fan1)) = 
+    let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
+        (Constraint.select_in_list complements sols))
+    and for_a_fan = Fan.impose_and_distribute (complements,automatically_distributed) in 
+    SM(for_a_solution_set sols1,for_a_fan fan1)  
+       ;;
 
   let typical_union (complements,automatically_distributed) (SM(sols1,fan1)) (SM(sols2,fan2))= 
     let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
@@ -715,7 +709,7 @@ module Mold = struct
   let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
     let new_l = Image.image (
           fun (t,old_data_for_t)->
-           (t,Small_mold.typical_union ([C[i;j;k]],[]) old_data_for_t Small_mold.empty_one
+           (t,Small_mold.typical_selection ([C[i;j;k]],[]) old_data_for_t 
             ) 
     )  prec_l in 
   Private.constructor_opt pwb prec_ext new_l  ;; 
