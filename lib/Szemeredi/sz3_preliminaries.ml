@@ -565,7 +565,8 @@ module Fan = struct
 
   let constructor = Private.constructor ;;
 
-  let core (F ll) = i_fold_intersect ll ;; 
+  let core (F ll) = 
+    i_fold_intersect ll ;; 
 
   let empty_one = F [[]] ;;
 
@@ -603,7 +604,8 @@ module Small_mold = struct
   let translate d (SM(sols,fan))  = 
     SM(Image.image (Image.image (fun t->t+d)) sols,Fan.translate d fan) ;;  
 
-  let typical_selection (complements,automatically_distributed) (SM(sols1,fan1)) = 
+  let typical_selection (complements,addendum_opt) (SM(sols1,fan1)) = 
+    let automatically_distributed = Option.to_list addendum_opt in 
     let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
         (Constraint.select_in_list complements sols))
     and for_a_fan = Fan.impose_and_distribute (complements,automatically_distributed) in 
@@ -699,7 +701,7 @@ module Mold = struct
         let new_l = Image.image (
           fun i->
            if i=0
-           then (i,Small_mold.typical_selection (c_constraints,[n]) (get i) )
+           then (i,Small_mold.typical_selection (c_constraints,Some n) (get i) )
            else (i,Small_mold.typical_union (c_constraints,[n]) (get i) (get(i-1)) )
             ) 
          new_range in 
@@ -708,7 +710,7 @@ module Mold = struct
   let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
     let new_l = Image.image (
           fun (t,old_data_for_t)->
-           (t,Small_mold.typical_selection ([C[i;j;k]],[]) old_data_for_t 
+           (t,Small_mold.typical_selection ([C[i;j;k]],None) old_data_for_t 
             ) 
     )  prec_l in 
   Private.constructor_opt pwb prec_ext new_l  ;; 
