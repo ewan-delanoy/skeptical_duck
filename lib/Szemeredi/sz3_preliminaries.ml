@@ -109,7 +109,8 @@ let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
 module Constraint = struct 
 
 let select_in_list  l_cstr candidates =  
-   List.filter (fun candidate->List.for_all( fun (C cstr) ->not(i_is_included_in cstr candidate)) l_cstr ) 
+   List.filter (fun candidate->
+    List.for_all( fun (C cstr) ->not(i_is_included_in cstr candidate)) l_cstr ) 
      candidates;;
 
 
@@ -504,6 +505,8 @@ end ;;
 
 
 module Fan = struct 
+
+  exception Two_empty_fans_cannot_be_united_exn ;; 
   
   module Private = struct
 
@@ -582,6 +585,18 @@ module Fan = struct
     let (with_n,without_n)=List.partition (i_mem n) ll in 
     let with_n_removed = Image.image (i_outsert n) with_n in 
     (constructor(with_n_removed@without_n@rays_for_n),F(without_n)) ;;   
+
+  let careful_union fan1_opt fan2_opt = match fan1_opt with 
+    None -> (
+              match fan2_opt with 
+                None -> raise(Two_empty_fans_cannot_be_united_exn)
+                |Some fan2 -> fan2
+            )
+   |(Some fan1) ->  (
+                      match fan2_opt with 
+                  None -> raise(Two_empty_fans_cannot_be_united_exn)
+                 |Some fan2 -> union fan1 fan2
+                )  ;;      
 
 end ;;   
 
@@ -692,18 +707,18 @@ module Mold = struct
        ) in
         let new_l = Image.image (
           fun i->
-           (i,Small_mold.typical_union (c_constraints,[n]) (get 0) (get_preceding_one i)
+           (i,Small_mold.typical_union (c_constraints,[n]) (get i) (get_preceding_one i)
             ) 
         )  new_range in 
         Private.constructor_opt full_pwb (i_insert n old_ext) new_l  ;;         
   
-        let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
-          let new_l = Image.image (
+  let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
+    let new_l = Image.image (
           fun (t,old_data_for_t)->
            (t,Small_mold.typical_union ([C[i;j;k]],[]) old_data_for_t Small_mold.empty_one
             ) 
-        )  prec_l in 
-        Private.constructor_opt pwb prec_ext new_l  ;; 
+    )  prec_l in 
+  Private.constructor_opt pwb prec_ext new_l  ;; 
   
         let shallow sols = 
           BM([],[0,SM(sols,Fan.empty_one)])  ;; 
