@@ -889,7 +889,25 @@ end ;;
 
 module Instituted_fixed_grocery = struct
 
-  let main_ref = ref Fixed_grocery.empty_one ;; 
+  module Private = struct 
+  
+    let main_ref = ref Fixed_grocery.empty_one ;; 
+
+    let institute_fan pwb fan =
+        let old_val = !main_ref in 
+        let new_val = Fixed_grocery.institute_fan old_val pwb fan in 
+        let _ = (main_ref:=new_val) in 
+        () ;;
+
+    institute_fan (No_constraint(FIS(2,[]))) 
+    (FRR
+    [(0, F [[1; 2]]);
+     (1, F [[1]; [2]])]) ;; 
+
+  end ;; 
+
+  let main_ref = Private.main_ref ;;
+  
 
 end ;;  
 
