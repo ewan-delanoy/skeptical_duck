@@ -696,14 +696,13 @@ module Mold = struct
         let old_range = Image.image fst old_data in 
         let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
         let  get = (fun i->List.assoc i old_data) in 
-        let get_preceding_one = (fun i->
-          if i=0 then Small_mold.empty_one else get(i-1)
-       ) in
         let new_l = Image.image (
           fun i->
-           (i,Small_mold.typical_union (c_constraints,[n]) (get i) (get_preceding_one i)
+           if i=0
+           then (i,Small_mold.typical_selection (c_constraints,[n]) (get i) )
+           else (i,Small_mold.typical_union (c_constraints,[n]) (get i) (get(i-1)) )
             ) 
-        )  new_range in 
+         new_range in 
         Private.constructor_opt full_pwb (i_insert n old_ext) new_l  ;;         
   
   let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
