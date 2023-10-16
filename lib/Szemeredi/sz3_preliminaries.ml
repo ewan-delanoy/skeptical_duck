@@ -612,10 +612,10 @@ module Small_mold = struct
     SM(for_a_solution_set sols1,for_a_fan fan1)  
        ;;
 
-  let typical_union (complements,automatically_distributed) (SM(sols1,fan1)) (SM(sols2,fan2))= 
-    let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
+  let typical_union (complements,n) (SM(sols1,fan1)) (SM(sols2,fan2))= 
+    let for_a_solution_set = (fun sols->Image.image (i_insert n)
         (Constraint.select_in_list complements sols))
-    and for_a_fan = Fan.impose_and_distribute (complements,automatically_distributed) in 
+    and for_a_fan = Fan.impose_and_distribute (complements,[n]) in 
     SM(il_merge (for_a_solution_set sols1) sols2,
        Fan.union (for_a_fan fan1) fan2  
       ) ;;
@@ -687,7 +687,7 @@ module Mold = struct
       ) in
       let new_l = Image.image (
         fun i->
-           (i,Small_mold.typical_union (c_constraints,[n]) (get_next_one i) (get i)) 
+           (i,Small_mold.typical_union (c_constraints,n) (get_next_one i) (get i)) 
       )  (i_insert 0 new_range) in 
       Private.constructor_opt full_pwb [] new_l ;;     
   
@@ -702,7 +702,7 @@ module Mold = struct
           fun i->
            if i=0
            then (i,Small_mold.typical_selection (c_constraints,Some n) (get i) )
-           else (i,Small_mold.typical_union (c_constraints,[n]) (get i) (get(i-1)) )
+           else (i,Small_mold.typical_union (c_constraints,n) (get i) (get(i-1)) )
             ) 
          new_range in 
         Private.constructor_opt full_pwb (i_insert n old_ext) new_l  ;;         
