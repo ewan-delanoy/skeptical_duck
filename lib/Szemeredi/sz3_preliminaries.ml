@@ -617,6 +617,9 @@ module Small_mold = struct
   let translate d (SM(sols,fan))  = 
     SM(Image.image (Image.image (fun t->t+d)) sols,Fan.translate d fan) ;;  
 
+  let test_for_impossible_constraint (SM(_sols,fan)) c_constraints =
+     ((Fan.impose_opt c_constraints fan)=None) ;;
+
   let typical_selection (complements,addendum_opt) (SM(sols1,fan1)) = 
     let automatically_distributed = Option.to_list addendum_opt in 
     let for_a_solution_set = (fun sols->Image.image (i_merge automatically_distributed)
