@@ -723,7 +723,12 @@ module Mold = struct
     new_range in 
     Private.constructor_opt full_pwb (i_insert n left_ext) new_l  ;;         
   
-  let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
+  let select_opt pwb prec_mold (i,j,k) = 
+    let (BM(prec_ext,prec_l)) = prec_mold in 
+    let get = Private.small_mold_at_index prec_mold in 
+    if Small_mold.test_for_impossible_constraint (get 0) [C[i;j;k]]
+    then None 
+    else  
     let new_l = Image.image (
           fun (t,old_data_for_t)->
            (t,Small_mold.typical_selection ([C[i;j;k]],None) old_data_for_t 
