@@ -877,31 +877,31 @@ module Fixed_grocery = struct
    triple_level  = []
    } ;;
 
-   let immediate_eval_opt grc pwb = 
+   let immediate_eval_opt low_level pwb = 
     if Point_with_breadth.has_no_constraint pwb 
     then let domain = Point_with_breadth.supporting_set pwb in 
          Some(Has_no_constraints,
-           Help.apply_help_except_extra_grooves (grc.helpers) pwb (Mold.discrete domain)) 
+           Help.apply_help_except_extra_grooves (low_level.helpers) pwb (Mold.discrete domain)) 
     else     
     let (FIS(n,scr)) = Point_with_breadth.support pwb 
     and w = Point_with_breadth.width pwb 
     and b = Point_with_breadth.breadth pwb in 
     let wpair = (w,scr) in
-    match List.assoc_opt wpair grc.pair_level with 
+    match List.assoc_opt wpair low_level.pair_level with 
     Some (f) -> let (handle,mold) =f b n in 
                 Some(handle,mold)    
   | None ->
     let wtriple = (w,scr,b) 
     and n =  Point_with_breadth.max  pwb  in 
-    match List.assoc_opt wtriple grc.triple_level with 
+    match List.assoc_opt wtriple low_level.triple_level with 
       Some (f) -> let (handle,mold) =f n in 
                   Some(handle,mold)    
     | None -> None ;;    
   
-    let institute_fan fixed_grc pwb frr =
+    let institute_fan fixed_low_level pwb frr =
       {
-        fixed_grc with
-        helpers = (Help.institute_fan (fixed_grc.helpers) pwb frr)
+        fixed_low_level with
+        helpers = (Help.institute_fan (fixed_low_level.helpers) pwb frr)
       } ;; 
 
 
@@ -983,13 +983,13 @@ end ;;
 
 module Grocery = struct 
 
-let immediate_eval_opt grc pwb = 
-  match Fixed_grocery.immediate_eval_opt (fst(grc)) pwb  with 
+let immediate_eval_opt low_level pwb = 
+  match Fixed_grocery.immediate_eval_opt (fst(low_level)) pwb  with 
   Some (answer) -> let (handle,mold) =answer in 
                    Some(handle,mold)    
 | None -> 
      (  
-      match Flexible_grocery.get_opt pwb (snd(grc)) with 
+      match Flexible_grocery.get_opt pwb (snd(low_level)) with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> None
@@ -1171,11 +1171,11 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,grc6) = Impatient.update_if_possible low_level1 nonisolated_pwb in 
-       if opt_pair6=None then (grc6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
+  then let (opt_pair6,low_level6) = Impatient.update_if_possible low_level1 nonisolated_pwb in 
+       if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
-       (Flexible_grocery.add grc6 pwb (Rightmost_pivot(W 0),mold),others) 
+       (Flexible_grocery.add low_level6 pwb (Rightmost_pivot(W 0),mold),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
@@ -1185,19 +1185,19 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,grc3) = Impatient.update_if_possible low_level1 pwb_i in 
-  if opt_pair3=None then (grc3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
+  let (opt_pair3,low_level3) = Impatient.update_if_possible low_level1 pwb_i in 
+  if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
-  let (opt_pair4,grc4) = Impatient.update_if_possible grc3 pwb_j in 
-  if opt_pair4=None then (grc4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
+  let (opt_pair4,low_level4) = Impatient.update_if_possible low_level3 pwb_j in 
+  if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
-  let (opt_pair5,grc5) = Impatient.update_if_possible grc4 pwb_k in 
-  if opt_pair5=None then (grc5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
+  let (opt_pair5,low_level5) = Impatient.update_if_possible low_level4 pwb_k in 
+  if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
-  (Flexible_grocery.add  grc5 pwb answer,others) ;;
+  (Flexible_grocery.add  low_level5 pwb answer,others) ;;
 
 let rec iterator (low_level,to_be_treated) =
     if to_be_treated = [] 
@@ -1220,30 +1220,30 @@ module Diagnose = struct
   
   module Private = struct
   
-    let diagnose_rightmost_overflow grc (u,v,_n)  left_pwb = 
-       match Impatient.immediate_opt grc left_pwb with 
+    let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
+       match Impatient.immediate_opt low_level left_pwb with 
        None -> Missing_subcomputation("rightmost_overflow",left_pwb)
        |Some (_,mold) -> 
         let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
         Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
   
-   let diagnose_rightmost_pivot std_sol_computer grc pwb left_pwb = 
-    match Impatient.immediate_opt grc left_pwb with 
+   let diagnose_rightmost_pivot std_sol_computer low_level pwb left_pwb = 
+    match Impatient.immediate_opt low_level left_pwb with 
     None -> Missing_subcomputation("rightmost_pivot",left_pwb)
     |Some (_,_) ->
       let the_sol = std_sol_computer pwb 
       and n = Point_with_breadth.max pwb in
       Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
   
-    let diagnose_select std_sol_computer grc pwb prec_pwb = 
-      match Impatient.immediate_opt grc prec_pwb with 
+    let diagnose_select std_sol_computer low_level pwb prec_pwb = 
+      match Impatient.immediate_opt low_level prec_pwb with 
     None -> Missing_subcomputation("select",prec_pwb)
     |Some (_,_) ->
         let the_sol = std_sol_computer pwb in
         Missing_solution("select",prec_pwb,the_sol) ;;  
   
-    let diagnose_fork std_sol_computer grc (i,j,k) pwb prec_pwb = 
-      match Impatient.immediate_opt grc prec_pwb with 
+    let diagnose_fork std_sol_computer low_level (i,j,k) pwb prec_pwb = 
+      match Impatient.immediate_opt low_level prec_pwb with 
        None -> Missing_subcomputation("fork",prec_pwb)
        |Some (_,prec_mold) -> 
       let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
@@ -1253,7 +1253,7 @@ module Diagnose = struct
       let the_sol = std_sol_computer pwb in 
       let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
       let shorter_pwb = Point_with_breadth.remove_element pwb l in 
-      match  Impatient.immediate_opt grc shorter_pwb with 
+      match  Impatient.immediate_opt low_level shorter_pwb with 
        None -> Missing_subcomputation("fork",shorter_pwb)
        |Some (_,mold) -> 
          let sols = Mold.solutions mold in 
@@ -1262,27 +1262,29 @@ module Diagnose = struct
          else Missing_switch_in_fork(l,pwb) ;;  
         
   
-  let diagnose_precedent (std_sol_computer,decomposer) grc pwb =
+  let diagnose_precedent (std_sol_computer,decomposer) low_level pwb =
     let (handle,pwb2_opt) = decomposer pwb in 
     let pwb2=(match pwb2_opt with 
        Some pwb3 -> pwb3
        | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
       match handle with
        Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
-      |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow grc (u,v,n) pwb2
-      |Rightmost_pivot(_) -> diagnose_rightmost_pivot std_sol_computer grc pwb pwb2
-      |Select (_,_,_) -> diagnose_select std_sol_computer grc pwb pwb2 
-      |Fork (i,j,k) -> diagnose_fork std_sol_computer grc (i,j,k) pwb pwb2 ;;  
+      |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow low_level (u,v,n) pwb2
+      |Rightmost_pivot(_) -> diagnose_rightmost_pivot std_sol_computer low_level pwb pwb2
+      |Select (_,_,_) -> diagnose_select std_sol_computer low_level pwb pwb2 
+      |Fork (i,j,k) -> diagnose_fork std_sol_computer low_level (i,j,k) pwb pwb2 ;;  
   
 
   
-  let inspect_along_chain (std_sol_computer,decomposer,chain_computer) grc pwb = 
-    let (opt_counterexample,opt_list,new_grc) =Impatient.walk_scale grc (chain_computer pwb) in 
+  let inspect_along_chain (std_sol_computer,decomposer,chain_computer) 
+      low_level pwb = 
+    let (opt_counterexample,opt_list,new_low_level) =
+        Impatient.walk_scale low_level (chain_computer pwb) in 
      match opt_counterexample  with 
      None -> let data = Option.get(opt_list) in 
              Smooth(List.assoc pwb data,(fun ()->data))
      |Some precedent -> Counterexample_found(precedent,
-       diagnose_precedent (std_sol_computer,decomposer) new_grc precedent);; 
+       diagnose_precedent (std_sol_computer,decomposer) new_low_level precedent);; 
   
   end ;;
 
@@ -1305,13 +1307,13 @@ module Impatient = struct
   let eval_opt = Generic.Impatient.eval_opt (!(Friend.impatient_ref)) ;; 
   let immediate_opt = Generic.Impatient.immediate_opt (!(Friend.impatient_ref)) ;; 
   let update_if_possible pwb =
-     let (opt_answer,new_grc) = Generic.Impatient.update_if_possible (!(Friend.impatient_ref)) pwb in 
-     let _ = (Friend.impatient_ref:=new_grc) in 
+     let (opt_answer,new_low_level) = Generic.Impatient.update_if_possible (!(Friend.impatient_ref)) pwb in 
+     let _ = (Friend.impatient_ref:=new_low_level) in 
      opt_answer ;;   
   let walk_scale scale = 
-    let (opt_counterexample,opt_list,_new_grc) 
+    let (opt_counterexample,opt_list,_new_low_level) 
        = Generic.Impatient.walk_scale (!(Friend.impatient_ref)) scale in 
-    (* let _ = (Private.impatient_ref:=new_grc) in *) 
+    (* let _ = (Private.impatient_ref:=new_low_level) in *) 
     (opt_counterexample,opt_list) ;;   
 
 end ;;
