@@ -714,6 +714,9 @@ module Mold = struct
         let old_range = Image.image fst old_data in 
         let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
         let  get = (fun i->List.assoc i old_data) in 
+        if Small_mold.test_for_impossible_constraint (get 0) c_constraints
+        then None 
+        else  
         let new_l = Image.image (
           fun i->
            if i=0
