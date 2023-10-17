@@ -641,7 +641,7 @@ end ;;
 
 module Mold = struct 
 
-  
+  exception Negative_fan_index_exn of int ;;
   
   module Private = struct 
   
@@ -654,7 +654,8 @@ module Mold = struct
       then Some(BM(forced_elts,l))
       else None ;;
   
-  let small_mold_at_index (BM(_,l)) i =
+  let small_mold_at_index (BM(_,l)) i = 
+      if i<0 then raise (Negative_fan_index_exn i) else
       match List.assoc_opt i l with 
      Some small_mold -> small_mold 
     |None -> SM([],Fan.empty_one) ;; 
@@ -688,43 +689,39 @@ module Mold = struct
       )  prec_l) in
      Private.constructor_opt pwb [] new_l ;; 
   
-  let rightmost_overflow_opt full_pwb (BM(_old_ext,old_data)) = 
+  let rightmost_overflow_opt full_pwb left_mold =
+      let (BM(_left_ext,left_data)) = left_mold in  
       let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
       and n = Point_with_breadth.max full_pwb in 
       let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
-      let old_range = Image.image fst old_data in 
+      let old_range = Image.image fst left_data in 
       let new_range = List.filter (fun i->(i_mem (i+1) old_range)) old_range in   
-      let get = (fun i->List.assoc i old_data) in 
-      let small_mold_at_level1 = (
-         if List.mem 1 old_range then get 1 else Small_mold.empty_one
-      ) in
-      let get_next_one = (fun i->
-         if i=0 then small_mold_at_level1 else get(i+1)
-      ) in
+      let get = Private.small_mold_at_index left_mold  in 
       let new_l = Image.image (
         fun i->
-           (i,Small_mold.typical_union (c_constraints,n) (get_next_one i) (get i)) 
+           (i,Small_mold.typical_union (c_constraints,n) (get(i+1)) (get i)) 
       )  (i_insert 0 new_range) in 
       Private.constructor_opt full_pwb [] new_l ;;     
   
-  let rightmost_pivot_opt full_pwb (BM(old_ext,old_data)) = 
-        let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
-        and n = Point_with_breadth.max full_pwb in 
-        let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
-        let old_range = Image.image fst old_data in 
-        let new_range = List.filter (fun i->(i=0)||(i_mem (i-1) old_range)) old_range in   
-        let  get = (fun i->List.assoc i old_data) in 
-        if Small_mold.test_for_impossible_constraint (get 0) c_constraints
-        then None 
-        else  
-        let new_l = Image.image (
+  let rightmost_pivot_opt full_pwb left_mold =
+    let (BM(left_ext,left_data)) = left_mold in  
+    let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
+    and n = Point_with_breadth.max full_pwb in 
+    let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
+    let old_range = Image.image fst left_data in 
+    let new_range = i_merge [0;1] (List.filter (fun i->i_mem (i-1) old_range) old_range) in   
+    let get = Private.small_mold_at_index left_mold in 
+    if Small_mold.test_for_impossible_constraint (get 0) c_constraints
+    then None 
+    else  
+    let new_l = Image.image (
           fun i->
            if i=0
            then (i,Small_mold.typical_selection (c_constraints,Some n) (get i) )
            else (i,Small_mold.typical_union (c_constraints,n) (get i) (get(i-1)) )
             ) 
-         new_range in 
-        Private.constructor_opt full_pwb (i_insert n old_ext) new_l  ;;         
+    new_range in 
+    Private.constructor_opt full_pwb (i_insert n left_ext) new_l  ;;         
   
   let select_opt pwb (BM(prec_ext,prec_l)) (i,j,k) = 
     let new_l = Image.image (
