@@ -505,10 +505,14 @@ end ;;
 
 
 module Fan = struct 
+
+  exception Impose_exn of fan * (constraint_t list);;
+  exception Badly_formed_fan ;;
   
   module Private = struct
 
     let constructor ll =
+      if ll= [] then raise Badly_formed_fan else 
       let sorted_ll = il_sort ll in 
       F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
 
@@ -570,7 +574,11 @@ module Fan = struct
 
   let empty_one = F [[]] ;;
 
-  let impose l_cstr (F rays) =  F(Constraint.select_in_list l_cstr rays);;
+  let impose l_cstr (F rays) =  
+      let new_rays =Constraint.select_in_list l_cstr rays in 
+      if new_rays = []
+      then raise(Impose_exn(F rays,l_cstr))
+      else  F new_rays;;
   
   let impose_and_distribute  (l_cstr,addendum) fan = 
       Private.distribute ( impose l_cstr fan) addendum ;;
