@@ -684,7 +684,7 @@ module Mold = struct
       let first_fan = Fan.impose c_constraints old_fan1 in  
       let new_l= (0,SM(sols,first_fan))::(List.filter_map (
             fun (i,old_indication)->
-               if i=0 then None else
+               if i<=1 then None else
                Some(i-1,Small_mold.impose c_constraints old_indication) 
       )  prec_l) in
      Private.constructor_opt pwb [] new_l ;; 
