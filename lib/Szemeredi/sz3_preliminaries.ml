@@ -557,7 +557,11 @@ module Fan = struct
       let temp4 = Image.image return_to_original temp3 in
       canonical_container_in_hard_case temp4 ;;
 
-    
+    let impose_opt l_cstr (F rays) =  
+        let new_rays =Constraint.select_in_list l_cstr rays in 
+        if new_rays = []
+        then None
+        else Some(F new_rays);;  
 
   end ;;  
 
@@ -574,14 +578,15 @@ module Fan = struct
 
   let empty_one = F [[]] ;;
 
-  let impose l_cstr (F rays) =  
-      let new_rays =Constraint.select_in_list l_cstr rays in 
-      if new_rays = []
-      then raise(Impose_exn(F rays,l_cstr))
-      else  F new_rays;;
+  let impose l_cstr fan = 
+     match Private.impose_opt l_cstr fan with 
+     None -> raise(Impose_exn(fan,l_cstr))
+    |Some answer -> answer;;
   
   let impose_and_distribute  (l_cstr,addendum) fan = 
       Private.distribute ( impose l_cstr fan) addendum ;;
+
+  let impose_opt = Private.impose_opt ;; 
 
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
