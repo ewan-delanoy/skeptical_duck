@@ -1253,7 +1253,7 @@ module Diagnose = struct
        |Some (_,prec_mold) -> 
       let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
       if missing_forced_elts <> []
-      then Missing_fan("rightmost_overflow",prec_pwb,0,F[missing_forced_elts])   
+      then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
       else   
       let the_sol = std_sol_computer pwb in 
       let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
