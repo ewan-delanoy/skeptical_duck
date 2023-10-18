@@ -695,7 +695,7 @@ module Mold = struct
       and n = Point_with_breadth.max full_pwb in 
       let c_constraints = Image.image (fun (i,j)->C[i;j]) c_pairs in  
       let old_range = Image.image fst left_data in 
-      let new_range = List.filter (fun i->(i_mem (i+1) old_range)) old_range in   
+      let new_range = i_merge [0;1] (List.filter (fun i->(i_mem (i+1) old_range)) old_range) in   
       let get = Private.small_mold_at_index left_mold  in 
       let new_l = Image.image (
         fun i->
