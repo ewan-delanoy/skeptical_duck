@@ -52,6 +52,7 @@ type fixed_grocery  = {
   helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   triple_level : ((width * int list * int) * (int -> handle * mold)) list;
+  precomputed :  (point_with_breadth * (handle * mold)) list
 } ;;
 
 type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
@@ -879,7 +880,8 @@ module Fixed_grocery = struct
    let empty_one = {
    helpers = [];
    pair_level = [];
-   triple_level  = []
+   triple_level  = [];
+   precomputed = []
    } ;;
 
    let immediate_eval_opt low_level pwb = 
