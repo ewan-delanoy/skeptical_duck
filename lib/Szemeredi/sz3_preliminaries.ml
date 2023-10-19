@@ -48,14 +48,15 @@ type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;;
 
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
 
+type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
+
+
 type fixed_grocery  = {
   helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  precomputed :  (point_with_breadth * (handle * mold)) list
+  precomputed :  flexible_grocery
 } ;;
-
-type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
 
   
 type diagnosis = Sz3_types.diagnosis =
@@ -873,6 +874,55 @@ let institute_fan = Private.institute_fan ;;
 
 end ;;  
 
+module Flexible_grocery = struct 
+
+  module Private = struct
+  
+    let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
+    ): handle Total_ordering_t.t);; 
+  
+    let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
+    ): mold Total_ordering_t.t);; 
+  
+    let hm_order = Total_ordering.product handle_order mold_order ;;
+   
+    let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
+   
+    let rec get_opt key (Flg l) = match l with 
+     [] -> None 
+     | (key2,val2) :: others ->
+        match Point_with_breadth.order key key2 with 
+         Total_ordering_result_t.Lower -> None
+        |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
+        |Total_ordering_result_t.Equal -> Some val2 ;;  
+      
+    let insert new_key data = Ordered.insert order new_key data ;; 
+    let merge data1 data2 = Ordered.merge order data1 data2 ;; 
+    let sort data = Ordered.sort order data ;; 
+
+    
+     end ;;
+  
+  let add (Flg l) pwb pair = 
+    Flg(Private.insert (pwb,pair) l) ;;
+   
+  
+  let add_if_it_has_constraints flg pwb pair =
+    if Point_with_breadth.has_no_constraint pwb 
+    then flg
+    else add flg pwb pair;;
+
+  let add_several (Flg l) pairs=
+  Flg(Private.merge (Private.sort pairs) l) ;;
+   
+  
+  let get_opt = Private.get_opt ;;   
+  
+
+end ;;
+
+
+
 module Fixed_grocery = struct
   
   module Private = struct 
@@ -881,29 +931,29 @@ module Fixed_grocery = struct
    helpers = [];
    pair_level = [];
    triple_level  = [];
-   precomputed = []
+   precomputed = Flg []
    } ;;
 
-   let immediate_eval_opt low_level pwb = 
+  let immediate_eval_opt fgr pwb = 
     if Point_with_breadth.has_no_constraint pwb 
     then let domain = Point_with_breadth.supporting_set pwb in 
          Some(Has_no_constraints,
-           Help.apply_help_except_extra_grooves (low_level.helpers) pwb (Mold.discrete domain)) 
+           Help.apply_help_except_extra_grooves (fgr.helpers) pwb (Mold.discrete domain)) 
     else     
     let (FIS(n,scr)) = Point_with_breadth.support pwb 
     and w = Point_with_breadth.width pwb 
     and b = Point_with_breadth.breadth pwb in 
     let wpair = (w,scr) in
-    match List.assoc_opt wpair low_level.pair_level with 
+    match List.assoc_opt wpair fgr.pair_level with 
     Some (f) -> let (handle,mold) =f b n in 
                 Some(handle,mold)    
   | None ->
     let wtriple = (w,scr,b) 
     and n =  Point_with_breadth.max  pwb  in 
-    match List.assoc_opt wtriple low_level.triple_level with 
+    match List.assoc_opt wtriple fgr.triple_level with 
       Some (f) -> let (handle,mold) =f n in 
                   Some(handle,mold)    
-    | None -> None ;;    
+    | None -> Flexible_grocery.get_opt pwb fgr.precomputed ;;    
   
     let institute_fan fixed_low_level pwb frr =
       {
@@ -943,47 +993,6 @@ module Instituted_fixed_grocery = struct
   
 
 end ;;  
-
-module Flexible_grocery = struct 
-
-  module Private = struct
-  
-    let handle_order = ((fun handle1 handle2 ->Total_ordering.standard handle1 handle2 
-    ): handle Total_ordering_t.t);; 
-  
-    let mold_order = ((fun mold1 mold2 ->Total_ordering.standard mold1 mold2 
-    ): mold Total_ordering_t.t);; 
-  
-    let hm_order = Total_ordering.product handle_order mold_order ;;
-   
-    let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
-   
-    let rec get_opt key (Flg l) = match l with 
-     [] -> None 
-     | (key2,val2) :: others ->
-        match Point_with_breadth.order key key2 with 
-         Total_ordering_result_t.Lower -> None
-        |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
-        |Total_ordering_result_t.Equal -> Some val2 ;;  
-      
-    let insert new_key data = Ordered.insert order new_key data ;; 
-
-    
-     end ;;
-  
-  let add (Flg l) pwb pair = 
-    Flg(Private.insert (pwb,pair) l) ;;
-   
-  
-  let add_if_it_has_constraints flg pwb pair =
-    if Point_with_breadth.has_no_constraint pwb 
-    then flg
-    else add flg pwb pair;;
-  
-  let get_opt = Private.get_opt ;;   
-  
-
-end ;;
 
 
 
