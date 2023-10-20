@@ -1003,7 +1003,7 @@ let has_no_constraint_quote = "has_no_cstr" ;;
 let rightmost_overflow_quote = "overflow" ;;
 let rightmost_pivot_quote = "pivot" ;;
 let select_quote = "select" ;;
-let fork_quote = "select" ;;
+let fork_quote = "fork" ;;
 
 
 let handle_to_t2 = function 
