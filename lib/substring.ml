@@ -4,6 +4,42 @@
 
 *)
 
+module Private = struct 
+
+   let leftmost_index_of_in_from x y i=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   match Int_range.find_opt tester (i-1) (String.length(y)-lx) with
+      None->(-1)
+     |Some(k)->k+1;;
+
+let occurrences_of_in x y=
+   let n=String.length y in
+   let rec tempf=(fun (j,accu)->
+      if j>n then List.rev(accu) else
+      let k=leftmost_index_of_in_from x y j in
+      if k<0 then List.rev(accu) else
+      tempf(k+1,k::accu)
+   )  in
+   tempf (1,[]);;
+
+let ranges_for_occurrences_of_in x y=
+   let m=String.length x in
+   let temp1 = occurrences_of_in x y in 
+   Image.image (fun i->(i,i+m-1)) temp1;;  
+
+
+end ;;    
+
+let decorated_occurrences_of_in x y =
+   let ny = String.length y 
+   and ranges = Private.ranges_for_occurrences_of_in x y in  
+   let arranged_ranges = Image.image (
+     fun (old_i,old_j)->
+        (max(1)(old_i-5),min(ny)(old_j+150))
+   ) ranges in 
+   Image.image (fun (a,b)->String.sub y (a-1) (b-a+1)) arranged_ranges ;;
+
  let is_the_beginning_of y x=Supstring.begins_with x y;;     
 
    
@@ -31,12 +67,7 @@
       try ((List.find tester temp1)+1) with
       _->(-1);;
   
-   let leftmost_index_of_in_from x y i=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      match Int_range.find_opt tester (i-1) (String.length(y)-lx) with
-         None->(-1)
-        |Some(k)->k+1;;
+   let leftmost_index_of_in_from = Private.leftmost_index_of_in_from ;;
   
 module Friend = struct
 
@@ -79,17 +110,6 @@ leftmost_index_of_pattern_among_in_from ["uv";"abc";"abcde"] "123abcde90" 1;;
 
 *)
 
-let occurrences_of_in x y=
-   let n=String.length y in
-   let rec tempf=(fun (j,accu)->
-      if j>n then List.rev(accu) else
-      let k=leftmost_index_of_in_from x y j in
-      if k<0 then List.rev(accu) else
-      tempf(k+1,k::accu)
-   )  in
-   tempf (1,[]);;
+let occurrences_of_in = Private.occurrences_of_in ;;
 
-let ranges_for_occurrences_of_in x y=
-   let m=String.length x in
-   let temp1 = occurrences_of_in x y in 
-   Image.image (fun i->(i,i+m-1)) temp1;;   
+let ranges_for_occurrences_of_in = Private.ranges_for_occurrences_of_in ;;   
