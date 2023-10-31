@@ -1,14 +1,205 @@
 (************************************************************************************************************************
-Snippet 127 : 
+Snippet 130 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 126 : Bijections with finite difference set
+Snippet 129 : Parsing a JSON file with short lines
 ************************************************************************************************************************)
 
+module Snip129=struct
+
+  let ap1 = Absolute_path.of_string 
+  "~/Teuliou/Sites/Angular/External/original_orders.txt" ;; 
+
+let u1 = Io.read_whole_file ap1 ;;  
+let lines1 = Lines_in_string.lines u1 ;; 
+
+let improve_line line =
+   if not(String.contains line ':')
+   then line
+   else 
+   let b = Substring.leftmost_index_of_in ":" line in
+   let before = Cull_string.beginning (b-1) line
+   and after = Cull_string.cobeginning (b-1) line in
+   let i= Substring.leftmost_index_of_in "\"" before
+   and j = Substring.rightmost_index_of_in "\"" before in
+   let name = Cull_string.interval before (i+1) (j-1) in 
+   name^after ;;
+
+let lines2 = Image.image improve_line lines1 ;; 
+let res1 = String.concat "\n" lines2 ;;    
+
+let ap2 = Absolute_path.of_string 
+  "~/Teuliou/Sites/Angular/External/all_orders.txt" ;; 
+
+let act () = Io.overwrite_with ap2 res1 ;; 
+
+
+let v1 = List.hd u6 ;; 
+
+let see = analize3 v1;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 128 : Parsing a JSON file with long lines
+************************************************************************************************************************)
+module Snip128=struct
+
+  let ap1 = Absolute_path.of_string 
+  "~/Teuliou/Sites/Angular/External/original_products.txt" ;; 
+
+let u1 = Io.read_whole_file ap1 ;;   
+let u2 = Substring.occurrences_of_in "{" u1 ;; 
+let u3 = Substring.occurrences_of_in "}" u1 ;; 
+let ranges = List.combine u2 u3 ;; 
+let u4 = Image.image (fun (a,b)->Cull_string.interval u1 a b) ranges ;; 
+
+let fields = [
+  "\"productID\":";
+  "\"name\":";
+  "\"productType\":";
+  "\"unitPrice\":";
+  "\"description\":";
+  "\"stockpiled\":"
+] ;;
+
+let analize1 item =
+    let ranges = Image.image (fun field->
+      let i =List.hd(Substring.occurrences_of_in field item) in 
+      (field,i,i+(String.length field)-1)
+      ) fields  in 
+     let indexed_ranges = Int_range.index_everything ranges 
+     and m = List.length ranges in
+     let temp1 = Image.image (fun (idx,(field,a,b))->
+        if idx = m
+        then (field,a,b,String.length item)
+        else let (_,a2,b2) = List.nth ranges idx in
+             (field,a,b,a2-1)    
+     ) indexed_ranges in 
+     let temp2 = Image.image (fun
+     (field,a,b,c) -> 
+       (Cull_string.two_sided_cutting ("\"","\":") field,
+        Cull_string.interval item (b+1) c) 
+     ) temp1 in
+     temp2 ;; 
+let u5 = Image.image analize1 u4 ;; 
+
+let analize2 = Image.image ( fun (field,content) ->
+   let i= Substring.leftmost_index_of_in "\n" content in 
+   let content2= Cull_string.beginning (i-1) content  in
+   let content3=(
+     if Supstring.ends_with content2 ","
+     then Cull_string.coending 1 content2
+     else content2  
+   ) in
+   (field,content3) );; 
+
+let u6 = Image.image analize2 u5;;
+
+let analize3 = Image.image ( fun pair ->
+  let (field,content) = pair in 
+  if field<> "productType" 
+  then pair
+  else
+      let i= Substring.leftmost_index_of_in "\"" content 
+      and j = Substring.rightmost_index_of_in "\"" content in
+      let name = Cull_string.interval content (i+1) (j-1) in
+      (field," ProductType."^(String.capitalize_ascii name)) 
+  );; 
+
+let u7 = Image.image analize3 u6;;
+
+let write_pair (field,content) = field^":"^content ;;   
+
+let write_item pairs =
+   "{\n"^(String.concat ",\n" (Image.image write_pair pairs))^"\n}" ;;
+
+let write_items items =
+    "\n\n\n[\n"^(String.concat ",\n" (Image.image write_item items))^"\n]\n\n\n" ;;   
+
+let res1 = write_items u7 ;;    
+
+let ap2 = Absolute_path.of_string 
+  "~/Teuliou/Sites/Angular/External/all_products.txt" ;; 
+
+let act () = Io.overwrite_with ap2 res1 ;; 
+
+
+let v1 = List.hd u6 ;; 
+
+let see = analize3 v1;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 127 : Code used for a Kotlin project
+************************************************************************************************************************)
+module Snip127=struct
+
+  let dir1 = Directory_name.of_string "~/Downloads/Some_kotlin_files" ;;
+let all_files = Unix_again.complete_ls dir1 ;; 
+let u1 = Image.image Absolute_path.to_string all_files ;; 
+let u2 = List.filter (fun s->Supstring.ends_with s ".kt") u1;;
+let file1 = List.find (fun s->Supstring.ends_with s "ExampleJson2KtKotlin.kt") u2 ;;
+let file2 = List.find (fun s->Supstring.ends_with s "Items.kt") u2 ;;
+let extracted_files = [file2;file1] ;; 
+let reordered_u2 = 
+    (List.filter (fun x->not(List.mem x extracted_files)) u2) @ (extracted_files) ;; 
+let u3 = Image.image rf reordered_u2 ;;
+let u4 = String.concat "\n\n\n(* aaa *)" u3;;
+let u5 = Replace_inside.replace_inside_string
+   ("\n\n(* aaa *)package com.example.example\n\nimport com.google.gson.annotations.SerializedName",
+   "") u4;;
+let whole_ap = Absolute_path.of_string "~/Downloads/Some_kotlin_files/whole.txt" ;;
+Io.overwrite_with whole_ap u5 ;; 
+
+
+let select_files sub_path ending =
+  let full_path = "~/Downloads/main/"^sub_path in 
+  let dir1 = Directory_name.of_string full_path in  
+  let all_files = Unix_again.complete_ls dir1 in 
+  let temp1 = Image.image (fun ap->(ap,Absolute_path.to_string ap)) all_files in
+  List.filter (fun (ap,s)->Supstring.ends_with s ending) temp1 ;;
+
+let g1 = select_files "java/com/example/animeapplication"  ".kt" ;;  
+let g2 = select_files "res/layout"  ".xml" ;; 
+let g3 = List.filter (
+   fun (ap,s) ->
+     let text = Io.read_whole_file ap in 
+     Supstring.contains text "hoto"
+) (g1 @ g2);; 
+
+let g4 = Image.image snd (g1 @ g2) ;;
+let g5 = Detect_inside.occurrences_for_several_words_in_several_files 
+   ["anga"] g4 ;; 
+
+let g4 = rf "/Users/ewandelanoy/Downloads/main/java/com/example/animeapplication/MangaViewHolder.kt" ;;
+Supstring.contains g4 "hoto" ;; 
+Substring.occurrences_of_in "hoto" g4 ;; 
+  
+let g5 = Cull_string.interval g4 750 1000 ;; 
+
+let z5 = Image.image (fun (ap,s)->Io.read_whole_file ap) z4 ;; 
+let z6 = String.concat "\n\n\n" z5 ;; 
+let ap2 = Absolute_path.of_string "~/Downloads/text.txt";;
+Io.overwrite_with ap2 z6 ;; 
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 126 : Bijections with finite difference set
+************************************************************************************************************************)
 module Snip126=struct
 
   let i_order = Total_ordering.for_integers ;;

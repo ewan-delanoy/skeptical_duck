@@ -47,7 +47,7 @@ let dir_renaming_command_in_set_app_name ks new_app_name =
   "mv "^full_javacomexample_path^(ks.app_name)^" "^
   full_javacomexample_path^new_app_name ;;   
 
-let replace_several ks words =
+let replace_several_inside_files ks words =
    let files = human_edited_files ks in    
    List.iter(
      Replace_inside.replace_several_inside_file
@@ -60,10 +60,12 @@ let set_app_name ks new_app_name =
    let old_name = ks.app_name in 
    let _ = Sys.command(dir_renaming_command_in_set_app_name ks new_app_name) in 
    let new_ks = {ks with app_name = new_app_name} in 
-   let compacter = Replace_inside.replace_inside_string ("_","")  in 
+   let compacter = (fun s->
+     String.lowercase_ascii(Replace_inside.replace_inside_string ("_","") s)
+      )   in 
    let old_compact = compacter old_name
    and new_compact = compacter new_app_name in 
-   let _ = replace_several new_ks ["com.example."^old_compact,"com.example."^new_compact] in 
+   let _ = replace_several_inside_files new_ks ["com.example."^old_compact,"com.example."^new_compact] in 
    new_ks
   ;;
 
@@ -164,17 +166,17 @@ let quick_deduced_pairs_for_filecontents (old_uncap,new_uncap) =
 
 
 let rename_inside_files ks rep = 
-   let _ = replace_several ks (deduced_pairs_for_filecontents rep) in
-  ks ;; 
+   let _ = replace_several_inside_files ks (deduced_pairs_for_filecontents rep) in
+   ks ;; 
 
 let modify ks new_app_name rep =
    let new_ks = set_app_name ks new_app_name in 
-   rename_inside_files new_ks rep;; 
+   rename_files (rename_inside_files new_ks rep) rep;; 
 
 let modify_quick ks new_app_name rep =
   let new_ks = set_app_name ks new_app_name in 
-  let _ = replace_several new_ks (quick_deduced_pairs_for_filecontents rep) in
-  new_ks ;; 
+  let _ = replace_several_inside_files new_ks (quick_deduced_pairs_for_filecontents rep) in
+  rename_files new_ks rep ;; 
    
 end ;;
 
@@ -183,7 +185,12 @@ let modify_quick = Private.modify_quick ;;
 
 (*
 
-let ks1 = {main_directory = "~/Downloads/main/"; app_name = "experimental"} ;;    
+open Mass_renaming ;;
+
+let ks1 = {main_directory = "~/Downloads/main/"; app_name = "animeapplication"} ;;    
+let ks2 = modify_quick ks1 "EbookApplication" ("manga","ebook") ;; 
+
+
 let ks_ref = ref ks1 ;; 
 let act() = (ks_ref := (rename_inside_files (!ks_ref) ("manga","crocodile"))) ;; 
 let see () = 
