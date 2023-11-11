@@ -1144,7 +1144,22 @@ let immediate_eval_opt low_level pwb =
 
 end ;;  
 
+module Precomputed_chain = struct 
 
+  exception Chain_not_computed_yet of point_with_breadth ;; 
+
+  module Private = struct
+
+  let data =[] ;;
+
+  end ;;
+
+  let chain pwb =
+     match List.assoc_opt pwb Private.data with 
+      None -> raise(Chain_not_computed_yet(pwb))
+    | Some answer -> answer ;; 
+
+end ;;  
 
 
 module Generic = struct 
@@ -1713,11 +1728,13 @@ module Decompose = struct
 
   module Diagnose = struct 
       
+       
     let half_impatient_eval_opt pwb = 
       let (_opt_counterexample,opt_list) = Impatient.walk_scale (Chain.chain pwb) in 
        match opt_list  with 
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
+      
 
    let inspect_along_chain = 
     Generic.Diagnose.inspect_along_chain 
