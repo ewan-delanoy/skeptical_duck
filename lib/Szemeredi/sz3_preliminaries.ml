@@ -1149,8 +1149,36 @@ module Precomputed_chain = struct
   exception Chain_not_computed_yet of point_with_breadth ;; 
 
   module Private = struct
+    
+    let all_constraints n scr w = Point_with_breadth.all_constraints(P(FIS(n,scr),W w)) ;;
 
-  let data =[] ;;
+    let level3 n = all_constraints n [] 3 ;;
+
+    (*
+  
+  (nt 1) = level3 2 ;; 
+  (nt 2) = level3 3 ;;  
+  (nt 3) = level3 4 ;;
+  (nt 4) = level3 5 ;; 
+  (nt 5) = level3 6 ;;  
+  (nt 6) = all_constraints 7 [] 2;;
+  (nt 7) = level3 7 ;;
+  (nt 8) = Point_with_breadth.constructor 8 [] (W 2) 1;; 
+  (nt 9) = level3 8 ;;
+  (nt 10) = level3 9  ;;
+
+  Point_with_breadth.constructor ;; 
+
+  *)
+    
+  let r7 = (Int_range.scale level3 2 6)@[all_constraints 7 [] 2;level3 7] ;; 
+  let r8 = r7@[Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]  ;; 
+
+  let data =[
+    (level3 7),r7;
+    (level3 8),r8;
+    (level3 9),r8@[level3 9]; 
+  ] ;;
 
   end ;;
 
@@ -1546,7 +1574,15 @@ module Extra_constraints = struct
      and final_constraints = Image.image (fun l->C l) constraints3 in 
      PWEC(final_pt,final_constraints) ;;  
   
-  
+     let easy_measure_opt (PWEC(pt,l_cstr)) = 
+       let (_,mold) = Painstaking.eval (Point_with_breadth.all_constraints pt) in 
+       let sols = Mold.solutions mold in 
+       let selected_sols = Constraint.select_in_list l_cstr sols in 
+       if selected_sols<>[]
+       then Some(List.length(List.hd selected_sols))
+       else None ;;
+
+
      let measure_for_pwc = Memoized.recursive (fun 
      old_f pwc-> 
        let (PWEC(pt,l_cstr)) = pwc in 
@@ -1555,8 +1591,10 @@ module Extra_constraints = struct
        else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
-       max(old_f pwc2)((old_f pwc3)+1)
-  );;
+       let m2 = (match easy_measure_opt pwc2 with Some m->m |None->old_f pwc2) 
+       and m3 = (match easy_measure_opt pwc3 with Some m->m |None->old_f pwc3) in  
+       max(m2)(m3+1)
+     );;
   
   let standard_solution_for_pwc  = Memoized.recursive (fun 
     old_f pwc-> 
