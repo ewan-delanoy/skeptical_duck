@@ -1438,10 +1438,10 @@ module Diagnose = struct
   
 
   
-  let inspect_along_chain (std_sol_computer,decomposer,chain_computer) 
+  let inspect_along_chain (std_sol_computer,decomposer) 
       low_level pwb = 
     let (opt_counterexample,opt_list,new_low_level) =
-        Impatient.walk_scale low_level (chain_computer pwb) in 
+        Impatient.walk_scale low_level (Precomputed_chain.chain pwb) in 
      match opt_counterexample  with 
      None -> let data = Option.get(opt_list) in 
              Smooth(List.assoc pwb data,(fun ()->data))
@@ -1730,7 +1730,8 @@ module Decompose = struct
       
        
     let half_impatient_eval_opt pwb = 
-      let (_opt_counterexample,opt_list) = Impatient.walk_scale (Chain.chain pwb) in 
+      let (_opt_counterexample,opt_list) = Impatient.walk_scale 
+          (Precomputed_chain.chain pwb) in 
        match opt_list  with 
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
@@ -1738,8 +1739,7 @@ module Decompose = struct
 
    let inspect_along_chain = 
     Generic.Diagnose.inspect_along_chain 
-    (Compute_standard_solution.compute,
-     Decompose.decompose,Chain.chain)
+    (Compute_standard_solution.compute, Decompose.decompose)
       (!(Impatient.Friend.impatient_ref)) ;;
       
   
