@@ -1516,9 +1516,60 @@ module Painstaking = struct
 
   module Private = struct
     let painstaking_ref = ref (Flg[]) ;;
+
+    exception Push_exn ;; 
+
+exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
+
+let pusher (low_level,to_be_treated) = match to_be_treated with 
+   [] -> raise Push_exn 
+  | pwb :: others ->
+  let (opt_pair1,low_level1) = Sagittarius_Impatient.update_if_possible low_level pwb in 
+  if opt_pair1<>None then (low_level1,others) else 
+  let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
+  if isolated_elts<>[]
+  then let (opt_pair6,low_level6) = Sagittarius_Impatient.update_if_possible low_level1 nonisolated_pwb in 
+       if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
+        let (_handle,nonisolated_mold) = Option.get opt_pair6 in
+        let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
+       (Flexible_grocery.add low_level6 pwb (Rightmost_pivot(W 0),mold),others) 
+  else
+  let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
+  if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
+  let (_,C cstr) = Option.get opt2 in 
+  let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+  let (i,j,k)=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+  let pwb_i = Point_with_breadth.remove_element pwb i 
+  and pwb_j = Point_with_breadth.remove_element pwb j 
+  and pwb_k = Point_with_breadth.remove_element pwb k in 
+  let (opt_pair3,low_level3) = Sagittarius_Impatient.update_if_possible low_level1 pwb_i in 
+  if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
+  let (_,mold_i) = Option.get opt_pair3 in 
+  let (opt_pair4,low_level4) = Sagittarius_Impatient.update_if_possible low_level3 pwb_j in 
+  if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
+  let (_,mold_j) = Option.get opt_pair4 in 
+  let (opt_pair5,low_level5) = Sagittarius_Impatient.update_if_possible low_level4 pwb_k in 
+  if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
+  let (_,mold_k) = Option.get opt_pair5 in  
+  let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
+  let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
+  let answer=(Fork(i,j,k),Mold.shallow final_sols) in
+  (Flexible_grocery.add  low_level5 pwb answer,others) ;;
+
+let rec iterator (low_level,to_be_treated) =
+    if to_be_treated = [] 
+    then low_level
+    else iterator(pusher (low_level,to_be_treated)) ;;
+    
+let eval  pwb =
+    let new_low_level = iterator (!painstaking_ref,[pwb]) in 
+    let _ = (painstaking_ref:=new_low_level) in 
+    Option.get(Sagittarius_Impatient.immediate_opt new_low_level pwb);;    
+
+
   end ;;
 
-  let eval = Generic.Painstaking.eval Private.painstaking_ref ;; 
+  let eval = Private.eval  ;; 
   let measure pwb = let (_,mold) = eval pwb in List.length(List.hd (Mold.solutions mold)) ;; 
 
 end ;;
