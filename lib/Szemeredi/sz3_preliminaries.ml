@@ -970,6 +970,7 @@ module Fixed_grocery = struct
 
 end ;;  
 
+
 module Conversion = struct
 
 module Private = struct
@@ -1166,6 +1167,7 @@ module Precomputed_chain = struct
   (nt 8) = Point_with_breadth.constructor 8 [] (W 2) 1;; 
   (nt 9) = level3 8 ;;
   (nt 10) = level3 9  ;;
+  (nt 11) = level3 10  ;;
 
   Point_with_breadth.constructor ;; 
 
@@ -1173,11 +1175,14 @@ module Precomputed_chain = struct
     
   let r7 = (Int_range.scale level3 2 6)@[all_constraints 7 [] 2;level3 7] ;; 
   let r8 = r7@[Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]  ;; 
+  let r9 = r8@[level3 9]  ;;
+
 
   let data =[
     (level3 7),r7;
     (level3 8),r8;
-    (level3 9),r8@[level3 9]; 
+    (level3 9),r9; 
+    (level3 10),r9@[level3 10]; 
   ] ;;
 
   end ;;
@@ -1189,10 +1194,7 @@ module Precomputed_chain = struct
 
 end ;;  
 
-
-module Generic = struct 
-
-module Impatient = struct 
+module Sagittarius_Impatient = struct 
 
   module Private = struct
 
@@ -1347,6 +1349,8 @@ let eval_opt low_level pwb =
 end ;;  
 
 
+module Generic = struct 
+
 
 module Painstaking = struct 
 
@@ -1357,11 +1361,11 @@ exception Should_never_happen_in_push_1_exn of point_with_breadth;;
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let (opt_pair1,low_level1) = Impatient.update_if_possible low_level pwb in 
+  let (opt_pair1,low_level1) = Sagittarius_Impatient.update_if_possible low_level pwb in 
   if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,low_level6) = Impatient.update_if_possible low_level1 nonisolated_pwb in 
+  then let (opt_pair6,low_level6) = Sagittarius_Impatient.update_if_possible low_level1 nonisolated_pwb in 
        if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
@@ -1375,13 +1379,13 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,low_level3) = Impatient.update_if_possible low_level1 pwb_i in 
+  let (opt_pair3,low_level3) = Sagittarius_Impatient.update_if_possible low_level1 pwb_i in 
   if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
-  let (opt_pair4,low_level4) = Impatient.update_if_possible low_level3 pwb_j in 
+  let (opt_pair4,low_level4) = Sagittarius_Impatient.update_if_possible low_level3 pwb_j in 
   if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
-  let (opt_pair5,low_level5) = Impatient.update_if_possible low_level4 pwb_k in 
+  let (opt_pair5,low_level5) = Sagittarius_Impatient.update_if_possible low_level4 pwb_k in 
   if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
@@ -1397,7 +1401,7 @@ let rec iterator (low_level,to_be_treated) =
 let eval low_level_ref pwb =
     let new_low_level = iterator (!low_level_ref,[pwb]) in 
     let _ = (low_level_ref:=new_low_level) in 
-    Option.get(Impatient.immediate_opt new_low_level pwb);;    
+    Option.get(Sagittarius_Impatient.immediate_opt new_low_level pwb);;    
 
 
 end ;;   
@@ -1411,14 +1415,14 @@ module Diagnose = struct
   module Private = struct
   
     let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
-       match Impatient.immediate_opt low_level left_pwb with 
+       match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
        None -> Missing_subcomputation("rightmost_overflow",left_pwb)
        |Some (_,mold) -> 
         let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
         Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
   
    let diagnose_rightmost_pivot std_sol_computer low_level pwb left_pwb = 
-    match Impatient.immediate_opt low_level left_pwb with 
+    match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
     None -> Missing_subcomputation("rightmost_pivot",left_pwb)
     |Some (_,_) ->
       let the_sol = std_sol_computer pwb 
@@ -1426,14 +1430,14 @@ module Diagnose = struct
       Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
   
     let diagnose_select std_sol_computer low_level pwb prec_pwb = 
-      match Impatient.immediate_opt low_level prec_pwb with 
+      match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
     None -> Missing_subcomputation("select",prec_pwb)
     |Some (_,_) ->
         let the_sol = std_sol_computer pwb in
         Missing_solution("select",prec_pwb,the_sol) ;;  
   
     let diagnose_fork std_sol_computer low_level (i,j,k) pwb prec_pwb = 
-      match Impatient.immediate_opt low_level prec_pwb with 
+      match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
        None -> Missing_subcomputation("fork",prec_pwb)
        |Some (_,prec_mold) -> 
       let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
@@ -1443,7 +1447,7 @@ module Diagnose = struct
       let the_sol = std_sol_computer pwb in 
       let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
       let shorter_pwb = Point_with_breadth.remove_element pwb l in 
-      match  Impatient.immediate_opt low_level shorter_pwb with 
+      match  Sagittarius_Impatient.immediate_opt low_level shorter_pwb with 
        None -> Missing_subcomputation("fork",shorter_pwb)
        |Some (_,mold) -> 
          let sols = Mold.solutions mold in 
@@ -1469,7 +1473,7 @@ module Diagnose = struct
   let inspect_along_chain (std_sol_computer,decomposer) 
       low_level pwb = 
     let (opt_counterexample,opt_list,new_low_level) =
-        Impatient.walk_scale low_level (Precomputed_chain.chain pwb) in 
+    Sagittarius_Impatient.walk_scale low_level (Precomputed_chain.chain pwb) in 
      match opt_counterexample  with 
      None -> let data = Option.get(opt_list) in 
              Smooth(List.assoc pwb data,(fun ()->data))
@@ -1494,15 +1498,15 @@ module Impatient = struct
     let impatient_ref = ref (Flg[]) ;;
   end ;;
 
-  let eval_opt = Generic.Impatient.eval_opt (!(Friend.impatient_ref)) ;; 
-  let immediate_opt = Generic.Impatient.immediate_opt (!(Friend.impatient_ref)) ;; 
+  let eval_opt = Sagittarius_Impatient.eval_opt (!(Friend.impatient_ref)) ;; 
+  let immediate_opt = Sagittarius_Impatient.immediate_opt (!(Friend.impatient_ref)) ;; 
   let update_if_possible pwb =
-     let (opt_answer,new_low_level) = Generic.Impatient.update_if_possible (!(Friend.impatient_ref)) pwb in 
+     let (opt_answer,new_low_level) = Sagittarius_Impatient.update_if_possible (!(Friend.impatient_ref)) pwb in 
      let _ = (Friend.impatient_ref:=new_low_level) in 
      opt_answer ;;   
   let walk_scale scale = 
     let (opt_counterexample,opt_list,_new_low_level) 
-       = Generic.Impatient.walk_scale (!(Friend.impatient_ref)) scale in 
+       = Sagittarius_Impatient.walk_scale (!(Friend.impatient_ref)) scale in 
     (* let _ = (Private.impatient_ref:=new_low_level) in *) 
     (opt_counterexample,opt_list) ;;   
 
