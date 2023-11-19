@@ -1151,23 +1151,6 @@ module Instituted_shortened_grocery = struct
 end ;;  
 
 
-
-module Grocery = struct 
-
-let immediate_eval_opt low_level pwb = 
-  match Fixed_grocery.immediate_eval_opt (fst(low_level)) pwb  with 
-  Some (answer) -> let (handle,mold) =answer in 
-                   Some(handle,mold)    
-| None -> 
-     (  
-      match Flexible_grocery.get_opt pwb (snd(low_level)) with 
-      Some (answer) -> let (handle,mold) =answer in 
-                       Some(handle,mold)    
-    | None -> None
-       ) ;;    
-
-end ;;  
-
 module Precomputed_chain = struct 
 
   exception Chain_not_computed_yet of point_with_breadth ;; 
