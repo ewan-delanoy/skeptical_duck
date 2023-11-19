@@ -969,32 +969,6 @@ end ;;
 
 
 
-
-
-module Fixed_grocery = struct
-  
-  module Private = struct 
-
-   let empty_one = CG(Shortened_grocery.empty_one,Flg []) ;;
-
-  let immediate_eval_opt (CG(fgr,flg)) pwb = 
-    match Shortened_grocery.immediate_eval_opt fgr pwb with 
-      Some(handle,mold) ->  Some(handle,mold)
-    | None -> Flexible_grocery.get_opt pwb flg ;;    
-  
-    let institute_fan (CG(fgr,flg)) pwb frr =
-      CG(Shortened_grocery.institute_fan fgr pwb frr,flg) ;; 
-
-
-  end ;; 
-
- let empty_one =  Private.empty_one ;; 
- let immediate_eval_opt = Private.immediate_eval_opt ;; 
- let institute_fan = Private.institute_fan ;;
-
-end ;;  
-
-
 module Conversion = struct
 
 module Private = struct
