@@ -1126,6 +1126,31 @@ let flg_to_string = Private.flg_to_string ;;
 
 end ;;  
 
+module Instituted_shortened_grocery = struct
+
+  module Private = struct 
+  
+    let main_ref = ref Shortened_grocery.empty_one ;; 
+
+    let institute_fan pwb fan =
+        let old_val = !main_ref in 
+        let new_val = Shortened_grocery.institute_fan old_val pwb fan in 
+        let _ = (main_ref:=new_val) in 
+        () ;;
+
+    institute_fan (No_constraint(FIS(2,[]))) 
+    (FRR
+    [(0, F [[1; 2]]);
+     (1, F [[1]; [2]])]) ;; 
+
+  end ;; 
+
+  let main_ref = Private.main_ref ;;
+  
+
+end ;;  
+
+
 module Instituted_fixed_grocery = struct
 
   module Private = struct 
@@ -1235,9 +1260,21 @@ module Sagittarius_Impatient = struct
 
   module Private = struct
 
+    let combined_eval_opt (fgr,low_level) pwb = 
+      match Shortened_grocery.immediate_eval_opt fgr pwb  with 
+      Some (answer) -> let (handle,mold) =answer in 
+                       Some(handle,mold)    
+    | None -> 
+         (  
+          match Flexible_grocery.get_opt pwb low_level with 
+          Some (answer) -> let (handle,mold) =answer in 
+                           Some(handle,mold)    
+        | None -> None
+           ) ;;    
+
  let immediate_opt low_level pwb =  
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match Grocery.immediate_eval_opt (!(Instituted_fixed_grocery.main_ref),low_level) grounded_pwb with 
+     match combined_eval_opt (!(Instituted_shortened_grocery.main_ref),low_level) grounded_pwb with 
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
