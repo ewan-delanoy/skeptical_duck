@@ -60,12 +60,12 @@ type composite_grocery = Sz3_types.composite_grocery =
   CG of shortened_grocery * flexible_grocery ;; 
 
 
-type fixed_grocery  = {
+(* type fixed_grocery = Sz3_types.fixed_grocery  = {
   helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   triple_level : ((width * int list * int) * (int -> handle * mold)) list;
   precomputed :  flexible_grocery
-} ;;
+} ;; *)
 
   
 type diagnosis = Sz3_types.diagnosis =
@@ -936,39 +936,39 @@ module Fixed_grocery = struct
   
   module Private = struct 
 
-   let empty_one = {
-   helpers = [];
-   pair_level = [];
-   triple_level  = [];
-   precomputed = Flg []
-   } ;;
+   let empty_one = CG({
+   sg_helpers = [];
+   sg_pair_level = [];
+   sg_triple_level  = [];
+   },
+   Flg []) ;;
 
-  let immediate_eval_opt fgr pwb = 
+  let immediate_eval_opt (CG(fgr,flg)) pwb = 
     if Point_with_breadth.has_no_constraint pwb 
     then let domain = Point_with_breadth.supporting_set pwb in 
          Some(Has_no_constraints,
-           Help.apply_help_except_extra_grooves (fgr.helpers) pwb (Mold.discrete domain)) 
+           Help.apply_help_except_extra_grooves (fgr.sg_helpers) pwb (Mold.discrete domain)) 
     else     
     let (FIS(n,scr)) = Point_with_breadth.support pwb 
     and w = Point_with_breadth.width pwb 
     and b = Point_with_breadth.breadth pwb in 
     let wpair = (w,scr) in
-    match List.assoc_opt wpair fgr.pair_level with 
+    match List.assoc_opt wpair fgr.sg_pair_level with 
     Some (f) -> let (handle,mold) =f b n in 
                 Some(handle,mold)    
   | None ->
     let wtriple = (w,scr,b) 
     and n =  Point_with_breadth.max  pwb  in 
-    match List.assoc_opt wtriple fgr.triple_level with 
+    match List.assoc_opt wtriple fgr.sg_triple_level with 
       Some (f) -> let (handle,mold) =f n in 
                   Some(handle,mold)    
-    | None -> Flexible_grocery.get_opt pwb fgr.precomputed ;;    
+    | None -> Flexible_grocery.get_opt pwb flg ;;    
   
-    let institute_fan fixed_low_level pwb frr =
-      {
-        fixed_low_level with
-        helpers = (Help.institute_fan (fixed_low_level.helpers) pwb frr)
-      } ;; 
+    let institute_fan (CG(fgr,flg)) pwb frr =
+      CG({
+        fgr with
+        sg_helpers = (Help.institute_fan (fgr.sg_helpers) pwb frr)
+      },flg) ;; 
 
 
   end ;; 
@@ -1252,7 +1252,8 @@ let fork_opt low_level pwb =
         if not(i_is_included_in [i;j;k] ext)
         then None
         else
-              let grooves = i_insert k (Help.extra_grooves (!(Instituted_fixed_grocery.main_ref)).helpers pwb) in 
+          let (CG(fgr,_flg)) = (!(Instituted_fixed_grocery.main_ref)) in 
+          let grooves = i_insert k (Help.extra_grooves fgr.sg_helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
               (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
                 None -> None
