@@ -1151,32 +1151,6 @@ module Instituted_shortened_grocery = struct
 end ;;  
 
 
-module Instituted_fixed_grocery = struct
-
-  module Private = struct 
-  
-    let main_ref = ref Fixed_grocery.empty_one ;; 
-
-    let institute_fan pwb fan =
-        let old_val = !main_ref in 
-        let new_val = Fixed_grocery.institute_fan old_val pwb fan in 
-        let _ = (main_ref:=new_val) in 
-        () ;;
-
-    institute_fan (No_constraint(FIS(2,[]))) 
-    (FRR
-    [(0, F [[1; 2]]);
-     (1, F [[1]; [2]])]) ;; 
-
-  end ;; 
-
-  let main_ref = Private.main_ref ;;
-  
-
-end ;;  
-
-
-
 
 module Grocery = struct 
 
@@ -1304,7 +1278,7 @@ let fork_opt low_level pwb =
         if not(i_is_included_in [i;j;k] ext)
         then None
         else
-          let (CG(fgr,_flg)) = (!(Instituted_fixed_grocery.main_ref)) in 
+          let fgr = (!(Instituted_shortened_grocery.main_ref)) in 
           let grooves = i_insert k (Help.extra_grooves fgr.sg_helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
               (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
