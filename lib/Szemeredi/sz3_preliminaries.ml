@@ -58,15 +58,6 @@ type shortened_grocery = Sz3_types.shortened_grocery = {
 
 type composite_grocery = Sz3_types.composite_grocery = 
   CG of shortened_grocery * flexible_grocery ;; 
-
-
-(* type fixed_grocery = Sz3_types.fixed_grocery  = {
-  helpers : piece_of_help list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  precomputed :  flexible_grocery
-} ;; *)
-
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
@@ -929,6 +920,54 @@ module Flexible_grocery = struct
   
 
 end ;;
+
+module Shortened_grocery = struct
+  
+  module Private = struct 
+
+   let empty_one = {
+   sg_helpers = [];
+   sg_pair_level = [];
+   sg_triple_level  = [];
+   } ;;
+
+  let immediate_eval_opt fgr pwb = 
+    if Point_with_breadth.has_no_constraint pwb 
+    then let domain = Point_with_breadth.supporting_set pwb in 
+         Some(Has_no_constraints,
+           Help.apply_help_except_extra_grooves (fgr.sg_helpers) pwb (Mold.discrete domain)) 
+    else     
+    let (FIS(n,scr)) = Point_with_breadth.support pwb 
+    and w = Point_with_breadth.width pwb 
+    and b = Point_with_breadth.breadth pwb in 
+    let wpair = (w,scr) in
+    match List.assoc_opt wpair fgr.sg_pair_level with 
+    Some (f) -> let (handle,mold) =f b n in 
+                Some(handle,mold)    
+  | None ->
+    let wtriple = (w,scr,b) 
+    and n =  Point_with_breadth.max  pwb  in 
+    match List.assoc_opt wtriple fgr.sg_triple_level with 
+      Some (f) -> let (handle,mold) =f n in 
+                  Some(handle,mold)    
+    | None -> None ;;    
+  
+    let institute_fan fgr pwb frr =
+      {
+        fgr with
+        sg_helpers = (Help.institute_fan (fgr.sg_helpers) pwb frr)
+      } ;; 
+
+
+  end ;; 
+
+ let empty_one =  Private.empty_one ;; 
+ let immediate_eval_opt = Private.immediate_eval_opt ;; 
+ let institute_fan = Private.institute_fan ;;
+
+end ;;  
+
+
 
 
 

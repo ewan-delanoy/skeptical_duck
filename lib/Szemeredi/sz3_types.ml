@@ -65,14 +65,6 @@ type shortened_grocery  = {
 } ;;
 
 type composite_grocery = CG of shortened_grocery * flexible_grocery ;; 
-
-type fixed_grocery  = {
-  helpers : piece_of_help list;
-  pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  triple_level : ((width * int list * int) * (int -> handle * mold)) list;
-  precomputed :  flexible_grocery
-} ;;
-
   
 type diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
