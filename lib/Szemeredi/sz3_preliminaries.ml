@@ -975,39 +975,15 @@ module Fixed_grocery = struct
   
   module Private = struct 
 
-   let empty_one = CG({
-   sg_helpers = [];
-   sg_pair_level = [];
-   sg_triple_level  = [];
-   },
-   Flg []) ;;
+   let empty_one = CG(Shortened_grocery.empty_one,Flg []) ;;
 
   let immediate_eval_opt (CG(fgr,flg)) pwb = 
-    if Point_with_breadth.has_no_constraint pwb 
-    then let domain = Point_with_breadth.supporting_set pwb in 
-         Some(Has_no_constraints,
-           Help.apply_help_except_extra_grooves (fgr.sg_helpers) pwb (Mold.discrete domain)) 
-    else     
-    let (FIS(n,scr)) = Point_with_breadth.support pwb 
-    and w = Point_with_breadth.width pwb 
-    and b = Point_with_breadth.breadth pwb in 
-    let wpair = (w,scr) in
-    match List.assoc_opt wpair fgr.sg_pair_level with 
-    Some (f) -> let (handle,mold) =f b n in 
-                Some(handle,mold)    
-  | None ->
-    let wtriple = (w,scr,b) 
-    and n =  Point_with_breadth.max  pwb  in 
-    match List.assoc_opt wtriple fgr.sg_triple_level with 
-      Some (f) -> let (handle,mold) =f n in 
-                  Some(handle,mold)    
+    match Shortened_grocery.immediate_eval_opt fgr pwb with 
+      Some(handle,mold) ->  Some(handle,mold)
     | None -> Flexible_grocery.get_opt pwb flg ;;    
   
     let institute_fan (CG(fgr,flg)) pwb frr =
-      CG({
-        fgr with
-        sg_helpers = (Help.institute_fan (fgr.sg_helpers) pwb frr)
-      },flg) ;; 
+      CG(Shortened_grocery.institute_fan fgr pwb frr,flg) ;; 
 
 
   end ;; 
