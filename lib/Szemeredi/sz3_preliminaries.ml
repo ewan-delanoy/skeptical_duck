@@ -48,7 +48,16 @@ type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;;
 
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
 
-type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
+type flexible_grocery = Sz3_types.flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
+
+type shortened_grocery = Sz3_types.shortened_grocery = {
+  sg_helpers : piece_of_help list;
+  sg_pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+  sg_triple_level : ((width * int list * int) * (int -> handle * mold)) list
+} ;;
+
+type composite_grocery = Sz3_types.composite_grocery = 
+  CG of shortened_grocery * flexible_grocery ;; 
 
 
 type fixed_grocery  = {
@@ -1168,6 +1177,7 @@ module Precomputed_chain = struct
   (nt 9) = level3 8 ;;
   (nt 10) = level3 9  ;;
   (nt 11) = level3 10  ;;
+  (nt 12) = level3 11  ;;
 
   Point_with_breadth.constructor ;; 
 
@@ -1176,13 +1186,25 @@ module Precomputed_chain = struct
   let r7 = (Int_range.scale level3 2 6)@[all_constraints 7 [] 2;level3 7] ;; 
   let r8 = r7@[Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]  ;; 
   let r9 = r8@[level3 9]  ;;
+  let r10 = r9@[level3 10]  ;;
+  let r11 = r10@[level3 11]  ;;
+  let r12 = r11@[level3 12]  ;;
+  let r13 = r12@[level3 13]  ;;
+  let r14 = r13@[level3 14]  ;;
+  let r15 = r14@[Point_with_breadth.constructor 15 [] (W 2) 8;level3 15] ;;
 
 
   let data =[
     (level3 7),r7;
     (level3 8),r8;
     (level3 9),r9; 
-    (level3 10),r9@[level3 10]; 
+    (level3 10),r10;
+    (level3 11),r11;
+    (level3 12),r12; 
+    (level3 13),r13; 
+    (level3 14),r14;
+    (level3 15),r15;
+    (level3 16),r15@[Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]; 
   ] ;;
 
   end ;;
@@ -1323,9 +1345,7 @@ let eval_opt low_level pwb =
         match eval_opt low_level pwb with 
        Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
      | None -> (None,low_level)
-      ) ;;
-
-  
+      ) ;;  
 
   let rec iterator_for_scale_walking (treated,low_level,to_be_treated) =
     match to_be_treated with 

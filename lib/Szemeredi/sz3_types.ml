@@ -58,6 +58,14 @@ type mold = BM of extension_data * (int * small_mold) list ;;
 
 type flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
 
+type shortened_grocery  = {
+  sg_helpers : piece_of_help list;
+  sg_pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
+  sg_triple_level : ((width * int list * int) * (int -> handle * mold)) list
+} ;;
+
+type composite_grocery = CG of shortened_grocery * flexible_grocery ;; 
+
 type fixed_grocery  = {
   helpers : piece_of_help list;
   pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
