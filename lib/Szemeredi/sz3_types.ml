@@ -63,8 +63,6 @@ type shortened_grocery  = {
   sg_pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
   sg_triple_level : ((width * int list * int) * (int -> handle * mold)) list
 } ;;
-
-type composite_grocery = CG of shortened_grocery * flexible_grocery ;; 
   
 type diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 

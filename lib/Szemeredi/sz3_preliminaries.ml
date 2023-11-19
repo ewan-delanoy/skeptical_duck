@@ -56,8 +56,7 @@ type shortened_grocery = Sz3_types.shortened_grocery = {
   sg_triple_level : ((width * int list * int) * (int -> handle * mold)) list
 } ;;
 
-type composite_grocery = Sz3_types.composite_grocery = 
-  CG of shortened_grocery * flexible_grocery ;; 
+
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
