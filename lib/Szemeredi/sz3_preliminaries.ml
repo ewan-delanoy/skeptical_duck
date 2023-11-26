@@ -1180,12 +1180,41 @@ module Precomputed_chain = struct
 
 end ;;  
 
+module Impatient = struct 
+
+  module Private = struct
+
+    let combined_eval_opt low_level pwb = 
+      match Shortened_grocery.immediate_eval_opt (!(Instituted_shortened_grocery.main_ref)) pwb  with 
+      Some (answer) -> let (handle,mold) =answer in 
+                       Some(handle,mold)    
+    | None -> 
+         (  
+          match Flexible_grocery.get_opt pwb low_level with 
+          Some (answer) -> let (handle,mold) =answer in 
+                           Some(handle,mold)    
+        | None -> None
+           ) ;;    
+
+  let eval_opt low_level pwb =  
+    let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
+     match combined_eval_opt low_level grounded_pwb with 
+      None -> None
+     |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
+
+  end ;;
+
+  let eval_opt = Private.eval_opt ;; 
+
+end ;;
+
+
 module Capricorn = struct 
 
   module Private = struct
 
-    let combined_eval_opt (fgr,low_level) pwb = 
-      match Shortened_grocery.immediate_eval_opt fgr pwb  with 
+    let combined_eval_opt low_level pwb = 
+      match Shortened_grocery.immediate_eval_opt (!(Instituted_shortened_grocery.main_ref)) pwb  with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> 
@@ -1198,7 +1227,7 @@ module Capricorn = struct
 
  let immediate_opt low_level pwb =  
     let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match combined_eval_opt (!(Instituted_shortened_grocery.main_ref),low_level) grounded_pwb with 
+     match combined_eval_opt low_level grounded_pwb with 
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
@@ -1345,25 +1374,6 @@ let eval_opt low_level pwb =
 
 end ;;  
 
-module Impatient = struct 
-
-  module Friend = struct
-    let impatient_ref = ref (Flg[]) ;;
-  end ;;
-
-  let eval_opt = Capricorn.eval_opt (!(Friend.impatient_ref)) ;; 
-  let immediate_opt = Capricorn.immediate_opt (!(Friend.impatient_ref)) ;; 
-  let update_if_possible pwb =
-     let (opt_answer,new_low_level) = Capricorn.update_if_possible (!(Friend.impatient_ref)) pwb in 
-     let _ = (Friend.impatient_ref:=new_low_level) in 
-     opt_answer ;;   
-  let walk_scale scale = 
-    let (opt_counterexample,opt_list,_new_low_level) 
-       = Capricorn.walk_scale (!(Friend.impatient_ref)) scale in 
-    (* let _ = (Private.impatient_ref:=new_low_level) in *) 
-    (opt_counterexample,opt_list) ;;   
-
-end ;;
 
 module Painstaking = struct 
 
