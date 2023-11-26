@@ -1351,95 +1351,6 @@ let eval_opt low_level pwb =
 
 end ;;  
 
-
-module Generic = struct 
-
-
-module Diagnose = struct 
-      
-  exception Nothing_to_diagnose_exn ;;
-  exception Has_no_constraints_not_diagnosable_exn ;; 
-  
-  module Private = struct
-  
-    let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
-       match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
-       None -> Missing_subcomputation("rightmost_overflow",left_pwb)
-       |Some (_,mold) -> 
-        let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
-        Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
-  
-   let diagnose_rightmost_pivot std_sol_computer low_level pwb left_pwb = 
-    match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
-    None -> Missing_subcomputation("rightmost_pivot",left_pwb)
-    |Some (_,_) ->
-      let the_sol = std_sol_computer pwb 
-      and n = Point_with_breadth.max pwb in
-      Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
-  
-    let diagnose_select std_sol_computer low_level pwb prec_pwb = 
-      match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
-    None -> Missing_subcomputation("select",prec_pwb)
-    |Some (_,_) ->
-        let the_sol = std_sol_computer pwb in
-        Missing_solution("select",prec_pwb,the_sol) ;;  
-  
-    let diagnose_fork std_sol_computer low_level (i,j,k) pwb prec_pwb = 
-      match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
-       None -> Missing_subcomputation("fork",prec_pwb)
-       |Some (_,prec_mold) -> 
-      let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
-      if missing_forced_elts <> []
-      then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
-      else   
-      let the_sol = std_sol_computer pwb in 
-      let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
-      let shorter_pwb = Point_with_breadth.remove_element pwb l in 
-      match  Sagittarius_Impatient.immediate_opt low_level shorter_pwb with 
-       None -> Missing_subcomputation("fork",shorter_pwb)
-       |Some (_,mold) -> 
-         let sols = Mold.solutions mold in 
-         if not(List.mem the_sol sols)
-         then Missing_solution("fork",shorter_pwb,the_sol)
-         else Missing_switch_in_fork(l,pwb) ;;  
-        
-  
-  let diagnose_precedent (std_sol_computer,decomposer) low_level pwb =
-    let (handle,pwb2_opt) = decomposer pwb in 
-    let pwb2=(match pwb2_opt with 
-       Some pwb3 -> pwb3
-       | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
-      match handle with
-       Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
-      |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow low_level (u,v,n) pwb2
-      |Rightmost_pivot(_) -> diagnose_rightmost_pivot std_sol_computer low_level pwb pwb2
-      |Select (_,_,_) -> diagnose_select std_sol_computer low_level pwb pwb2 
-      |Fork (i,j,k) -> diagnose_fork std_sol_computer low_level (i,j,k) pwb pwb2 ;;  
-  
-
-  
-  let inspect_along_chain (std_sol_computer,decomposer) 
-      low_level pwb = 
-    let (opt_counterexample,opt_list,new_low_level) =
-    Sagittarius_Impatient.walk_scale low_level (Precomputed_chain.chain pwb) in 
-     match opt_counterexample  with 
-     None -> let data = Option.get(opt_list) in 
-             Smooth(List.assoc pwb data,(fun ()->data))
-     |Some precedent -> Counterexample_found(precedent,
-       diagnose_precedent (std_sol_computer,decomposer) new_low_level precedent);; 
-  
-  end ;;
-
-   
- let inspect_along_chain = Private.inspect_along_chain ;; 
-
-end ;;
-
-
-end ;; 
-
-
-
 module Impatient = struct 
 
   module Friend = struct
@@ -1468,8 +1379,6 @@ module Painstaking = struct
 
   module Private = struct
     let painstaking_ref = ref (Flg[]) ;;
-
-    
 
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
@@ -1771,6 +1680,82 @@ module Decompose = struct
 
   module Diagnose = struct 
       
+    module Private = struct 
+      
+      exception Nothing_to_diagnose_exn ;;
+      exception Has_no_constraints_not_diagnosable_exn ;; 
+      
+        let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
+           match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
+           None -> Missing_subcomputation("rightmost_overflow",left_pwb)
+           |Some (_,mold) -> 
+            let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
+            Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
+      
+       let diagnose_rightmost_pivot low_level pwb left_pwb = 
+        match Sagittarius_Impatient.immediate_opt low_level left_pwb with 
+        None -> Missing_subcomputation("rightmost_pivot",left_pwb)
+        |Some (_,_) ->
+          let the_sol = Compute_standard_solution.compute pwb 
+          and n = Point_with_breadth.max pwb in
+          Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
+      
+        let diagnose_select low_level pwb prec_pwb = 
+          match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
+        None -> Missing_subcomputation("select",prec_pwb)
+        |Some (_,_) ->
+            let the_sol = Compute_standard_solution.compute pwb in
+            Missing_solution("select",prec_pwb,the_sol) ;;  
+      
+        let diagnose_fork low_level (i,j,k) pwb prec_pwb = 
+          match Sagittarius_Impatient.immediate_opt low_level prec_pwb with 
+           None -> Missing_subcomputation("fork",prec_pwb)
+           |Some (_,prec_mold) -> 
+          let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
+          if missing_forced_elts <> []
+          then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
+          else   
+          let the_sol = Compute_standard_solution.compute pwb in 
+          let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
+          let shorter_pwb = Point_with_breadth.remove_element pwb l in 
+          match  Sagittarius_Impatient.immediate_opt low_level shorter_pwb with 
+           None -> Missing_subcomputation("fork",shorter_pwb)
+           |Some (_,mold) -> 
+             let sols = Mold.solutions mold in 
+             if not(List.mem the_sol sols)
+             then Missing_solution("fork",shorter_pwb,the_sol)
+             else Missing_switch_in_fork(l,pwb) ;;  
+            
+      
+      let diagnose_precedent low_level pwb =
+        let (handle,pwb2_opt) = Decompose.decompose pwb in 
+        let pwb2=(match pwb2_opt with 
+           Some pwb3 -> pwb3
+           | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
+          match handle with
+           Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
+          |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow low_level (u,v,n) pwb2
+          |Rightmost_pivot(_) -> diagnose_rightmost_pivot low_level pwb pwb2
+          |Select (_,_,_) -> diagnose_select low_level pwb pwb2 
+          |Fork (i,j,k) -> diagnose_fork low_level (i,j,k) pwb pwb2 ;;  
+      
+    
+      
+      let inspect_along_chain 
+          low_level pwb = 
+        let (opt_counterexample,opt_list,new_low_level) =
+        Sagittarius_Impatient.walk_scale low_level (Precomputed_chain.chain pwb) in 
+         match opt_counterexample  with 
+         None -> let data = Option.get(opt_list) in 
+                 Smooth(List.assoc pwb data,(fun ()->data))
+         |Some precedent -> Counterexample_found(precedent,
+           diagnose_precedent  new_low_level precedent);; 
+      
+    
+    end ;;
+    
+    
+
        
     let half_impatient_eval_opt pwb = 
       let (_opt_counterexample,opt_list) = Impatient.walk_scale 
@@ -1781,9 +1766,7 @@ module Decompose = struct
       
 
    let inspect_along_chain = 
-    Generic.Diagnose.inspect_along_chain 
-    (Compute_standard_solution.compute, Decompose.decompose)
-      (!(Impatient.Friend.impatient_ref)) ;;
+    Private.inspect_along_chain (!(Impatient.Friend.impatient_ref)) ;;
       
   
   end ;;
