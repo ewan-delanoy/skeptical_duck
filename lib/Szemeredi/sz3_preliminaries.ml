@@ -1213,30 +1213,13 @@ module Capricorn = struct
 
   module Private = struct
 
-    let combined_eval_opt low_level pwb = 
-      match Shortened_grocery.immediate_eval_opt (!(Instituted_shortened_grocery.main_ref)) pwb  with 
-      Some (answer) -> let (handle,mold) =answer in 
-                       Some(handle,mold)    
-    | None -> 
-         (  
-          match Flexible_grocery.get_opt pwb low_level with 
-          Some (answer) -> let (handle,mold) =answer in 
-                           Some(handle,mold)    
-        | None -> None
-           ) ;;    
-
- let immediate_opt low_level pwb =  
-    let (d,grounded_pwb) = Point_with_breadth.decompose_wrt_translation pwb in 
-     match combined_eval_opt low_level grounded_pwb with 
-      None -> None
-     |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
  
  let rec immediate_for_several_opt low_level (treated,to_be_treated) = 
     match to_be_treated with 
     [] -> Some(List.rev treated) 
     | pwb :: others ->
      (
-      match immediate_opt low_level pwb with 
+      match Impatient.eval_opt low_level pwb with 
         None -> None 
         |Some (_,mold) -> immediate_for_several_opt low_level (mold::treated,others)
      ) ;;
@@ -1247,7 +1230,7 @@ let fork_opt low_level pwb =
   match Point_with_breadth.usual_decomposition_opt pwb with 
   None -> None
  |Some(prec_pwb,C cstr) ->
-    match immediate_opt low_level prec_pwb with 
+    match Impatient.eval_opt low_level prec_pwb with 
     None -> None
   | Some(_,prec_mold) -> 
         let ext = Mold.forced_elements prec_mold in 
@@ -1275,7 +1258,7 @@ let fork_opt low_level pwb =
 let rightmost_overflow_opt low_level pwb  = 
  let n = Point_with_breadth.max pwb in 
  let left_pwb = Point_with_breadth.remove_element pwb n in 
- match immediate_opt low_level left_pwb with 
+ match Impatient.eval_opt low_level left_pwb with 
      None -> None
    | Some(_,left_mold) -> 
   let left_ext = Mold.forced_elements left_mold 
@@ -1297,7 +1280,7 @@ let rightmost_overflow_opt low_level pwb  =
  let rightmost_pivot_opt low_level pwb  = 
    let n = Point_with_breadth.max pwb in 
    let left_pwb = Point_with_breadth.remove_element pwb n in 
-   match immediate_opt low_level left_pwb with 
+   match Impatient.eval_opt low_level left_pwb with 
        None -> None
      | Some(_,left_mold) -> 
      (match Mold.rightmost_pivot_opt pwb left_mold with 
@@ -1309,7 +1292,7 @@ let select_opt low_level pwb =
   match Point_with_breadth.usual_decomposition_opt pwb with 
   None -> None
  |Some(prec_pwb,C cstr) ->
-    match immediate_opt low_level prec_pwb with 
+    match Impatient.eval_opt low_level prec_pwb with 
     None -> None
   | Some(_,prec_mold) -> 
              let nth_cstr = (fun k->List.nth cstr (k-1)) in 
@@ -1322,7 +1305,7 @@ let select_opt low_level pwb =
              );;        
 
 let eval_opt low_level pwb =
-  match immediate_opt low_level pwb with 
+  match Impatient.eval_opt low_level pwb with 
   Some(answer0) -> Some answer0
  | None -> 
   if Point_with_breadth.has_no_constraint pwb 
@@ -1344,7 +1327,7 @@ let eval_opt low_level pwb =
    ) ;;
     
   let update_if_possible low_level pwb =  
-     match immediate_opt low_level pwb with 
+     match Impatient.eval_opt low_level pwb with 
      Some pair1 -> (Some pair1,low_level) 
      | None -> 
       (
@@ -1368,7 +1351,6 @@ let eval_opt low_level pwb =
   end ;;  
 
   let eval_opt = Private.eval_opt ;;
-  let immediate_opt = Private.immediate_opt ;;
   let update_if_possible = Private.update_if_possible ;; 
   let walk_scale = Private.walk_scale ;; 
 
@@ -1427,7 +1409,7 @@ let rec iterator (low_level,to_be_treated) =
 let eval  pwb =
     let new_low_level = iterator (!painstaking_ref,[pwb]) in 
     let _ = (painstaking_ref:=new_low_level) in 
-    Option.get(Capricorn.immediate_opt new_low_level pwb);;    
+    Option.get(Impatient.eval_opt new_low_level pwb);;    
 
 
   end ;;
@@ -1690,14 +1672,14 @@ module Decompose = struct
       exception Has_no_constraints_not_diagnosable_exn ;; 
       
         let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
-           match Capricorn.immediate_opt low_level left_pwb with 
+           match Impatient.eval_opt low_level left_pwb with 
            None -> Missing_subcomputation("rightmost_overflow",left_pwb)
            |Some (_,mold) -> 
             let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
             Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
       
        let diagnose_rightmost_pivot low_level pwb left_pwb = 
-        match Capricorn.immediate_opt low_level left_pwb with 
+        match Impatient.eval_opt low_level left_pwb with 
         None -> Missing_subcomputation("rightmost_pivot",left_pwb)
         |Some (_,_) ->
           let the_sol = Compute_standard_solution.compute pwb 
@@ -1705,14 +1687,14 @@ module Decompose = struct
           Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
       
         let diagnose_select low_level pwb prec_pwb = 
-          match Capricorn.immediate_opt low_level prec_pwb with 
+          match Impatient.eval_opt low_level prec_pwb with 
         None -> Missing_subcomputation("select",prec_pwb)
         |Some (_,_) ->
             let the_sol = Compute_standard_solution.compute pwb in
             Missing_solution("select",prec_pwb,the_sol) ;;  
       
         let diagnose_fork low_level (i,j,k) pwb prec_pwb = 
-          match Capricorn.immediate_opt low_level prec_pwb with 
+          match Impatient.eval_opt low_level prec_pwb with 
            None -> Missing_subcomputation("fork",prec_pwb)
            |Some (_,prec_mold) -> 
           let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
@@ -1722,7 +1704,7 @@ module Decompose = struct
           let the_sol = Compute_standard_solution.compute pwb in 
           let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
           let shorter_pwb = Point_with_breadth.remove_element pwb l in 
-          match  Capricorn.immediate_opt low_level shorter_pwb with 
+          match  Impatient.eval_opt low_level shorter_pwb with 
            None -> Missing_subcomputation("fork",shorter_pwb)
            |Some (_,mold) -> 
              let sols = Mold.solutions mold in 
