@@ -1413,11 +1413,16 @@ let eval  pwb =
     let _ = (painstaking_ref:=new_low_level) in 
     Option.get(Impatient.eval_opt new_low_level pwb);;    
 
+    let store data = 
+       (painstaking_ref:=Flexible_grocery.add_several (!painstaking_ref) data);;
+
 
   end ;;
 
   let eval = Private.eval  ;; 
   let measure pwb = let (_,mold) = eval pwb in List.length(List.hd (Mold.solutions mold)) ;; 
+  let store = Private.store ;; 
+      
 
 end ;;
 
