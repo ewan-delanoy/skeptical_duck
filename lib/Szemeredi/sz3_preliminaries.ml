@@ -1130,62 +1130,53 @@ module Precomputed_chain = struct
 
   module Private = struct
     
+    let pwb_order = Point_with_breadth.order ;;
+    let pwb_list_order = Total_ordering.lex_compare pwb_order ;;
+    let pair_order = Total_ordering.product pwb_order pwb_list_order ;;
+    
+    let data_ref =ref [];;
+    let insert_new_pair pair = data_ref:= (Ordered.insert pair_order pair (!data_ref));; 
+
+    let rec helper_for_all_subchains (treated,(pwb,chain_for_pwb),to_be_treated) = 
+        match to_be_treated with 
+         [] -> List.rev( (pwb,chain_for_pwb) :: treated )
+        | pwb2 :: others ->
+          helper_for_all_subchains ((pwb,chain_for_pwb)::treated,(pwb2,chain_for_pwb@[pwb2]),others) ;; 
+
+    let all_subchains = function 
+      [] -> []
+      | a1 :: others1 -> (
+         match others1 with 
+         [] -> []
+         | a2 :: others2 -> 
+          helper_for_all_subchains ([],(a2,[a1;a2]),others2) 
+      ) ;;
+
+    let declare_chain chain =
+       List.iter insert_new_pair (all_subchains chain) ;; 
+
     let all_constraints n scr w = Point_with_breadth.all_constraints(P(FIS(n,scr),W w)) ;;
 
     let level3 n = all_constraints n [] 3 ;;
-
-    (*
-  
-  (nt 1) = level3 2 ;; 
-  (nt 2) = level3 3 ;;  
-  (nt 3) = level3 4 ;;
-  (nt 4) = level3 5 ;; 
-  (nt 5) = level3 6 ;;  
-  (nt 6) = all_constraints 7 [] 2;;
-  (nt 7) = level3 7 ;;
-  (nt 8) = Point_with_breadth.constructor 8 [] (W 2) 1;; 
-  (nt 9) = level3 8 ;;
-  (nt 10) = level3 9  ;;
-  (nt 11) = level3 10  ;;
-  (nt 12) = level3 11  ;;
-
-  Point_with_breadth.constructor ;; 
-
-  *)
     
-  let r7 = (Int_range.scale level3 2 6)@[all_constraints 7 [] 2;level3 7] ;; 
-  let r8 = r7@[Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]  ;; 
-  let r9 = r8@[level3 9]  ;;
-  let r10 = r9@[level3 10]  ;;
-  let r11 = r10@[level3 11]  ;;
-  let r12 = r11@[level3 12]  ;;
-  let r13 = r12@[level3 13]  ;;
-  let r14 = r13@[level3 14]  ;;
-  let r15 = r14@[Point_with_breadth.constructor 15 [] (W 2) 8;level3 15] ;;
-
-
-  let data =ref [
-    (level3 7),r7;
-    (level3 8),r8;
-    (level3 9),r9; 
-    (level3 10),r10;
-    (level3 11),r11;
-    (level3 12),r12; 
-    (level3 13),r13; 
-    (level3 14),r14;
-    (level3 15),r15;
-    (level3 16),r15@[Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]; 
-  ] ;;
-
-
-
-
+    declare_chain (
+      (Int_range.scale level3 2 6)@
+      [all_constraints 7 [] 2;level3 7]@
+      [Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]@
+      (Int_range.scale level3 9 14)@
+      [Point_with_breadth.constructor 15 [] (W 2) 8;level3 15]@
+      [Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]
+    ) ;;
+    
+  
   end ;;
 
   let chain pwb =
-     match List.assoc_opt pwb (!(Private.data)) with 
+     match List.assoc_opt pwb (!(Private.data_ref)) with 
       None -> raise(Chain_not_computed_yet(pwb))
     | Some answer -> answer ;; 
+
+  let declare_chain = Private.declare_chain ;;   
 
 end ;;  
 

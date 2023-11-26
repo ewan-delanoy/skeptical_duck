@@ -37,12 +37,6 @@ let ap2 = Absolute_path.of_string
 
 let act () = Io.overwrite_with ap2 res1 ;; 
 
-
-let v1 = List.hd u6 ;; 
-
-let see = analize3 v1;;
-
-
 end ;;
 
 
@@ -187,7 +181,7 @@ Substring.occurrences_of_in "hoto" g4 ;;
   
 let g5 = Cull_string.interval g4 750 1000 ;; 
 
-let z5 = Image.image (fun (ap,s)->Io.read_whole_file ap) z4 ;; 
+let z5 = Image.image (fun (ap,s)->Io.read_whole_file ap) [] ;; 
 let z6 = String.concat "\n\n\n" z5 ;; 
 let ap2 = Absolute_path.of_string "~/Downloads/text.txt";;
 Io.overwrite_with ap2 z6 ;; 
