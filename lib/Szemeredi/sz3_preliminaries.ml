@@ -1602,11 +1602,6 @@ module Decompose = struct
    module Private = struct 
 
     let hints = ref ([
-      (*
-      (Point_with_breadth.constructor 7 [] (W 3) 0,
-       [Point_with_breadth.constructor 7 [] (W 3) 0]  
-      )
-      *)
     ]: (point_with_breadth * point_with_breadth list) list) ;; 
     
     let main_hashtbl = ((Hashtbl.create 100): (point_with_breadth, point_with_breadth list) Hashtbl.t) ;; 
@@ -1771,7 +1766,10 @@ module Decompose = struct
    let inspect_along_chain = 
     Private.inspect_along_chain (Flg[]);;
       
-  
+    let store_all_half_impatient_expansions () =
+       Painstaking.store Private.all_half_impatient_expansions ;; 
+
+
   end ;;
 
 
