@@ -1174,7 +1174,9 @@ module Precomputed_chain = struct
   let chain pwb =
      match List.assoc_opt pwb (!(Private.data_ref)) with 
       None -> raise(Chain_not_computed_yet(pwb))
-    | Some answer -> answer ;; 
+    | Some answer -> answer ;;
+    
+  let chained_points = (!(Private.data_ref)) ;; 
 
   let declare_chain = Private.declare_chain ;;   
 
