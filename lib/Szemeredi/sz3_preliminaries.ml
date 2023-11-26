@@ -1747,20 +1747,18 @@ module Decompose = struct
       
     
     end ;;
-    
-    
-
+  
        
     let half_impatient_eval_opt pwb = 
-      let (_opt_counterexample,opt_list) = Impatient.walk_scale 
-          (Precomputed_chain.chain pwb) in 
+      let (_opt_counterexample,opt_list,_new_low_level) 
+          = Capricorn.walk_scale (Flg[])  (Precomputed_chain.chain pwb) in     
        match opt_list  with 
       None -> None
       |Some data -> List.assoc_opt pwb data ;;
       
 
    let inspect_along_chain = 
-    Private.inspect_along_chain (!(Impatient.Friend.impatient_ref)) ;;
+    Private.inspect_along_chain (Flg[]);;
       
   
   end ;;
