@@ -1164,7 +1164,7 @@ module Precomputed_chain = struct
   let r15 = r14@[Point_with_breadth.constructor 15 [] (W 2) 8;level3 15] ;;
 
 
-  let data =[
+  let data =ref [
     (level3 7),r7;
     (level3 8),r8;
     (level3 9),r9; 
@@ -1177,10 +1177,13 @@ module Precomputed_chain = struct
     (level3 16),r15@[Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]; 
   ] ;;
 
+
+
+
   end ;;
 
   let chain pwb =
-     match List.assoc_opt pwb Private.data with 
+     match List.assoc_opt pwb (!(Private.data)) with 
       None -> raise(Chain_not_computed_yet(pwb))
     | Some answer -> answer ;; 
 
