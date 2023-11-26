@@ -1176,7 +1176,7 @@ module Precomputed_chain = struct
       None -> raise(Chain_not_computed_yet(pwb))
     | Some answer -> answer ;;
     
-  let chained_points = (!(Private.data_ref)) ;; 
+  let chained_points = Image.image fst (!(Private.data_ref)) ;; 
 
   let declare_chain = Private.declare_chain ;;   
 
@@ -1211,7 +1211,7 @@ module Impatient = struct
 end ;;
 
 
-module Capricorn = struct 
+module Minimal_effort = struct 
 
   module Private = struct
 
@@ -1371,11 +1371,11 @@ module Painstaking = struct
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let (opt_pair1,low_level1) = Capricorn.update_if_possible low_level pwb in 
+  let (opt_pair1,low_level1) = Minimal_effort.update_if_possible low_level pwb in 
   if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,low_level6) = Capricorn.update_if_possible low_level1 nonisolated_pwb in 
+  then let (opt_pair6,low_level6) = Minimal_effort.update_if_possible low_level1 nonisolated_pwb in 
        if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
@@ -1389,13 +1389,13 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,low_level3) = Capricorn.update_if_possible low_level1 pwb_i in 
+  let (opt_pair3,low_level3) = Minimal_effort.update_if_possible low_level1 pwb_i in 
   if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
-  let (opt_pair4,low_level4) = Capricorn.update_if_possible low_level3 pwb_j in 
+  let (opt_pair4,low_level4) = Minimal_effort.update_if_possible low_level3 pwb_j in 
   if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
-  let (opt_pair5,low_level5) = Capricorn.update_if_possible low_level4 pwb_k in 
+  let (opt_pair5,low_level5) = Minimal_effort.update_if_possible low_level4 pwb_k in 
   if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
@@ -1672,6 +1672,7 @@ module Decompose = struct
       
       exception Nothing_to_diagnose_exn ;;
       exception Has_no_constraints_not_diagnosable_exn ;; 
+      exception Half_impatient_eval_exn of point_with_breadth ;; 
       
         let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
            match Impatient.eval_opt low_level left_pwb with 
@@ -1732,23 +1733,34 @@ module Decompose = struct
       let inspect_along_chain 
           low_level pwb = 
         let (opt_counterexample,opt_list,new_low_level) =
-        Capricorn.walk_scale low_level (Precomputed_chain.chain pwb) in 
+        Minimal_effort.walk_scale low_level (Precomputed_chain.chain pwb) in 
          match opt_counterexample  with 
          None -> let data = Option.get(opt_list) in 
                  Smooth(List.assoc pwb data,(fun ()->data))
          |Some precedent -> Counterexample_found(precedent,
            diagnose_precedent  new_low_level precedent);; 
-      
+  
+    let half_impatient_eval_opt pwb = 
+        let (_opt_counterexample,opt_list,_new_low_level) 
+                = Minimal_effort.walk_scale (Flg[])  (Precomputed_chain.chain pwb) in     
+             match opt_list  with 
+        None -> None
+      |Some data -> List.assoc_opt pwb data ;;
+
+    let half_impatient_eval pwb = match half_impatient_eval_opt pwb with 
+      Some answer -> answer 
+      |None -> raise(Half_impatient_eval_exn(pwb)) ;; 
+   
+
+    let all_half_impatient_expansions = Image.image (
+      fun pwb ->(pwb,half_impatient_eval pwb)
+    ) (Precomputed_chain.chained_points);;        
+
     
     end ;;
   
        
-    let half_impatient_eval_opt pwb = 
-      let (_opt_counterexample,opt_list,_new_low_level) 
-          = Capricorn.walk_scale (Flg[])  (Precomputed_chain.chain pwb) in     
-       match opt_list  with 
-      None -> None
-      |Some data -> List.assoc_opt pwb data ;;
+    let half_impatient_eval_opt = Private.half_impatient_eval_opt ;;
       
 
    let inspect_along_chain = 
