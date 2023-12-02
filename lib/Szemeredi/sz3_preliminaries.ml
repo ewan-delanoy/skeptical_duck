@@ -1443,6 +1443,7 @@ let eval_in_unblocked_mode  pwb =
 
   end ;;
 
+  let current_mode () = (!(Private.blocked_mode_ref)) ;;
   let eval = Private.eval  ;; 
   let measure pwb = let (_,mold) = eval pwb in List.length(List.hd (Mold.solutions mold)) ;; 
   let set_blocked_mode mode = (Private.blocked_mode_ref:=mode) ;; 
@@ -1688,7 +1689,32 @@ module Decompose = struct
 
 
 
+  module Expanded_painstaking = struct 
 
+    exception Next_problem_in_chain_exn ;;
+
+    let next_problem_in_chain pwb = 
+      let old_mode = Painstaking.current_mode() in
+     try (fun _->
+      Painstaking.set_blocked_mode old_mode;
+      raise Next_problem_in_chain_exn)(Chain.chain pwb) with 
+     Painstaking.First_problem(pwb2) -> 
+      Painstaking.set_blocked_mode old_mode;
+      pwb2 ;;  
+
+    exception Next_problem_in_eval_exn ;;
+
+      let next_problem_in_eval pwb = 
+        let old_mode = Painstaking.current_mode() in
+       try (fun _->
+        Painstaking.set_blocked_mode old_mode;
+        raise Next_problem_in_eval_exn)(Painstaking.eval pwb) with 
+       Painstaking.First_problem(pwb2) -> 
+        Painstaking.set_blocked_mode old_mode;
+        pwb2 ;;     
+
+  end ;;
+  
 
 
   module Diagnose = struct 
