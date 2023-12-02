@@ -1166,7 +1166,8 @@ module Precomputed_chain = struct
       (Int_range.scale level3 9 14)@
       [Point_with_breadth.constructor 15 [] (W 2) 8;level3 15]@
       [Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]@
-      (Int_range.scale level3 17 21)
+      (Int_range.scale level3 17 22)@
+      [Point_with_breadth.constructor 23 [] (W 2) 16]
     ) ;;
     
   
@@ -1366,6 +1367,8 @@ module Painstaking = struct
 
   exception Should_never_happen_in_push_1_exn of point_with_breadth;; 
 
+  exception First_problem of point_with_breadth ;; 
+
   module Private = struct
     let painstaking_ref = ref (Flg[]) ;;
 
@@ -1409,10 +1412,23 @@ let rec iterator (low_level,to_be_treated) =
     then low_level
     else iterator(pusher (low_level,to_be_treated)) ;;
     
-let eval  pwb =
+let eval_in_unblocked_mode  pwb =
     let new_low_level = iterator (!painstaking_ref,[pwb]) in 
     let _ = (painstaking_ref:=new_low_level) in 
     Option.get(Impatient.eval_opt new_low_level pwb);;    
+
+  let eval_in_blocked_mode pwb = 
+    let (low_level,to_be_treated) = pusher (!painstaking_ref,[pwb]) in
+    if to_be_treated=[]
+    then  Option.get(Impatient.eval_opt (low_level) pwb)
+    else  raise(First_problem(List.hd to_be_treated)) ;; 
+
+  let blocked_mode_ref = ref false ;;    
+
+  let eval pwb =
+     if !blocked_mode_ref 
+     then eval_in_blocked_mode pwb
+     else eval_in_unblocked_mode pwb ;;    
 
     let store data = 
        (painstaking_ref:=Flexible_grocery.add_several (!painstaking_ref) data);;
@@ -1422,6 +1438,7 @@ let eval  pwb =
 
   let eval = Private.eval  ;; 
   let measure pwb = let (_,mold) = eval pwb in List.length(List.hd (Mold.solutions mold)) ;; 
+  let set_blocked_mode mode = (Private.blocked_mode_ref:=mode) ;; 
   let store = Private.store ;; 
       
 
