@@ -4,6 +4,31 @@
 
 *)
 
+module Private = struct
+
+let rec helper_for_common_initial_sublist (treated,to_be_treated1,to_be_treated2) =
+  match to_be_treated1 with 
+  [] -> (List.rev treated,to_be_treated1,to_be_treated2)
+  | a1 :: others1 ->
+    (
+      match to_be_treated2 with 
+      [] -> (List.rev treated,to_be_treated1,to_be_treated2)
+      | a2 :: others2 ->
+          if a1<>a2
+          then (List.rev treated,to_be_treated1,to_be_treated2)
+          else helper_for_common_initial_sublist (a1::treated,others1,others2)   
+    ) ;;
+
+end ;;    
+
+let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([],l1,l2) ;;
+
+(*
+common_initial_sublist [1;2;3;7;8] [1;2;3;9] ;; 
+*)
+
+
+
 let find_index_of_in x ll=
     let rec sub_f=(function (j,l)->match l with
     []->(-1)      
