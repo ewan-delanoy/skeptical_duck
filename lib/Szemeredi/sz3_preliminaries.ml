@@ -1165,7 +1165,8 @@ module Precomputed_chain = struct
       [Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]@
       (Int_range.scale level3 9 14)@
       [Point_with_breadth.constructor 15 [] (W 2) 8;level3 15]@
-      [Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]
+      [Point_with_breadth.constructor 16 [] (W 2) 9;level3 16]@
+      (Int_range.scale level3 17 21)
     ) ;;
     
   

@@ -5,6 +5,8 @@
 *)
 
 
+exception Timeout ;;
+
 module Private=struct
  
 let naive_extension ap=
@@ -236,6 +238,17 @@ let create_subdirs_and_fill_files root subdirs files_with_content =
          Io.overwrite_with (Absolute_path.of_string full_path) content
    ) files_with_content;;
 
+let compute_with_time_constraint f x timeout =
+      let _ =
+        Sys.set_signal Sys.sigalrm (Sys.Signal_handle (fun _ -> raise Timeout))
+      in
+      ignore (Unix.alarm timeout);
+      try
+        let r = f x in
+        ignore (Unix.alarm 0); r
+      with
+      | e  -> ignore (Unix.alarm 0); raise e ;; 
+
 end;;    
 
 
@@ -254,6 +267,7 @@ let complete_ls=Private.complete_ls;;
 let complete_ls_with_directories_only=Private.complete_ls_with_directories_only;;
 let complete_ls_with_ignored_subdirs=Private.complete_ls_with_ignored_subdirs;;
 let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
+let compute_with_time_constraint = Private.compute_with_time_constraint ;; 
 let clear_directory_contents = Private.clear_directory_contents;;
 let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
 let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
