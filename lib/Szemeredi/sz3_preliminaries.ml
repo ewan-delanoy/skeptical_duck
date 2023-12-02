@@ -496,6 +496,9 @@ let point pwb = fst(Private.point_and_breadth pwb) ;;
 let projection pwb = snd(decompose_wrt_translation pwb);;
 let remove_element = Private.remove_element ;;
 let rightmost_largest_width = Private.rightmost_largest_width ;;
+let size pwb =
+  let (pt,_b) = Private.point_and_breadth pwb in 
+  Point.size pt ;;
 let solutions = Private.solutions ;;  
 let subset_is_admissible= Private.subset_is_admissible ;; 
 let support  = Private.support ;; 
