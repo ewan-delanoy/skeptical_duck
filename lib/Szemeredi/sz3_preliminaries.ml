@@ -214,6 +214,8 @@ module Finite_int_set = struct
 
   *)
 
+  let size (FIS(n,scr)) = n-(List.length scr);; 
+
   let to_usual_int_list = Private.to_usual_int_list ;; 
 
   let translate d fis = 
