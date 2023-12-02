@@ -266,6 +266,8 @@ module Point = struct
 
   let remove_elements pt pivots = List.fold_left remove_element pt pivots ;;   
 
+  let size (P(fis,_)) = Finite_int_set.size fis ;; 
+
   let standardize pt =
      let (P(fis,_)) = pt in 
       match highest_constraint_opt pt with  
