@@ -1697,7 +1697,9 @@ module Decompose = struct
       let old_mode = Painstaking.current_mode() in
      try (fun _->
       Painstaking.set_blocked_mode old_mode;
-      raise Next_problem_in_chain_exn)(Chain.chain pwb) with 
+      raise Next_problem_in_chain_exn)(
+       let _ = Painstaking.set_blocked_mode true in  
+       Chain.chain pwb) with 
      Painstaking.First_problem(pwb2) -> 
       Painstaking.set_blocked_mode old_mode;
       pwb2 ;;  
@@ -1708,7 +1710,9 @@ module Decompose = struct
         let old_mode = Painstaking.current_mode() in
        try (fun _->
         Painstaking.set_blocked_mode old_mode;
-        raise Next_problem_in_eval_exn)(Painstaking.eval pwb) with 
+        raise Next_problem_in_eval_exn)(
+          let _ = Painstaking.set_blocked_mode true in    
+        Painstaking.eval pwb) with 
        Painstaking.First_problem(pwb2) -> 
         Painstaking.set_blocked_mode old_mode;
         pwb2 ;;     
