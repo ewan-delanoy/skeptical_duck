@@ -1185,7 +1185,7 @@ module Precomputed_chain = struct
       None -> raise(Chain_not_computed_yet(pwb))
     | Some answer -> answer ;;
     
-  let chained_points = Image.image fst (!(Private.data_ref)) ;; 
+  let chained_points () = Image.image fst (!(Private.data_ref)) ;; 
 
   let declare_chain = Private.declare_chain ;;   
 
@@ -1806,11 +1806,6 @@ module Decompose = struct
       Some answer -> answer 
       |None -> raise(Half_impatient_eval_exn(pwb)) ;; 
    
-
-    let all_half_impatient_expansions = Image.image (
-      fun pwb ->(pwb,half_impatient_eval pwb)
-    ) (Precomputed_chain.chained_points);;        
-
     
     end ;;
   
@@ -1822,7 +1817,10 @@ module Decompose = struct
     Private.inspect_along_chain (Flg[]);;
       
     let store_all_half_impatient_expansions () =
-       Painstaking.store Private.all_half_impatient_expansions ;; 
+      let half_impatient_expansions =  Image.image (
+        fun pwb ->(pwb,Private.half_impatient_eval pwb)
+      ) (Precomputed_chain.chained_points ()) in 
+       Painstaking.store half_impatient_expansions ;; 
 
 
   end ;;
