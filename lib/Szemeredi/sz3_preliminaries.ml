@@ -707,6 +707,7 @@ module Mold = struct
      let forced_elts = i_fold_intersect all_sols in 
      BM(forced_elts,[0,Small_mold.constructor all_sols forced_elts]) ;; 
 
+  let from_single_solution sol = BM(sol,[0,Small_mold.constructor [sol] sol]) ;; 
 
   let in_short_sized_case pwb =
     if ((Point_with_breadth.size pwb)>18)
