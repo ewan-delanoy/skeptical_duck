@@ -481,6 +481,9 @@ let usual_decomposition_opt = function
           let (d,_) = Point.decompose_wrt_translation pt in 
           (d,translate (-d) pwb);; 
 
+
+    
+
 end ;;  
 
 let breadth pwb =snd(Private.point_and_breadth pwb);;
@@ -615,6 +618,8 @@ module Small_mold = struct
     let add = i_merge isolated_set in 
     SM(Image.image add sols,Fan.impose_and_distribute ([],isolated_set) fan) ;;
 
+  let constructor sols forced_elts = SM(sols,Fan.constructor [forced_elts]);;
+
   let empty_one = SM([],Fan.empty_one);;
 
   let fan (SM(_sols,fan_inside)) = fan_inside ;;
@@ -650,7 +655,8 @@ end ;;
 module Mold = struct 
 
   exception Negative_fan_index_exn of int ;;
-  
+  exception In_short_sized_case_exn of point_with_breadth ;;
+
   module Private = struct 
   
   let constructor_opt pwb naive_forced_elts l = 
@@ -697,6 +703,18 @@ module Mold = struct
       )  prec_l) in
      Private.constructor_opt pwb [] new_l ;; 
   
+  let from_exhaustive_list_of_solutions all_sols =
+     let forced_elts = i_fold_intersect all_sols in 
+     BM(forced_elts,[0,Small_mold.constructor all_sols forced_elts]) ;; 
+
+
+  let in_short_sized_case pwb =
+    if ((Point_with_breadth.size pwb)>18)
+    then raise(In_short_sized_case_exn(pwb))
+    else 
+      let all_sols = Point_with_breadth.solutions pwb 0 in   
+      from_exhaustive_list_of_solutions all_sols  ;; 
+
   let rightmost_overflow_opt full_pwb left_mold =
       let (BM(_left_ext,left_data)) = left_mold in  
       let c_pairs = Point_with_breadth.complementary_pairs full_pwb 
@@ -1437,9 +1455,10 @@ let eval_in_unblocked_mode  pwb =
      then eval_in_blocked_mode pwb
      else eval_in_unblocked_mode pwb ;;    
 
-    let store data = 
+  let store data = 
        (painstaking_ref:=Flexible_grocery.add_several (!painstaking_ref) data);;
 
+    
 
   end ;;
 
