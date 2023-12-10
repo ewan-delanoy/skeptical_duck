@@ -1150,7 +1150,14 @@ module Instituted_shortened_grocery = struct
 end ;;  
 
 
-module Precomputed_chain = struct 
+module Precomputed_overchain = struct 
+
+   (* the lists declared here are not exact chains but
+     merely overchains, i.e. sequences [s(1);s(2);...] where
+     for each i, the predecessor of s(i+1) is some s(j) for j<=i 
+     (and not necessarily s(i) as it would be for an exact chain)
+
+   *)
 
   exception Chain_not_computed_yet of point_with_breadth ;; 
 
@@ -1178,14 +1185,14 @@ module Precomputed_chain = struct
           helper_for_all_subchains ([],(a2,[a1;a2]),others2) 
       ) ;;
 
-    let declare_chain chain =
+    let declare_overchain chain =
        List.iter insert_new_pair (all_subchains chain) ;; 
 
     let all_constraints n scr w = Point_with_breadth.all_constraints(P(FIS(n,scr),W w)) ;;
 
     let level3 n = all_constraints n [] 3 ;;
     
-    declare_chain (
+    declare_overchain (
       (Int_range.scale level3 2 6)@
       [all_constraints 7 [] 2;level3 7]@
       [Point_with_breadth.constructor 8 [] (W 2) 1;level3 8]@
@@ -1199,14 +1206,14 @@ module Precomputed_chain = struct
   
   end ;;
 
-  let chain pwb =
+  let overchain pwb =
      match List.assoc_opt pwb (!(Private.data_ref)) with 
       None -> raise(Chain_not_computed_yet(pwb))
     | Some answer -> answer ;;
     
   let chained_points () = Image.image fst (!(Private.data_ref)) ;; 
 
-  let declare_chain = Private.declare_chain ;;   
+  let declare_overchain = Private.declare_overchain ;;   
 
 end ;;  
 
@@ -1818,7 +1825,7 @@ module Decompose = struct
       let inspect_along_chain 
           low_level pwb = 
         let (opt_counterexample,opt_list,new_low_level) =
-        Minimal_effort.walk_scale low_level (Precomputed_chain.chain pwb) in 
+        Minimal_effort.walk_scale low_level (Precomputed_overchain.overchain pwb) in 
          match opt_counterexample  with 
          None -> let data = Option.get(opt_list) in 
                  Smooth(List.assoc pwb data,(fun ()->data))
@@ -1827,7 +1834,7 @@ module Decompose = struct
   
     let half_impatient_eval_opt pwb = 
         let (_opt_counterexample,opt_list,_new_low_level) 
-                = Minimal_effort.walk_scale (Flg[])  (Precomputed_chain.chain pwb) in     
+                = Minimal_effort.walk_scale (Flg[])  (Precomputed_overchain.overchain pwb) in     
              match opt_list  with 
         None -> None
       |Some data -> List.assoc_opt pwb data ;;
@@ -1849,7 +1856,7 @@ module Decompose = struct
     let store_all_half_impatient_expansions () =
       let half_impatient_expansions =  Image.image (
         fun pwb ->(pwb,Private.half_impatient_eval pwb)
-      ) (Precomputed_chain.chained_points ()) in 
+      ) (Precomputed_overchain.chained_points ()) in 
        Painstaking.store half_impatient_expansions ;; 
 
 
