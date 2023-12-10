@@ -1365,16 +1365,26 @@ let eval_opt low_level pwb =
        Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
      | None -> (None,low_level)
       ) ;;  
+ 
+  exception Pusher_for_scale_walking_exn1 ;;
+  exception Pusher_for_scale_walking_exn2 ;;
 
-  let rec iterator_for_scale_walking (treated,low_level,to_be_treated) =
-    match to_be_treated with 
-     [] ->(None,Some(treated),low_level)
-    |pwb :: others ->
-        let (answer_opt,new_low_level) = update_if_possible low_level pwb in 
-        match answer_opt with  
-           None -> (Some pwb,None,low_level)
-          |Some answer -> iterator_for_scale_walking ((pwb,answer)::treated,new_low_level,others) ;;
+  let rec pusher_for_scale_walking (treated,low_level,to_be_treated) =
+        match to_be_treated with 
+         [] ->raise Pusher_for_scale_walking_exn1
+        |pwb :: others ->
+            let (answer_opt,new_low_level) = update_if_possible low_level pwb in 
+            match answer_opt with  
+               None -> raise Pusher_for_scale_walking_exn2
+              |Some answer -> ((pwb,answer)::treated,new_low_level,others) ;;
+    
 
+  let rec iterator_for_scale_walking triple =
+    let (treated,low_level,to_be_treated) = triple in 
+    if to_be_treated = [] then (None,Some(treated),low_level) else
+    try  iterator_for_scale_walking(pusher_for_scale_walking triple) with 
+    Pusher_for_scale_walking_exn2 ->  (Some (List.hd to_be_treated),None,low_level) ;;
+    
   let walk_scale low_level to_be_treated = iterator_for_scale_walking ([],low_level,to_be_treated) ;;
 
 
