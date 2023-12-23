@@ -1788,6 +1788,7 @@ module Decompose = struct
 
   let declare_overchain = Private.declare_overchain ;; 
   let eval = Private.eval ;; 
+  let eval_opt = Private.eval_opt ;; 
 
   end ;;   
 
@@ -1866,33 +1867,13 @@ module Decompose = struct
          |Some precedent -> Counterexample_found(precedent,
            diagnose_precedent  new_low_level precedent);; 
   
-    let half_impatient_eval_opt pwb = 
-        let (_opt_counterexample,opt_list,_new_low_level) 
-                = Minimal_effort.walk_scale (Flg[])  (Precomputed_overchain.overchain pwb) in     
-             match opt_list  with 
-        None -> None
-      |Some data -> List.assoc_opt pwb data ;;
-
-    let half_impatient_eval pwb = match half_impatient_eval_opt pwb with 
-      Some answer -> answer 
-      |None -> raise(Half_impatient_eval_exn(pwb)) ;; 
    
     
     end ;;
-  
-       
-    let half_impatient_eval_opt = Private.half_impatient_eval_opt ;;
-      
 
    let inspect_along_chain = 
     Private.inspect_along_chain (Flg[]);;
       
-    let store_all_half_impatient_expansions () =
-      let half_impatient_expansions =  Image.image (
-        fun pwb ->(pwb,Private.half_impatient_eval pwb)
-      ) (Precomputed_overchain.chained_points ()) in 
-       Painstaking.store half_impatient_expansions ;; 
-
 
   end ;;
 
@@ -1904,7 +1885,7 @@ module Fan_related_requirement = struct
   module Private = struct
 
     let adjust_required_fan pwb level_in_mold original_required_fan = 
-      let mold = snd(Option.get(Diagnose.half_impatient_eval_opt pwb)) in 
+      let mold = snd(Option.get(Impatient_on_chains.eval_opt pwb)) in 
       let older_fan = Mold.fan_at_index mold level_in_mold in 
       let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
       let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
