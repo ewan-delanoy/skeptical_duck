@@ -482,19 +482,28 @@ let usual_decomposition_opt = function
           (d,translate (-d) pwb);; 
 
 
-    
+    let left pwb =
+        let n = Finite_int_set.max (support pwb) in 
+        remove_element pwb n ;;        
+
+    let predecessor_opt pwb = match usual_decomposition_opt pwb with 
+      None -> None 
+     |Some(prec_pwb,_) -> Some prec_pwb ;;   
+       
 
 end ;;  
 
+let all_constraints = Private.all_constraints ;; 
 let breadth pwb =snd(Private.point_and_breadth pwb);;
 let constructor = Private.constructor ;; 
 let complementary_pairs = Private.complementary_pairs ;;
-let decompose_wrt_translation = Private.decompose_wrt_translation ;;   
-let all_constraints = Private.all_constraints ;; 
-let has_no_constraint pwb = (Private.usual_decomposition_opt pwb=None) ;; 
+let decompose_wrt_translation = Private.decompose_wrt_translation ;;  
+let has_no_constraint pwb = (Private.usual_decomposition_opt pwb=None) ;;
+let left = Private.left ;;  
 let max pwb = Finite_int_set.max (Private.support pwb) ;;
 let nonisolated_version = Private.nonisolated_version ;;
 let order = Private.order ;; 
+let predecessor_opt = Private.predecessor_opt ;;
 let point pwb = fst(Private.point_and_breadth pwb) ;;  
 let projection pwb = snd(decompose_wrt_translation pwb);;
 let remove_element = Private.remove_element ;;
@@ -1783,6 +1792,14 @@ module Decompose = struct
   let declare_overchain  data =     
        (Precomputed_overchain.declare_overchain data;
        store_all_half_impatient_expansions ());;
+
+  (* let predecessor_in_chain_opt pwb  = function 
+       Has_no_constraints -> None 
+      |Rightmost_overflow(u,v,n) ->  
+      |Rightmost_pivot(W w) -> (rightmost_pivot_quote,w,0,0) 
+      |Select (i,j,k) -> (select_quote,i,j,k)  
+      |Fork (i,j,k) -> (fork_quote,i,j,k) ;; *)
+
 
   end ;;   
 
