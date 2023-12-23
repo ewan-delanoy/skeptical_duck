@@ -1774,8 +1774,19 @@ module Decompose = struct
     Some answer -> answer 
     |None -> raise(Eval_exn(pwb)) ;;    
     
+  let store_all_half_impatient_expansions () =
+      let half_impatient_expansions =  Image.image (
+        fun pwb ->(pwb,eval pwb)
+      ) (Precomputed_overchain.chained_points ()) in 
+       Painstaking.store half_impatient_expansions ;; 
+
+  let declare_overchain  data =     
+       (Precomputed_overchain.declare_overchain data;
+       store_all_half_impatient_expansions ());;
+
   end ;;   
 
+  let declare_overchain = Private.declare_overchain ;; 
   let eval = Private.eval ;; 
 
   end ;;   
