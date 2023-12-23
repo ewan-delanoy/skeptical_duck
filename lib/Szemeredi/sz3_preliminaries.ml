@@ -1759,6 +1759,24 @@ module Decompose = struct
 
   module Impatient_on_chains = struct 
 
+  exception Eval_exn of point_with_breadth ;;   
+
+  module Private = struct 
+
+  let eval_opt pwb = 
+      let (_opt_counterexample,opt_list,_new_low_level) 
+              = Minimal_effort.walk_scale (Flg[])  (Precomputed_overchain.overchain pwb) in     
+           match opt_list  with 
+      None -> None
+    |Some data -> List.assoc_opt pwb data ;;
+
+  let eval pwb = match eval_opt pwb with 
+    Some answer -> answer 
+    |None -> raise(Eval_exn(pwb)) ;;    
+    
+  end ;;   
+
+  let eval = Private.eval ;; 
 
   end ;;   
 
