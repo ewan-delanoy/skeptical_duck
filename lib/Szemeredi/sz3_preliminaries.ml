@@ -572,10 +572,10 @@ module Fan = struct
       let (_,temp3) = Min.minimize_it_with_care List.length temp2 in 
       let return_to_original = (fun l->F(Image.image(fun idx->List.assoc idx indexed_rays) l)) in 
       if List.length temp3 = 1 
-      then return_to_original (List.hd temp3) 
+      then (true,return_to_original (List.hd temp3)) 
       else      
       let temp4 = Image.image return_to_original temp3 in
-      canonical_container_in_hard_case temp4 ;;
+      (false,canonical_container_in_hard_case temp4) ;;
 
     let impose_opt l_cstr (F rays) =  
         let new_rays =Constraint.select_in_list l_cstr rays in 
@@ -1923,7 +1923,7 @@ module Fan_related_requirement = struct
       let older_fan = Mold.fan_at_index mold level_in_mold in 
       let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
       let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
-      Fan.canonical_container all_sols pre_adjusted_requirement;;
+      snd(Fan.canonical_container all_sols pre_adjusted_requirement);;
 
   let pull_on_single_requirement (n,complements_for_n) handle (level_in_mold,required_fan)= 
    let draft = (
