@@ -1818,7 +1818,8 @@ module Decompose = struct
   end ;;   
 
   let chain = Private.compute_chain ;; 
-  let declare_overchain = Private.declare_overchain ;; 
+  let declare_overchain = Private.declare_overchain ;;
+  let decompose = Private.decompose ;; 
   let eval = Private.eval ;; 
   let eval_opt = Private.eval_opt ;; 
   
