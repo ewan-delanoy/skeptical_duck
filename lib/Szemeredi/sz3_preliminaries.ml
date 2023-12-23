@@ -1376,7 +1376,7 @@ let eval_opt low_level pwb =
   exception Pusher_for_scale_walking_exn1 ;;
   exception Pusher_for_scale_walking_exn2 ;;
 
-  let rec pusher_for_scale_walking (treated,low_level,to_be_treated) =
+  let pusher_for_scale_walking (treated,low_level,to_be_treated) =
         match to_be_treated with 
          [] ->raise Pusher_for_scale_walking_exn1
         |pwb :: others ->
@@ -1728,15 +1728,15 @@ module Decompose = struct
 
   module Expanded_painstaking = struct 
 
-    exception Next_problem_in_chain_exn ;;
+    exception Next_problem_in_decompose_exn ;;
 
-    let next_problem_in_chain pwb = 
+    let next_problem_in_decompose pwb = 
       let old_mode = Painstaking.current_mode() in
      try (fun _->
       Painstaking.set_blocked_mode old_mode;
-      raise Next_problem_in_chain_exn)(
+      raise Next_problem_in_decompose_exn)(
        let _ = Painstaking.set_blocked_mode true in  
-       Chain.chain pwb) with 
+       Decompose.decompose pwb) with 
      Painstaking.First_problem(pwb2) -> 
       Painstaking.set_blocked_mode old_mode;
       pwb2 ;;  
@@ -1756,6 +1756,11 @@ module Decompose = struct
 
   end ;;
   
+
+  module Impatient_on_chains = struct 
+
+
+  end ;;   
 
 
   module Diagnose = struct 
