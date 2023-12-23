@@ -1793,19 +1793,35 @@ module Decompose = struct
        (Precomputed_overchain.declare_overchain data;
        store_all_half_impatient_expansions ());;
 
-  (* let predecessor_in_chain_opt pwb  = function 
+  let predecessor_in_chain_opt pwb  = function 
        Has_no_constraints -> None 
-      |Rightmost_overflow(u,v,n) ->  
-      |Rightmost_pivot(W w) -> (rightmost_pivot_quote,w,0,0) 
-      |Select (i,j,k) -> (select_quote,i,j,k)  
-      |Fork (i,j,k) -> (fork_quote,i,j,k) ;; *)
+      |Rightmost_overflow(_,_,_) 
+      |Rightmost_pivot(W _) -> Some(Point_with_breadth.left pwb)
+      |Select (_,_,_)
+      |Fork (_,_,_) -> Point_with_breadth.predecessor_opt pwb ;; 
+
+
+  let decompose pwb = 
+    let (handle,_) = eval pwb in 
+    (handle,predecessor_in_chain_opt pwb handle) ;;
+     
+
+  let compute_chain =Memoized.recursive(fun old_f pwb -> 
+        let (_,prec_pwb_opt) = decompose pwb in 
+        match prec_pwb_opt with 
+         None -> [pwb]
+        |Some prec_pwb ->
+       (old_f prec_pwb)@[pwb] ) ;;  
+       
 
 
   end ;;   
 
+  let chain = Private.compute_chain ;; 
   let declare_overchain = Private.declare_overchain ;; 
   let eval = Private.eval ;; 
   let eval_opt = Private.eval_opt ;; 
+  
 
   end ;;   
 
