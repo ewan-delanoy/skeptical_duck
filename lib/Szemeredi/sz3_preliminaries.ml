@@ -49,14 +49,6 @@ type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;;
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
 
 type flexible_grocery = Sz3_types.flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
-
-type shortened_grocery = Sz3_types.shortened_grocery = {
-  sg_helpers : piece_of_help list;
-  sg_pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
-  sg_triple_level : ((width * int list * int) * (int -> handle * mold)) list
-} ;;
-
-
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
