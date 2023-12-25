@@ -787,114 +787,7 @@ let translate d handle =
 
 end ;;  
 
-module Piece_of_help = struct 
 
-module Private = struct 
-
-  let order_for_extra_solutions =((fun
-    (v1:((int * solution list) list)) (v2:((int * solution list) list)) ->
-        Total_ordering.standard v1 v2
-  ): ((int * solution list) list) Total_ordering_t.t) ;; 
-
-  let order_for_imposed_fans =((fun
-    (v1:((int * fan) list)) (v2:((int * fan) list)) ->
-        Total_ordering.standard v1 v2
-  ): ((int * fan) list) Total_ordering_t.t) ;; 
-
-  let order_for_extra_grooves =((fun
-    (v1:(int list)) (v2:(int list)) ->
-        Total_ordering.standard v1 v2
-  ): (int list) Total_ordering_t.t) ;; 
-
-  let order_for_fourtuples =
-      Total_ordering.quadruple_product 
-        Point_with_breadth.order  order_for_extra_solutions  order_for_imposed_fans  order_for_extra_grooves ;; 
-  
-  let to_uple gr = (gr.beneficiary,gr.extra_solutions,gr.imposed_fans,gr.extra_grooves_for_fork)
-
-  let order =((fun
-    (v1:piece_of_help) (v2:piece_of_help) ->
-      order_for_fourtuples (to_uple v1) (to_uple v2)
-  ): piece_of_help Total_ordering_t.t) ;; 
-
-end ;;  
-
-let extra_solutions_at_level help i = 
-  match List.assoc_opt i help.extra_solutions with 
-  (Some extra_sols) -> extra_sols 
-  | None -> [] ;; 
-
-let imposed_fan_at_level help i = List.assoc_opt i  help.imposed_fans ;; 
-
-let order = Private.order ;; 
-
-end ;;  
-
-module Help = struct 
-
-module Private = struct
-
-
-let replace_perhaps original replacer_opt = match replacer_opt with 
-  None -> original 
-  |Some replacer -> replacer ;;
-
-let apply_individual_help_except_extra_grooves help mold =
-    let (BM(ext,old_data)) = mold in 
-    let old_range = Image.image fst old_data in
-    let new_range = i_merge old_range (Image.image fst help.imposed_fans) in 
-    let new_data = Image.image (
-      fun i->
-         let (SM(old_sols,old_fan)) = Mold.small_mold_at_index mold i in 
-         (i,SM(
-           il_merge old_sols (Piece_of_help.extra_solutions_at_level help i ),
-           replace_perhaps old_fan (Piece_of_help.imposed_fan_at_level help i) ))
-    ) new_range in 
-    BM(ext,new_data) ;; 
-    
-let apply_help_except_extra_grooves helpers pwb mold =
-   match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
-      None -> mold 
-     |Some help -> apply_individual_help_except_extra_grooves help mold ;; 
-
-let extra_grooves helpers pwb = 
-  match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
-      None -> []
-     |Some help -> help.extra_grooves_for_fork ;; 
-  
-let rec get_opt pwb = function 
-  [] -> None 
-  | piece :: others ->
-    match Point_with_breadth.order pwb piece.beneficiary with 
-    Total_ordering_result_t.Lower -> None
-   |Total_ordering_result_t.Greater -> get_opt pwb others  
-   |Total_ordering_result_t.Equal -> Some piece ;;  
-
-let institute_fan helpers pwb (FRR l) =
-    match get_opt pwb helpers with 
-    None -> let piece = { 
-              beneficiary = pwb;
-              extra_solutions = [];
-              imposed_fans  = l;
-              extra_grooves_for_fork = [];
-            } in 
-            Ordered.insert Piece_of_help.order piece helpers
-   | Some old_piece ->
-     let new_piece = {
-          old_piece with 
-          imposed_fans = l
-     } in 
-     Image.image (fun piece -> if piece.beneficiary=pwb then new_piece else piece) helpers ;;
-
-     
-
-end ;;
-
-let apply_help_except_extra_grooves = Private.apply_help_except_extra_grooves ;; 
-let extra_grooves = Private.extra_grooves ;;
-let institute_fan = Private.institute_fan ;; 
-
-end ;;  
 
 module Flexible_grocery = struct 
 
@@ -953,6 +846,116 @@ module Impatient = struct
       pair_level : ((width * int list) * (int -> int -> handle * mold)) list;
       triple_level : ((width * int list * int) * (int -> handle * mold)) list
     } ;;
+
+
+    module Piece_of_help = struct 
+
+      module Private = struct 
+      
+        let order_for_extra_solutions =((fun
+          (v1:((int * solution list) list)) (v2:((int * solution list) list)) ->
+              Total_ordering.standard v1 v2
+        ): ((int * solution list) list) Total_ordering_t.t) ;; 
+      
+        let order_for_imposed_fans =((fun
+          (v1:((int * fan) list)) (v2:((int * fan) list)) ->
+              Total_ordering.standard v1 v2
+        ): ((int * fan) list) Total_ordering_t.t) ;; 
+      
+        let order_for_extra_grooves =((fun
+          (v1:(int list)) (v2:(int list)) ->
+              Total_ordering.standard v1 v2
+        ): (int list) Total_ordering_t.t) ;; 
+      
+        let order_for_fourtuples =
+            Total_ordering.quadruple_product 
+              Point_with_breadth.order  order_for_extra_solutions  order_for_imposed_fans  order_for_extra_grooves ;; 
+        
+        let to_uple gr = (gr.beneficiary,gr.extra_solutions,gr.imposed_fans,gr.extra_grooves_for_fork)
+      
+        let order =((fun
+          (v1:piece_of_help) (v2:piece_of_help) ->
+            order_for_fourtuples (to_uple v1) (to_uple v2)
+        ): piece_of_help Total_ordering_t.t) ;; 
+      
+      end ;;  
+      
+      let extra_solutions_at_level help i = 
+        match List.assoc_opt i help.extra_solutions with 
+        (Some extra_sols) -> extra_sols 
+        | None -> [] ;; 
+      
+      let imposed_fan_at_level help i = List.assoc_opt i  help.imposed_fans ;; 
+      
+      let order = Private.order ;; 
+      
+      end ;;  
+      
+      module Help = struct 
+      
+      module Private = struct
+      
+      
+      let replace_perhaps original replacer_opt = match replacer_opt with 
+        None -> original 
+        |Some replacer -> replacer ;;
+      
+      let apply_individual_help_except_extra_grooves help mold =
+          let (BM(ext,old_data)) = mold in 
+          let old_range = Image.image fst old_data in
+          let new_range = i_merge old_range (Image.image fst help.imposed_fans) in 
+          let new_data = Image.image (
+            fun i->
+               let (SM(old_sols,old_fan)) = Mold.small_mold_at_index mold i in 
+               (i,SM(
+                 il_merge old_sols (Piece_of_help.extra_solutions_at_level help i ),
+                 replace_perhaps old_fan (Piece_of_help.imposed_fan_at_level help i) ))
+          ) new_range in 
+          BM(ext,new_data) ;; 
+          
+      let apply_help_except_extra_grooves helpers pwb mold =
+         match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
+            None -> mold 
+           |Some help -> apply_individual_help_except_extra_grooves help mold ;; 
+      
+      let extra_grooves helpers pwb = 
+        match List.find_opt (fun help->help.beneficiary = pwb) helpers with 
+            None -> []
+           |Some help -> help.extra_grooves_for_fork ;; 
+        
+      let rec get_opt pwb = function 
+        [] -> None 
+        | piece :: others ->
+          match Point_with_breadth.order pwb piece.beneficiary with 
+          Total_ordering_result_t.Lower -> None
+         |Total_ordering_result_t.Greater -> get_opt pwb others  
+         |Total_ordering_result_t.Equal -> Some piece ;;  
+      
+      let institute_fan helpers pwb (FRR l) =
+          match get_opt pwb helpers with 
+          None -> let piece = { 
+                    beneficiary = pwb;
+                    extra_solutions = [];
+                    imposed_fans  = l;
+                    extra_grooves_for_fork = [];
+                  } in 
+                  Ordered.insert Piece_of_help.order piece helpers
+         | Some old_piece ->
+           let new_piece = {
+                old_piece with 
+                imposed_fans = l
+           } in 
+           Image.image (fun piece -> if piece.beneficiary=pwb then new_piece else piece) helpers ;;
+      
+           
+      
+      end ;;
+      
+      let apply_help_except_extra_grooves = Private.apply_help_except_extra_grooves ;; 
+      let extra_grooves = Private.extra_grooves ;;
+      let institute_fan = Private.institute_fan ;; 
+      
+      end ;;  
 
     module Generic_extra_help = struct
   
