@@ -1372,7 +1372,7 @@ let eval_opt low_level pwb =
     )
    ) ;;
     
-  let update_if_possible low_level pwb =  
+  let eval_opt_with_update low_level pwb =  
      match Impatient.eval_opt low_level pwb with 
      Some pair1 -> (Some pair1,low_level) 
      | None -> 
@@ -1389,7 +1389,7 @@ let eval_opt low_level pwb =
         match to_be_treated with 
          [] ->raise Pusher_for_scale_walking_exn1
         |pwb :: others ->
-            let (answer_opt,new_low_level) = update_if_possible low_level pwb in 
+            let (answer_opt,new_low_level) = eval_opt_with_update low_level pwb in 
             match answer_opt with  
                None -> raise Pusher_for_scale_walking_exn2
               |Some answer -> ((pwb,answer)::treated,new_low_level,others) ;;
@@ -1407,7 +1407,7 @@ let eval_opt low_level pwb =
   end ;;  
 
   let eval_opt = Private.eval_opt ;;
-  let update_if_possible = Private.update_if_possible ;; 
+  let eval_opt_with_update = Private.eval_opt_with_update ;; 
   let walk_scale = Private.walk_scale ;; 
 
 end ;;  
@@ -1427,11 +1427,11 @@ module Painstaking = struct
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let (opt_pair1,low_level1) = Minimal_effort.update_if_possible low_level pwb in 
+  let (opt_pair1,low_level1) = Minimal_effort.eval_opt_with_update low_level pwb in 
   if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,low_level6) = Minimal_effort.update_if_possible low_level1 nonisolated_pwb in 
+  then let (opt_pair6,low_level6) = Minimal_effort.eval_opt_with_update low_level1 nonisolated_pwb in 
        if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
@@ -1445,13 +1445,13 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,low_level3) = Minimal_effort.update_if_possible low_level1 pwb_i in 
+  let (opt_pair3,low_level3) = Minimal_effort.eval_opt_with_update low_level1 pwb_i in 
   if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
-  let (opt_pair4,low_level4) = Minimal_effort.update_if_possible low_level3 pwb_j in 
+  let (opt_pair4,low_level4) = Minimal_effort.eval_opt_with_update low_level3 pwb_j in 
   if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
-  let (opt_pair5,low_level5) = Minimal_effort.update_if_possible low_level4 pwb_k in 
+  let (opt_pair5,low_level5) = Minimal_effort.eval_opt_with_update low_level4 pwb_k in 
   if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
