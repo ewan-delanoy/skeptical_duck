@@ -1994,3 +1994,35 @@ let pull pwb old_frr  =
 let pull_all_fans = Private.pull_all_fans ;; 
 
 end ;;   
+
+
+module Initialize_overchains = struct 
+
+module Private = struct 
+  
+  let all_constraints n scr w = Point_with_breadth.all_constraints(P(FIS(n,scr),W w)) ;;
+  let level3 n = all_constraints n [] 3 ;;
+  
+  let special1 q = 
+     if q=0 
+     then all_constraints 7 [] 2 
+     else Point_with_breadth.constructor (8*q+7) [] (W 2) (8*q) ;;
+
+  let chunk q = 
+    (Int_range.scale level3 (8*q+1) (8*q+6))@
+    [special1 q;level3 (8*q+7)]@
+    [Point_with_breadth.constructor (8*q) [] (W 2) (8*q-7);level3 (8*q+8)]  ;; 
+
+
+  let data1 = List.concat_map chunk (Int_range.range 0 4);; 
+
+
+  let data = [data1] ;;
+  
+end ;;   
+
+(*
+List.iter Impatient_on_chains.declare_overchain Private.data ;;
+*)
+
+end ;;   
