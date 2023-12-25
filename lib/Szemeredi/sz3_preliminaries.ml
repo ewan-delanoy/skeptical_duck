@@ -1186,7 +1186,7 @@ module Impatiently = struct
 end ;;
 
 
-module Painstaking = struct 
+module Raw_computer = struct 
 
   exception Push_exn ;; 
 
@@ -1327,7 +1327,7 @@ module Extra_constraints = struct
      PWEC(final_pt,final_constraints) ;;  
   
      let easy_measure_opt (PWEC(pt,l_cstr)) = 
-       let (_,mold) = Painstaking.eval (Point_with_breadth.all_constraints pt) in 
+       let (_,mold) = Raw_computer.eval (Point_with_breadth.all_constraints pt) in 
        let sols = Mold.solutions mold in 
        let selected_sols = Constraint.select_in_list l_cstr sols in 
        if selected_sols<>[]
@@ -1339,7 +1339,7 @@ module Extra_constraints = struct
      old_f pwc-> 
        let (PWEC(pt,l_cstr)) = pwc in 
        if l_cstr = []
-       then Painstaking.measure(Point_with_breadth.all_constraints pt)
+       then Raw_computer.measure(Point_with_breadth.all_constraints pt)
        else 
        let pwc2 = remove_rightmost_element_on_pwc pwc
        and pwc3 = remove_rightmost_element_but_keep_constraints_on_pwc pwc in 
@@ -1400,7 +1400,7 @@ module Decompose = struct
   module Private = struct
   
   let test_for_individual_rightmost_overflow left_pwb m (u,v) = 
-        List.for_all (fun t->Painstaking.measure(Point_with_breadth.remove_element left_pwb t)=m-1) [u;v] ;;
+        List.for_all (fun t->Raw_computer.measure(Point_with_breadth.remove_element left_pwb t)=m-1) [u;v] ;;
     
   let test_for_rightmost_overflow pwb m =
         let pairs =  Point_with_breadth.complementary_pairs pwb 
@@ -1420,13 +1420,13 @@ module Decompose = struct
           then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
                 Some left_pwb)
           else   
-          let m = Painstaking.measure pwb in   
+          let m = Raw_computer.measure pwb in   
             ( match test_for_rightmost_overflow pwb m with 
            (Some(u,v))->(Rightmost_overflow(u,v,n), Some left_pwb)
            |None ->   
          
          let nth = (fun k->List.nth cstr (k-1)) in 
-         if Painstaking.measure prec_pwb = m
+         if Raw_computer.measure prec_pwb = m
          then 
               (Select(nth 1,nth 2,nth 3),Some prec_pwb)
          else (Fork(nth 1,nth 2,nth 3),Some prec_pwb)   
@@ -1513,27 +1513,27 @@ module Decompose = struct
     exception Next_problem_in_decompose_exn ;;
 
     let next_problem_in_decompose pwb = 
-      let old_mode = Painstaking.current_mode() in
+      let old_mode = Raw_computer.current_mode() in
      try (fun _->
-      Painstaking.set_blocked_mode old_mode;
+      Raw_computer.set_blocked_mode old_mode;
       raise Next_problem_in_decompose_exn)(
-       let _ = Painstaking.set_blocked_mode true in  
+       let _ = Raw_computer.set_blocked_mode true in  
        Decompose.decompose pwb) with 
-     Painstaking.First_problem(pwb2) -> 
-      Painstaking.set_blocked_mode old_mode;
+     Raw_computer.First_problem(pwb2) -> 
+      Raw_computer.set_blocked_mode old_mode;
       pwb2 ;;  
 
     exception Next_problem_in_eval_exn ;;
 
       let next_problem_in_eval pwb = 
-        let old_mode = Painstaking.current_mode() in
+        let old_mode = Raw_computer.current_mode() in
        try (fun _->
-        Painstaking.set_blocked_mode old_mode;
+        Raw_computer.set_blocked_mode old_mode;
         raise Next_problem_in_eval_exn)(
-          let _ = Painstaking.set_blocked_mode true in    
-        Painstaking.eval pwb) with 
-       Painstaking.First_problem(pwb2) -> 
-        Painstaking.set_blocked_mode old_mode;
+          let _ = Raw_computer.set_blocked_mode true in    
+        Raw_computer.eval pwb) with 
+       Raw_computer.First_problem(pwb2) -> 
+        Raw_computer.set_blocked_mode old_mode;
         pwb2 ;;     
 
   end ;;
@@ -1556,7 +1556,7 @@ module Decompose = struct
         let pair = (handle,mold) in 
         let _ = (impatient_on_chains_ref:=
         Common_table.add_if_it_has_constraints (!impatient_on_chains_ref) pwb pair;
-        Painstaking.store [pwb,pair]
+        Raw_computer.store [pwb,pair]
         ) in 
         opt_answer ;;
 
