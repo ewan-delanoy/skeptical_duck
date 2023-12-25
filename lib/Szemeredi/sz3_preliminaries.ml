@@ -1386,18 +1386,18 @@ module Computer_for_extra_constraints = struct
 
   end ;;    
 
-module Compute_standard_solution = struct 
+module Thorough_computer = struct 
 
-  let compute = Memoized.make(fun pwb->
+module Private = struct   
+
+
+  let standard_solution = Memoized.make(fun pwb->
     Computer_for_extra_constraints.standard_solution
        (Computer_for_extra_constraints.of_point_with_breadth pwb)
   )  ;;
   
-end;;
   
 module Decompose = struct 
-
-  module Private = struct
   
   let test_for_individual_rightmost_overflow left_pwb m (u,v) = 
         List.for_all (fun t->Raw_computer.measure(Point_with_breadth.remove_element left_pwb t)=m-1) [u;v] ;;
@@ -1432,16 +1432,15 @@ module Decompose = struct
          else (Fork(nth 1,nth 2,nth 3),Some prec_pwb)   
   ))  ;;     
   
- 
-  end ;;
-  
-  
-  
-  let decompose = Private.decompose ;; 
-  
+
   end ;;
 
+end ;;
 
+let decompose = Private.Decompose.decompose ;;
+let standard_solution = Private.standard_solution ;; 
+
+end ;;
 
 
 
@@ -1455,7 +1454,7 @@ module Decompose = struct
       Raw_computer.set_blocked_mode old_mode;
       raise Next_problem_in_decompose_exn)(
        let _ = Raw_computer.set_blocked_mode true in  
-       Decompose.decompose pwb) with 
+       Thorough_computer.decompose pwb) with 
      Raw_computer.First_problem(pwb2) -> 
       Raw_computer.set_blocked_mode old_mode;
       pwb2 ;;  
@@ -1540,7 +1539,7 @@ module Decompose = struct
       match eval_opt left_pwb with 
       None -> Missing_subcomputation("rightmost_pivot",left_pwb)
       |Some (_,_) ->
-        let the_sol = Compute_standard_solution.compute pwb 
+        let the_sol = Thorough_computer.standard_solution pwb 
         and n = Point_with_breadth.max pwb in
         Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
     
@@ -1548,7 +1547,7 @@ module Decompose = struct
         match eval_opt prec_pwb with 
       None -> Missing_subcomputation("select",prec_pwb)
       |Some (_,_) ->
-          let the_sol = Compute_standard_solution.compute pwb in
+          let the_sol = Thorough_computer.standard_solution pwb in
           Missing_solution("select",prec_pwb,the_sol) ;;  
     
       let diagnose_fork (i,j,k) pwb prec_pwb = 
@@ -1559,7 +1558,7 @@ module Decompose = struct
         if missing_forced_elts <> []
         then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
         else   
-        let the_sol = Compute_standard_solution.compute pwb in 
+        let the_sol = Thorough_computer.standard_solution pwb in 
         let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
         let shorter_pwb = Point_with_breadth.remove_element pwb l in 
         match  eval_opt shorter_pwb with 
@@ -1682,7 +1681,7 @@ module Fan_related_requirement = struct
 
     let rec iterator_for_fan_pulling (pwb,handle,pwb_before,frr,treated) = 
       let frr_before = pull_and_adjust pwb handle  pwb_before frr 
-      and (handle_before,pwb_much_before_opt) = Decompose.decompose pwb_before in 
+      and (handle_before,pwb_much_before_opt) = Thorough_computer.decompose pwb_before in 
       let updated = (pwb_before,frr_before)::treated in 
       match pwb_much_before_opt with 
        None -> updated
@@ -1690,7 +1689,7 @@ module Fan_related_requirement = struct
           
     let pull_all_fans pwb original_required_fan =
       let frr=FRR[0,adjust_required_fan pwb 0 original_required_fan]
-      and (handle,pwb_before_opt) = Decompose.decompose pwb in 
+      and (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
       match pwb_before_opt with 
       None -> [pwb,frr]
      |Some(pwb_before) -> iterator_for_fan_pulling (pwb,handle,pwb_before,frr,[pwb,frr]) ;; 
@@ -1700,7 +1699,7 @@ end ;;
 let constructor pwb level_in_mold original_required_fan = 
      FRR[0,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
 let pull pwb old_frr  = 
-      let (handle,pwb_before_opt) = Decompose.decompose pwb in 
+      let (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
      let pwb_before = Option.get pwb_before_opt in 
     Private.pull_and_adjust pwb handle pwb_before old_frr ;; 
 let pull_all_fans = Private.pull_all_fans ;; 
