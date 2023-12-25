@@ -1046,7 +1046,7 @@ module Impatient = struct
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
 
  
-  module One_step_more = struct   
+  module One_more_step = struct   
 
     let rec immediate_for_several_opt low_level (treated,to_be_treated) = 
       match to_be_treated with 
@@ -1138,7 +1138,7 @@ module Impatient = struct
                      |Some mold -> Some(Select(i,j,k),mold) 
                );;        
   
-  let one_step_more_opt low_level pwb =
+  let one_more_step_opt low_level pwb =
     match eval_opt low_level pwb with 
     Some(answer0) -> Some answer0
    | None -> 
@@ -1165,7 +1165,7 @@ module Impatient = struct
        Some pair1 -> (Some pair1,low_level) 
        | None -> 
         (
-          match one_step_more_opt low_level pwb with 
+          match one_more_step_opt low_level pwb with 
          Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
        | None -> (None,low_level)
         ) ;;  
@@ -1178,144 +1178,9 @@ module Impatient = struct
   end ;;  
 
   let eval_opt = Private.eval_opt ;; 
-  let one_step_more_opt = Private.One_step_more.opt_with_update ;;
+  let one_more_step_opt = Private.One_more_step.opt_with_update ;;
 
 end ;;
-
-
-module Minimal_effort = struct 
-
-  module Private = struct
-
- 
- let rec immediate_for_several_opt low_level (treated,to_be_treated) = 
-    match to_be_treated with 
-    [] -> Some(List.rev treated) 
-    | pwb :: others ->
-     (
-      match Impatient.eval_opt low_level pwb with 
-        None -> None 
-        |Some (_,mold) -> immediate_for_several_opt low_level (mold::treated,others)
-     ) ;;
-
-
-
-let fork_opt low_level pwb =
-  match Point_with_breadth.usual_decomposition_opt pwb with 
-  None -> None
- |Some(prec_pwb,C cstr) ->
-    match Impatient.eval_opt low_level prec_pwb with 
-    None -> None
-  | Some(_,prec_mold) -> 
-        let ext = Mold.forced_elements prec_mold in 
-        let nth_cstr = (fun k->List.nth cstr (k-1)) in 
-        let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
-        let (i,j,k) = ijk in 
-        if not(i_is_included_in [i;j;k] ext)
-        then None
-        else
-          let fgr = (!(Impatient.Private.Instituted_extra_help.main_ref)) in 
-          let grooves = i_insert k (Help.extra_grooves fgr.Impatient.Private.helpers pwb) in 
-              let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
-              (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
-                None -> None
-              | Some(pointed_molds) -> 
-                 (
-                  match Mold.fork_opt pwb prec_mold pointed_molds ijk with 
-                     None -> None 
-                    |Some mold -> Some(Fork(i,j,k),mold) 
-                 )
-              );;   
-
-
-           
-let rightmost_overflow_opt low_level pwb  = 
- let n = Point_with_breadth.max pwb in 
- let left_pwb = Point_with_breadth.remove_element pwb n in 
- match Impatient.eval_opt low_level left_pwb with 
-     None -> None
-   | Some(_,left_mold) -> 
-  let left_ext = Mold.forced_elements left_mold 
-  and complements = Point_with_breadth.complementary_pairs pwb in  
-  match List.find_opt  (
-              fun (u,v) -> i_is_included_in [u;v] left_ext 
-    ) complements with
-    None -> None 
-   |Some(u,v) ->
-      (
-        match Mold.rightmost_overflow_opt pwb left_mold with 
-           None -> None 
-          |Some mold -> Some(Rightmost_overflow(u,v,n),mold) 
-       )
-    ;;
-
-           
-
- let rightmost_pivot_opt low_level pwb  = 
-   let n = Point_with_breadth.max pwb in 
-   let left_pwb = Point_with_breadth.remove_element pwb n in 
-   match Impatient.eval_opt low_level left_pwb with 
-       None -> None
-     | Some(_,left_mold) -> 
-     (match Mold.rightmost_pivot_opt pwb left_mold with 
-       None -> None 
-      |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
-     )    ;;  
- 
-let select_opt low_level pwb =
-  match Point_with_breadth.usual_decomposition_opt pwb with 
-  None -> None
- |Some(prec_pwb,C cstr) ->
-    match Impatient.eval_opt low_level prec_pwb with 
-    None -> None
-  | Some(_,prec_mold) -> 
-             let nth_cstr = (fun k->List.nth cstr (k-1)) in 
-             let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
-             let (i,j,k) = ijk in 
-             (
-                 match Mold.select_opt pwb prec_mold ijk with 
-                    None -> None 
-                   |Some mold -> Some(Select(i,j,k),mold) 
-             );;        
-
-let eval_opt low_level pwb =
-  match Impatient.eval_opt low_level pwb with 
-  Some(answer0) -> Some answer0
- | None -> 
-  if Point_with_breadth.has_no_constraint pwb 
-  then Some(Has_no_constraints,Mold.discrete(Point_with_breadth.supporting_set pwb))
-  else    
-  (match rightmost_pivot_opt low_level pwb with 
-   Some(answer1) -> Some answer1
-  | None -> 
-    (
-      match rightmost_overflow_opt low_level pwb with 
-        Some(answer2) -> Some answer2
-      | None -> 
-        (
-          match select_opt low_level pwb with 
-            Some(answer3) -> Some answer3
-          | None -> fork_opt low_level pwb
-        )     
-    )
-   ) ;;
-    
-  let eval_opt_with_update low_level pwb =  
-     match Impatient.eval_opt low_level pwb with 
-     Some pair1 -> (Some pair1,low_level) 
-     | None -> 
-      (
-        match eval_opt low_level pwb with 
-       Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
-     | None -> (None,low_level)
-      ) ;;  
-
-
-  end ;;  
-
-  let eval_opt_with_update = Private.eval_opt_with_update ;; 
-  
-end ;;  
 
 
 module Painstaking = struct 
@@ -1332,11 +1197,11 @@ module Painstaking = struct
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
   | pwb :: others ->
-  let (opt_pair1,low_level1) = Minimal_effort.eval_opt_with_update low_level pwb in 
+  let (opt_pair1,low_level1) = Impatient.one_more_step_opt low_level pwb in 
   if opt_pair1<>None then (low_level1,others) else 
   let (nonisolated_pwb,isolated_elts) = Point_with_breadth.nonisolated_version pwb in 
   if isolated_elts<>[]
-  then let (opt_pair6,low_level6) = Minimal_effort.eval_opt_with_update low_level1 nonisolated_pwb in 
+  then let (opt_pair6,low_level6) = Impatient.one_more_step_opt low_level1 nonisolated_pwb in 
        if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
@@ -1350,13 +1215,13 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let pwb_i = Point_with_breadth.remove_element pwb i 
   and pwb_j = Point_with_breadth.remove_element pwb j 
   and pwb_k = Point_with_breadth.remove_element pwb k in 
-  let (opt_pair3,low_level3) = Minimal_effort.eval_opt_with_update low_level1 pwb_i in 
+  let (opt_pair3,low_level3) = Impatient.one_more_step_opt low_level1 pwb_i in 
   if opt_pair3=None then (low_level3,(Point_with_breadth.projection pwb_i)::to_be_treated) else
   let (_,mold_i) = Option.get opt_pair3 in 
-  let (opt_pair4,low_level4) = Minimal_effort.eval_opt_with_update low_level3 pwb_j in 
+  let (opt_pair4,low_level4) = Impatient.one_more_step_opt low_level3 pwb_j in 
   if opt_pair4=None then (low_level4,(Point_with_breadth.projection pwb_j)::to_be_treated) else
   let (_,mold_j) = Option.get opt_pair4 in 
-  let (opt_pair5,low_level5) = Minimal_effort.eval_opt_with_update low_level4 pwb_k in 
+  let (opt_pair5,low_level5) = Impatient.one_more_step_opt low_level4 pwb_k in 
   if opt_pair5=None then (low_level5,(Point_with_breadth.projection pwb_k)::to_be_treated) else
   let (_,mold_k) = Option.get opt_pair5 in  
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
@@ -1681,7 +1546,7 @@ module Decompose = struct
 
   let eval_opt pwb = 
       let (opt_answer,_new_low_level) 
-              = Minimal_effort.eval_opt_with_update (!impatient_on_chains_ref) pwb  in     
+              = Impatient.one_more_step_opt (!impatient_on_chains_ref) pwb  in     
       match opt_answer  with 
       None -> None
     |Some (handle,mold) -> 
