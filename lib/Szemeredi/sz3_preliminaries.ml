@@ -41,7 +41,7 @@ type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;;
 
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
 
-type flexible_grocery = Sz3_types.flexible_grocery = Flg of  (point_with_breadth * (handle * mold)) list ;; 
+type common_table = Sz3_types.common_table = CT of  (point_with_breadth * (handle * mold)) list ;; 
   
 type diagnosis = Sz3_types.diagnosis =
    Missing_fan of string * point_with_breadth * int * fan 
@@ -796,12 +796,12 @@ module Flexible_grocery = struct
    
     let order = Total_ordering.product Point_with_breadth.order hm_order ;; 
    
-    let rec get_opt key (Flg l) = match l with 
+    let rec get_opt key (CT l) = match l with 
      [] -> None 
      | (key2,val2) :: others ->
         match Point_with_breadth.order key key2 with 
          Total_ordering_result_t.Lower -> None
-        |Total_ordering_result_t.Greater -> get_opt key (Flg others) 
+        |Total_ordering_result_t.Greater -> get_opt key (CT others) 
         |Total_ordering_result_t.Equal -> Some val2 ;;  
       
     let insert new_key data = Ordered.insert order new_key data ;; 
@@ -811,8 +811,8 @@ module Flexible_grocery = struct
     
      end ;;
   
-  let add (Flg l) pwb pair = 
-    Flg(Private.insert (pwb,pair) l) ;;
+  let add (CT l) pwb pair = 
+    CT(Private.insert (pwb,pair) l) ;;
    
   
   let add_if_it_has_constraints flg pwb pair =
@@ -820,8 +820,8 @@ module Flexible_grocery = struct
     then flg
     else add flg pwb pair;;
 
-  let add_several (Flg l) pairs=
-  Flg(Private.merge (Private.sort pairs) l) ;;
+  let add_several (CT l) pairs=
+  CT(Private.merge (Private.sort pairs) l) ;;
    
   
   let get_opt = Private.get_opt ;;   
@@ -1195,7 +1195,7 @@ module Painstaking = struct
   exception First_problem of point_with_breadth ;; 
 
   module Private = struct
-    let painstaking_ref = ref (Flg[]) ;;
+    let painstaking_ref = ref (CT[]) ;;
 
 let pusher (low_level,to_be_treated) = match to_be_treated with 
    [] -> raise Push_exn 
@@ -1545,7 +1545,7 @@ module Decompose = struct
 
   module Private = struct 
 
-  let impatient_on_chains_ref = ref (Flg[]);; 
+  let impatient_on_chains_ref = ref (CT[]);; 
 
   let eval_opt pwb = 
       let (opt_answer,_new_low_level) 
