@@ -951,84 +951,86 @@ module Flexible_grocery = struct
 
 end ;;
 
-module Shortened_grocery = struct
-  
-  module Private = struct 
-
-   let empty_one = {
-   sg_helpers = [];
-   sg_pair_level = [];
-   sg_triple_level  = [];
-   } ;;
-
-  let immediate_eval_opt fgr pwb = 
-    if Point_with_breadth.has_no_constraint pwb 
-    then let domain = Point_with_breadth.supporting_set pwb in 
-         Some(Has_no_constraints,
-           Help.apply_help_except_extra_grooves (fgr.sg_helpers) pwb (Mold.discrete domain)) 
-    else     
-    let (FIS(n,scr)) = Point_with_breadth.support pwb 
-    and w = Point_with_breadth.width pwb 
-    and b = Point_with_breadth.breadth pwb in 
-    let wpair = (w,scr) in
-    match List.assoc_opt wpair fgr.sg_pair_level with 
-    Some (f) -> let (handle,mold) =f b n in 
-                Some(handle,mold)    
-  | None ->
-    let wtriple = (w,scr,b) 
-    and n =  Point_with_breadth.max  pwb  in 
-    match List.assoc_opt wtriple fgr.sg_triple_level with 
-      Some (f) -> let (handle,mold) =f n in 
-                  Some(handle,mold)    
-    | None -> None ;;    
-  
-    let institute_fan fgr pwb frr =
-      {
-        fgr with
-        sg_helpers = (Help.institute_fan (fgr.sg_helpers) pwb frr)
-      } ;; 
-
-
-  end ;; 
-
- let empty_one =  Private.empty_one ;; 
- let immediate_eval_opt = Private.immediate_eval_opt ;; 
- let institute_fan = Private.institute_fan ;;
-
-end ;;  
-
-
-module Instituted_shortened_grocery = struct
-
-  module Private = struct 
-  
-    let main_ref = ref Shortened_grocery.empty_one ;; 
-
-    let institute_fan pwb fan =
-        let old_val = !main_ref in 
-        let new_val = Shortened_grocery.institute_fan old_val pwb fan in 
-        let _ = (main_ref:=new_val) in 
-        () ;;
-
-    institute_fan (No_constraint(FIS(2,[]))) 
-    (FRR
-    [(0, F [[1; 2]]);
-     (1, F [[1]; [2]])]) ;; 
-
-  end ;; 
-
-  let main_ref = Private.main_ref ;;
-  
-
-end ;;  
-
 
 module Impatient = struct 
 
-  module Private = struct
+  module Private = struct 
+
+    module Generic_extra_help = struct
+  
+      module Private = struct 
+    
+       let empty_one = {
+       sg_helpers = [];
+       sg_pair_level = [];
+       sg_triple_level  = [];
+       } ;;
+    
+      let immediate_eval_opt fgr pwb = 
+        if Point_with_breadth.has_no_constraint pwb 
+        then let domain = Point_with_breadth.supporting_set pwb in 
+             Some(Has_no_constraints,
+               Help.apply_help_except_extra_grooves (fgr.sg_helpers) pwb (Mold.discrete domain)) 
+        else     
+        let (FIS(n,scr)) = Point_with_breadth.support pwb 
+        and w = Point_with_breadth.width pwb 
+        and b = Point_with_breadth.breadth pwb in 
+        let wpair = (w,scr) in
+        match List.assoc_opt wpair fgr.sg_pair_level with 
+        Some (f) -> let (handle,mold) =f b n in 
+                    Some(handle,mold)    
+      | None ->
+        let wtriple = (w,scr,b) 
+        and n =  Point_with_breadth.max  pwb  in 
+        match List.assoc_opt wtriple fgr.sg_triple_level with 
+          Some (f) -> let (handle,mold) =f n in 
+                      Some(handle,mold)    
+        | None -> None ;;    
+      
+        let institute_fan fgr pwb frr =
+          {
+            fgr with
+            sg_helpers = (Help.institute_fan (fgr.sg_helpers) pwb frr)
+          } ;; 
+    
+    
+      end ;; 
+    
+     let empty_one =  Private.empty_one ;; 
+     let immediate_eval_opt = Private.immediate_eval_opt ;; 
+     let institute_fan = Private.institute_fan ;;
+    
+    end ;;  
+    
+    
+    module Instituted_extra_help = struct
+    
+      module Private = struct 
+      
+        let main_ref = ref Generic_extra_help.empty_one ;; 
+    
+        let institute_fan pwb fan =
+            let old_val = !main_ref in 
+            let new_val = Generic_extra_help.institute_fan old_val pwb fan in 
+            let _ = (main_ref:=new_val) in 
+            () ;;
+    
+        institute_fan (No_constraint(FIS(2,[]))) 
+        (FRR
+        [(0, F [[1; 2]]);
+         (1, F [[1]; [2]])]) ;; 
+    
+      end ;; 
+    
+      let main_ref = Private.main_ref ;;
+      
+    
+    end ;;  
+    
+    
 
     let combined_eval_opt low_level pwb = 
-      match Shortened_grocery.immediate_eval_opt (!(Instituted_shortened_grocery.main_ref)) pwb  with 
+      match Generic_extra_help.immediate_eval_opt (!(Instituted_extra_help.main_ref)) pwb  with 
       Some (answer) -> let (handle,mold) =answer in 
                        Some(handle,mold)    
     | None -> 
@@ -1085,7 +1087,7 @@ let fork_opt low_level pwb =
         if not(i_is_included_in [i;j;k] ext)
         then None
         else
-          let fgr = (!(Instituted_shortened_grocery.main_ref)) in 
+          let fgr = (!(Impatient.Private.Instituted_extra_help.main_ref)) in 
           let grooves = i_insert k (Help.extra_grooves fgr.sg_helpers pwb) in 
               let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
               (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
