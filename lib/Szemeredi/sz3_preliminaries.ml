@@ -1444,7 +1444,7 @@ end ;;
 
 
 
-  module Expanded_painstaking = struct 
+  module Slow_motion = struct 
 
     exception Next_problem_in_decompose_exn ;;
 
