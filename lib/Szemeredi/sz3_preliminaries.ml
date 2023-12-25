@@ -37,13 +37,6 @@ type handle = Sz3_types.handle =
 
 type fan = Sz3_types.fan = F of int list list ;; 
 
-type piece_of_help = Sz3_types.piece_of_help = {
-   beneficiary : point_with_breadth ;
-   extra_solutions : (int * solution list) list;
-   imposed_fans : (int *fan) list;
-   extra_grooves_for_fork : int list;
-} ;; 
-
 type small_mold = Sz3_types.small_mold = SM of (solution list) * fan ;; 
 
 type mold = Sz3_types.mold = BM of extension_data * (int * small_mold) list ;;
@@ -840,6 +833,13 @@ end ;;
 module Impatient = struct 
 
   module Private = struct 
+
+    type piece_of_help =  {
+      beneficiary : point_with_breadth ;
+      extra_solutions : (int * solution list) list;
+      imposed_fans : (int *fan) list;
+      extra_grooves_for_fork : int list;
+   } ;; 
 
     type extra_help  = {
       helpers : piece_of_help list;
