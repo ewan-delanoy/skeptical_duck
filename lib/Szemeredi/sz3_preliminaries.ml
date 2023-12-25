@@ -1778,26 +1778,29 @@ module Decompose = struct
 
   module Private = struct 
 
+  let impatient_on_chains_ref = ref (Flg[]);; 
+
   let eval_opt pwb = 
-      let (opt_list,_new_low_level) 
-              = Minimal_effort.walk_scale (Flg[])  (Precomputed_overchain.overchain pwb) in     
-           match opt_list  with 
+      let (opt_answer,_new_low_level) 
+              = Minimal_effort.eval_opt_with_update (!impatient_on_chains_ref) pwb  in     
+      match opt_answer  with 
       None -> None
-    |Some data -> List.assoc_opt pwb data ;;
+    |Some (handle,mold) -> 
+        let pair = (handle,mold) in 
+        let _ = (impatient_on_chains_ref:=
+        Flexible_grocery.add_if_it_has_constraints (!impatient_on_chains_ref) pwb pair;
+        Painstaking.store [pwb,pair]
+        ) in 
+        opt_answer ;;
 
   let eval pwb = match eval_opt pwb with 
     Some answer -> answer 
     |None -> raise(Eval_exn(pwb)) ;;    
-    
-  let store_all_half_impatient_expansions () =
-      let half_impatient_expansions =  Image.image (
-        fun pwb ->(pwb,eval pwb)
-      ) (Precomputed_overchain.chained_points ()) in 
-       Painstaking.store half_impatient_expansions ;; 
 
   let declare_overchain  data =     
-       (Precomputed_overchain.declare_overchain data;
-       store_all_half_impatient_expansions ());;
+    let _ = Precomputed_overchain.declare_overchain data in 
+    let _ = Image.image eval data in 
+    () ;;
 
   let predecessor_in_chain_opt pwb  = function 
        Has_no_constraints -> None 
