@@ -1441,70 +1441,7 @@ module Decompose = struct
   
   end ;;
 
-  module Chain = struct 
-    
-   
-   module Private = struct 
 
-    let hints = ref ([
-    ]: (point_with_breadth * point_with_breadth list) list) ;; 
-    
-    let main_hashtbl = ((Hashtbl.create 100): (point_with_breadth, point_with_breadth list) Hashtbl.t) ;; 
-   
-    let pwb_order = Point_with_breadth.order ;;
-
-    let pwblist_order = Total_ordering.lex_compare pwb_order ;;
-
-    let order_for_hints = Total_ordering.product pwb_order pwblist_order ;; 
-
-    let rec adhoc_assoc pwb l =
-        match l with 
-        [] -> []
-        |(pwb2,answer2) :: others ->
-          (
-            match pwb_order pwb pwb2 with 
-              Total_ordering_result_t.Lower -> []
-              |Total_ordering_result_t.Equal -> answer2
-              |Total_ordering_result_t.Greater -> adhoc_assoc pwb others 
-          ) ;;
-
-    let needed_extras pwb = adhoc_assoc pwb (!hints) ;; 
-
-     let rec compute_chain pwb = 
-      let (handle,prec_pwb_opt) = Decompose.decompose pwb in 
-      if handle = Has_no_constraints 
-      then [pwb]
-      else
-      let  prec_pwb = Option.get prec_pwb_opt in   
-       match Hashtbl.find_opt main_hashtbl pwb with 
-       (Some old_answer) -> old_answer
-       |None ->
-      let ancestors = Ordered.sort pwb_order (prec_pwb :: (needed_extras pwb)) in 
-      let temp1 = Image.image compute_chain ancestors in 
-      let temp2 = Ordered.fold_merge pwb_order temp1 in 
-      let final_answer = Ordered.insert pwb_order pwb temp2 in 
-      let _ = Hashtbl.add main_hashtbl pwb final_answer in 
-      final_answer ;;  
-     
-  let add_hint pwb pwb2 = 
-    let old_hints_for_pwb = needed_extras pwb in 
-    if old_hints_for_pwb=[]
-    then hints := (Ordered.insert order_for_hints (pwb,[pwb2]) (!hints)) 
-    else
-    let new_hints_for_pwb = Ordered.insert pwb_order pwb2 old_hints_for_pwb in 
-    hints := Image.image (
-      fun pair->if fst(pair)=pwb then (pwb,new_hints_for_pwb) else pair
-    ) (!hints) ;;
-        
-  let add_hint_and_reset_hashtbl pwb pwb2 =
-     (add_hint pwb pwb2; Hashtbl.clear main_hashtbl) ;;
-
-  end ;;
-
- let add_hint = Private.add_hint_and_reset_hashtbl ;;    
- let chain = Private.compute_chain ;; 
-
-  end ;;   
 
 
 
