@@ -1402,7 +1402,7 @@ let eval_opt low_level pwb =
   let rec iterator_for_scale_walking triple =
     let (treated,low_level,to_be_treated) = triple in 
     if to_be_treated = [] 
-    then (None,Some(treated),low_level) 
+    then (Some(treated),low_level) 
     else iterator_for_scale_walking(pusher_for_scale_walking triple) ;;
     
   let walk_scale low_level to_be_treated = iterator_for_scale_walking ([],low_level,to_be_treated) ;;
@@ -1412,6 +1412,8 @@ let eval_opt low_level pwb =
 
   let eval_opt = Private.eval_opt ;;
   let eval_opt_with_update = Private.eval_opt_with_update ;; 
+  let retrieve_data_of_problem_during_scale_walking () = 
+       Option.get(!(Private.ref_for_problem_during_scale_walking)) ;;
   let walk_scale = Private.walk_scale ;; 
 
 end ;;  
@@ -1777,7 +1779,7 @@ module Decompose = struct
   module Private = struct 
 
   let eval_opt pwb = 
-      let (_opt_counterexample,opt_list,_new_low_level) 
+      let (opt_list,_new_low_level) 
               = Minimal_effort.walk_scale (Flg[])  (Precomputed_overchain.overchain pwb) in     
            match opt_list  with 
       None -> None
@@ -1897,12 +1899,13 @@ module Decompose = struct
       
       let inspect_along_chain 
           low_level pwb = 
-        let (opt_counterexample,opt_list,new_low_level) =
+        let (opt_list,new_low_level) =
         Minimal_effort.walk_scale low_level (Precomputed_overchain.overchain pwb) in 
-         match opt_counterexample  with 
-         None -> let data = Option.get(opt_list) in 
-                 Smooth(List.assoc pwb data,(fun ()->data))
-         |Some precedent -> Counterexample_found(precedent,
+         match opt_list  with 
+           Some data -> Smooth(List.assoc pwb data,(fun ()->data))
+         | None -> 
+           let (precedent,_) = Minimal_effort.retrieve_data_of_problem_during_scale_walking () in 
+           Counterexample_found(precedent,
            diagnose_precedent  new_low_level precedent);; 
   
    
