@@ -1272,7 +1272,7 @@ let eval_in_unblocked_mode  pwb =
 end ;;
 
 
-module Extra_constraints = struct
+module Computer_for_extra_constraints = struct
   
   type paint_with_extra_constraints = PWEC of point * constraint_t list ;;
   
@@ -1389,8 +1389,8 @@ module Extra_constraints = struct
 module Compute_standard_solution = struct 
 
   let compute = Memoized.make(fun pwb->
-    Extra_constraints.standard_solution
-       (Extra_constraints.of_point_with_breadth pwb)
+    Computer_for_extra_constraints.standard_solution
+       (Computer_for_extra_constraints.of_point_with_breadth pwb)
   )  ;;
   
 end;;
@@ -1414,9 +1414,9 @@ module Decompose = struct
         |Some(prec_pwb,C cstr) -> 
           let n = Point_with_breadth.max pwb in
           let left_pwb = Point_with_breadth.remove_element pwb n in 
-          let pwc = Extra_constraints.of_point_with_breadth pwb in  
-          if Extra_constraints.measure(Extra_constraints.remove pwc n)=
-            Extra_constraints.measure(pwc)-1   
+          let pwc = Computer_for_extra_constraints.of_point_with_breadth pwb in  
+          if Computer_for_extra_constraints.measure(Computer_for_extra_constraints.remove pwc n)=
+            Computer_for_extra_constraints.measure(pwc)-1   
           then (Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),
                 Some left_pwb)
           else   
