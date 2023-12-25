@@ -1045,16 +1045,145 @@ module Impatient = struct
       None -> None
      |Some(handle,mold) -> Some(Handle.translate d handle,Mold.translate d mold) ;; 
 
+ 
+  module One_step_more = struct   
+
+    let rec immediate_for_several_opt low_level (treated,to_be_treated) = 
+      match to_be_treated with 
+      [] -> Some(List.rev treated) 
+      | pwb :: others ->
+       (
+        match eval_opt low_level pwb with 
+          None -> None 
+          |Some (_,mold) -> immediate_for_several_opt low_level (mold::treated,others)
+       ) ;;
+  
+  
+  
+  let fork_opt low_level pwb =
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> None
+   |Some(prec_pwb,C cstr) ->
+      match eval_opt low_level prec_pwb with 
+      None -> None
+    | Some(_,prec_mold) -> 
+          let ext = Mold.forced_elements prec_mold in 
+          let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+          let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+          let (i,j,k) = ijk in 
+          if not(i_is_included_in [i;j;k] ext)
+          then None
+          else
+            let fgr = (!(Instituted_extra_help.main_ref)) in 
+            let grooves = i_insert k (Help.extra_grooves fgr.helpers pwb) in 
+                let pointed_pwbs = Image.image (Point_with_breadth.remove_element pwb) grooves in 
+                (match immediate_for_several_opt low_level ([],pointed_pwbs) with 
+                  None -> None
+                | Some(pointed_molds) -> 
+                   (
+                    match Mold.fork_opt pwb prec_mold pointed_molds ijk with 
+                       None -> None 
+                      |Some mold -> Some(Fork(i,j,k),mold) 
+                   )
+                );;   
+  
+  
+             
+  let rightmost_overflow_opt low_level pwb  = 
+   let n = Point_with_breadth.max pwb in 
+   let left_pwb = Point_with_breadth.remove_element pwb n in 
+   match eval_opt low_level left_pwb with 
+       None -> None
+     | Some(_,left_mold) -> 
+    let left_ext = Mold.forced_elements left_mold 
+    and complements = Point_with_breadth.complementary_pairs pwb in  
+    match List.find_opt  (
+                fun (u,v) -> i_is_included_in [u;v] left_ext 
+      ) complements with
+      None -> None 
+     |Some(u,v) ->
+        (
+          match Mold.rightmost_overflow_opt pwb left_mold with 
+             None -> None 
+            |Some mold -> Some(Rightmost_overflow(u,v,n),mold) 
+         )
+      ;;
+  
+             
+  
+   let rightmost_pivot_opt low_level pwb  = 
+     let n = Point_with_breadth.max pwb in 
+     let left_pwb = Point_with_breadth.remove_element pwb n in 
+     match eval_opt low_level left_pwb with 
+         None -> None
+       | Some(_,left_mold) -> 
+       (match Mold.rightmost_pivot_opt pwb left_mold with 
+         None -> None 
+        |Some mold -> Some(Rightmost_pivot(Point_with_breadth.rightmost_largest_width pwb),mold) 
+       )    ;;  
+   
+  let select_opt low_level pwb =
+    match Point_with_breadth.usual_decomposition_opt pwb with 
+    None -> None
+   |Some(prec_pwb,C cstr) ->
+      match eval_opt low_level prec_pwb with 
+      None -> None
+    | Some(_,prec_mold) -> 
+               let nth_cstr = (fun k->List.nth cstr (k-1)) in 
+               let ijk=(nth_cstr 1,nth_cstr 2,nth_cstr 3) in 
+               let (i,j,k) = ijk in 
+               (
+                   match Mold.select_opt pwb prec_mold ijk with 
+                      None -> None 
+                     |Some mold -> Some(Select(i,j,k),mold) 
+               );;        
+  
+  let one_step_more_opt low_level pwb =
+    match eval_opt low_level pwb with 
+    Some(answer0) -> Some answer0
+   | None -> 
+    if Point_with_breadth.has_no_constraint pwb 
+    then Some(Has_no_constraints,Mold.discrete(Point_with_breadth.supporting_set pwb))
+    else    
+    (match rightmost_pivot_opt low_level pwb with 
+     Some(answer1) -> Some answer1
+    | None -> 
+      (
+        match rightmost_overflow_opt low_level pwb with 
+          Some(answer2) -> Some answer2
+        | None -> 
+          (
+            match select_opt low_level pwb with 
+              Some(answer3) -> Some answer3
+            | None -> fork_opt low_level pwb
+          )     
+      )
+     ) ;;
+      
+    let opt_with_update low_level pwb =  
+       match eval_opt low_level pwb with 
+       Some pair1 -> (Some pair1,low_level) 
+       | None -> 
+        (
+          match one_step_more_opt low_level pwb with 
+         Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
+       | None -> (None,low_level)
+        ) ;;  
+  
+  
+
+
   end ;;
 
+  end ;;  
+
   let eval_opt = Private.eval_opt ;; 
+  let one_step_more_opt = Private.One_step_more.opt_with_update ;;
 
 end ;;
 
 
 module Minimal_effort = struct 
-
-  exception Problem_during_scale_walking_exn of point_with_breadth ;; 
 
   module Private = struct
 
@@ -1180,39 +1309,12 @@ let eval_opt low_level pwb =
        Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
      | None -> (None,low_level)
       ) ;;  
- 
-  exception Pusher_for_scale_walking_exn1 ;;
-  
-  let ref_for_problem_during_scale_walking = ref None ;; 
-
-  let pusher_for_scale_walking (treated,low_level,to_be_treated) =
-        match to_be_treated with 
-         [] ->raise Pusher_for_scale_walking_exn1
-        |pwb :: others ->
-            let (answer_opt,new_low_level) = eval_opt_with_update low_level pwb in 
-            match answer_opt with  
-               None -> let _ = (ref_for_problem_during_scale_walking:=Some(pwb,low_level)) in
-                       raise(Problem_during_scale_walking_exn(pwb))
-              |Some answer -> ((pwb,answer)::treated,new_low_level,others) ;;
-    
-
-  let rec iterator_for_scale_walking triple =
-    let (treated,low_level,to_be_treated) = triple in 
-    if to_be_treated = [] 
-    then (Some(treated),low_level) 
-    else iterator_for_scale_walking(pusher_for_scale_walking triple) ;;
-    
-  let walk_scale low_level to_be_treated = iterator_for_scale_walking ([],low_level,to_be_treated) ;;
 
 
   end ;;  
 
-  let eval_opt = Private.eval_opt ;;
   let eval_opt_with_update = Private.eval_opt_with_update ;; 
-  let retrieve_data_of_problem_during_scale_walking () = 
-       Option.get(!(Private.ref_for_problem_during_scale_walking)) ;;
-  let walk_scale = Private.walk_scale ;; 
-
+  
 end ;;  
 
 
