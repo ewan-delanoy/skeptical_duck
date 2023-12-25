@@ -782,7 +782,7 @@ end ;;
 
 
 
-module Flexible_grocery = struct 
+module Common_table = struct 
 
   module Private = struct
   
@@ -1036,7 +1036,7 @@ module Impatient = struct
                        Some(handle,mold)    
     | None -> 
          (  
-          match Flexible_grocery.get_opt pwb low_level with 
+          match Common_table.get_opt pwb low_level with 
           Some (answer) -> let (handle,mold) =answer in 
                            Some(handle,mold)    
         | None -> None
@@ -1169,7 +1169,7 @@ module Impatient = struct
        | None -> 
         (
           match one_more_step_opt low_level pwb with 
-         Some pair2 -> (Some pair2,Flexible_grocery.add_if_it_has_constraints low_level pwb pair2) 
+         Some pair2 -> (Some pair2,Common_table.add_if_it_has_constraints low_level pwb pair2) 
        | None -> (None,low_level)
         ) ;;  
   
@@ -1208,7 +1208,7 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
        if opt_pair6=None then (low_level6,(Point_with_breadth.projection nonisolated_pwb)::to_be_treated) else 
         let (_handle,nonisolated_mold) = Option.get opt_pair6 in
         let mold = Mold.add_isolated_set nonisolated_mold isolated_elts in 
-       (Flexible_grocery.add low_level6 pwb (Rightmost_pivot(W 0),mold),others) 
+       (Common_table.add low_level6 pwb (Rightmost_pivot(W 0),mold),others) 
   else
   let opt2 = Point_with_breadth.usual_decomposition_opt pwb in 
   if opt2=None then raise(Should_never_happen_in_push_1_exn(pwb)) else
@@ -1230,7 +1230,7 @@ let pusher (low_level,to_be_treated) = match to_be_treated with
   let candidates = il_fold_merge(Image.image Mold.solutions [mold_i;mold_j;mold_k]) in 
   let (_,final_sols) = Max.maximize_it_with_care List.length candidates in 
   let answer=(Fork(i,j,k),Mold.shallow final_sols) in
-  (Flexible_grocery.add  low_level5 pwb answer,others) ;;
+  (Common_table.add  low_level5 pwb answer,others) ;;
 
 let rec iterator (low_level,to_be_treated) =
     if to_be_treated = [] 
@@ -1256,7 +1256,7 @@ let eval_in_unblocked_mode  pwb =
      else eval_in_unblocked_mode pwb ;;    
 
   let store data = 
-       (painstaking_ref:=Flexible_grocery.add_several (!painstaking_ref) data);;
+       (painstaking_ref:=Common_table.add_several (!painstaking_ref) data);;
 
     
 
@@ -1555,7 +1555,7 @@ module Decompose = struct
     |Some (handle,mold) -> 
         let pair = (handle,mold) in 
         let _ = (impatient_on_chains_ref:=
-        Flexible_grocery.add_if_it_has_constraints (!impatient_on_chains_ref) pwb pair;
+        Common_table.add_if_it_has_constraints (!impatient_on_chains_ref) pwb pair;
         Painstaking.store [pwb,pair]
         ) in 
         opt_answer ;;
