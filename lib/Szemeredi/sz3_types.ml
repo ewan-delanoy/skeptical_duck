@@ -42,13 +42,6 @@ type helper =
 
 type fan = F of int list list ;; 
 
-type piece_of_help = {
-   beneficiary : point_with_breadth ;
-   extra_solutions : (int * solution list) list;
-   imposed_fans : (int *fan) list;
-   extra_grooves_for_fork : int list;
-} ;; 
-
 type small_mold = SM of (solution list) * fan ;; 
 
 type mold = BM of extension_data * (int * small_mold) list ;;
