@@ -1797,10 +1797,7 @@ module Decompose = struct
     Some answer -> answer 
     |None -> raise(Eval_exn(pwb)) ;;    
 
-  let declare_overchain  data =     
-    let _ = Precomputed_overchain.declare_overchain data in 
-    let _ = Image.image eval data in 
-    () ;;
+  
 
   let predecessor_in_chain_opt pwb  = function 
        Has_no_constraints -> None 
@@ -1821,7 +1818,92 @@ module Decompose = struct
          None -> [pwb]
         |Some prec_pwb ->
        (old_f prec_pwb)@[pwb] ) ;;  
-       
+  
+  module Diagnose = struct 
+
+    exception Nothing_to_diagnose_exn ;;
+    exception Has_no_constraints_not_diagnosable_exn ;; 
+    exception Half_impatient_eval_exn of point_with_breadth ;; 
+    
+      let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
+         match eval_opt left_pwb with 
+         None -> Missing_subcomputation("rightmost_overflow",left_pwb)
+         |Some (_,mold) -> 
+          let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
+          Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
+    
+     let diagnose_rightmost_pivot pwb left_pwb = 
+      match eval_opt left_pwb with 
+      None -> Missing_subcomputation("rightmost_pivot",left_pwb)
+      |Some (_,_) ->
+        let the_sol = Compute_standard_solution.compute pwb 
+        and n = Point_with_breadth.max pwb in
+        Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
+    
+      let diagnose_select pwb prec_pwb = 
+        match eval_opt prec_pwb with 
+      None -> Missing_subcomputation("select",prec_pwb)
+      |Some (_,_) ->
+          let the_sol = Compute_standard_solution.compute pwb in
+          Missing_solution("select",prec_pwb,the_sol) ;;  
+    
+      let diagnose_fork (i,j,k) pwb prec_pwb = 
+        match eval_opt prec_pwb with 
+         None -> Missing_subcomputation("fork",prec_pwb)
+         |Some (_,prec_mold) -> 
+        let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
+        if missing_forced_elts <> []
+        then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
+        else   
+        let the_sol = Compute_standard_solution.compute pwb in 
+        let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
+        let shorter_pwb = Point_with_breadth.remove_element pwb l in 
+        match  eval_opt shorter_pwb with 
+         None -> Missing_subcomputation("fork",shorter_pwb)
+         |Some (_,mold) -> 
+           let sols = Mold.solutions mold in 
+           if not(List.mem the_sol sols)
+           then Missing_solution("fork",shorter_pwb,the_sol)
+           else Missing_switch_in_fork(l,pwb) ;;  
+          
+    
+    let diagnose_precedent pwb =
+      let (handle,pwb2_opt) = decompose pwb in 
+      let pwb2=(match pwb2_opt with 
+         Some pwb3 -> pwb3
+         | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in   
+        match handle with
+         Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
+        |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow (u,v,n) pwb2
+        |Rightmost_pivot(_) -> diagnose_rightmost_pivot pwb pwb2
+        |Select (_,_,_) -> diagnose_select pwb pwb2 
+        |Fork (i,j,k) -> diagnose_fork (i,j,k) pwb pwb2 ;;  
+    
+  
+
+  end ;;  
+  
+  let ref_for_problem_during_overchain_declaration = ref None ;; 
+    
+
+  (* The overchains declared here are not exact chains but
+     merely overchains, i.e. sequences [s(1);s(2);...] where
+     for each i, the predecessor of s(i+1) is some s(j) for j<=i 
+     (and not necessarily s(i) as it would be for an exact chain)
+
+   *)
+
+  let rec declare_overchain = function 
+     [] -> ()
+    |pwb :: others -> 
+       match eval_opt pwb with 
+        None -> 
+           let diag = Diagnose.diagnose_precedent pwb in   
+          (ref_for_problem_during_overchain_declaration:=Some(pwb,diag);
+           print_string("An exception was raised");
+           print_string("Type Im"^"patient_on_chains.current_diagnosis() for more details");
+          )
+        | _ -> declare_overchain others ;; 
 
 
   end ;;   
@@ -1836,91 +1918,7 @@ module Decompose = struct
   end ;;   
 
 
-  module Diagnose = struct 
-      
-    module Private = struct 
-      
-      exception Nothing_to_diagnose_exn ;;
-      exception Has_no_constraints_not_diagnosable_exn ;; 
-      exception Half_impatient_eval_exn of point_with_breadth ;; 
-      
-        let diagnose_rightmost_overflow low_level (u,v,_n)  left_pwb = 
-           match Impatient.eval_opt low_level left_pwb with 
-           None -> Missing_subcomputation("rightmost_overflow",left_pwb)
-           |Some (_,mold) -> 
-            let missing_forced_elts = i_setminus [u;v] (Mold.forced_elements mold) in 
-            Missing_fan("rightmost_overflow",left_pwb,0,F[missing_forced_elts]) ;; 
-      
-       let diagnose_rightmost_pivot low_level pwb left_pwb = 
-        match Impatient.eval_opt low_level left_pwb with 
-        None -> Missing_subcomputation("rightmost_pivot",left_pwb)
-        |Some (_,_) ->
-          let the_sol = Compute_standard_solution.compute pwb 
-          and n = Point_with_breadth.max pwb in
-          Missing_solution("rightmost_pivot",left_pwb,i_outsert n the_sol) ;; 
-      
-        let diagnose_select low_level pwb prec_pwb = 
-          match Impatient.eval_opt low_level prec_pwb with 
-        None -> Missing_subcomputation("select",prec_pwb)
-        |Some (_,_) ->
-            let the_sol = Compute_standard_solution.compute pwb in
-            Missing_solution("select",prec_pwb,the_sol) ;;  
-      
-        let diagnose_fork low_level (i,j,k) pwb prec_pwb = 
-          match Impatient.eval_opt low_level prec_pwb with 
-           None -> Missing_subcomputation("fork",prec_pwb)
-           |Some (_,prec_mold) -> 
-          let missing_forced_elts = i_setminus [i;j;k] (Mold.forced_elements prec_mold) in 
-          if missing_forced_elts <> []
-          then Missing_fan("fork",prec_pwb,0,F[missing_forced_elts])   
-          else   
-          let the_sol = Compute_standard_solution.compute pwb in 
-          let l = List.find (fun t->not(i_mem t the_sol)) [k;j;i] in
-          let shorter_pwb = Point_with_breadth.remove_element pwb l in 
-          match  Impatient.eval_opt low_level shorter_pwb with 
-           None -> Missing_subcomputation("fork",shorter_pwb)
-           |Some (_,mold) -> 
-             let sols = Mold.solutions mold in 
-             if not(List.mem the_sol sols)
-             then Missing_solution("fork",shorter_pwb,the_sol)
-             else Missing_switch_in_fork(l,pwb) ;;  
-            
-      
-      let diagnose_precedent low_level pwb =
-        let (handle,pwb2_opt) = Decompose.decompose pwb in 
-        let pwb2=(match pwb2_opt with 
-           Some pwb3 -> pwb3
-           | None -> Point_with_breadth.constructor 0 [] (W 0) 0) in 
-          match handle with
-           Has_no_constraints -> raise(Has_no_constraints_not_diagnosable_exn)
-          |Rightmost_overflow(u,v,n) ->  diagnose_rightmost_overflow low_level (u,v,n) pwb2
-          |Rightmost_pivot(_) -> diagnose_rightmost_pivot low_level pwb pwb2
-          |Select (_,_,_) -> diagnose_select low_level pwb pwb2 
-          |Fork (i,j,k) -> diagnose_fork low_level (i,j,k) pwb pwb2 ;;  
-      
-    
-      
-      let inspect_along_chain 
-          low_level pwb = 
-        let (opt_list,new_low_level) =
-        Minimal_effort.walk_scale low_level (Precomputed_overchain.overchain pwb) in 
-         match opt_list  with 
-           Some data -> Smooth(List.assoc pwb data,(fun ()->data))
-         | None -> 
-           let (precedent,_) = Minimal_effort.retrieve_data_of_problem_during_scale_walking () in 
-           Counterexample_found(precedent,
-           diagnose_precedent  new_low_level precedent);; 
-  
-   
-    
-    end ;;
-
-   let inspect_along_chain = 
-    Private.inspect_along_chain (Flg[]);;
-      
-
-  end ;;
-
+ 
 
 module Fan_related_requirement = struct 
 
