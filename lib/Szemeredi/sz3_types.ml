@@ -70,8 +70,4 @@ type diagnosis =
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
       
-type chain_inspection_result =
-  Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
-  |Counterexample_found of point_with_breadth * diagnosis ;; 
-
 type fan_related_requirement = FRR of (int * fan) list ;;   

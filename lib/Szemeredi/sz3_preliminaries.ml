@@ -64,10 +64,6 @@ type diagnosis = Sz3_types.diagnosis =
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
 
-type chain_inspection_result = Sz3_types.chain_inspection_result =
-  Smooth of (handle * mold) * (unit -> ((point_with_breadth * (handle * mold)) list))
-  |Counterexample_found of point_with_breadth * diagnosis ;; 
-
 type fan_related_requirement = Sz3_types.fan_related_requirement = FRR of (int * fan) list ;;    
 
 let i_order = Total_ordering.for_integers ;;
