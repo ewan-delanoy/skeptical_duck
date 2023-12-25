@@ -1475,7 +1475,7 @@ end ;;
   end ;;
   
 
-  module Impatient_on_chains = struct 
+  module Impatient_computer_on_rails = struct 
 
   exception Eval_exn of point_with_breadth ;;   
 
@@ -1515,7 +1515,7 @@ end ;;
     (handle,predecessor_in_chain_opt pwb handle) ;;
      
 
-  let compute_chain =Memoized.recursive(fun old_f pwb -> 
+  let compute_rail =Memoized.recursive(fun old_f pwb -> 
         let (_,prec_pwb_opt) = decompose pwb in 
         match prec_pwb_opt with 
          None -> [pwb]
@@ -1526,7 +1526,7 @@ end ;;
 
     exception Nothing_to_diagnose_exn ;;
     exception Has_no_constraints_not_diagnosable_exn ;; 
-    exception Half_impatient_eval_exn of point_with_breadth ;; 
+    
     
       let diagnose_rightmost_overflow (u,v,_n)  left_pwb = 
          match eval_opt left_pwb with 
@@ -1589,14 +1589,14 @@ end ;;
   let ref_for_problem_during_overchain_declaration = ref None ;; 
     
 
-  (* The overchains declared here are not exact chains but
-     merely overchains, i.e. sequences [s(1);s(2);...] where
+  (* The overrails declared here are not exact rails but
+     merely overrails, i.e. sequences [s(1);s(2);...] where
      for each i, the predecessor of s(i+1) is some s(j) for j<=i 
-     (and not necessarily s(i) as it would be for an exact chain)
+     (and not necessarily s(i) as it would be for an exact rail)
 
    *)
 
-  let rec declare_overchain = function 
+  let rec declare_overrail = function 
      [] -> ()
     |pwb :: others -> 
        match eval_opt pwb with 
@@ -1606,13 +1606,13 @@ end ;;
            print_string("An exception was raised");
            print_string("Type Im"^"patient_on_chains.current_diagnosis() for more details");
           )
-        | _ -> declare_overchain others ;; 
+        | _ -> declare_overrail others ;; 
 
 
   end ;;   
 
-  let chain = Private.compute_chain ;; 
-  let declare_overchain = Private.declare_overchain ;;
+  let rail = Private.compute_rail ;; 
+  let declare_overrail = Private.declare_overrail ;;
   let decompose = Private.decompose ;; 
   let eval = Private.eval ;; 
   let eval_opt = Private.eval_opt ;; 
@@ -1630,7 +1630,7 @@ module Fan_related_requirement = struct
   module Private = struct
 
     let adjust_required_fan pwb level_in_mold original_required_fan = 
-      let mold = snd(Option.get(Impatient_on_chains.eval_opt pwb)) in 
+      let mold = snd(Option.get(Impatient_computer_on_rails.eval_opt pwb)) in 
       let older_fan = Mold.fan_at_index mold level_in_mold in 
       let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
       let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
@@ -1733,7 +1733,7 @@ module Private = struct
 end ;;   
 
 (*
-List.iter Impatient_on_chains.declare_overchain Private.data ;;
+List.iter Impatient_computer_on_rails.declare_overchain Private.data ;;
 *)
 
 end ;;   
