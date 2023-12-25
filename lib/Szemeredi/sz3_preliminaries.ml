@@ -1257,6 +1257,8 @@ end ;;
 
 module Minimal_effort = struct 
 
+  exception Problem_during_scale_walking_exn of point_with_breadth ;; 
+
   module Private = struct
 
  
@@ -1383,7 +1385,8 @@ let eval_opt low_level pwb =
       ) ;;  
  
   exception Pusher_for_scale_walking_exn1 ;;
-  exception Pusher_for_scale_walking_exn2 ;;
+  
+  let ref_for_problem_during_scale_walking = ref None ;; 
 
   let pusher_for_scale_walking (treated,low_level,to_be_treated) =
         match to_be_treated with 
@@ -1391,15 +1394,16 @@ let eval_opt low_level pwb =
         |pwb :: others ->
             let (answer_opt,new_low_level) = eval_opt_with_update low_level pwb in 
             match answer_opt with  
-               None -> raise Pusher_for_scale_walking_exn2
+               None -> let _ = (ref_for_problem_during_scale_walking:=Some(pwb,low_level)) in
+                       raise(Problem_during_scale_walking_exn(pwb))
               |Some answer -> ((pwb,answer)::treated,new_low_level,others) ;;
     
 
   let rec iterator_for_scale_walking triple =
     let (treated,low_level,to_be_treated) = triple in 
-    if to_be_treated = [] then (None,Some(treated),low_level) else
-    try  iterator_for_scale_walking(pusher_for_scale_walking triple) with 
-    Pusher_for_scale_walking_exn2 ->  (Some (List.hd to_be_treated),None,low_level) ;;
+    if to_be_treated = [] 
+    then (None,Some(treated),low_level) 
+    else iterator_for_scale_walking(pusher_for_scale_walking triple) ;;
     
   let walk_scale low_level to_be_treated = iterator_for_scale_walking ([],low_level,to_be_treated) ;;
 
