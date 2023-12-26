@@ -1611,12 +1611,13 @@ end ;;
 
   end ;;   
 
-  let rail = Private.compute_rail ;; 
+  
+  let current_diagnosis () = Option.get(!(Private.ref_for_problem_during_overchain_declaration));;
   let declare_overrail = Private.declare_overrail ;;
   let decompose = Private.decompose ;; 
   let eval = Private.eval ;; 
   let eval_opt = Private.eval_opt ;; 
-  
+  let rail = Private.compute_rail ;;
 
   end ;;   
 
