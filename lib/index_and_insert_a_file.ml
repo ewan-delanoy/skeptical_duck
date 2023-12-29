@@ -104,7 +104,7 @@ module Private = struct
 
    
 
-   let commands_for_upwards_insertion extraction_dir s_or_l = 
+   let commands_for_insertion_of_old_files extraction_dir s_or_l = 
       let (wild_fn,tamed_fn) = detox_related extraction_dir in 
       match index_analysis_before_insertion s_or_l with 
        None -> None 
@@ -120,7 +120,7 @@ module Private = struct
          Some(fst_command ::other_commands) ;;    
   
      
-     let commands_for_downwards_insertion extraction_dir s_or_l = 
+     let commands_for_insertion_of_recent_files extraction_dir s_or_l = 
       let (wild_fn,tamed_fn) = detox_related extraction_dir in 
       match index_analysis_before_insertion s_or_l with 
        None -> None 
@@ -131,28 +131,30 @@ module Private = struct
          [s_dir^wild_fn;conventional_name (s_or_l,m,tamed_fn)]  in 
       Some([fst_command]) ;;    
     
-      let do_upwards_insertion extraction_dir s_or_l = 
-         match  commands_for_upwards_insertion extraction_dir s_or_l with 
+      let do_insertion_of_old_files extraction_dir s_or_l = 
+         match  commands_for_insertion_of_old_files extraction_dir s_or_l with 
           None -> []
          |Some l -> Image.image Unix_command.hardcore_uc l ;;   
      
-    let do_downwards_insertion extraction_dir s_or_l = 
-     match  commands_for_downwards_insertion extraction_dir s_or_l with 
+    let do_insertion_of_recent_files extraction_dir s_or_l = 
+     match  commands_for_insertion_of_recent_files extraction_dir s_or_l with 
       None -> []
      |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
 
 
 
-let long  () = do_upwards_insertion downloads_dir Long ;; 
-let short_downwards () = do_downwards_insertion downloads_dir Short ;; 
-let short_upwards   () = do_upwards_insertion downloads_dir Short ;; 
-
+let long_file  () = 
+   let _ = (print_string"\n Long files are always old ... \n";flush stdout) in
+   do_insertion_of_old_files downloads_dir Long ;; 
+ 
+let short_old_file   () = do_insertion_of_old_files downloads_dir Short ;; 
+let short_recent_file () = do_insertion_of_recent_files downloads_dir Short ;;
 
 end ;;   
 
 
 
-let long = Private.long ;; 
-let short_downwards = Private.short_downwards ;; 
-let short_upwards = Private.short_upwards ;; 
+let long_file = Private.long_file ;; 
+let short_old_file = Private.short_old_file ;; 
+let short_recent_file = Private.short_recent_file ;; 
