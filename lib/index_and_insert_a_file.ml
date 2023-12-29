@@ -72,22 +72,37 @@ module Private = struct
       int_of_string(Cull_string.interval fn 2 5),
       Cull_string.cobeginning 6 fn) ;;  
   
-  let warn msg =
-     let _ = (print_string ("\n\n\n"^msg^"\n\n\n");flush stdout) in None ;; 
+   let order_for_intstring_pairs =
+        Total_ordering.product Total_ordering.for_integers Total_ordering.lex_for_strings ;; 
+
+
+   let ref_for_mistakes = ref ([],[]) ;; 
+
+  let warn found_files indexed_data msg = 
+     let _ = (
+        ref_for_mistakes:=(found_files,indexed_data);
+        print_string ("\n\n\n"^msg^"\n"^
+        " See In"^"dex_and_insert_a_file.Private.ref_for_mistakes for more details\n\n\n");
+        flush stdout) in None ;; 
   
      let index_analysis_before_insertion s_or_l =
       let dir = directory_for_size s_or_l in  
       let temp1 = Unix_again.beheaded_simple_ls dir in 
       let indexed_data = List.filter_map detect_indexed_file temp1 in 
-      if indexed_data = [] then warn "Failure : No indexed files" else 
-      let indices = Image.image (fun (_s_or_l,idx,_end_fn)->idx ) indexed_data in 
+      if indexed_data = [] 
+      then warn temp1 indexed_data "Failure : No indexed files" 
+      else 
+      let unordered_indices = Image.image (fun (_s_or_l,idx,_end_fn)->idx ) indexed_data in 
+      let indices = Ordered.sort Total_ordering.for_integers unordered_indices in 
       let m = List.length indices in 
-      if indices<>Int_range.range 1 m 
-      then warn "Failure: Indexes do not form an initial segment"
+      if (indices<>Int_range.range 1 m)||(List.length(unordered_indices)<>m) 
+      then warn temp1 indexed_data "Failure: Indexes do not form an initial segment"
       else   
       if List.exists(fun (s_or_l1,_idx,_end_fn)->s_or_l1<>s_or_l) indexed_data 
-      then warn "Failure : Short files and long files are mixed" 
-      else Some (Image.image (fun (_s_or_l,idx,end_fn)->(idx,end_fn)) indexed_data) ;;  
+      then warn temp1 indexed_data  "Failure : Short files and long files are mixed" 
+      else 
+      let unordered_pairs = Image.image (fun (_s_or_l,idx,end_fn)->(idx,end_fn)) indexed_data in 
+      Some (Ordered.sort order_for_intstring_pairs unordered_pairs) ;;  
   
    let basename_of_dir dir =
        let s_dir = Directory_name.connectable_to_subpath dir in 
