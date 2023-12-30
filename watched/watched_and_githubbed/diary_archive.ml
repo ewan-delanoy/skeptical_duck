@@ -1,14 +1,33 @@
 (************************************************************************************************************************
-Snippet 130 : 
+Snippet 131 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 129 : Parsing a JSON file with short lines
+Snippet 130 : Debug the Index_and_insert_a_file module
 ************************************************************************************************************************)
 
+module Snip130=struct
+
+module Pri = Index_and_insert_a_file.Private ;; 
+let g1 = Pri.commands_for_insertion_of_old_files Pri.downloads_dir Index_and_insert_a_file.Short;; 
+
+
+
+let act () = Index_and_insert_a_file.short_old_file () ;; 
+let (temp1,indexed_data) = (!(Index_and_insert_a_file.Private.ref_for_mistakes)) ;;
+let indices = Image.image (fun (_s_or_l,idx,_end_fn)->idx ) indexed_data ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 129 : Parsing a JSON file with short lines
+************************************************************************************************************************)
 module Snip129=struct
 
   let ap1 = Absolute_path.of_string 
