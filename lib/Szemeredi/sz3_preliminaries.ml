@@ -1433,11 +1433,21 @@ module Decompose = struct
   ))  ;;     
   
 
+   let rec helper_for_rail (treated,to_be_treated) =
+      let (_handle,pwb_opt) = decompose to_be_treated in 
+      let treated2 = to_be_treated::treated in 
+      match pwb_opt with
+      None -> List.rev treated2
+      |Some pwb -> helper_for_rail (treated2,pwb) ;;
+      
+  let rail pwb = helper_for_rail ([],pwb) ;;    
+
   end ;;
 
 end ;;
 
 let decompose = Private.Decompose.decompose ;;
+let rail = Private.Decompose.rail ;;
 let standard_solution = Private.standard_solution ;; 
 
 end ;;
@@ -1622,8 +1632,6 @@ end ;;
   end ;;   
 
 
- 
-
 module Fan_related_requirement = struct 
 
   exception No_pullback_without_a_constraint_exn ;; 
@@ -1734,7 +1742,7 @@ module Private = struct
 end ;;   
 
 (*
-List.iter Impatient_computer_on_rails.declare_overchain Private.data ;;
+List.iter Impatient_computer_on_rails.declare_overrail Private.data ;;
 *)
 
 end ;;   
