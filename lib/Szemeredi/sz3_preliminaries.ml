@@ -1510,8 +1510,6 @@ end ;;
     Some answer -> answer 
     |None -> raise(Eval_exn(pwb)) ;;    
 
-  
-
   let predecessor_in_chain_opt pwb  = function 
        Has_no_constraints -> None 
       |Rightmost_overflow(_,_,_) 
@@ -1614,19 +1612,36 @@ end ;;
            let diag = Diagnose.diagnose_precedent pwb in   
           (ref_for_problem_during_overchain_declaration:=Some(pwb,diag);
            print_string("An exception was raised");
-           print_string("Type Im"^"patient_on_chains.current_diagnosis() for more details");
+           print_string("Type Im"^"patient_computer_on_chains.current_diagnosis() for more details");
           )
         | _ -> declare_overrail others ;; 
 
+  let ref_for_problem_during_iter_eval = ref None ;;
+
+  let rec iter_eval = function 
+    [] -> ()
+   |pwb :: others ->
+     (
+      match eval_opt pwb with
+       Some(_) -> iter_eval others 
+      | None -> 
+        (ref_for_problem_during_iter_eval:=Some(pwb);
+           print_string("A blocker was encountered");
+           print_string("Type Im"^"patient_computer_on_chains.current_blocker() for more details");
+          )
+     ) ;;
+      
+  
 
   end ;;   
 
-  
+  let current_blocker () = Option.get(!(Private.ref_for_problem_during_iter_eval));;
   let current_diagnosis () = Option.get(!(Private.ref_for_problem_during_overchain_declaration));;
   let declare_overrail = Private.declare_overrail ;;
   let decompose = Private.decompose ;; 
   let eval = Private.eval ;; 
   let eval_opt = Private.eval_opt ;; 
+  let iter_eval = Private.iter_eval ;; 
   let rail = Private.compute_rail ;;
 
   end ;;   
@@ -1742,7 +1757,9 @@ module Private = struct
 end ;;   
 
 (*
+
 List.iter Impatient_computer_on_rails.declare_overrail Private.data ;;
+
 *)
 
 end ;;   
