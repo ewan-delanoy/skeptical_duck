@@ -1611,8 +1611,8 @@ end ;;
         None -> 
            let diag = Diagnose.diagnose_precedent pwb in   
           (ref_for_problem_during_overchain_declaration:=Some(pwb,diag);
-           print_string("An exception was raised");
-           print_string("Type Im"^"patient_computer_on_chains.current_diagnosis() for more details");
+           print_string("An exception was raised.\n");
+           print_string("Type Im"^"patient_computer_on_rails.current_diagnosis() for more details");
           )
         | _ -> declare_overrail others ;; 
 
@@ -1626,8 +1626,8 @@ end ;;
        Some(_) -> iter_eval others 
       | None -> 
         (ref_for_problem_during_iter_eval:=Some(pwb);
-           print_string("A blocker was encountered");
-           print_string("Type Im"^"patient_computer_on_chains.current_blocker() for more details");
+           print_string("A blocker was encountered.\n");
+           print_string("Type Im"^"patient_computer_on_rails.current_blocker() for more details");
           )
      ) ;;
       
