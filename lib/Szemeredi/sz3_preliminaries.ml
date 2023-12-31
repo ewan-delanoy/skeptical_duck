@@ -49,8 +49,6 @@ type diagnosis = Sz3_types.diagnosis =
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
 
-type canonized_requirement = Sz3_types.canonized_requirement = CR of point_with_breadth * int * fan ;; 
-
 type point_with_requirements = Sz3_types.point_with_requirements = PWR of point_with_breadth * ( (int * fan) list ) ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -1678,7 +1676,78 @@ end ;;
   let iter_eval = Private.iter_eval ;; 
   let rail = Private.compute_rail ;;
 
-  end ;;   
+  end ;; 
+  
+  
+module Point_with_requirements = struct   
+
+exception Pull_exn ;;   
+
+module Private = struct
+
+module Canonized_requirement = struct 
+
+type t = CR of point_with_breadth * int * fan ;; 
+
+
+let constructor pwb level_in_mold fan =
+  let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
+  let improved_fan = snd(Fan.canonical_container all_sols fan) in 
+  CR(pwb,level_in_mold,improved_fan);;
+
+let pull handle source_pwb (CR(destination_pwb,level_in_mold,destination_fan)) =
+    let cases = Fan.pull handle (destination_pwb,destination_fan) in 
+    Image.image (fun (offset,fan)->constructor source_pwb (level_in_mold+offset) fan) cases ;;
+
+let order_list l = match l with
+    []->[] 
+    |head::_ ->
+    let (CR(common_pwb,_,_)) = head in   
+    let unordered_levels = Image.image (fun (CR(_,level_in_mold,_))->level_in_mold) l in 
+    let levels = i_sort unordered_levels in 
+    Image.image (
+      fun k ->
+        let fans = List.filter_map (fun (CR(_,level_in_mold,fan))->
+            if level_in_mold=k then Some fan else None) l in 
+        constructor common_pwb k (Fan.combine_conditions fans)     
+    ) levels ;; 
+
+let pull_list handle source_pwb l =order_list(List.flatten(Image.image (pull handle source_pwb) l));;
+
+let list_of_pwr (PWR(destination_pwb,reqs))= 
+  Image.image (fun (level,fans)->CR(destination_pwb,level,fans)) reqs  ;;
+
+exception List_to_pwr_exn ;;
+
+let list_to_pwr l = match l with
+  []->raise List_to_pwr_exn
+  |head::_ ->
+  let (CR(common_pwb,_,_)) = head in  
+  PWR(common_pwb,Image.image (fun (CR(_,level_in_mold,fan))->(level_in_mold,fan)) l) ;;  
+ 
+
+end ;;   
+
+
+
+let pull destination_pwr =
+  let (PWR(destination_pwb,_))=  destination_pwr in 
+  let (handle,source_pwb_opt) = Thorough_computer.decompose destination_pwb in 
+  match source_pwb_opt with 
+  None -> raise Pull_exn
+  |Some source_pwb ->
+  let destination_cr_list = Canonized_requirement.list_of_pwr destination_pwr in 
+  let source_cr_list =  Canonized_requirement.pull_list handle source_pwb destination_cr_list in 
+  Canonized_requirement.list_to_pwr source_cr_list ;;
+
+
+end ;; 
+
+let constructor pwb = PWR(pwb,[0,Fan.empty_one]) ;; 
+let pull = Private.pull ;; 
+
+end ;;
+
 
 (*
 module Fan_related_requirement = struct 
