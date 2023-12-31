@@ -49,9 +49,9 @@ type diagnosis = Sz3_types.diagnosis =
   |Missing_subcomputation of string * point_with_breadth 
   |Missing_switch_in_fork of int * point_with_breadth ;;
 
-type fan_related_requirement = Sz3_types.fan_related_requirement = FRR of (int * fan) list ;;    
+type canonized_requirement = Sz3_types.canonized_requirement = CR of point_with_breadth * int * fan ;; 
 
-type point_with_requirements = Sz3_types.point_with_requirements = PWR of point_with_breadth * fan_related_requirement ;;
+type point_with_requirements = Sz3_types.point_with_requirements = PWR of point_with_breadth * ( (int * fan) list ) ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -511,7 +511,8 @@ module Fan = struct
 
   exception Impose_exn of fan * (constraint_t list);;
   exception Badly_formed_fan ;;
-  
+  exception No_pullback_without_a_constraint_exn;;
+
   module Private = struct
 
     let constructor ll =
@@ -566,6 +567,40 @@ module Fan = struct
         then None
         else Some(F new_rays);;  
 
+    let with_or_without (F(ll)) n complements_for_n =
+          let rays_for_n=Image.image (fun (i,j)->[i;j]) complements_for_n in   
+          let (with_n,without_n)=List.partition (i_mem n) ll in 
+          let with_n_removed = Image.image (i_outsert n) with_n in 
+          (constructor(with_n_removed@without_n@rays_for_n),F(without_n)) ;;     
+
+    let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
+
+    let pull handle (destination_pwb,destination_fan)= 
+        let n = Point_with_breadth.max destination_pwb 
+        and complements_for_n = Point_with_breadth.complementary_pairs destination_pwb  in
+          match handle with  
+         Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
+       | Rightmost_pivot(_) -> 
+            (* in this case n is involved, the destination level set is included in 
+              the union of two translates of source level sets, and measure(dest)=measure(source)+1 *)        
+            let (with_n,without_n) = with_or_without destination_fan n complements_for_n in 
+            [-1,without_n;0,with_n]
+       | Rightmost_overflow (_,_,_) -> 
+             (* in this case n is involved, the destination level set is included in 
+              the union of two translates of source level sets, and measure(dest)=measure(source) *) 
+            let (with_n,without_n) = with_or_without destination_fan n complements_for_n in 
+            [0,without_n;1,with_n]
+       | Select (i,j,k) ->  
+            (* in this case n is not involved, the destination level set is included in 
+              one source level set, and measure(dest)=measure(source) *) 
+            let relaxed_fan = union destination_fan (F[[i;j;k]])   in
+            [0,relaxed_fan]
+       | Fork (i,j,k) -> 
+             (* in this case n is not involved, the destination level set is included in 
+              one source level set, and measure(dest)=measure(source)-1 *)
+            let relaxed_fan = union destination_fan (F[[i;j;k]])   in
+            [1,relaxed_fan] ;; 
+
   end ;;  
 
   let canonical_container = Private.canonical_container ;; 
@@ -591,15 +626,12 @@ module Fan = struct
 
   let impose_opt = Private.impose_opt ;; 
 
+  let pull = Private.pull ;;  
+
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
-  let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
-
-  let with_or_without (F(ll)) n complements_for_n =
-    let rays_for_n=Image.image (fun (i,j)->[i;j]) complements_for_n in   
-    let (with_n,without_n)=List.partition (i_mem n) ll in 
-    let with_n_removed = Image.image (i_outsert n) with_n in 
-    (constructor(with_n_removed@without_n@rays_for_n),F(without_n)) ;;   
+  let union = Private.union ;; 
+  
 
 
 end ;;   
@@ -933,7 +965,7 @@ module Impatiently = struct
          |Total_ordering_result_t.Greater -> get_opt pwb others  
          |Total_ordering_result_t.Equal -> Some piece ;;  
       
-      let institute_fan helpers pwb (FRR l) =
+      let institute_fan helpers (PWR(pwb,l))  =
           match get_opt pwb helpers with 
           None -> let piece = { 
                     beneficiary = pwb;
@@ -990,10 +1022,10 @@ module Impatiently = struct
                       Some(handle,mold)    
         | None -> None ;;    
       
-        let institute_fan fgr pwb frr =
+        let institute_fan fgr pwb_with_reqs =
           {
             fgr with
-            helpers = (Help.institute_fan (fgr.helpers) pwb frr)
+            helpers = (Help.institute_fan (fgr.helpers) pwb_with_reqs)
           } ;; 
     
     
@@ -1012,16 +1044,16 @@ module Impatiently = struct
       
         let main_ref = ref Generic_extra_help.empty_one ;; 
     
-        let institute_fan pwb fan =
+        let institute_fan pwb_with_reqs =
             let old_val = !main_ref in 
-            let new_val = Generic_extra_help.institute_fan old_val pwb fan in 
+            let new_val = Generic_extra_help.institute_fan old_val pwb_with_reqs in 
             let _ = (main_ref:=new_val) in 
             () ;;
     
-        institute_fan (No_constraint(FIS(2,[]))) 
-        (FRR
+        institute_fan 
+        (PWR(No_constraint(FIS(2,[])),
         [(0, F [[1; 2]]);
-         (1, F [[1]; [2]])]) ;; 
+         (1, F [[1]; [2]])])) ;; 
     
       end ;; 
     
@@ -1648,7 +1680,7 @@ end ;;
 
   end ;;   
 
-
+(*
 module Fan_related_requirement = struct 
 
   exception No_pullback_without_a_constraint_exn ;; 
@@ -1747,7 +1779,7 @@ let pull (PWR(pwb,frr)) =
 
 
 end ;;  
-
+*)
 
 module Initialize_overchains = struct 
 
