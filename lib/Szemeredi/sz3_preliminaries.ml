@@ -1705,33 +1705,48 @@ module Fan_related_requirement = struct
       ) possibly_not_adjusted_reqs in 
       FRR adjusted_reqs ;;  
 
-    let rec iterator_for_fan_pulling (pwb,handle,pwb_before,frr,treated) = 
-      let frr_before = pull_and_adjust pwb handle  pwb_before frr 
-      and (handle_before,pwb_much_before_opt) = Thorough_computer.decompose pwb_before in 
-      let updated = (pwb_before,frr_before)::treated in 
-      match pwb_much_before_opt with 
-       None -> updated
-      |Some(pwb_much_before) -> iterator_for_fan_pulling (pwb_before,handle_before,pwb_much_before,frr_before,updated) ;;
-          
-
-    let pull_all_fans pwb original_required_fan =
-      let frr=FRR[0,adjust_required_fan pwb 0 original_required_fan]
-      and (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
-      match pwb_before_opt with 
-      None -> [pwb,frr]
-     |Some(pwb_before) -> iterator_for_fan_pulling (pwb,handle,pwb_before,frr,[pwb,frr]) ;; 
+    
 
 end ;;
 
 let constructor pwb level_in_mold original_required_fan = 
-     FRR[0,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
+    if original_required_fan = Fan.empty_one 
+    then FRR[]  
+    else FRR[level_in_mold,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
+
 let pull pwb old_frr  = 
       let (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
      let pwb_before = Option.get pwb_before_opt in 
     Private.pull_and_adjust pwb handle pwb_before old_frr ;; 
-let pull_all_fans = Private.pull_all_fans ;; 
+
 
 end ;;   
+
+module Point_with_requirements = struct 
+
+exception No_pullback_without_a_constraint_exn ;;
+
+let constructor pwb = 
+  let (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
+  let pwb_before = Option.get pwb_before_opt in 
+  let fanny = (
+    match handle with  
+   Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
+ | Rightmost_pivot(_) 
+ | Select (_,_,_) ->  Fan.empty_one
+ | Rightmost_overflow (u,v,_) -> F[[u;v]]  
+ | Fork (i,j,k) -> F[[i;j;k]]
+   ) in 
+  PWR(pwb_before,Fan_related_requirement.constructor pwb_before 0 fanny) ;; 
+
+let pull (PWR(pwb,frr)) =
+  let (_handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
+  let pwb_before = Option.get pwb_before_opt in 
+  PWR(pwb_before,Fan_related_requirement.pull pwb frr) ;; 
+  
+
+
+end ;;  
 
 
 module Initialize_overchains = struct 
