@@ -55,3 +55,5 @@ type diagnosis =
   |Missing_switch_in_fork of int * point_with_breadth ;;
       
 type fan_related_requirement = FRR of (int * fan) list ;;   
+
+type point_with_requirements = PWR of point_with_breadth * fan_related_requirement ;;

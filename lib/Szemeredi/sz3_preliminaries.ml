@@ -51,6 +51,8 @@ type diagnosis = Sz3_types.diagnosis =
 
 type fan_related_requirement = Sz3_types.fan_related_requirement = FRR of (int * fan) list ;;    
 
+type point_with_requirements = Sz3_types.point_with_requirements = PWR of point_with_breadth * fan_related_requirement ;;
+
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -1711,6 +1713,7 @@ module Fan_related_requirement = struct
        None -> updated
       |Some(pwb_much_before) -> iterator_for_fan_pulling (pwb_before,handle_before,pwb_much_before,frr_before,updated) ;;
           
+
     let pull_all_fans pwb original_required_fan =
       let frr=FRR[0,adjust_required_fan pwb 0 original_required_fan]
       and (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
