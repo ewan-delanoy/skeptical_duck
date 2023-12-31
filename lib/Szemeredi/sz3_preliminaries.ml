@@ -1746,7 +1746,7 @@ module Private = struct
   let chunk q = 
     (Int_range.scale level3 (8*q+1) (8*q+6))@
     [special1 q;level3 (8*q+7)]@
-    [Point_with_breadth.constructor (8*q) [] (W 2) (8*q-7);level3 (8*q+8)]  ;; 
+    [Point_with_breadth.constructor (8*q+8) [] (W 2) (8*q+1);level3 (8*q+8)]  ;; 
 
 
   let data1 = List.concat_map chunk (Int_range.range 0 4);; 
