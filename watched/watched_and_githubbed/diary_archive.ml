@@ -6656,6 +6656,11 @@ let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with
 (41,45) (Absolute_path.of_string "watched/watched_not_githubbed/jug.ml")
  ~shift_amplitude:(-12) ~forced:false ;; 
 
+ let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with 
+(608,635) (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml")
+ ~shift_amplitude:(-8) ~forced:false ;; 
+
+
 let act2 () = Lines_in_string.remove_interval_in_file 
  (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 346 580 ;; 
 

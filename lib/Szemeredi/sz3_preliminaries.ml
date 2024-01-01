@@ -573,31 +573,69 @@ module Fan = struct
 
     let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
 
-    let pull handle (destination_pwb,destination_fan)= 
+   
+    let pull_one_level handle destination_pwb (level_in_mold,destination_fan)= 
+       (* note that this function does not take into account
+          the extra fan-related conditions that come from the handle,
+          we cannot do so at this individual level stage   
+       *)
         let n = Point_with_breadth.max destination_pwb 
         and complements_for_n = Point_with_breadth.complementary_pairs destination_pwb  in
-          match handle with  
+        let draft= (match handle with  
          Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
        | Rightmost_pivot(_) -> 
             (* in this case n is involved, the destination level set is included in 
               the union of two translates of source level sets, and measure(dest)=measure(source)+1 *)        
             let (with_n,without_n) = with_or_without destination_fan n complements_for_n in 
-            [-1,without_n;0,with_n]
+            [level_in_mold-1,without_n;level_in_mold,with_n]
        | Rightmost_overflow (_,_,_) -> 
              (* in this case n is involved, the destination level set is included in 
               the union of two translates of source level sets, and measure(dest)=measure(source) *) 
             let (with_n,without_n) = with_or_without destination_fan n complements_for_n in 
-            [0,without_n;1,with_n]
+            [level_in_mold,without_n;level_in_mold+1,with_n]
        | Select (i,j,k) ->  
             (* in this case n is not involved, the destination level set is included in 
               one source level set, and measure(dest)=measure(source) *) 
             let relaxed_fan = union destination_fan (F[[i;j;k]])   in
-            [0,relaxed_fan]
+            [level_in_mold,relaxed_fan]
        | Fork (i,j,k) -> 
              (* in this case n is not involved, the destination level set is included in 
               one source level set, and measure(dest)=measure(source)-1 *)
             let relaxed_fan = union destination_fan (F[[i;j;k]])   in
-            [1,relaxed_fan] ;; 
+            [level_in_mold+1,relaxed_fan]) in
+       List.filter (fun (level_in_mold,_)->level_in_mold>=0) draft ;; 
+
+  let insert_smoothly_at_zero fan old_reqs = match old_reqs with 
+    [] -> [0,fan]
+    | (l1,fan1) :: others ->
+       if l1 = 0
+       then (0,combine_two_conditions fan fan1) :: others
+       else old_reqs ;;  
+
+
+  let add_handle_related_conditions old_reqs  = function 
+    Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
+  | Rightmost_pivot(_) 
+  | Select (_,_,_) -> old_reqs  
+  | Rightmost_overflow (u,v,_) -> insert_smoothly_at_zero (F[[u;v]]) old_reqs
+  | Fork (i,j,k) -> insert_smoothly_at_zero (F[[i;j;k]]) old_reqs ;;  
+
+  let pull_all_levels handle destination_pwb old_levelled_fans= 
+      let unordered_pulled_levelled_fans = List.flatten(Image.image(pull_one_level handle destination_pwb) old_levelled_fans) in 
+      let unordered_levels = Image.image fst unordered_pulled_levelled_fans in 
+      let levels = i_sort unordered_levels in 
+      let before_handle_related_conditions = List.filter_map (
+        fun k ->
+          let fans = List.filter_map (fun ((level_in_mold,fan))->
+              if level_in_mold=k then Some fan else None) unordered_pulled_levelled_fans in 
+          let final_fan = combine_conditions fans in   
+          if final_fan = F [[]]
+          then None   
+          else Some(k,final_fan)     
+      ) levels in 
+      add_handle_related_conditions  before_handle_related_conditions handle ;;
+  
+
 
   end ;;  
 
@@ -624,7 +662,7 @@ module Fan = struct
 
   let impose_opt = Private.impose_opt ;; 
 
-  let pull = Private.pull ;;  
+  let pull = Private.pull_all_levels ;;  
 
   let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
 
@@ -1695,28 +1733,19 @@ let constructor pwb level_in_mold fan =
   let improved_fan = snd(Fan.canonical_container all_sols fan) in 
   CR(pwb,level_in_mold,improved_fan);;
 
-let pull handle source_pwb (CR(destination_pwb,level_in_mold,destination_fan)) =
-    let cases = Fan.pull handle (destination_pwb,destination_fan) in 
-    List.filter_map (fun (offset,fan)->
-      let new_level = level_in_mold+offset in 
-      if new_level < 0
-      then None  
-      else Some(constructor source_pwb new_level fan)) cases ;;
 
-let order_list l = match l with
-    []->[] 
-    |head::_ ->
-    let (CR(common_pwb,_,_)) = head in   
-    let unordered_levels = Image.image (fun (CR(_,level_in_mold,_))->level_in_mold) l in 
-    let levels = i_sort unordered_levels in 
-    Image.image (
-      fun k ->
-        let fans = List.filter_map (fun (CR(_,level_in_mold,fan))->
-            if level_in_mold=k then Some fan else None) l in 
-        constructor common_pwb k (Fan.combine_conditions fans)     
-    ) levels ;; 
-
-let pull_list handle source_pwb l =order_list(List.flatten(Image.image (pull handle source_pwb) l));;
+let pull_list handle source_pwb canonized_reqs = 
+  match canonized_reqs with 
+  [] -> []
+  | (CR(destination_pwb,_,_)) :: _ ->
+  let old_reqs = Image.image (fun (CR(_,level,fan)) -> (level,fan) ) canonized_reqs in
+  let new_reqs = Fan.pull handle source_pwb old_reqs in 
+  List.filter_map (
+      fun (k,fan) ->
+        if fan = Fan.empty_one
+        then None   
+        else Some(constructor destination_pwb k fan)     
+    ) new_reqs  ;;
 
 let list_of_pwr (PWR(destination_pwb,reqs))= 
   Image.image (fun (level,fans)->CR(destination_pwb,level,fans)) reqs  ;;
@@ -1729,7 +1758,6 @@ let list_to_pwr l = match l with
   let (CR(common_pwb,_,_)) = head in  
   PWR(common_pwb,Image.image (fun (CR(_,level_in_mold,fan))->(level_in_mold,fan)) l) ;;  
  
-
 end ;;   
 
 
@@ -1747,7 +1775,7 @@ let pull destination_pwr =
 
 end ;; 
 
-let constructor pwb = PWR(pwb,[0,Fan.empty_one]) ;; 
+let constructor pwb = PWR(pwb,[]) ;; 
 let pull = Private.pull ;; 
 
 end ;;
