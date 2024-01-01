@@ -1752,10 +1752,7 @@ let list_of_pwr (PWR(destination_pwb,reqs))=
 
 exception List_to_pwr_exn ;;
 
-let list_to_pwr l = match l with
-  []->raise List_to_pwr_exn
-  |head::_ ->
-  let (CR(common_pwb,_,_)) = head in  
+let list_to_pwr common_pwb l = 
   PWR(common_pwb,Image.image (fun (CR(_,level_in_mold,fan))->(level_in_mold,fan)) l) ;;  
  
 end ;;   
@@ -1770,7 +1767,7 @@ let pull destination_pwr =
   |Some source_pwb ->
   let destination_cr_list = Canonized_requirement.list_of_pwr destination_pwr in 
   let source_cr_list =  Canonized_requirement.pull_list handle source_pwb destination_cr_list in 
-  Canonized_requirement.list_to_pwr source_cr_list ;;
+  Canonized_requirement.list_to_pwr source_pwb source_cr_list ;;
 
 
 end ;; 
