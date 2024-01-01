@@ -4,7 +4,6 @@
 
 *)
 
-type short_or_long = Short | Long ;;
 
 exception Detox_exn of string list ;; 
 
@@ -12,7 +11,8 @@ exception  Unique_olavian_file_inside of string list ;;
 
 module Private = struct 
 
-     
+   type short_or_long = Short | Long ;;
+    
 
    let unique_olavian_file_inside dir = 
       let files_inside = Unix_again.beheaded_simple_ls dir in 
@@ -157,8 +157,23 @@ module Private = struct
      |Some l -> Image.image Unix_command.hardcore_uc l ;; 
   
 
-
-
+     let dict_order=(fun (i1,str1) (i2,str2) ->
+      let trial1 = Total_ordering.lex_for_strings str1 str2 in 
+      if trial1<>Total_ordering_result_t.Equal then trial1 else
+      Total_ordering.for_integers i1 i2  
+  ) ;; 
+  
+  let list_files_in_alphabetical_order  s_or_l = 
+    let temp1 = Option.get(index_analysis_before_insertion s_or_l) in 
+    let temp2 = Ordered.sort dict_order temp1 in 
+    let lines = Image.image (
+      fun (i,str)-> (String.make 4 ' ')^str^"  ["^(string_of_int i)^"]"
+    ) temp2 in 
+    let full_text = "\n\n\n"^(String.concat "\n" lines)^"\n\n\n" in 
+    print_string full_text ;; 
+  
+  
+let list_short_files () = list_files_in_alphabetical_order Short ;; 
 let long_file  () = 
    let _ = (print_string"\n Long files are always old ... \n";flush stdout) in
    do_insertion_of_old_files downloads_dir Long ;; 
@@ -166,10 +181,12 @@ let long_file  () =
 let short_old_file   () = do_insertion_of_old_files downloads_dir Short ;; 
 let short_recent_file () = do_insertion_of_recent_files downloads_dir Short ;;
 
+
+
 end ;;   
 
 
-
+let list_short_files = Private.list_short_files ;; 
 let long_file = Private.long_file ;; 
 let short_old_file = Private.short_old_file ;; 
 let short_recent_file = Private.short_recent_file ;; 
