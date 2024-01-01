@@ -1697,7 +1697,11 @@ let constructor pwb level_in_mold fan =
 
 let pull handle source_pwb (CR(destination_pwb,level_in_mold,destination_fan)) =
     let cases = Fan.pull handle (destination_pwb,destination_fan) in 
-    Image.image (fun (offset,fan)->constructor source_pwb (level_in_mold+offset) fan) cases ;;
+    List.filter_map (fun (offset,fan)->
+      let new_level = level_in_mold+offset in 
+      if new_level < 0
+      then None  
+      else Some(constructor source_pwb new_level fan)) cases ;;
 
 let order_list l = match l with
     []->[] 
@@ -1748,107 +1752,6 @@ let pull = Private.pull ;;
 
 end ;;
 
-
-(*
-module Fan_related_requirement = struct 
-
-  exception No_pullback_without_a_constraint_exn ;; 
-
-  module Private = struct
-
-    let adjust_required_fan pwb level_in_mold original_required_fan = 
-      let mold = snd(Option.get(Impatient_computer_on_rails.eval_opt pwb)) in 
-      let older_fan = Mold.fan_at_index mold level_in_mold in 
-      let pre_adjusted_requirement = Fan.combine_two_conditions older_fan original_required_fan in 
-      let all_sols = Point_with_breadth.solutions pwb level_in_mold in 
-      snd(Fan.canonical_container all_sols pre_adjusted_requirement);;
-
-  let pull_on_single_requirement (n,complements_for_n) handle (level_in_mold,required_fan)= 
-   let draft = (
-     match handle with  
-    Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
-  | Rightmost_pivot(_) -> let (with_n,without_n) = Fan.with_or_without required_fan n complements_for_n in 
-                          [level_in_mold,with_n;level_in_mold-1,without_n]
-  | Rightmost_overflow (_,_,_) -> 
-                          let (with_n,without_n) = Fan.with_or_without required_fan n complements_for_n in 
-                          [level_in_mold+1,with_n;level_in_mold,without_n]
-  | Select (i,j,k) ->  let relaxed_fan = Fan.union required_fan (F[[i;j;k]])   in
-                        [level_in_mold,relaxed_fan]
-  | Fork (i,j,k) -> let relaxed_fan = Fan.union required_fan (F[[i;j;k]])   in
-                        [level_in_mold+1,relaxed_fan]
-    ) in
-    List.filter (fun (level,_fan)->level>=0) draft  ;; 
-      
-  let pull_on_several_requirements (FRR(old_requirements)) pair handle = 
-     let temp1 = List.flatten(Image.image (pull_on_single_requirement pair handle) old_requirements) in 
-     let indices = i_sort(Image.image fst temp1) in 
-     List.filter_map (
-       fun level_in_mold ->
-        let requirements =List.filter_map (
-           fun (level_in_mold2,fan) ->
-             if level_in_mold2 = level_in_mold 
-             then Some fan
-            else None  
-        ) temp1 in 
-        let final_fan = Fan.combine_conditions requirements in 
-        if final_fan = Fan.empty_one
-        then None  
-        else Some(level_in_mold,Fan.combine_conditions requirements)
-     ) indices ;;
-  
-   let pull_and_adjust pwb handle pwb_before old_frr  = 
-      let n = Point_with_breadth.max pwb 
-      and comps = Point_with_breadth.complementary_pairs pwb in 
-      let possibly_not_adjusted_reqs = pull_on_several_requirements old_frr (n,comps) handle in 
-      let adjusted_reqs = Image.image (
-        fun (level_in_mold,fan) ->
-           (level_in_mold,adjust_required_fan pwb_before level_in_mold fan)
-      ) possibly_not_adjusted_reqs in 
-      FRR adjusted_reqs ;;  
-
-    
-
-end ;;
-
-let constructor pwb level_in_mold original_required_fan = 
-    if original_required_fan = Fan.empty_one 
-    then FRR[]  
-    else FRR[level_in_mold,Private.adjust_required_fan pwb level_in_mold original_required_fan];;
-
-let pull pwb old_frr  = 
-      let (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
-     let pwb_before = Option.get pwb_before_opt in 
-    Private.pull_and_adjust pwb handle pwb_before old_frr ;; 
-
-
-end ;;   
-
-module Point_with_requirements = struct 
-
-exception No_pullback_without_a_constraint_exn ;;
-
-let constructor pwb = 
-  let (handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
-  let pwb_before = Option.get pwb_before_opt in 
-  let fanny = (
-    match handle with  
-   Has_no_constraints -> raise(No_pullback_without_a_constraint_exn)
- | Rightmost_pivot(_) 
- | Select (_,_,_) ->  Fan.empty_one
- | Rightmost_overflow (u,v,_) -> F[[u;v]]  
- | Fork (i,j,k) -> F[[i;j;k]]
-   ) in 
-  PWR(pwb_before,Fan_related_requirement.constructor pwb_before 0 fanny) ;; 
-
-let pull (PWR(pwb,frr)) =
-  let (_handle,pwb_before_opt) = Thorough_computer.decompose pwb in 
-  let pwb_before = Option.get pwb_before_opt in 
-  PWR(pwb_before,Fan_related_requirement.pull pwb frr) ;; 
-  
-
-
-end ;;  
-*)
 
 module Initialize_overchains = struct 
 
