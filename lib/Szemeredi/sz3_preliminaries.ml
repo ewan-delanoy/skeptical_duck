@@ -620,7 +620,7 @@ module Fan = struct
   | Rightmost_overflow (u,v,_) -> insert_smoothly_at_zero (F[[u;v]]) old_reqs
   | Fork (i,j,k) -> insert_smoothly_at_zero (F[[i;j;k]]) old_reqs ;;  
 
-  let pull_all_levels handle destination_pwb old_levelled_fans= 
+  let pull_all_levels handle ~destination:destination_pwb old_levelled_fans= 
       let unordered_pulled_levelled_fans = List.flatten(Image.image(pull_one_level handle destination_pwb) old_levelled_fans) in 
       let unordered_levels = Image.image fst unordered_pulled_levelled_fans in 
       let levels = i_sort unordered_levels in 
@@ -1736,12 +1736,12 @@ let constructor pwb level_in_mold fan =
 
 let pull_list handle source_pwb destination_pwb canonized_reqs = 
   let old_reqs = Image.image (fun (CR(_,level,fan)) -> (level,fan) ) canonized_reqs in
-  let new_reqs = Fan.pull handle source_pwb old_reqs in 
+  let new_reqs = Fan.pull handle ~destination:destination_pwb old_reqs in 
   List.filter_map (
       fun (k,fan) ->
         if fan = Fan.empty_one
         then None   
-        else Some(constructor destination_pwb k fan)     
+        else Some(constructor source_pwb k fan)     
     ) new_reqs  ;;
 
 let list_of_pwr (PWR(destination_pwb,reqs))= 
