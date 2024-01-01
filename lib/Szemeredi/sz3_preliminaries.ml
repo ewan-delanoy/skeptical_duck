@@ -1734,10 +1734,7 @@ let constructor pwb level_in_mold fan =
   CR(pwb,level_in_mold,improved_fan);;
 
 
-let pull_list handle source_pwb canonized_reqs = 
-  match canonized_reqs with 
-  [] -> []
-  | (CR(destination_pwb,_,_)) :: _ ->
+let pull_list handle source_pwb destination_pwb canonized_reqs = 
   let old_reqs = Image.image (fun (CR(_,level,fan)) -> (level,fan) ) canonized_reqs in
   let new_reqs = Fan.pull handle source_pwb old_reqs in 
   List.filter_map (
@@ -1766,7 +1763,7 @@ let pull destination_pwr =
   None -> raise Pull_exn
   |Some source_pwb ->
   let destination_cr_list = Canonized_requirement.list_of_pwr destination_pwr in 
-  let source_cr_list =  Canonized_requirement.pull_list handle source_pwb destination_cr_list in 
+  let source_cr_list =  Canonized_requirement.pull_list handle source_pwb destination_pwb destination_cr_list in 
   Canonized_requirement.list_to_pwr source_pwb source_cr_list ;;
 
 
