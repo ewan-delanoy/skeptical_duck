@@ -1,18 +1,41 @@
 (************************************************************************************************************************
-Snippet 131 : 
+Snippet 132 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 130 : Debug the Index_and_insert_a_file module
+Snippet 131 : Parsing a YAML file
 ************************************************************************************************************************)
 
+module Snip131=struct
+
+  let ap1 = Absolute_path.of_string (home^"/Downloads/api-v2.txt") ;; 
+let u1 = Io.read_whole_file ap1 ;; 
+let lines1 = Lines_in_string.indexed_lines u1 ;; 
+
+let the_line = List.assoc 2048 lines1 ;; 
+
+
+
+let left_measure s = String.length(s) - String.length(Cull_string.trim_spaces_on_the_left s) ;; 
+let the_measure = left_measure the_line ;; 
+
+let lines2 = List.filter (fun (idx,s)->(idx<2048)&&((left_measure s)<the_measure)) lines1 ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 130 : Debug the Index_and_insert_a_file module
+************************************************************************************************************************)
 module Snip130=struct
 
 module Pri = Index_and_insert_a_file.Private ;; 
-let g1 = Pri.commands_for_insertion_of_old_files Pri.downloads_dir Index_and_insert_a_file.Short;; 
+let g1 = Pri.commands_for_insertion_of_old_files Pri.downloads_dir Index_and_insert_a_file.Private.Short;; 
 
 
 

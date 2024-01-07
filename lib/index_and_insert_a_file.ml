@@ -172,7 +172,7 @@ module Private = struct
     let full_text = "\n\n\n"^(String.concat "\n" lines)^"\n\n\n" in 
     print_string full_text ;; 
   
-  
+let list_long_files () = list_files_in_alphabetical_order Long ;;   
 let list_short_files () = list_files_in_alphabetical_order Short ;; 
 let long_file  () = 
    let _ = (print_string"\n Long files are always old ... \n";flush stdout) in
@@ -185,7 +185,7 @@ let short_recent_file () = do_insertion_of_recent_files downloads_dir Short ;;
 
 end ;;   
 
-
+let list_long_files = Private.list_long_files ;; 
 let list_short_files = Private.list_short_files ;; 
 let long_file = Private.long_file ;; 
 let short_old_file = Private.short_old_file ;; 
