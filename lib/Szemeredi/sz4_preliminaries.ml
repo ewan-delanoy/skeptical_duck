@@ -68,6 +68,8 @@ let cleanup_list unchecked_list =
     let temp2 = il_sort(Ordered_misc.minimal_elts_wrt_inclusion temp1) in 
     Image.image (fun cstr -> (C cstr) )   temp2 ;;
 
+let is_weaker_than (C cstr_weak) (C cstr_strong) = i_is_included_in cstr_strong cstr_weak ;; 
+
 let select_in_list  l_cstr candidates =  
    List.filter (fun candidate->
     List.for_all( fun (C cstr) ->not(i_is_included_in cstr candidate)) l_cstr ) 
