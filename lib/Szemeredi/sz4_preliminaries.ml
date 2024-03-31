@@ -82,30 +82,39 @@ let width (C l) = W((List.nth l 1)-(List.nth l 0)) ;;
 
 end ;;  
 
-module Find_highest_constraint = struct
+module Highest_constraint = struct
 
-  let rec for_exact_width (W w) domain to_be_treated =
+   module Private = struct
+
+  let rec for_exact_positive_width (W w) domain to_be_treated =
     match to_be_treated with 
     [] -> None 
     |p::others ->
        if p<=2*w then None else 
        if i_is_included_in [p-2*w;p-w] domain 
        then Some (C[p-2*w;p-w;p])
-       else for_exact_width (W w) domain others ;;     
-  
+       else for_exact_positive_width (W w) domain others ;;    
+       
+  let for_exact_width (W w) domain =
+     if w<1 then None else for_exact_positive_width (W w) domain (List.rev domain) ;;
+
   let rec below_maximal_width (W w) domain =
-   match for_exact_width (W w) domain (List.rev domain) with 
-   Some (cstr) -> Some(cstr)
-   |None ->
-      if w<2 then None else 
-      below_maximal_width (W (w-1)) domain ;;  
+        match for_exact_width (W w) domain with 
+        Some (cstr) -> Some(cstr)
+        |None ->
+           if w<2 then None else 
+           below_maximal_width (W (w-1)) domain ;;       
   
-  let below_width_bound_pair (W w,bound) domain =
-    match List.find_opt(fun b->
-      i_is_included_in [b;b+(w+1);b+2*(w+1)] domain
-      ) (List.rev(Int_range.range 1 bound)) with 
-    Some bmax ->  Some (C[bmax;bmax+(w+1);bmax+2*(w+1)])
-    | None -> below_maximal_width (W w) domain ;; 
+  end ;;
+
+  let below_maximal_width = Private.below_maximal_width ;;
+
+  let effective_max_width base_set proposed_width =
+     match Private.below_maximal_width proposed_width base_set with 
+     None -> W 0
+     |Some(cstr) -> Constraint.width cstr ;; 
+  
+  
 
   end ;;
 
@@ -196,116 +205,5 @@ end ;;
 
 
 
-module Fan = struct 
 
-  exception Impose_exn of fan * (constraint_t list);;
-  exception Badly_formed_fan ;;
-  exception No_pullback_without_a_constraint_exn;;
-
-  module Private = struct
-
-    let constructor ll =
-      if ll= [] then raise Badly_formed_fan else 
-      let sorted_ll = il_sort ll in 
-      F (Ordered_misc.minimal_elts_wrt_inclusion(sorted_ll));;
-
-  let distribute (F rays) addendum= F(Image.image (i_merge addendum) rays) ;;  
-
-  let combine_two_conditions (F ll1) (F ll2) =
-    let temp1 = Cartesian.product ll1 ll2 in 
-    constructor( Image.image (fun (x,y)->i_merge x y) temp1 );; 
-
- let combine_conditions = function 
-     [] -> F[]
-    |first_fan :: other_fans ->
-       List.fold_left combine_two_conditions first_fan other_fans ;; 
-
-  let canonical_container_in_hard_case initial_competing_fans =
-    let measure = (fun (F rays)->
-      i_length_preserving_sort (Image.image List.length rays)
-    ) in 
-    let temp1 = Image.image measure initial_competing_fans in 
-    let smallest_measure = il_min temp1 in 
-    let competing_fans = 
-        List.filter(fun mz->measure(mz)=smallest_measure)  
-            initial_competing_fans in 
-    combine_conditions competing_fans ;; 
-
-  let canonical_container sample (F rays) =
-     let indexed_rays = Int_range.index_everything rays in 
-     let covering_indices = (fun x->
-        List.filter_map (fun (idx,ray)->
-           if i_is_included_in ray x 
-           then Some idx 
-          else None   
-        ) indexed_rays
-      ) in
-      let temp1 = Image.image covering_indices sample in 
-      let temp2 = Ordered_misc.minimal_transversals temp1 in 
-      let (_,temp3) = Min.minimize_it_with_care List.length temp2 in 
-      let return_to_original = (fun l->F(Image.image(fun idx->List.assoc idx indexed_rays) l)) in 
-      if List.length temp3 = 1 
-      then (true,return_to_original (List.hd temp3)) 
-      else      
-      let temp4 = Image.image return_to_original temp3 in
-      (false,canonical_container_in_hard_case temp4) ;;
-
-    let impose_opt l_cstr (F rays) =  
-        let new_rays =Constraint.select_in_list l_cstr rays in 
-        if new_rays = []
-        then None
-        else Some(F new_rays);;  
-
-    let with_or_without (F(ll)) n complements_for_n =
-          let rays_for_n=Image.image (fun (i,j)->[i;j]) complements_for_n in   
-          let (with_n,without_n)=List.partition (i_mem n) ll in 
-          let with_n_removed = Image.image (i_outsert n) with_n in 
-          (constructor(with_n_removed@without_n@rays_for_n),F(without_n)) ;;     
-
-    let union (F ll1) (F ll2) = constructor(ll1@ll2) ;; 
-
-   
-    
-
-  let insert_smoothly_at_zero fan old_reqs = match old_reqs with 
-    [] -> [0,fan]
-    | (l1,fan1) :: others ->
-       if l1 = 0
-       then (0,combine_two_conditions fan fan1) :: others
-       else old_reqs ;;  
-  
-
-
-  end ;;  
-
-  let canonical_container = Private.canonical_container ;; 
-
-  let combine_two_conditions = Private.combine_two_conditions ;; 
-
-  let combine_conditions = Private.combine_conditions ;;  
-
-  let constructor = Private.constructor ;;
-
-  let core (F ll) = 
-    i_fold_intersect ll ;; 
-
-  let empty_one = F [[]] ;;
-
-  let impose l_cstr fan = 
-     match Private.impose_opt l_cstr fan with 
-     None -> raise(Impose_exn(fan,l_cstr))
-    |Some answer -> answer;;
-  
-  let impose_and_distribute  (l_cstr,addendum) fan = 
-      Private.distribute ( impose l_cstr fan) addendum ;;
-
-  let impose_opt = Private.impose_opt ;; 
-
-  let translate d (F rays) = F(Image.image (fun ray->Image.image (fun t->t+d) ray) rays);;
-
-  let union = Private.union ;; 
-  
-
-
-end ;;   
 
