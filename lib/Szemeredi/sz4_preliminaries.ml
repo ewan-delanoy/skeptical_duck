@@ -15,6 +15,12 @@ type constraint_t = Sz4_types.constraint_t = C of int list;;
 
 type fan = Sz4_types.fan = F of int list list ;; 
 
+type point = Sz4_types.point = {
+    base_set : finite_int_set;
+    max_width: width;
+    excluded_full_constraints: constraint_t list;
+    added_partial_constraints: constraint_t list
+} ;;
 
 
 
