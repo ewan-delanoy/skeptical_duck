@@ -154,6 +154,9 @@ module Finite_int_set = struct
     ) in 
     (d,Private.of_usual_int_list core_domain) ;; 
 
+  let effective_max_width fis proposed_width = 
+       Highest_constraint.effective_max_width (Private.to_usual_int_list fis) proposed_width ;; 
+
   let empty_set = FIS(0,[]) ;;
 
   let max (FIS(n,_)) = n ;; 
@@ -205,5 +208,36 @@ end ;;
 
 
 
+module Point = struct
 
+  module Private = struct
+  
+  let check_excluded_constraint base_set checked_max_width ~checked_added_constraints excl_constraint=
+     if Constraint.width(excl_constraint)>checked_max_width 
+     then false 
+     else if List.exists (Constraint.is_weaker_than excl_constraint) checked_added_constraints 
+     then false
+     else Finite_int_set.constraint_can_apply base_set excl_constraint ;; 
+  
+  end ;;
+  
+  let constructor base 
+     ~max_width:unchecked_max_width 
+     ~excluded_full_constraints ~added_partial_constraints = 
+      let checked_max_width = Finite_int_set.effective_max_width base unchecked_max_width in 
+      let checked_added_constraints = Constraint.cleanup_list added_partial_constraints in 
+      let checked_excluded_constraints = Constraint.cleanup_list(
+         List.filter (Private.check_excluded_constraint base checked_max_width ~checked_added_constraints)
+         ( excluded_full_constraints)
+      ) in 
+      {
+        base_set = base;
+        max_width = checked_max_width;
+        excluded_full_constraints = checked_excluded_constraints;
+        added_partial_constraints = checked_added_constraints;
+     } ;; 
+  
+  end ;; 
+  
+  
 
