@@ -128,6 +128,9 @@ module Finite_int_set = struct
 
   end ;;
 
+  let constraint_can_apply (FIS(n,scrappers)) (C l) =
+     List.for_all(fun t->(1<=t)&&(t<=n)&&(not(List.mem t scrappers))) l ;; 
+
   let constructor n scrappers =
       let domain = i_setminus (Int_range.range 1 n) scrappers in 
       Private.of_usual_int_list domain ;; 
