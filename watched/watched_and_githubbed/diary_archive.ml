@@ -1,14 +1,79 @@
 (************************************************************************************************************************
-Snippet 132 : 
+Snippet 133 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 131 : Parsing a YAML file
+Snippet 132 : Code to adapt copy-pasted text to LaTeX
 ************************************************************************************************************************)
 
+module Snip132=struct
+
+
+  let ap1 = Absolute_path.of_string 
+  (home^"/Downloads/Human_Booster/Dossier_projet/LaTeX/dossier_projet.tex");; 
+  
+  let text_ref = ref(Io.read_whole_file ap1);;
+  
+  let replacements = ref [] ;; 
+  
+  let ur () = (text_ref:=(Io.read_whole_file ap1)) ;;
+  let txt () = (!text_ref) ;;
+  let rep () = (
+    Replace_inside.replace_several_inside_file (!replacements) ap1;
+    ur()
+  );;
+  let sr reps = 
+     (
+      replacements:=reps;
+      rep()
+     ) ;; 
+  let ch line_nbr = Strung.explode(List.nth (Lines_in_string.lines(txt())) (line_nbr-1)) ;; 
+  
+  sr [
+      ("E\204\129","\195\137");
+      ("a\204\128","\195\160");
+      ("a\204\130","\195\162");
+      ("c\204\167","\195\167");
+      ("e\204\128","\195\168");
+      ("e\204\129","\195\169");
+      ("e\204\130","\195\170");
+      ("o\204\130","\195\180");
+      ("u\204\128","\195\185");
+  ] ;; 
+  
+  
+     
+  let pattern = "dans la mesure " ;;
+  
+  let g1 = txt () ;;
+  let occs =  Substring.occurrences_of_in pattern g1;; 
+  let n1 = (List.hd occs) + (String.length pattern) ;; 
+  let g2 = Cull_string.interval g1 n1 (n1+40) ;; 
+  let g3 = Strung.explode g2 ;; 
+  
+  
+  (*
+  let ap2 = Absolute_path.of_string 
+  (home^"/Teuliou/LaTeX/Brouilhedou/anse.tex");; 
+  let text2=Io.read_whole_file ap2 ;; 
+  let lines2 = Lines_in_string.indexed_lines text2 ;; 
+  let the_line2 = List.assoc 18 lines2 ;; 
+  
+  let peggy1 i = let si = string_of_int i in "("^si^",\"\\195\\"^si^"\")" ;; 
+  let text1 = "\n\n\nlet amy = [" ^ (String.concat ";" (Int_range.scale peggy1 100 200) )^ "]\n\n\n";;
+  let act () = print_string text1 ;; 
+  
+  *)
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 131 : Parsing a YAML file
+************************************************************************************************************************)
 module Snip131=struct
 
   let ap1 = Absolute_path.of_string (home^"/Downloads/api-v2.txt") ;; 
