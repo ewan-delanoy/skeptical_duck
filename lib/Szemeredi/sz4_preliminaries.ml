@@ -86,31 +86,33 @@ module Highest_constraint = struct
 
    module Private = struct
 
-  let rec for_exact_positive_width (W w) domain to_be_treated =
+  let rec for_exact_positive_width (W w) excluded_constraints 
+     domain to_be_treated =
     match to_be_treated with 
     [] -> None 
     |p::others ->
        if p<=2*w then None else 
-       if i_is_included_in [p-2*w;p-w] domain 
+       if (i_is_included_in [p-2*w;p-w] domain)
+           &&(not(List.mem (C[p-2*w;p-w;p]) excluded_constraints)) 
        then Some (C[p-2*w;p-w;p])
-       else for_exact_positive_width (W w) domain others ;;    
+       else for_exact_positive_width (W w) excluded_constraints domain others ;;    
        
-  let for_exact_width (W w) domain =
-     if w<1 then None else for_exact_positive_width (W w) domain (List.rev domain) ;;
+  let for_exact_width (W w) excluded_constraints domain =
+     if w<1 then None else for_exact_positive_width (W w) excluded_constraints domain (List.rev domain) ;;
 
-  let rec below_maximal_width (W w) domain =
-        match for_exact_width (W w) domain with 
+  let rec below_maximal_width (W w) excluded_constraints domain =
+        match for_exact_width (W w) excluded_constraints domain with 
         Some (cstr) -> Some(cstr)
         |None ->
            if w<2 then None else 
-           below_maximal_width (W (w-1)) domain ;;       
+           below_maximal_width (W (w-1)) excluded_constraints domain ;;       
   
   end ;;
 
   let below_maximal_width = Private.below_maximal_width ;;
 
-  let effective_max_width base_set proposed_width =
-     match Private.below_maximal_width proposed_width base_set with 
+  let effective_max_width base_set excluded_constraints proposed_width =
+     match Private.below_maximal_width proposed_width excluded_constraints base_set with 
      None -> W 0
      |Some(cstr) -> Constraint.width cstr ;; 
   
@@ -154,8 +156,9 @@ module Finite_int_set = struct
     ) in 
     (d,Private.of_usual_int_list core_domain) ;; 
 
-  let effective_max_width fis proposed_width = 
-       Highest_constraint.effective_max_width (Private.to_usual_int_list fis) proposed_width ;; 
+  let effective_max_width fis excluded_constraints proposed_width = 
+       Highest_constraint.effective_max_width 
+       (Private.to_usual_int_list fis) excluded_constraints proposed_width ;; 
 
   let empty_set = FIS(0,[]) ;;
 
@@ -224,7 +227,7 @@ module Point = struct
   let constructor base 
      ~max_width:unchecked_max_width 
      ~excluded_full_constraints ~added_partial_constraints = 
-      let checked_max_width = Finite_int_set.effective_max_width base unchecked_max_width in 
+      let checked_max_width = Finite_int_set.effective_max_width base excluded_full_constraints unchecked_max_width in 
       let checked_added_constraints = Constraint.cleanup_list added_partial_constraints in 
       let checked_excluded_constraints = Constraint.cleanup_list(
          List.filter (Private.check_excluded_constraint base checked_max_width ~checked_added_constraints)
