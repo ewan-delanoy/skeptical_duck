@@ -324,7 +324,15 @@ module Point = struct
       ~excluded_full_constraints:new_excluded_pcs
        ~added_partial_constraints:new_added_pcs;;
  
-
+  let highest_constraint_opt pt =
+    if pt.added_partial_constraints <> []
+    then Some(List.hd(List.rev(pt.added_partial_constraints)))
+    else 
+    let (W w) = pt.max_width in 
+    if w < 1 then None else  
+    let domain = Finite_int_set.to_usual_int_list pt.base_set in 
+    Highest_constraint.below_maximal_width 
+       pt.max_width pt.excluded_full_constraints domain ;;
 
   let remove pt vertices_to_be_removed =
     let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
