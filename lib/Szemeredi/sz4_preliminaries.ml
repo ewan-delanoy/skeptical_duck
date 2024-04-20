@@ -22,7 +22,15 @@ type point = Sz4_types.point = {
     added_partial_constraints: constraint_t list
 } ;;
 
+module type MOLD_STATE_TYPE = Sz4_types.MOLD_STATE_TYPE ;;
 
+
+module Mold_state:MOLD_STATE_TYPE = Sz4_types.Mold_state ;;
+
+type mold = {
+    solutions : (int list) list;
+    forced_elements : int list;
+} ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
