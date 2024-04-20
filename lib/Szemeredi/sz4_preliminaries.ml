@@ -251,6 +251,13 @@ module Point = struct
         added_partial_constraints = checked_added_constraints;
      } ;; 
   
+  let exclude pt constraint_to_be_excluded = 
+    let new_excluded_pcs = constraint_to_be_excluded :: pt.excluded_full_constraints in 
+    constructor pt.base_set 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:new_excluded_pcs
+       ~added_partial_constraints:(pt.added_partial_constraints);;
+ 
   let force pt vertices_to_be_forced =
     let new_base = Finite_int_set.remove pt.base_set vertices_to_be_forced in 
     let new_excluded_pcs = List.filter (
