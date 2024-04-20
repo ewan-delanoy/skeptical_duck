@@ -232,6 +232,8 @@ module Point = struct
      else Finite_int_set.constraint_can_apply base_set excl_constraint ;; 
   
   end ;;
+
+  exception Excessive_forcing of point * int list ;; 
   
   let constructor base 
      ~max_width:unchecked_max_width 
@@ -249,6 +251,24 @@ module Point = struct
         added_partial_constraints = checked_added_constraints;
      } ;; 
   
+  let force pt vertices_to_be_forced =
+    let new_base = Finite_int_set.remove pt.base_set vertices_to_be_forced in 
+    let new_excluded_pcs = List.filter (
+        fun (C l) -> i_does_not_intersect l vertices_to_be_forced
+    )  pt.excluded_full_constraints 
+    and new_added_pcs = Image.image (
+        fun (C l) -> C(i_setminus l vertices_to_be_forced)
+    )  pt.added_partial_constraints in  
+    if List.mem (C []) new_added_pcs 
+    then raise(Excessive_forcing(pt,vertices_to_be_forced))
+    else 
+    constructor new_base 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:new_excluded_pcs
+       ~added_partial_constraints:new_added_pcs;;
+ 
+
+
   let remove pt vertices_to_be_removed =
     let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
     and selector = List.filter (
