@@ -128,14 +128,28 @@ module Finite_int_set = struct
 
   let to_usual_int_list (FIS(n,scrappers)) = i_setminus (Int_range.range 1 n) scrappers ;; 
   
+  let empty_set = FIS(0,[]) ;;
+
   let of_usual_int_list domain =
-       if domain = [] then FIS(0,[]) else 
+       if domain = [] then empty_set else 
        let n = List.hd(List.rev domain) in 
        FIS(n,i_setminus (Int_range.range 1 n) domain) ;;   
 
   let translation_goes_negative d = function 
     [] -> false
     | m :: _ -> m+d<0 ;;      
+
+  let remove_element fis k=
+    let (FIS(n,scrappers)) = fis in 
+    if (k>n)||(k<1) then fis else 
+    let new_scrappers = i_insert k scrappers in 
+    if k <> n then FIS(n,new_scrappers) else 
+    if scrappers = Int_range.range 1 (n-1)
+    then empty_set
+    else   
+    let new_z =  to_usual_int_list (FIS(n-1,scrappers)) in 
+    let new_max = List.hd(List.rev new_z) in 
+    FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
 
   end ;;
 
@@ -160,7 +174,7 @@ module Finite_int_set = struct
        Highest_constraint.effective_max_width 
        (Private.to_usual_int_list fis) excluded_constraints proposed_width ;; 
 
-  let empty_set = FIS(0,[]) ;;
+  let empty_set = Private.empty_set ;;
 
   let max (FIS(n,_)) = n ;; 
 
@@ -174,24 +188,20 @@ module Finite_int_set = struct
       Total_ordering.silex_for_intlists scr1 scr2
   ): finite_int_set Total_ordering_t.t);;
 
-  let remove_element fis k=
-    let (FIS(n,scrappers)) = fis in 
-    if (k>n)||(k<1) then fis else 
-    let new_scrappers = i_insert k scrappers in 
-    if k <> n then FIS(n,new_scrappers) else 
-    if scrappers = Int_range.range 1 (n-1)
-    then empty_set
-    else   
-    let new_z =  Private.to_usual_int_list (FIS(n-1,scrappers)) in 
-    let new_max = List.hd(List.rev new_z) in 
-    FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
+  let remove fis vertices_to_be_removed =
+    let (FIS(n,_scrappers)) = fis in 
+    let old_list = Private.to_usual_int_list fis in 
+    let vertices_in_order = i_sort vertices_to_be_removed in 
+    let new_list = i_setminus old_list vertices_in_order in 
+    Private.of_usual_int_list new_list ;; 
 
+    
   (*
   
-  remove_element (FIS(10,[3;7;8;9])) 10 ;;
-  remove_element (FIS(3,[])) 3 ;;
-  remove_element (FIS(1,[])) 1 ;;
-  remove_element (FIS(1,[])) 4 ;;
+  remove (FIS(10,[3;7;8;9])) [10] ;;
+  remove (FIS(3,[])) [3] ;;
+  remove (FIS(1,[])) [1] ;;
+  remove (FIS(1,[])) [4] ;;
 
   *)
 
