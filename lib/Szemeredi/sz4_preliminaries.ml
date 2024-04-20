@@ -188,8 +188,7 @@ module Finite_int_set = struct
       Total_ordering.silex_for_intlists scr1 scr2
   ): finite_int_set Total_ordering_t.t);;
 
-  let remove fis vertices_to_be_removed =
-    let (FIS(n,_scrappers)) = fis in 
+  let remove fis vertices_to_be_removed = 
     let old_list = Private.to_usual_int_list fis in 
     let vertices_in_order = i_sort vertices_to_be_removed in 
     let new_list = i_setminus old_list vertices_in_order in 
@@ -250,6 +249,19 @@ module Point = struct
         added_partial_constraints = checked_added_constraints;
      } ;; 
   
+  let remove pt vertices_to_be_removed =
+    let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
+    and selector = List.filter (
+        fun (C l) -> i_does_not_intersect l vertices_to_be_removed
+    ) in 
+    let new_excluded_pcs = selector pt.excluded_full_constraints 
+    and new_added_pcs = selector pt.added_partial_constraints in  
+    constructor new_base 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:new_excluded_pcs
+       ~added_partial_constraints:new_added_pcs;;
+
+
   end ;; 
   
   
