@@ -230,18 +230,35 @@ end ;;
 
 module Point = struct
 
+  (*
+
+  The record { 
+    base_set:b, 
+    max_width:w, 
+    excluded_full_constraints: efc,
+    added_partial_constraints: apc
+  } 
+  represents the hypergraph (b,H) 
+  where H=(Sz(b,w) \ E) u A= (Sz(b,w) u A) \ E 
+  where 
+  - Sz(b,w) is the set of all arithmetic progressions 
+  inside b with width <=w (in particular, this set is 
+  empty when w = 0)
+  - A is a set of added constraints of cardinality <= 2.
+  - E is a set of excluded arithmetic progressions inside
+  b  
+
+  *)
+
   module Private = struct
   
-  let check_excluded_constraint base_set checked_max_width ~checked_added_constraints excl_constraint=
+  let check_excluded_constraint base_set checked_max_width 
+       ~checked_added_constraints excl_constraint=
      if Constraint.width(excl_constraint)>checked_max_width 
      then false 
      else if List.exists (Constraint.is_weaker_than excl_constraint) checked_added_constraints 
      then false
      else Finite_int_set.constraint_can_apply base_set excl_constraint ;; 
-  
-  end ;;
-
-  exception Excessive_forcing of point * int list ;; 
   
   let constructor base 
      ~max_width:unchecked_max_width 
@@ -249,7 +266,7 @@ module Point = struct
       let checked_max_width = Finite_int_set.effective_max_width base excluded_full_constraints unchecked_max_width in 
       let checked_added_constraints = Constraint.cleanup_list added_partial_constraints in 
       let checked_excluded_constraints = Constraint.cleanup_list(
-         List.filter (Private.check_excluded_constraint base checked_max_width ~checked_added_constraints)
+         List.filter (check_excluded_constraint base checked_max_width ~checked_added_constraints)
          ( excluded_full_constraints)
       ) in 
       {
@@ -259,12 +276,37 @@ module Point = struct
         added_partial_constraints = checked_added_constraints;
      } ;; 
   
-  let exclude pt constraint_to_be_excluded = 
-    let new_excluded_pcs = constraint_to_be_excluded :: pt.excluded_full_constraints in 
+
+  let exclude_full_arithmetic_progression pt constraint_to_be_excluded = 
+    let new_excluded_fcs = constraint_to_be_excluded :: pt.excluded_full_constraints in 
     constructor pt.base_set 
      ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_pcs
+      ~excluded_full_constraints:new_excluded_fcs
        ~added_partial_constraints:(pt.added_partial_constraints);;
+   
+  let exclude_partial_arithmetic_progression pt constraint_to_be_excluded = 
+    let new_added_pcs = 
+    List.filter (fun c -> c <> constraint_to_be_excluded) 
+       pt.added_partial_constraints in 
+    constructor pt.base_set 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:pt.excluded_full_constraints
+       ~added_partial_constraints:new_added_pcs;;
+   
+
+  end ;;
+
+  exception Excessive_forcing of point * int list ;; 
+  
+  let constructor = Private.constructor ;; 
+  
+  let exclude pt constraint_to_be_excluded = 
+    if Private.check_excluded_constraint 
+        pt.base_set pt.max_width 
+        ~checked_added_constraints:[] 
+        constraint_to_be_excluded
+    then Private.exclude_full_arithmetic_progression pt constraint_to_be_excluded
+    else Private.exclude_partial_arithmetic_progression pt constraint_to_be_excluded ;;
  
   let force pt vertices_to_be_forced =
     let new_base = Finite_int_set.remove pt.base_set vertices_to_be_forced in 
