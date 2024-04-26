@@ -306,6 +306,7 @@ module Point = struct
       ~excluded_full_constraints:new_excluded_pcs
        ~added_partial_constraints:new_added_pcs;; 
 
+
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
@@ -354,6 +355,10 @@ module Point = struct
 
   let remove = Private.remove ;;
 
+  let subset_is_admissible pt subset =
+      ((Highest_constraint.below_maximal_width 
+       pt.max_width [] subset) 
+       =None);;
 
   end ;; 
   
