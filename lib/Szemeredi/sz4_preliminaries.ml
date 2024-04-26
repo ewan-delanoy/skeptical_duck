@@ -353,18 +353,40 @@ module Point = struct
 
 module Lightweight_mold_state = struct 
 
+let default = U1 ;;
+let in_free_case (_pt:point) = default ;; 
+
+
 end ;;
 
 module Heavyweight_mold_state = struct 
+
+let default = U2 ;;
+let in_free_case (_pt:point) = default ;; 
 
 end ;;
 
 
 module Mold = struct 
 
+ let in_free_case pt =
+    let base = Finite_int_set.to_usual_int_list pt.base_set in 
+   { 
+   solutions  = [base]; 
+   forced_elements = base; 
+   }
+;;
+
 end ;;
 
 module Mold_with_state = struct 
+
+let in_free_case pt =
+   MWS(
+     Mold.in_free_case pt,
+     Lightweight_mold_state.in_free_case pt,
+     Heavyweight_mold_state.in_free_case pt
+   );;
 
 end ;;
 
