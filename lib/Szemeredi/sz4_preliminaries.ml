@@ -22,11 +22,16 @@ type point = Sz4_types.point = {
     added_partial_constraints: constraint_t list
 } ;;
 
+type lightweight_mold_state = Sz4_types.lightweight_mold_state = U1 ;;
+type heavyweight_mold_state = Sz4_types.heavyweight_mold_state = U2 ;; 
 
-type mold = {
+type mold = Sz4_types.mold = {
     solutions : (int list) list;
     forced_elements : int list;
 } ;;
+
+type mold_with_state = Sz4_types.mold_with_state = MWS of 
+   mold * lightweight_mold_state * heavyweight_mold_state ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -346,5 +351,20 @@ module Point = struct
   end ;; 
   
 
-  
+module Lightweight_mold_state = struct 
+
+end ;;
+
+module Heavyweight_mold_state = struct 
+
+end ;;
+
+
+module Mold = struct 
+
+end ;;
+
+module Mold_with_state = struct 
+
+end ;;
 

@@ -24,10 +24,17 @@ type point = {
 } ;;
 
 
+type lightweight_mold_state = U1 ;;
+type heavyweight_mold_state = U2 ;; 
+
 type mold = {
     solutions : (int list) list;
     forced_elements : int list;
 } ;;
+
+type mold_with_state = MWS of 
+   mold * lightweight_mold_state * heavyweight_mold_state ;; 
+
 
 
 
