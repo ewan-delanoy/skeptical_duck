@@ -22,9 +22,6 @@ type point = Sz4_types.point = {
     added_partial_constraints: constraint_t list
 } ;;
 
-module type MOLD_STATE_TYPE = Sz4_types.MOLD_STATE_TYPE ;;
-
-
 
 type mold = {
     solutions : (int list) list;
@@ -348,11 +345,6 @@ module Point = struct
 
   end ;; 
   
-module Mold_state:MOLD_STATE_TYPE = struct 
 
-type t = unit ;; 
-
-
-end ;;
   
 

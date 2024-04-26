@@ -23,11 +23,6 @@ type point = {
     added_partial_constraints: constraint_t list
 } ;;
 
-module type MOLD_STATE_TYPE = sig 
-
-type t
-
-end ;;
 
 type mold = {
     solutions : (int list) list;
