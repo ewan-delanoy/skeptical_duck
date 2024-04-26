@@ -294,6 +294,17 @@ module Point = struct
       ~excluded_full_constraints:pt.excluded_full_constraints
        ~added_partial_constraints:new_added_pcs;;
    
+  let remove pt vertices_to_be_removed =
+    let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
+    and selector = List.filter (
+        fun (C l) -> i_does_not_intersect l vertices_to_be_removed
+    ) in 
+    let new_excluded_pcs = selector pt.excluded_full_constraints 
+    and new_added_pcs = selector pt.added_partial_constraints in  
+    constructor new_base 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:new_excluded_pcs
+       ~added_partial_constraints:new_added_pcs;; 
 
   end ;;
 
@@ -320,10 +331,16 @@ module Point = struct
     if List.mem (C []) new_added_pcs 
     then raise(Excessive_forcing(pt,vertices_to_be_forced))
     else 
-    constructor new_base 
+    let (automatic,non_automatic) = 
+      List.partition (fun (C l)->(List.length l)=1 ) new_added_pcs in 
+    let forced_elements = Image.image (fun (C l)->List.hd l) automatic in 
+    let draft = constructor new_base 
      ~max_width:pt.max_width 
       ~excluded_full_constraints:new_excluded_pcs
-       ~added_partial_constraints:new_added_pcs;;
+       ~added_partial_constraints:non_automatic in 
+    if forced_elements = []
+    then draft
+    else Private.remove draft forced_elements;;
  
   let highest_constraint_opt pt =
     if pt.added_partial_constraints <> []
@@ -335,17 +352,7 @@ module Point = struct
     Highest_constraint.below_maximal_width 
        pt.max_width pt.excluded_full_constraints domain ;;
 
-  let remove pt vertices_to_be_removed =
-    let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
-    and selector = List.filter (
-        fun (C l) -> i_does_not_intersect l vertices_to_be_removed
-    ) in 
-    let new_excluded_pcs = selector pt.excluded_full_constraints 
-    and new_added_pcs = selector pt.added_partial_constraints in  
-    constructor new_base 
-     ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_pcs
-       ~added_partial_constraints:new_added_pcs;;
+  let remove = Private.remove ;;
 
 
   end ;; 
