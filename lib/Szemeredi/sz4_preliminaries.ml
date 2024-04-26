@@ -25,7 +25,6 @@ type point = Sz4_types.point = {
 module type MOLD_STATE_TYPE = Sz4_types.MOLD_STATE_TYPE ;;
 
 
-module Mold_state:MOLD_STATE_TYPE = Sz4_types.Mold_state ;;
 
 type mold = {
     solutions : (int list) list;
@@ -349,5 +348,11 @@ module Point = struct
 
   end ;; 
   
+module Mold_state:MOLD_STATE_TYPE = struct 
+
+type t = unit ;; 
+
+
+end ;;
   
 

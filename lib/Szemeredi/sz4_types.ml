@@ -29,12 +29,6 @@ type t
 
 end ;;
 
-module Mold_state:MOLD_STATE_TYPE = struct
-
-type t = unit ;; 
-
-end ;;
-
 type mold = {
     solutions : (int list) list;
     forced_elements : int list;
