@@ -306,11 +306,66 @@ module Point = struct
       ~excluded_full_constraints:new_excluded_pcs
        ~added_partial_constraints:new_added_pcs;; 
 
+  let left_complementary_pairs domain (W max_w) j = 
+    let v_max = List.hd(List.rev domain) in 
+    let upper_bound = min max_w ((v_max-j)/2) in 
+    let range = Int_range.range 1 upper_bound in 
+    List.filter_map (
+         fun w->
+            let u = j+w and v=j+2*w in 
+           if i_is_included_in [u;v] domain 
+           then Some([u;v]) 
+           else None  
+     ) range ;; 
+
+  let middle_complementary_pairs domain (W max_w) j = 
+    let v_min = List.hd domain 
+    and v_max = List.hd(List.rev domain) in 
+    let upper_bound = min max_w (min (j-v_min) (v_max-j)) in 
+    let range = Int_range.range 1 upper_bound in 
+    List.filter_map (
+         fun w->
+            let u = j-w and v=j+w in 
+           if i_is_included_in [u;v] domain 
+           then Some([u;v]) 
+           else None  
+     ) range ;; 
+
+  let right_complementary_pairs domain (W max_w) j = 
+    let v_min = List.hd domain  in 
+    let upper_bound = min max_w ((j-v_min)/2) in 
+    let range = Int_range.range 1 upper_bound in 
+    List.filter_map (
+         fun w->
+            let u = j-2*w and v=j-w in 
+           if i_is_included_in [u;v] domain 
+           then Some([u;v]) 
+           else None  
+     ) range ;; 
+
+  let complementary_pairs domain w j =
+    (left_complementary_pairs domain w j)@
+    (middle_complementary_pairs domain w j)@
+    (right_complementary_pairs domain w j) ;; 
+
+  let other_complements pt j =
+    List.filter_map (
+         fun (C l)->
+           if i_mem j l 
+           then Some(i_outsert j l) 
+           else None  
+     ) pt.added_partial_constraints ;; 
 
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
   
+  let complements pt j = 
+     let domain = Finite_int_set.to_usual_int_list pt.base_set 
+     and w = pt.max_width in 
+     (Private.complementary_pairs domain w j)@
+     (Private.other_complements pt j) ;; 
+
   let constructor = Private.constructor ;; 
   
   let exclude pt constraint_to_be_excluded = 
