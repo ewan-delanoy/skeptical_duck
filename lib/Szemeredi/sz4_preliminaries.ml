@@ -356,6 +356,24 @@ module Point = struct
            else None  
      ) pt.added_partial_constraints ;; 
 
+  
+  let translate t pt =   
+     let new_base = Finite_int_set.translate t pt.base_set in 
+     let new_full = Image.image (fun (C l) ->
+        C(Image.image ((+) t) l)
+     ) pt.excluded_full_constraints
+     and new_partial = Image.image (fun (C l) ->
+        C(Image.image ((+) t) l)
+     ) pt.added_partial_constraints
+     in  
+     {
+        base_set = new_base;
+        max_width = pt.max_width;
+        excluded_full_constraints = new_full;
+        added_partial_constraints = new_partial;
+     } ;; 
+   
+
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
@@ -414,6 +432,8 @@ module Point = struct
       ((Highest_constraint.below_maximal_width 
        pt.max_width [] subset) 
        =None);;
+
+  let translate = Private.translate ;;     
 
   end ;; 
   
