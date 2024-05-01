@@ -386,6 +386,10 @@ module Point = struct
 
   let constructor = Private.constructor ;; 
   
+  let decompose_wrt_translation pt =
+     let (d,_) = Finite_int_set.decompose_wrt_translation pt.base_set in 
+     (d,Private.translate d pt) ;;  
+
   let exclude pt constraint_to_be_excluded = 
     if Private.check_excluded_constraint 
         pt.base_set pt.max_width 
