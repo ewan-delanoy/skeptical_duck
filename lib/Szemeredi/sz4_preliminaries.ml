@@ -72,10 +72,14 @@ let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
 
 module Constraint = struct 
 
-let cleanup_list unchecked_list =
-    let temp1 = Image.image (fun (C cstr)-> cstr) unchecked_list in 
-    let temp2 = il_sort(Ordered_misc.minimal_elts_wrt_inclusion temp1) in 
-    Image.image (fun cstr -> (C cstr) )   temp2 ;;
+let cleanup_list unchecked_list base =
+ let temp1 = List.filter_map (fun (C cstr)-> 
+   if i_is_included_in cstr base 
+   then Some(cstr)
+   else None
+  ) unchecked_list in 
+ let temp2 = il_sort(Ordered_misc.minimal_elts_wrt_inclusion temp1) in 
+ Image.image (fun cstr -> (C cstr) )   temp2 ;;
 
 let is_weaker_than (C cstr_weak) (C cstr_strong) = i_is_included_in cstr_strong cstr_weak ;; 
 
@@ -265,11 +269,12 @@ module Point = struct
      ~max_width:unchecked_max_width 
      ~excluded_full_constraints ~added_partial_constraints = 
       let checked_max_width = Finite_int_set.effective_max_width base excluded_full_constraints unchecked_max_width in 
-      let checked_added_constraints = Constraint.cleanup_list added_partial_constraints in 
+      let base_list = Finite_int_set.to_usual_int_list base in 
+      let checked_added_constraints = Constraint.cleanup_list added_partial_constraints base_list in 
       let checked_excluded_constraints = Constraint.cleanup_list(
          List.filter (check_excluded_constraint base checked_max_width ~checked_added_constraints)
          ( excluded_full_constraints)
-      ) in 
+      ) base_list in 
       {
         base_set = base;
         max_width = checked_max_width;
