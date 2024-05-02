@@ -571,3 +571,105 @@ let in_free_case pt =
 
 end ;;
 
+module Impatient = struct 
+
+module Private = struct 
+
+let impatient_ref = ref ([]: (point * mold_with_state) list) ;; 
+
+let eval_without_remembering_opt pt =
+   if Point.highest_constraint_opt pt = None 
+   then Some(Mold_with_state.in_free_case pt) 
+   else 
+   let n = Finite_int_set.max (pt.base_set) in 
+   let beheaded_pt = Point.remove pt [n] in 
+   match List.assoc_opt pt (!impatient_ref) with 
+    None -> None 
+   |Some beheaded_mws ->
+     let (MWS(beheaded_mold,light,heavy)) = beheaded_mws in 
+     let extended_sols = List.filter_map (
+       fun sol -> let extended_sol = sol @ [n] in 
+         if Point.subset_is_admissible pt extended_sol 
+         then Some extended_sol
+         else None 
+     ) beheaded_mold.solutions in 
+     if extended_sols <> []
+     then Some(Mold_with_state.in_extended_case 
+           pt n extended_sols beheaded_mold light heavy)
+     else 
+     let complements = Point.complements pt n in 
+     (match List.find_opt (
+        fun c-> i_is_included_in c beheaded_mold.forced_elements
+     ) complements with 
+     (Some complement) ->
+       Some(Mold_with_state.in_full_case 
+         pt n complement beheaded_mold light heavy)
+     | None ->
+       Mold_with_state.solution_from_state_opt
+         pt n (beheaded_pt,beheaded_mold) light heavy  
+     ) ;;
+
+
+
+
+let eval_on_pretranslated_opt pt =
+  match List.assoc_opt pt (!impatient_ref) with 
+  (Some old_answer) -> Some old_answer
+  | None ->
+   (
+      match eval_without_remembering_opt pt with 
+      None -> None 
+      |Some new_answer ->
+        let _ = (impatient_ref := (pt,new_answer) :: 
+          (!impatient_ref)) in 
+        Some new_answer
+
+   ) ;;      
+
+let eval_opt pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Option.map(Mold_with_state.translate d)
+     (eval_on_pretranslated_opt pretranslated_pt);;
+
+let rec helper_for_rails_computing 
+   (treated,current,vertices_to_be_removed) =
+ match vertices_to_be_removed with 
+  [] -> current :: treated 
+ |v :: other_vertices ->
+   let next_one = Point.remove current [v] in 
+   helper_for_rails_computing 
+   (current :: treated,next_one,other_vertices) ;;
+    
+let compute_rails pt =
+   let base = List.tl(Finite_int_set.to_usual_int_list pt.base_set) in 
+   helper_for_rails_computing 
+   ([],pt,List.rev base) ;; 
+
+let rec helper_for_rails_evaluation (current,to_be_treated) =
+  match to_be_treated with 
+  [] -> Some current 
+  | pt :: other_points ->
+     match eval_opt pt with 
+       None -> None  
+      |Some next_one ->
+        helper_for_rails_evaluation (next_one,other_points) ;; 
+
+end ;;
+
+let eval_on_rails_opt pt = 
+   match Private.compute_rails pt with 
+   [] -> Private.eval_opt pt 
+   | spark :: rails ->
+     (
+      match Private.eval_opt spark with 
+      None -> None 
+      |Some spark_mold ->
+     Private.helper_for_rails_evaluation (spark_mold,rails) 
+     );; 
+
+let eval_opt = Private.eval_opt ;; 
+
+end ;;
+
+
