@@ -583,7 +583,7 @@ let eval_without_remembering_opt pt =
    else 
    let n = Finite_int_set.max (pt.base_set) in 
    let beheaded_pt = Point.remove pt [n] in 
-   match List.assoc_opt pt (!impatient_ref) with 
+   match List.assoc_opt beheaded_pt (!impatient_ref) with 
     None -> None 
    |Some beheaded_mws ->
      let (MWS(beheaded_mold,light,heavy)) = beheaded_mws in 
