@@ -505,8 +505,14 @@ module Mold = struct
    { 
    solutions  = [base]; 
    forced_elements = base; 
-   }
-;;
+   } ;;
+
+ let translate d mold = 
+    let tr = Image.image ((+) d) in 
+    { 
+        solutions  = Image.image tr mold.solutions; 
+        forced_elements = tr mold.forced_elements; 
+    } ;;
 
 end ;;
 
@@ -559,6 +565,9 @@ let in_free_case pt =
         Some(MWS(mold,def,new_heavy)) 
          |None -> None
         );;     
+
+ let translate d (MWS(mold,light,heavy)) =
+     MWS(Mold.translate d mold,light,heavy) ;;     
 
 end ;;
 
