@@ -455,6 +455,12 @@ let in_extended_case
    (_beheaded_mold:mold) (_light:lightweight_mold_state) =
    default ;;
 
+let in_full_case 
+   (_pt:point) (_n:int) (_complements:int list) 
+   (_beheaded_mold:mold) (_light:lightweight_mold_state) =
+   default ;;
+
+
 let in_free_case (_pt:point) = default ;; 
 
 
@@ -467,8 +473,14 @@ let default = U2 ;;
 
 let in_extended_case 
    (_pt:point) (_n:int) (_extended_sols:int list list) 
-   (_beheaded_mold:mold) (_light:heavyweight_mold_state) =
+   (_beheaded_mold:mold) (_heavy:heavyweight_mold_state) =
    default ;;
+
+let in_full_case 
+   (_pt:point) (_n:int) (_complements:int list) 
+   (_beheaded_mold:mold) (_heavy:heavyweight_mold_state) =
+   default ;;
+
 let in_free_case (_pt:point) = default ;; 
 
 end ;;
@@ -499,6 +511,19 @@ let in_extended_case
      Lightweight_mold_state.in_extended_case pt n extended_sols beheaded_mold light,
      Heavyweight_mold_state.in_extended_case pt n extended_sols beheaded_mold heavy
    );;
+
+ let in_full_case 
+    pt n complement beheaded_mold light heavy =
+    let new_mold = {
+       solutions = beheaded_mold.solutions;
+       forced_elements = []
+    } in 
+    MWS(
+     new_mold,
+     Lightweight_mold_state.in_full_case pt n complement beheaded_mold light,
+     Heavyweight_mold_state.in_full_case pt n complement beheaded_mold heavy
+   );;
+
 
 let in_free_case pt =
    MWS(
