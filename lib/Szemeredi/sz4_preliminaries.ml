@@ -450,7 +450,13 @@ module Point = struct
 module Lightweight_mold_state = struct 
 
 let default = U1 ;;
+let in_extended_case 
+   (_pt:point) (_n:int) (_extended_sols:int list list) 
+   (_beheaded_mold:mold) (_light:lightweight_mold_state) =
+   default ;;
+
 let in_free_case (_pt:point) = default ;; 
+
 
 
 end ;;
@@ -458,6 +464,11 @@ end ;;
 module Heavyweight_mold_state = struct 
 
 let default = U2 ;;
+
+let in_extended_case 
+   (_pt:point) (_n:int) (_extended_sols:int list list) 
+   (_beheaded_mold:mold) (_light:heavyweight_mold_state) =
+   default ;;
 let in_free_case (_pt:point) = default ;; 
 
 end ;;
@@ -477,12 +488,32 @@ end ;;
 
 module Mold_with_state = struct 
 
+let in_extended_case 
+    pt n extended_sols beheaded_mold light heavy =
+    let new_mold = {
+       solutions = extended_sols;
+       forced_elements = (beheaded_mold.forced_elements)@[n]
+    } in 
+    MWS(
+     new_mold,
+     Lightweight_mold_state.in_extended_case pt n extended_sols beheaded_mold light,
+     Heavyweight_mold_state.in_extended_case pt n extended_sols beheaded_mold heavy
+   );;
+
 let in_free_case pt =
    MWS(
      Mold.in_free_case pt,
      Lightweight_mold_state.in_free_case pt,
      Heavyweight_mold_state.in_free_case pt
    );;
+
+(*
+       Mold_with_state.in_full_case 
+         pt n complement beheaded_mold light heavy
+     | None ->
+       Mold_with_state.use_state
+         pt n beheaded_mold light heavy 
+*)
 
 end ;;
 
