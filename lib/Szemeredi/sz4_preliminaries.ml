@@ -463,6 +463,11 @@ let in_full_case
 
 let in_free_case (_pt:point) = default ;; 
 
+let solution_from_state_opt
+   (_pt:point) (_n:int) 
+     ((_beheaded_pt:point),(_beheaded_mold:mold)) 
+       (_light:lightweight_mold_state) =
+       (None: (mold * lightweight_mold_state) option) ;;     
 
 
 end ;;
@@ -482,6 +487,13 @@ let in_full_case
    default ;;
 
 let in_free_case (_pt:point) = default ;; 
+
+let solution_from_state_opt
+   (_pt:point) (_n:int) 
+     ((_beheaded_pt:point),(_beheaded_mold:mold)) 
+       (_heavy:heavyweight_mold_state) =
+       (None: (mold * heavyweight_mold_state) option) ;;     
+
 
 end ;;
 
@@ -532,13 +544,21 @@ let in_free_case pt =
      Heavyweight_mold_state.in_free_case pt
    );;
 
-(*
-       Mold_with_state.in_full_case 
-         pt n complement beheaded_mold light heavy
-     | None ->
-       Mold_with_state.use_state
-         pt n beheaded_mold light heavy 
-*)
+ let solution_from_state_opt
+         pt n (beheaded_pt,beheaded_mold) light heavy =
+    match  Lightweight_mold_state.solution_from_state_opt
+         pt n (beheaded_pt,beheaded_mold) light  with 
+    (Some (mold,new_light)) -> 
+        let def = Heavyweight_mold_state.default in 
+        Some(MWS(mold,new_light,def)) 
+    |None ->
+        (match Heavyweight_mold_state.solution_from_state_opt
+         pt n (beheaded_pt,beheaded_mold) heavy with 
+         (Some (mold,new_heavy)) -> 
+        let def = Lightweight_mold_state.default in 
+        Some(MWS(mold,def,new_heavy)) 
+         |None -> None
+        );;     
 
 end ;;
 
