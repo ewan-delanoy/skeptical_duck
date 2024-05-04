@@ -393,17 +393,44 @@ module Point = struct
       let m = List.length(List.hd(List.rev realizations)) in 
       List.filter (fun y->List.length(y)=m-offset) realizations ;;  
 
+    let complements pt j = 
+     let domain = Finite_int_set.to_usual_int_list pt.base_set 
+     and w = pt.max_width in 
+     (complementary_pairs domain w j)@
+     (other_complements pt j) ;; 
+
+   exception Excessive_forcing_reached ;; 
+
+   let force_one_vertex pt vertex_to_be_forced =
+    let new_base = Finite_int_set.remove pt.base_set [vertex_to_be_forced] in 
+    let new_excluded_pcs = List.filter (
+        fun (C l) -> not(i_mem vertex_to_be_forced l)
+    )  pt.excluded_full_constraints 
+    and new_added_pcs = complements pt vertex_to_be_forced in  
+    if List.mem [] new_added_pcs 
+    then raise(Excessive_forcing_reached)
+    else 
+    let (automatic,non_automatic) = 
+      List.partition (fun l->(List.length l)=1 ) new_added_pcs in 
+    let mandatory_elements = Image.image List.hd automatic 
+    and final_added_pcs = Image.image(fun l-> C l) non_automatic in 
+    let draft = constructor new_base 
+     ~max_width:pt.max_width 
+      ~excluded_full_constraints:new_excluded_pcs
+       ~added_partial_constraints:final_added_pcs in 
+    if mandatory_elements = []
+    then draft
+    else remove draft mandatory_elements;;
+
+
+
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
   
   let all_solutions = Private.all_solutions ;; 
 
-  let complements pt j = 
-     let domain = Finite_int_set.to_usual_int_list pt.base_set 
-     and w = pt.max_width in 
-     (Private.complementary_pairs domain w j)@
-     (Private.other_complements pt j) ;; 
+  let complements = Private.complements ;; 
 
   let constructor = Private.constructor ;; 
   
@@ -419,27 +446,10 @@ module Point = struct
     then Private.exclude_full_arithmetic_progression pt constraint_to_be_excluded
     else Private.exclude_partial_arithmetic_progression pt constraint_to_be_excluded ;;
  
-  let force pt vertices_to_be_forced =
-    let new_base = Finite_int_set.remove pt.base_set vertices_to_be_forced in 
-    let new_excluded_pcs = List.filter (
-        fun (C l) -> i_does_not_intersect l vertices_to_be_forced
-    )  pt.excluded_full_constraints 
-    and new_added_pcs = Image.image (
-        fun (C l) -> C(i_setminus l vertices_to_be_forced)
-    )  pt.added_partial_constraints in  
-    if List.mem (C []) new_added_pcs 
-    then raise(Excessive_forcing(pt,vertices_to_be_forced))
-    else 
-    let (automatic,non_automatic) = 
-      List.partition (fun (C l)->(List.length l)=1 ) new_added_pcs in 
-    let mandatory_elements = Image.image (fun (C l)->List.hd l) automatic in 
-    let draft = constructor new_base 
-     ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_pcs
-       ~added_partial_constraints:non_automatic in 
-    if mandatory_elements = []
-    then draft
-    else Private.remove draft mandatory_elements;;
+  let force pt vertices_to_be_forced = 
+     try List.fold_left Private.force_one_vertex pt vertices_to_be_forced with 
+     Private.Excessive_forcing_reached ->   
+       raise(Excessive_forcing(pt,vertices_to_be_forced)) ;; 
  
   let highest_constraint_opt pt =
     if pt.added_partial_constraints <> []
