@@ -378,11 +378,27 @@ module Point = struct
         added_partial_constraints = new_partial;
      } ;; 
    
+   let subset_is_admissible pt subset =
+      ((Highest_constraint.below_maximal_width 
+       pt.max_width [] subset) 
+       =None);;
+
+   let all_realizations =Memoized.make(fun pt ->
+      let base = Finite_int_set.to_usual_int_list pt.base_set in 
+      let temp1 = il_sort(List_again.power_set base) in 
+      List.filter (subset_is_admissible pt) temp1)  ;; 
+
+   let all_solutions pt offset =
+      let realizations = all_realizations pt  in 
+      let m = List.length(List.hd(List.rev realizations)) in 
+      List.filter (fun y->List.length(y)=m-offset)  ;;  
 
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
   
+  let all_solutions = Private.all_solutions ;; 
+
   let complements pt j = 
      let domain = Finite_int_set.to_usual_int_list pt.base_set 
      and w = pt.max_width in 
@@ -437,10 +453,7 @@ module Point = struct
 
   let remove = Private.remove ;;
 
-  let subset_is_admissible pt subset =
-      ((Highest_constraint.below_maximal_width 
-       pt.max_width [] subset) 
-       =None);;
+  let subset_is_admissible = Private.subset_is_admissible ;;
 
   let translate = Private.translate ;;     
 
