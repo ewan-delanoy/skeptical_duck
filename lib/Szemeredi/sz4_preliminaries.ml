@@ -520,7 +520,21 @@ module Mold = struct
    mandatory_elements = base; 
    } ;;
 
+ let join mold1 mold2 =
+     {
+       solutions = il_merge mold1.solutions mold2.solutions ;
+       mandatory_elements = i_intersect 
+            mold1.mandatory_elements mold2.mandatory_elements   
+     } ;; 
+
  let solution_size mold = List.length(List.hd mold.solutions) ;;   
+
+ let successful_append forced_mold n =
+     {
+       solutions=Image.image(fun sol->sol@[n]) forced_mold.solutions;
+       mandatory_elements=(forced_mold.mandatory_elements)@[n]
+     } ;;
+
 
  let translate d mold = 
     let tr = Image.image ((+) d) in 
