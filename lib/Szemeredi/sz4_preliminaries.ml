@@ -413,7 +413,12 @@ module Point = struct
     let (automatic,non_automatic) = 
       List.partition (fun l->(List.length l)=1 ) new_added_pcs in 
     let mandatory_elements = Image.image List.hd automatic 
-    and final_added_pcs = Image.image(fun l-> C l) non_automatic in 
+    and retained_added_pcs = 
+       List.filter_map(fun ( C l)-> 
+         if not(i_mem vertex_to_be_forced l) then Some l else None) 
+       pt.added_partial_constraints in 
+    let final_added_pcs = Image.image(fun l-> C l) 
+       (il_merge retained_added_pcs non_automatic) in 
     let draft = constructor new_base 
      ~max_width:pt.max_width 
       ~excluded_full_constraints:new_excluded_pcs
