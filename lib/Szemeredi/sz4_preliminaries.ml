@@ -520,6 +520,8 @@ module Mold = struct
    forced_elements = base; 
    } ;;
 
+ let solution_size mold = List.length(List.hd mold.solutions) ;;   
+
  let translate d mold = 
     let tr = Image.image ((+) d) in 
     { 
