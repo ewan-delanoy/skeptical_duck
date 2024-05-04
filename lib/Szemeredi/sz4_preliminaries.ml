@@ -391,7 +391,7 @@ module Point = struct
    let all_solutions pt offset =
       let realizations = all_realizations pt  in 
       let m = List.length(List.hd(List.rev realizations)) in 
-      List.filter (fun y->List.length(y)=m-offset)  ;;  
+      List.filter (fun y->List.length(y)=m-offset) realizations ;;  
 
   end ;;
 
