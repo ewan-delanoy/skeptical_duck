@@ -29,7 +29,7 @@ type heavyweight_mold_state = U2 ;;
 
 type mold = {
     solutions : (int list) list;
-    forced_elements : int list;
+    mandatory_elements : int list;
 } ;;
 
 type mold_with_state = MWS of 

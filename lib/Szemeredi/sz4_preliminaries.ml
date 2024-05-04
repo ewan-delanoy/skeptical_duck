@@ -27,7 +27,7 @@ type heavyweight_mold_state = Sz4_types.heavyweight_mold_state = U2 ;;
 
 type mold = Sz4_types.mold = {
     solutions : (int list) list;
-    forced_elements : int list;
+    mandatory_elements : int list;
 } ;;
 
 type mold_with_state = Sz4_types.mold_with_state = MWS of 
@@ -432,14 +432,14 @@ module Point = struct
     else 
     let (automatic,non_automatic) = 
       List.partition (fun (C l)->(List.length l)=1 ) new_added_pcs in 
-    let forced_elements = Image.image (fun (C l)->List.hd l) automatic in 
+    let mandatory_elements = Image.image (fun (C l)->List.hd l) automatic in 
     let draft = constructor new_base 
      ~max_width:pt.max_width 
       ~excluded_full_constraints:new_excluded_pcs
        ~added_partial_constraints:non_automatic in 
-    if forced_elements = []
+    if mandatory_elements = []
     then draft
-    else Private.remove draft forced_elements;;
+    else Private.remove draft mandatory_elements;;
  
   let highest_constraint_opt pt =
     if pt.added_partial_constraints <> []
@@ -517,7 +517,7 @@ module Mold = struct
     let base = Finite_int_set.to_usual_int_list pt.base_set in 
    { 
    solutions  = [base]; 
-   forced_elements = base; 
+   mandatory_elements = base; 
    } ;;
 
  let solution_size mold = List.length(List.hd mold.solutions) ;;   
@@ -526,7 +526,7 @@ module Mold = struct
     let tr = Image.image ((+) d) in 
     { 
         solutions  = Image.image tr mold.solutions; 
-        forced_elements = tr mold.forced_elements; 
+        mandatory_elements = tr mold.mandatory_elements; 
     } ;;
 
 end ;;
@@ -537,7 +537,7 @@ let in_extended_case
     pt n extended_sols beheaded_mold light heavy =
     let new_mold = {
        solutions = extended_sols;
-       forced_elements = (beheaded_mold.forced_elements)@[n]
+       mandatory_elements = (beheaded_mold.mandatory_elements)@[n]
     } in 
     MWS(
      new_mold,
@@ -549,7 +549,7 @@ let in_extended_case
     pt n complement beheaded_mold light heavy =
     let new_mold = {
        solutions = beheaded_mold.solutions;
-       forced_elements = []
+       mandatory_elements = []
     } in 
     MWS(
      new_mold,
@@ -616,7 +616,7 @@ let eval_without_remembering_opt pt =
      else 
      let complements = Point.complements pt n in 
      (match List.find_opt (
-        fun c-> i_is_included_in c beheaded_mold.forced_elements
+        fun c-> i_is_included_in c beheaded_mold.mandatory_elements
      ) complements with 
      (Some complement) ->
        Some(Mold_with_state.in_full_case 
