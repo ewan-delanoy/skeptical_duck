@@ -579,6 +579,8 @@ let in_free_case pt =
          |None -> None
         );;     
 
+  let to_mold (MWS(mold,_,_)) = mold ;; 
+
  let translate d (MWS(mold,light,heavy)) =
      MWS(Mold.translate d mold,light,heavy) ;;     
 
