@@ -472,23 +472,46 @@ module Private = struct
 
 let max_size = 18 ;; 
 
-let all_realizations =Memoized.make(fun pt ->
+let memoized_all_realizations =Memoized.make(fun pt ->
       let base = Finite_int_set.to_usual_int_list pt.base_set in 
       let temp1 = il_sort(List_again.power_set base) in 
       List.filter (Point.subset_is_admissible pt) temp1)  ;; 
 
-
-end ;;
-
 let all_realizations pt =
-    if Point.size(pt) > Private.max_size 
+    if Point.size(pt) > max_size 
     then raise(Size_too_big(pt))
-    else Private.all_realizations pt ;; 
-    
+    else memoized_all_realizations pt ;;
+
 let all_solutions pt offset =
       let realizations = all_realizations pt  in 
       let m = List.length(List.hd(List.rev realizations)) in 
       List.filter (fun y->List.length(y)=m-offset) realizations ;;  
+
+
+let rec helper_for_solution_chooser (sols,base) =
+     if List.length sols = 1 then List.hd sols else 
+     match base with 
+      [] -> failwith("Error in Brute_force.helper_for_solution_chooser")
+     |v::others ->
+       let possibly_empty = List.filter (fun sol ->not(i_mem v sol)) sols in 
+       let not_empty = (if possibly_empty = [] then sols else possibly_empty) in 
+       helper_for_solution_chooser (not_empty,others) ;;
+
+let eval pt = 
+     let base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
+     and sols = all_solutions pt 0 in 
+     {
+       solutions = [helper_for_solution_chooser (sols,base)]; 
+       mandatory_elements = i_fold_intersect sols
+     } ;; 
+
+end ;;
+
+let all_realizations = Private.all_realizations ;; 
+    
+let all_solutions = Private.all_solutions ;;  
+
+let eval = Private.eval ;;  
 
 let max_size = Private.max_size ;;
 
