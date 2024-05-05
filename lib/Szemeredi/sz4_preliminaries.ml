@@ -763,4 +763,85 @@ let eval_opt = Private.eval_opt ;;
 
 end ;;
 
+module Painstaking = struct 
+
+exception Initial_data_already_accessible ;;
+
+module Private = struct 
+
+let painstaking_ref = ref ([]: (point * mold) list) ;; 
+
+let eval_on_nonfree old_f nonfree_pt =
+   match Impatient.eval_on_rails_opt nonfree_pt with 
+    Some old_answer -> Mold_with_state.to_mold old_answer 
+   |None -> 
+     let n = Finite_int_set.max (nonfree_pt.base_set) in 
+     let beheaded_pt = Point.remove nonfree_pt [n] in 
+     let forced_pt = Point.force nonfree_pt [n] in 
+     let beheaded_mold = old_f (beheaded_pt,false) 
+     and forced_mold = Mold.successful_append 
+                      (old_f (forced_pt,false)) n in 
+     let m0 = (Mold.solution_size beheaded_mold)
+     and m1 = (Mold.solution_size forced_mold) in 
+     if m1 > m0 (* implying m1 = m0 + 1 *)
+     then forced_mold 
+     else if m1 = m0
+     then Mold.join forced_mold beheaded_mold 
+     else (* unknown case so far, but theoretically possible *)
+          beheaded_mold ;; 
+    
+let  eval_on_possibly_free old_f pt_starting_with_1 =
+   if Point.highest_constraint_opt pt_starting_with_1 = None 
+   then Mold.in_free_case pt_starting_with_1 
+   else 
+   let mold = eval_on_nonfree old_f pt_starting_with_1 in  
+   let _ = (painstaking_ref := (pt_starting_with_1,mold) :: (!painstaking_ref)) in 
+   mold ;;   
+
+let rec helper_for_eval_on_pretranslated (pt,is_known_to_be_nonfree) =
+    if is_known_to_be_nonfree 
+    then eval_on_nonfree helper_for_eval_on_pretranslated pt
+    else eval_on_possibly_free helper_for_eval_on_pretranslated pt ;; 
+
+let eval_on_pretranslated pt = 
+    helper_for_eval_on_pretranslated (pt,false) ;;
+
+let eval pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Mold.translate d
+     (eval_on_pretranslated pretranslated_pt);;
+
+let pretranslated_is_accessible pt =
+  ((Point.size pt) <= Brute_force.max_size ) || 
+  ((Impatient.eval_on_rails_opt pt) <> None) ||
+  ((List.assoc_opt pt (!painstaking_ref)) <> None) ;;
+
+let is_accessible pt =
+    let (_,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    pretranslated_is_accessible pretranslated_pt;;
+
+let rec helper_for_next_advance inaccessible_pt = 
+  let n = Finite_int_set.max (inaccessible_pt.base_set) in 
+  let beheaded_pt = Point.remove inaccessible_pt [n] in
+  if not(is_accessible beheaded_pt)
+  then  helper_for_next_advance beheaded_pt 
+  else
+  let forced_pt = Point.force inaccessible_pt [n] in 
+  if not(is_accessible forced_pt)
+  then helper_for_next_advance forced_pt 
+  else inaccessible_pt ;;
+
+let next_advance pt = 
+  if is_accessible pt 
+  then raise Initial_data_already_accessible
+  else helper_for_next_advance pt ;; 
+
+end ;;
+
+let eval = Private.eval ;; 
+let next_advance = Private.next_advance ;; 
+
+end ;;
 
