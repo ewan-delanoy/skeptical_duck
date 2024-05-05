@@ -383,16 +383,6 @@ module Point = struct
        pt.max_width [] subset) 
        =None);;
 
-   let all_realizations =Memoized.make(fun pt ->
-      let base = Finite_int_set.to_usual_int_list pt.base_set in 
-      let temp1 = il_sort(List_again.power_set base) in 
-      List.filter (subset_is_admissible pt) temp1)  ;; 
-
-   let all_solutions pt offset =
-      let realizations = all_realizations pt  in 
-      let m = List.length(List.hd(List.rev realizations)) in 
-      List.filter (fun y->List.length(y)=m-offset) realizations ;;  
-
     let complements pt j = 
      let domain = Finite_int_set.to_usual_int_list pt.base_set 
      and w = pt.max_width in 
@@ -433,8 +423,6 @@ module Point = struct
 
   exception Excessive_forcing of point * int list ;; 
   
-  let all_solutions = Private.all_solutions ;; 
-
   let complements = Private.complements ;; 
 
   let constructor = Private.constructor ;; 
@@ -468,12 +456,43 @@ module Point = struct
 
   let remove = Private.remove ;;
 
+  let size pt = Finite_int_set.size pt.base_set ;; 
+
   let subset_is_admissible = Private.subset_is_admissible ;;
 
   let translate = Private.translate ;;     
 
   end ;; 
   
+module Brute_force = struct 
+
+exception Size_too_big of point ;; 
+
+module Private = struct 
+
+let max_size = 18 ;; 
+
+let all_realizations =Memoized.make(fun pt ->
+      let base = Finite_int_set.to_usual_int_list pt.base_set in 
+      let temp1 = il_sort(List_again.power_set base) in 
+      List.filter (Point.subset_is_admissible pt) temp1)  ;; 
+
+
+end ;;
+
+let all_realizations pt =
+    if Point.size(pt) > Private.max_size 
+    then raise(Size_too_big(pt))
+    else Private.all_realizations pt ;; 
+    
+let all_solutions pt offset =
+      let realizations = all_realizations pt  in 
+      let m = List.length(List.hd(List.rev realizations)) in 
+      List.filter (fun y->List.length(y)=m-offset) realizations ;;  
+
+let max_size = Private.max_size ;;
+
+end ;;  
 
 module Lightweight_mold_state = struct 
 
