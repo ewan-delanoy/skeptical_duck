@@ -349,17 +349,19 @@ module Point = struct
      ) range ;; 
 
   let complementary_pairs domain w j =
+    il_sort(
     (left_complementary_pairs domain w j)@
     (middle_complementary_pairs domain w j)@
-    (right_complementary_pairs domain w j) ;; 
+    (right_complementary_pairs domain w j) 
+    );; 
 
   let other_complements pt j =
-    List.filter_map (
+    il_sort(List.filter_map (
          fun (C l)->
            if i_mem j l 
            then Some(i_outsert j l) 
            else None  
-     ) pt.added_partial_constraints ;; 
+     ) pt.added_partial_constraints) ;; 
 
   
   let translate t pt =   
@@ -389,7 +391,8 @@ module Point = struct
     let complements pt j = 
      let domain = Finite_int_set.to_usual_int_list pt.base_set 
      and w = pt.max_width in 
-     (complementary_pairs domain w j)@
+     il_merge
+     (complementary_pairs domain w j)
      (other_complements pt j) ;; 
 
    exception Excessive_forcing_reached ;; 
