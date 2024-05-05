@@ -380,8 +380,11 @@ module Point = struct
    
    let subset_is_admissible pt subset =
       ((Highest_constraint.below_maximal_width 
-       pt.max_width [] subset) 
-       =None);;
+       pt.max_width pt.excluded_full_constraints subset) 
+       =None) && 
+       (List.for_all (fun (C l)->
+         not(i_is_included_in l subset)
+       ) pt.added_partial_constraints);;
 
     let complements pt j = 
      let domain = Finite_int_set.to_usual_int_list pt.base_set 
