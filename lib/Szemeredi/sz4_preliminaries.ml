@@ -508,6 +508,14 @@ let eval pt =
        mandatory_elements = i_fold_intersect sols
      } ;; 
 
+let synthesize_rays indexed_rays sol = 
+   List.filter_map (
+     fun (idx,ray) -> 
+     if i_is_included_in ray sol 
+     then Some idx
+     else None 
+   ) indexed_rays;;
+
 end ;;
 
 let all_realizations = Private.all_realizations ;; 
@@ -517,6 +525,14 @@ let all_solutions = Private.all_solutions ;;
 let eval = Private.eval ;;  
 
 let max_size = Private.max_size ;;
+
+let ray_analysis ~rays ~solutions =
+   let indexed_rays = Int_range.index_everything rays in
+   let temp1 = il_sort(Image.image 
+          (Private.synthesize_rays indexed_rays) solutions) in  
+   let temp2 = Ordered_misc.minimal_transversals temp1 in 
+   let assoc2 = Image.image (fun k->List.nth rays (k-1)) in 
+   Image.image assoc2 temp2 ;; 
 
 end ;;  
 
