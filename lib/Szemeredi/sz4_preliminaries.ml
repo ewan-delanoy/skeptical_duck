@@ -525,17 +525,35 @@ let synthesize_rays indexed_rays sol =
 let fan_analysis (F rays) ~solutions =
    let indexed_rays = Int_range.index_everything rays in
    let temp1 = il_sort(Image.image 
-          (Private.synthesize_rays indexed_rays) solutions) in  
+          (synthesize_rays indexed_rays) solutions) in  
    let temp2 = Ordered_misc.minimal_transversals temp1 in 
    let assoc2 = (fun l->
      F(Image.image (fun k->List.nth rays (k-1)) l)  ) in 
    Image.image assoc2 temp2 ;;
+
+let test_for_decomposer sols dec =
+    let m = List.length(i_intersect dec (List.hd sols)) in 
+    List.for_all (fun sol-> 
+       List.length(i_intersect dec sol) = m 
+    ) sols ;; 
+    
+let decomposers pt =
+  let base = Finite_int_set.to_usual_int_list pt.base_set in 
+  let full_power_set = il_sort(List_again.power_set base) in 
+  let beheaded_power_set = List.tl full_power_set in 
+  let m = (List.length base)/2 in 
+  let half_power_set = List.filter 
+      (fun z->List.length(z)<=m) beheaded_power_set in 
+  let solutions = all_solutions pt 0 in 
+  List.filter (test_for_decomposer solutions) half_power_set ;; 
 
 end ;;
 
 let all_realizations = Private.all_realizations ;; 
     
 let all_solutions = Private.all_solutions ;;  
+
+let decomposers = Private.decomposers ;; 
 
 let eval = Private.eval ;;  
 
