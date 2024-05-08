@@ -22,19 +22,11 @@ type point = Sz4_types.point = {
     added_partial_constraints: constraint_t list
 } ;;
 
-type state_molecule = Sz4_types.state_molecule = SA of (int * fan) list ;; 
-
-
-type lightweight_mold_state = Sz4_types.lightweight_mold_state = U1 ;;
-type heavyweight_mold_state = Sz4_types.heavyweight_mold_state = U2 ;; 
-
 type mold = Sz4_types.mold = {
     solutions : (int list) list;
     mandatory_elements : int list;
 } ;;
 
-type mold_with_state = Sz4_types.mold_with_state = MWS of 
-   mold * lightweight_mold_state * heavyweight_mold_state ;; 
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -579,55 +571,6 @@ let max_size = Private.max_size ;;
 
 end ;;  
 
-module Lightweight_mold_state = struct 
-
-let default = U1 ;;
-let in_extended_case 
-   (_pt:point) (_n:int) (_extended_sols:int list list) 
-   (_beheaded_mold:mold) (_light:lightweight_mold_state) =
-   default ;;
-
-let in_full_case 
-   (_pt:point) (_n:int) (_complements:int list) 
-   (_beheaded_mold:mold) (_light:lightweight_mold_state) =
-   default ;;
-
-
-let in_free_case (_pt:point) = default ;; 
-
-let solution_from_state_opt
-   (_pt:point) (_n:int) 
-     ((_beheaded_pt:point),(_beheaded_mold:mold)) 
-       (_light:lightweight_mold_state) =
-       (None: (mold * lightweight_mold_state) option) ;;     
-
-
-end ;;
-
-module Heavyweight_mold_state = struct 
-
-let default = U2 ;;
-
-let in_extended_case 
-   (_pt:point) (_n:int) (_extended_sols:int list list) 
-   (_beheaded_mold:mold) (_heavy:heavyweight_mold_state) =
-   default ;;
-
-let in_full_case 
-   (_pt:point) (_n:int) (_complements:int list) 
-   (_beheaded_mold:mold) (_heavy:heavyweight_mold_state) =
-   default ;;
-
-let in_free_case (_pt:point) = default ;; 
-
-let solution_from_state_opt
-   (_pt:point) (_n:int) 
-     ((_beheaded_pt:point),(_beheaded_mold:mold)) 
-       (_heavy:heavyweight_mold_state) =
-       (None: (mold * heavyweight_mold_state) option) ;;     
-
-
-end ;;
 
 
 module Mold = struct 
@@ -664,79 +607,23 @@ module Mold = struct
 
 end ;;
 
-module Mold_with_state = struct 
 
-let in_extended_case 
-    pt n extended_sols beheaded_mold light heavy =
-    let new_mold = {
-       solutions = extended_sols;
-       mandatory_elements = (beheaded_mold.mandatory_elements)@[n]
-    } in 
-    MWS(
-     new_mold,
-     Lightweight_mold_state.in_extended_case pt n extended_sols beheaded_mold light,
-     Heavyweight_mold_state.in_extended_case pt n extended_sols beheaded_mold heavy
-   );;
-
- let in_full_case 
-    pt n complement beheaded_mold light heavy =
-    let new_mold = {
-       solutions = beheaded_mold.solutions;
-       mandatory_elements = []
-    } in 
-    MWS(
-     new_mold,
-     Lightweight_mold_state.in_full_case pt n complement beheaded_mold light,
-     Heavyweight_mold_state.in_full_case pt n complement beheaded_mold heavy
-   );;
-
-
-let in_free_case pt =
-   MWS(
-     Mold.in_free_case pt,
-     Lightweight_mold_state.in_free_case pt,
-     Heavyweight_mold_state.in_free_case pt
-   );;
-
- let solution_from_state_opt
-         pt n (beheaded_pt,beheaded_mold) light heavy =
-    match  Lightweight_mold_state.solution_from_state_opt
-         pt n (beheaded_pt,beheaded_mold) light  with 
-    (Some (mold,new_light)) -> 
-        let def = Heavyweight_mold_state.default in 
-        Some(MWS(mold,new_light,def)) 
-    |None ->
-        (match Heavyweight_mold_state.solution_from_state_opt
-         pt n (beheaded_pt,beheaded_mold) heavy with 
-         (Some (mold,new_heavy)) -> 
-        let def = Lightweight_mold_state.default in 
-        Some(MWS(mold,def,new_heavy)) 
-         |None -> None
-        );;     
-
-  let to_mold (MWS(mold,_,_)) = mold ;; 
-
- let translate d (MWS(mold,light,heavy)) =
-     MWS(Mold.translate d mold,light,heavy) ;;     
-
-end ;;
 
 module Impatient = struct 
 
 module Private = struct 
 
-let impatient_ref = ref ([]: (point * mold_with_state) list) ;; 
+let impatient_ref = ref ([]: (point * mold) list) ;; 
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
-   then Some(Mold_with_state.in_free_case pt) 
+   then Some(Mold.in_free_case pt) 
    else 
    let n = Finite_int_set.max (pt.base_set) in 
    let beheaded_pt = Point.remove pt [n] in 
    match List.assoc_opt beheaded_pt (!impatient_ref) with 
     None -> None 
-   |Some beheaded_mws ->
-     let (MWS(beheaded_mold,light,heavy)) = beheaded_mws in 
+   |Some beheaded_mold ->
      let extended_sols = List.filter_map (
        fun sol -> let extended_sol = sol @ [n] in 
          if Point.subset_is_admissible pt extended_sol 
@@ -744,19 +631,26 @@ let eval_without_remembering_opt pt =
          else None 
      ) beheaded_mold.solutions in 
      if extended_sols <> []
-     then Some(Mold_with_state.in_extended_case 
-           pt n extended_sols beheaded_mold light heavy)
+     then Some(
+           {
+             solutions = extended_sols;
+             mandatory_elements = 
+             (beheaded_mold.mandatory_elements)@[n]
+           }
+          )
      else 
      let complements = Point.complements pt n in 
      (match List.find_opt (
         fun c-> i_is_included_in c beheaded_mold.mandatory_elements
      ) complements with 
-     (Some complement) ->
-       Some(Mold_with_state.in_full_case 
-         pt n complement beheaded_mold light heavy)
-     | None ->
-       Mold_with_state.solution_from_state_opt
-         pt n (beheaded_pt,beheaded_mold) light heavy  
+     (Some _complement) ->
+       Some(
+        {
+         solutions = beheaded_mold.solutions;
+         mandatory_elements = []
+        }
+       )
+     | None -> None  
      ) ;;
 
 
@@ -779,7 +673,7 @@ let eval_on_pretranslated_opt pt =
 let eval_opt pt =
     let (d,pretranslated_pt) = 
       Point.decompose_wrt_translation pt in 
-    Option.map(Mold_with_state.translate d)
+    Option.map(Mold.translate d)
      (eval_on_pretranslated_opt pretranslated_pt);;
 
 let rec helper_for_rails_computing 
@@ -832,7 +726,7 @@ let painstaking_ref = ref ([]: (point * mold) list) ;;
 
 let eval_on_nonfree old_f nonfree_pt =
    match Impatient.eval_on_rails_opt nonfree_pt with 
-    Some old_answer -> Mold_with_state.to_mold old_answer 
+    Some old_answer -> old_answer 
    |None -> 
      let n = Finite_int_set.max (nonfree_pt.base_set) in 
      let beheaded_pt = Point.remove nonfree_pt [n] in 
@@ -906,7 +800,7 @@ end ;;
 
 module PointExample = struct 
 
-let segment_in_no_lables_version 
+let segment 
    ?imposed_max_width ?rightmost_cut n= 
    let default_width = ((n-1)/2) in 
    let effective_max_width = (
