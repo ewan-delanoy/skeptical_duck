@@ -201,6 +201,11 @@ module Finite_int_set = struct
 
   let max (FIS(n,_)) = n ;; 
 
+  let name (FIS(n,l)) =
+     "FIS("^(string_of_int n)^",["^
+     (String.concat ";" (Image.image string_of_int l))
+     ^"])";;
+
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
   let order = ((fun (FIS(n1,scr1)) (FIS(n2,scr2)) ->
@@ -614,6 +619,32 @@ module Impatient = struct
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
+
+let rec helper_for_linear_decomposition
+   (reversed_left,right,pt,goal) =
+   let left_pt = Point.remove pt right
+   and right_pt = Point.remove pt reversed_left in 
+   let (d,translated_right_pt) = 
+      Point.decompose_wrt_translation right_pt in 
+   match List.assoc_opt left_pt (!impatient_ref) with 
+    None -> None 
+   |Some left_mold ->
+   (
+     match List.assoc_opt translated_right_pt (!impatient_ref) with 
+    None -> None 
+   |Some translated_right_mold ->
+      if Mold.solution_size(left_mold)+
+         Mold.solution_size(translated_right_mold) = goal 
+      then let right_mold = Mold.translate d translated_right_mold in
+           Some(left_mold,right_mold)
+      else 
+      (
+         match right with 
+         [] -> None 
+         | v :: others -> helper_for_linear_decomposition
+          (v::reversed_left,others,pt,goal)
+      )        
+   ) ;;
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
