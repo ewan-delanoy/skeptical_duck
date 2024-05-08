@@ -22,6 +22,9 @@ type point = Sz4_types.point = {
     added_partial_constraints: constraint_t list
 } ;;
 
+type state_molecule = Sz4_types.state_molecule = SA of (int * fan) list ;; 
+
+
 type lightweight_mold_state = Sz4_types.lightweight_mold_state = U1 ;;
 type heavyweight_mold_state = Sz4_types.heavyweight_mold_state = U2 ;; 
 
