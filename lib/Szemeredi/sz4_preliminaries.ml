@@ -116,6 +116,21 @@ module Highest_constraint = struct
   let for_exact_width (W w) excluded_constraints domain =
      if w<1 then None else for_exact_positive_width (W w) excluded_constraints domain (List.rev domain) ;;
 
+  let rec all_for_exact_positive_width (W w) excluded_constraints 
+     domain (treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> treated 
+    |p::others ->
+       if p<=2*w then treated else 
+       if (i_is_included_in [p-2*w;p-w] domain)
+           &&(not(List.mem (C[p-2*w;p-w;p]) excluded_constraints)) 
+       then all_for_exact_positive_width (W w) excluded_constraints domain (C[p-2*w;p-w;p]::treated,others)
+       else all_for_exact_positive_width (W w) excluded_constraints domain (treated,others) ;;    
+       
+  let all_for_exact_width (W w) excluded_constraints domain =
+     if w<1 then [] else all_for_exact_positive_width (W w) excluded_constraints domain ([],List.rev domain) ;;
+
+
   let rec below_maximal_width (W w) excluded_constraints domain =
         match for_exact_width (W w) excluded_constraints domain with 
         Some (cstr) -> Some(cstr)
@@ -891,10 +906,36 @@ end ;;
 
 module PointExample = struct 
 
-let segment n = {
+let segment_in_no_lables_version 
+   ?imposed_max_width ?rightmost_cut n= 
+   let default_width = ((n-1)/2) in 
+   let effective_max_width = (
+     match imposed_max_width with
+      None -> default_width
+     |Some(width) -> min width default_width 
+   ) in 
+   let maximal_rightmostcut_length = n-2*effective_max_width in
+   let rightmost_cut_length = (
+      match rightmost_cut with
+      None -> 0
+     |Some(r) -> max 0 (min r maximal_rightmostcut_length)
+   ) in 
+   let (final_width,final_constraints)= (
+      if (rightmost_cut_length = maximal_rightmostcut_length)
+      then (* the whole upper level has been erased,
+              we go down one level *)
+              (effective_max_width-1,[])
+      else (effective_max_width,
+            Int_range.scale(fun t->
+              let p = n + rightmost_cut_length -t in 
+              C[p-2*effective_max_width;p-effective_max_width;p]
+            ) 1 rightmost_cut_length
+            )
+   ) in 
+{
   base_set = FIS (n, []);
-  max_width = W (min 3 ((n-1)/2));
-  excluded_full_constraints = []; 
+  max_width = (W final_width);
+  excluded_full_constraints = final_constraints; 
   added_partial_constraints = []
 } ;; 
 
