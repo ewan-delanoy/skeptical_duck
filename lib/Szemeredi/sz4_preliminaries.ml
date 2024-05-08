@@ -889,3 +889,13 @@ let next_advance = Private.next_advance ;;
 
 end ;;
 
+module PointExample = struct 
+
+let segment n = {
+  base_set = FIS (n, []);
+  max_width = W (min 3 ((n-1)/2));
+  excluded_full_constraints = []; 
+  added_partial_constraints = []
+} ;; 
+
+end ;; 
