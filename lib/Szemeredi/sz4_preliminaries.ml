@@ -580,12 +580,35 @@ end ;;
 
 module Mold = struct 
 
+  let in_extension_case extended_sols beheaded_mold n =
+  {
+             solutions = extended_sols;
+             mandatory_elements = 
+             (beheaded_mold.mandatory_elements)@[n]
+  } ;; 
+
  let in_free_case pt =
     let base = Finite_int_set.to_usual_int_list pt.base_set in 
    { 
    solutions  = [base]; 
    mandatory_elements = base; 
    } ;;
+
+ let in_linear_decomposition_case 
+     ~beheaded:beheaded_mold
+             ~left:left_mold ~right:right_mold = 
+    { 
+   solutions  = beheaded_mold.solutions; 
+   mandatory_elements = 
+     (left_mold.mandatory_elements)@
+     (right_mold.mandatory_elements);
+   } ;;         
+
+ let in_stagnation_case beheaded_mold =
+  {
+         solutions = beheaded_mold.solutions;
+         mandatory_elements = []
+  };;
 
  let join mold1 mold2 =
      {
@@ -635,7 +658,13 @@ let rec helper_for_linear_decomposition
    |Some translated_right_mold ->
       if Mold.solution_size(left_mold)+
          Mold.solution_size(translated_right_mold) = goal 
-      then let right_mold = Mold.translate d translated_right_mold in
+      then let msg= " Decomposition found : "^
+           (Finite_int_set.name(left_pt.base_set))^
+           " \226\138\149 ( "^(string_of_int d)^" + "^
+           (Finite_int_set.name(translated_right_pt.base_set))^" )"
+           in 
+           let _ = (print_string msg;flush stdout) in 
+           let right_mold = Mold.translate d translated_right_mold in
            Some(left_mold,right_mold)
       else 
       (
@@ -646,6 +675,43 @@ let rec helper_for_linear_decomposition
       )        
    ) ;;
 
+let linear_decomposition_opt pt goal = 
+    let base = Finite_int_set.to_usual_int_list(pt.base_set) in 
+    let revbase = List.rev base in 
+    helper_for_linear_decomposition
+      (List.tl revbase,[List.hd revbase],pt,goal) ;; 
+
+let check_extension_case pt n beheaded_mold = 
+   let extended_sols = List.filter_map (
+       fun sol -> let extended_sol = sol @ [n] in 
+         if Point.subset_is_admissible pt extended_sol 
+         then Some extended_sol
+         else None 
+     ) beheaded_mold.solutions in 
+     if extended_sols <> []
+     then Some(Mold.in_extension_case extended_sols beheaded_mold n)
+     else None ;; 
+
+let check_filled_complement_case pt n beheaded_mold = 
+     let complements = Point.complements pt n in 
+     match List.find_opt (
+        fun c-> i_is_included_in c 
+        beheaded_mold.mandatory_elements
+     ) complements with 
+     (Some _complement) ->
+       Some(Mold.in_stagnation_case beheaded_mold)
+     | None -> None ;;  
+
+let check_linear_decomposition_case pt beheaded_mold = 
+    let goal = Mold.solution_size beheaded_mold in 
+         match linear_decomposition_opt pt goal with 
+         Some(left_mold,right_mold) ->
+           Some(Mold.in_linear_decomposition_case 
+             ~beheaded:beheaded_mold 
+              ~left:left_mold ~right:right_mold)
+        | None -> None ;;  
+
+
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
    then Some(Mold.in_free_case pt) 
@@ -655,37 +721,15 @@ let eval_without_remembering_opt pt =
    match List.assoc_opt beheaded_pt (!impatient_ref) with 
     None -> None 
    |Some beheaded_mold ->
-     let extended_sols = List.filter_map (
-       fun sol -> let extended_sol = sol @ [n] in 
-         if Point.subset_is_admissible pt extended_sol 
-         then Some extended_sol
-         else None 
-     ) beheaded_mold.solutions in 
-     if extended_sols <> []
-     then Some(
-           {
-             solutions = extended_sols;
-             mandatory_elements = 
-             (beheaded_mold.mandatory_elements)@[n]
-           }
-          )
+     let opt1 = check_extension_case pt n beheaded_mold in 
+     if opt1 <> None
+     then opt1
      else 
-     let complements = Point.complements pt n in 
-     (match List.find_opt (
-        fun c-> i_is_included_in c beheaded_mold.mandatory_elements
-     ) complements with 
-     (Some _complement) ->
-       Some(
-        {
-         solutions = beheaded_mold.solutions;
-         mandatory_elements = []
-        }
-       )
-     | None -> None  
-     ) ;;
-
-
-
+     let opt2 = check_filled_complement_case pt n beheaded_mold in 
+     if opt2 <> None
+     then opt2
+     else 
+     check_linear_decomposition_case pt beheaded_mold ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
