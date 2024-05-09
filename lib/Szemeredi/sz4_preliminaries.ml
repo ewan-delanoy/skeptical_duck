@@ -806,6 +806,15 @@ let check_linear_decomposition_case pt beheaded_mold =
               ~half:left_mold ~half:right_mold)
         | None -> None ;;  
 
+let check_oddeven_decomposition_case pt beheaded_mold = 
+    let goal = Mold.solution_size beheaded_mold in 
+         match oddeven_decomposition_opt pt goal with 
+         Some(mold_with_1,mold_without_1) ->
+           Some(Mold.in_decomposition_case 
+             ~beheaded:beheaded_mold 
+              ~half:mold_with_1 ~half:mold_without_1)
+        | None -> None ;;  
+
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
@@ -824,7 +833,11 @@ let eval_without_remembering_opt pt =
      if opt2 <> None
      then opt2
      else 
-     check_linear_decomposition_case pt beheaded_mold ;;
+     let opt3 = check_linear_decomposition_case pt beheaded_mold in 
+     if opt3 <> None
+     then opt3
+     else 
+     check_oddeven_decomposition_case pt beheaded_mold ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
