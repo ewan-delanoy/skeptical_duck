@@ -721,6 +721,12 @@ exception Incorrect_constraint_in_fork_exn
 
 exception Incomplete_fork_exn of int * point ;;
 
+exception Next_advance_exn ;; 
+
+type next_advance_result =
+   Decomposition of  (int list) * (int list list)
+  |Fork of (int list) * constraint_t ;;
+
 
 module Private = struct 
 
@@ -882,6 +888,13 @@ let eval_opt pt =
     Option.map(Mold.translate d)
      (eval_on_pretranslated_opt pretranslated_pt);;
 
+let eval_using_only_translation_opt pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Option.map(Mold.translate d)
+     (List.assoc_opt pretranslated_pt (!impatient_ref));;
+
+
 let rec helper_for_rails_computing 
    (treated,current,vertices_to_be_removed) =
  match vertices_to_be_removed with 
@@ -924,6 +937,33 @@ let deduce_using_fork pt (i,j,k) =
           (!impatient_ref)) in 
     mold ;;    
 
+let rec helper_for_next_advance (pt,to_be_treated) = 
+     match to_be_treated with 
+     [] -> raise Next_advance_exn 
+     | cutting :: other_cuttings ->
+    let simpler_pt = Point.remove pt cutting in 
+    if eval_using_only_translation_opt(simpler_pt)<>None 
+    then helper_for_next_advance (pt,other_cuttings)
+    else 
+    match Brute_force.analize simpler_pt with 
+    Brute_force.Decomposition(_,decs) -> 
+         Decomposition(cutting,decs)
+    |Brute_force.Breaking_point(_,C l,_,_) ->
+      let new_cuttings = Image.image (fun t->cutting@[t]) l in 
+      let untreated_cuttings = List.filter (fun 
+        rr -> 
+        eval_using_only_translation_opt
+        (Point.remove pt rr)<>None
+      ) new_cuttings in 
+      if untreated_cuttings = []
+      then Fork(cutting,C l)
+      else helper_for_next_advance 
+           (pt,untreated_cuttings@to_be_treated) ;;    
+    
+let next_advance pt = 
+    if eval_using_only_translation_opt(pt)<>None 
+    then raise Next_advance_exn 
+    else helper_for_next_advance (pt,[[]]) ;;
 
 
 end ;;
@@ -941,6 +981,8 @@ let eval_on_rails_opt pt =
      );; 
 
 let eval_opt = Private.eval_opt ;; 
+
+let next_advance = Private.next_advance ;; 
 
 let set_verbose_mode b = (Private.verbose_mode_ref:=b) ;; 
 
