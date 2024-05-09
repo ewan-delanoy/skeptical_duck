@@ -180,6 +180,20 @@ module Finite_int_set = struct
     let new_max = List.hd(List.rev new_z) in 
     FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
 
+  let rec helper_for_oe_decomposer (half1,half2,l) = 
+    match l with 
+    [] -> (List.rev half1,List.rev half2)
+    |a1 :: others1 ->
+      (
+        match others1 with 
+        [] -> (List.rev (a1::half1),List.rev half2)
+        |a2 :: others2 ->
+           helper_for_oe_decomposer (a1::half1,a2::half2,others2)
+      ) ;;
+
+  let oe_decomposer_for_usual_lists l = 
+     helper_for_oe_decomposer ([],[],l) ;;
+
   end ;;
 
   let constraint_can_apply (FIS(n,scrappers)) (C l) =
@@ -211,6 +225,11 @@ module Finite_int_set = struct
      "FIS("^(string_of_int n)^",["^
      (String.concat ";" (Image.image string_of_int l))
      ^"])";;
+
+  let oddeven_decomposition fis = 
+    Private.oe_decomposer_for_usual_lists(
+        Private.to_usual_int_list fis
+    );;
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
@@ -743,6 +762,8 @@ let linear_decomposition_opt pt goal =
     let revbase = List.rev base in 
     helper_for_linear_decomposition
       (List.tl revbase,[List.hd revbase],pt,goal) ;; 
+
+
 
 let check_extension_case pt n beheaded_mold = 
    let extended_sols = List.filter_map (
