@@ -937,6 +937,26 @@ let deduce_using_fork pt (i,j,k) =
           (!impatient_ref)) in 
     mold ;;    
 
+let extensions_for_cuttings simpler_pt = function 
+     (Brute_force.Decomposition(_,decs)) -> 
+          let dec = List.hd decs 
+          and whole = Finite_int_set.to_usual_int_list 
+               simpler_pt.base_set in
+          let cdec = i_setminus whole dec in       
+          [dec;cdec] 
+    |(Brute_force.Breaking_point(_,C l,_,_)) ->
+      Image.image (fun t->[t]) l ;;
+ 
+ let happy_result simpler_pt cutting = function 
+    (Brute_force.Decomposition(_,decs)) -> 
+          let dec = List.hd decs 
+          and whole = Finite_int_set.to_usual_int_list 
+               simpler_pt.base_set in
+          let cdec = i_setminus whole dec in       
+          Decomposition(cutting,dec,cdec) 
+    |(Brute_force.Breaking_point(_,C l,_,_)) ->
+         Fork (cutting,C l) ;;
+
 let rec helper_for_next_advance (pt,to_be_treated) = 
      match to_be_treated with 
      [] -> raise Next_advance_exn 
@@ -945,35 +965,17 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     if eval_using_only_translation_opt(simpler_pt)<>None 
     then helper_for_next_advance (pt,other_cuttings)
     else 
-    match Brute_force.analize simpler_pt with 
-    Brute_force.Decomposition(_,decs) -> 
-        (
-          let dec = List.hd decs 
-          and whole = Finite_int_set.to_usual_int_list 
-               simpler_pt.base_set in
-          let cdec = i_setminus whole dec in       
-          let new_cuttings = Image.image 
-             (fun t->i_sort(cutting@t)) [dec;cdec] in 
-          let untreated_cuttings = List.filter (fun 
-           rr -> 
-           eval_using_only_translation_opt
-            (Point.remove pt rr)=None
-          ) new_cuttings in 
-          if untreated_cuttings = []
-          then Decomposition(cutting,dec,cdec)
-          else helper_for_next_advance 
-              (pt,untreated_cuttings@to_be_treated)
-        )
-    |Brute_force.Breaking_point(_,C l,_,_) ->
-      let new_cuttings = Image.image (fun t->cutting@[t]) l in 
+    let bf_analysis_result = Brute_force.analize simpler_pt in 
+    let ext = extensions_for_cuttings simpler_pt bf_analysis_result in  
+    let new_cuttings = Image.image (fun t->cutting@t) ext in 
       let untreated_cuttings = List.filter (fun 
         rr -> 
         eval_using_only_translation_opt
         (Point.remove pt rr)=None
       ) new_cuttings in 
-      if untreated_cuttings = []
-      then Fork(cutting,C l)
-      else helper_for_next_advance 
+    if untreated_cuttings = []
+    then happy_result simpler_pt cutting bf_analysis_result
+    else helper_for_next_advance 
            (pt,untreated_cuttings@to_be_treated) ;;    
     
 let next_advance pt = 
