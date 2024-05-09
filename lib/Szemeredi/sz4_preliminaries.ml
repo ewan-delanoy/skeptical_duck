@@ -67,6 +67,7 @@ let order_for_triples = ((fun (W w1,scr1,b1) (W w2,scr2,b2) ->
 
 module Constraint = struct 
 
+
 let cleanup_list unchecked_list base =
  let temp1 = List.filter_map (fun (C cstr)-> 
    if i_is_included_in cstr base 
@@ -75,6 +76,11 @@ let cleanup_list unchecked_list base =
   ) unchecked_list in 
  let temp2 = il_sort(Ordered_misc.minimal_elts_wrt_inclusion temp1) in 
  Image.image (fun cstr -> (C cstr) )   temp2 ;;
+
+let is_an_arithmetic_progression (C l) =
+     if List.length(l)<>3 then false else 
+     ((List.nth l 1)-(List.nth l 0))=((List.nth l 2)-(List.nth l 1));;
+
 
 let is_weaker_than (C cstr_weak) (C cstr_strong) = i_is_included_in cstr_strong cstr_weak ;; 
 
@@ -439,12 +445,23 @@ module Point = struct
     else remove draft mandatory_elements;;
 
 
-
   end ;;
 
   exception Excessive_forcing of point * int list ;; 
   
   let complements = Private.complements ;; 
+
+  let constraint_can_apply pt cstr =
+     if List.mem cstr pt.added_partial_constraints 
+     then true 
+     else 
+     if not(Constraint.is_an_arithmetic_progression cstr)
+     then false 
+     else 
+     if List.mem cstr pt.excluded_full_constraints 
+     then false 
+     else Finite_int_set.constraint_can_apply pt.base_set cstr ;; 
+  
 
   let constructor = Private.constructor ;; 
   
@@ -587,6 +604,16 @@ module Mold = struct
              (beheaded_mold.mandatory_elements)@[n]
   } ;; 
 
+  let in_fork_case molds =
+    let last_mold = List.hd(List.rev molds) in 
+    
+   { 
+     solutions  = last_mold.solutions; 
+     mandatory_elements = i_fold_intersect (Image.image
+      (fun mold -> mold.mandatory_elements) molds
+   ); 
+   } ;;
+
  let in_free_case pt =
     let base = Finite_int_set.to_usual_int_list pt.base_set in 
    { 
@@ -638,6 +665,12 @@ end ;;
 
 
 module Impatient = struct 
+
+exception Incorrect_constraint_in_fork_exn 
+   of int * int * int  * point ;;
+
+exception Incomplete_fork_exn of int * point ;;
+
 
 module Private = struct 
 
@@ -774,8 +807,30 @@ let rec helper_for_rails_evaluation (current,to_be_treated) =
       |Some next_one ->
         helper_for_rails_evaluation (next_one,other_points) ;; 
 
+let deduce_using_fork pt (i,j,k) = 
+    let cstr = C [i;j;k] in 
+    if not(Point.constraint_can_apply pt cstr)
+    then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
+    else
+    let temp1 = Image.image (fun t->
+       eval_opt(Point.remove pt [t])
+    ) [i;j;k] in 
+    let m = List_again.find_index_of_in None temp1 in 
+    if m > 0 
+    then let p = List.nth [i;j;k] (m-1) in
+         raise(Incomplete_fork_exn(p,pt))
+    else 
+    let molds = Image.image Option.get temp1 in 
+    let mold = Mold.in_fork_case molds in 
+    let _ = (impatient_ref := (pt,mold) :: 
+          (!impatient_ref)) in 
+    mold ;;    
+
+
+
 end ;;
 
+let deduce_using_fork = Private.deduce_using_fork ;; 
 let eval_on_rails_opt pt = 
    match Private.compute_rails pt with 
    [] -> Private.eval_opt pt 
