@@ -501,6 +501,75 @@ module Point = struct
   let translate = Private.translate ;;     
 
   end ;; 
+
+
+module Mold = struct 
+
+  let in_extension_case extended_sols beheaded_mold n =
+  {
+             solutions = extended_sols;
+             mandatory_elements = 
+             (beheaded_mold.mandatory_elements)@[n]
+  } ;; 
+
+  let in_fork_case molds =
+    let last_mold = List.hd(List.rev molds) in 
+    
+   { 
+     solutions  = last_mold.solutions; 
+     mandatory_elements = i_fold_intersect (Image.image
+      (fun mold -> mold.mandatory_elements) molds
+   ); 
+   } ;;
+
+ let in_free_case pt =
+    let base = Finite_int_set.to_usual_int_list pt.base_set in 
+   { 
+   solutions  = [base]; 
+   mandatory_elements = base; 
+   } ;;
+
+ let in_linear_decomposition_case 
+     ~beheaded:beheaded_mold
+             ~left:left_mold ~right:right_mold = 
+    { 
+   solutions  = beheaded_mold.solutions; 
+   mandatory_elements = 
+     (left_mold.mandatory_elements)@
+     (right_mold.mandatory_elements);
+   } ;;         
+
+ let in_stagnation_case beheaded_mold =
+  {
+         solutions = beheaded_mold.solutions;
+         mandatory_elements = []
+  };;
+
+ let join mold1 mold2 =
+     {
+       solutions = il_merge mold1.solutions mold2.solutions ;
+       mandatory_elements = i_intersect 
+            mold1.mandatory_elements mold2.mandatory_elements   
+     } ;; 
+
+ let solution_size mold = List.length(List.hd mold.solutions) ;;   
+
+ let successful_append forced_mold n =
+     {
+       solutions=Image.image(fun sol->sol@[n]) forced_mold.solutions;
+       mandatory_elements=(forced_mold.mandatory_elements)@[n]
+     } ;;
+
+
+ let translate d mold = 
+    let tr = Image.image ((+) d) in 
+    { 
+        solutions  = Image.image tr mold.solutions; 
+        mandatory_elements = tr mold.mandatory_elements; 
+    } ;;
+
+end ;;
+
   
 module Brute_force = struct 
 
@@ -576,11 +645,32 @@ let decomposers =Memoized.make(fun pt ->
   let solutions = all_solutions pt 0 in 
   List.filter (test_for_decomposer solutions) half_power_set );; 
 
+let rec helper_for_analysis (pt, size) = 
+    if decomposers(pt) <> []
+    then (pt,"Decomposable")
+    else
+    let cstr = Option.get (Point.highest_constraint_opt pt) in 
+    let pt_before = Point.exclude pt cstr in 
+    let sol_before = eval pt_before in 
+    let size_before = Mold.solution_size sol_before in 
+    if size_before<>size  
+    then (pt,"Breaking point")
+    else helper_for_analysis (pt_before, size) ;;
+
+let analysis pt = 
+    let mold = eval pt in 
+    let size = Mold.solution_size mold in
+    helper_for_analysis (pt, size) ;;  
+
+
+
 end ;;
 
 let all_realizations = Private.all_realizations ;; 
     
 let all_solutions = Private.all_solutions ;;  
+
+let analysis = Private.analysis ;; 
 
 let decomposers = Private.decomposers ;; 
 
@@ -595,72 +685,7 @@ end ;;
 
 
 
-module Mold = struct 
 
-  let in_extension_case extended_sols beheaded_mold n =
-  {
-             solutions = extended_sols;
-             mandatory_elements = 
-             (beheaded_mold.mandatory_elements)@[n]
-  } ;; 
-
-  let in_fork_case molds =
-    let last_mold = List.hd(List.rev molds) in 
-    
-   { 
-     solutions  = last_mold.solutions; 
-     mandatory_elements = i_fold_intersect (Image.image
-      (fun mold -> mold.mandatory_elements) molds
-   ); 
-   } ;;
-
- let in_free_case pt =
-    let base = Finite_int_set.to_usual_int_list pt.base_set in 
-   { 
-   solutions  = [base]; 
-   mandatory_elements = base; 
-   } ;;
-
- let in_linear_decomposition_case 
-     ~beheaded:beheaded_mold
-             ~left:left_mold ~right:right_mold = 
-    { 
-   solutions  = beheaded_mold.solutions; 
-   mandatory_elements = 
-     (left_mold.mandatory_elements)@
-     (right_mold.mandatory_elements);
-   } ;;         
-
- let in_stagnation_case beheaded_mold =
-  {
-         solutions = beheaded_mold.solutions;
-         mandatory_elements = []
-  };;
-
- let join mold1 mold2 =
-     {
-       solutions = il_merge mold1.solutions mold2.solutions ;
-       mandatory_elements = i_intersect 
-            mold1.mandatory_elements mold2.mandatory_elements   
-     } ;; 
-
- let solution_size mold = List.length(List.hd mold.solutions) ;;   
-
- let successful_append forced_mold n =
-     {
-       solutions=Image.image(fun sol->sol@[n]) forced_mold.solutions;
-       mandatory_elements=(forced_mold.mandatory_elements)@[n]
-     } ;;
-
-
- let translate d mold = 
-    let tr = Image.image ((+) d) in 
-    { 
-        solutions  = Image.image tr mold.solutions; 
-        mandatory_elements = tr mold.mandatory_elements; 
-    } ;;
-
-end ;;
 
 
 
