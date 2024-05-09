@@ -573,6 +573,10 @@ end ;;
   
 module Brute_force = struct 
 
+type analysis_result =
+   Decomposition of point * (int list list)
+  |Breaking_point of point * constraint_t * point * mold ;;
+
 exception Size_too_big of point ;; 
 
 module Private = struct 
@@ -646,18 +650,19 @@ let decomposers =Memoized.make(fun pt ->
   List.filter (test_for_decomposer solutions) half_power_set );; 
 
 let rec helper_for_analysis (pt, size) = 
-    if decomposers(pt) <> []
-    then (pt,"Decomposable")
+    let dec = decomposers(pt) in 
+    if dec <> []
+    then Decomposition(pt,dec)
     else
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
     let sol_before = eval pt_before in 
     let size_before = Mold.solution_size sol_before in 
     if size_before<>size  
-    then (pt,"Breaking point")
-    else helper_for_analysis (pt_before, size) ;;
+    then Breaking_point(pt,cstr,pt_before,sol_before)
+    else helper_for_analysis (pt_before, size) ;; 
 
-let analysis pt = 
+let analize pt = 
     let mold = eval pt in 
     let size = Mold.solution_size mold in
     helper_for_analysis (pt, size) ;;  
@@ -670,7 +675,7 @@ let all_realizations = Private.all_realizations ;;
     
 let all_solutions = Private.all_solutions ;;  
 
-let analysis = Private.analysis ;; 
+let analize = Private.analize ;; 
 
 let decomposers = Private.decomposers ;; 
 
