@@ -989,3 +989,26 @@ let segment
 } ;; 
 
 end ;; 
+
+module Initialization = struct 
+
+module Private = struct 
+
+let p3 n = PointExample.segment n ~imposed_max_width:3;;
+
+
+end ;;
+
+Impatient.eval_on_rails_opt (Private.p3 6) ;;
+let pt1 = Point.remove (Private.p3 7) [4] ;;
+Impatient.eval_on_rails_opt pt1 ;; 
+Impatient.deduce_using_fork (Private.p3 7) (1,4,7) ;;
+
+
+end ;;
+
+
+
+
+
+
