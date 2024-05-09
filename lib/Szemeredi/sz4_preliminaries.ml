@@ -953,7 +953,7 @@ let rec helper_for_next_advance (pt,to_be_treated) =
       let untreated_cuttings = List.filter (fun 
         rr -> 
         eval_using_only_translation_opt
-        (Point.remove pt rr)<>None
+        (Point.remove pt rr)=None
       ) new_cuttings in 
       if untreated_cuttings = []
       then Fork(cutting,C l)
@@ -964,7 +964,6 @@ let next_advance pt =
     if eval_using_only_translation_opt(pt)<>None 
     then raise Next_advance_exn 
     else helper_for_next_advance (pt,[[]]) ;;
-
 
 end ;;
 
