@@ -548,14 +548,15 @@ module Mold = struct
    mandatory_elements = base; 
    } ;;
 
- let in_linear_decomposition_case 
+ let in_decomposition_case 
      ~beheaded:beheaded_mold
-             ~left:left_mold ~right:right_mold = 
+             ~half:half_mold1 ~half:half_mold2 = 
     { 
    solutions  = beheaded_mold.solutions; 
    mandatory_elements = 
-     (left_mold.mandatory_elements)@
-     (right_mold.mandatory_elements);
+     i_merge
+     (half_mold1.mandatory_elements)
+     (half_mold2.mandatory_elements);
    } ;;         
 
  let in_stagnation_case beheaded_mold =
@@ -790,9 +791,9 @@ let check_linear_decomposition_case pt beheaded_mold =
     let goal = Mold.solution_size beheaded_mold in 
          match linear_decomposition_opt pt goal with 
          Some(left_mold,right_mold) ->
-           Some(Mold.in_linear_decomposition_case 
+           Some(Mold.in_decomposition_case 
              ~beheaded:beheaded_mold 
-              ~left:left_mold ~right:right_mold)
+              ~half:left_mold ~half:right_mold)
         | None -> None ;;  
 
 
