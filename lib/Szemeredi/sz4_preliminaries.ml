@@ -724,7 +724,7 @@ exception Incomplete_fork_exn of int * point ;;
 exception Next_advance_exn ;; 
 
 type next_advance_result =
-   Decomposition of  (int list) * (int list list)
+   Decomposition of  (int list) * (int list) * (int list)
   |Fork of (int list) * constraint_t ;;
 
 
@@ -947,7 +947,23 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     else 
     match Brute_force.analize simpler_pt with 
     Brute_force.Decomposition(_,decs) -> 
-         Decomposition(cutting,decs)
+        (
+          let dec = List.hd decs 
+          and whole = Finite_int_set.to_usual_int_list 
+               simpler_pt.base_set in
+          let cdec = i_setminus whole dec in       
+          let new_cuttings = Image.image 
+             (fun t->i_sort(cutting@t)) [dec;cdec] in 
+          let untreated_cuttings = List.filter (fun 
+           rr -> 
+           eval_using_only_translation_opt
+            (Point.remove pt rr)=None
+          ) new_cuttings in 
+          if untreated_cuttings = []
+          then Decomposition(cutting,dec,cdec)
+          else helper_for_next_advance 
+              (pt,untreated_cuttings@to_be_treated)
+        )
     |Brute_force.Breaking_point(_,C l,_,_) ->
       let new_cuttings = Image.image (fun t->cutting@[t]) l in 
       let untreated_cuttings = List.filter (fun 
@@ -1130,6 +1146,9 @@ fpr3 7 [] (1,4,7) ;;
 ipr3 8 [2;4] ;;
 ipr3 8 [2;7] ;;
 fpr3 8 [2] (1,4,7) ;;
+
+ipr3 8 [5;4] ;;
+ipr3 8 [5;7] ;;
 
 
 Impatient.set_verbose_mode true ;; 
