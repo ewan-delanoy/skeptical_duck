@@ -726,37 +726,42 @@ module Private = struct
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
 
-let rec helper_for_linear_decomposition
-   (reversed_left,right,pt,goal) =
-   let left_pt = Point.remove pt right
-   and right_pt = Point.remove pt reversed_left in 
-   let (d,translated_right_pt) = 
-      Point.decompose_wrt_translation right_pt in 
-   match List.assoc_opt left_pt (!impatient_ref) with 
+let decomposition_processor
+   (part_with_1,part_without_1,pt,goal) =
+   let pt_with_1 = Point.remove pt part_without_1
+   and pt_without_1 = Point.remove pt part_with_1 in 
+   let (d,translated___pt_without_1) = 
+      Point.decompose_wrt_translation pt_without_1 in 
+   match List.assoc_opt pt_with_1 (!impatient_ref) with 
     None -> None 
-   |Some left_mold ->
+   |Some mold_with_1 ->
    (
-     match List.assoc_opt translated_right_pt (!impatient_ref) with 
+     match List.assoc_opt translated___pt_without_1 (!impatient_ref) with 
     None -> None 
-   |Some translated_right_mold ->
-      if Mold.solution_size(left_mold)+
-         Mold.solution_size(translated_right_mold) = goal 
+   |Some translated___mold_without_1 ->
+      if Mold.solution_size(mold_with_1)+
+         Mold.solution_size(translated___mold_without_1) = goal 
       then let msg= " Decomposition found : "^
-           (Finite_int_set.name(left_pt.base_set))^
+           (Finite_int_set.name(pt_with_1.base_set))^
            " \226\138\149 ( "^(string_of_int d)^" + "^
-           (Finite_int_set.name(translated_right_pt.base_set))^" )"
+           (Finite_int_set.name(translated___pt_without_1.base_set))^" )"
            in 
            let _ = (print_string msg;flush stdout) in 
-           let right_mold = Mold.translate d translated_right_mold in
-           Some(left_mold,right_mold)
-      else 
-      (
-         match right with 
-         [] -> None 
-         | v :: others -> helper_for_linear_decomposition
-          (v::reversed_left,others,pt,goal)
-      )        
+           let mold_without_1 = Mold.translate d translated___mold_without_1 in
+           Some(mold_with_1,mold_without_1)
+      else None    
    ) ;;
+
+let rec helper_for_linear_decomposition
+   (reversed_left,right,pt,goal) =
+   let opt = decomposition_processor 
+   (reversed_left,right,pt,goal) in  
+   if opt<>None then opt else 
+   match right with 
+     [] -> None 
+   | v :: others -> helper_for_linear_decomposition
+          (v::reversed_left,others,pt,goal)       
+    ;;
 
 let linear_decomposition_opt pt goal = 
     let base = Finite_int_set.to_usual_int_list(pt.base_set) in 
@@ -764,6 +769,11 @@ let linear_decomposition_opt pt goal =
     helper_for_linear_decomposition
       (List.tl revbase,[List.hd revbase],pt,goal) ;; 
 
+let oddeven_decomposition_opt pt goal = 
+    let (odd_list,even_list) = 
+      Finite_int_set.oddeven_decomposition(pt.base_set) in 
+    decomposition_processor
+      (odd_list,even_list,pt,goal) ;; 
 
 
 let check_extension_case pt n beheaded_mold = 
