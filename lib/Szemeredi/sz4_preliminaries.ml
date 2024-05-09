@@ -1070,16 +1070,25 @@ module Initialization = struct
 module Private = struct 
 
 let p3 n = PointExample.segment n ~imposed_max_width:3;;
+let pr3 n r = Point.remove (p3 n) r ;;
+let ip3 n = Impatient.eval_on_rails_opt (p3 n);;
+let ipr3 n r = Impatient.eval_on_rails_opt (pr3 n r);;
+let fpr3 n r = Impatient.deduce_using_fork (pr3 n r);;
 
 
 end ;;
 
 Impatient.set_verbose_mode false ;; 
 
-Impatient.eval_on_rails_opt (Private.p3 6) ;;
-let pt1 = Point.remove (Private.p3 7) [4] ;;
-Impatient.eval_on_rails_opt pt1 ;; 
-Impatient.deduce_using_fork (Private.p3 7) (1,4,7) ;;
+open Private ;;
+
+ip3  6 ;;
+ipr3 7 [4] ;; 
+fpr3 7 [] (1,4,7) ;;
+
+ipr3 8 [2;4] ;;
+ipr3 8 [2;7] ;;
+fpr3 8 [2] (1,4,7) ;;
 
 
 Impatient.set_verbose_mode true ;; 
