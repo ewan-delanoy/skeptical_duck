@@ -566,7 +566,7 @@ let test_for_decomposer sols dec =
        List.length(i_intersect dec sol) = m 
     ) sols ;; 
     
-let decomposers pt =
+let decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
   let full_power_set = il_sort(List_again.power_set base) in 
   let beheaded_power_set = List.tl full_power_set in 
@@ -574,7 +574,7 @@ let decomposers pt =
   let half_power_set = List.filter 
       (fun z->List.length(z)<=m) beheaded_power_set in 
   let solutions = all_solutions pt 0 in 
-  List.filter (test_for_decomposer solutions) half_power_set ;; 
+  List.filter (test_for_decomposer solutions) half_power_set );; 
 
 end ;;
 
