@@ -726,6 +726,18 @@ module Private = struct
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
 
+let verbose_mode_ref = ref true ;;
+
+let display_message_when_in_verbose_mode
+    d pt_with_1 translated___pt_without_1 = 
+   if not(!verbose_mode_ref) then () else 
+   let msg= " Decomposition found : "^
+   (Finite_int_set.name(pt_with_1.base_set))^
+   " \226\138\149 ( "^(string_of_int d)^" + "^
+   (Finite_int_set.name(translated___pt_without_1.base_set))^" )\n"
+   in 
+   print_string msg;flush stdout ;;
+
 let decomposition_processor
    (part_with_1,part_without_1,pt,goal) =
    let pt_with_1 = Point.remove pt part_without_1
@@ -741,12 +753,8 @@ let decomposition_processor
    |Some translated___mold_without_1 ->
       if Mold.solution_size(mold_with_1)+
          Mold.solution_size(translated___mold_without_1) = goal 
-      then let msg= " Decomposition found : "^
-           (Finite_int_set.name(pt_with_1.base_set))^
-           " \226\138\149 ( "^(string_of_int d)^" + "^
-           (Finite_int_set.name(translated___pt_without_1.base_set))^" )\n"
-           in 
-           let _ = (print_string msg;flush stdout) in 
+      then let _ = display_message_when_in_verbose_mode
+           d pt_with_1 translated___pt_without_1 in 
            let mold_without_1 = Mold.translate d translated___mold_without_1 in
            Some(mold_with_1,mold_without_1)
       else None    
@@ -934,6 +942,8 @@ let eval_on_rails_opt pt =
 
 let eval_opt = Private.eval_opt ;; 
 
+let set_verbose_mode b = (Private.verbose_mode_ref:=b) ;; 
+
 end ;;
 
 module Painstaking = struct 
@@ -1064,10 +1074,15 @@ let p3 n = PointExample.segment n ~imposed_max_width:3;;
 
 end ;;
 
+Impatient.set_verbose_mode false ;; 
+
 Impatient.eval_on_rails_opt (Private.p3 6) ;;
 let pt1 = Point.remove (Private.p3 7) [4] ;;
 Impatient.eval_on_rails_opt pt1 ;; 
 Impatient.deduce_using_fork (Private.p3 7) (1,4,7) ;;
+
+
+Impatient.set_verbose_mode true ;; 
 
 
 end ;;
