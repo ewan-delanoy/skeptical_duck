@@ -744,7 +744,7 @@ let decomposition_processor
       then let msg= " Decomposition found : "^
            (Finite_int_set.name(pt_with_1.base_set))^
            " \226\138\149 ( "^(string_of_int d)^" + "^
-           (Finite_int_set.name(translated___pt_without_1.base_set))^" )"
+           (Finite_int_set.name(translated___pt_without_1.base_set))^" )\n"
            in 
            let _ = (print_string msg;flush stdout) in 
            let mold_without_1 = Mold.translate d translated___mold_without_1 in
@@ -769,9 +769,16 @@ let linear_decomposition_opt pt goal =
     helper_for_linear_decomposition
       (List.tl revbase,[List.hd revbase],pt,goal) ;; 
 
-let oddeven_decomposition_opt pt goal = 
+let oddeven_indices_decomposition_opt pt goal = 
     let (odd_list,even_list) = 
       Finite_int_set.oddeven_decomposition(pt.base_set) in 
+    decomposition_processor
+      (odd_list,even_list,pt,goal) ;; 
+
+let oddeven_decomposition_opt pt goal = 
+    let base = Finite_int_set.to_usual_int_list(pt.base_set) in 
+    let (odd_list,even_list) = 
+      List.partition(fun t-> t mod 2=1)base in 
     decomposition_processor
       (odd_list,even_list,pt,goal) ;; 
 
@@ -806,6 +813,15 @@ let check_linear_decomposition_case pt beheaded_mold =
               ~half:left_mold ~half:right_mold)
         | None -> None ;;  
 
+let check_oddeven_indices_decomposition_case pt beheaded_mold = 
+    let goal = Mold.solution_size beheaded_mold in 
+         match oddeven_indices_decomposition_opt pt goal with 
+         Some(mold_with_1,mold_without_1) ->
+           Some(Mold.in_decomposition_case 
+             ~beheaded:beheaded_mold 
+              ~half:mold_with_1 ~half:mold_without_1)
+        | None -> None ;;  
+
 let check_oddeven_decomposition_case pt beheaded_mold = 
     let goal = Mold.solution_size beheaded_mold in 
          match oddeven_decomposition_opt pt goal with 
@@ -814,7 +830,6 @@ let check_oddeven_decomposition_case pt beheaded_mold =
              ~beheaded:beheaded_mold 
               ~half:mold_with_1 ~half:mold_without_1)
         | None -> None ;;  
-
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
