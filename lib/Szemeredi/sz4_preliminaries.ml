@@ -797,7 +797,10 @@ let oddeven_decomposition_opt pt goal =
       (odd_list,even_list,pt,goal) ;; 
 
 
-let check_extension_case pt n beheaded_mold = 
+let check_extension_case pt n beheaded_mold_opt = 
+   match beheaded_mold_opt with 
+    None -> None 
+   |Some beheaded_mold -> 
    let extended_sols = List.filter_map (
        fun sol -> let extended_sol = sol @ [n] in 
          if Point.subset_is_admissible pt extended_sol 
@@ -808,15 +811,18 @@ let check_extension_case pt n beheaded_mold =
      then Some(Mold.in_extension_case extended_sols beheaded_mold n)
      else None ;; 
 
-let check_filled_complement_case pt n beheaded_mold = 
-     let complements = Point.complements pt n in 
+let check_filled_complement_case pt n beheaded_mold_opt = 
+  match beheaded_mold_opt with 
+    None -> None 
+   |Some beheaded_mold ->
+    (let complements = Point.complements pt n in 
      match List.find_opt (
         fun c-> i_is_included_in c 
         beheaded_mold.mandatory_elements
      ) complements with 
      (Some _complement) ->
        Some(Mold.in_stagnation_case beheaded_mold)
-     | None -> None ;;  
+     | None -> None );;  
 
 let check_linear_decomposition_case pt beheaded_mold = 
     let goal = Mold.solution_size beheaded_mold in 
@@ -851,14 +857,15 @@ let eval_without_remembering_opt pt =
    else 
    let n = Finite_int_set.max (pt.base_set) in 
    let beheaded_pt = Point.remove pt [n] in 
-   match List.assoc_opt beheaded_pt (!impatient_ref) with 
+   let beheaded_mold_opt = List.assoc_opt beheaded_pt (!impatient_ref) in 
+   match beheaded_mold_opt with 
     None -> None 
    |Some beheaded_mold ->
-     let opt1 = check_extension_case pt n beheaded_mold in 
+     let opt1 = check_extension_case pt n beheaded_mold_opt in 
      if opt1 <> None
      then opt1
      else 
-     let opt2 = check_filled_complement_case pt n beheaded_mold in 
+     let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
      if opt2 <> None
      then opt2
      else 
@@ -970,13 +977,18 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     let new_cuttings = Image.image (fun t->cutting@t) ext in 
       let untreated_cuttings = List.filter (fun 
         rr -> 
-        eval_using_only_translation_opt
-        (Point.remove pt rr)=None
+        eval_using_only_translation_opt(Point.remove pt rr)=None
       ) new_cuttings in 
-    if untreated_cuttings = []
-    then happy_result simpler_pt cutting bf_analysis_result
-    else helper_for_next_advance 
-           (pt,untreated_cuttings@to_be_treated) ;;    
+    if untreated_cuttings <> []
+    then helper_for_next_advance 
+           (pt,untreated_cuttings@to_be_treated) 
+    else 
+    let m = Finite_int_set.max simpler_pt.base_set in 
+    let enhanced_cutting = cutting@[m] in 
+    if eval_using_only_translation_opt(Point.remove pt enhanced_cutting)=None
+    then helper_for_next_advance 
+           (pt,enhanced_cutting::to_be_treated)
+    else happy_result simpler_pt cutting bf_analysis_result  ;;    
     
 let next_advance pt = 
     if eval_using_only_translation_opt(pt)<>None 
