@@ -750,27 +750,40 @@ let display_message_when_in_verbose_mode
    in 
    print_string msg;flush stdout ;;
 
-let decomposition_processor
-   (part_with_1,part_without_1,pt,goal) =
-   let pt_with_1 = Point.remove pt part_without_1
-   and pt_without_1 = Point.remove pt part_with_1 in 
-   let (d,translated___pt_without_1) = 
-      Point.decompose_wrt_translation pt_without_1 in 
-   match List.assoc_opt pt_with_1 (!impatient_ref) with 
-    None -> None 
-   |Some mold_with_1 ->
-   (
-     match List.assoc_opt translated___pt_without_1 (!impatient_ref) with 
-    None -> None 
-   |Some translated___mold_without_1 ->
-      if Mold.solution_size(mold_with_1)+
-         Mold.solution_size(translated___mold_without_1) = goal 
-      then let _ = display_message_when_in_verbose_mode
-           d pt_with_1 translated___pt_without_1 in 
-           let mold_without_1 = Mold.translate d translated___mold_without_1 in
-           Some(mold_with_1,mold_without_1)
-      else None    
-   ) ;;
+
+let test_for_individual_decomposition pt domain 
+      (DH(hook,sol_for_hook))=
+    if not(i_is_included_in hook domain) then None else 
+    let hook_complement = i_setminus domain hook in 
+    if hook_complement = [] then None else 
+    let d = (List.hd hook_complement) - 1 in 
+    let pt_with_1 = Point.remove pt hook_complement 
+    and pt_without_1 = Point.remove pt hook in 
+    let translated___pt_without_1 =
+          Point.translate (-d) pt_without_1 in 
+    let opt1 =  
+     List.assoc_opt translated___pt_without_1 (!impatient_ref) in 
+    if opt1 = None then None else 
+    let translated___mold_without_1 = Option.get opt1 in 
+    let full_sols = List.filter_map(fun translated_sol ->
+            let sol = Image.image ((+) d) translated_sol in 
+            let full_sol = sol_for_hook @ sol in 
+            if Point.subset_is_admissible pt full_sol 
+            then Some(full_sol,translated_sol)
+            else None
+    )  (translated___mold_without_1.solutions) in
+    if full_sols = [] then None else 
+    Some({
+        solutions = Image.image fst full_sols;
+        mandatory_elements = 
+            translated___mold_without_1.mandatory_elements
+    }) ;;
+
+let check_decomposition_case pt domain = 
+    List.find_map (
+      test_for_individual_decomposition pt domain 
+    ) (!decomposition_hooks_ref) ;;  
+
 
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
@@ -800,10 +813,6 @@ let check_filled_complement_case pt n beheaded_mold_opt =
      | None -> None );;  
 
 
-let check_decomposition_case pt domain = 
-    (* List.find_map (
-      check_individual_decomposition pt 
-    ) *) None ;;  
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
