@@ -569,7 +569,7 @@ module Mold = struct
          mandatory_elements = []
   };;
 
- let join mold1 mold2 =
+ let sum mold1 mold2 =
      {
        solutions = il_merge mold1.solutions mold2.solutions ;
        mandatory_elements = i_intersect 
@@ -1008,7 +1008,7 @@ let eval_on_nonfree old_f nonfree_pt =
      if m1 > m0 (* implying m1 = m0 + 1 *)
      then forced_mold 
      else if m1 = m0
-     then Mold.join forced_mold beheaded_mold 
+     then Mold.sum forced_mold beheaded_mold 
      else (* unknown case so far, but theoretically possible *)
           beheaded_mold ;; 
     
