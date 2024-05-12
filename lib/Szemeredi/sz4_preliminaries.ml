@@ -738,6 +738,8 @@ let impatient_ref = ref ([]: (point * mold) list) ;;
 
 let verbose_mode_ref = ref true ;;
 
+let decomposition_hooks_ref = ref ([]: decomposition_hook list) ;; 
+
 let display_message_when_in_verbose_mode
     d pt_with_1 translated___pt_without_1 = 
    if not(!verbose_mode_ref) then () else 
