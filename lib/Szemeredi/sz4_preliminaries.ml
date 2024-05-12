@@ -550,18 +550,7 @@ module Mold = struct
    { 
    solutions  = [base]; 
    mandatory_elements = base; 
-   } ;;
-
- let in_decomposition_case 
-     ~beheaded:beheaded_mold
-             ~half:half_mold1 ~half:half_mold2 = 
-    { 
-   solutions  = beheaded_mold.solutions; 
-   mandatory_elements = 
-     i_merge
-     (half_mold1.mandatory_elements)
-     (half_mold2.mandatory_elements);
-   } ;;         
+   } ;;      
 
  let in_stagnation_case beheaded_mold =
   {
