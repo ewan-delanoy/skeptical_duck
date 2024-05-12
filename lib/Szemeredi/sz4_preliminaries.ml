@@ -587,7 +587,7 @@ end ;;
 module Brute_force = struct 
 
 type analysis_result =
-   Decomposition of point * (int list list)
+   Decomposition of point * (int list list) * (int list)* (int list)
   |Breaking_point of point * constraint_t * point * mold ;;
 
 exception Size_too_big of point ;; 
@@ -620,6 +620,12 @@ let rec helper_for_solution_chooser (sols,base) =
        let possibly_empty = List.filter (fun sol ->not(i_mem v sol)) sols in 
        let not_empty = (if possibly_empty = [] then sols else possibly_empty) in 
        helper_for_solution_chooser (not_empty,others) ;;
+
+let canonical_solution = Memoized.make(fun pt->
+   let base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
+   and sols = all_solutions pt 0 in 
+   helper_for_solution_chooser (sols,base)
+) ;; 
 
 let eval pt = 
      let base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
@@ -663,9 +669,15 @@ let decomposers =Memoized.make(fun pt ->
   List.filter (test_for_decomposer solutions) half_power_set );; 
 
 let rec helper_for_analysis (pt, size) = 
-    let dec = decomposers(pt) in 
-    if dec <> []
-    then Decomposition(pt,dec)
+    let half_of_decs = decomposers(pt) in 
+    if half_of_decs <> []
+    then 
+         let whole = Finite_int_set.to_usual_int_list pt.base_set in
+         let other_half = Image.image (i_setminus whole) half_of_decs in 
+         let decs = half_of_decs @ other_half in 
+         let decs_with_1 = List.filter (i_mem 1) decs in  
+         let chosen_dec = Ordered.min il_order decs_with_1 in 
+         Decomposition(pt,half_of_decs,chosen_dec,canonical_solution pt)
     else
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
@@ -717,7 +729,7 @@ exception Incomplete_fork_exn of int * point ;;
 exception Next_advance_exn ;; 
 
 type next_advance_result =
-   Decomposition of  (int list) * (int list) * (int list)
+   Decomposition of  (int list) * decomposition_hook * (int list)
   |Fork of (int list) * constraint_t ;;
 
 
@@ -901,23 +913,18 @@ let deduce_using_fork pt (i,j,k) =
           (!impatient_ref)) in 
     mold ;;    
 
-let extensions_for_cuttings simpler_pt = function 
-     (Brute_force.Decomposition(_,decs)) -> 
-          let dec = List.hd decs 
-          and whole = Finite_int_set.to_usual_int_list 
-               simpler_pt.base_set in
-          let cdec = i_setminus whole dec in       
-          [dec;cdec] 
+let extensions_for_cuttings = function 
+     (Brute_force.Decomposition(_,_,chosen_dec,_)) ->       
+          [chosen_dec] 
     |(Brute_force.Breaking_point(_,C l,_,_)) ->
       Image.image (fun t->[t]) l ;;
  
- let happy_result simpler_pt cutting = function 
-    (Brute_force.Decomposition(_,decs)) -> 
-          let dec = List.hd decs 
-          and whole = Finite_int_set.to_usual_int_list 
-               simpler_pt.base_set in
-          let cdec = i_setminus whole dec in       
-          Decomposition(cutting,dec,cdec) 
+ let happy_result cutting = function 
+    (Brute_force.Decomposition(_,_,chosen_dec,canonical_solution)) ->      
+          let hook = 
+          DH(chosen_dec,
+          i_intersect chosen_dec canonical_solution) in 
+          Decomposition(cutting,hook,canonical_solution) 
     |(Brute_force.Breaking_point(_,C l,_,_)) ->
          Fork (cutting,C l) ;;
 
@@ -930,7 +937,7 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     then helper_for_next_advance (pt,other_cuttings)
     else 
     let bf_analysis_result = Brute_force.analize simpler_pt in 
-    let ext = extensions_for_cuttings simpler_pt bf_analysis_result in  
+    let ext = extensions_for_cuttings bf_analysis_result in  
     let new_cuttings = Image.image (fun t->cutting@t) ext in 
       let untreated_cuttings = List.filter (fun 
         rr -> 
@@ -945,7 +952,7 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     if eval_using_only_translation_opt(Point.remove pt enhanced_cutting)=None
     then helper_for_next_advance 
            (pt,enhanced_cutting::to_be_treated)
-    else happy_result simpler_pt cutting bf_analysis_result  ;;    
+    else happy_result cutting bf_analysis_result  ;;    
     
 let next_advance pt = 
     if eval_using_only_translation_opt(pt)<>None 
