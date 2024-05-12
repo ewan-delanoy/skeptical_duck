@@ -740,14 +740,22 @@ let verbose_mode_ref = ref true ;;
 
 let decomposition_hooks_ref = ref ([]: decomposition_hook list) ;; 
 
-let display_message_when_in_verbose_mode
-    d pt_with_1 translated___pt_without_1 = 
-   if not(!verbose_mode_ref) then () else 
-   let msg= " Decomposition found : "^
-   (Finite_int_set.name(pt_with_1.base_set))^
+let descr_for_dec d left right = 
+   left^
    " \226\138\149 ( "^(string_of_int d)^" + "^
-   (Finite_int_set.name(translated___pt_without_1.base_set))^" )\n"
-   in 
+   right^" )\n" ;; 
+
+let display_message_when_in_verbose_mode
+    d pt_with_1 translated___pt_without_1 
+    sol_for_hook translated___sol_without_1 =
+   if not(!verbose_mode_ref) then () else 
+   let base1 = Finite_int_set.name(pt_with_1.base_set)
+   and base2 = Finite_int_set.name(translated___pt_without_1.base_set)
+   and sol1 = Arithmetic_list.write_using_connected_components(sol_for_hook)
+   and sol2 = Arithmetic_list.write_using_connected_components(translated___sol_without_1) in 
+   let msg= " Decomposition found : "^
+   (descr_for_dec d base1 base2)^(descr_for_dec d sol1 sol2) 
+   in
    print_string msg;flush stdout ;;
 
 
@@ -773,6 +781,9 @@ let test_for_individual_decomposition pt domain
             else None
     )  (translated___mold_without_1.solutions) in
     if full_sols = [] then None else 
+    let _ = display_message_when_in_verbose_mode
+    d pt_with_1 translated___pt_without_1 
+    sol_for_hook (snd(List.hd full_sols)) in 
     Some({
         solutions = Image.image fst full_sols;
         mandatory_elements = 
