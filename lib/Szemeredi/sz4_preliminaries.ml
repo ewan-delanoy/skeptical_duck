@@ -27,6 +27,10 @@ type mold = Sz4_types.mold = {
     mandatory_elements : int list;
 } ;;
 
+type decomposition_hook = 
+   Sz4_types.decomposition_hook = DH of (int list) * (int list) ;; 
+
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
@@ -766,37 +770,6 @@ let decomposition_processor
       else None    
    ) ;;
 
-let rec helper_for_linear_decomposition
-   (reversed_left,right,pt,goal) =
-   let opt = decomposition_processor 
-   (reversed_left,right,pt,goal) in  
-   if opt<>None then opt else 
-   match right with 
-     [] -> None 
-   | v :: others -> helper_for_linear_decomposition
-          (v::reversed_left,others,pt,goal)       
-    ;;
-
-let linear_decomposition_opt pt goal = 
-    let base = Finite_int_set.to_usual_int_list(pt.base_set) in 
-    let revbase = List.rev base in 
-    helper_for_linear_decomposition
-      (List.tl revbase,[List.hd revbase],pt,goal) ;; 
-
-let oddeven_indices_decomposition_opt pt goal = 
-    let (odd_list,even_list) = 
-      Finite_int_set.oddeven_decomposition(pt.base_set) in 
-    decomposition_processor
-      (odd_list,even_list,pt,goal) ;; 
-
-let oddeven_decomposition_opt pt goal = 
-    let base = Finite_int_set.to_usual_int_list(pt.base_set) in 
-    let (odd_list,even_list) = 
-      List.partition(fun t-> t mod 2=1)base in 
-    decomposition_processor
-      (odd_list,even_list,pt,goal) ;; 
-
-
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
     None -> None 
@@ -824,32 +797,11 @@ let check_filled_complement_case pt n beheaded_mold_opt =
        Some(Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
-let check_linear_decomposition_case pt beheaded_mold = 
-    let goal = Mold.solution_size beheaded_mold in 
-         match linear_decomposition_opt pt goal with 
-         Some(left_mold,right_mold) ->
-           Some(Mold.in_decomposition_case 
-             ~beheaded:beheaded_mold 
-              ~half:left_mold ~half:right_mold)
-        | None -> None ;;  
 
-let check_oddeven_indices_decomposition_case pt beheaded_mold = 
-    let goal = Mold.solution_size beheaded_mold in 
-         match oddeven_indices_decomposition_opt pt goal with 
-         Some(mold_with_1,mold_without_1) ->
-           Some(Mold.in_decomposition_case 
-             ~beheaded:beheaded_mold 
-              ~half:mold_with_1 ~half:mold_without_1)
-        | None -> None ;;  
-
-let check_oddeven_decomposition_case pt beheaded_mold = 
-    let goal = Mold.solution_size beheaded_mold in 
-         match oddeven_decomposition_opt pt goal with 
-         Some(mold_with_1,mold_without_1) ->
-           Some(Mold.in_decomposition_case 
-             ~beheaded:beheaded_mold 
-              ~half:mold_with_1 ~half:mold_without_1)
-        | None -> None ;;  
+let check_decomposition_case pt domain = 
+    (* List.find_map (
+      check_individual_decomposition pt 
+    ) *) None ;;  
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
@@ -858,22 +810,16 @@ let eval_without_remembering_opt pt =
    let n = Finite_int_set.max (pt.base_set) in 
    let beheaded_pt = Point.remove pt [n] in 
    let beheaded_mold_opt = List.assoc_opt beheaded_pt (!impatient_ref) in 
-   match beheaded_mold_opt with 
-    None -> None 
-   |Some beheaded_mold ->
-     let opt1 = check_extension_case pt n beheaded_mold_opt in 
-     if opt1 <> None
-     then opt1
-     else 
-     let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
-     if opt2 <> None
-     then opt2
-     else 
-     let opt3 = check_linear_decomposition_case pt beheaded_mold in 
-     if opt3 <> None
-     then opt3
-     else 
-     check_oddeven_decomposition_case pt beheaded_mold ;;
+   let opt1 = check_extension_case pt n beheaded_mold_opt in 
+   if opt1 <> None
+   then opt1
+   else 
+   let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
+   if opt2 <> None
+   then opt2
+   else let domain = 
+           Finite_int_set.to_usual_int_list (pt.base_set) in 
+        check_decomposition_case pt domain ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
@@ -1151,6 +1097,7 @@ end ;;
 
 Impatient.set_verbose_mode false ;; 
 
+(*
 open Private ;;
 
 ip3  6 ;;
@@ -1163,7 +1110,7 @@ fpr3 8 [2] (1,4,7) ;;
 
 ipr3 8 [5;4] ;;
 ipr3 8 [5;7] ;;
-
+*)
 
 Impatient.set_verbose_mode true ;; 
 
