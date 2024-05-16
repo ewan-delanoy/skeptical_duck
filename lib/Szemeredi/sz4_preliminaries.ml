@@ -745,7 +745,11 @@ let impatient_ref = ref ([]: (point * mold) list) ;;
 
 let verbose_mode_ref = ref true ;;
 
-let decomposition_hooks_ref = ref ([]: decomposition_hook list) ;; 
+let decomposition_hooks_ref = ref ([
+    DH ([1; 2; 3], [1; 3]);
+    DH ([1; 3; 5], [1; 3]);
+    DH (Int_range.range 1 7, [1; 2; 4; 5]);
+]: decomposition_hook list) ;; 
 
 let descr_for_dec d left right = 
    left^
@@ -797,9 +801,46 @@ let test_for_individual_decomposition pt domain
             translated___mold_without_1.mandatory_elements
     }) ;;
 
-let check_decomposition_case pt domain = 
+let tdi (pt,(DH(hook,sol_for_hook))) =
+    let domain = 
+           Finite_int_set.to_usual_int_list (pt.base_set) in 
+    if not(i_is_included_in hook domain) then None else 
+    let hook_complement = i_setminus domain hook in 
+    if hook_complement = [] then None else 
+    let d = (List.hd hook_complement) - 1 in 
+    let pt_with_1 = Point.remove pt hook_complement 
+    and pt_without_1 = Point.remove pt hook in 
+    let translated___pt_without_1 =
+          Point.translate (-d) pt_without_1 in 
+    let opt1 =  
+     List.assoc_opt translated___pt_without_1 (!impatient_ref) in 
+    if opt1 = None then None else 
+    let translated___mold_without_1 = Option.get opt1 in 
+    let full_sols = List.filter_map(fun translated_sol ->
+            let sol = Image.image ((+) d) translated_sol in 
+            let full_sol = sol_for_hook @ sol in 
+            if Point.subset_is_admissible pt full_sol 
+            then Some(full_sol,translated_sol)
+            else None
+    )  (translated___mold_without_1.solutions) in
+    if full_sols = [] then None else 
+    let _ = display_message_when_in_verbose_mode
+    d pt_with_1 translated___pt_without_1 
+    sol_for_hook (snd(List.hd full_sols)) in 
+    Some({
+        solutions = Image.image fst full_sols;
+        mandatory_elements = 
+            translated___mold_without_1.mandatory_elements
+    }) ;;
+
+let test_for_individual_decomposition pt 
+      (DH(hook,sol_for_hook))=
+    tdi (pt,(DH(hook,sol_for_hook))) ;;
+
+
+let check_decomposition_case pt = 
     List.find_map (
-      test_for_individual_decomposition pt domain 
+      test_for_individual_decomposition pt  
     ) (!decomposition_hooks_ref) ;;  
 
 
@@ -848,7 +889,7 @@ let eval_without_remembering_opt pt =
    then opt2
    else let domain = 
            Finite_int_set.to_usual_int_list (pt.base_set) in 
-        check_decomposition_case pt domain ;;
+        check_decomposition_case pt ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
@@ -953,7 +994,6 @@ let rec helper_for_next_advance (pt,to_be_treated) =
     then helper_for_next_advance 
            (pt,untreated_cuttings@to_be_treated) 
     else 
-    let m = Finite_int_set.max simpler_pt.base_set in 
     happy_result cutting bf_analysis_result  ;;    
     
 let next_advance pt = 
@@ -1117,10 +1157,10 @@ end ;;
 
 Impatient.set_verbose_mode false ;; 
 
-(*
+
 open Private ;;
 
-ip3  6 ;;
+ipr3 6 [];;
 ipr3 7 [4] ;; 
 fpr3 7 [] (1,4,7) ;;
 
@@ -1128,9 +1168,15 @@ ipr3 8 [2;4] ;;
 ipr3 8 [2;7] ;;
 fpr3 8 [2] (1,4,7) ;;
 
+
 ipr3 8 [5;4] ;;
 ipr3 8 [5;7] ;;
-*)
+fpr3 8 [5] (1,4,7) ;;
+
+fpr3 8 [] (2,5,8) ;;
+
+ipr3 14 [] ;; 
+
 
 Impatient.set_verbose_mode true ;; 
 
