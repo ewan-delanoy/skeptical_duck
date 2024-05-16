@@ -668,7 +668,7 @@ let decomposers =Memoized.make(fun pt ->
   let solutions = all_solutions pt 0 in 
   List.filter (test_for_decomposer solutions) half_power_set );; 
 
-let rec helper_for_analysis (pt, size) = 
+let rec naive_helper_for_analysis (pt, size) = 
     let half_of_decs = decomposers(pt) in 
     if half_of_decs <> []
     then 
@@ -685,7 +685,13 @@ let rec helper_for_analysis (pt, size) =
     let size_before = Mold.solution_size sol_before in 
     if size_before<>size  
     then Breaking_point(pt,cstr,pt_before,sol_before)
-    else helper_for_analysis (pt_before, size) ;; 
+    else naive_helper_for_analysis (pt_before, size) ;; 
+
+let error_ref = ref None ;;
+
+let helper_for_analysis (pt,size) = 
+    try naive_helper_for_analysis (pt, size)  with 
+    _ -> let _=(error_ref:=Some(pt,size)) in failwith("hhh") ;; 
 
 let analize pt = 
     let mold = eval pt in 
@@ -948,11 +954,7 @@ let rec helper_for_next_advance (pt,to_be_treated) =
            (pt,untreated_cuttings@to_be_treated) 
     else 
     let m = Finite_int_set.max simpler_pt.base_set in 
-    let enhanced_cutting = cutting@[m] in 
-    if eval_using_only_translation_opt(Point.remove pt enhanced_cutting)=None
-    then helper_for_next_advance 
-           (pt,enhanced_cutting::to_be_treated)
-    else happy_result cutting bf_analysis_result  ;;    
+    happy_result cutting bf_analysis_result  ;;    
     
 let next_advance pt = 
     if eval_using_only_translation_opt(pt)<>None 
