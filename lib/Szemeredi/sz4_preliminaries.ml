@@ -751,6 +751,10 @@ let decomposition_hooks_ref = ref ([
     DH (Int_range.range 1 7, [1; 2; 4; 5]);
 ]: decomposition_hook list) ;; 
 
+let extra_solutions_ref = 
+   ref ([]: (point * (int list list)) list) ;; 
+
+
 let descr_for_dec d left right = 
    left^
    " \226\138\149 ( "^(string_of_int d)^" + "^
@@ -887,9 +891,7 @@ let eval_without_remembering_opt pt =
    let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
    if opt2 <> None
    then opt2
-   else let domain = 
-           Finite_int_set.to_usual_int_list (pt.base_set) in 
-        check_decomposition_case pt ;;
+   else check_decomposition_case pt ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
@@ -904,6 +906,8 @@ let eval_on_pretranslated_opt pt =
         Some new_answer
 
    ) ;;      
+
+   
 
 let eval_opt pt =
     let (d,pretranslated_pt) = 

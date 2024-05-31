@@ -1,14 +1,174 @@
 (************************************************************************************************************************
-Snippet 134 : 
+Snippet 135 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 133 : 
+Snippet 134 : computation of sources in a Java project
 ************************************************************************************************************************)
 
+module Snip134=struct
+
+let dir1 = Directory_name.of_string "~/Downloads/myspring" ;; 
+let u1 = Unix_again.complete_ls dir1 ;; 
+
+
+let files_in_project = List.filter (fun ap->
+  not(Unix_again.is_a_directory ap)
+) u1 ;; 
+
+let java_files_in_project = List.filter (fun ap->
+  let s = Absolute_path.to_string ap in 
+  Supstring.ends_with s ".java"
+) files_in_project ;; 
+
+let extract_classname_from_filename ap = 
+   let s = Absolute_path.to_string ap in 
+     let s2 = Cull_string.after_rightmost s '/' in 
+     Cull_string.before_rightmost s2 '.' ;; 
+
+let extract_source_from_filename ap = 
+   let s = Absolute_path.to_string ap in 
+   let i1 = Substring.rightmost_index_of_in "/src/" s in
+   let s2 = Cull_string.beginning (i1-1) s in 
+   (Cull_string.after_rightmost s2 '/',s2) ;;
+     
+let sources_in_project_in_no_particular_order = 
+ Explicit.image extract_source_from_filename 
+ java_files_in_project ;;
+
+let sources_in_project = 
+   Ordered.sort Total_ordering.standard 
+     sources_in_project_in_no_particular_order ;; 
+
+let source_names_in_project = 
+   Ordered.sort Total_ordering.silex_for_strings 
+     (Image.image fst sources_in_project) ;; 
+  
+
+let locations_for_sourcename srcn =
+  List.filter (
+      fun (a,b) -> a = srcn
+  ) sources_in_project ;; 
+
+let list_for_locations = Image.image (
+   fun srcn->(srcn,locations_for_sourcename srcn)
+) source_names_in_project;;
+
+let repeated_source_names = List.filter (
+   fun (srcn,l) -> List.length(l)>1
+) list_for_locations ;; 
+
+let source_locations_in_project = 
+   Ordered.sort Total_ordering.silex_for_strings 
+     (Image.image snd sources_in_project) ;;
+
+let g1 = Image.image (Cull_string.cobeginning 38) 
+   source_locations_in_project ;;
+
+let g2 = Image.image (fun s->"   "^(Strung.enclose s)^";" ) g1;;
+let g3 = String.concat "\n" g2 ;; 
+let g4 = "\n\n\n let reconstructed_source_locations_in_project=[\n"
+   ^g3^"] ;;\n\n\n" ;;
+
+let ap1 = Absolute_path.of_string 
+"watched/watched_not_githubbed/cloth.ml";;
+
+let act1 () =
+Io.append_string_to_file g4 ap1 ;;   
+
+(*
+
+let check_reconstruction = 
+ (reconstructed_source_locations_in_project=
+  source_locations_in_project 
+ ) ;;
+
+*)
+
+
+
+
+  
+
+
+
+
+
+
+(*
+
+let java_classes_in_project_in_no_particular_order = 
+ Explicit.image extract_classname_from_filename java_files_in_project ;;
+
+let java_classes_in_project = 
+   Ordered.sort Total_ordering.silex_for_strings 
+     java_classes_in_project_in_no_particular_order ;; 
+
+let associated_files = Memoized.make(fun s->
+   List.filter (fun ap ->
+      extract_classname_from_filename ap = s
+   ) java_files_in_project
+) ;; 
+
+let table_for_associated_files = Explicit.image (
+   fun s->(s,associated_files s)
+) java_classes_in_project ;;
+
+let repeated_classnames = Explicit.filter (
+   fun (s,l) -> List.length(l) > 1
+) table_for_associated_files ;; 
+
+let see1 = List.nth repeated_classnames 0;;
+
+
+
+
+let u3 = Explicit.image (fun ap->(ap,Io.read_whole_file ap)) u2;;
+
+let see1 = List.find_map (
+   fun (ap,text) ->
+     if Substring.is_a_substring_of "@Configuration" text 
+     then Some ap 
+     else None
+) u3 ;;
+
+let see2 = List.find_map (
+   fun (ap,text) ->
+     if (Substring.is_a_substring_of "bean" text)
+         ||
+        (Substring.is_a_substring_of "Bean" text)  
+     then Some ap 
+     else None
+) u3 ;;
+
+let sourcename_opt ap = 
+   let s = Absolute_path.to_string ap in 
+   let (path1,end1) = Cull_string.split_wrt_rightmost s '/' in 
+   let (path2,end2) = Cull_string.split_wrt_rightmost path1 '/' in 
+   let (path3,end3) = Cull_string.split_wrt_rightmost path2 '/' in 
+   
+     Cull_string.before_rightmost s2 '.' ;; 
+let s = "/Users/ewandelanoy/Downloads/myspring/spring-boot-2.7.x/"^
+"spring-boot-tests/spring-boot-smoke-tests/"^
+"spring-boot-smoke-test-rsocket/src/main/java/smoketest/" ;;
+
+let i1 = Substring.rightmost_index_of_in "/src/" s ;;
+let s2 = Cull_string.beginning (i1-1) s ;;
+let s3 = Cull_string.after_rightmost s2 '/' ;;
+ 
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 133 : Storing an old version of code for the Szemeredi problem
+************************************************************************************************************************)
 module Snip133=struct
 
 module Sz3_types = struct 
