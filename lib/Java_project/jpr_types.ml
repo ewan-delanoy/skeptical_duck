@@ -16,3 +16,5 @@ type java_package = Jpkg of string ;;
 
 type java_import = Jiprt of string * string ;; 
 
+type java_subdir = Jsbd of string ;; 
+
