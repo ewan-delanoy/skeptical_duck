@@ -1,14 +1,512 @@
 (************************************************************************************************************************
-Snippet 135 : 
+Snippet 136 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 134 : computation of sources in a Java project
+Snippet 135 : deduce package from path in a Java project
 ************************************************************************************************************************)
 
+module Snip135=struct
+
+let prefix = home^"/Downloads/my_springs/spring_0/" ;;
+
+ let sources_in_project=Image.image(
+    fun s->prefix^s
+ )[
+   "spring-boot-2.7.x/buildSrc";
+   "spring-framework-5.3.x/buildSrc";
+   "spring-framework-5.3.x/spring-tx";
+   "spring-framework-5.3.x/spring-aop";
+   "spring-framework-5.3.x/spring-jcl";
+   "spring-framework-5.3.x/spring-jms";
+   "spring-framework-5.3.x/spring-orm";
+   "spring-framework-5.3.x/spring-oxm";
+   "spring-framework-5.3.x/spring-web";
+   "spring-framework-5.3.x/spring-core";
+   "spring-framework-5.3.x/spring-jdbc";
+   "spring-framework-5.3.x/spring-test";
+   "spring-framework-5.3.x/spring-beans";
+   "spring-framework-5.3.x/spring-r2dbc";
+   "spring-framework-5.3.x/spring-webmvc";
+   "spring-framework-5.3.x/spring-aspects";
+   "spring-framework-5.3.x/spring-context";
+   "spring-framework-5.3.x/spring-webflux";
+   "spring-framework-5.3.x/spring-messaging";
+   "spring-framework-5.3.x/spring-websocket";
+   "spring-framework-5.3.x/integration-tests";
+   "spring-framework-5.3.x/spring-expression";
+   "spring-framework-5.3.x/spring-instrument";
+   "spring-framework-5.3.x/spring-context-indexer";
+   "spring-framework-5.3.x/spring-context-support";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-cli";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-docs";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-test";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-actuator";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-devtools";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-autoconfigure";
+   "spring-boot-2.7.x/spring-boot-system-tests/spring-boot-image-tests";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-test-autoconfigure";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-properties-migrator";
+   "spring-boot-2.7.x/spring-boot-system-tests/spring-boot-deployment-tests";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-actuator-autoconfigure";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-antlib";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-loader";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-loader-tools";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-test-support";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-gradle-plugin";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-buildpack-platform";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-jarmode-layertools";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-ant";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-aop";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jpa";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-war";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-xml";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-gradle-test-support";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-amqp";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-test";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-antlib/src/it/sample";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-batch";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-cache";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jetty";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-kafka";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-flyway";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jersey";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-quartz";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-secure";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-simple";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-testng";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-tomcat";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-configuration-metadata";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-loader-tests";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-server-tests";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-graphql";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-hateoas";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jetty10";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-logback";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-profile";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-rsocket";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-servlet";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-jsp";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-webflux";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-autoconfigure-processor";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-configuration-processor";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-activemq";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-actuator";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-jpa";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-devtools";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-undertow";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-jdbc";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-ldap";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-rest";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jetty-jsp";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jetty-ssl";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-liquibase";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-atmosphere";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-r2dbc";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-hazelcast3";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-hazelcast4";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-tomcat-jsp";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-tomcat-ssl";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-secure";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-static";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-actuator-ui";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-hibernate52";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-integration";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-traditional";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-webservices";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-jta-atomikos";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-jdbc";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-undertow-ssl";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-mustache";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-junit-vintage";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-oauth2-client";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-secure-jersey";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-mongo";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-redis";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-thymeleaf";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-launch-script-tests";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-actuator-noweb";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-parent-context";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-secure-webflux";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-test-nomockito";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-freemarker";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-actuator-log4j2";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-animated-banner";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-secure-jdbc";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-websocket-jetty";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-websocket-tomcat";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-r2dbc-flyway";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-hazelcast";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-secure-custom";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-websocket-jetty10";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-bootstrap-registry";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-websocket-undertow";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-property-validation";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-method-security";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-data-r2dbc-liquibase";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-application-type";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-web-groovy-templates";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-webflux-mongo";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-session-webflux-redis";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-oauth2-resource-server";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-reactive-oauth2-client";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-saml2-service-provider";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-tomcat-multi-connectors";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-configuration-processor-tests";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-actuator-custom-security";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-fork";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/start-stop";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-envargs";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-exclude";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-jvmargs";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-devtools";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-profiles";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-smoke-tests/spring-boot-smoke-test-reactive-oauth2-resource-server";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-arguments";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-create-dir";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-custom-dir";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-executable";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-test-scope";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-toolchains";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-layered/jar";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-with-unpack";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/start-stop-skip";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-layered/war";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-reactor/war";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-with-unpack";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-tags";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-system-scope";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-disable-fork";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-system-scope";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-exclude-entry";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-exclude-group";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-exclude-entry";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-loader-tests/spring-boot-loader-tests-app";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-server-tests/spring-boot-server-tests-app";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-caches";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-network";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-publish";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-attach-disabled";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-classifier-main";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-custom-launcher";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-with-zip-layout";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-bindings";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-cmd-line";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-output-timestamp";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-jvm-system-props";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-output-timestamp";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-classifier-source";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-working-directory";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-classifier";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-final-name";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-custom-file";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-layered-custom/jar";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-use-test-classpath";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-layered-custom/war";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-custom-name";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-reproducible";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-jvmargs-commandline";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-custom-layout/custom";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-custom-layout/layout";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-layered-disabled/jar";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-system-scope-default";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-with-layout-property";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/start-stop-fork-disabled";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-layered-disabled/war";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-bad-buildpack";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-builder-error";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-war-packaging";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-zip-packaging";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-custom-layout/default";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-arguments-commandline";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-custom-builder";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-with-repackage";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/run-profiles-fork-disabled";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-caches-multiple";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-empty-env-entry";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-multi-module/app";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-custom-build-time";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-classifier-source";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-custom-buildpacks";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-disable-build-time";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-exclude-build-time";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-layered-no-layer-tools/jar";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/war-layered-no-layer-tools/war";
+   "spring-boot-2.7.x/spring-boot-tests/spring-boot-integration-tests/spring-boot-launch-script-tests/spring-boot-launch-script-tests-app";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-multi-module/library";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-additional-properties";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-lib-name-conflict/test-project";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-info-exclude-build-properties";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-classifier-main-attach-disabled";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-classifier-with-repackage";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/jar-classifier-source-attach-disabled";
+   "spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-classifier-source-with-repackage"
+   ] ;;
+
+
+let current_source = List.nth sources_in_project 12 ;; 
+
+let files_under_source = Memoized.make(fun s_ap ->
+   let dir = Directory_name.of_string s_ap in 
+   let all_paths = Unix_again.complete_ls dir in 
+   List.filter (fun x->not(Unix_again.is_a_directory x))
+      all_paths) ;;
+
+
+let java_files_under_source = 
+   Memoized.make(fun src ->
+    let all_files = files_under_source src in 
+   List.filter (fun 
+    ap->
+     let s = Absolute_path.to_string ap in 
+     Supstring.ends_with s ".java"
+   )
+   all_files) ;;
+
+let extract_classname_from_filename ap = 
+   let s = Absolute_path.to_string ap in 
+     let s2 = Cull_string.after_rightmost s '/' in 
+     Cull_string.before_rightmost s2 '.' ;; 
+
+let java_classnames_under_source = 
+   Memoized.make(fun src ->
+    let java_files = java_files_under_source src in 
+    let classnames_inpo = 
+       Explicit.image extract_classname_from_filename java_files in 
+     Ordered.sort Total_ordering.silex_for_strings 
+      classnames_inpo
+   ) ;;
+
+let paths_for_classname src cname = 
+   List.filter (fun ap ->
+      extract_classname_from_filename ap = cname
+   ) (java_files_under_source src) ;; 
+
+
+let table_for_classname_paths_under_source = 
+   Memoized.make(fun src ->
+    let java_classes = java_classnames_under_source src in 
+    Image.image (
+   fun cname->(cname,paths_for_classname src cname)
+) java_classes 
+   ) ;;
+
+let all_files_in_project = 
+   let main_dir = Directory_name.of_string prefix in 
+   let temp1 = Unix_again.complete_ls main_dir in  
+   List.filter (fun ap->
+    not(Unix_again.is_a_directory ap)
+   ) temp1 ;; 
+
+let all_java_files_in_project = 
+   List.filter (
+    fun ap ->
+      let s_ap = Absolute_path.to_string ap in 
+      Supstring.ends_with s_ap ".java"
+   ) all_files_in_project ;; 
+
+
+let table_for_filecontents = Chronometer.it (Explicit.image (
+  fun fn ->(fn,Io.read_whole_file fn)
+)) all_files_in_project ;; 
+
+let file_contents = Memoized.make(fun fn ->
+   List.assoc fn table_for_filecontents
+) ;;
+
+let local_occurrences cname fname =
+   let text = file_contents fname in 
+   let temp1 = Substring.occurrences_of_in cname text in 
+   Image.image (
+     fun i->(Absolute_path.to_string fname,
+      (i,i+(String.length cname)-1))
+   ) temp1 ;;
+
+let occurrences cname = 
+   let temp1 = Explicit.image (local_occurrences cname) all_files_in_project in 
+   List.flatten temp1 ;;   
+
+let all_classnames_in_project =
+   let temp1 = Image.image java_classnames_under_source sources_in_project in 
+   Ordered.fold_merge
+    Total_ordering.silex_for_strings
+    temp1 ;;   
+
+let package_from_line_opt untrimmed_line = 
+  let line = Cull_string.trim_spaces untrimmed_line in 
+  let beginning = "package " 
+  and ending = ";" in 
+  if not(
+    (Supstring.begins_with line beginning) &&
+    (Supstring.ends_with line ending) 
+  )
+  then None 
+  else
+  let line2 = Cull_string.two_sided_cutting
+        (beginning,ending) line in 
+  let line3 = Cull_string.trim_spaces line2 in       
+  Some(line3);;
+
+
+exception Extract_package_from_text_exn ;;
+   
+let extract_package_from_text text = 
+    let lines = Lines_in_string.lines text in 
+    match List.find_map package_from_line_opt lines with 
+     None -> raise Extract_package_from_text_exn 
+    |Some (pn) -> pn ;;  
+
+exception Extract_package_from_java_file_exn of Absolute_path.t ;;
+ 
+let extract_package_from_java_file =Memoized.make(fun jf -> 
+  try extract_package_from_text (file_contents jf) with 
+  Extract_package_from_text_exn ->
+   raise(Extract_package_from_java_file_exn(jf) ) );;
+   
+let import_from_line_opt untrimmed_line = 
+  let line = Cull_string.trim_spaces untrimmed_line in 
+  let beginning = "import " 
+  and ending = ";" in 
+  if not(
+    (Supstring.begins_with line beginning) &&
+    (Supstring.ends_with line ending) 
+  )
+  then None 
+  else
+  let line2 = Cull_string.two_sided_cutting
+        (beginning,ending) line in 
+  let line3 = Cull_string.trim_spaces line2 in       
+  Some(Cull_string.split_wrt_rightmost line3 '.');;      
+
+let extract_imports_from_text text = 
+    let lines = Lines_in_string.lines text in 
+    List.filter_map import_from_line_opt lines ;;
+
+let extract_imports_from_java_file =Memoized.make(fun jf -> 
+  extract_imports_from_text (file_contents jf)
+);;
+   
+let extract_subdir_from_java_file jf = 
+  let s = Absolute_path.to_string jf in
+  Cull_string.two_sided_cutting (prefix,"") 
+  (Cull_string.before_rightmost s '/') ;;   
+   
+let subdirs_and_packages = 
+  Explicit.image 
+  (fun jf ->(
+     extract_subdir_from_java_file jf
+     ,extract_package_from_java_file jf) )
+     all_java_files_in_project ;; 
+
+let all_subdirs = 
+   Ordered.sort Total_ordering.silex_for_strings 
+     (Image.image fst subdirs_and_packages) ;;
+
+exception Java_separator_in_subdirname of string ;;
+
+let java_separator_in_subdirname subdir = 
+  match List.find_opt (
+    Supstring.contains subdir
+ )  ["/java/";"/javaTemplate/";"/javaTemplates/"] with 
+ None -> raise (Java_separator_in_subdirname(subdir))
+ |Some sep -> sep ;; 
+
+let natural_subdir_to_package subdir = 
+   let sep = java_separator_in_subdirname subdir in 
+   let ocs = Substring.occurrences_of_in sep subdir in 
+   let last_oc = List.hd(List.rev ocs) in 
+   let offset = String.length(sep)-1 in 
+   let after_sep = Cull_string.cobeginning (last_oc+offset) subdir  in 
+   Replace_inside.replace_inside_string 
+    ~display_number_of_matches:false
+     ("/",".") after_sep ;;
+
+let war_reactor_example = 
+   "spring-boot-2.7.x/spring-boot-project/"^
+    "spring-boot-tools/spring-boot-maven-plugin/src/intTest/"^
+    "projects/war-reactor/war/src/main/java/com/example" ;; 
+
+
+let subdir_to_package subdir = 
+   if subdir = war_reactor_example 
+   then "org.test"
+   else natural_subdir_to_package subdir ;;
+
+
+(*
+
+let comp1 = Explicit.image files_under_source sources_in_project ;; 
+let comp2 = Explicit.image java_files_under_source sources_in_project ;; 
+let comp3 = Explicit.image java_classnames_under_source sources_in_project ;; 
+let comp4 = Explicit.image table_for_classname_paths_under_source sources_in_project ;; 
+let comp5 = Explicit.image occurrences all_classnames_in_project ;;
+let comp6 = Explicit.image extract_package_from_java_file all_java_files_in_project ;; 
+let comp7 = Explicit.image extract_imports_from_java_file all_java_files_in_project ;; 
+
+
+let base1 = Image.image(
+  fun (sd,pkg) ->
+    (sd,pkg,subdir_to_package sd)
+) subdirs_and_packages ;; 
+
+
+let check_base1 = List.filter(
+  fun (sd,pkg,pkg2) -> pkg2 <> pkg
+) base1 ;;
+
+
+let debug_base1 = Tools_for_debugging.extract_from_list (
+  fun (sd,pkg) ->
+    (sd,pkg,subdir_to_package sd)
+) subdirs_and_packages ;; 
+
+
+
+
+
+let check_comp4 = List.filter (
+   fun (s,l) -> List.length(l)>1
+) (List.flatten comp4);;
+let browse_comp7 = List.filter (
+   fun ll -> List.exists(fun (a,b)->String.contains b '*') ll 
+) (comp7);;
+
+let z1 = List.nth subdirs_and_packages 100 ;; 
+let sz1 = subdir_to_package (fst z1);;
+
+let z2 = List.nth subdirs_and_packages 129 ;; 
+let sz2 = subdir_to_package (fst z2);;
+
+let z3 = List.nth subdirs_and_packages 200 ;; 
+let sz3 = subdir_to_package (fst z2);;
+
+
+
+let check1 = List.filter (fun (a,b)->
+  not(Supstring.begins_with b "org.")) subdirs_and_packages ;; 
+
+
+
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 134 : computation of sources in a Java project
+************************************************************************************************************************)
 module Snip134=struct
 
 let dir1 = Directory_name.of_string "~/Downloads/myspring" ;; 
