@@ -14,3 +14,5 @@ type java_classname = Jcn of string ;;
 
 type java_package = Jpkg of string ;; 
 
+type java_import = Jiprt of string * string ;; 
+
