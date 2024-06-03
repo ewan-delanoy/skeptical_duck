@@ -6,7 +6,7 @@
 
 type project_root = Pr of string ;;
 
-type source = Src of string ;;
+type java_source = Jsrc of string ;;
 
 type java_file = Jf of string ;; 
 
