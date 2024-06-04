@@ -27,6 +27,12 @@ let order_for_subdirs = (
    ) : Jpr_types.java_subdir Total_ordering_t.t
 ) ;;
 
+let order_for_packages = (
+   (fun (Jpr_types.Jpkg jpkg1) (Jpr_types.Jpkg jpkg2) ->
+   	 Total_ordering.silex_for_strings jpkg1 jpkg2
+   ) : Jpr_types.java_package Total_ordering_t.t
+) ;;
+
 let files_in_project =Memoized.make(fun (Jpr_types.Pr(path)) -> 
   let dir = Directory_name.of_string path in 
   let files_or_dirs = Unix_again.complete_ls dir in  
@@ -243,14 +249,22 @@ let import_from_line_opt untrimmed_line =
         (beginning,ending) line in 
   let line3 = Cull_string.trim_spaces line2 in   
   let (a,b)= Cull_string.split_wrt_rightmost line3 '.' in 
-  Some(Jpr_types.Jiprt(a,b));;      
+  Some(Jpr_types.Jiprt(Jpr_types.Jpkg a,Jpr_types.Jcn b));;      
 
 let extract_imports_from_text text = 
     let lines = Lines_in_string.lines text in 
     List.filter_map import_from_line_opt lines ;;
 
-let extract_imports_from_java_file =Memoized.make(fun jf -> 
-  extract_imports_from_text (file_contents jf)
+let extract_imports_from_java_file =Memoized.make(fun 
+	(Jpr_types.Jf jf) -> 
+  let ap = Absolute_path.of_string jf in 
+  extract_imports_from_text (file_contents ap)
+);;
+
+let imported_packages_in_java_file =Memoized.make(fun jf -> 
+  Ordered.sort order_for_packages
+  (Image.image (fun (Jpr_types.Jiprt(pkg,_))->pkg) 
+   (extract_imports_from_java_file jf))
 );;
 
 exception Java_separator_in_subdirname of string ;;
@@ -287,7 +301,30 @@ let subdir_to_package subdir =
    then Jpr_types.Jpkg "org.test"
    else natural_subdir_to_package subdir ;;
 
+let imported_packages_in_project 
+  = Memoized.make(fun jproj->
+   let temp1 = Image.image 
+     imported_packages_in_java_file 
+      (java_files_in_project jproj) in 
+   Ordered.fold_merge
+      order_for_packages
+    temp1 
+);; 	
+
+ let subdirs_for_package jproj pkg=
+   List.filter (
+       fun sbd -> (subdir_to_package sbd) = pkg
+   )(all_subdirs_in_project jproj) ;;  
+
+ let table_for_package_location 
+   = Memoized.make(fun jproj->
+   Image.image 
+     (subdirs_for_package jproj)
+      (imported_packages_in_project jproj) 
+ );; 	
+
+
 end ;;
 
 let sources_in_project = Private.sources_in_project ;; 
-let subdir_to_package = Private.subdir_to_package ;;
+let table_for_package_location = Private.table_for_package_location ;;
