@@ -103,6 +103,41 @@ find_one_of_several_in_from_idx ["ba";"ab"] "123ab67" 1;;
 
 *)
 
+let rec 
+helper_for_dec_according_to_occ 
+(whole,candidates,last_idx) (treated,idx) =
+if idx > last_idx 
+then List.rev treated 
+else
+match find_one_of_several_in_from_idx candidates whole idx with 
+  None -> List.rev (((idx,last_idx),false,Cull_string.interval whole idx last_idx) 
+                       :: treated)
+ |Some(idx2,found_word) ->
+    let treated2 = (
+       if idx2=idx 
+       then treated
+       else ((idx,idx2-1),false,Cull_string.interval whole idx (idx2-1)) ::treated
+    ) in 
+    let new_idx = idx +(String.length found_word)  in 
+    let pair2 = ((idx,new_idx-1),true,found_word)  in 
+    helper_for_dec_according_to_occ    
+     (whole,candidates,last_idx) (pair2::treated2,new_idx);;
+  
+
+let decomposition_according_to_occurrences_from_several whole candidates = 
+  helper_for_dec_according_to_occ 
+  (whole,candidates,String.length whole) ([],1);;
+
+
+(*
+
+decomposition_according_to_occurrences_from_several 
+  "12abc3def4ababab5c" ["ab";"c";"def"] ;;
+
+
+*)
+
+
 let remove_newlines s=
    let temp1=List.filter (fun c->c<>'\n') (explode s) in 
    implode temp1;;
