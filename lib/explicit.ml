@@ -6,7 +6,8 @@
 
 module Private = struct 
 
-let iter0 (f:'a->unit) l (left,right)=
+let iter0 (f:'a->unit) l (pre_left,right)=
+  let left=(if pre_left="" then "" else pre_left^" : ") in 
   let n=List.length(l)
   and accu=ref(l) in
   let s0=" of "^string_of_int(n)^" "^right^"\n" in
@@ -14,7 +15,7 @@ let iter0 (f:'a->unit) l (left,right)=
                do
                ( f(List.hd(!accu));
                  accu:=List.tl(!accu);
-                 print_string(left^" : "^string_of_int(j)^s0);
+                 print_string(left^string_of_int(j)^s0);
                  flush stdout)
                done;;
 
