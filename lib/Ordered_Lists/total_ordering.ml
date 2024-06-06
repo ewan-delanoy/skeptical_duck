@@ -353,6 +353,7 @@ let from_list (l:'a list)=((fun x1 x2->
 end ;;
 
 let cardinality_then_diameter = Private.cardinality_then_diameter ;;
+let for_characters = Private.for_characters ;;
 let for_integers = Private.for_integers ;;
 let from_list = Private.from_list ;; 
 let lex_compare = Private.lex_compare ;;

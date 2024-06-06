@@ -40,18 +40,24 @@ let files_in_project =Memoized.make(fun (Jpr_types.Pr(path)) ->
   not(Unix_again.is_a_directory ap)
 ) files_or_dirs);; 
 
+(* By convention, we exclude the package-info files *)
+let is_a_java_filename s =
+  (Supstring.ends_with s ".java")
+     &&
+  (not(Supstring.ends_with s "/package-info.java")) ;;
+
+let java_file_selector ap = 
+   let s = Absolute_path.to_string ap in 
+  if is_a_java_filename s
+  then Some(Jpr_types.Jf(s))
+  else None ;;
+
 
 let java_files_in_project = 
- (* By convention, we exlcude the package-info files *)
  Memoized.make(fun 
-	jproj -> List.filter_map (fun ap->
-  let s = Absolute_path.to_string ap in 
-  if (Supstring.ends_with s ".java")
-     &&
-     (not(Supstring.ends_with s "/package-info.java"))
-  then Some(Jpr_types.Jf(s))
-  else None
-) (files_in_project jproj) );; 
+	jproj -> List.filter_map 
+     java_file_selector
+     (files_in_project jproj) );; 
 
 let extract_source_from_java_filename (Jpr_types.Jf(s)) =
    let i1 = Substring.rightmost_index_of_in "/src/" s in
@@ -76,12 +82,7 @@ let files_under_source = Memoized.make(fun
 let java_files_under_source = 
    Memoized.make(fun src ->
     let all_files = files_under_source src in 
-   List.filter_map (
-   	fun ap->
-  	 let s = Absolute_path.to_string ap in 
-  	 if Supstring.ends_with s ".java"
-  	 then Some(Jpr_types.Jf(s))
-  	 else None) 
+   List.filter_map java_file_selector
     all_files) ;;
 
 let extract_java_classname_from_filename (Jpr_types.Jf(s)) = 
