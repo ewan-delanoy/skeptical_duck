@@ -6,10 +6,10 @@
 
 module Private = struct 
 
-let iter0 (f:'a->unit) l addenda=
+let iter0 (f:'a->unit) l (left,right)=
   let n=List.length(l)
   and accu=ref(l) in
-  let s0=" of "^string_of_int(n)^" "^addenda^"\n" in
+  let s0=left^" of "^string_of_int(n)^" "^right^"\n" in
   for j=1 to n
                do
                ( f(List.hd(!accu));
@@ -30,10 +30,10 @@ let iter2 (f:'a->'a) initial_value tester (shower:'a->string)  addenda=
                done) in
   !accu;;
 
-let e_rev l=
+let e_rev job_description l=
    let accu=ref([]) in 
    let f=(fun x->accu:=x::(!accu)) in
-   let _=iter0(f)(l)(" (rev part)") in
+   let _=iter0(f)(l)(job_description," (rev part)") in
    !accu;;    
 
 let unchronometered_explore_tree f l=
@@ -61,25 +61,25 @@ let unchronometered_explore_tree f l=
 
 
 
-let unchronometered_filter f l=
+let unchronometered_filter job_description f l=
    let accu=ref([]) in 
    let g=(fun x->if f(x) then accu:=x::(!accu) else ()) in
-   let _=iter0(g)(l)(" (filter part)") in
-   e_rev(!accu);;    
+   let _=iter0(g)(l)(job_description," (filter part)") in
+   e_rev job_description (!accu);;    
  
  
- let unchronometered_image f l=
+ let unchronometered_image job_description f l=
    let accu=ref([]) in 
    let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(l)(" (rev_image part)") in
-   e_rev(!accu);;  
+   let _=iter0(g)(l)(job_description," (rev_image part)") in
+   e_rev job_description (!accu);;  
    
 
-let unchronometered_image_computed_backwards f l=
-   let temp1=e_rev(l) in
+let unchronometered_image_computed_backwards job_description f l=
+   let temp1=e_rev job_description l in
     let accu=ref([]) in 
    let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(temp1)(" (image part)") in
+   let _=iter0(g)(temp1)(job_description," (image part)") in
    (!accu);;     
  
   
@@ -100,13 +100,13 @@ end ;;
 
 let explore_tree f l=Chronometer.it (Private.unchronometered_explore_tree f) l;; 
            
-let filter f l=Chronometer.it (Private.unchronometered_filter f) l;; 
+let filter ?(job_description="") f l=Chronometer.it (Private.unchronometered_filter job_description f) l;; 
 
 
-let image f l=Chronometer.it (Private.unchronometered_image f) l;;  
+let image ?(job_description="") f l=Chronometer.it (Private.unchronometered_image job_description f) l;;  
 
-let image_computed_backwards f l=Chronometer.it 
-   	(Private.unchronometered_image_computed_backwards f) l;;               
+let image_computed_backwards ?(job_description="") f l=Chronometer.it 
+   	(Private.unchronometered_image_computed_backwards job_description f) l;;               
 
 let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
 

@@ -16,7 +16,7 @@ let order_for_java_sources = (
 
 let order_for_java_classnames = (
    (fun (Jpr_types.Jcn jcn1) (Jpr_types.Jcn jcn2) ->
-   	 Total_ordering.silex_for_strings jcn1 jcn2
+   	 Total_ordering.lex_for_strings jcn1 jcn2
    ) : Jpr_types.java_classname Total_ordering_t.t
 ) ;;
 
@@ -318,8 +318,8 @@ let imported_packages_in_project
 
  let table_for_package_location 
    = Memoized.make(fun jproj->
-   Image.image 
-     (subdirs_for_package jproj)
+   Explicit.image 
+     (fun pkg->(pkg,subdirs_for_package jproj pkg))
       (imported_packages_in_project jproj) 
  );; 	
 
