@@ -9,12 +9,12 @@ module Private = struct
 let iter0 (f:'a->unit) l (left,right)=
   let n=List.length(l)
   and accu=ref(l) in
-  let s0=left^" of "^string_of_int(n)^" "^right^"\n" in
+  let s0=" of "^string_of_int(n)^" "^right^"\n" in
   for j=1 to n
                do
                ( f(List.hd(!accu));
                  accu:=List.tl(!accu);
-                 print_string(string_of_int(j)^s0);
+                 print_string(left^" : "^string_of_int(j)^s0);
                  flush stdout)
                done;;
 
