@@ -41,10 +41,14 @@ let files_in_project =Memoized.make(fun (Jpr_types.Pr(path)) ->
 ) files_or_dirs);; 
 
 
-let java_files_in_project = Memoized.make(fun 
+let java_files_in_project = 
+ (* By convention, we exlcude the package-info files *)
+ Memoized.make(fun 
 	jproj -> List.filter_map (fun ap->
   let s = Absolute_path.to_string ap in 
-  if Supstring.ends_with s ".java"
+  if (Supstring.ends_with s ".java")
+     &&
+     (not(Supstring.ends_with s "/package-info.java"))
   then Some(Jpr_types.Jf(s))
   else None
 ) (files_in_project jproj) );; 
