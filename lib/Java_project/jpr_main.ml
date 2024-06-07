@@ -134,12 +134,10 @@ let java_classnames_in_project
 
 
 let current_java_project_data =  
-
-   let seed = Jpr_constant.spring_5_3_with_boot_2_7 in 
    ref (
-     seed,
+     Jpr_constant.ninkasi_root,
      None,
-     None,
+     Some(Jpr_constant.ninkasi_classnames),
      None 
    );;
 
