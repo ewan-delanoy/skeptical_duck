@@ -10,7 +10,7 @@ module Private = struct
 
 let order_for_java_sources = (
    (fun (Jpr_types.Jsrc jsrc1) (Jpr_types.Jsrc jsrc2) ->
-   	 Total_ordering.silex_for_strings jsrc1 jsrc2
+   	 Total_ordering.lex_for_strings jsrc1 jsrc2
    ) : Jpr_types.java_source Total_ordering_t.t
 ) ;;
 
@@ -23,13 +23,13 @@ let order_for_java_classnames = (
 
 let order_for_subdirs = (
    (fun (Jpr_types.Jsbd jsbd1) (Jpr_types.Jsbd jsbd2) ->
-   	 Total_ordering.silex_for_strings jsbd1 jsbd2
+   	 Total_ordering.lex_for_strings jsbd1 jsbd2
    ) : Jpr_types.java_subdir Total_ordering_t.t
 ) ;;
 
 let order_for_packages = (
    (fun (Jpr_types.Jpkg jpkg1) (Jpr_types.Jpkg jpkg2) ->
-   	 Total_ordering.silex_for_strings jpkg1 jpkg2
+   	 Total_ordering.lex_for_strings jpkg1 jpkg2
    ) : Jpr_types.java_package Total_ordering_t.t
 ) ;;
 
@@ -138,7 +138,7 @@ let current_java_project_data =
      Jpr_constant.ninkasi_root,
      None,
      Some(Jpr_constant.ninkasi_classnames),
-     None 
+     Some(Jpr_constant.ninkasi_subdirs) 
    );;
 
 let compute_and_remember_table_for_filecontents () = 
