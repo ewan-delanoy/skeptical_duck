@@ -35802,6 +35802,8546 @@ let ninkasi_classnames = Classnames.v_4714 ;;
 (* Beginning of generated code for Ninkasi classname finders *)
 (* End of generated code for Ninkasi classname finders *)
 
+
+module Subdirs = struct
+
+(* Beginning of generated code for Ninkasi subdirs *)
+
+
+let v_1 =
+[
+"erver";
+"ockjs/frame";
+"ockjs/client";
+"erver/support";
+"ockjs/support";
+"erver/standard";
+"ockjs/transport";
+"ockjs/transport/handler";
+"ockjs/transport/session"
+];;
+
+let v_2 =
+[
+""
+];;
+
+let v_3 =
+[
+""
+];;
+
+let v_4 =
+[
+"lient";
+"onfig";
+"lient/jetty";
+"lient/standard";
+"onfig/annotation"
+];;
+
+let v_5 =
+[
+"jetty";
+"standard"
+];;
+
+let v_6 =
+reunite [
+("adapter/",v_5);
+("c",v_4);
+("handler",v_3);
+("messaging",v_2);
+("s",v_1)
+];;
+
+let v_7 =
+[
+"";
+"/frame";
+"/client";
+"/support";
+"/transport";
+"/transport/handler";
+"/transport/session"
+];;
+
+let v_8 =
+[
+"";
+"/jetty";
+"/support";
+"/standard"
+];;
+
+let v_9 =
+reunite [
+("erver",v_8);
+("ockjs",v_7)
+];;
+
+let v_10 =
+[
+""
+];;
+
+let v_11 =
+[
+""
+];;
+
+let v_12 =
+[
+"lient";
+"onfig";
+"lient/jetty";
+"lient/standard";
+"onfig/annotation"
+];;
+
+let v_13 =
+[
+"";
+"/jetty";
+"/standard"
+];;
+
+let v_14 =
+reunite [
+("adapter",v_13);
+("c",v_12);
+("handler",v_11);
+("messaging",v_10);
+("s",v_9)
+];;
+
+let v_15 =
+""::(
+reunite [
+("/",v_6)
+]
+);;
+
+let v_16 =
+""::(
+reunite [
+("/",v_14)
+]
+);;
+
+let v_17 =
+[
+"";
+"/xml";
+"/feed";
+"/json";
+"/xslt";
+"/groovy";
+"/script";
+"/tiles3";
+"/document";
+"/freemarker"
+];;
+
+let v_18 =
+[
+"ags";
+"heme";
+"ags/form"
+];;
+
+let v_19 =
+[
+""
+];;
+
+let v_20 =
+[
+""
+];;
+
+let v_21 =
+[
+"";
+"/method";
+"/support";
+"/condition";
+"/annotation";
+"/method/annotation"
+];;
+
+let v_22 =
+[
+""
+];;
+
+let v_23 =
+[
+""
+];;
+
+let v_24 =
+[
+"";
+"/support"
+];;
+
+let v_25 =
+[
+"";
+"/annotation"
+];;
+
+let v_26 =
+reunite [
+("config",v_25);
+("function",v_24);
+("handler",v_23);
+("i18n",v_22);
+("mvc",v_21);
+("resource",v_20);
+("support",v_19);
+("t",v_18);
+("view",v_17)
+];;
+
+let v_27 =
+""::(
+reunite [
+("/",v_26)
+]
+);;
+
+let v_28 =
+[
+"";
+"/support"
+];;
+
+let v_29 =
+reunite [
+("context",v_28);
+("servlet",v_27)
+];;
+
+let v_30 =
+[
+""
+];;
+
+let v_31 =
+[
+""
+];;
+
+let v_32 =
+[
+"";
+"/xml";
+"/feed";
+"/json";
+"/xslt";
+"/groovy";
+"/script";
+"/tiles3";
+"/document";
+"/freemarker"
+];;
+
+let v_33 =
+[
+"ags";
+"heme";
+"ags/form"
+];;
+
+let v_34 =
+[
+""
+];;
+
+let v_35 =
+[
+""
+];;
+
+let v_36 =
+[
+"";
+"/method";
+"/support";
+"/condition";
+"/annotation";
+"/method/annotation"
+];;
+
+let v_37 =
+[
+""
+];;
+
+let v_38 =
+[
+""
+];;
+
+let v_39 =
+[
+"";
+"/support"
+];;
+
+let v_40 =
+[
+"";
+"/annotation"
+];;
+
+let v_41 =
+reunite [
+("config",v_40);
+("function",v_39);
+("handler",v_38);
+("i18n",v_37);
+("mvc",v_36);
+("resource",v_35);
+("support",v_34);
+("t",v_33);
+("view",v_32)
+];;
+
+let v_42 =
+reunite [
+("beans/factory/access",v_31);
+("context",v_30);
+("web/",v_29)
+];;
+
+let v_43 =
+""::(
+reunite [
+("/",v_41)
+]
+);;
+
+let v_44 =
+[
+"";
+"/server/support";
+"/server/upgrade"
+];;
+
+let v_45 =
+[
+"ult";
+"ource";
+"ult/view";
+"ult/method";
+"ult/condition";
+"ult/view/script";
+"ult/view/freemarker";
+"ult/method/annotation"
+];;
+
+let v_46 =
+[
+""
+];;
+
+let v_47 =
+[
+""
+];;
+
+let v_48 =
+[
+"";
+"/client";
+"/server";
+"/client/support";
+"/server/support"
+];;
+
+let v_49 =
+[
+""
+];;
+
+let v_50 =
+[
+""
+];;
+
+let v_51 =
+reunite [
+("accept",v_50);
+("config",v_49);
+("function",v_48);
+("handler",v_47);
+("protobuf",v_46);
+("res",v_45);
+("socket",v_44)
+];;
+
+let v_52 =
+[
+"";
+"/client";
+"/server";
+"/adapter";
+"/server/support";
+"/server/upgrade"
+];;
+
+let v_53 =
+[
+"ult";
+"ource";
+"ult/view";
+"ult/method";
+"ult/condition";
+"ult/view/script";
+"ult/view/freemarker";
+"ult/method/annotation"
+];;
+
+let v_54 =
+[
+""
+];;
+
+let v_55 =
+[
+"";
+"/client";
+"/server";
+"/client/support";
+"/server/support"
+];;
+
+let v_56 =
+[
+""
+];;
+
+let v_57 =
+[
+""
+];;
+
+let v_58 =
+reunite [
+("accept",v_57);
+("config",v_56);
+("function",v_55);
+("handler",v_54);
+("res",v_53);
+("socket",v_52)
+];;
+
+let v_59 =
+""::(
+reunite [
+("/",v_51)
+]
+);;
+
+let v_60 =
+""::(
+reunite [
+("/",v_58)
+]
+);;
+
+let v_61 =
+[
+"";
+"/pattern"
+];;
+
+let v_62 =
+[
+"i18n";
+"adapter";
+"handler";
+"session"
+];;
+
+let v_63 =
+[
+"ethod";
+"ethod/support";
+"ethod/annotation";
+"ultipart/commons";
+"ultipart/support"
+];;
+
+let v_64 =
+[
+""
+];;
+
+let v_65 =
+[
+"";
+"/reactive"
+];;
+
+let v_66 =
+[
+"ors";
+"lient";
+"ontext";
+"ors/reactive";
+"ontext/request";
+"ontext/support";
+"ontext/request/async"
+];;
+
+let v_67 =
+[
+"";
+"/support"
+];;
+
+let v_68 =
+[
+""
+];;
+
+let v_69 =
+[
+"";
+"/xml";
+"/feed";
+"/json";
+"/smile";
+"/protobuf"
+];;
+
+let v_70 =
+[
+"";
+"/xml";
+"/cbor";
+"/json";
+"/support";
+"/protobuf";
+"/xml/jaxb";
+"/multipart"
+];;
+
+let v_71 =
+reunite [
+("dec",v_70);
+("nverter",v_69)
+];;
+
+let v_72 =
+[
+"";
+"/support";
+"/reactive"
+];;
+
+let v_73 =
+[
+"";
+"/reactive"
+];;
+
+let v_74 =
+reunite [
+("lient",v_72);
+("o",v_71)
+];;
+
+let v_75 =
+reunite [
+("c",v_74);
+("server",v_73)
+];;
+
+let v_76 =
+reunite [
+("accept",v_68);
+("bind",v_67);
+("c",v_66);
+("filter",v_65);
+("jsf",v_64);
+("m",v_63);
+("server/",v_62);
+("util",v_61)
+];;
+
+let v_77 =
+[
+"jaxws";
+"caucho";
+"httpinvoker"
+];;
+
+let v_78 =
+[
+""
+];;
+
+let v_79 =
+""::(
+reunite [
+("/",v_75)
+]
+);;
+
+let v_80 =
+[
+"task";
+"convert/support"
+];;
+
+let v_81 =
+[
+"xml";
+"method";
+"server";
+"servlet";
+"server/handler";
+"http/client/reactive";
+"http/server/reactive";
+"http/server/reactive/bootstrap"
+];;
+
+let v_82 =
+reunite [
+("core/",v_80);
+("http",v_79);
+("protobuf",v_78);
+("remoting/",v_77);
+("web/",v_76)
+];;
+
+let v_83 =
+[
+"";
+"/pattern"
+];;
+
+let v_84 =
+[
+"";
+"/i18n";
+"/adapter";
+"/handler";
+"/session"
+];;
+
+let v_85 =
+[
+"ethod";
+"ultipart";
+"ethod/support";
+"ethod/annotation";
+"ultipart/commons";
+"ultipart/support"
+];;
+
+let v_86 =
+[
+"";
+"/el"
+];;
+
+let v_87 =
+[
+"";
+"/reactive"
+];;
+
+let v_88 =
+[
+"ors";
+"lient";
+"ontext";
+"ors/reactive";
+"lient/support";
+"ontext/request";
+"ontext/support";
+"ontext/annotation";
+"ontext/request/async"
+];;
+
+let v_89 =
+[
+"";
+"/support";
+"/annotation"
+];;
+
+let v_90 =
+[
+""
+];;
+
+let v_91 =
+reunite [
+("accept",v_90);
+("bind",v_89);
+("c",v_88);
+("filter",v_87);
+("jsf",v_86);
+("m",v_85);
+("server",v_84);
+("util",v_83)
+];;
+
+let v_92 =
+[
+"";
+"/xml";
+"/cbor";
+"/feed";
+"/json";
+"/smile";
+"/support";
+"/protobuf"
+];;
+
+let v_93 =
+[
+"";
+"/xml";
+"/cbor";
+"/json";
+"/support";
+"/protobuf";
+"/multipart"
+];;
+
+let v_94 =
+reunite [
+("dec",v_93);
+("nverter",v_92)
+];;
+
+let v_95 =
+[
+"";
+"/support";
+"/reactive"
+];;
+
+let v_96 =
+[
+"";
+"/reactive"
+];;
+
+let v_97 =
+reunite [
+("lient",v_95);
+("o",v_94)
+];;
+
+let v_98 =
+reunite [
+("c",v_97);
+("server",v_96)
+];;
+
+let v_99 =
+""::(
+reunite [
+("/",v_91)
+]
+);;
+
+let v_100 =
+[
+"jaxws";
+"caucho";
+"httpinvoker"
+];;
+
+let v_101 =
+""::(
+reunite [
+("/",v_98)
+]
+);;
+
+let v_102 =
+reunite [
+("/java/org/springframework/",v_82);
+("Fixtures/java/org/springframework/web/testfixture/",v_81)
+];;
+
+let v_103 =
+reunite [
+("http",v_101);
+("remoting/",v_100);
+("web",v_99)
+];;
+
+let v_104 =
+[
+"http";
+"web/bind";
+"http/codec/json";
+"web/util/pattern"
+];;
+
+let v_105 =
+reunite [
+("main/java/org/springframework/web/socket",v_16);
+("test/java/org/springframework/web/socket",v_15)
+];;
+
+let v_106 =
+reunite [
+("main/java/org/springframework/web/servlet",v_43);
+("test/java/org/springframework/",v_42)
+];;
+
+let v_107 =
+reunite [
+("main/java/org/springframework/web/reactive",v_60);
+("test/java/org/springframework/web/reactive",v_59)
+];;
+
+let v_108 =
+reunite [
+("jmh/java/org/springframework/",v_104);
+("main/java/org/springframework/",v_103);
+("test",v_102)
+];;
+
+let v_109 =
+[
+"";
+"/jta";
+"/event";
+"/config";
+"/support";
+"/reactive";
+"/annotation";
+"/interceptor"
+];;
+
+let v_110 =
+[
+"cci";
+"support"
+];;
+
+let v_111 =
+[
+"support";
+"annotation"
+];;
+
+let v_112 =
+[
+""
+];;
+
+let v_113 =
+reunite [
+("dao/",v_111);
+("jca/",v_110);
+("transaction",v_109)
+];;
+
+let v_114 =
+[
+"";
+"/jta";
+"/event";
+"/config";
+"/support";
+"/reactive";
+"/annotation";
+"/interceptor"
+];;
+
+let v_115 =
+[
+"cci";
+"work";
+"context";
+"support";
+"cci/core";
+"endpoint";
+"cci/object";
+"cci/connection";
+"cci/core/support"
+];;
+
+let v_116 =
+[
+"";
+"/support";
+"/annotation"
+];;
+
+let v_117 =
+reunite [
+("/java/org/springframework/",v_113);
+("Fixtures/java/org/springframework/transaction/testfixture",v_112)
+];;
+
+let v_118 =
+reunite [
+("dao",v_116);
+("jca/",v_115);
+("transaction",v_114)
+];;
+
+let v_119 =
+[
+"etup";
+"amples/spr";
+"amples/context";
+"amples/standalone";
+"amples/client/context";
+"amples/client/standalone";
+"amples/standalone/resulthandlers";
+"amples/standalone/resultmatchers";
+"amples/client/standalone/resultmatches";
+"amples/client/standalone/resulthandlers"
+];;
+
+let v_120 =
+[
+"sult";
+"quest"
+];;
+
+let v_121 =
+[
+"";
+"/webdriver"
+];;
+
+let v_122 =
+reunite [
+("htmlunit",v_121);
+("re",v_120);
+("s",v_119)
+];;
+
+let v_123 =
+""::(
+reunite [
+("/",v_122)
+]
+);;
+
+let v_124 =
+[
+"";
+"/samples";
+"/samples/bind"
+];;
+
+let v_125 =
+[
+"";
+"/match";
+"/samples";
+"/response";
+"/samples/matchers"
+];;
+
+let v_126 =
+reunite [
+("client",v_125);
+("reactive/server",v_124);
+("servlet",v_123)
+];;
+
+let v_127 =
+[
+"";
+"/ejb";
+"/ejb/dao";
+"/manager";
+"/ejb/model";
+"/programmatic"
+];;
+
+let v_128 =
+[
+"";
+"/web";
+"/event";
+"/transaction/ejb";
+"/transaction/programmatic"
+];;
+
+let v_129 =
+[
+"pr3896";
+"pr4868";
+"pr6128";
+"pr8849";
+"pr9051";
+"pr9799";
+"tatements"
+];;
+
+let v_130 =
+[
+""
+];;
+
+let v_131 =
+[
+"xml";
+"resolver";
+"annotation";
+"importresource"
+];;
+
+let v_132 =
+[
+"";
+"/domain";
+"/service";
+"/repository";
+"/service/impl";
+"/repository/hibernate"
+];;
+
+let v_133 =
+[
+""
+];;
+
+let v_134 =
+[
+""
+];;
+
+let v_135 =
+[
+""
+];;
+
+let v_136 =
+[
+""
+];;
+
+let v_137 =
+[
+"ci";
+"ci/xml";
+"nnotation";
+"ci/annotation";
+"nnotation/meta"
+];;
+
+let v_138 =
+reunite [
+("a",v_137);
+("concurrency",v_136);
+("event",v_135);
+("hybrid",v_134);
+("nested",v_133);
+("orm",v_132);
+("profile/",v_131);
+("rules",v_130);
+("s",v_129)
+];;
+
+let v_139 =
+[
+"orm";
+"web";
+"event";
+"comics";
+"nested";
+"generics";
+"parallel";
+"orm/domain";
+"transaction";
+"defaultmethods"
+];;
+
+let v_140 =
+""::(
+reunite [
+("/",v_138)
+]
+);;
+
+let v_141 =
+""::(
+reunite [
+("/",v_139)
+]
+);;
+
+let v_142 =
+""::(
+reunite [
+("/jupiter",v_141);
+("4",v_140)
+]
+);;
+
+let v_143 =
+[
+"";
+"/merging"
+];;
+
+let v_144 =
+[
+"";
+"/socket"
+];;
+
+let v_145 =
+reunite [
+("estng",v_128);
+("ransaction",v_127)
+];;
+
+let v_146 =
+[
+""
+];;
+
+let v_147 =
+reunite [
+("dbc",v_143);
+("unit",v_142)
+];;
+
+let v_148 =
+[
+"web";
+"meta";
+"standard"
+];;
+
+let v_149 =
+[
+""
+];;
+
+let v_150 =
+[
+"nv";
+"vent";
+"xpression";
+"nv/repeatable";
+"nv/subpackage"
+];;
+
+let v_151 =
+[
+"ache";
+"onfiguration";
+"onfiguration/interfaces"
+];;
+
+let v_152 =
+[
+""
+];;
+
+let v_153 =
+reunite [
+("async",v_152);
+("c",v_151);
+("e",v_150);
+("groovy",v_149);
+("hierarchies/",v_148);
+("j",v_147);
+("support",v_146);
+("t",v_145);
+("web",v_144)
+];;
+
+let v_154 =
+""::(
+reunite [
+("/",v_126)
+]
+);;
+
+let v_155 =
+[
+"";
+"/subpackage"
+];;
+
+let v_156 =
+[
+""
+];;
+
+let v_157 =
+[
+""
+];;
+
+let v_158 =
+""::(
+reunite [
+("/",v_153)
+]
+);;
+
+let v_159 =
+[
+""
+];;
+
+let v_160 =
+reunite [
+("annotation",v_159);
+("context",v_158);
+("jdbc",v_157);
+("transaction",v_156);
+("util",v_155);
+("web",v_154)
+];;
+
+let v_161 =
+[
+"web";
+"jndi";
+"http/server/reactive"
+];;
+
+let v_162 =
+[
+"";
+"/setup";
+"/client";
+"/result";
+"/request";
+"/htmlunit";
+"/htmlunit/webdriver"
+];;
+
+let v_163 =
+[
+""
+];;
+
+let v_164 =
+[
+"";
+"/match";
+"/response"
+];;
+
+let v_165 =
+reunite [
+("client",v_164);
+("reactive/server",v_163);
+("servlet",v_162)
+];;
+
+let v_166 =
+[
+"";
+"/socket"
+];;
+
+let v_167 =
+[
+""
+];;
+
+let v_168 =
+[
+"estng";
+"ransaction"
+];;
+
+let v_169 =
+[
+""
+];;
+
+let v_170 =
+[
+"dbc";
+"unit4";
+"unit4/rules";
+"unit/jupiter";
+"unit/jupiter/web";
+"unit4/statements"
+];;
+
+let v_171 =
+[
+"";
+"/annotation"
+];;
+
+let v_172 =
+[
+""
+];;
+
+let v_173 =
+reunite [
+("cache",v_172);
+("event",v_171);
+("j",v_170);
+("support",v_169);
+("t",v_168);
+("util",v_167);
+("web",v_166)
+];;
+
+let v_174 =
+""::(
+reunite [
+("/",v_165)
+]
+);;
+
+let v_175 =
+[
+""
+];;
+
+let v_176 =
+[
+""
+];;
+
+let v_177 =
+""::(
+reunite [
+("/",v_173)
+]
+);;
+
+let v_178 =
+[
+""
+];;
+
+let v_179 =
+reunite [
+("annotation",v_178);
+("context",v_177);
+("jdbc",v_176);
+("util",v_175);
+("web",v_174)
+];;
+
+let v_180 =
+[
+"env";
+"web";
+"http";
+"jndi";
+"web/server";
+"http/client";
+"http/client/reactive";
+"http/server/reactive";
+"web/reactive/function/server"
+];;
+
+let v_181 =
+reunite [
+("mock/",v_161);
+("test/",v_160)
+];;
+
+let v_182 =
+reunite [
+("mock/",v_180);
+("test/",v_179)
+];;
+
+let v_183 =
+reunite [
+("main/java/org/springframework/",v_118);
+("test",v_117)
+];;
+
+let v_184 =
+reunite [
+("main/java/org/springframework/",v_182);
+("test/java/org/springframework/",v_181)
+];;
+
+let v_185 =
+[
+"re";
+"nnection";
+"re/binding";
+"nnection/init";
+"nnection/lookup"
+];;
+
+let v_186 =
+[
+"";
+"/core";
+"/connection";
+"/core/binding";
+"/connection/init";
+"/connection/lookup"
+];;
+
+let v_187 =
+[
+"";
+"/jaxb";
+"/jibx";
+"/config";
+"/xstream"
+];;
+
+let v_188 =
+[
+"";
+"/jaxb";
+"/jibx";
+"/mime";
+"/config";
+"/support";
+"/xstream"
+];;
+
+let v_189 =
+[
+"";
+"/domain";
+"/support";
+"/hibernate";
+"/eclipselink";
+"/hibernate/beans";
+"/persistenceunit"
+];;
+
+let v_190 =
+[
+"";
+"/jpa";
+"/hibernate5";
+"/jpa/vendor";
+"/jpa/support";
+"/hibernate5/support";
+"/jpa/persistenceunit"
+];;
+
+let v_191 =
+reunite [
+("main/java/org/springframework/oxm",v_188);
+("test/java/org/springframework/oxm",v_187)
+];;
+
+let v_192 =
+reunite [
+("main/java/org/springframework/orm",v_190);
+("test/java/org/springframework/orm/jpa",v_189)
+];;
+
+let v_193 =
+[
+"imp";
+"upport";
+"imp/user";
+"imp/stomp";
+"imp/broker";
+"imp/config";
+"imp/annotation/support"
+];;
+
+let v_194 =
+[
+"";
+"/annotation/support"
+];;
+
+let v_195 =
+[
+""
+];;
+
+let v_196 =
+[
+"";
+"/annotation";
+"/invocation";
+"/annotation/support";
+"/annotation/reactive";
+"/invocation/reactive"
+];;
+
+let v_197 =
+[
+"re";
+"nverter"
+];;
+
+let v_198 =
+reunite [
+("co",v_197);
+("handler",v_196);
+("protobuf",v_195);
+("rsocket",v_194);
+("s",v_193)
+];;
+
+let v_199 =
+[
+"";
+"/reactor"
+];;
+
+let v_200 =
+[
+"imp";
+"upport";
+"imp/user";
+"imp/stomp";
+"imp/broker";
+"imp/config";
+"imp/annotation";
+"imp/annotation/support"
+];;
+
+let v_201 =
+[
+"";
+"/annotation";
+"/annotation/support"
+];;
+
+let v_202 =
+[
+"";
+"/annotation";
+"/invocation";
+"/annotation/support";
+"/annotation/reactive";
+"/invocation/reactive"
+];;
+
+let v_203 =
+[
+"re";
+"nverter"
+];;
+
+let v_204 =
+reunite [
+("co",v_203);
+("handler",v_202);
+("rsocket",v_201);
+("s",v_200);
+("tcp",v_199)
+];;
+
+let v_205 =
+""::(
+reunite [
+("/",v_198)
+]
+);;
+
+let v_206 =
+""::(
+reunite [
+("/",v_204)
+]
+);;
+
+let v_207 =
+[
+""
+];;
+
+let v_208 =
+[
+"";
+"/converter";
+"/destination"
+];;
+
+let v_209 =
+[
+""
+];;
+
+let v_210 =
+[
+"";
+"/adapter";
+"/endpoint"
+];;
+
+let v_211 =
+[
+"re";
+"nfig";
+"nnection";
+"re/support"
+];;
+
+let v_212 =
+[
+""
+];;
+
+let v_213 =
+reunite [
+("annotation",v_212);
+("co",v_211);
+("listener",v_210);
+("remoting",v_209);
+("support",v_208)
+];;
+
+let v_214 =
+""::(
+reunite [
+("/",v_213)
+]
+);;
+
+let v_215 =
+[
+""
+];;
+
+let v_216 =
+reunite [
+("ca",v_215);
+("ms",v_214)
+];;
+
+let v_217 =
+[
+""
+];;
+
+let v_218 =
+[
+"";
+"/converter";
+"/destination"
+];;
+
+let v_219 =
+[
+""
+];;
+
+let v_220 =
+[
+"";
+"/adapter";
+"/endpoint"
+];;
+
+let v_221 =
+[
+"re";
+"nfig";
+"nnection";
+"re/support"
+];;
+
+let v_222 =
+[
+""
+];;
+
+let v_223 =
+reunite [
+("annotation",v_222);
+("co",v_221);
+("listener",v_220);
+("remoting",v_219);
+("support",v_218)
+];;
+
+let v_224 =
+reunite [
+("core/task",v_217);
+("j",v_216)
+];;
+
+let v_225 =
+""::(
+reunite [
+("/",v_223)
+]
+);;
+
+let v_226 =
+[
+"";
+"/rowset";
+"/incrementer"
+];;
+
+let v_227 =
+[
+""
+];;
+
+let v_228 =
+[
+"";
+"/init";
+"/lookup";
+"/embedded"
+];;
+
+let v_229 =
+[
+"re";
+"nfig";
+"re/test";
+"re/simple";
+"re/support";
+"re/namedparam"
+];;
+
+let v_230 =
+reunite [
+("co",v_229);
+("datasource",v_228);
+("object",v_227);
+("support",v_226)
+];;
+
+let v_231 =
+[
+"";
+"/lob";
+"/xml";
+"/rowset";
+"/incrementer"
+];;
+
+let v_232 =
+[
+""
+];;
+
+let v_233 =
+[
+"";
+"/init";
+"/lookup";
+"/embedded"
+];;
+
+let v_234 =
+[
+"re";
+"nfig";
+"re/simple";
+"re/support";
+"re/metadata";
+"re/namedparam"
+];;
+
+let v_235 =
+reunite [
+("co",v_234);
+("datasource",v_233);
+("object",v_232);
+("support",v_231)
+];;
+
+let v_236 =
+""::(
+reunite [
+("/",v_230)
+]
+);;
+
+let v_237 =
+""::(
+reunite [
+("/",v_235)
+]
+);;
+
+let v_238 =
+reunite [
+("main/java/org/springframework/jms",v_225);
+("test/java/org/springframework/",v_224)
+];;
+
+let v_239 =
+reunite [
+("main/java/org/springframework/jdbc",v_237);
+("test/java/org/springframework/jdbc",v_236)
+];;
+
+let v_240 =
+[
+"";
+"/impl"
+];;
+
+let v_241 =
+[
+"";
+"/ast";
+"/support";
+"/spr10210";
+"/standard";
+"/testdata";
+"/spr10210/comp";
+"/testresources";
+"/spr10210/infra";
+"/testresources/le/div/mod/reserved"
+];;
+
+let v_242 =
+[
+"";
+"/spel";
+"/common";
+"/spel/ast";
+"/spel/support";
+"/spel/standard"
+];;
+
+let v_243 =
+[
+""
+];;
+
+let v_244 =
+[
+"ask";
+"ype";
+"estfixture";
+"ype/classreading"
+];;
+
+let v_245 =
+[
+"tyle";
+"erializer"
+];;
+
+let v_246 =
+[
+""
+];;
+
+let v_247 =
+[
+"";
+"/buffer";
+"/support";
+"/buffer/support"
+];;
+
+let v_248 =
+[
+""
+];;
+
+let v_249 =
+[
+"dec";
+"nvert";
+"nvert/support";
+"nvert/converter"
+];;
+
+let v_250 =
+[
+"";
+"/subpackage"
+];;
+
+let v_251 =
+reunite [
+("annotation",v_250);
+("co",v_249);
+("env",v_248);
+("io",v_247);
+("log",v_246);
+("s",v_245);
+("t",v_244)
+];;
+
+let v_252 =
+[
+"";
+"/xml";
+"/unit";
+"/comparator";
+"/concurrent"
+];;
+
+let v_253 =
+[
+"";
+"/sample/objects"
+];;
+
+let v_254 =
+""::(
+reunite [
+("/",v_251)
+]
+);;
+
+let v_255 =
+reunite [
+("core",v_254);
+("tests",v_253);
+("util",v_252)
+];;
+
+let v_256 =
+""::(
+reunite [
+("/",v_255)
+]
+);;
+
+let v_257 =
+[
+""
+];;
+
+let v_258 =
+[
+"";
+"/io";
+"/env";
+"/xml";
+"/codec";
+"/security";
+"/io/buffer";
+"/stereotype"
+];;
+
+let v_259 =
+reunite [
+("example/type",v_257);
+("org/springframework",v_256)
+];;
+
+let v_260 =
+[
+"ask";
+"ype";
+"ype/filter";
+"ask/support";
+"ype/classreading"
+];;
+
+let v_261 =
+[
+"tyle";
+"erializer";
+"erializer/support"
+];;
+
+let v_262 =
+[
+"";
+"/jfr"
+];;
+
+let v_263 =
+[
+""
+];;
+
+let v_264 =
+[
+"";
+"/buffer";
+"/support"
+];;
+
+let v_265 =
+[
+""
+];;
+
+let v_266 =
+[
+"dec";
+"nvert";
+"nvert/support";
+"nvert/converter"
+];;
+
+let v_267 =
+[
+""
+];;
+
+let v_268 =
+reunite [
+("annotation",v_267);
+("co",v_266);
+("env",v_265);
+("io",v_264);
+("log",v_263);
+("metrics",v_262);
+("s",v_261);
+("t",v_260)
+];;
+
+let v_269 =
+""::(
+reunite [
+("/",v_268)
+]
+);;
+
+let v_270 =
+[
+"";
+"/core";
+"/beans";
+"/proxy"
+];;
+
+let v_271 =
+[
+"";
+"/xml";
+"/unit";
+"/backoff";
+"/function";
+"/comparator";
+"/concurrent"
+];;
+
+let v_272 =
+[
+""
+];;
+
+let v_273 =
+[
+""
+];;
+
+let v_274 =
+reunite [
+("glib",v_270);
+("ore",v_269)
+];;
+
+let v_275 =
+[
+""
+];;
+
+let v_276 =
+reunite [
+("/java/",v_259);
+("Fixtures/java/org/springframework/core/testfixture",v_258)
+];;
+
+let v_277 =
+reunite [
+("asm",v_275);
+("c",v_274);
+("lang",v_273);
+("objenesis",v_272);
+("util",v_271)
+];;
+
+let v_278 =
+[
+"util";
+"core/codec";
+"core/convert/support"
+];;
+
+let v_279 =
+[
+"";
+"/a";
+"/spr8955";
+"/spr9031";
+"/spr9031/scanpackage"
+];;
+
+let v_280 =
+[
+"level1";
+"level2";
+"level3";
+"simple";
+"importing";
+"cycle/left";
+"cycle/right"
+];;
+
+let v_281 =
+[
+"8761";
+"8808";
+"10546";
+"12111";
+"12233";
+"12334";
+"16756";
+"10546/scanpackage"
+];;
+
+let v_282 =
+[
+""
+];;
+
+let v_283 =
+[
+""
+];;
+
+let v_284 =
+reunite [
+("mponentscan/",v_280);
+("nfiguration",v_279)
+];;
+
+let v_285 =
+[
+""
+];;
+
+let v_286 =
+[
+""
+];;
+
+let v_287 =
+[
+""
+];;
+
+let v_288 =
+[
+""
+];;
+
+let v_289 =
+[
+""
+];;
+
+let v_290 =
+reunite [
+("co",v_284);
+("jsr330",v_283);
+("role",v_282);
+("spr",v_281)
+];;
+
+let v_291 =
+[
+""
+];;
+
+let v_292 =
+[
+"18n";
+"ndex"
+];;
+
+let v_293 =
+[
+""
+];;
+
+let v_294 =
+[
+"vent";
+"vent/test";
+"xpression"
+];;
+
+let v_295 =
+[
+"fig";
+"versionservice"
+];;
+
+let v_296 =
+""::(
+reunite [
+("/",v_290);
+("2",v_289);
+("3",v_288);
+("4",v_287);
+("5",v_286);
+("6",v_285)
+]
+);;
+
+let v_297 =
+reunite [
+("annotation",v_296);
+("con",v_295);
+("e",v_294);
+("groovy",v_293);
+("i",v_292);
+("support",v_291)
+];;
+
+let v_298 =
+[
+""
+];;
+
+let v_299 =
+""::(
+reunite [
+("/",v_297)
+]
+);;
+
+let v_300 =
+reunite [
+("ntext",v_299);
+("re/task",v_298)
+];;
+
+let v_301 =
+[
+"";
+"/config";
+"/annotation";
+"/concurrent";
+"/interceptor"
+];;
+
+let v_302 =
+[
+""
+];;
+
+let v_303 =
+[
+""
+];;
+
+let v_304 =
+[
+"";
+"/adapter";
+"/autoproxy"
+];;
+
+let v_305 =
+[
+""
+];;
+
+let v_306 =
+[
+"";
+"/generic";
+"/autoproxy";
+"/autoproxy/spr3064";
+"/autoproxy/benchmark"
+];;
+
+let v_307 =
+[
+"";
+"/beanvalidation"
+];;
+
+let v_308 =
+[
+"i";
+"til"
+];;
+
+let v_309 =
+[
+""
+];;
+
+let v_310 =
+[
+"ripting";
+"ripting/bsh";
+"ripting/config";
+"ripting/groovy";
+"heduling/config";
+"ripting/support";
+"heduling/support";
+"heduling/annotation";
+"heduling/concurrent"
+];;
+
+let v_311 =
+[
+"rmi";
+"support"
+];;
+
+let v_312 =
+[
+""
+];;
+
+let v_313 =
+[
+"mx";
+"ndi";
+"mx/access";
+"mx/export";
+"mx/support";
+"mx/export/naming";
+"mx/export/assembler";
+"mx/export/annotation";
+"mx/export/notification"
+];;
+
+let v_314 =
+[
+""
+];;
+
+let v_315 =
+[
+"number";
+"support";
+"datetime";
+"number/money";
+"datetime/joda";
+"datetime/standard"
+];;
+
+let v_316 =
+[
+"access";
+"config"
+];;
+
+let v_317 =
+reunite [
+("ache",v_301);
+("o",v_300)
+];;
+
+let v_318 =
+[
+"xml";
+"support";
+"annotation";
+"xml/support"
+];;
+
+let v_319 =
+reunite [
+("aspectj",v_306);
+("config",v_305);
+("framework",v_304);
+("scope",v_303);
+("target",v_302)
+];;
+
+let v_320 =
+[
+"mixin";
+"aspect"
+];;
+
+let v_321 =
+reunite [
+("aop/",v_319);
+("beans/factory/",v_318);
+("c",v_317);
+("ejb/",v_316);
+("format/",v_315);
+("instrument/classloading",v_314);
+("j",v_313);
+("mock/env",v_312);
+("remoting/",v_311);
+("sc",v_310);
+("tests/sample/beans",v_309);
+("u",v_308);
+("validation",v_307)
+];;
+
+let v_322 =
+[
+"gh24375";
+"scannable";
+"profilescan";
+"scannable/sub";
+"scannable_scoped";
+"scannable_implicitbasepackage"
+];;
+
+let v_323 =
+[
+"";
+"/jndi";
+"/beans";
+"/cache";
+"/index";
+"/cache/beans"
+];;
+
+let v_324 =
+reunite [
+("example/",v_322);
+("org/springframework/",v_321);
+("test/",v_320)
+];;
+
+let v_325 =
+[
+""
+];;
+
+let v_326 =
+[
+"ripting";
+"heduling";
+"ripting/bsh";
+"ripting/config";
+"ripting/groovy";
+"heduling/config";
+"ripting/support";
+"heduling/support";
+"heduling/annotation";
+"heduling/concurrent"
+];;
+
+let v_327 =
+[
+"";
+"/support"
+];;
+
+let v_328 =
+[
+"";
+"/access";
+"/export";
+"/support";
+"/export/naming";
+"/export/metadata";
+"/export/assembler";
+"/export/annotation";
+"/export/notification"
+];;
+
+let v_329 =
+[
+"";
+"/i18n";
+"/event";
+"/index";
+"/config";
+"/support";
+"/weaving";
+"/annotation";
+"/expression"
+];;
+
+let v_330 =
+[
+"";
+"/config";
+"/support";
+"/annotation";
+"/concurrent";
+"/interceptor"
+];;
+
+let v_331 =
+[
+"";
+"/support";
+"/annotation";
+"/beanvalidation"
+];;
+
+let v_332 =
+[
+"";
+"/context";
+"/context/support"
+];;
+
+let v_333 =
+reunite [
+("c",v_326);
+("tereotype",v_325)
+];;
+
+let v_334 =
+[
+"";
+"/rmi";
+"/soap";
+"/support"
+];;
+
+let v_335 =
+reunite [
+("mx",v_328);
+("ndi",v_327)
+];;
+
+let v_336 =
+[
+"";
+"/jboss";
+"/tomcat";
+"/weblogic";
+"/glassfish";
+"/websphere"
+];;
+
+let v_337 =
+[
+"";
+"/number";
+"/support";
+"/datetime";
+"/annotation";
+"/number/money";
+"/datetime/joda";
+"/datetime/standard"
+];;
+
+let v_338 =
+[
+"access";
+"config"
+];;
+
+let v_339 =
+reunite [
+("ache",v_330);
+("ontext",v_329)
+];;
+
+let v_340 =
+reunite [
+("/java/",v_324);
+("Fixtures/java/org/springframework/context/testfixture",v_323)
+];;
+
+let v_341 =
+reunite [
+("c",v_339);
+("ejb/",v_338);
+("format",v_337);
+("instrument/classloading",v_336);
+("j",v_335);
+("remoting",v_334);
+("s",v_333);
+("ui",v_332);
+("validation",v_331)
+];;
+
+let v_342 =
+[
+"annotation";
+"expression"
+];;
+
+let v_343 =
+[
+""
+];;
+
+let v_344 =
+[
+""
+];;
+
+let v_345 =
+[
+""
+];;
+
+let v_346 =
+[
+"";
+"/javamail"
+];;
+
+let v_347 =
+[
+"jcache";
+"ehcache";
+"caffeine";
+"transaction";
+"jcache/config";
+"jcache/interceptor"
+];;
+
+let v_348 =
+[
+"cache";
+"jcache"
+];;
+
+let v_349 =
+reunite [
+("cache/",v_347);
+("mail",v_346);
+("scheduling/quartz",v_345);
+("ui/freemarker",v_344);
+("validation/beanvalidation2",v_343)
+];;
+
+let v_350 =
+[
+""
+];;
+
+let v_351 =
+[
+"quartz";
+"commonj"
+];;
+
+let v_352 =
+[
+"";
+"/javamail"
+];;
+
+let v_353 =
+[
+"jcache";
+"ehcache";
+"caffeine";
+"transaction";
+"jcache/config";
+"jcache/interceptor"
+];;
+
+let v_354 =
+reunite [
+("/java/org/springframework/",v_349);
+("Fixtures/java/org/springframework/contextsupport/testfixture/",v_348)
+];;
+
+let v_355 =
+reunite [
+("cache/",v_353);
+("mail",v_352);
+("scheduling/",v_351);
+("ui/freemarker",v_350)
+];;
+
+let v_356 =
+reunite [
+("main/java/org/springframework/",v_355);
+("test",v_354)
+];;
+
+let v_357 =
+[
+"test/java/org/springframework/context/index/test";
+"test/java/org/springframework/context/index/sample";
+"main/java/org/springframework/context/index/processor";
+"test/java/org/springframework/context/index/processor";
+"test/java/org/springframework/context/index/sample/cdi";
+"test/java/org/springframework/context/index/sample/jpa";
+"test/java/org/springframework/context/index/sample/type"
+];;
+
+let v_358 =
+reunite [
+("jmh/java/org/springframework/context/",v_342);
+("main/java/org/springframework/",v_341);
+("test",v_340)
+];;
+
+let v_359 =
+reunite [
+("indexer/src/",v_357);
+("support/src/",v_356)
+];;
+
+let v_360 =
+reunite [
+("jmh/java/org/springframework/",v_278);
+("main/java/org/springframework/",v_277);
+("test",v_276)
+];;
+
+let v_361 =
+reunite [
+("-",v_359);
+("/src/",v_358)
+];;
+
+let v_362 =
+[
+"xml";
+"config";
+"wiring";
+"parsing";
+"support";
+"annotation";
+"xml/support";
+"serviceloader";
+"support/security";
+"support/security/support"
+];;
+
+let v_363 =
+[
+""
+];;
+
+let v_364 =
+[
+""
+];;
+
+let v_365 =
+""::(
+reunite [
+("/",v_362)
+]
+);;
+
+let v_366 =
+reunite [
+("factory",v_365);
+("propertyeditors",v_364);
+("support",v_363)
+];;
+
+let v_367 =
+[
+"beans";
+"factory/xml";
+"beans/subpkg";
+"beans/factory"
+];;
+
+let v_368 =
+""::(
+reunite [
+("/",v_366)
+]
+);;
+
+let v_369 =
+[
+""
+];;
+
+let v_370 =
+[
+""
+];;
+
+let v_371 =
+[
+"";
+"/xml";
+"/config";
+"/groovy";
+"/wiring";
+"/parsing";
+"/support";
+"/annotation";
+"/serviceloader"
+];;
+
+let v_372 =
+[
+""
+];;
+
+let v_373 =
+reunite [
+("annotation",v_372);
+("factory",v_371);
+("propertyeditors",v_370);
+("support",v_369)
+];;
+
+let v_374 =
+reunite [
+("/java/org/springframework/beans",v_368);
+("Fixtures/java/org/springframework/beans/testfixture/",v_367)
+];;
+
+let v_375 =
+""::(
+reunite [
+("/",v_373)
+]
+);;
+
+let v_376 =
+[
+"";
+"/factory"
+];;
+
+let v_377 =
+[
+"cache/config";
+"cache/aspectj";
+"scheduling/aspectj";
+"transaction/aspectj";
+"aop/aspectj/autoproxy";
+"beans/factory/aspectj";
+"context/annotation/aspectj"
+];;
+
+let v_378 =
+[
+"cache/aspectj";
+"scheduling/aspectj";
+"transaction/aspectj";
+"beans/factory/aspectj";
+"context/annotation/aspectj"
+];;
+
+let v_379 =
+[
+"";
+"/dynamic"
+];;
+
+let v_380 =
+[
+"cope";
+"upport";
+"upport/annotation"
+];;
+
+let v_381 =
+[
+""
+];;
+
+let v_382 =
+[
+"";
+"/adapter"
+];;
+
+let v_383 =
+[
+""
+];;
+
+let v_384 =
+[
+"";
+"/autoproxy";
+"/annotation"
+];;
+
+let v_385 =
+[
+"op";
+"nnotation";
+"nnotation/transaction"
+];;
+
+let v_386 =
+reunite [
+("aspectj",v_384);
+("config",v_383);
+("framework",v_382);
+("interceptor",v_381);
+("s",v_380);
+("target",v_379)
+];;
+
+let v_387 =
+[
+"advice";
+"interceptor"
+];;
+
+let v_388 =
+reunite [
+("org/springframework/aop/",v_386);
+("test/a",v_385)
+];;
+
+let v_389 =
+[
+"";
+"/dynamic"
+];;
+
+let v_390 =
+[
+"cope";
+"upport";
+"upport/annotation"
+];;
+
+let v_391 =
+[
+""
+];;
+
+let v_392 =
+[
+"";
+"/adapter";
+"/autoproxy";
+"/autoproxy/target"
+];;
+
+let v_393 =
+[
+""
+];;
+
+let v_394 =
+[
+"";
+"/autoproxy";
+"/annotation"
+];;
+
+let v_395 =
+reunite [
+("aspectj",v_394);
+("config",v_393);
+("framework",v_392);
+("interceptor",v_391);
+("s",v_390);
+("target",v_389)
+];;
+
+let v_396 =
+""::(
+reunite [
+("/",v_395)
+]
+);;
+
+let v_397 =
+[
+"aop";
+"intercept"
+];;
+
+let v_398 =
+reunite [
+("/java/",v_388);
+("Fixtures/java/org/springframework/aop/testfixture/",v_387)
+];;
+
+let v_399 =
+reunite [
+("aopalliance/",v_397);
+("springframework/aop",v_396)
+];;
+
+let v_400 =
+reunite [
+("main/java/org/springframework/",v_378);
+("test/java/org/springframework/",v_377)
+];;
+
+let v_401 =
+reunite [
+("main/java/org/",v_399);
+("test",v_398)
+];;
+
+let v_402 =
+reunite [
+("/src/",v_108);
+("flux/src/",v_107);
+("mvc/src/",v_106);
+("socket/src/",v_105)
+];;
+
+let v_403 =
+reunite [
+("est/src/",v_184);
+("x/src/",v_183)
+];;
+
+let v_404 =
+reunite [
+("main/java/org/springframework/r2dbc",v_186);
+("test/java/org/springframework/r2dbc/co",v_185)
+];;
+
+let v_405 =
+reunite [
+("rm/src/",v_192);
+("xm/src/",v_191)
+];;
+
+let v_406 =
+reunite [
+("jmh/java/org/springframework/messaging/simp/broker",v_207);
+("main/java/org/springframework/messaging",v_206);
+("test/java/org/springframework/messaging",v_205)
+];;
+
+let v_407 =
+reunite [
+("cl/src/main/java/org/apache/commons/logging",v_240);
+("dbc/src/",v_239);
+("ms/src/",v_238)
+];;
+
+let v_408 =
+[
+""
+];;
+
+let v_409 =
+reunite [
+("jmh/java/org/springframework/expression/spel",v_243);
+("main/java/org/springframework/expression",v_242);
+("test/java/org/springframework/expression/spel",v_241)
+];;
+
+let v_410 =
+reunite [
+("ntext",v_361);
+("re/src/",v_360)
+];;
+
+let v_411 =
+reunite [
+("jmh/java/org/springframework/beans",v_376);
+("main/java/org/springframework/beans",v_375);
+("test",v_374)
+];;
+
+let v_412 =
+reunite [
+("op/src/",v_401);
+("spects/src/",v_400)
+];;
+
+let v_413 =
+[
+""
+];;
+
+let v_414 =
+[
+""
+];;
+
+let v_415 =
+[
+""
+];;
+
+let v_416 =
+[
+"ore/env";
+"ore/env/scan1";
+"ore/env/scan2";
+"ache/annotation";
+"ontext/annotation/scope";
+"ontext/annotation/jsr330"
+];;
+
+let v_417 =
+[
+""
+];;
+
+let v_418 =
+[
+"config";
+"framework/autoproxy"
+];;
+
+let v_419 =
+reunite [
+("a",v_412);
+("beans/src/",v_411);
+("co",v_410);
+("expression/src/",v_409);
+("instrument/src/main/java/org/springframework/instrument",v_408);
+("j",v_407);
+("messaging/src/",v_406);
+("o",v_405);
+("r2dbc/src/",v_404);
+("t",v_403);
+("web",v_402)
+];;
+
+let v_420 =
+reunite [
+("aop/",v_418);
+("beans/factory/xml",v_417);
+("c",v_416);
+("expression/spel/support",v_415);
+("scheduling/annotation",v_414);
+("transaction/annotation",v_413)
+];;
+
+let v_421 =
+[
+"api";
+"compile";
+"optional"
+];;
+
+let v_422 =
+[
+"main/java/smoketest/websocket/jetty10";
+"test/java/smoketest/websocket/jetty10";
+"main/java/smoketest/websocket/jetty10/echo";
+"test/java/smoketest/websocket/jetty10/echo";
+"main/java/smoketest/websocket/jetty10/snake";
+"test/java/smoketest/websocket/jetty10/snake";
+"main/java/smoketest/websocket/jetty10/client";
+"main/java/smoketest/websocket/jetty10/reverse"
+];;
+
+let v_423 =
+[
+"main/java/smoketest/websocket/jetty";
+"test/java/smoketest/websocket/jetty";
+"main/java/smoketest/websocket/jetty/echo";
+"test/java/smoketest/websocket/jetty/echo";
+"main/java/smoketest/websocket/jetty/snake";
+"test/java/smoketest/websocket/jetty/snake";
+"main/java/smoketest/websocket/jetty/client";
+"main/java/smoketest/websocket/jetty/reverse"
+];;
+
+let v_424 =
+[
+"main/java/smoketest/websocket/undertow";
+"test/java/smoketest/websocket/undertow";
+"main/java/smoketest/websocket/undertow/echo";
+"test/java/smoketest/websocket/undertow/echo";
+"main/java/smoketest/websocket/undertow/snake";
+"test/java/smoketest/websocket/undertow/snake";
+"main/java/smoketest/websocket/undertow/client";
+"main/java/smoketest/websocket/undertow/reverse"
+];;
+
+let v_425 =
+[
+"main/java/smoketest/websocket/tomcat";
+"test/java/smoketest/websocket/tomcat";
+"main/java/smoketest/websocket/tomcat/echo";
+"test/java/smoketest/websocket/tomcat/echo";
+"main/java/smoketest/websocket/tomcat/snake";
+"test/java/smoketest/websocket/tomcat/snake";
+"main/java/smoketest/websocket/tomcat/client";
+"main/java/smoketest/websocket/tomcat/reverse"
+];;
+
+let v_426 =
+reunite [
+("/src/",v_423);
+("10/src/",v_422)
+];;
+
+let v_427 =
+reunite [
+("jetty",v_426);
+("tomcat/src/",v_425);
+("undertow/src/",v_424)
+];;
+
+let v_428 =
+[
+"main/java/smoketest/webservices";
+"test/java/smoketest/webservices";
+"main/java/smoketest/webservices/service";
+"main/java/smoketest/webservices/endpoint"
+];;
+
+let v_429 =
+[
+"main/java/smoketest/web/thymeleaf";
+"test/java/smoketest/web/thymeleaf";
+"main/java/smoketest/web/thymeleaf/mvc"
+];;
+
+let v_430 =
+[
+"ecure/src/main/java/smoketest/web/secure";
+"ecure/src/test/java/smoketest/web/secure";
+"tatic/src/main/java/smoketest/web/staticcontent";
+"tatic/src/test/java/smoketest/web/staticcontent";
+"ecure-jdbc/src/main/java/smoketest/web/secure/jdbc";
+"ecure-jdbc/src/test/java/smoketest/web/secure/jdbc";
+"ecure-custom/src/main/java/smoketest/web/secure/custom";
+"ecure-custom/src/test/java/smoketest/web/secure/custom"
+];;
+
+let v_431 =
+[
+"ustache/src/main/java/smoketest/mustache";
+"ustache/src/test/java/smoketest/mustache";
+"ethod-security/src/main/java/smoketest/security/method";
+"ethod-security/src/test/java/smoketest/security/method"
+];;
+
+let v_432 =
+[
+"main/java/smoketest/jsp";
+"test/java/smoketest/jsp"
+];;
+
+let v_433 =
+[
+"main/java/smoketest/groovytemplates";
+"test/java/smoketest/groovytemplates";
+"main/java/smoketest/groovytemplates/mvc"
+];;
+
+let v_434 =
+[
+"main/java/smoketest/freemarker";
+"test/java/smoketest/freemarker"
+];;
+
+let v_435 =
+[
+"main/java/smoketest/webapplicationtype";
+"test/java/smoketest/webapplicationtype"
+];;
+
+let v_436 =
+reunite [
+("ervices/src/",v_428);
+("ocket-",v_427)
+];;
+
+let v_437 =
+[
+"main/java/smoketest/webflux";
+"test/java/smoketest/webflux"
+];;
+
+let v_438 =
+reunite [
+("application-type/src/",v_435);
+("freemarker/src/",v_434);
+("groovy-templates/src/",v_433);
+("jsp/src/",v_432);
+("m",v_431);
+("s",v_430);
+("thymeleaf/src/",v_429)
+];;
+
+let v_439 =
+reunite [
+("-",v_438);
+("flux/src/",v_437);
+("s",v_436)
+];;
+
+let v_440 =
+[
+"main/java/smoketest/war";
+"test/java/smoketest/war"
+];;
+
+let v_441 =
+[
+"main/java/smoketest/tomcat";
+"test/java/smoketest/tomcat";
+"main/java/smoketest/tomcat/web";
+"main/java/smoketest/tomcat/service"
+];;
+
+let v_442 =
+[
+"jsp/src/main/java/smoketest/tomcat/jsp";
+"jsp/src/test/java/smoketest/tomcat/jsp";
+"ssl/src/main/java/smoketest/tomcat/ssl";
+"ssl/src/test/java/smoketest/tomcat/ssl";
+"ssl/src/main/java/smoketest/tomcat/ssl/web";
+"multi-connectors/src/main/java/smoketest/tomcat/multiconnector";
+"multi-connectors/src/test/java/smoketest/tomcat/multiconnector";
+"multi-connectors/src/main/java/smoketest/tomcat/multiconnector/web"
+];;
+
+let v_443 =
+[
+"main/java/smoketest/testng";
+"test/java/smoketest/testng";
+"main/java/smoketest/testng/web";
+"main/java/smoketest/testng/service"
+];;
+
+let v_444 =
+[
+"main/java/smoketest/test";
+"test/java/smoketest/test";
+"main/java/smoketest/test/web";
+"test/java/smoketest/test/web";
+"main/java/smoketest/test/domain";
+"test/java/smoketest/test/domain";
+"main/java/smoketest/test/service";
+"test/java/smoketest/test/service"
+];;
+
+let v_445 =
+[
+"main/java/smoketest/testnomockito";
+"test/java/smoketest/testnomockito"
+];;
+
+let v_446 =
+[
+"main/java/smoketest/traditional";
+"test/java/smoketest/traditional";
+"main/java/smoketest/traditional/config"
+];;
+
+let v_447 =
+reunite [
+("-",v_442);
+("/src/",v_441)
+];;
+
+let v_448 =
+reunite [
+("-nomockito/src/",v_445);
+("/src/",v_444);
+("ng/src/",v_443)
+];;
+
+let v_449 =
+[
+"mongo/src/main/java/smoketest/session";
+"mongo/src/test/java/smoketest/session";
+"redis/src/main/java/smoketest/session";
+"redis/src/test/java/smoketest/session"
+];;
+
+let v_450 =
+[
+"main/java/smoketest/session/redis";
+"test/java/smoketest/session/redis"
+];;
+
+let v_451 =
+[
+"main/java/smoketest/session/mongodb";
+"test/java/smoketest/session/mongodb"
+];;
+
+let v_452 =
+[
+"main/java/smoketest/session";
+"test/java/smoketest/session"
+];;
+
+let v_453 =
+[
+"main/java/smoketest/session/hazelcast";
+"test/java/smoketest/session/hazelcast"
+];;
+
+let v_454 =
+reunite [
+("hazelcast/src/",v_453);
+("jdbc/src/",v_452);
+("mongo/src/",v_451);
+("redis/src/",v_450);
+("webflux-",v_449)
+];;
+
+let v_455 =
+[
+"main/java/smoketest/servlet";
+"test/java/smoketest/servlet"
+];;
+
+let v_456 =
+[
+"/src/main/java/smoketest/secure";
+"/src/test/java/smoketest/secure";
+"-jersey/src/main/java/smoketest/secure/jersey";
+"-jersey/src/test/java/smoketest/secure/jersey";
+"-webflux/src/main/java/smoketest/secure/webflux";
+"-webflux/src/test/java/smoketest/secure/webflux"
+];;
+
+let v_457 =
+[
+"main/java/smoketest/simple";
+"test/java/smoketest/simple";
+"main/java/smoketest/simple/service"
+];;
+
+let v_458 =
+reunite [
+("cure",v_456);
+("rvlet/src/",v_455);
+("ssion-",v_454)
+];;
+
+let v_459 =
+[
+"main/java/smoketest/saml2/serviceprovider";
+"test/java/smoketest/saml2/serviceprovider"
+];;
+
+let v_460 =
+[
+"main/java/smoketest/jetty10";
+"test/java/smoketest/jetty10";
+"main/java/smoketest/jetty10/web";
+"main/java/smoketest/jetty10/service"
+];;
+
+let v_461 =
+[
+"main/java/smoketest/jetty";
+"test/java/smoketest/jetty";
+"main/java/smoketest/jetty/web";
+"main/java/smoketest/jetty/service"
+];;
+
+let v_462 =
+[
+"jsp/src/main/java/smoketest/jetty/jsp";
+"jsp/src/test/java/smoketest/jetty/jsp";
+"ssl/src/main/java/smoketest/jetty/ssl";
+"ssl/src/test/java/smoketest/jetty/ssl";
+"ssl/src/main/java/smoketest/jetty/ssl/web"
+];;
+
+let v_463 =
+reunite [
+("-",v_462);
+("/src/",v_461);
+("10/src/",v_460)
+];;
+
+let v_464 =
+[
+"main/java/smoketest/jersey";
+"test/java/smoketest/jersey"
+];;
+
+let v_465 =
+[
+"main/java/smoketest";
+"test/java/smoketest"
+];;
+
+let v_466 =
+[
+"main/java/smoketest/atomikos";
+"test/java/smoketest/atomikos"
+];;
+
+let v_467 =
+[
+"main/java/smoketest/jpa";
+"test/java/smoketest/jpa";
+"main/java/smoketest/jpa/web";
+"main/java/smoketest/jpa/domain";
+"main/java/smoketest/jpa/repository";
+"test/java/smoketest/jpa/repository"
+];;
+
+let v_468 =
+reunite [
+("rsey/src/",v_464);
+("tty",v_463)
+];;
+
+let v_469 =
+[
+"main/java/smoketest/data/rest";
+"test/java/smoketest/data/rest";
+"main/java/smoketest/data/rest/domain";
+"main/java/smoketest/data/rest/service";
+"test/java/smoketest/data/rest/service"
+];;
+
+let v_470 =
+[
+"/src/main/java/smoketest/data/r2dbc";
+"/src/test/java/smoketest/data/r2dbc";
+"-flyway/src/main/java/smoketest/data/r2dbc";
+"-flyway/src/test/java/smoketest/data/r2dbc";
+"-liquibase/src/main/java/smoketest/data/r2dbc";
+"-liquibase/src/test/java/smoketest/data/r2dbc"
+];;
+
+let v_471 =
+reunite [
+("2dbc",v_470);
+("est/src/",v_469)
+];;
+
+let v_472 =
+[
+"main/java/smoketest/data/ldap";
+"test/java/smoketest/data/ldap"
+];;
+
+let v_473 =
+[
+"pa/src/main/java/smoketest/data/jpa";
+"pa/src/test/java/smoketest/data/jpa";
+"dbc/src/main/java/smoketest/data/jdbc";
+"dbc/src/test/java/smoketest/data/jdbc";
+"pa/src/main/java/smoketest/data/jpa/web";
+"pa/src/main/java/smoketest/data/jpa/domain";
+"pa/src/main/java/smoketest/data/jpa/service";
+"pa/src/test/java/smoketest/data/jpa/service"
+];;
+
+let v_474 =
+[
+"main/java/smoketest/devtools";
+"test/java/smoketest/devtools"
+];;
+
+let v_475 =
+reunite [
+("j",v_473);
+("ldap/src/",v_472);
+("r",v_471)
+];;
+
+let v_476 =
+[
+"/src/main/java/smoketest/actuator";
+"/src/test/java/smoketest/actuator";
+"-ui/src/main/java/smoketest/actuator/ui";
+"-ui/src/test/java/smoketest/actuator/ui";
+"-noweb/src/main/java/smoketest/actuator/noweb";
+"-noweb/src/test/java/smoketest/actuator/noweb";
+"-log4j2/src/main/java/smoketest/actuator/log4j2";
+"-log4j2/src/test/java/smoketest/actuator/log4j2";
+"-custom-security/src/main/java/smoketest/actuator/customsecurity";
+"-custom-security/src/test/java/smoketest/actuator/customsecurity"
+];;
+
+let v_477 =
+[
+"main/java/smoketest/activemq";
+"test/java/smoketest/activemq"
+];;
+
+let v_478 =
+[
+"main/java/smoketest/atmosphere";
+"test/java/smoketest/atmosphere"
+];;
+
+let v_479 =
+[
+"main/java/smoketest/aop";
+"test/java/smoketest/aop";
+"main/java/smoketest/aop/monitor";
+"main/java/smoketest/aop/service"
+];;
+
+let v_480 =
+[
+"t/src/main/java/smoketest/ant";
+"t/src/test/java/smoketest/ant";
+"imated-banner/src/main/java/smoketest/animated"
+];;
+
+let v_481 =
+[
+"main/java/smoketest/amqp";
+"test/java/smoketest/amqp"
+];;
+
+let v_482 =
+reunite [
+("ivemq/src/",v_477);
+("uator",v_476)
+];;
+
+let v_483 =
+[
+"main/java/smoketest/xml";
+"test/java/smoketest/xml";
+"main/java/smoketest/xml/service"
+];;
+
+let v_484 =
+reunite [
+("ar/src/",v_440);
+("eb",v_439)
+];;
+
+let v_485 =
+[
+"/src/main/java/smoketest/undertow";
+"/src/test/java/smoketest/undertow";
+"/src/main/java/smoketest/undertow/web";
+"-ssl/src/main/java/smoketest/undertow/ssl";
+"-ssl/src/test/java/smoketest/undertow/ssl";
+"-ssl/src/main/java/smoketest/undertow/ssl/web"
+];;
+
+let v_486 =
+reunite [
+("est",v_448);
+("omcat",v_447);
+("raditional/src/",v_446)
+];;
+
+let v_487 =
+reunite [
+("aml2-service-provider/src/",v_459);
+("e",v_458);
+("imple/src/",v_457)
+];;
+
+let v_488 =
+[
+"socket/src/main/java/smoketest/rsocket";
+"socket/src/test/java/smoketest/rsocket";
+"eactive-oauth2-client/src/main/java/smoketest/oauth2/client";
+"eactive-oauth2-client/src/test/java/smoketest/oauth2/client";
+"eactive-oauth2-resource-server/src/main/java/smoketest/oauth2/resource";
+"eactive-oauth2-resource-server/src/test/java/smoketest/oauth2/resource"
+];;
+
+let v_489 =
+[
+"main/java/smoketest/quartz";
+"test/java/smoketest/quartz"
+];;
+
+let v_490 =
+[
+"rofile/src/main/java/smoketest/profile";
+"rofile/src/test/java/smoketest/profile";
+"arent-context/src/main/java/smoketest/parent";
+"rofile/src/main/java/smoketest/profile/service";
+"arent-context/src/test/java/smoketest/parent/consumer";
+"arent-context/src/test/java/smoketest/parent/producer";
+"roperty-validation/src/main/java/smoketest/propertyvalidation";
+"roperty-validation/src/test/java/smoketest/propertyvalidation"
+];;
+
+let v_491 =
+[
+"client/src/main/java/smoketest/oauth2/client";
+"client/src/test/java/smoketest/oauth2/client";
+"resource-server/src/main/java/smoketest/oauth2/resource";
+"resource-server/src/test/java/smoketest/oauth2/resource"
+];;
+
+let v_492 =
+[
+"ogback/src/main/java/smoketest/logback";
+"ogback/src/test/java/smoketest/logback";
+"iquibase/src/main/java/smoketest/liquibase";
+"iquibase/src/test/java/smoketest/liquibase"
+];;
+
+let v_493 =
+[
+"main/java/smoketest/kafka";
+"test/java/smoketest/kafka"
+];;
+
+let v_494 =
+reunite [
+("e",v_468);
+("pa/src/",v_467);
+("ta-atomikos/src/",v_466);
+("unit-vintage/src/",v_465)
+];;
+
+let v_495 =
+[
+"main/java/smoketest/integration";
+"test/java/smoketest/integration/consumer";
+"test/java/smoketest/integration/producer"
+];;
+
+let v_496 =
+[
+"ateoas/src/main/java/smoketest/hateoas";
+"ateoas/src/test/java/smoketest/hateoas";
+"ateoas/src/main/java/smoketest/hateoas/web";
+"azelcast3/src/main/java/smoketest/hazelcast3";
+"azelcast3/src/test/java/smoketest/hazelcast3";
+"azelcast4/src/main/java/smoketest/hazelcast4";
+"azelcast4/src/test/java/smoketest/hazelcast4";
+"ateoas/src/main/java/smoketest/hateoas/domain";
+"ibernate52/src/main/java/org/springframework/boot/tests/hibernate52";
+"ibernate52/src/test/java/org/springframework/boot/tests/hibernate52"
+];;
+
+let v_497 =
+[
+"main/java/smoketest/graphql";
+"test/java/smoketest/graphql"
+];;
+
+let v_498 =
+[
+"main/java/smoketest/flyway";
+"test/java/smoketest/flyway"
+];;
+
+let v_499 =
+reunite [
+("ata-",v_475);
+("evtools/src/",v_474)
+];;
+
+let v_500 =
+[
+"main/java/smoketest/cache";
+"test/java/smoketest/cache";
+"redisTest/java/smoketest/cache"
+];;
+
+let v_501 =
+[
+"atch/src/main/java/smoketest/batch";
+"atch/src/test/java/smoketest/batch";
+"ootstrap-registry/src/main/java/smoketest/bootstrapregistry/app";
+"ootstrap-registry/src/test/java/smoketest/bootstrapregistry/app";
+"ootstrap-registry/src/main/java/smoketest/bootstrapregistry/external/svn"
+];;
+
+let v_502 =
+reunite [
+("ct",v_482);
+("mqp/src/",v_481);
+("n",v_480);
+("op/src/",v_479);
+("tmosphere/src/",v_478)
+];;
+
+let v_503 =
+reunite [
+("a",v_502);
+("b",v_501);
+("cache/src/",v_500);
+("d",v_499);
+("flyway/src/",v_498);
+("graphql/src/",v_497);
+("h",v_496);
+("integration/src/",v_495);
+("j",v_494);
+("kafka/src/",v_493);
+("l",v_492);
+("oauth2-",v_491);
+("p",v_490);
+("quartz/src/",v_489);
+("r",v_488);
+("s",v_487);
+("t",v_486);
+("undertow",v_485);
+("w",v_484);
+("xml/src/",v_483)
+];;
+
+let v_504 =
+[
+"configuration-processor-tests/src/main/java/sample";
+"loader-tests/src/intTest/java/org/springframework/boot/loader";
+"server-tests/spring-boot-server-tests-app/src/main/java/com/example";
+"server-tests/spring-boot-server-tests-app/src/main/java/com/autoconfig";
+"server-tests/src/intTest/java/org/springframework/boot/context/embedded";
+"launch-script-tests/src/intTest/java/org/springframework/boot/launchscript";
+"loader-tests/spring-boot-loader-tests-app/src/main/java/org/springframework/boot/loaderapp";
+"configuration-processor-tests/src/test/java/org/springframework/boot/configurationprocessor/tests";
+"launch-script-tests/spring-boot-launch-script-tests-app/src/main/java/org/springframework/boot/launchscript"
+];;
+
+let v_505 =
+[
+"";
+"/mock";
+"/view";
+"/error";
+"/filter";
+"/server";
+"/context";
+"/support";
+"/context/config";
+"/testcomponents"
+];;
+
+let v_506 =
+[
+""
+];;
+
+let v_507 =
+reunite [
+("er",v_506);
+("let",v_505)
+];;
+
+let v_508 =
+[
+"error";
+"server";
+"context";
+"result/view";
+"context/config"
+];;
+
+let v_509 =
+[
+"test";
+"jetty";
+"netty";
+"tomcat";
+"undertow"
+];;
+
+let v_510 =
+[
+"lient";
+"ontext"
+];;
+
+let v_511 =
+[
+""
+];;
+
+let v_512 =
+reunite [
+("c",v_510);
+("embedded/",v_509);
+("reactive/",v_508);
+("serv",v_507)
+];;
+
+let v_513 =
+[
+""
+];;
+
+let v_514 =
+[
+""
+];;
+
+let v_515 =
+[
+"";
+"/init";
+"/metadata"
+];;
+
+let v_516 =
+[
+"";
+"/types";
+"/scan/a";
+"/scan/b";
+"/scan/c";
+"/scan/d"
+];;
+
+let v_517 =
+[
+"bind";
+"source";
+"bind/test";
+"scan/valid";
+"bind/handler";
+"scan/valid/a";
+"scan/valid/b";
+"bind/validation";
+"scan/combined/c";
+"scan/combined/d"
+];;
+
+let v_518 =
+""::(
+reunite [
+("/",v_517)
+]
+);;
+
+let v_519 =
+[
+""
+];;
+
+let v_520 =
+[
+""
+];;
+
+let v_521 =
+[
+""
+];;
+
+let v_522 =
+[
+""
+];;
+
+let v_523 =
+[
+"";
+"warnings/dflt";
+"warnings/real";
+"warnings/orgspring";
+"warnings/annotation";
+"warnings/real/nested"
+];;
+
+let v_524 =
+[
+""
+];;
+
+let v_525 =
+reunite [
+("annotation",v_524);
+("config",v_523);
+("event",v_522);
+("filtersample",v_521);
+("logging",v_520);
+("metrics/buffering",v_519);
+("properties",v_518)
+];;
+
+let v_526 =
+[
+""
+];;
+
+let v_527 =
+""::(
+reunite [
+("/",v_525)
+]
+);;
+
+let v_528 =
+reunite [
+("text",v_527);
+("vert",v_526)
+];;
+
+let v_529 =
+[
+"";
+"/cloudfoundry"
+];;
+
+let v_530 =
+reunite [
+("/",v_512);
+("services/client",v_511)
+];;
+
+let v_531 =
+[
+"";
+"/beanvalidation"
+];;
+
+let v_532 =
+[
+""
+];;
+
+let v_533 =
+[
+"ask";
+"ype/classreading"
+];;
+
+let v_534 =
+[
+"ystem";
+"ql/init";
+"ampleconfig";
+"ecurity/servlet";
+"ecurity/reactive";
+"ql/init/dependency"
+];;
+
+let v_535 =
+[
+"2dbc";
+"eactor";
+"2dbc/init";
+"socket/netty";
+"socket/context"
+];;
+
+let v_536 =
+[
+"igin";
+"m/jpa/hibernate"
+];;
+
+let v_537 =
+[
+"ogging";
+"iquibase";
+"ogging/java";
+"ogging/log4j2";
+"ogging/logback"
+];;
+
+let v_538 =
+reunite [
+("ackson",v_516);
+("dbc",v_515);
+("son",v_514);
+("ta/atomikos",v_513)
+];;
+
+let v_539 =
+[
+""
+];;
+
+let v_540 =
+[
+""
+];;
+
+let v_541 =
+[
+"";
+"/analyzer";
+"/analyzer/nounique"
+];;
+
+let v_542 =
+reunite [
+("loud",v_529);
+("on",v_528)
+];;
+
+let v_543 =
+[
+""
+];;
+
+let v_544 =
+[
+"nsi";
+"dmin";
+"vailability"
+];;
+
+let v_545 =
+reunite [
+("a",v_544);
+("builder",v_543);
+("c",v_542);
+("diagnostics",v_541);
+("env",v_540);
+("info",v_539);
+("j",v_538);
+("l",v_537);
+("or",v_536);
+("r",v_535);
+("s",v_534);
+("t",v_533);
+("util",v_532);
+("validation",v_531);
+("web",v_530)
+];;
+
+let v_546 =
+[
+""
+];;
+
+let v_547 =
+""::(
+reunite [
+("/",v_545)
+]
+);;
+
+let v_548 =
+[
+"er";
+"let";
+"let/view";
+"let/error";
+"let/filter";
+"let/server";
+"let/context";
+"let/support"
+];;
+
+let v_549 =
+[
+"error";
+"filter";
+"server";
+"context";
+"result/view";
+"function/client"
+];;
+
+let v_550 =
+[
+"rror";
+"mbedded/jetty";
+"mbedded/netty";
+"mbedded/tomcat";
+"mbedded/undertow"
+];;
+
+let v_551 =
+[
+"odec";
+"lient";
+"ontext"
+];;
+
+let v_552 =
+[
+""
+];;
+
+let v_553 =
+reunite [
+("c",v_551);
+("e",v_550);
+("reactive/",v_549);
+("serv",v_548)
+];;
+
+let v_554 =
+[
+"event";
+"config";
+"logging";
+"annotation";
+"properties";
+"properties/bind";
+"metrics/buffering";
+"properties/source";
+"properties/bind/handler";
+"properties/bind/validation"
+];;
+
+let v_555 =
+[
+""
+];;
+
+let v_556 =
+""::(
+reunite [
+("/",v_554)
+]
+);;
+
+let v_557 =
+reunite [
+("text",v_556);
+("vert",v_555)
+];;
+
+let v_558 =
+[
+""
+];;
+
+let v_559 =
+reunite [
+("/",v_553);
+("services/client",v_552)
+];;
+
+let v_560 =
+[
+"";
+"/beanvalidation"
+];;
+
+let v_561 =
+[
+""
+];;
+
+let v_562 =
+[
+"ask";
+"ype/classreading"
+];;
+
+let v_563 =
+[
+"ystem";
+"ql/init";
+"ecurity/servlet";
+"ecurity/reactive";
+"ql/init/dependency"
+];;
+
+let v_564 =
+[
+"2dbc";
+"eactor";
+"2dbc/init";
+"socket/netty";
+"socket/server";
+"socket/context";
+"socket/messaging"
+];;
+
+let v_565 =
+[
+"igin";
+"m/jpa";
+"m/jpa/hibernate"
+];;
+
+let v_566 =
+[
+"ogging";
+"iquibase";
+"ogging/java";
+"ogging/log4j2";
+"ogging/logback"
+];;
+
+let v_567 =
+[
+"ms";
+"dbc";
+"ooq";
+"son";
+"ackson";
+"dbc/init";
+"ta/atomikos";
+"dbc/metadata"
+];;
+
+let v_568 =
+[
+""
+];;
+
+let v_569 =
+[
+""
+];;
+
+let v_570 =
+[
+""
+];;
+
+let v_571 =
+[
+"";
+"/analyzer"
+];;
+
+let v_572 =
+reunite [
+("loud",v_558);
+("on",v_557)
+];;
+
+let v_573 =
+[
+""
+];;
+
+let v_574 =
+[
+"nsi";
+"dmin";
+"vailability"
+];;
+
+let v_575 =
+reunite [
+("a",v_574);
+("builder",v_573);
+("c",v_572);
+("diagnostics",v_571);
+("env",v_570);
+("flyway",v_569);
+("info",v_568);
+("j",v_567);
+("l",v_566);
+("or",v_565);
+("r",v_564);
+("s",v_563);
+("t",v_562);
+("util",v_561);
+("validation",v_560);
+("web",v_559)
+];;
+
+let v_576 =
+[
+""
+];;
+
+let v_577 =
+""::(
+reunite [
+("/",v_575)
+]
+);;
+
+let v_578 =
+reunite [
+("org/springframework/boot",v_547);
+("sampleconfig",v_546)
+];;
+
+let v_579 =
+reunite [
+("/org/springframework/boot",v_577);
+("Templates/org/springframework/boot",v_576)
+];;
+
+let v_580 =
+[
+""
+];;
+
+let v_581 =
+[
+""
+];;
+
+let v_582 =
+[
+""
+];;
+
+let v_583 =
+[
+"/src/main/java/org/test";
+"-fork-disabled/src/main/java/org/test"
+];;
+
+let v_584 =
+[
+"args/src/main/java/org/test";
+"-system-props/src/main/java/org/test";
+"args-commandline/src/main/java/org/test"
+];;
+
+let v_585 =
+[
+""
+];;
+
+let v_586 =
+[
+"nvargs/src/main/java/org/test";
+"xclude/src/main/java/org/test"
+];;
+
+let v_587 =
+[
+"evtools/src/main/java/org/test";
+"isable-fork/src/main/java/org/test";
+"evtools/src/main/java/org/springframework/boot/devtools/restart"
+];;
+
+let v_588 =
+[
+"/src/main/java/org/test";
+"-commandline/src/main/java/org/test"
+];;
+
+let v_589 =
+[
+""
+];;
+
+let v_590 =
+reunite [
+("arguments",v_588);
+("d",v_587);
+("e",v_586);
+("fork/src/main/java/org/test",v_585);
+("jvm",v_584);
+("profiles",v_583);
+("toolchains/src/main/java/org/test",v_582);
+("use-test-classpath/src/main/java/org/test",v_581);
+("working-directory/src/main/java/org/test",v_580)
+];;
+
+let v_591 =
+[
+"unpack/src/main/java/org/test";
+"zip-layout/src/main/java/org/test";
+"layout-property/src/main/java/org/test"
+];;
+
+let v_592 =
+[
+""
+];;
+
+let v_593 =
+[
+"/src/main/java/org/test";
+"-default/src/main/java/org/test"
+];;
+
+let v_594 =
+[
+""
+];;
+
+let v_595 =
+[
+"ayered/jar/src/main/java/org/test";
+"ayered-custom/jar/src/main/java/org/test";
+"ayered-disabled/jar/src/main/java/org/test";
+"ayered-no-layer-tools/jar/src/main/java/org/test";
+"ib-name-conflict/test-project/src/main/java/org/test"
+];;
+
+let v_596 =
+[
+"ecutable/src/main/java/org/test";
+"clude-entry/src/main/java/org/test";
+"clude-group/src/main/java/org/test"
+];;
+
+let v_597 =
+[
+"reate-dir/src/main/java/org/test";
+"ustom-dir/src/main/java/org/test";
+"lassifier-main/src/main/java/org/test";
+"ustom-launcher/src/main/java/org/test";
+"lassifier-source/src/main/java/org/test";
+"ustom-layout/custom/src/main/java/org/test";
+"ustom-layout/default/src/main/java/org/test";
+"ustom-layout/layout/src/main/java/smoketest/layout";
+"lassifier-main-attach-disabled/src/main/java/org/test";
+"lassifier-source-attach-disabled/src/main/java/org/test"
+];;
+
+let v_598 =
+[
+""
+];;
+
+let v_599 =
+[
+""
+];;
+
+let v_600 =
+reunite [
+("attach-disabled/src/main/java/org/test",v_598);
+("c",v_597);
+("ex",v_596);
+("l",v_595);
+("output-timestamp/src/main/java/org/test",v_594);
+("system-scope",v_593);
+("test-scope/src/main/java/org/test",v_592);
+("with-",v_591)
+];;
+
+let v_601 =
+[
+""
+];;
+
+let v_602 =
+[
+"ar-packaging/src/main/java/org/test";
+"ith-repackage/src/main/java/org/test"
+];;
+
+let v_603 =
+[
+""
+];;
+
+let v_604 =
+[
+""
+];;
+
+let v_605 =
+[
+""
+];;
+
+let v_606 =
+[
+"app/src/main/java/org/test";
+"library/src/main/java/org/test"
+];;
+
+let v_607 =
+[
+""
+];;
+
+let v_608 =
+[
+""
+];;
+
+let v_609 =
+[
+"aches/src/main/java/org/test";
+"md-line/src/main/java/org/test";
+"lassifier/src/main/java/org/test";
+"ustom-name/src/main/java/org/test";
+"ustom-builder/src/main/java/org/test";
+"aches-multiple/src/main/java/org/test";
+"lassifier-source/src/main/java/org/test";
+"ustom-buildpacks/src/main/java/org/test";
+"lassifier-with-repackage/src/main/java/org/test";
+"lassifier-source-with-repackage/src/main/java/org/test"
+];;
+
+let v_610 =
+[
+"indings/src/main/java/org/test";
+"ad-buildpack/src/main/java/org/test";
+"uilder-error/src/main/java/org/test"
+];;
+
+let v_611 =
+[
+""
+];;
+
+let v_612 =
+reunite [
+("b",v_610);
+("c",v_609);
+("empty-env-entry/src/main/java/org/test",v_608);
+("final-name/src/main/java/org/test",v_607);
+("multi-module/",v_606);
+("network/src/main/java/org/test",v_605);
+("publish/src/main/java/org/test",v_604);
+("tags/src/main/java/org/test",v_603);
+("w",v_602);
+("zip-packaging/src/main/java/org/test",v_601)
+];;
+
+let v_613 =
+[
+"/src/main/java/org/test";
+"-custom-file/src/main/java/org/test";
+"-reproducible/src/main/java/org/test";
+"-custom-build-time/src/main/java/org/test";
+"-disable-build-time/src/main/java/org/test";
+"-exclude-build-time/src/main/java/org/test";
+"-additional-properties/src/main/java/org/test";
+"-exclude-build-properties/src/main/java/org/test"
+];;
+
+let v_614 =
+reunite [
+("-",v_612);
+("/src/main/java/org/test",v_611)
+];;
+
+let v_615 =
+[
+"/src/main/java/org/test";
+"-layered/war/src/main/java/org/test";
+"-with-unpack/src/main/java/org/test";
+"-system-scope/src/main/java/org/test";
+"-exclude-entry/src/main/java/org/test";
+"-reactor/war/src/main/java/com/example";
+"-output-timestamp/src/main/java/org/test";
+"-layered-custom/war/src/main/java/org/test";
+"-layered-disabled/war/src/main/java/org/test";
+"-layered-no-layer-tools/war/src/main/java/org/test"
+];;
+
+let v_616 =
+[
+"/src/main/java/org/test";
+"-skip/src/main/java/org/test";
+"-fork-disabled/src/main/java/org/test"
+];;
+
+let v_617 =
+reunite [
+("-",v_590);
+("/src/main/java/org/test",v_589)
+];;
+
+let v_618 =
+reunite [
+("-",v_600);
+("/src/main/java/org/test",v_599)
+];;
+
+let v_619 =
+reunite [
+("mage",v_614);
+("nfo",v_613)
+];;
+
+let v_620 =
+reunite [
+("build-i",v_619);
+("jar",v_618);
+("run",v_617);
+("start-stop",v_616);
+("war",v_615)
+];;
+
+let v_621 =
+[
+""
+];;
+
+let v_622 =
+[
+"";
+"/sample"
+];;
+
+let v_623 =
+[
+""
+];;
+
+let v_624 =
+reunite [
+("java/org/springframework/boot/maven",v_621);
+("projects/",v_620)
+];;
+
+let v_625 =
+[
+"";
+"/jar";
+"/data";
+"/util";
+"/archive";
+"/jarmode"
+];;
+
+let v_626 =
+[
+"";
+"/jar";
+"/data";
+"/util";
+"/archive";
+"/jarmode"
+];;
+
+let v_627 =
+reunite [
+("main/java/org/springframework/boot/loader",v_626);
+("test/java/org/springframework/boot/loader",v_625)
+];;
+
+let v_628 =
+[
+"main/java/org/springframework/boot/loader/tools";
+"test/java/org/springframework/boot/loader/tools";
+"main/java/org/springframework/boot/loader/tools/layer";
+"test/java/org/springframework/boot/loader/tools/layer";
+"test/java/org/springframework/boot/loader/tools/sample"
+];;
+
+let v_629 =
+[
+"";
+"/dsl";
+"/docs";
+"/junit";
+"/plugin";
+"/tasks/run";
+"/tasks/bundling";
+"/tasks/buildinfo"
+];;
+
+let v_630 =
+[
+"jar/main";
+"run/main";
+"war/main";
+"run/jvmargs";
+"jar/classpath";
+"run/classpath"
+];;
+
+let v_631 =
+reunite [
+("com/example/boot",v_630);
+("org/springframework/boot/gradle",v_629)
+];;
+
+let v_632 =
+[
+"dsl";
+"util";
+"plugin";
+"tasks/run";
+"tasks/bundling";
+"tasks/buildinfo";
+"tasks/application"
+];;
+
+let v_633 =
+[
+""
+];;
+
+let v_634 =
+reunite [
+("main/java/org/springframework/boot/gradle/",v_632);
+("test/java/",v_631)
+];;
+
+let v_635 =
+[
+"imple";
+"pecific"
+];;
+
+let v_636 =
+[
+""
+];;
+
+let v_637 =
+[
+""
+];;
+
+let v_638 =
+[
+""
+];;
+
+let v_639 =
+[
+"mmutable";
+"ncremental";
+"nheritance"
+];;
+
+let v_640 =
+[
+""
+];;
+
+let v_641 =
+[
+""
+];;
+
+let v_642 =
+[
+"";
+"/incremental"
+];;
+
+let v_643 =
+reunite [
+("endpoint",v_642);
+("fieldvalues",v_641);
+("generic",v_640);
+("i",v_639);
+("lombok",v_638);
+("method",v_637);
+("recursive",v_636);
+("s",v_635)
+];;
+
+let v_644 =
+""::(
+reunite [
+("/",v_643)
+]
+);;
+
+let v_645 =
+[
+"";
+"/test";
+"/metadata";
+"/fieldvalues";
+"/fieldvalues/javac"
+];;
+
+let v_646 =
+reunite [
+("processor",v_645);
+("sample",v_644)
+];;
+
+let v_647 =
+[
+"";
+"/metadata";
+"/fieldvalues";
+"/fieldvalues/javac"
+];;
+
+let v_648 =
+[
+""
+];;
+
+let v_649 =
+reunite [
+("json-shade/java/org/springframework/boot/configurationprocessor/json",v_648);
+("main/java/org/springframework/boot/configurationprocessor",v_647);
+("test/java/org/springframework/boot/configuration",v_646)
+];;
+
+let v_650 =
+[
+"main/java/org/springframework/boot/configurationmetadata";
+"test/java/org/springframework/boot/configurationmetadata"
+];;
+
+let v_651 =
+[
+"io";
+"json";
+"build";
+"docker";
+"socket";
+"docker/ssl";
+"docker/type";
+"docker/transport";
+"docker/configuration"
+];;
+
+let v_652 =
+[
+"io";
+"json";
+"build";
+"docker";
+"socket";
+"system";
+"docker/ssl";
+"docker/type";
+"docker/transport";
+"docker/configuration"
+];;
+
+let v_653 =
+[
+"main/java/org/springframework/boot/testsupport";
+"main/java/org/springframework/boot/testsupport/junit";
+"main/java/org/springframework/boot/testsupport/system";
+"main/java/org/springframework/boot/testsupport/logging";
+"main/java/org/springframework/boot/testsupport/compiler";
+"main/java/org/springframework/boot/testsupport/classpath";
+"test/java/org/springframework/boot/testsupport/classpath";
+"main/java/org/springframework/boot/testsupport/web/servlet";
+"test/java/org/springframework/boot/testsupport/web/servlet";
+"main/java/org/springframework/boot/testsupport/testcontainers"
+];;
+
+let v_654 =
+reunite [
+("intTest/",v_624);
+("main/java/org/springframework/boot/maven",v_623);
+("test/java/org/springframework/boot/maven",v_622)
+];;
+
+let v_655 =
+reunite [
+("-tools/src/",v_628);
+("/src/",v_627)
+];;
+
+let v_656 =
+[
+"main/java/org/springframework/boot/jarmode/layertools";
+"test/java/org/springframework/boot/jarmode/layertools"
+];;
+
+let v_657 =
+reunite [
+("plugin/src/",v_634);
+("test-support/src/main/java/org/springframework/boot/testsupport/gradle/testkit",v_633)
+];;
+
+let v_658 =
+reunite [
+("metadata/src/",v_650);
+("processor/src/",v_649)
+];;
+
+let v_659 =
+reunite [
+("main/java/org/springframework/boot/buildpack/platform/",v_652);
+("test/java/org/springframework/boot/buildpack/platform/",v_651)
+];;
+
+let v_660 =
+[
+"ntlib/src/it/sample/src/main/java/org/test";
+"ntlib/src/main/java/org/springframework/boot/ant";
+"utoconfigure-processor/src/main/java/org/springframework/boot/autoconfigureprocessor";
+"utoconfigure-processor/src/test/java/org/springframework/boot/autoconfigureprocessor"
+];;
+
+let v_661 =
+[
+"";
+"/client";
+"/server";
+"/htmlunit";
+"/client/scan";
+"/reactive/server";
+"/htmlunit/webdriver"
+];;
+
+let v_662 =
+[
+""
+];;
+
+let v_663 =
+[
+""
+];;
+
+let v_664 =
+[
+""
+];;
+
+let v_665 =
+[
+"web";
+"mockito";
+"mockito/example"
+];;
+
+let v_666 =
+[
+""
+];;
+
+let v_667 =
+[
+""
+];;
+
+let v_668 =
+[
+"";
+"/filter";
+"/runner";
+"/assertj";
+"/example";
+"/bootstrap";
+"/nestedtests";
+"/example/scan";
+"/example/scan/sub"
+];;
+
+let v_669 =
+[
+"";
+"/client";
+"/server";
+"/htmlunit";
+"/reactive/server";
+"/htmlunit/webdriver"
+];;
+
+let v_670 =
+[
+""
+];;
+
+let v_671 =
+[
+""
+];;
+
+let v_672 =
+[
+""
+];;
+
+let v_673 =
+[
+"web";
+"mockito"
+];;
+
+let v_674 =
+[
+""
+];;
+
+let v_675 =
+[
+""
+];;
+
+let v_676 =
+[
+"";
+"/filter";
+"/runner";
+"/assertj"
+];;
+
+let v_677 =
+reunite [
+("context",v_668);
+("graphql/tester",v_667);
+("json",v_666);
+("mock/",v_665);
+("rsocket/server",v_664);
+("system",v_663);
+("util",v_662);
+("web",v_661)
+];;
+
+let v_678 =
+reunite [
+("context",v_676);
+("graphql/tester",v_675);
+("json",v_674);
+("mock/",v_673);
+("rsocket/server",v_672);
+("system",v_671);
+("util",v_670);
+("web",v_669)
+];;
+
+let v_679 =
+[
+"/client";
+"/servlet";
+"/reactive";
+"services/client";
+"services/server";
+"/servlet/mockmvc";
+"/reactive/webclient"
+];;
+
+let v_680 =
+[
+""
+];;
+
+let v_681 =
+[
+""
+];;
+
+let v_682 =
+[
+""
+];;
+
+let v_683 =
+[
+"rm/jpa";
+"verride"
+];;
+
+let v_684 =
+[
+"dbc";
+"ooq";
+"son";
+"son/app"
+];;
+
+let v_685 =
+[
+"";
+"/tester"
+];;
+
+let v_686 =
+[
+""
+];;
+
+let v_687 =
+[
+"jdbc";
+"ldap";
+"mongo";
+"neo4j";
+"r2dbc";
+"redis";
+"cassandra";
+"couchbase";
+"elasticsearch"
+];;
+
+let v_688 =
+[
+"ore";
+"ache"
+];;
+
+let v_689 =
+[
+""
+];;
+
+let v_690 =
+reunite [
+("actuate/metrics",v_689);
+("c",v_688);
+("data/",v_687);
+("filter",v_686);
+("graphql",v_685);
+("j",v_684);
+("o",v_683);
+("properties",v_682);
+("restdocs",v_681);
+("security",v_680);
+("web",v_679)
+];;
+
+let v_691 =
+[
+"/client";
+"/servlet";
+"/reactive";
+"services/client";
+"services/server"
+];;
+
+let v_692 =
+[
+""
+];;
+
+let v_693 =
+[
+""
+];;
+
+let v_694 =
+[
+""
+];;
+
+let v_695 =
+[
+"dbc";
+"ooq";
+"son"
+];;
+
+let v_696 =
+[
+"";
+"/tester"
+];;
+
+let v_697 =
+[
+""
+];;
+
+let v_698 =
+[
+"jdbc";
+"ldap";
+"mongo";
+"neo4j";
+"r2dbc";
+"redis";
+"cassandra";
+"couchbase";
+"elasticsearch"
+];;
+
+let v_699 =
+[
+""
+];;
+
+let v_700 =
+[
+""
+];;
+
+let v_701 =
+reunite [
+("actuate/metrics",v_700);
+("core",v_699);
+("data/",v_698);
+("filter",v_697);
+("graphql",v_696);
+("j",v_695);
+("orm/jpa",v_694);
+("properties",v_693);
+("restdocs",v_692);
+("web",v_691)
+];;
+
+let v_702 =
+""::(
+reunite [
+("/",v_690)
+]
+);;
+
+let v_703 =
+""::(
+reunite [
+("/",v_701)
+]
+);;
+
+let v_704 =
+reunite [
+("main/java/org/springframework/boot/test/",v_678);
+("test/java/org/springframework/boot/test/",v_677)
+];;
+
+let v_705 =
+reunite [
+("main/java/org/springframework/boot/test/autoconfigure",v_703);
+("test/java/org/springframework/boot/test/autoconfigure",v_702)
+];;
+
+let v_706 =
+reunite [
+("a",v_660);
+("buildpack-platform/src/",v_659);
+("configuration-",v_658);
+("gradle-",v_657);
+("jarmode-layertools/src/",v_656);
+("loader",v_655);
+("maven-plugin/src/",v_654);
+("test-support/src/",v_653)
+];;
+
+let v_707 =
+reunite [
+("-autoconfigure/src/",v_705);
+("/src/",v_704)
+];;
+
+let v_708 =
+[
+"dataaccess";
+"springbootapplication";
+"dataaccess/configuretwodatasources";
+"dataaccess/configurecustomdatasource";
+"actuator/maphealthindicatorstometrics";
+"webserver/usetomcatlegacycookieprocessor";
+"dataaccess/configurecustomdatasource/simple";
+"dataaccess/configurecustomdatasource/configurable"
+];;
+
+let v_709 =
+[
+"testing/utilities/outputcapture";
+"springapplication/fluentbuilderapi";
+"testing/springbootapplications/jmx";
+"testing/utilities/testresttemplate";
+"developingautoconfiguration/testing";
+"externalconfig/typesafeconfigurationproperties/conversion/durations/javabeanbinding";
+"externalconfig/typesafeconfigurationproperties/conversion/durations/constructorbinding"
+];;
+
+let v_710 =
+[
+"jersey";
+"springmvc";
+"springmvc/cors";
+"springmvc/errorhandling";
+"springmvc/messageconverters";
+"springmvc/errorhandling/errorpages";
+"embeddedcontainer/applicationcontext";
+"embeddedcontainer/customizing/samesite";
+"embeddedcontainer/customizing/programmatic";
+"springmvc/errorhandling/errorpageswithoutspringmvc"
+];;
+
+let v_711 =
+[
+"oauth2/client";
+"springwebflux";
+"saml2/relyingparty"
+];;
+
+let v_712 =
+reunite [
+("curity/",v_711);
+("rvlet/",v_710)
+];;
+
+let v_713 =
+[
+"webflux";
+"webflux/httpcodecs";
+"webflux/errorhandling";
+"reactiveserver/customizing/programmatic"
+];;
+
+let v_714 =
+[
+"runtimewiring";
+"transports/rsocket"
+];;
+
+let v_715 =
+[
+""
+];;
+
+let v_716 =
+[
+"sending";
+"streams";
+"receiving";
+"embedded/property";
+"embedded/annotation"
+];;
+
+let v_717 =
+[
+"sending";
+"receiving";
+"receiving/custom"
+];;
+
+let v_718 =
+[
+"sending";
+"receiving";
+"receiving/custom"
+];;
+
+let v_719 =
+[
+""
+];;
+
+let v_720 =
+[
+""
+];;
+
+let v_721 =
+[
+"webclient";
+"resttemplate";
+"resttemplate/customization"
+];;
+
+let v_722 =
+[
+""
+];;
+
+let v_723 =
+[
+"xa";
+"nonxa";
+"primary"
+];;
+
+let v_724 =
+[
+"";
+"/provider";
+"/provider/redis";
+"/provider/cache2k";
+"/provider/couchbase"
+];;
+
+let v_725 =
+[
+""
+];;
+
+let v_726 =
+[
+""
+];;
+
+let v_727 =
+[
+"twodatasources";
+"customdatasource/custom";
+"customdatasource/simple";
+"customdatasource/builder";
+"acomponentthatisusedbyjpa";
+"hibernatesecondlevelcaching";
+"customdatasource/configurable";
+"hibernatenamingstrategy/spring";
+"hibernatenamingstrategy/standard"
+];;
+
+let v_728 =
+[
+"configure";
+"discoverport";
+"usetomcatlegacycookieprocessor";
+"enablemultipleconnectorsintomcat";
+"enablemultiplelistenersinundertow";
+"addservletfilterlistener/springbean/disable";
+"createwebsocketendpointsusingserverendpoint"
+];;
+
+let v_729 =
+[
+"esting/slicetests";
+"raditionaldeployment/war";
+"esting/withspringsecurity";
+"esting/testcontainers/vanilla";
+"raditionaldeployment/weblogic";
+"esting/testcontainers/dynamicproperties";
+"raditionaldeployment/convertexistingapplication";
+"raditionaldeployment/convertexistingapplication/both"
+];;
+
+let v_730 =
+[
+"ecurity/enablehttps";
+"pringmvc/writexmlrestservice";
+"pringmvc/writejsonrestservice"
+];;
+
+let v_731 =
+[
+"builder";
+"application"
+];;
+
+let v_732 =
+[
+""
+];;
+
+let v_733 =
+[
+"springsecurity";
+"alongsideanotherwebframework"
+];;
+
+let v_734 =
+[
+""
+];;
+
+let v_735 =
+reunite [
+("configure",v_727);
+("separateentitydefinitionsfromspringconfiguration",v_726);
+("usemultipleentitymanagers",v_725)
+];;
+
+let v_736 =
+[
+"ctuator/maphealthindicatorstometrics";
+"pplication/customizetheenvironmentorapplicationcontext"
+];;
+
+let v_737 =
+[
+""
+];;
+
+let v_738 =
+[
+"propagation";
+"nopropagation"
+];;
+
+let v_739 =
+[
+"db";
+"outdb"
+];;
+
+let v_740 =
+[
+"server";
+"inmemory"
+];;
+
+let v_741 =
+[
+"";
+"/withdb";
+"/withoutdb"
+];;
+
+let v_742 =
+[
+""
+];;
+
+let v_743 =
+[
+"assandra";
+"ouchbase"
+];;
+
+let v_744 =
+[
+"mockmvc";
+"restassured";
+"webtestclient"
+];;
+
+let v_745 =
+reunite [
+("c",v_743);
+("elasticsearch",v_742);
+("jpa",v_741);
+("ldap/",v_740);
+("mongodb/with",v_739);
+("neo4j/",v_738);
+("redis",v_737)
+];;
+
+let v_746 =
+[
+"client";
+"server"
+];;
+
+let v_747 =
+reunite [
+("data",v_745);
+("restdocs/with",v_744)
+];;
+
+let v_748 =
+[
+""
+];;
+
+let v_749 =
+[
+"dbc";
+"ooq"
+];;
+
+let v_750 =
+reunite [
+("j",v_749);
+("restclient",v_748);
+("spring",v_747);
+("webservices/",v_746)
+];;
+
+let v_751 =
+[
+""
+];;
+
+let v_752 =
+[
+"runningserver";
+"mockenvironment"
+];;
+
+let v_753 =
+[
+"ingapplicationarguments";
+"erconfigurationandslicing";
+"erconfigurationandslicing/scan"
+];;
+
+let v_754 =
+[
+"mvctests";
+"graphqltests";
+"webfluxtests"
+];;
+
+let v_755 =
+[
+"bean";
+"listener"
+];;
+
+let v_756 =
+[
+"mx";
+"sontests"
+];;
+
+let v_757 =
+[
+""
+];;
+
+let v_758 =
+[
+""
+];;
+
+let v_759 =
+reunite [
+("dditionalautoconfigurationandslicing",v_751);
+("utoconfigured",v_750)
+];;
+
+let v_760 =
+[
+"outputcapture";
+"testresttemplate";
+"testpropertyvalues";
+"configdataapplicationcontextinitializer"
+];;
+
+let v_761 =
+reunite [
+("a",v_759);
+("detectingwebapptype",v_758);
+("excludingconfiguration",v_757);
+("j",v_756);
+("mockingbeans/",v_755);
+("spring",v_754);
+("us",v_753);
+("with",v_752)
+];;
+
+let v_762 =
+[
+"";
+"/nested"
+];;
+
+let v_763 =
+[
+""
+];;
+
+let v_764 =
+[
+""
+];;
+
+let v_765 =
+[
+""
+];;
+
+let v_766 =
+[
+"map";
+"list"
+];;
+
+let v_767 =
+[
+""
+];;
+
+let v_768 =
+[
+""
+];;
+
+let v_769 =
+[
+"structorbinding";
+"structorbinding/nonnull";
+"version/datasizes/javabeanbinding";
+"version/durations/javabeanbinding";
+"version/datasizes/constructorbinding";
+"version/durations/constructorbinding"
+];;
+
+let v_770 =
+reunite [
+("con",v_769);
+("enablingannotatedtypes",v_768);
+("javabeanbinding",v_767);
+("mergingcomplextypes/",v_766);
+("relaxedbinding",v_765);
+("thirdpartyconfiguration",v_764);
+("usingannotatedtypes",v_763);
+("validation",v_762)
+];;
+
+let v_771 =
+reunite [
+("springbootapplications/",v_761);
+("utilities/",v_760)
+];;
+
+let v_772 =
+[
+"";
+"/applicationexit";
+"/startuptracking";
+"/fluentbuilderapi";
+"/commandlinerunner";
+"/applicationarguments";
+"/customizingspringapplication";
+"/applicationavailability/managing"
+];;
+
+let v_773 =
+[
+""
+];;
+
+let v_774 =
+[
+""
+];;
+
+let v_775 =
+[
+"";
+"/object"
+];;
+
+let v_776 =
+""::(
+reunite [
+("/typesafeconfigurationproperties/",v_770)
+]
+);;
+
+let v_777 =
+[
+"testing";
+"customstarter/configurationkeys";
+"conditionannotations/beanconditions";
+"conditionannotations/classconditions"
+];;
+
+let v_778 =
+[
+""
+];;
+
+let v_779 =
+[
+""
+];;
+
+let v_780 =
+[
+"connecting";
+"repositories"
+];;
+
+let v_781 =
+[
+"template";
+"connecting";
+"repositories"
+];;
+
+let v_782 =
+[
+""
+];;
+
+let v_783 =
+[
+""
+];;
+
+let v_784 =
+[
+"assandra/connecting";
+"ouchbase/repositories"
+];;
+
+let v_785 =
+[
+"r2dbc";
+"jdbctemplate";
+"jooq/dslcontext";
+"r2dbc/repositories";
+"r2dbc/usingdatabaseclient";
+"h2webconsole/springsecurity";
+"jpaandspringdata/repositories";
+"jpaandspringdata/entityclasses";
+"jpaandspringdata/enversrepositories"
+];;
+
+let v_786 =
+reunite [
+("c",v_784);
+("elasticsearch/connectingusingspringdata",v_783);
+("ldap/repositories",v_782);
+("mongodb/",v_781);
+("neo4j/",v_780);
+("redis/connecting",v_779);
+("solr/connecting",v_778)
+];;
+
+let v_787 =
+[
+""
+];;
+
+let v_788 =
+reunite [
+("nosql/",v_786);
+("sql/",v_785)
+];;
+
+let v_789 =
+[
+"mongodb/command";
+"timedannotation/all";
+"mongodb/connectionpool";
+"timedannotation/change";
+"timedannotation/single"
+];;
+
+let v_790 =
+[
+""
+];;
+
+let v_791 =
+[
+"commontags";
+"specifictype"
+];;
+
+let v_792 =
+[
+"jmx";
+"graphite"
+];;
+
+let v_793 =
+[
+""
+];;
+
+let v_794 =
+reunite [
+("customizing",v_793);
+("export/",v_792);
+("gettingstarted/",v_791);
+("registeringcustom",v_790);
+("supported/",v_789)
+];;
+
+let v_795 =
+[
+"security/typical";
+"implementingcustom";
+"security/exposeall";
+"health/reactivehealthindicators";
+"info/writingcustominfocontributors";
+"health/writingcustomhealthindicators"
+];;
+
+let v_796 =
+[
+""
+];;
+
+let v_797 =
+[
+"format/property";
+"manualhints/valuehint";
+"annotationprocessor/automaticmetadatageneration";
+"annotationprocessor/automaticmetadatageneration/nestedproperties"
+];;
+
+let v_798 =
+reunite [
+("cloudfoundry/customcontextpath",v_796);
+("endpoints/",v_795);
+("metrics/",v_794)
+];;
+
+let v_799 =
+reunite [
+("graphql/",v_714);
+("reactive/",v_713);
+("se",v_712)
+];;
+
+let v_800 =
+[
+"devtools/restart/disable";
+"autoconfiguration/disablingspecific";
+"structuringyourcode/locatingthemainclass";
+"springbeansanddependencyinjection/singleconstructor";
+"springbeansanddependencyinjection/multipleconstructors";
+"usingthespringbootapplicationannotation/springapplication";
+"usingthespringbootapplicationannotation/individualannotations"
+];;
+
+let v_801 =
+reunite [
+("amqp/",v_718);
+("jms/",v_717);
+("kafka/",v_716);
+("rsocket/requester",v_715)
+];;
+
+let v_802 =
+reunite [
+("caching",v_724);
+("jta/mixingxaandnonxaconnections/",v_723);
+("quartz",v_722);
+("restclient/",v_721);
+("validation",v_720);
+("webservices/template",v_719)
+];;
+
+let v_803 =
+reunite [
+("a",v_736);
+("dataaccess/",v_735);
+("httpclients/webclientreactornettycustomization",v_734);
+("jersey/",v_733);
+("messaging/disabletransactedjmssession",v_732);
+("propertiesandconfiguration/externalizeconfiguration/",v_731);
+("s",v_730);
+("t",v_729);
+("webserver/",v_728)
+];;
+
+let v_804 =
+[
+""
+];;
+
+let v_805 =
+reunite [
+("developingautoconfiguration/",v_777);
+("externalconfig",v_776);
+("json/jackson/customserializersanddeserializers",v_775);
+("logexample",v_774);
+("profiles",v_773);
+("springapplication",v_772);
+("testing/",v_771)
+];;
+
+let v_806 =
+reunite [
+("ata/",v_788);
+("eployment/cloud/cloudfoundry/bindingtoservices",v_787)
+];;
+
+let v_807 =
+[
+""
+];;
+
+let v_808 =
+reunite [
+("ctuator/",v_798);
+("ppendix/configurationmetadata/",v_797)
+];;
+
+let v_809 =
+reunite [
+("features/",v_709);
+("howto/",v_708)
+];;
+
+let v_810 =
+reunite [
+("a",v_808);
+("buildtoolplugins/otherbuildsystems/examplerepackageimplementation",v_807);
+("d",v_806);
+("features/",v_805);
+("gettingstarted/firstapplication/code",v_804);
+("howto/",v_803);
+("io/",v_802);
+("messaging/",v_801);
+("using/",v_800);
+("web/",v_799)
+];;
+
+let v_811 =
+[
+""
+];;
+
+let v_812 =
+[
+""
+];;
+
+let v_813 =
+[
+"start";
+"mote/client";
+"mote/server";
+"start/server";
+"start/classloader"
+];;
+
+let v_814 =
+[
+""
+];;
+
+let v_815 =
+[
+""
+];;
+
+let v_816 =
+[
+""
+];;
+
+let v_817 =
+[
+""
+];;
+
+let v_818 =
+[
+""
+];;
+
+let v_819 =
+reunite [
+("autoconfigure",v_818);
+("classpath",v_817);
+("env",v_816);
+("filewatch",v_815);
+("livereload",v_814);
+("re",v_813);
+("settings",v_812);
+("test",v_811)
+];;
+
+let v_820 =
+[
+"ystem";
+"ettings"
+];;
+
+let v_821 =
+[
+"start";
+"mote/client";
+"mote/server";
+"start/server";
+"start/classloader"
+];;
+
+let v_822 =
+[
+"ogger";
+"ivereload"
+];;
+
+let v_823 =
+[
+""
+];;
+
+let v_824 =
+[
+""
+];;
+
+let v_825 =
+[
+""
+];;
+
+let v_826 =
+[
+""
+];;
+
+let v_827 =
+reunite [
+("autoconfigure",v_826);
+("classpath",v_825);
+("env",v_824);
+("filewatch",v_823);
+("l",v_822);
+("re",v_821);
+("s",v_820)
+];;
+
+let v_828 =
+""::(
+reunite [
+("/",v_819)
+]
+);;
+
+let v_829 =
+""::(
+reunite [
+("/",v_827)
+]
+);;
+
+let v_830 =
+[
+"com/example";
+"org/springframework/boot/devtools/tests"
+];;
+
+let v_831 =
+reunite [
+("main/java/org/springframework/boot/docs/",v_810);
+("test/java/org/springframework/boot/docs/",v_809)
+];;
+
+let v_832 =
+reunite [
+("intTest/java/",v_830);
+("main/java/org/springframework/boot/devtools",v_829);
+("test/java/org/springframework/boot/devtools",v_828)
+];;
+
+let v_833 =
+[
+""
+];;
+
+let v_834 =
+[
+"mand";
+"piler";
+"mand/run";
+"mand/init";
+"mand/shell";
+"piler/grape";
+"mand/archive";
+"mand/install";
+"piler/dependencies";
+"mand/encodepassword"
+];;
+
+let v_835 =
+[
+""
+];;
+
+let v_836 =
+reunite [
+("app",v_835);
+("com",v_834);
+("util",v_833)
+];;
+
+let v_837 =
+""::(
+reunite [
+("/",v_836)
+]
+);;
+
+let v_838 =
+[
+""
+];;
+
+let v_839 =
+[
+"run";
+"core";
+"grab";
+"init";
+"shell";
+"status";
+"archive";
+"install";
+"options";
+"encodepassword"
+];;
+
+let v_840 =
+[
+"";
+"/grape";
+"/maven";
+"/dependencies";
+"/autoconfigure"
+];;
+
+let v_841 =
+""::(
+reunite [
+("/",v_839)
+]
+);;
+
+let v_842 =
+[
+""
+];;
+
+let v_843 =
+reunite [
+("mand",v_841);
+("piler",v_840)
+];;
+
+let v_844 =
+[
+"pp";
+"rchive"
+];;
+
+let v_845 =
+reunite [
+("a",v_844);
+("com",v_843);
+("util",v_842)
+];;
+
+let v_846 =
+[
+""
+];;
+
+let v_847 =
+""::(
+reunite [
+("/",v_845)
+]
+);;
+
+let v_848 =
+reunite [
+("cli/command",v_838);
+("org/springframework/boot/cli",v_837)
+];;
+
+let v_849 =
+reunite [
+("cli",v_847);
+("groovy",v_846)
+];;
+
+let v_850 =
+[
+"";
+"/infrastructure"
+];;
+
+let v_851 =
+[
+"ervices";
+"ocket/servlet";
+"ervices/client"
+];;
+
+let v_852 =
+[
+"client";
+"format";
+"servlet";
+"embedded";
+"reactive";
+"servlet/error";
+"reactive/error";
+"reactive/function/client"
+];;
+
+let v_853 =
+[
+""
+];;
+
+let v_854 =
+[
+"aml2";
+"ervlet"
+];;
+
+let v_855 =
+[
+"socket";
+"eactive"
+];;
+
+let v_856 =
+[
+"client";
+"client/servlet";
+"client/reactive";
+"resource/servlet";
+"resource/reactive"
+];;
+
+let v_857 =
+[
+""
+];;
+
+let v_858 =
+reunite [
+("jpa",v_857);
+("oauth2/",v_856);
+("r",v_855);
+("s",v_854);
+("user",v_853)
+];;
+
+let v_859 =
+[
+""
+];;
+
+let v_860 =
+[
+""
+];;
+
+let v_861 =
+""::(
+reunite [
+("/",v_858)
+]
+);;
+
+let v_862 =
+[
+""
+];;
+
+let v_863 =
+reunite [
+("curity",v_861);
+("ndgrid",v_860);
+("ssion",v_859)
+];;
+
+let v_864 =
+[
+""
+];;
+
+let v_865 =
+[
+"est";
+"2dbc";
+"edis";
+"2dbc/city";
+"edis/city"
+];;
+
+let v_866 =
+[
+"";
+"/city";
+"/scan";
+"/empty";
+"/country"
+];;
+
+let v_867 =
+[
+"";
+"/city";
+"/country"
+];;
+
+let v_868 =
+[
+"";
+"/person"
+];;
+
+let v_869 =
+[
+"pa";
+"dbc";
+"pa/city";
+"dbc/city";
+"pa/country"
+];;
+
+let v_870 =
+[
+"mpty";
+"lasticsearch";
+"lasticsearch/city"
+];;
+
+let v_871 =
+[
+"assandra";
+"ouchbase";
+"assandra/city";
+"ouchbase/city"
+];;
+
+let v_872 =
+[
+"jpa";
+"ldap";
+"mongo";
+"neo4j";
+"redis";
+"cassandra";
+"couchbase";
+"elasticsearch"
+];;
+
+let v_873 =
+reunite [
+("alt/",v_872);
+("c",v_871);
+("e",v_870);
+("j",v_869);
+("ldap",v_868);
+("mongo",v_867);
+("neo4j",v_866);
+("r",v_865);
+("web",v_864)
+];;
+
+let v_874 =
+""::(
+reunite [
+("/",v_873)
+]
+);;
+
+let v_875 =
+[
+""
+];;
+
+let v_876 =
+[
+"";
+"/scan/a";
+"/scan/b";
+"/scan/c"
+];;
+
+let v_877 =
+[
+""
+];;
+
+let v_878 =
+reunite [
+("o",v_875);
+("ta",v_874)
+];;
+
+let v_879 =
+""::(
+reunite [
+("/",v_852);
+("s",v_851)
+]
+);;
+
+let v_880 =
+[
+""
+];;
+
+let v_881 =
+[
+"ask";
+"emplate";
+"hymeleaf";
+"ransaction";
+"ransaction/jta"
+];;
+
+let v_882 =
+reunite [
+("e",v_863);
+("ql/init",v_862)
+];;
+
+let v_883 =
+[
+"2dbc";
+"socket"
+];;
+
+let v_884 =
+[
+""
+];;
+
+let v_885 =
+[
+"one";
+"two"
+];;
+
+let v_886 =
+[
+"";
+"/test";
+"/mapping"
+];;
+
+let v_887 =
+[
+"o4j";
+"tty"
+];;
+
+let v_888 =
+[
+"ail";
+"ongo";
+"ustache";
+"ongo/embedded"
+];;
+
+let v_889 =
+[
+"dap";
+"ogging";
+"iquibase";
+"dap/embedded"
+];;
+
+let v_890 =
+[
+""
+];;
+
+let v_891 =
+[
+"ms";
+"mx";
+"dbc";
+"ndi";
+"ooq";
+"sonb";
+"ersey";
+"ackson";
+"ms/artemis";
+"ms/activemq"
+];;
+
+let v_892 =
+[
+"fo";
+"flux";
+"tegration"
+];;
+
+let v_893 =
+[
+"2";
+"ttp";
+"ateoas";
+"azelcast";
+"ttp/codec"
+];;
+
+let v_894 =
+[
+"son";
+"raphql";
+"raphql/data";
+"raphql/rsocket";
+"raphql/servlet";
+"roovy/template";
+"raphql/reactive";
+"raphql/security"
+];;
+
+let v_895 =
+[
+"lyway";
+"reemarker"
+];;
+
+let v_896 =
+[
+""
+];;
+
+let v_897 =
+reunite [
+("a",v_878);
+("iagnostics/analyzer",v_877);
+("omain",v_876)
+];;
+
+let v_898 =
+[
+"ache";
+"ontext";
+"assandra";
+"ondition";
+"ouchbase";
+"ache/support";
+"ondition/scan";
+"ontext/filtersample";
+"ondition/config/first";
+"ondition/config/second"
+];;
+
+let v_899 =
+[
+""
+];;
+
+let v_900 =
+[
+"op";
+"mqp";
+"dmin";
+"vailability"
+];;
+
+let v_901 =
+reunite [
+("a",v_900);
+("batch",v_899);
+("c",v_898);
+("d",v_897);
+("elasticsearch",v_896);
+("f",v_895);
+("g",v_894);
+("h",v_893);
+("in",v_892);
+("j",v_891);
+("kafka",v_890);
+("l",v_889);
+("m",v_888);
+("ne",v_887);
+("orm/jpa",v_886);
+("packagestest/",v_885);
+("quartz",v_884);
+("r",v_883);
+("s",v_882);
+("t",v_881);
+("validation",v_880);
+("web",v_879)
+];;
+
+let v_902 =
+[
+"ervices";
+"ocket/servlet";
+"ervices/client";
+"ocket/reactive"
+];;
+
+let v_903 =
+[
+"client";
+"format";
+"servlet";
+"embedded";
+"reactive";
+"servlet/error";
+"reactive/error";
+"reactive/function/client"
+];;
+
+let v_904 =
+[
+"saml2";
+"rsocket";
+"servlet";
+"reactive";
+"oauth2/client";
+"oauth2/resource";
+"oauth2/client/servlet";
+"oauth2/client/reactive";
+"oauth2/resource/servlet";
+"oauth2/resource/reactive"
+];;
+
+let v_905 =
+[
+""
+];;
+
+let v_906 =
+[
+""
+];;
+
+let v_907 =
+""::(
+reunite [
+("/",v_904)
+]
+);;
+
+let v_908 =
+[
+""
+];;
+
+let v_909 =
+[
+""
+];;
+
+let v_910 =
+reunite [
+("curity",v_907);
+("ndgrid",v_906);
+("ssion",v_905)
+];;
+
+let v_911 =
+[
+""
+];;
+
+let v_912 =
+[
+"est";
+"2dbc";
+"edis"
+];;
+
+let v_913 =
+[
+""
+];;
+
+let v_914 =
+[
+""
+];;
+
+let v_915 =
+[
+""
+];;
+
+let v_916 =
+[
+"pa";
+"dbc"
+];;
+
+let v_917 =
+[
+""
+];;
+
+let v_918 =
+[
+"assandra";
+"ouchbase"
+];;
+
+let v_919 =
+reunite [
+("c",v_918);
+("elasticsearch",v_917);
+("j",v_916);
+("ldap",v_915);
+("mongo",v_914);
+("neo4j",v_913);
+("r",v_912);
+("web",v_911)
+];;
+
+let v_920 =
+""::(
+reunite [
+("/",v_919)
+]
+);;
+
+let v_921 =
+[
+""
+];;
+
+let v_922 =
+[
+""
+];;
+
+let v_923 =
+[
+""
+];;
+
+let v_924 =
+reunite [
+("o",v_921);
+("ta",v_920)
+];;
+
+let v_925 =
+""::(
+reunite [
+("/",v_903);
+("s",v_902)
+]
+);;
+
+let v_926 =
+[
+""
+];;
+
+let v_927 =
+[
+"ask";
+"emplate";
+"hymeleaf";
+"ransaction";
+"ransaction/jta"
+];;
+
+let v_928 =
+reunite [
+("e",v_910);
+("olr",v_909);
+("ql/init",v_908)
+];;
+
+let v_929 =
+[
+"2dbc";
+"socket";
+"eactor/netty"
+];;
+
+let v_930 =
+[
+""
+];;
+
+let v_931 =
+[
+""
+];;
+
+let v_932 =
+[
+"o4j";
+"tty"
+];;
+
+let v_933 =
+[
+"ail";
+"ongo";
+"ustache";
+"ongo/embedded"
+];;
+
+let v_934 =
+[
+"dap";
+"ogging";
+"iquibase";
+"dap/embedded"
+];;
+
+let v_935 =
+[
+""
+];;
+
+let v_936 =
+[
+"ms";
+"mx";
+"dbc";
+"ooq";
+"sonb";
+"ersey";
+"ackson";
+"ms/artemis";
+"ms/activemq";
+"dbc/metadata"
+];;
+
+let v_937 =
+[
+"fo";
+"flux";
+"tegration"
+];;
+
+let v_938 =
+[
+"2";
+"ttp";
+"ateoas";
+"azelcast";
+"ttp/codec"
+];;
+
+let v_939 =
+[
+"son";
+"raphql";
+"raphql/data";
+"raphql/rsocket";
+"raphql/servlet";
+"roovy/template";
+"raphql/reactive";
+"raphql/security"
+];;
+
+let v_940 =
+[
+"lyway";
+"reemarker"
+];;
+
+let v_941 =
+[
+""
+];;
+
+let v_942 =
+reunite [
+("a",v_924);
+("iagnostics/analyzer",v_923);
+("omain",v_922)
+];;
+
+let v_943 =
+[
+"ache";
+"odec";
+"ontext";
+"assandra";
+"ondition";
+"ouchbase"
+];;
+
+let v_944 =
+[
+""
+];;
+
+let v_945 =
+[
+"op";
+"mqp";
+"dmin";
+"vailability"
+];;
+
+let v_946 =
+reunite [
+("a",v_945);
+("batch",v_944);
+("c",v_943);
+("d",v_942);
+("elasticsearch",v_941);
+("f",v_940);
+("g",v_939);
+("h",v_938);
+("in",v_937);
+("j",v_936);
+("kafka",v_935);
+("l",v_934);
+("m",v_933);
+("ne",v_932);
+("orm/jpa",v_931);
+("quartz",v_930);
+("r",v_929);
+("s",v_928);
+("t",v_927);
+("validation",v_926);
+("web",v_925)
+];;
+
+let v_947 =
+""::(
+reunite [
+("/",v_901)
+]
+);;
+
+let v_948 =
+""::(
+reunite [
+("/",v_946)
+]
+);;
+
+let v_949 =
+[
+"client";
+"tomcat";
+"servlet";
+"reactive/client";
+"reactive/server"
+];;
+
+let v_950 =
+[
+"ystem";
+"tartup"
+];;
+
+let v_951 =
+[
+""
+];;
+
+let v_952 =
+[
+""
+];;
+
+let v_953 =
+[
+""
+];;
+
+let v_954 =
+[
+""
+];;
+
+let v_955 =
+[
+""
+];;
+
+let v_956 =
+[
+""
+];;
+
+let v_957 =
+[
+""
+];;
+
+let v_958 =
+[
+"mqp";
+"nnotation"
+];;
+
+let v_959 =
+reunite [
+("a",v_958);
+("cache",v_957);
+("data",v_956);
+("export/prometheus",v_955);
+("graphql",v_954);
+("http",v_953);
+("jdbc",v_952);
+("r2dbc",v_951);
+("s",v_950);
+("web/",v_949)
+];;
+
+let v_960 =
+[
+""
+];;
+
+let v_961 =
+""::(
+reunite [
+("/",v_959)
+]
+);;
+
+let v_962 =
+[
+"il";
+"nagement"
+];;
+
+let v_963 =
+[
+"";
+"/test";
+"/jersey";
+"/servlet";
+"/reactive";
+"/annotation"
+];;
+
+let v_964 =
+[
+"";
+"/annotation"
+];;
+
+let v_965 =
+[
+"r/cache";
+"/convert";
+"/reflect"
+];;
+
+let v_966 =
+[
+""
+];;
+
+let v_967 =
+reunite [
+("annotation",v_966);
+("invoke",v_965);
+("jmx",v_964);
+("web",v_963)
+];;
+
+let v_968 =
+[
+""
+];;
+
+let v_969 =
+""::(
+reunite [
+("/",v_967)
+]
+);;
+
+let v_970 =
+reunite [
+("dpoint",v_969);
+("v",v_968)
+];;
+
+let v_971 =
+[
+""
+];;
+
+let v_972 =
+[
+"mappings";
+"trace/servlet";
+"trace/reactive"
+];;
+
+let v_973 =
+[
+"";
+"/servlet";
+"/reactive"
+];;
+
+let v_974 =
+[
+"olr";
+"ystem";
+"ession";
+"tartup";
+"ecurity";
+"cheduling"
+];;
+
+let v_975 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_976 =
+[
+""
+];;
+
+let v_977 =
+[
+""
+];;
+
+let v_978 =
+reunite [
+("a",v_962);
+("etrics",v_961);
+("ongo",v_960)
+];;
+
+let v_979 =
+[
+"dap";
+"ogging";
+"iquibase"
+];;
+
+let v_980 =
+[
+"ms";
+"dbc"
+];;
+
+let v_981 =
+[
+"fo";
+"flux";
+"tegration"
+];;
+
+let v_982 =
+[
+"ealth";
+"azelcast"
+];;
+
+let v_983 =
+[
+""
+];;
+
+let v_984 =
+reunite [
+("lasticsearch",v_971);
+("n",v_970)
+];;
+
+let v_985 =
+[
+"ache";
+"ontext";
+"assandra";
+"ouchbase";
+"ontext/properties"
+];;
+
+let v_986 =
+[
+""
+];;
+
+let v_987 =
+[
+"mqp";
+"udit";
+"vailability";
+"udit/listener"
+];;
+
+let v_988 =
+[
+"jetty";
+"client";
+"tomcat";
+"servlet";
+"reactive/client";
+"reactive/server"
+];;
+
+let v_989 =
+[
+"ystem";
+"tartup"
+];;
+
+let v_990 =
+[
+""
+];;
+
+let v_991 =
+[
+""
+];;
+
+let v_992 =
+[
+""
+];;
+
+let v_993 =
+[
+""
+];;
+
+let v_994 =
+[
+""
+];;
+
+let v_995 =
+[
+""
+];;
+
+let v_996 =
+[
+""
+];;
+
+let v_997 =
+[
+"mqp";
+"nnotation"
+];;
+
+let v_998 =
+reunite [
+("a",v_997);
+("cache",v_996);
+("data",v_995);
+("export/prometheus",v_994);
+("graphql",v_993);
+("http",v_992);
+("jdbc",v_991);
+("r2dbc",v_990);
+("s",v_989);
+("web/",v_988)
+];;
+
+let v_999 =
+[
+""
+];;
+
+let v_1000 =
+""::(
+reunite [
+("/",v_998)
+]
+);;
+
+let v_1001 =
+[
+"il";
+"nagement"
+];;
+
+let v_1002 =
+[
+"";
+"/jersey";
+"/servlet";
+"/reactive";
+"/annotation"
+];;
+
+let v_1003 =
+[
+"";
+"/annotation"
+];;
+
+let v_1004 =
+[
+"";
+"r/cache";
+"/convert";
+"/reflect"
+];;
+
+let v_1005 =
+[
+""
+];;
+
+let v_1006 =
+reunite [
+("annotation",v_1005);
+("invoke",v_1004);
+("jmx",v_1003);
+("web",v_1002)
+];;
+
+let v_1007 =
+[
+""
+];;
+
+let v_1008 =
+""::(
+reunite [
+("/",v_1006)
+]
+);;
+
+let v_1009 =
+reunite [
+("dpoint",v_1008);
+("v",v_1007)
+];;
+
+let v_1010 =
+[
+""
+];;
+
+let v_1011 =
+[
+"mappings";
+"trace/servlet";
+"trace/reactive";
+"mappings/servlet";
+"mappings/reactive"
+];;
+
+let v_1012 =
+[
+""
+];;
+
+let v_1013 =
+[
+"olr";
+"ystem";
+"ession";
+"tartup";
+"ecurity";
+"cheduling"
+];;
+
+let v_1014 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_1015 =
+[
+""
+];;
+
+let v_1016 =
+[
+""
+];;
+
+let v_1017 =
+reunite [
+("a",v_1001);
+("etrics",v_1000);
+("ongo",v_999)
+];;
+
+let v_1018 =
+[
+"dap";
+"ogging";
+"iquibase"
+];;
+
+let v_1019 =
+[
+"ms";
+"dbc"
+];;
+
+let v_1020 =
+[
+"fo";
+"flux";
+"tegration"
+];;
+
+let v_1021 =
+[
+"ealth";
+"azelcast"
+];;
+
+let v_1022 =
+[
+""
+];;
+
+let v_1023 =
+reunite [
+("lasticsearch",v_1010);
+("n",v_1009)
+];;
+
+let v_1024 =
+[
+"ache";
+"ontext";
+"assandra";
+"ouchbase";
+"ontext/properties"
+];;
+
+let v_1025 =
+[
+""
+];;
+
+let v_1026 =
+[
+"mqp";
+"udit";
+"vailability";
+"udit/listener"
+];;
+
+let v_1027 =
+reunite [
+("a",v_987);
+("beans",v_986);
+("c",v_985);
+("e",v_984);
+("flyway",v_983);
+("h",v_982);
+("in",v_981);
+("j",v_980);
+("l",v_979);
+("m",v_978);
+("neo4j",v_977);
+("quartz",v_976);
+("r",v_975);
+("s",v_974);
+("trace/http",v_973);
+("web/",v_972)
+];;
+
+let v_1028 =
+reunite [
+("a",v_1026);
+("beans",v_1025);
+("c",v_1024);
+("e",v_1023);
+("flyway",v_1022);
+("h",v_1021);
+("in",v_1020);
+("j",v_1019);
+("l",v_1018);
+("m",v_1017);
+("neo4j",v_1016);
+("quartz",v_1015);
+("r",v_1014);
+("s",v_1013);
+("trace/http",v_1012);
+("web/",v_1011)
+];;
+
+let v_1029 =
+[
+""
+];;
+
+let v_1030 =
+[
+"imple";
+"tatsd";
+"ignalfx";
+"tackdriver"
+];;
+
+let v_1031 =
+[
+"metheus";
+"perties"
+];;
+
+let v_1032 =
+[
+""
+];;
+
+let v_1033 =
+[
+""
+];;
+
+let v_1034 =
+[
+""
+];;
+
+let v_1035 =
+[
+""
+];;
+
+let v_1036 =
+[
+""
+];;
+
+let v_1037 =
+[
+"anglia";
+"raphite"
+];;
+
+let v_1038 =
+[
+""
+];;
+
+let v_1039 =
+[
+"atadog";
+"ynatrace"
+];;
+
+let v_1040 =
+[
+"tlas";
+"ppoptics"
+];;
+
+let v_1041 =
+reunite [
+("a",v_1040);
+("d",v_1039);
+("elastic",v_1038);
+("g",v_1037);
+("humio",v_1036);
+("influx",v_1035);
+("jmx",v_1034);
+("kairos",v_1033);
+("newrelic",v_1032);
+("pro",v_1031);
+("s",v_1030);
+("wavefront",v_1029)
+];;
+
+let v_1042 =
+[
+"";
+"/jetty";
+"/client";
+"/tomcat";
+"/servlet";
+"/reactive"
+];;
+
+let v_1043 =
+[
+"ask";
+"est"
+];;
+
+let v_1044 =
+[
+""
+];;
+
+let v_1045 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_1046 =
+[
+""
+];;
+
+let v_1047 =
+[
+""
+];;
+
+let v_1048 =
+[
+"dbc";
+"ersey"
+];;
+
+let v_1049 =
+[
+""
+];;
+
+let v_1050 =
+[
+""
+];;
+
+let v_1051 =
+""::(
+reunite [
+("/",v_1041)
+]
+);;
+
+let v_1052 =
+[
+"";
+"/city"
+];;
+
+let v_1053 =
+[
+""
+];;
+
+let v_1054 =
+[
+""
+];;
+
+let v_1055 =
+reunite [
+("amqp",v_1054);
+("cache",v_1053);
+("data",v_1052);
+("export",v_1051);
+("graphql",v_1050);
+("integration",v_1049);
+("j",v_1048);
+("mongo",v_1047);
+("orm/jpa",v_1046);
+("r",v_1045);
+("startup",v_1044);
+("t",v_1043);
+("web",v_1042)
+];;
+
+let v_1056 =
+[
+""
+];;
+
+let v_1057 =
+""::(
+reunite [
+("/",v_1055)
+]
+);;
+
+let v_1058 =
+[
+"il";
+"nagement"
+];;
+
+let v_1059 =
+[
+"";
+"/trace";
+"/jersey";
+"/server";
+"/servlet";
+"/mappings";
+"/reactive"
+];;
+
+let v_1060 =
+[
+"olr";
+"ystem";
+"ession";
+"tartup";
+"cheduling";
+"ecurity/servlet";
+"ecurity/reactive"
+];;
+
+let v_1061 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_1062 =
+[
+""
+];;
+
+let v_1063 =
+[
+""
+];;
+
+let v_1064 =
+reunite [
+("a",v_1058);
+("etrics",v_1057);
+("ongo",v_1056)
+];;
+
+let v_1065 =
+[
+"dap";
+"ogging";
+"iquibase"
+];;
+
+let v_1066 =
+[
+"ms";
+"dbc";
+"olokia"
+];;
+
+let v_1067 =
+[
+"fo";
+"flux";
+"tegration";
+"tegrationtest"
+];;
+
+let v_1068 =
+[
+"ealth";
+"azelcast"
+];;
+
+let v_1069 =
+[
+""
+];;
+
+let v_1070 =
+[
+"nv";
+"ndpoint";
+"ndpoint/jmx";
+"ndpoint/web";
+"lasticsearch";
+"ndpoint/expose";
+"ndpoint/condition";
+"ndpoint/web/jersey";
+"ndpoint/web/documentation"
+];;
+
+let v_1071 =
+[
+"ache";
+"ontext";
+"assandra";
+"ondition";
+"ouchbase";
+"loudfoundry";
+"ontext/properties";
+"loudfoundry/servlet";
+"loudfoundry/reactive"
+];;
+
+let v_1072 =
+[
+""
+];;
+
+let v_1073 =
+[
+"mqp";
+"udit";
+"vailability"
+];;
+
+let v_1074 =
+[
+""
+];;
+
+let v_1075 =
+[
+"imple";
+"tatsd";
+"ignalfx";
+"tackdriver"
+];;
+
+let v_1076 =
+[
+"metheus";
+"perties"
+];;
+
+let v_1077 =
+[
+""
+];;
+
+let v_1078 =
+[
+""
+];;
+
+let v_1079 =
+[
+""
+];;
+
+let v_1080 =
+[
+""
+];;
+
+let v_1081 =
+[
+""
+];;
+
+let v_1082 =
+[
+"anglia";
+"raphite"
+];;
+
+let v_1083 =
+[
+""
+];;
+
+let v_1084 =
+[
+"atadog";
+"ynatrace"
+];;
+
+let v_1085 =
+[
+"tlas";
+"ppoptics"
+];;
+
+let v_1086 =
+reunite [
+("a",v_1085);
+("d",v_1084);
+("elastic",v_1083);
+("g",v_1082);
+("humio",v_1081);
+("influx",v_1080);
+("jmx",v_1079);
+("kairos",v_1078);
+("newrelic",v_1077);
+("pro",v_1076);
+("s",v_1075);
+("wavefront",v_1074)
+];;
+
+let v_1087 =
+[
+"jetty";
+"client";
+"tomcat";
+"servlet";
+"reactive"
+];;
+
+let v_1088 =
+[
+""
+];;
+
+let v_1089 =
+[
+""
+];;
+
+let v_1090 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_1091 =
+[
+""
+];;
+
+let v_1092 =
+[
+""
+];;
+
+let v_1093 =
+[
+"dbc";
+"ersey"
+];;
+
+let v_1094 =
+[
+""
+];;
+
+let v_1095 =
+[
+""
+];;
+
+let v_1096 =
+""::(
+reunite [
+("/",v_1086)
+]
+);;
+
+let v_1097 =
+[
+""
+];;
+
+let v_1098 =
+[
+""
+];;
+
+let v_1099 =
+[
+""
+];;
+
+let v_1100 =
+reunite [
+("amqp",v_1099);
+("cache",v_1098);
+("data",v_1097);
+("export",v_1096);
+("graphql",v_1095);
+("integration",v_1094);
+("j",v_1093);
+("mongo",v_1092);
+("orm/jpa",v_1091);
+("r",v_1090);
+("startup",v_1089);
+("task",v_1088);
+("web/",v_1087)
+];;
+
+let v_1101 =
+[
+""
+];;
+
+let v_1102 =
+""::(
+reunite [
+("/",v_1100)
+]
+);;
+
+let v_1103 =
+[
+"il";
+"nagement"
+];;
+
+let v_1104 =
+[
+"";
+"/jersey";
+"/server";
+"/servlet";
+"/mappings";
+"/reactive"
+];;
+
+let v_1105 =
+[
+""
+];;
+
+let v_1106 =
+[
+"olr";
+"ystem";
+"ession";
+"tartup";
+"cheduling";
+"ecurity/servlet";
+"ecurity/reactive"
+];;
+
+let v_1107 =
+[
+"2dbc";
+"edis"
+];;
+
+let v_1108 =
+[
+""
+];;
+
+let v_1109 =
+[
+""
+];;
+
+let v_1110 =
+reunite [
+("a",v_1103);
+("etrics",v_1102);
+("ongo",v_1101)
+];;
+
+let v_1111 =
+[
+"dap";
+"ogging";
+"iquibase"
+];;
+
+let v_1112 =
+[
+"ms";
+"dbc";
+"olokia"
+];;
+
+let v_1113 =
+[
+"fo";
+"flux";
+"tegration"
+];;
+
+let v_1114 =
+[
+"ealth";
+"azelcast"
+];;
+
+let v_1115 =
+[
+""
+];;
+
+let v_1116 =
+[
+"nv";
+"ndpoint";
+"ndpoint/jmx";
+"ndpoint/web";
+"lasticsearch";
+"ndpoint/expose";
+"ndpoint/condition";
+"ndpoint/web/jersey";
+"ndpoint/web/servlet";
+"ndpoint/web/reactive"
+];;
+
+let v_1117 =
+[
+"ache";
+"ontext";
+"assandra";
+"ondition";
+"ouchbase";
+"loudfoundry";
+"ontext/properties";
+"loudfoundry/servlet";
+"loudfoundry/reactive"
+];;
+
+let v_1118 =
+[
+""
+];;
+
+let v_1119 =
+[
+"mqp";
+"udit";
+"vailability"
+];;
+
+let v_1120 =
+reunite [
+("a",v_1119);
+("beans",v_1118);
+("c",v_1117);
+("e",v_1116);
+("flyway",v_1115);
+("h",v_1114);
+("in",v_1113);
+("j",v_1112);
+("l",v_1111);
+("m",v_1110);
+("neo4j",v_1109);
+("quartz",v_1108);
+("r",v_1107);
+("s",v_1106);
+("trace/http",v_1105);
+("web",v_1104)
+];;
+
+let v_1121 =
+reunite [
+("a",v_1073);
+("beans",v_1072);
+("c",v_1071);
+("e",v_1070);
+("flyway",v_1069);
+("h",v_1068);
+("in",v_1067);
+("j",v_1066);
+("l",v_1065);
+("m",v_1064);
+("neo4j",v_1063);
+("quartz",v_1062);
+("r",v_1061);
+("s",v_1060);
+("web",v_1059)
+];;
+
+let v_1122 =
+""::(
+reunite [
+("/",v_1120)
+]
+);;
+
+let v_1123 =
+reunite [
+("main/java/org/springframework/boot/actuate/",v_1028);
+("test/java/org/springframework/boot/actuate/",v_1027)
+];;
+
+let v_1124 =
+reunite [
+("main/java/org/springframework/boot/actuate/autoconfigure",v_1122);
+("test/java/org/springframework/boot/actuate/autoconfigure/",v_1121)
+];;
+
+let v_1125 =
+reunite [
+("main/java/org/springframework/boot/autoconfigure",v_948);
+("test/java/org/springframework/boot/autoconfigure",v_947)
+];;
+
+let v_1126 =
+reunite [
+("-autoconfigure/src/",v_1124);
+("/src/",v_1123)
+];;
+
+let v_1127 =
+reunite [
+("est",v_707);
+("ools/spring-boot-",v_706)
+];;
+
+let v_1128 =
+[
+"main/java/org/springframework/boot/context/properties/migrator";
+"test/java/org/springframework/boot/context/properties/migrator"
+];;
+
+let v_1129 =
+reunite [
+("evtools/src/",v_832);
+("ocs/src/",v_831)
+];;
+
+let v_1130 =
+reunite [
+("intTest/java/org/springframework/boot/cli",v_850);
+("main/java/org/springframework/boot/",v_849);
+("test/java/",v_848)
+];;
+
+let v_1131 =
+reunite [
+("ctuator",v_1126);
+("utoconfigure/src/",v_1125)
+];;
+
+let v_1132 =
+reunite [
+("main/java",v_579);
+("test/java/",v_578)
+];;
+
+let v_1133 =
+reunite [
+("a",v_1131);
+("cli/src/",v_1130);
+("d",v_1129);
+("properties-migrator/src/",v_1128);
+("t",v_1127)
+];;
+
+let v_1134 =
+reunite [
+("integration-tests/spring-boot-",v_504);
+("smoke-tests/spring-boot-smoke-test-",v_503)
+];;
+
+let v_1135 =
+[
+"deployment-tests/src/main/java/sample/app";
+"deployment-tests/src/main/java/sample/autoconfig";
+"image-tests/src/systemTest/java/org/springframework/boot/image/junit";
+"image-tests/src/systemTest/java/org/springframework/boot/image/paketo";
+"deployment-tests/src/systemTest/java/org/springframework/boot/deployment";
+"image-tests/src/systemTest/java/org/springframework/boot/image/assertions"
+];;
+
+let v_1136 =
+reunite [
+("-",v_1133);
+("/src/",v_1132)
+];;
+
+let v_1137 =
+[
+"";
+"/sub"
+];;
+
+let v_1138 =
+[
+"";
+"/sub"
+];;
+
+let v_1139 =
+[
+"pp/nonstatic";
+"fpp/nonstatic";
+"fpp/parameters";
+"pp/noparameters";
+"fpp/noparameters";
+"pp/safeparameters";
+"pp/unsafeparameters"
+];;
+
+let v_1140 =
+reunite [
+("b",v_1139);
+("tangled",v_1138);
+("untangled",v_1137)
+];;
+
+let v_1141 =
+[
+""
+];;
+
+let v_1142 =
+""::(
+reunite [
+("/",v_1140)
+]
+);;
+
+let v_1143 =
+[
+""
+];;
+
+let v_1144 =
+reunite [
+("chitecture",v_1142);
+("tifacts",v_1141)
+];;
+
+let v_1145 =
+[
+""
+];;
+
+let v_1146 =
+[
+""
+];;
+
+let v_1147 =
+[
+""
+];;
+
+let v_1148 =
+[
+""
+];;
+
+let v_1149 =
+[
+"";
+"/bomr";
+"/bomr/version"
+];;
+
+let v_1150 =
+reunite [
+("r",v_1144);
+("ssertj",v_1143)
+];;
+
+let v_1151 =
+reunite [
+("a",v_1150);
+("bom",v_1149);
+("context/properties",v_1148);
+("mavenplugin",v_1147);
+("optional",v_1146);
+("testing",v_1145)
+];;
+
+let v_1152 =
+[
+"est";
+"esting";
+"oolchain";
+"est/autoconfigure"
+];;
+
+let v_1153 =
+[
+""
+];;
+
+let v_1154 =
+[
+""
+];;
+
+let v_1155 =
+[
+""
+];;
+
+let v_1156 =
+[
+""
+];;
+
+let v_1157 =
+[
+"ocs";
+"evtools"
+];;
+
+let v_1158 =
+[
+"li";
+"lasspath";
+"onstraints";
+"ontext/properties"
+];;
+
+let v_1159 =
+[
+"";
+"/bomr";
+"/bomr/github";
+"/bomr/version"
+];;
+
+let v_1160 =
+[
+"rtifacts";
+"rchitecture";
+"utoconfigure"
+];;
+
+let v_1161 =
+reunite [
+("a",v_1160);
+("bom",v_1159);
+("c",v_1158);
+("d",v_1157);
+("mavenplugin",v_1156);
+("optional",v_1155);
+("processors",v_1154);
+("starters",v_1153);
+("t",v_1152)
+];;
+
+let v_1162 =
+""::(
+reunite [
+("/",v_1151)
+]
+);;
+
+let v_1163 =
+""::(
+reunite [
+("/",v_1161)
+]
+);;
+
+let v_1164 =
+reunite [
+("project/spring-boot",v_1136);
+("system-tests/spring-boot-",v_1135);
+("tests/spring-boot-",v_1134)
+];;
+
+let v_1165 =
+reunite [
+("main/java/org/springframework/boot/build",v_1163);
+("test/java/org/springframework/boot/build",v_1162)
+];;
+
+let v_1166 =
+reunite [
+("buildSrc/src/main/java/org/springframework/build/",v_421);
+("integration-tests/src/test/java/org/springframework/",v_420);
+("spring-",v_419)
+];;
+
+let v_1167 =
+reunite [
+("buildSrc/src/",v_1165);
+("spring-boot-",v_1164)
+];;
+
+let v_1168 =
+reunite [
+("boot-2.7.x/",v_1167);
+("framework-5.3.x/",v_1166)
+];;
+
+let v_1169 =
+reunite [
+("spring-",v_1168)
+];;
+
+(* End of generated code for Ninkasi subdirs *)
+
+end ;;
+
+let ninkasi_subdirs = Subdirs.v_1169 ;; 
+
 end ;;
 
 let ninkasi_classnames = Image.image (
@@ -35811,5 +44351,8 @@ let ninkasi_classnames = Image.image (
 
 let ninkasi_root = Jpr_types.Pr (Private.ninkasi_root) ;;
 
+let ninkasi_subdirs = Image.image (
+  fun sbd -> (Jpr_types.Jsbd sbd)
+) Private.ninkasi_subdirs ;;
 
 
