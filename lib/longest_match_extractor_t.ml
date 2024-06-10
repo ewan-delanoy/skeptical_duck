@@ -5,5 +5,5 @@
 *)
 
 
-type t = LME of  (int * (char * int) list) list ;;  
+type t = LME of  (int * bool * (char * int) list) list ;;  
 
