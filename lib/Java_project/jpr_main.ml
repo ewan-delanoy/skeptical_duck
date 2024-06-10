@@ -138,34 +138,35 @@ let current_java_project_data =
      Jpr_constant.ninkasi_root,
      None,
      Some(Jpr_constant.ninkasi_classnames),
-     Some(Jpr_constant.ninkasi_subdirs) 
+     Some(Jpr_constant.ninkasi_subdirs),
+     Some(Jpr_constant.ninkasi_package_locations) 
    );;
 
 let compute_and_remember_table_for_filecontents () = 
-	let (seed,_fcs,cns,sbds) = !current_java_project_data in 
+	let (seed,_fcs,cns,sbds,pkgls) = !current_java_project_data in 
     let new_fcs =table_for_filecontents(seed) in 
-    let _ = (current_java_project_data:=(seed,Some(new_fcs),cns,sbds)) in 
+    let _ = (current_java_project_data:=(seed,Some(new_fcs),cns,sbds,pkgls)) in 
     new_fcs ;;  
 
 let compute_and_remember_classnames () = 
-	let (seed,fcs,_cns,sbds) = !current_java_project_data in 
+	let (seed,fcs,_cns,sbds,pkgls) = !current_java_project_data in 
     let new_cns =java_classnames_in_project(seed) in 
-    let _ = (current_java_project_data:=(seed,fcs,Some(new_cns),sbds)) in 
+    let _ = (current_java_project_data:=(seed,fcs,Some(new_cns),sbds,pkgls)) in 
     new_cns ;;  
 
 
 let current_java_project_root () = 
-  (fun (seed,_fcs,_cns,_sbds)->seed) 
+  (fun (seed,_fcs,_cns,_sbds,_pkgls)->seed) 
      (!current_java_project_data) ;;  
 
 let current_table_for_filecontents () = 
-   match (fun (_seed,fcs,_cns,_sbds)->fcs) (!current_java_project_data) with 
+   match (fun (_seed,fcs,_cns,_sbds,_pkgls)->fcs) (!current_java_project_data) with 
    (Some already_computed) ->
        already_computed
    |None -> compute_and_remember_table_for_filecontents ();;
  
 let current_classnames () = 
-   match (fun (_seed,_fcs,cns,_sbds)->cns)(!current_java_project_data) with 
+   match (fun (_seed,_fcs,cns,_sbds,_pkgls)->cns)(!current_java_project_data) with 
    (Some already_computed) ->
        already_computed
    |None -> compute_and_remember_classnames ();;
@@ -225,14 +226,14 @@ let all_subdirs_in_project = Memoized.make (fun jproj ->
      (Image.image fst (subdirs_and_packages jproj)) );;
 
 let compute_and_remember_subdirs () = 
-	let (seed,fcs,cns,_sbds) = !current_java_project_data in 
+	let (seed,fcs,cns,_sbds,pkgls) = !current_java_project_data in 
     let new_sbds =all_subdirs_in_project(seed) in 
-    let _ = (current_java_project_data:=(seed,fcs,cns,Some(new_sbds))) in 
+    let _ = (current_java_project_data:=(seed,fcs,cns,Some(new_sbds),pkgls)) in 
     new_sbds ;;  
 
  
 let current_subdirs () = 
-   match (fun (_seed,_fcs,_cns,sbds)->sbds) (!current_java_project_data) with 
+   match (fun (_seed,_fcs,_cns,sbds,_pkgls)->sbds) (!current_java_project_data) with 
    (Some already_computed) ->
        already_computed
    |None -> compute_and_remember_subdirs ();;
@@ -319,7 +320,7 @@ let imported_packages_in_project
        fun sbd -> (subdir_to_package sbd) = pkg
    )(all_subdirs_in_project jproj) ;;  
 
- let table_for_package_location 
+ let table_for_package_locations 
    = Memoized.make(fun jproj->
    Explicit.image 
      (fun pkg->(pkg,subdirs_for_package jproj pkg))
@@ -327,7 +328,21 @@ let imported_packages_in_project
  );; 	
 
 
+let compute_and_remember_table_for_package_locations () = 
+    let (seed,fcs,cns,sbds,_pkgls) = !current_java_project_data in 
+    let new_pkgls =table_for_package_locations(seed) in 
+    let _ = (current_java_project_data:=(seed,fcs,cns,sbds,Some(new_pkgls))) in 
+    new_pkgls ;;  
+
+ 
+let current_table_for_package_locations () = 
+   match (fun (_seed,_fcs,_cns,_sbds,pkgls)->pkgls) (!current_java_project_data) with 
+   (Some already_computed) ->
+       already_computed
+   |None -> compute_and_remember_table_for_package_locations ();;
+ 
+
 end ;;
 
 let sources_in_project = Private.sources_in_project ;; 
-let table_for_package_location = Private.table_for_package_location ;;
+let table_for_package_locations = Private.table_for_package_locations ;;

@@ -1,14 +1,698 @@
 (************************************************************************************************************************
-Snippet 136 : 
+Snippet 137 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 135 : deduce package from path in a Java project
+Snippet 136 : Now-abandoned idea to create a longest-match finder.
+Part of this code is reused in the Longest_match_extractor module
 ************************************************************************************************************************)
 
+module Snip136=struct
+
+module MPRI = Jpr_main.Private ;; 
+module CPRI = Jpr_constant.Private ;; 
+
+let prefixes s = 
+   let n = String.length s in 
+   Int_range.scale (fun j->String.sub s 0 j) 1 n ;; 
+
+let u1 = CPRI.ninkasi_classnames ;; 
+let u2 = Explicit.image prefixes (List.rev u1);; 
+let base = "" :: (Ordered.fold_merge 
+    Total_ordering.lex_for_strings u2) ;; 
+
+let u3 = Image.image Strung.explode u1 ;; 
+let u4 = List.flatten u3 ;; 
+(* formerly, 
+let alphabet = Ordered.sort Total_ordering.for_characters u4 ;; 
+*) 
+
+let alphabet = 
+['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; 'a'; 'A'; 'b'; 'B'; 'c';
+ 'C'; 'd'; 'D'; 'e'; 'E'; 'f'; 'F'; 'g'; 'G'; 'h'; 'H'; 'i'; 'I'; 'j'; 'J';
+ 'k'; 'K'; 'l'; 'L'; 'm'; 'M'; 'n'; 'N'; 'o'; 'O'; 'p'; 'P'; 'q'; 'Q'; 'r';
+ 'R'; 's'; 'S'; 't'; 'T'; 'u'; 'U'; 'v'; 'V'; 'w'; 'W'; 'x'; 'X'; 'y'; 'Y';
+ 'z'; 'Z']
+;;
+
+let indexed_base = Int_range.index_everything base ;; 
+
+let rec helper_for_index_in_base_opt s l = 
+   match l with 
+   [] -> None 
+   | (idx,s2) :: others ->
+   match Total_ordering.lex_for_strings s s2 with 
+     Total_ordering_result_t.Equal -> Some idx  
+     |Lower -> None 
+     |Greater -> helper_for_index_in_base_opt s others ;;
+
+let index_in_base_opt s = 
+    helper_for_index_in_base_opt s indexed_base ;; 
+
+let inner_fan s c= 
+  let new_s = s ^ (String.make 1 c) in 
+  Option.map (
+    fun new_idx -> (c,new_idx)
+  )(index_in_base_opt new_s) ;; 
+
+let fan = Memoized.make(fun s 
+ -> List.filter_map (inner_fan s) alphabet);;
+
+
+let walker = ref (0,([]:(int * (char * int) list) list)) ;;
+
+let next () = 
+    let (k,old_val) = (!walker) in 
+    let elt = List.nth base k in 
+    let new_val =  (k+1,fan elt)::old_val in 
+    (walker:=(k+1,new_val));;
+
+let total_size = List.length base ;; 
+
+let go () = 
+    let current_size = fst(!walker) in 
+    for j = current_size+1 to total_size 
+    do 
+       next()
+    done ;; 
+
+let location_for_data1 = 
+  home^"/Teuliou/OCaml/Marshaled/data1.marshaled";;
+
+let store_current_state () = 
+   let current_state = (!walker) 
+   and janet = open_out_bin location_for_data1 in 
+   (Marshal.to_channel janet current_state [];
+    close_out janet);;
+
+let retrieve_current_state () = 
+   let john = open_in_bin location_for_data1 in 
+   ((Marshal.from_channel john)  :
+    int * (int * (char * int) list) list       
+    );;
+
+
+let decompose_wrt_first_chars unchecked_l = 
+   let empty_string_present = (match unchecked_l with 
+      [] -> false 
+      |a:: _ -> a = ""
+   )  in
+   let l = (if empty_string_present then List.tl unchecked_l else unchecked_l) in 
+   let first_chars = Ordered.sort Total_ordering.for_characters
+       (Image.image (fun s->String.get s 0) l) in 
+   (empty_string_present,Image.image 
+      (
+     fun c->(c,List.filter_map(
+        fun s->
+          if String.get s 0 = c 
+          then Some(Cull_string.cobeginning 1 s)
+          else None
+     ) l)
+   ) first_chars);;
+
+
+let rec helper_for_left_factorization (treated,to_be_treated) =
+    let (empty_string_present,parts) = 
+       decompose_wrt_first_chars to_be_treated in 
+    if (empty_string_present)||((List.length parts)<>1) 
+    then (treated,to_be_treated)
+    else 
+    let (c,rest) = List.hd parts in 
+    helper_for_left_factorization 
+      (treated^(String.make 1 c),rest) ;;
+
+
+let left_factorize l = 
+   helper_for_left_factorization ("",l) ;;
+
+
+let decomposition_combined_with_left_factorization l =
+   let (empty_string_present,parts) = 
+       decompose_wrt_first_chars l in 
+   (empty_string_present,
+      Image.image (fun (c,l2)->
+       let (common,l3) = left_factorize(l2) in 
+       ((String.make 1 c)^common,l3)
+   ) parts
+   ) ;; 
+
+exception Pusher_for_conversion_to_tower_exn ;; 
+
+let pusher_for_conversion_to_tower 
+   (treated,counter,to_be_treated) = 
+   match to_be_treated with 
+    [] -> raise Pusher_for_conversion_to_tower_exn  
+   | (idx_for_l,l) :: others ->
+     if List.length(l)<=10 
+     then let triple= (idx_for_l,(Small(l),l)) in 
+          (triple::treated,counter,others)
+     else
+     let (empty_string_present,dec) = 
+        decomposition_combined_with_left_factorization l in
+     let indexed_dec = Int_range.index_everything dec 
+     and r = List.length dec in 
+     let te=Decomposed(empty_string_present,
+        Image.image (fun (idx,(prefix,rest))->
+           (prefix,counter+idx)
+     ) indexed_dec) in 
+     let new_needs = Image.image (
+        fun (idx,(prefix,rest))->(counter+idx,rest)
+     ) indexed_dec in 
+     let triple= (idx_for_l,(te,l)) in  
+          (triple::treated,counter+r,new_needs@others) ;; 
+   
+let reindex_tower_element size te = 
+   match te with 
+   (Small l) -> te 
+   |Decomposed(empty_string_present,dec) ->
+     let new_dec = Image.image (
+       fun (prefix,old_idx) -> (prefix,size+1-old_idx)
+     ) dec in 
+     Decomposed(empty_string_present,new_dec) ;;
+
+let reindex_tower size ll = 
+    Image.image (
+      fun (idx,(te,l)) ->(size+1-idx,
+         (reindex_tower_element size te,l))
+    ) ll ;; 
+
+let rec helper_for_conversion_to_tower triple =
+   let (treated,counter,to_be_treated) = triple in  
+   if to_be_treated = []
+   then let temp = Int_range.descending_scale (fun j->
+           (j,List.assoc j treated)
+         ) counter 1 in 
+        reindex_tower counter temp 
+   else  helper_for_conversion_to_tower 
+          (pusher_for_conversion_to_tower triple) ;; 
+   
+
+let to_tower ll=
+    helper_for_conversion_to_tower
+      ([],1,[1,ll]) ;; 
+
+let print_stringlist l =
+   "[\n"^ 
+       (String.concat ";\n"(
+         Image.image Strung.enclose l
+       ))^
+   "\n]" ;; 
+
+let print_dec_element (prefix,idx) = 
+   "("^(Strung.enclose prefix)^",v_"^(string_of_int idx)^")" ;; 
+
+let print_decomposition dec = 
+    "reunite [\n"^ 
+       (String.concat ";\n"(
+         Image.image print_dec_element dec
+       ))^
+   "\n]" ;; 
+
+let list_text_for_tower_elt = function
+    (Small l) -> print_stringlist l 
+   |Decomposed(empty_string_present,dec) ->
+     let temp1 = print_decomposition dec in 
+     if empty_string_present 
+     then "\"\"::(\n"^temp1^"\n)"
+     else temp1 ;;
+   
+let list_text_for_indexed_tower_elt (idx,(te,_)) =
+    "let v_"^(string_of_int idx)^" =\n"^ 
+       (list_text_for_tower_elt te)^
+   ";;" ;; 
+
+let list_text_for_tower tw =
+   String.concat "\n\n" (Image.image
+     list_text_for_indexed_tower_elt tw
+   ) ;; 
+
+let print_vlist size = 
+    "[\n"^ 
+       (String.concat ";\n"(
+         Int_range.scale (fun j->"v_"^(string_of_int j)) 1 size
+       ))^
+   "\n]" ;; 
+
+let list_text_for_vlist size =
+    "let vlist =\n"^ 
+       (print_vlist size)^
+   ";;" ;; 
+
+
+let print_dec_element_finder (prefix,idx) = 
+   "("^(Strung.enclose prefix)^",lmf_"^(string_of_int idx)^")" ;; 
+
+let print_finder_decomposition dec = 
+    "[\n"^ 
+       (String.concat ";\n"(
+         Image.image print_dec_element_finder dec
+       ))^
+   "\n]" ;; 
+
+let finder_text_for_tower_elt = function
+    (Small l) -> "naive_longest_match_finder "^(print_stringlist l) 
+   |Decomposed(empty_string_present,dec) ->
+     let temp1 = print_finder_decomposition dec in 
+     if empty_string_present 
+     then " reunite_finders_with_empty_string "^temp1
+     else " reunite_finders_without_empty_string "^temp1 ;;
+   
+let finder_text_for_indexed_tower_elt (idx,(te,_)) =
+    "let lmf_"^(string_of_int idx)^" =\n"^ 
+       (finder_text_for_tower_elt te)^
+   ";;" ;; 
+
+let finder_text_for_tower tw =
+   String.concat "\n\n" (Image.image
+     finder_text_for_indexed_tower_elt tw
+   ) ;; 
+
+let ap1 = Absolute_path.of_string 
+"lib/Java_project/jpr_constant.ml";;
+
+
+(*   
+
+
+type tower_element = 
+    Small of string list 
+   |Decomposed of bool * ((string * int) list) ;;
+
+#use"watched/watched_not_githubbed/cloth.ml";;
+
+let cns1 = Image.image (
+   fun (Jpr_types.Jcn cn) -> cn
+) (Jpr_main.Private.current_classnames()) ;; 
+let tw1 = to_tower cns1 ;; 
+
+
+let text1 = list_text_for_tower tw1 ;; 
+let text2 = list_text_for_vlist (List.length tw1) ;;
+let composite_text1 = 
+   String.concat "\n\n\n" ["";text1(*; text2*);""] ;;
+
+
+let act1 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:composite_text1 (
+  "(* Beginning of generated code for Ninkasi classnames *)
+","(* End of generated code for Ninkasi classnames *)")
+  ap1 ;;
+
+
+let text3 = finder_text_for_tower tw1 ;; 
+let act2 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:text3 (
+  "(* Beginning of generated code for Ninkasi classname finders *)
+","(* End of generated code for Ninkasi classname finders *)")
+  ap1 ;;
+
+let r1 = MPRI.current_java_project_root();;
+let r1_str = (fun (Jpr_types.Pr s)->s) r1;; 
+
+let subdirs1 = MPRI.all_subdirs_in_project r1 ;; 
+let subdirs2 = Image.image (
+   fun (Jpr_types.Jsbd s) -> s
+) subdirs1 ;; 
+let subdirs3 = Image.image 
+(Cull_string.two_sided_cutting (r1_str,"")) 
+subdirs2 ;;
+let tw2 = to_tower subdirs3 ;; 
+
+
+let text4 = "\n\n"^(list_text_for_tower tw2)^"\n\n" ;; 
+let text5 = list_text_for_vlist (List.length tw2) ;;
+let composite_text2 = 
+   String.concat "\n\n\n" ["";text4(*; text5 *);""] ;;
+
+
+
+let act3 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:composite_text2 (
+  "(* Beginning of generated code for Ninkasi subdirs *)
+","(* End of generated code for Ninkasi subdirs *)")
+  ap1 ;;
+
+
+*)
+
+
+
+
+
+
+(*
+
+let r1 = MPRI.current_java_project_root();;
+let r1_str = (fun (Jpr_types.Pr s)->s) r1;; 
+
+let subdirs1 = MPRI.all_subdirs_in_project r1 ;; 
+let subdirs4 = Jpr_constant.ninkasi_subdirs ;;
+let check = (subdirs1 = subdirs4) ;; 
+
+let (Jpr_types.Jsbd h1) = List.nth subdirs1 100;;
+let (Jpr_types.Jsbd h2) = List.nth subdirs4 100;;
+let check = (h1 = r1_str ^h2) ;; 
+
+let z1 = List.combine subdirs1 subdirs4 ;; 
+let z2 = List.filter (fun (x,y)->x<>y) z1 ;; 
+
+let check1 = ((Ordered.sort MPRI.order_for_subdirs subdirs1)=subdirs1);;
+
+let check4 = ((Ordered.sort MPRI.order_for_subdirs subdirs4)=subdirs4);;
+
+
+let indexed_vlist = Int_range.index_everything CPRI.Subdirs.vlist ;;
+let (idx,example) = List.find (
+  fun (_,l)->(Ordered.sort Total_ordering.lex_for_strings l)<>l
+) indexed_vlist ;; 
+
+
+
+let subdirs2 = Image.image (
+   fun (Jpr_types.Jsbd s) -> s
+) subdirs1 ;; 
+let subdirs3 = Image.image 
+(Cull_string.two_sided_cutting (r1_str,"")) 
+subdirs2 ;;
+
+*)
+
+(*
+let g1 = CPRI.ninkasi_classnames ;; 
+let g2 = Max.maximize_it_with_care (
+    String.length
+) g1 ;;
+
+let g3 = Jpr_constant.ninkasi_classname_finder
+ ("12JdbcTestWithAutoConfigureTestDatabaseReplace"^
+  "AutoConfiguredWithoutOverrideIntegrationTests4") 3 ;;
+
+let ap1 = Absolute_path.of_string 
+"lib/Java_project/jpr_constant.ml";;
+ 
+Lines_in_string.remove_interval_in_file ap1 35803 71292 ;; 
+
+
+
+
+
+let r1 = MPRI.current_java_project_root();;
+let dir1 = (
+   fun (Jpr_types.Pr s) -> Directory_name.of_string s
+) r1 ;; 
+let files_or_dirs1 = Unix_again.complete_ls dir1 ;;  
+let dirs1 = List.filter Unix_again.is_a_directory files_or_dirs1;;
+
+let u1 = Image.image (
+   fun ap -> let s= Cull_string.coending(1)
+      (Absolute_path.to_string ap) in 
+   (ap,Cull_string.after_rightmost s '/')
+) dirs1 ;; 
+
+let u2 = List.filter (fun (ap,s)->
+  Supstring.begins_with s "test"
+) u1 ;; 
+
+ls my_springs/spring_0/spring-boot-2.7.x/spring-boot-project/spring-boot-tools/spring-boot-maven-plugin/src/intTest/projects/build-image-caches-multiple/src/main/
+
+*)
+
+(*
+
+type tower_element = 
+    Small of string list 
+   |Decomposed of bool * ((string * int) list) ;;
+
+
+*)
+
+open Sz4_preliminaries ;; 
+
+
+let decompose_wrt_first_chars unchecked_l = 
+   let empty_string_present = (match unchecked_l with 
+      [] -> false 
+      |a:: _ -> a = ""
+   )  in
+   let l = (if empty_string_present then List.tl unchecked_l else unchecked_l) in 
+   let first_chars = Ordered.sort Total_ordering.for_characters
+       (Image.image (fun s->String.get s 0) l) in 
+   (empty_string_present,Image.image 
+      (
+     fun c->(c,List.filter_map(
+        fun s->
+          if String.get s 0 = c 
+          then Some(Cull_string.cobeginning 1 s)
+          else None
+     ) l)
+   ) first_chars);;
+
+
+let rec helper_for_left_factorization (treated,to_be_treated) =
+    let (empty_string_present,parts) = 
+       decompose_wrt_first_chars to_be_treated in 
+    if (empty_string_present)||((List.length parts)<>1) 
+    then (treated,to_be_treated)
+    else 
+    let (c,rest) = List.hd parts in 
+    helper_for_left_factorization 
+      (treated^(String.make 1 c),rest) ;;
+
+
+let left_factorize l = 
+   helper_for_left_factorization ("",l) ;;
+
+
+let decomposition_combined_with_left_factorization l =
+   let (empty_string_present,parts) = 
+       decompose_wrt_first_chars l in 
+   (empty_string_present,
+      Image.image (fun (c,l2)->
+       let (common,l3) = left_factorize(l2) in 
+       ((String.make 1 c)^common,l3)
+   ) parts
+   ) ;; 
+
+exception Pusher_for_conversion_to_tower_exn ;; 
+
+let pusher_for_conversion_to_tower 
+   (treated,counter,to_be_treated) = 
+   match to_be_treated with 
+    [] -> raise Pusher_for_conversion_to_tower_exn  
+   | (idx_for_l,l) :: others ->
+     if List.length(l)<=10 
+     then let triple= (idx_for_l,(Small(l),l)) in 
+          (triple::treated,counter,others)
+     else
+     let (empty_string_present,dec) = 
+        decomposition_combined_with_left_factorization l in
+     let indexed_dec = Int_range.index_everything dec 
+     and r = List.length dec in 
+     let te=Decomposed(empty_string_present,
+        Image.image (fun (idx,(prefix,rest))->
+           (prefix,counter+idx)
+     ) indexed_dec) in 
+     let new_needs = Image.image (
+        fun (idx,(prefix,rest))->(counter+idx,rest)
+     ) indexed_dec in 
+     let triple= (idx_for_l,(te,l)) in  
+          (triple::treated,counter+r,new_needs@others) ;; 
+   
+let reindex_tower_element size te = 
+   match te with 
+   (Small l) -> te 
+   |Decomposed(empty_string_present,dec) ->
+     let new_dec = Image.image (
+       fun (prefix,old_idx) -> (prefix,size+1-old_idx)
+     ) dec in 
+     Decomposed(empty_string_present,new_dec) ;;
+
+let reindex_tower size ll = 
+    Image.image (
+      fun (idx,(te,l)) ->(size+1-idx,
+         (reindex_tower_element size te,l))
+    ) ll ;; 
+
+let rec helper_for_conversion_to_tower triple =
+   let (treated,counter,to_be_treated) = triple in  
+   if to_be_treated = []
+   then let temp = Int_range.descending_scale (fun j->
+           (j,List.assoc j treated)
+         ) counter 1 in 
+        reindex_tower counter temp 
+   else  helper_for_conversion_to_tower 
+          (pusher_for_conversion_to_tower triple) ;; 
+   
+
+let to_tower ll=
+    helper_for_conversion_to_tower
+      ([],1,[1,ll]) ;; 
+
+let print_stringlist l =
+   "[\n"^ 
+       (String.concat ";\n"(
+         Image.image Strung.enclose l
+       ))^
+   "\n]" ;; 
+
+let print_dec_element (prefix,idx) = 
+   "("^(Strung.enclose prefix)^",v_"^(string_of_int idx)^")" ;; 
+
+let print_decomposition dec = 
+    "reunite [\n"^ 
+       (String.concat ";\n"(
+         Image.image print_dec_element dec
+       ))^
+   "\n]" ;; 
+
+let list_text_for_tower_elt = function
+    (Small l) -> print_stringlist l 
+   |Decomposed(empty_string_present,dec) ->
+     let temp1 = print_decomposition dec in 
+     if empty_string_present 
+     then "\"\"::(\n"^temp1^"\n)"
+     else temp1 ;;
+   
+let list_text_for_indexed_tower_elt (idx,(te,_)) =
+    "let v_"^(string_of_int idx)^" =\n"^ 
+       (list_text_for_tower_elt te)^
+   ";;" ;; 
+
+let list_text_for_tower tw =
+   String.concat "\n\n" (Image.image
+     list_text_for_indexed_tower_elt tw
+   ) ;; 
+
+let print_vlist size = 
+    "[\n"^ 
+       (String.concat ";\n"(
+         Int_range.scale (fun j->"v_"^(string_of_int j)) 1 size
+       ))^
+   "\n]" ;; 
+
+let list_text_for_vlist size =
+    "let vlist =\n"^ 
+       (print_vlist size)^
+   ";;" ;; 
+
+
+let print_dec_element_finder (prefix,idx) = 
+   "("^(Strung.enclose prefix)^",lmf_"^(string_of_int idx)^")" ;; 
+
+let print_finder_decomposition dec = 
+    "[\n"^ 
+       (String.concat ";\n"(
+         Image.image print_dec_element_finder dec
+       ))^
+   "\n]" ;; 
+
+let finder_text_for_tower_elt = function
+    (Small l) -> "naive_longest_match_finder "^(print_stringlist l) 
+   |Decomposed(empty_string_present,dec) ->
+     let temp1 = print_finder_decomposition dec in 
+     if empty_string_present 
+     then " reunite_finders_with_empty_string "^temp1
+     else " reunite_finders_without_empty_string "^temp1 ;;
+   
+let finder_text_for_indexed_tower_elt (idx,(te,_)) =
+    "let lmf_"^(string_of_int idx)^" =\n"^ 
+       (finder_text_for_tower_elt te)^
+   ";;" ;; 
+
+let finder_text_for_tower tw =
+   String.concat "\n\n" (Image.image
+     finder_text_for_indexed_tower_elt tw
+   ) ;; 
+
+let ap1 = Absolute_path.of_string 
+"lib/Java_project/jpr_constant.ml";;
+
+
+(*   
+
+
+type tower_element = 
+    Small of string list 
+   |Decomposed of bool * ((string * int) list) ;;
+
+#use"watched/watched_not_githubbed/cloth.ml";;
+
+let cns1 = Image.image (
+   fun (Jpr_types.Jcn cn) -> cn
+) (Jpr_main.Private.current_classnames()) ;; 
+let tw1 = to_tower cns1 ;; 
+
+
+let text1 = list_text_for_tower tw1 ;; 
+let text2 = list_text_for_vlist (List.length tw1) ;;
+let composite_text1 = 
+   String.concat "\n\n\n" ["";text1(*; text2*);""] ;;
+
+
+let act1 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:composite_text1 (
+  "(* Beginning of generated code for Ninkasi classnames *)
+","(* End of generated code for Ninkasi classnames *)")
+  ap1 ;;
+
+
+let text3 = finder_text_for_tower tw1 ;; 
+let act2 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:text3 (
+  "(* Beginning of generated code for Ninkasi classname finders *)
+","(* End of generated code for Ninkasi classname finders *)")
+  ap1 ;;
+
+let r1 = MPRI.current_java_project_root();;
+let r1_str = (fun (Jpr_types.Pr s)->s) r1;; 
+
+let subdirs1 = MPRI.all_subdirs_in_project r1 ;; 
+let subdirs2 = Image.image (
+   fun (Jpr_types.Jsbd s) -> s
+) subdirs1 ;; 
+let subdirs3 = Image.image 
+(Cull_string.two_sided_cutting (r1_str,"")) 
+subdirs2 ;;
+let tw2 = to_tower subdirs3 ;; 
+
+
+let text4 = "\n\n"^(list_text_for_tower tw2)^"\n\n" ;; 
+let text5 = list_text_for_vlist (List.length tw2) ;;
+let composite_text2 = 
+   String.concat "\n\n\n" ["";text4(*; text5 *);""] ;;
+
+
+
+let act3 () = 
+Replace_inside.overwrite_between_markers_inside_file
+  ~overwriter:composite_text2 (
+  "(* Beginning of generated code for Ninkasi subdirs *)
+","(* End of generated code for Ninkasi subdirs *)")
+  ap1 ;;
+
+
+*)
+
+
+
+
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 135 : deduce package from path in a Java project
+************************************************************************************************************************)
 module Snip135=struct
 
 let prefix = home^"/Downloads/my_springs/spring_0/" ;;
