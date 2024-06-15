@@ -807,44 +807,9 @@ let eval_using_only_translation_opt pt =
      (List.assoc_opt pretranslated_pt (!impatient_ref));;
 
 let unsafe_add pt mold = 
-      (impatient_ref := (pt,mold) :: 
-          (!impatient_ref)) ;;
+      (impatient_ref := (pt,mold) ::(!impatient_ref)) ;;
 
-
-let rec helper_for_rails_computing 
-   (treated,current,vertices_to_be_removed) =
- match vertices_to_be_removed with 
-  [] -> current :: treated 
- |v :: other_vertices ->
-   let next_one = Point.remove current [v] in 
-   helper_for_rails_computing 
-   (current :: treated,next_one,other_vertices) ;;
-    
-let compute_rails pt =
-   let base = List.tl(Finite_int_set.to_usual_int_list pt.base_set) in 
-   helper_for_rails_computing 
-   ([],pt,List.rev base) ;; 
-
-let rec helper_for_rails_evaluation (current,to_be_treated) =
-  match to_be_treated with 
-  [] -> Some current 
-  | pt :: other_points ->
-     match eval_opt pt with 
-       None -> None  
-      |Some next_one ->
-        helper_for_rails_evaluation (next_one,other_points) ;; 
 end ;;
-
-let eval_on_rails_opt pt = 
-   match Private.compute_rails pt with 
-   [] -> Private.eval_opt pt 
-   | spark :: rails ->
-     (
-      match Private.eval_opt spark with 
-      None -> None 
-      |Some spark_mold ->
-     Private.helper_for_rails_evaluation (spark_mold,rails) 
-     );; 
 
 let eval_opt = Private.eval_opt ;; 
 
@@ -882,6 +847,51 @@ let using_fork pt (i,j,k) =
 
 end ;;
 
+module WithRails = struct 
+
+module Private = struct 
+
+let rec helper_for_rails_computing 
+   (treated,current,vertices_to_be_removed) =
+ match vertices_to_be_removed with 
+  [] -> current :: treated 
+ |v :: other_vertices ->
+   let next_one = Point.remove current [v] in 
+   helper_for_rails_computing 
+   (current :: treated,next_one,other_vertices) ;;
+    
+let compute_rails pt =
+   let base = List.tl(Finite_int_set.to_usual_int_list pt.base_set) in 
+   helper_for_rails_computing 
+   ([],pt,List.rev base) ;; 
+
+let rec helper_for_rails_evaluation (current,to_be_treated) =
+  match to_be_treated with 
+  [] -> Some current 
+  | pt :: other_points ->
+     match Impatient.eval_opt pt with 
+       None -> None  
+      |Some next_one ->
+        helper_for_rails_evaluation (next_one,other_points) ;; 
+
+let eval_on_rails_opt pt = 
+   match compute_rails pt with 
+   [] -> Impatient.eval_opt pt 
+   | spark :: rails ->
+     (
+      match Impatient.eval_opt spark with 
+      None -> None 
+      |Some spark_mold ->
+       helper_for_rails_evaluation (spark_mold,rails) 
+     );; 
+
+end ;;
+
+
+let eval_opt = Private.eval_on_rails_opt ;; 
+
+end ;;
+
 module Painstaking = struct 
 
 exception Initial_data_already_accessible ;;
@@ -891,7 +901,7 @@ module Private = struct
 let painstaking_ref = ref ([]: (point * mold) list) ;; 
 
 let eval_on_nonfree old_f nonfree_pt =
-   match Impatient.eval_on_rails_opt nonfree_pt with 
+   match WithRails.eval_opt nonfree_pt with 
     Some old_answer -> old_answer 
    |None -> 
      let n = Finite_int_set.max (nonfree_pt.base_set) in 
@@ -933,7 +943,7 @@ let eval pt =
 
 let pretranslated_is_accessible pt =
   ((Point.size pt) <= Brute_force.max_size ) || 
-  ((Impatient.eval_on_rails_opt pt) <> None) ||
+  ((WithRails.eval_opt pt) <> None) ||
   ((List.assoc_opt pt (!painstaking_ref)) <> None) ;;
 
 let is_accessible pt =
@@ -1007,8 +1017,8 @@ module Private = struct
 
 let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
-let ip3 n = Impatient.eval_on_rails_opt (p3 n);;
-let ipr3 n r = Impatient.eval_on_rails_opt (pr3 n r);;
+let ip3 n = WithRails.eval_opt (p3 n);;
+let ipr3 n r = WithRails.eval_opt (pr3 n r);;
 let fpr3 n r = Deduce.using_fork (pr3 n r);;
 
 
