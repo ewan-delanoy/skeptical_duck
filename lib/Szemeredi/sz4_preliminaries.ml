@@ -727,17 +727,6 @@ end ;;
 
 module Impatient = struct 
 
-exception Incorrect_constraint_in_fork_exn 
-   of int * int * int  * point ;;
-
-exception Incomplete_fork_exn of int * point ;;
-
-
-type next_advance_result =
-   Decomposition of  (int list) * decomposition_hook * (int list)
-  |Fork of (int list) * constraint_t ;;
-
-
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
@@ -817,6 +806,10 @@ let eval_using_only_translation_opt pt =
     Option.map(Mold.translate d)
      (List.assoc_opt pretranslated_pt (!impatient_ref));;
 
+let unsafe_add pt mold = 
+      (impatient_ref := (pt,mold) :: 
+          (!impatient_ref)) ;;
+
 
 let rec helper_for_rails_computing 
    (treated,current,vertices_to_be_removed) =
@@ -840,29 +833,8 @@ let rec helper_for_rails_evaluation (current,to_be_treated) =
        None -> None  
       |Some next_one ->
         helper_for_rails_evaluation (next_one,other_points) ;; 
-
-let deduce_using_fork pt (i,j,k) = 
-    let cstr = C [i;j;k] in 
-    if not(Point.constraint_can_apply pt cstr)
-    then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
-    else
-    let temp1 = Image.image (fun t->
-       eval_opt(Point.remove pt [t])
-    ) [i;j;k] in 
-    let m = List_again.find_index_of_in None temp1 in 
-    if m > 0 
-    then let p = List.nth [i;j;k] (m-1) in
-         raise(Incomplete_fork_exn(p,pt))
-    else 
-    let molds = Image.image Option.get temp1 in 
-    let mold = Mold.in_fork_case molds in 
-    let _ = (impatient_ref := (pt,mold) :: 
-          (!impatient_ref)) in 
-    mold ;;    
- 
 end ;;
 
-let deduce_using_fork = Private.deduce_using_fork ;; 
 let eval_on_rails_opt pt = 
    match Private.compute_rails pt with 
    [] -> Private.eval_opt pt 
@@ -877,6 +849,36 @@ let eval_on_rails_opt pt =
 let eval_opt = Private.eval_opt ;; 
 
 let set_verbose_mode b = (Private.verbose_mode_ref:=b) ;; 
+
+let unsafe_add = Private.unsafe_add ;;
+
+end ;;
+
+module Deduce = struct 
+
+exception Incorrect_constraint_in_fork_exn 
+   of int * int * int  * point ;;
+
+exception Incomplete_fork_exn of int * point ;;
+
+
+let using_fork pt (i,j,k) = 
+    let cstr = C [i;j;k] in 
+    if not(Point.constraint_can_apply pt cstr)
+    then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
+    else
+    let temp1 = Image.image (fun t->
+       Impatient.eval_opt(Point.remove pt [t])
+    ) [i;j;k] in 
+    let m = List_again.find_index_of_in None temp1 in 
+    if m > 0 
+    then let p = List.nth [i;j;k] (m-1) in
+         raise(Incomplete_fork_exn(p,pt))
+    else 
+    let molds = Image.image Option.get temp1 in 
+    let mold = Mold.in_fork_case molds in 
+    let _ = Impatient.unsafe_add pt mold in 
+    mold ;;
 
 end ;;
 
@@ -1007,7 +1009,7 @@ let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 let ip3 n = Impatient.eval_on_rails_opt (p3 n);;
 let ipr3 n r = Impatient.eval_on_rails_opt (pr3 n r);;
-let fpr3 n r = Impatient.deduce_using_fork (pr3 n r);;
+let fpr3 n r = Deduce.using_fork (pr3 n r);;
 
 
 end ;;
