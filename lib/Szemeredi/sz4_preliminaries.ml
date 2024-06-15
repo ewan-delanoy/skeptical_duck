@@ -586,10 +586,24 @@ end ;;
   
 module Brute_force = struct 
 
+type decomposition_t = D of (int list)*(int list) ;;
+
+type decomposition_data = {
+    decompositions : decomposition_t list ;
+    chosen_decomposition : decomposition_t ;
+    canonical_solution : int list
+} ;;
+
+type breaking_point_data = {
+    breaking_constraint : constraint_t ;
+    broken_point : point ;
+    broken_mold : mold 
+} ;;
+
 type analysis_result =
-   Decomposition of point * ((int list * int list) list) * 
-             ((int list)*(int list))* (int list)
-  |Breaking_point of point * constraint_t * point * mold ;;
+   Decomposition of decomposition_data
+  |Breaking_point of breaking_point_data ;; 
+
 
 exception Size_too_big of point ;; 
 
@@ -642,26 +656,14 @@ let test_for_decomposer sols dec =
     List.for_all (fun sol-> 
        List.length(i_intersect dec sol) = m 
     ) sols ;; 
-    
-let behead_on_both_sides l = match List.rev(l) with
-  [] -> []
-  | _last_one :: others ->
-   (
-     match List.rev(others) with 
-      [] -> []
-     | _first_one :: middle -> middle
-   ) ;; 
-
-(*
-
-behead_on_both_sides  [1; 2; 3; 4; 5; 6; 7] ;;
-
-*)
 
 let decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
   let full_power_set = il_sort(List_again.power_set base) in 
-  let beheaded_power_set = behead_on_both_sides full_power_set in 
+  let beheaded_power_set = List.tl full_power_set in 
+  let half_size = (List.length base)/2 in 
+  let half_power_set = List.filter 
+      (fun z->List.length(z)<=half_size) beheaded_power_set in 
   let solutions = all_solutions pt 0 in 
   List.filter_map (
     fun part ->
@@ -669,36 +671,48 @@ let decomposers =Memoized.make(fun pt ->
       then None 
       else let other_part = i_setminus base part in 
            if (il_order part other_part)=Total_ordering_result_t.Greater 
-           then Some(part,other_part)
+           then Some(D(part,other_part))
            else None  
-  ) beheaded_power_set );; 
+  ) half_power_set );; 
+
+
+let analysis_in_decomposition_case pt decs = 
+   let base = Finite_int_set.to_usual_int_list pt.base_set in
+   let n = List.hd(List.rev base) in 
+   let rewritten_decs = Image.image (fun (D(p1,p2))->
+             if i_mem n p2 then (p1,p2) else (p2,p1)
+   ) decs in 
+   let second_parts = Image.image snd rewritten_decs in 
+   let chosen_second_part = 
+             Ordered.min il_order second_parts in
+   let base = Finite_int_set.to_usual_int_list pt.base_set in
+   let chosen_first_part = 
+            i_setminus base chosen_second_part in
+   let chosen_dec = D(chosen_first_part,chosen_second_part) in    
+   Decomposition(
+   {
+      decompositions = decs ;
+      chosen_decomposition = chosen_dec ;
+      canonical_solution = canonical_solution pt 
+   });;
 
 let rec naive_helper_for_analysis (pt, size) = 
     let decs = decomposers(pt) in 
     if decs <> []
-    then
-         let base = Finite_int_set.to_usual_int_list pt.base_set in
-         let n = List.hd(List.rev base) in 
-         let rewritten_decs = Image.image (fun (p1,p2)->
-             if i_mem n p2 then (p1,p2) else (p2,p1)
-         ) decs in 
-         let second_parts = Image.image snd rewritten_decs in 
-         let chosen_second_part = 
-             Ordered.min il_order second_parts in
-         let base = Finite_int_set.to_usual_int_list pt.base_set in
-         let chosen_first_part = 
-            i_setminus base chosen_second_part in
-         let chosen_dec = (chosen_first_part,chosen_second_part) in    
-          Decomposition(pt,rewritten_decs,chosen_dec,
-               canonical_solution pt)
+    then analysis_in_decomposition_case pt decs 
     else
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
     let sol_before = eval pt_before in 
     let size_before = Mold.solution_size sol_before in 
     if size_before<>size  
-    then Breaking_point(pt,cstr,pt_before,sol_before)
-    else naive_helper_for_analysis (pt_before, size) ;; 
+    then Breaking_point(
+        {
+          breaking_constraint = cstr ;
+          broken_point = pt_before ;
+          broken_mold = sol_before 
+        })
+   else naive_helper_for_analysis (pt_before, size) ;; 
 
 let error_ref = ref None ;;
 
