@@ -467,6 +467,9 @@ module Point = struct
     then draft
     else remove draft mandatory_elements;;
 
+  let restrict pt l = 
+     let base = Finite_int_set.to_usual_int_list pt.base_set in 
+     remove pt (i_setminus base l) ;; 
 
   end ;;
 
@@ -516,6 +519,8 @@ module Point = struct
        pt.max_width pt.excluded_full_constraints domain ;;
 
   let remove = Private.remove ;;
+
+  let restrict = Private.restrict ;;  
 
   let size pt = Finite_int_set.size pt.base_set ;; 
 
