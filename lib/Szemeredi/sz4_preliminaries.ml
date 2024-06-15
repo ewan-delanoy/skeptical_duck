@@ -533,6 +533,11 @@ module Point = struct
 
 module Mold = struct 
 
+  let add_one_solution mold sol = {
+     mold with 
+     solutions = il_insert sol mold.solutions
+  } ;;
+
   let in_extension_case extended_sols beheaded_mold n =
   {
              solutions = extended_sols;
