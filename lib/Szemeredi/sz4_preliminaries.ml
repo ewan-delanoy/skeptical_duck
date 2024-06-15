@@ -538,6 +538,15 @@ module Mold = struct
      solutions = il_insert sol mold.solutions
   } ;;
 
+  let in_decomposition_case mold1 mold2 full_sol =
+  {
+             solutions = [full_sol];
+             mandatory_elements = 
+             i_merge
+             (mold1.mandatory_elements)
+             (mold2.mandatory_elements)
+  } ;; 
+
   let in_extension_case extended_sols beheaded_mold n =
   {
              solutions = extended_sols;
