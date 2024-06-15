@@ -870,6 +870,56 @@ exception Incorrect_constraint_in_fork_exn
 
 exception Incomplete_fork_exn of int * point ;;
 
+module Private = struct 
+
+exception Nonadmissible_whole_in_decomposition of (point * (int list));;
+exception Nonadmissible_part_in_decomposition of (point * (int list));;
+exception Badly_sized_part_in_decomposition of (point * (int list));;
+exception Unknown_part_in_decomposition of point ;;
+
+
+
+let check_part_in_decomposition pt fis sol = 
+    let domain = Finite_int_set.to_usual_int_list fis in 
+    let smaller_pt = Point.restrict pt domain in 
+    match Impatient.eval_opt smaller_pt with 
+    None -> raise(Unknown_part_in_decomposition(smaller_pt))
+    |Some mold ->
+      let m = Mold.solution_size mold in 
+      if not(Point.subset_is_admissible smaller_pt sol)
+      then raise(Nonadmissible_part_in_decomposition(smaller_pt,sol))
+      else 
+      if List.length(sol)<>m
+      then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
+      else Mold.add_one_solution mold sol ;; 
+
+
+let find_translation_index_in_between_intlists l l1 l2 = 
+   let translated_l2 = i_setminus l l1 in 
+   (List.hd translated_l2) - (List.hd l2);;
+
+let find_translation_index_in_between fis fis1 fis2 = 
+   find_translation_index_in_between_intlists 
+     (Finite_int_set.to_usual_int_list fis)
+     (Finite_int_set.to_usual_int_list fis1)
+     (Finite_int_set.to_usual_int_list fis2) ;;
+
+let deduce_using_decomposition pt (part1,sol1) (part2,sol2) = 
+   let mold1 = check_part_in_decomposition pt part1 sol1 
+   and pre_mold2 = check_part_in_decomposition pt part2 sol2 in 
+   let t = find_translation_index_in_between pt.base_set part1 part2 in 
+   let mold2 = Mold.translate t pre_mold2  in 
+   let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
+   if Point.subset_is_admissible pt full_sol 
+   then let mold = Mold.in_decomposition_case mold1 mold2 full_sol in 
+        Impatient.unsafe_add pt mold 
+   else raise(Nonadmissible_whole_in_decomposition(pt,full_sol));;
+
+
+
+end ;;
+
+let using_decomposition = Private.deduce_using_decomposition ;;
 
 let using_fork pt (i,j,k) = 
     let cstr = C [i;j;k] in 
