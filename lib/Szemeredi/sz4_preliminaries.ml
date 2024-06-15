@@ -587,7 +587,8 @@ end ;;
 module Brute_force = struct 
 
 type analysis_result =
-   Decomposition of point * (int list list) * (int list)* (int list)
+   Decomposition of point * ((int list * int list) list) * 
+             ((int list)*(int list))* (int list)
   |Breaking_point of point * constraint_t * point * mold ;;
 
 exception Size_too_big of point ;; 
@@ -635,14 +636,6 @@ let eval pt =
        mandatory_elements = i_fold_intersect sols
      } ;; 
 
-let synthesize_rays indexed_rays sol = 
-   List.filter_map (
-     fun (idx,ray) -> 
-     if i_is_included_in ray sol 
-     then Some idx
-     else None 
-   ) indexed_rays;;
-
 
 let test_for_decomposer sols dec =
     let m = List.length(i_intersect dec (List.hd sols)) in 
@@ -650,26 +643,54 @@ let test_for_decomposer sols dec =
        List.length(i_intersect dec sol) = m 
     ) sols ;; 
     
+let behead_on_both_sides l = match List.rev(l) with
+  [] -> []
+  | _last_one :: others ->
+   (
+     match List.rev(others) with 
+      [] -> []
+     | _first_one :: middle -> middle
+   ) ;; 
+
+(*
+
+behead_on_both_sides  [1; 2; 3; 4; 5; 6; 7] ;;
+
+*)
+
 let decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
   let full_power_set = il_sort(List_again.power_set base) in 
-  let beheaded_power_set = List.tl full_power_set in 
-  let m = (List.length base)/2 in 
-  let half_power_set = List.filter 
-      (fun z->List.length(z)<=m) beheaded_power_set in 
+  let beheaded_power_set = behead_on_both_sides full_power_set in 
   let solutions = all_solutions pt 0 in 
-  List.filter (test_for_decomposer solutions) half_power_set );; 
+  List.filter_map (
+    fun part ->
+      if not(test_for_decomposer solutions part)
+      then None 
+      else let other_part = i_setminus base part in 
+           if (il_order part other_part)=Total_ordering_result_t.Greater 
+           then Some(part,other_part)
+           else None  
+  ) beheaded_power_set );; 
 
 let rec naive_helper_for_analysis (pt, size) = 
-    let half_of_decs = decomposers(pt) in 
-    if half_of_decs <> []
-    then 
-         let whole = Finite_int_set.to_usual_int_list pt.base_set in
-         let other_half = Image.image (i_setminus whole) half_of_decs in 
-         let decs = half_of_decs @ other_half in 
-         let decs_with_1 = List.filter (i_mem 1) decs in  
-         let chosen_dec = Ordered.min il_order decs_with_1 in 
-         Decomposition(pt,half_of_decs,chosen_dec,canonical_solution pt)
+    let decs = decomposers(pt) in 
+    if decs <> []
+    then
+         let base = Finite_int_set.to_usual_int_list pt.base_set in
+         let n = List.hd(List.rev base) in 
+         let rewritten_decs = Image.image (fun (p1,p2)->
+             if i_mem n p2 then (p1,p2) else (p2,p1)
+         ) decs in 
+         let second_parts = Image.image snd rewritten_decs in 
+         let chosen_second_part = 
+             Ordered.min il_order second_parts in
+         let base = Finite_int_set.to_usual_int_list pt.base_set in
+         let chosen_first_part = 
+            i_setminus base chosen_second_part in
+         let chosen_dec = (chosen_first_part,chosen_second_part) in    
+          Decomposition(pt,rewritten_decs,chosen_dec,
+               canonical_solution pt)
     else
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
