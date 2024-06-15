@@ -751,9 +751,6 @@ let decomposition_hooks_ref = ref ([
     DH (Int_range.range 1 7, [1; 2; 4; 5]);
 ]: decomposition_hook list) ;; 
 
-let extra_solutions_ref = 
-   ref ([]: (point * (int list list)) list) ;; 
-
 
 let descr_for_dec d left right = 
    left^
@@ -970,41 +967,6 @@ let extensions_for_cuttings = function
     |(Brute_force.Breaking_point(_,C l,_,_)) ->
       Image.image (fun t->[t]) l ;;
  
- let happy_result cutting = function 
-    (Brute_force.Decomposition(_,_,chosen_dec,canonical_solution)) ->      
-          let hook = 
-          DH(chosen_dec,
-          i_intersect chosen_dec canonical_solution) in 
-          Decomposition(cutting,hook,canonical_solution) 
-    |(Brute_force.Breaking_point(_,C l,_,_)) ->
-         Fork (cutting,C l) ;;
-
-let rec helper_for_next_advance (pt,to_be_treated) = 
-     match to_be_treated with 
-     [] -> raise Next_advance_exn 
-     | cutting :: other_cuttings ->
-    let simpler_pt = Point.remove pt cutting in 
-    if eval_using_only_translation_opt(simpler_pt)<>None 
-    then helper_for_next_advance (pt,other_cuttings)
-    else 
-    let bf_analysis_result = Brute_force.analize simpler_pt in 
-    let ext = extensions_for_cuttings bf_analysis_result in  
-    let new_cuttings = Image.image (fun t->cutting@t) ext in 
-      let untreated_cuttings = List.filter (fun 
-        rr -> 
-        eval_using_only_translation_opt(Point.remove pt rr)=None
-      ) new_cuttings in 
-    if untreated_cuttings <> []
-    then helper_for_next_advance 
-           (pt,untreated_cuttings@to_be_treated) 
-    else 
-    happy_result cutting bf_analysis_result  ;;    
-    
-let next_advance pt = 
-    if eval_using_only_translation_opt(pt)<>None 
-    then raise Next_advance_exn 
-    else helper_for_next_advance (pt,[[]]) ;;
-
 end ;;
 
 let deduce_using_fork = Private.deduce_using_fork ;; 
@@ -1020,8 +982,6 @@ let eval_on_rails_opt pt =
      );; 
 
 let eval_opt = Private.eval_opt ;; 
-
-let next_advance = Private.next_advance ;; 
 
 let set_verbose_mode b = (Private.verbose_mode_ref:=b) ;; 
 
