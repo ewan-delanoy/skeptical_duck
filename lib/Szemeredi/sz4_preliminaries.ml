@@ -703,7 +703,7 @@ let compute_data_around_decomposer (D(part1,part2)) full_sol=
     let sol1 = i_intersect part1 full_sol 
     and sol2 = translate(i_intersect part2 full_sol) in 
     let fis1 = Finite_int_set.of_usual_int_list part1 
-    and fis2 = Finite_int_set.of_usual_int_list part2 in 
+    and fis2 = Finite_int_set.of_usual_int_list translated_part2 in 
     DTBD((fis1,sol1),(fis2,sol2));;
 
 
@@ -920,7 +920,8 @@ let deduce_using_decomposition pt (part1,sol1) (part2,sol2) =
    let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
    if Point.subset_is_admissible pt full_sol 
    then let mold = Mold.in_decomposition_case mold1 mold2 full_sol in 
-        Impatient.unsafe_add pt mold 
+        let _ = Impatient.unsafe_add pt mold in 
+        mold
    else raise(Nonadmissible_whole_in_decomposition(pt,full_sol));;
 
 
@@ -1119,9 +1120,9 @@ module Private = struct
 
 let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
-let ip3 n = WithRails.eval_opt (p3 n);;
 let ipr3 n r = WithRails.eval_opt (pr3 n r);;
 let fpr3 n r = Deduce.using_fork (pr3 n r);;
+let dpr3 n r = Deduce.using_decomposition (pr3 n r) ;;
 
 
 end ;;
@@ -1138,6 +1139,8 @@ fpr3 7 [] (1,4,7) ;;
 ipr3 8 [2;4] ;;
 
 (*
+dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
+
 ipr3 8 [2;7] ;;
 fpr3 8 [2] (1,4,7) ;;
 
