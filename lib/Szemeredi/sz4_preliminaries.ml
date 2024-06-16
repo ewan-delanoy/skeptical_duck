@@ -836,7 +836,9 @@ let check_individual_june_decomposition pt (right_pt,right_mold) =
     let translated_fis = Finite_int_set.translate offset right_pt.base_set 
     and translated_sol = Image.image (fun x->x+offset) sol in
     let right_dom = Finite_int_set.to_usual_int_list translated_fis in 
-    if (Point.restrict pt right_dom)<>right_pt
+    let side1 = Point.restrict pt right_dom 
+    and side2 = Point.translate offset right_pt in 
+    if side1<>side2
     then None 
     else  
     let left_pt = Point.remove pt right_dom in 
@@ -869,7 +871,7 @@ let eval_without_remembering_opt pt =
    let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
    if opt2 <> None
    then opt2
-   else None ;;
+   else check_june_decompositions pt ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
@@ -1161,9 +1163,15 @@ module Private = struct
 
 let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
-let ipr3 n r = WithRails.eval_opt (pr3 n r);;
-let fpr3 n r = Deduce.using_fork (pr3 n r);;
-let dpr3 n r = Deduce.using_decomposition (pr3 n r) ;;
+
+let d = Deduce.using_decomposition;;
+let e = WithRails.eval_opt ;;
+let f = Deduce.using_fork;;
+
+let dpr3 n r = d(pr3 n r);;
+let epr3 n r = e(pr3 n r);;
+let fpr3 n r = f(pr3 n r);;
+
 
 
 end ;;
@@ -1173,26 +1181,22 @@ Impatient.set_verbose_mode false ;;
 
 open Private ;;
 
-ipr3 6 [];;
-ipr3 7 [4] ;; 
+epr3 6 [];;
+epr3 7 [4] ;; 
 fpr3 7 [] (1,4,7) ;;
 
-ipr3 8 [2;4] ;;
+epr3 8 [2;4] ;;
 dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
 fpr3 8 [2] (1,4,7) ;;
 
-ipr3 8 [5;4] ;;
+epr3 8 [5;4] ;;
 dpr3 8 [5;7] (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
 
 fpr3 8 [5] (1,4,7) ;;
 fpr3 8 [] (2,5,8) ;;
 
-ipr3 14 [];;
+epr3 200 [];;
 
-(*
-dpr3 15 [] (FIS(8,[]),[1;2;4;5]) (FIS(7,[]),[1;2;4;5]) ;; 
-dpr3 16 [] (FIS(8,[]),[1;2;4;5]) (FIS(8,[]),[1;2;4;5]) ;; 
-*)
 
 
 Impatient.set_verbose_mode true ;; 
