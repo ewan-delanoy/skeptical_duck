@@ -785,6 +785,22 @@ let impatient_ref = ref ([]: (point * mold) list) ;;
 
 let verbose_mode_ref = ref true ;;
 
+let june_decompositions_ref = 
+   let p3 = (fun n-> {
+    base_set = FIS(n,[]);
+    max_width = W 3;
+    excluded_full_constraints = [];
+    added_partial_constraints = [];
+   }) 
+  and mold1 =  {
+    solutions = [[1; 2; 4; 5]];
+    mandatory_elements = []
+  } in  
+  ref ([
+     (p3 7),mold1;
+     (p3 8),mold1;
+  ]: (point * mold) list) ;;
+
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
     None -> None 
@@ -812,7 +828,32 @@ let check_filled_complement_case pt n beheaded_mold_opt =
        Some(Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
+let check_individual_june_decomposition pt (right_pt,right_mold) = 
+    let sol = List.hd right_mold.solutions in  
+    let m1 = Finite_int_set.max (right_pt.base_set)
+    and m2 = Finite_int_set.max (pt.base_set) in 
+    let offset = m2-m1 in 
+    let translated_fis = Finite_int_set.translate offset right_pt.base_set 
+    and translated_sol = Image.image (fun x->x+offset) sol in
+    let right_dom = Finite_int_set.to_usual_int_list translated_fis in 
+    if (Point.restrict pt right_dom)<>right_pt
+    then None 
+    else  
+    let left_pt = Point.remove pt right_dom in 
+    match List.assoc_opt left_pt (!impatient_ref) with 
+     None -> None 
+    |Some left_mold ->
+      List.find_map (
+         fun left_sol ->
+           let full_sol = i_merge left_sol translated_sol in 
+           if Point.subset_is_admissible pt full_sol 
+           then Some(Mold.in_decomposition_case left_mold right_mold full_sol)
+           else None
+      ) left_mold.solutions ;;
 
+let check_june_decompositions pt = 
+    List.find_map (check_individual_june_decomposition pt)
+        (!june_decompositions_ref) ;; 
 
 let eval_without_remembering_opt pt =
    if Point.highest_constraint_opt pt = None 
@@ -1137,22 +1178,22 @@ ipr3 7 [4] ;;
 fpr3 7 [] (1,4,7) ;;
 
 ipr3 8 [2;4] ;;
-
-(*
 dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
-
-ipr3 8 [2;7] ;;
 fpr3 8 [2] (1,4,7) ;;
 
-
 ipr3 8 [5;4] ;;
-ipr3 8 [5;7] ;;
-fpr3 8 [5] (1,4,7) ;;
+dpr3 8 [5;7] (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
 
+fpr3 8 [5] (1,4,7) ;;
 fpr3 8 [] (2,5,8) ;;
 
-ipr3 14 [] ;; 
+ipr3 14 [];;
+
+(*
+dpr3 15 [] (FIS(8,[]),[1;2;4;5]) (FIS(7,[]),[1;2;4;5]) ;; 
+dpr3 16 [] (FIS(8,[]),[1;2;4;5]) (FIS(8,[]),[1;2;4;5]) ;; 
 *)
+
 
 Impatient.set_verbose_mode true ;; 
 
