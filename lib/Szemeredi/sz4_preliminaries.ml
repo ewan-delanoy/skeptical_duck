@@ -678,36 +678,28 @@ let test_for_decomposer sols dec =
 
 let decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
-  let full_power_set = il_sort(List_again.power_set base) in 
-  let beheaded_power_set = List.tl full_power_set in 
-  let half_size = (List.length base)/2 in 
-  let half_power_set = List.filter 
-      (fun z->List.length(z)<=half_size) beheaded_power_set in 
+  let beheaded_base = List.rev(List.tl(List.rev base)) in  
+  let power_subset_with_empty_set = il_sort(List_again.power_set base) in 
+  let power_subset = List.tl power_subset_with_empty_set in 
   let solutions = all_solutions pt 0 in 
   List.filter_map (
     fun part ->
       if not(test_for_decomposer solutions part)
       then None 
       else let other_part = i_setminus base part in 
-           if (il_order part other_part)=Total_ordering_result_t.Greater 
-           then Some(D(part,other_part))
-           else None  
-  ) half_power_set );; 
+           Some(D(part,other_part))
+  ) power_subset );; 
 
 
 let analysis_in_decomposition_case pt decs = 
    let base = Finite_int_set.to_usual_int_list pt.base_set in
-   let n = List.hd(List.rev base) in 
-   let rewritten_decs = Image.image (fun (D(p1,p2))->
-             if i_mem n p2 then (p1,p2) else (p2,p1)
-   ) decs in 
-   let second_parts = Image.image snd rewritten_decs in 
+   let n = List.hd(List.rev base) in  
+   let sndd = (fun (D(_a,b)) ->b) in 
+   let second_parts = Image.image sndd decs in 
    let chosen_second_part = 
              Ordered.min il_order second_parts in
-   let base = Finite_int_set.to_usual_int_list pt.base_set in
-   let chosen_first_part = 
-            i_setminus base chosen_second_part in
-   let chosen_dec = D(chosen_first_part,chosen_second_part) in    
+   let chosen_dec = List.find (fun dec->
+     sndd(dec)=chosen_second_part) decs in 
    Decomposition(
    {
       decompositions = decs ;
@@ -1125,10 +1117,11 @@ open Private ;;
 
 ipr3 6 [];;
 ipr3 7 [4] ;; 
-(*
 fpr3 7 [] (1,4,7) ;;
 
 ipr3 8 [2;4] ;;
+
+(*
 ipr3 8 [2;7] ;;
 fpr3 8 [2] (1,4,7) ;;
 
