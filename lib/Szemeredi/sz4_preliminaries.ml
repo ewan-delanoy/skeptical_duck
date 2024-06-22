@@ -1116,7 +1116,6 @@ let next_advance pt =
 end ;;
 
 let eval = Private.eval ;; 
-let next_advance = Private.next_advance ;; 
 
 end ;;
 
