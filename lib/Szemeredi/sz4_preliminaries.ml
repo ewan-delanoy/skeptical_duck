@@ -884,7 +884,9 @@ let eval_on_pretranslated_opt pt =
       match eval_without_remembering_opt pt with 
       None -> None 
       |Some new_answer ->
-        let _ = (impatient_ref := (pt,new_answer) :: 
+        let _ = (
+            if not(Point.is_free pt) then  
+            impatient_ref := (pt,new_answer) :: 
           (!impatient_ref)) in 
         Some new_answer
 
@@ -1046,17 +1048,13 @@ exception Initial_data_already_accessible ;;
 module Private = struct 
 
 let painstaking_ref = ref ([]: (point * mold) list) ;; 
+let new_discoveries_ref = ref ([]: (point * mold) list) ;; 
 
-let eval_on_nonfree old_f nonfree_pt =
-   match Linear.eval_opt nonfree_pt with 
-    Some old_answer -> old_answer 
-   |None -> 
-     let n = Finite_int_set.max (nonfree_pt.base_set) in 
-     let beheaded_pt = Point.remove nonfree_pt [n] in 
-     let forced_pt = Point.force nonfree_pt [n] in 
-     let beheaded_mold = old_f (beheaded_pt,false) 
-     and forced_mold = Mold.successful_append 
-                      (old_f (forced_pt,false)) n in 
+
+let finalize_decomposition_computation 
+        beheaded_pt forced_pt data =
+     let beheaded_mold = Option.get(List.assoc beheaded_pt data) 
+     and forced_mold = Option.get(List.assoc forced_pt data) in 
      let m0 = (Mold.solution_size beheaded_mold)
      and m1 = (Mold.solution_size forced_mold) in 
      if m1 > m0 (* implying m1 = m0 + 1 *)
@@ -1064,23 +1062,108 @@ let eval_on_nonfree old_f nonfree_pt =
      else if m1 = m0
      then Mold.sum forced_mold beheaded_mold 
      else (* unknown case so far, but theoretically possible *)
-          beheaded_mold ;; 
-    
-let  eval_on_possibly_free old_f pt_starting_with_1 =
-   if Point.is_free pt_starting_with_1 
-   then Mold.in_free_case pt_starting_with_1 
+          beheaded_mold ;;   
+
+         
+let rec lower_level_eval_opt pt_with_1 = 
+   if Point.is_free pt_with_1 
+   then Some(Mold.in_free_case pt_with_1) 
    else 
-   let mold = eval_on_nonfree old_f pt_starting_with_1 in  
-   let _ = (painstaking_ref := (pt_starting_with_1,mold) :: (!painstaking_ref)) in 
-   mold ;;   
+   match List.assoc_opt pt_with_1 (!painstaking_ref) with 
+  (Some old_answer) -> Some old_answer
+  | None ->
+    (match List.assoc_opt pt_with_1 (!new_discoveries_ref) with 
+  (Some old_answer) -> Some old_answer
+  | None ->
+   (match Linear.eval_opt pt_with_1 with  
+    (Some lower_level_answer) -> 
+       let _ = (new_discoveries_ref := (pt_with_1,lower_level_answer) :: 
+        (!new_discoveries_ref)) in
+        Some lower_level_answer 
+    |None -> None ));;   
 
-let rec helper_for_eval_on_pretranslated (pt,is_known_to_be_nonfree) =
-    if is_known_to_be_nonfree 
-    then eval_on_nonfree helper_for_eval_on_pretranslated pt
-    else eval_on_possibly_free helper_for_eval_on_pretranslated pt ;; 
+(*
+If we hav reached the end of the list, we return the last
+computed value (which corresponds to the initially asked value),
+otherwise we store the result in new_discoveries_ref 
+and keep on computing
 
-let eval_on_pretranslated pt = 
-    helper_for_eval_on_pretranslated (pt,false) ;;
+*)
+
+let rec eval_on_nonempty_list next_pt other_untreated_pts = 
+   match lower_level_eval_opt next_pt with 
+  (Some next_mold) -> 
+      (
+        match other_untreated_pts with  
+        second_next_pt :: other_pts ->
+          eval_on_nonempty_list second_next_pt other_pts 
+        | [] -> next_mold   
+      )  
+  | None ->
+     let n = Finite_int_set.max (next_pt.base_set) in 
+     let beheaded_pt = Point.remove next_pt [n] in 
+     let forced_pt = Point.force next_pt [n] in
+     let temp1 = Image.image (
+          fun pt -> (pt,lower_level_eval_opt pt)
+     ) [beheaded_pt;forced_pt] in 
+     let (known,unknown) = List.partition (
+         fun (_pt,answer_opt) -> answer_opt <> None
+     ) temp1 in 
+     if unknown <> []
+     then let untreated_pts = Image.image fst unknown in 
+          eval_on_nonempty_list (List.hd untreated_pts) 
+                     ((List.tl untreated_pts)@
+                         (next_pt::other_untreated_pts))
+     else  
+     let next_mold = finalize_decomposition_computation 
+        beheaded_pt forced_pt known in 
+     (
+        match other_untreated_pts with  
+        second_next_pt :: other_pts ->
+          let _ = (new_discoveries_ref := (next_pt,next_mold) :: 
+        (!new_discoveries_ref)) in
+          eval_on_nonempty_list second_next_pt other_pts 
+        | [] -> next_mold   
+      )     
+     ;;
+
+let outer_eval pt_with_1 = 
+   let  _ = (new_discoveries_ref:=[]) in 
+   match lower_level_eval_opt pt_with_1 with 
+  (Some old_answer) -> old_answer
+  | None ->
+     let n = Finite_int_set.max (pt_with_1.base_set) in 
+     let beheaded_pt = Point.remove pt_with_1 [n] in 
+     let forced_pt = Point.force pt_with_1 [n] in
+     let temp1 = Image.image (
+          fun pt -> (pt,lower_level_eval_opt pt)
+     ) [beheaded_pt;forced_pt] in 
+     let (known,unknown) = List.partition (
+         fun (_pt,answer_opt) -> answer_opt <> None
+     ) temp1 in 
+     if unknown <> []
+     then let untreated_pts = Image.image fst unknown in 
+          eval_on_nonempty_list (List.hd untreated_pts) 
+                     ((List.tl untreated_pts)@[pt_with_1])
+     else  
+     finalize_decomposition_computation 
+        beheaded_pt forced_pt known ;;
+
+
+
+let eval_on_pretranslated pt_with_1 =
+  match List.assoc_opt pt_with_1 (!painstaking_ref) with 
+  (Some old_answer) -> old_answer
+  | None ->
+   (
+      let new_answer = outer_eval pt_with_1 in 
+      let _ = (
+            if not(Point.is_free pt_with_1) then  
+            painstaking_ref := (pt_with_1,new_answer) :: 
+          (!painstaking_ref)) in 
+      new_answer
+   ) ;;      
+
 
 let eval pt =
     let (d,pretranslated_pt) = 
@@ -1156,6 +1239,7 @@ open Private ;;
 
 (* computing epr3 n [] *)
 
+(*
 epr3 6 [];;
 epr3 7 [4] ;; 
 fpr3 7 [] (1,4,7) ;;
@@ -1171,10 +1255,13 @@ fpr3 8 [5] (1,4,7) ;;
 fpr3 8 [] (2,5,8) ;;
 
 epr3 200 [];;
+*)
 
 (* computing epr3 n [2] *)
 
+(*
 epr3 6 [2];;
+*)
 
 (*
 dpr3 7 [2] (FIS(6,[1;2;4]),[3;5;6]) (FIS(7,[2;3;5;6]),[1;4]) ;; 
