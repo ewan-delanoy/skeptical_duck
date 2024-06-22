@@ -992,7 +992,7 @@ let using_fork pt (i,j,k) =
 
 end ;;
 
-module WithRails = struct 
+module Linear = struct 
 
 module Private = struct 
 
@@ -1046,7 +1046,7 @@ module Private = struct
 let painstaking_ref = ref ([]: (point * mold) list) ;; 
 
 let eval_on_nonfree old_f nonfree_pt =
-   match WithRails.eval_opt nonfree_pt with 
+   match Linear.eval_opt nonfree_pt with 
     Some old_answer -> old_answer 
    |None -> 
      let n = Finite_int_set.max (nonfree_pt.base_set) in 
@@ -1138,7 +1138,7 @@ let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
 let d = Deduce.using_decomposition;;
-let e = WithRails.eval_opt ;;
+let e = Linear.eval_opt ;;
 let f = Deduce.using_fork;;
 
 let dpr3 n r = d(pr3 n r);;
