@@ -684,7 +684,7 @@ let test_for_decomposer sols dec =
        List.length(i_intersect dec sol) = m 
     ) sols ;; 
 
-let weak_decomposers =Memoized.make(fun pt ->
+let decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
   let beheaded_base = List.rev(List.tl(List.rev base)) in  
   let power_subset_with_empty_set = il_sort(List_again.power_set beheaded_base) in 
@@ -698,11 +698,6 @@ let weak_decomposers =Memoized.make(fun pt ->
            Some(D(part,other_part))
   ) power_subset );; 
 
-let decomposers =Memoized.make(fun pt ->
-   List.filter (
-       fun (D(part1,part2)) -> 
-   )(weak_decomposers pt)
-);; 
 
 let compute_data_around_decomposer (D(part1,part2)) full_sol= 
     let t = (List.hd part2) - 1 in 
@@ -790,8 +785,6 @@ module Impatient = struct
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
-
-let verbose_mode_ref = ref true ;;
 
 let june_decompositions_ref = 
    let p3 = (fun n-> {
@@ -915,8 +908,6 @@ let unsafe_add pt mold =
 end ;;
 
 let eval_opt = Private.eval_opt ;; 
-
-let set_verbose_mode b = (Private.verbose_mode_ref:=b) ;; 
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1121,10 +1112,6 @@ let next_advance pt =
   then raise Initial_data_already_accessible
   else helper_for_next_advance pt ;; 
 
-let eval_on_pretranslated_accessible pt = 
-   let sub_f = (fun other_pt->
-
-   )
 
 end ;;
 
@@ -1190,8 +1177,6 @@ let fpr3 n r = f(pr3 n r);;
 
 end ;;
 
-Impatient.set_verbose_mode false ;; 
-
 
 open Private ;;
 
@@ -1213,22 +1198,13 @@ fpr3 8 [] (2,5,8) ;;
 
 epr3 200 [];;
 
-(* computing epr3 n [] *)
+(* computing epr3 n [2] *)
 
-epr3 6 2;;
+epr3 6 [2];;
 
 (*
 dpr3 7 [2] (FIS(6,[1;2;4]),[3;5;6]) (FIS(7,[2;3;5;6]),[1;4]) ;; 
 *)
-
-
-
-
-
-
-
-
-Impatient.set_verbose_mode true ;; 
 
 
 end ;;
