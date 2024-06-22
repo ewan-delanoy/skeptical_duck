@@ -1,15 +1,81 @@
 (************************************************************************************************************************
-Snippet 137 : 
+Snippet 138 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
+Snippet 137 : Enhance a Java file with many printouts
+************************************************************************************************************************)
+
+module Snip137=struct
+
+let ap1 = Absolute_path.of_string 
+  "~/Downloads/StepExploitationPropertiesConfiguration.java";;
+
+let text1 = Io.read_whole_file ap1 ;; 
+
+let lines1 = Lines_in_string.enhanced_indexed_lines text1 ;;  
+
+let prefix1="public String ";;
+
+let indentation = 8;;
+let indenter = String.make indentation ' ';;
+
+let extract1 (length_before,line_index,line) =
+  let i1 = Strung.char_finder_from (fun c->
+    not(List.mem c [' ';'\t';'\r'])
+  ) line 1 in 
+  if i1<1 then None else
+  let temp1 = Cull_string.cobeginning (i1-1) line in 
+  if not(Supstring.begins_with temp1 prefix1) 
+  then None 
+  else 
+  let j1 = i1+(String.length prefix1) -1 in 
+  let temp2 = Cull_string.cobeginning j1 line in 
+  let i2 = (String.index_from line j1 '(')+1 in 
+  let getter_name = Cull_string.interval line (j1+1) (i2-1) in 
+  let i3 = (String.index_from line i2 '{')+1 in
+  let before = Cull_string.beginning i3 line 
+  and after = Cull_string.cobeginning i3 line in 
+  let msg = "\r\n"^indenter^"System.out.println(\" >>@#@<< Entering "
+   ^getter_name^"\");" in 
+  Some(line_index,before^msg^after) 
+  (*
+  Some(length_before,line_index,getter_name,before,after) 
+  *)  
+;; 
+  
+
+let newly_created_lines = List.filter_map extract1 lines1 ;; 
+
+let old_lines = Lines_in_string.indexed_lines text1 ;;
+
+let modified_lines = Image.image (
+   fun (idx,line) ->
+     match List.assoc_opt idx newly_created_lines with 
+     None -> line 
+     |Some enhanced_line -> enhanced_line
+) old_lines ;;
+
+let text2 = String.concat "\n" modified_lines ;;
+
+let act1 () = Io.overwrite_with ap1 text2 ;; 
+(*
+let v1 = Tools_for_debugging.extract_from_list extract1 lines1 ;; 
+*)
+
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
 Snippet 136 : Now-abandoned idea to create a longest-match finder.
 Part of this code is reused in the Longest_match_extractor module
 ************************************************************************************************************************)
-
 module Snip136=struct
 
 module MPRI = Jpr_main.Private ;; 

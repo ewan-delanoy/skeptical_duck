@@ -603,7 +603,7 @@ module Mold = struct
 end ;;
 
   
-module Brute_force = struct 
+module Small_size_set = struct 
 
 type decomposition_t = D of (int list)*(int list) ;;
 
@@ -650,11 +650,14 @@ let all_solutions pt offset =
       let m = List.length(List.hd(List.rev realizations)) in 
       List.filter (fun y->List.length(y)=m-offset) realizations ;;  
 
+let measure = Memoized.make(fun pt ->
+   List.length(List.hd(List.rev (all_realizations pt)))
+);;
 
 let rec helper_for_solution_chooser (sols,base) =
      if List.length sols = 1 then List.hd sols else 
      match base with 
-      [] -> failwith("Error in Brute_force.helper_for_solution_chooser")
+      [] -> failwith("Error in Small_size_set.helper_for_solution_chooser")
      |v::others ->
        let possibly_empty = List.filter (fun sol ->not(i_mem v sol)) sols in 
        let not_empty = (if possibly_empty = [] then sols else possibly_empty) in 
@@ -681,7 +684,7 @@ let test_for_decomposer sols dec =
        List.length(i_intersect dec sol) = m 
     ) sols ;; 
 
-let decomposers =Memoized.make(fun pt ->
+let weak_decomposers =Memoized.make(fun pt ->
   let base = Finite_int_set.to_usual_int_list pt.base_set in 
   let beheaded_base = List.rev(List.tl(List.rev base)) in  
   let power_subset_with_empty_set = il_sort(List_again.power_set beheaded_base) in 
@@ -695,6 +698,11 @@ let decomposers =Memoized.make(fun pt ->
            Some(D(part,other_part))
   ) power_subset );; 
 
+let decomposers =Memoized.make(fun pt ->
+   List.filter (
+       fun (D(part1,part2)) -> 
+   )(weak_decomposers pt)
+);; 
 
 let compute_data_around_decomposer (D(part1,part2)) full_sol= 
     let t = (List.hd part2) - 1 in 
@@ -1088,7 +1096,7 @@ let eval pt =
      (eval_on_pretranslated pretranslated_pt);;
 
 let pretranslated_is_accessible pt =
-  ((Point.size pt) <= Brute_force.max_size ) || 
+  ((Point.size pt) <= Small_size_set.max_size ) || 
   ((WithRails.eval_opt pt) <> None) ||
   ((List.assoc_opt pt (!painstaking_ref)) <> None) ;;
 
@@ -1113,12 +1121,18 @@ let next_advance pt =
   then raise Initial_data_already_accessible
   else helper_for_next_advance pt ;; 
 
+let eval_on_pretranslated_accessible pt = 
+   let sub_f = (fun other_pt->
+
+   )
+
 end ;;
 
 let eval = Private.eval ;; 
 let next_advance = Private.next_advance ;; 
 
 end ;;
+
 
 module PointExample = struct 
 
@@ -1181,6 +1195,8 @@ Impatient.set_verbose_mode false ;;
 
 open Private ;;
 
+(* computing epr3 n [] *)
+
 epr3 6 [];;
 epr3 7 [4] ;; 
 fpr3 7 [] (1,4,7) ;;
@@ -1196,6 +1212,19 @@ fpr3 8 [5] (1,4,7) ;;
 fpr3 8 [] (2,5,8) ;;
 
 epr3 200 [];;
+
+(* computing epr3 n [] *)
+
+epr3 6 2;;
+
+(*
+dpr3 7 [2] (FIS(6,[1;2;4]),[3;5;6]) (FIS(7,[2;3;5;6]),[1;4]) ;; 
+*)
+
+
+
+
+
 
 
 
