@@ -518,6 +518,8 @@ module Point = struct
     Highest_constraint.below_maximal_width 
        pt.max_width pt.excluded_full_constraints domain ;;
 
+  let is_free pt = ((highest_constraint_opt pt) =None );;
+
   let remove = Private.remove ;;
 
   let restrict = Private.restrict ;;  
@@ -859,7 +861,7 @@ let check_june_decompositions pt =
         (!june_decompositions_ref) ;; 
 
 let eval_without_remembering_opt pt =
-   if Point.highest_constraint_opt pt = None 
+   if Point.is_free pt 
    then Some(Mold.in_free_case pt) 
    else 
    let n = Finite_int_set.max (pt.base_set) in 
@@ -1065,7 +1067,7 @@ let eval_on_nonfree old_f nonfree_pt =
           beheaded_mold ;; 
     
 let  eval_on_possibly_free old_f pt_starting_with_1 =
-   if Point.highest_constraint_opt pt_starting_with_1 = None 
+   if Point.is_free pt_starting_with_1 
    then Mold.in_free_case pt_starting_with_1 
    else 
    let mold = eval_on_nonfree old_f pt_starting_with_1 in  
