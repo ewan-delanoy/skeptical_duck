@@ -780,7 +780,7 @@ end ;;
 
 
 
-module Impatient = struct 
+module One_more_small_step = struct 
 
 module Private = struct 
 
@@ -932,7 +932,7 @@ exception Unknown_part_in_decomposition of point ;;
 let check_part_in_decomposition pt fis sol = 
     let domain = Finite_int_set.to_usual_int_list fis in 
     let smaller_pt = Point.restrict pt domain in 
-    match Impatient.eval_opt smaller_pt with 
+    match One_more_small_step.eval_opt smaller_pt with 
     None -> raise(Unknown_part_in_decomposition(smaller_pt))
     |Some mold ->
       let m = Mold.solution_size mold in 
@@ -962,7 +962,7 @@ let deduce_using_decomposition pt (part1,sol1) (part2,sol2) =
    let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
    if Point.subset_is_admissible pt full_sol 
    then let mold = Mold.in_decomposition_case mold1 mold2 full_sol in 
-        let _ = Impatient.unsafe_add pt mold in 
+        let _ = One_more_small_step.unsafe_add pt mold in 
         mold
    else raise(Nonadmissible_whole_in_decomposition(pt,full_sol));;
 
@@ -978,7 +978,7 @@ let using_fork pt (i,j,k) =
     then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
     else
     let temp1 = Image.image (fun t->
-       Impatient.eval_opt(Point.remove pt [t])
+       One_more_small_step.eval_opt(Point.remove pt [t])
     ) [i;j;k] in 
     let m = List_again.find_index_of_in None temp1 in 
     if m > 0 
@@ -987,7 +987,7 @@ let using_fork pt (i,j,k) =
     else 
     let molds = Image.image Option.get temp1 in 
     let mold = Mold.in_fork_case molds in 
-    let _ = Impatient.unsafe_add pt mold in 
+    let _ = One_more_small_step.unsafe_add pt mold in 
     mold ;;
 
 end ;;
@@ -1014,17 +1014,17 @@ let rec helper_for_rails_evaluation (current,to_be_treated) =
   match to_be_treated with 
   [] -> Some current 
   | pt :: other_points ->
-     match Impatient.eval_opt pt with 
+     match One_more_small_step.eval_opt pt with 
        None -> None  
       |Some next_one ->
         helper_for_rails_evaluation (next_one,other_points) ;; 
 
 let eval_on_rails_opt pt = 
    match compute_rails pt with 
-   [] -> Impatient.eval_opt pt 
+   [] -> One_more_small_step.eval_opt pt 
    | spark :: rails ->
      (
-      match Impatient.eval_opt spark with 
+      match One_more_small_step.eval_opt spark with 
       None -> None 
       |Some spark_mold ->
        helper_for_rails_evaluation (spark_mold,rails) 
@@ -1085,33 +1085,6 @@ let eval pt =
       Point.decompose_wrt_translation pt in 
     Mold.translate d
      (eval_on_pretranslated pretranslated_pt);;
-
-let pretranslated_is_accessible pt =
-  ((Point.size pt) <= Small_size_set.max_size ) || 
-  ((WithRails.eval_opt pt) <> None) ||
-  ((List.assoc_opt pt (!painstaking_ref)) <> None) ;;
-
-let is_accessible pt =
-    let (_,pretranslated_pt) = 
-      Point.decompose_wrt_translation pt in 
-    pretranslated_is_accessible pretranslated_pt;;
-
-let rec helper_for_next_advance inaccessible_pt = 
-  let n = Finite_int_set.max (inaccessible_pt.base_set) in 
-  let beheaded_pt = Point.remove inaccessible_pt [n] in
-  if not(is_accessible beheaded_pt)
-  then  helper_for_next_advance beheaded_pt 
-  else
-  let forced_pt = Point.force inaccessible_pt [n] in 
-  if not(is_accessible forced_pt)
-  then helper_for_next_advance forced_pt 
-  else inaccessible_pt ;;
-
-let next_advance pt = 
-  if is_accessible pt 
-  then raise Initial_data_already_accessible
-  else helper_for_next_advance pt ;; 
-
 
 end ;;
 
