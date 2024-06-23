@@ -977,7 +977,16 @@ let eval_on_rails_opt pt =
 let eval_opt ?(extra_solutions=[]) pt = 
     match eval_on_rails_opt pt with 
        None -> None 
-      |Some mold -> Some(Mold.add_solutions mold extra_solutions) ;;
+      |Some mold -> 
+        let new_mold = Mold.add_solutions mold extra_solutions 
+        and old_mold = Option.get (One_more_small_step.eval_opt pt) in 
+        let _ = (
+          if new_mold <> old_mold 
+          then 
+          let expl = Option.get(One_more_small_step.explanation_opt pt) in 
+          One_more_small_step.unsafe_add pt new_mold expl
+        ) in 
+        Some(Mold.add_solutions mold extra_solutions) ;;
 
 end ;;
 
@@ -1371,6 +1380,10 @@ fpr3 8 [2] (1,4,7) ;;
 epr3 9 [2] ;; 
 
 dpr3 10 [2] (FIS(1,[]),[1]) (FIS(8,[]),[1;2;6;7]);; 
+
+epr3 12 [2] ;;
+epr3 13 [2] ~extra_solutions:[[1;3;4;6;10;11;13]] ;;
+
 
 (*
 epr3 13 [2] ;;
