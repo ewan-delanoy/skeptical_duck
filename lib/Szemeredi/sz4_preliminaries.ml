@@ -1182,6 +1182,32 @@ module BuiltOnEval = struct
 
 exception Find_sticky_vertex_exn ;;
 
+type decomposition_t = D of (int list) * (int list) ;; 
+
+type decomposition_to_be_deduced_t = 
+    DTBD of ( finite_int_set * (int list) ) * 
+            ( finite_int_set * (int list) ) ;;
+
+type decomposition_data = {
+    decompositions : decomposition_t list ;
+    chosen_decomposition : decomposition_t ;
+    to_be_deduced : decomposition_to_be_deduced_t ;
+    canonical_solution : int list
+} ;;
+
+type breaking_point_data = {
+    breaking_constraint : constraint_t ;
+    broken_point : point ;
+    broken_mold : mold 
+} ;;
+
+type analysis_result =
+   Decomposition of decomposition_data
+  |Breaking_point of breaking_point_data ;; 
+
+
+
+
 module Private = struct 
 
 let measure = Memoized.make(fun pt->
@@ -1218,11 +1244,86 @@ let distinguished_parts = Memoized.recursive(fun old_f pt ->
     il_merge temp1 temp2
 ) ;; 
 
+let rec helper_for_solution_chooser (pt,m,obtained_so_far,to_be_treated) =
+     match to_be_treated with 
+      [] -> obtained_so_far
+     |v::others ->
+       let beheaded_pt = Point.remove pt [v] in 
+       if measure(beheaded_pt) = m 
+       then helper_for_solution_chooser (beheaded_pt,m,obtained_so_far,others)
+       else 
+       let forced_pt = Point.force pt [v] in
+       helper_for_solution_chooser (forced_pt,m-1,v::obtained_so_far,others)
+       
+let canonical_solution = Memoized.make(fun pt->
+   let rev_base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
+   and m = measure pt  in 
+   helper_for_solution_chooser (pt,m,[],rev_base)
+) ;; 
+
+let compute_data_around_decomposer (D(part1,part2)) full_sol= 
+    let t = (List.hd part2) - 1 in 
+    let translate = Image.image (fun x->x-t)  in  
+    let translated_part2 = translate part2 in  
+    let sol1 = i_intersect part1 full_sol 
+    and sol2 = translate(i_intersect part2 full_sol) in 
+    let fis1 = Finite_int_set.of_usual_int_list part1 
+    and fis2 = Finite_int_set.of_usual_int_list translated_part2 in 
+    DTBD((fis1,sol1),(fis2,sol2));;
 
 
+let analysis_in_decomposition_case pt real_decs = 
+   let chosen_second_part = List.hd real_decs in
+   let whole = Finite_int_set.to_usual_int_list (pt.base_set) in 
+   let chosen_first_part = i_setminus whole chosen_second_part in
+   let chosen_dec =D(chosen_first_part,chosen_second_part) in  
+   let sol = canonical_solution pt in 
+   let n = Finite_int_set.max (pt.base_set) in 
+   let formal_decs = List.filter_map (
+      fun part ->
+       let other_part = i_setminus whole part in 
+       if i_mem n other_part 
+       then Some(D(part,other_part))
+       else None
+   ) real_decs in 
+   Decomposition(
+   {
+      decompositions = formal_decs ;
+      chosen_decomposition = chosen_dec ;
+      to_be_deduced = compute_data_around_decomposer chosen_dec sol;
+      canonical_solution = sol 
+   });;
+
+
+let rec helper_for_analysis (pt, size) = 
+    let decs = distinguished_parts(pt) in 
+    let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
+    if real_decs <> []
+    then analysis_in_decomposition_case pt real_decs 
+    else
+    let cstr = Option.get (Point.highest_constraint_opt pt) in 
+    let pt_before = Point.exclude pt cstr in 
+    let sol_before = Painstaking.eval pt_before in 
+    let size_before = Mold.solution_size sol_before in 
+    if size_before<>size  
+    then Breaking_point(
+        {
+          breaking_constraint = cstr ;
+          broken_point = pt_before ;
+          broken_mold = sol_before 
+        })
+   else helper_for_analysis (pt_before, size) ;; 
+
+let analize pt = 
+    let mold = Painstaking.eval pt in 
+    let size = Mold.solution_size mold in
+    helper_for_analysis (pt, size) ;;  
 
 
 end ;;
+
+let analize = Private.analize ;;
+let canonical_solution = Private.canonical_solution ;; 
 
 end ;;
 
