@@ -536,14 +536,30 @@ module Point = struct
 
 module Mold = struct 
 
-  let add_solutions mold sols = {
-     mold with 
-     solutions = il_merge (il_sort sols) mold.solutions
-  } ;;
+  exception Incorrect_extra_solutions of int *((int list) list) ;;
+
+  module Private = struct
+
+  let add_carefully extra_sols old_sols = 
+    let m = List.length(List.hd old_sols) in 
+    let bad_extra_sols = List.filter (
+       fun z-> (List.length z)<> m 
+    ) extra_sols in 
+    if bad_extra_sols <> []
+    then raise(Incorrect_extra_solutions(m,bad_extra_sols))
+    else il_merge (il_sort extra_sols) old_sols ;; 
+  
+  end ;;
+
+  let add_solutions mold extra_sols = 
+      {
+         mold with 
+         solutions = Private.add_carefully extra_sols mold.solutions
+      } ;;
 
   let in_decomposition_case mold1 mold2 full_sol extra_solutions =
   {
-             solutions = il_merge (il_sort extra_solutions) [full_sol];
+             solutions = Private.add_carefully extra_solutions [full_sol];
              mandatory_elements = 
              i_merge
              (mold1.mandatory_elements)
@@ -561,7 +577,7 @@ module Mold = struct
     let last_mold = List.hd(List.rev molds) in 
     
    { 
-     solutions  = il_merge (il_sort extra_solutions) last_mold.solutions; 
+     solutions  = Private.add_carefully extra_solutions last_mold.solutions; 
      mandatory_elements = i_fold_intersect (Image.image
       (fun mold -> mold.mandatory_elements) molds
    ); 
@@ -958,10 +974,15 @@ let eval_on_rails_opt pt =
        helper_for_rails_evaluation (spark_mold,rails) 
      );; 
 
+let eval_opt ?(extra_solutions=[]) pt = 
+    match eval_on_rails_opt pt with 
+       None -> None 
+      |Some mold -> Some(Mold.add_solutions mold extra_solutions) ;;
+
 end ;;
 
 
-let eval_opt = Private.eval_on_rails_opt ;; 
+let eval_opt = Private.eval_opt ;; 
 
 end ;;
 
@@ -1305,9 +1326,9 @@ let d = Deduce.using_decomposition;;
 let e = Linear.eval_opt ;;
 let f = Deduce.using_fork;;
 
-let dpr3 n r = d(pr3 n r);;
-let epr3 n r = e(pr3 n r);;
-let fpr3 n r = f(pr3 n r);;
+let dpr3 ?extra_solutions n r = d ?extra_solutions (pr3 n r);;
+let epr3 ?extra_solutions n r = e ?extra_solutions (pr3 n r);;
+let fpr3 ?extra_solutions n r = f ?extra_solutions (pr3 n r);;
 
 
 
@@ -1324,7 +1345,8 @@ epr3 7 [4] ;;
 fpr3 7 [] (1,4,7) ;;
 
 epr3 8 [2;4] ;;
-dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
+dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) 
+   ~extra_solutions:[[1;3;4;8]];; 
 fpr3 8 [2] (1,4,7) ;;
 
 epr3 8 [5;4] ;;
@@ -1346,16 +1368,14 @@ fpr3 7 [2;6] (1,4,7) ;;
 dpr3 7 [2] (FIS(6,[1;2;3;4;5]),[6]) (FIS(7,[2;6]),[1;3;4]) ;; 
 
 fpr3 8 [2] (1,4,7) ;;
+epr3 9 [2] ;; 
+
+dpr3 10 [2] (FIS(1,[]),[1]) (FIS(8,[]),[1;2;6;7]);; 
+
 (*
-epr3 9 [2] ;;
+epr3 13 [2] ;;
+epr3 
 *)
-
-
-(*
-dpr3 9 [2]  (FIS(9, [1;2]),[3;4;8;9]) (FIS(1,[]),[1]) ;; 
-dpr3 10 [2] (FIS(10,[1;2]),[3;4;8;9]) (FIS(1,[]),[1]) ;; 
-*)
-
 
 
 end ;;
