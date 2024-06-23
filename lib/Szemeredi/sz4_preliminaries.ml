@@ -536,9 +536,9 @@ module Point = struct
 
 module Mold = struct 
 
-  let add_one_solution mold sol = {
+  let add_solutions mold sols = {
      mold with 
-     solutions = il_insert sol mold.solutions
+     solutions = il_merge (il_sort sols) mold.solutions
   } ;;
 
   let in_decomposition_case mold1 mold2 full_sol =
@@ -825,7 +825,7 @@ let explanation_on_pretranslated_opt pt_with_1 =
     then Some "free"
     else List.assoc_opt pt_with_1 (!explanations_ref) ;; 
 
-let explanations_opt pt =  
+let explanation_opt pt =  
    let (_,pretranslated_pt) = 
       Point.decompose_wrt_translation pt in 
    explanation_on_pretranslated_opt  pretranslated_pt ;;   
@@ -834,7 +834,7 @@ end ;;
 
 let eval_opt = Private.eval_opt ;; 
 
-let explanations_opt = Private.explanations_opt ;;
+let explanation_opt = Private.explanation_opt ;;
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -868,7 +868,7 @@ let check_part_in_decomposition pt fis sol =
       else 
       if List.length(sol)<>m
       then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
-      else Mold.add_one_solution mold sol ;; 
+      else Mold.add_solutions mold [sol] ;; 
 
 
 let find_translation_index_in_between_intlists l l1 l2 = 
@@ -880,6 +880,7 @@ let find_translation_index_in_between fis fis1 fis2 =
      (Finite_int_set.to_usual_int_list fis)
      (Finite_int_set.to_usual_int_list fis1)
      (Finite_int_set.to_usual_int_list fis2) ;;
+
 
 let deduce_using_decomposition pt (part1,sol1) (part2,sol2) = 
    let mold1 = check_part_in_decomposition pt part1 sol1 
