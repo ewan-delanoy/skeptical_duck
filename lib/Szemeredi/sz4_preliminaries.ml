@@ -684,6 +684,8 @@ module One_more_small_step = struct
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
+let explanations_ref = ref ([]: (point * string) list) ;; 
+
 
 let june_decompositions_ref = 
    let p3 = (fun n-> {
@@ -763,6 +765,9 @@ let lower_level_eval_opt pt_with_1 =
    then Some(Mold.in_free_case pt_with_1) 
    else List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
+let add_explanation pt expl = 
+     (explanations_ref := (pt,expl) :: (!explanations_ref));;
+
 let eval_without_remembering_opt pt =
    if Point.is_free pt 
    then Some(Mold.in_free_case pt) 
@@ -772,12 +777,19 @@ let eval_without_remembering_opt pt =
    let beheaded_mold_opt = lower_level_eval_opt beheaded_pt in 
    let opt1 = check_extension_case pt n beheaded_mold_opt in 
    if opt1 <> None
-   then opt1
+   then let _ = add_explanation pt "extension" in 
+        opt1
    else 
    let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
    if opt2 <> None
-   then opt2
-   else check_june_decompositions pt ;;
+   then let _ = add_explanation pt "filled complement" in 
+        opt2
+   else 
+   let opt3 = check_june_decompositions pt in 
+   if opt3 <> None
+   then let _ = add_explanation pt "June decompositions" in 
+        opt3
+   else None ;;
 
 let eval_on_pretranslated_opt pt =
   match List.assoc_opt pt (!impatient_ref) with 
@@ -803,12 +815,26 @@ let eval_opt pt =
     Option.map(Mold.translate d)
      (eval_on_pretranslated_opt pretranslated_pt);;
 
-let unsafe_add pt mold = 
-      (impatient_ref := (pt,mold) ::(!impatient_ref)) ;;
+let unsafe_add pt mold expl = 
+      (impatient_ref := (pt,mold) ::(!impatient_ref);
+       explanations_ref := (pt,expl) ::(!explanations_ref);
+      ) ;;
+
+let explanation_on_pretranslated_opt pt_with_1 = 
+    if Point.is_free pt_with_1 
+    then Some "free"
+    else List.assoc_opt pt_with_1 (!explanations_ref) ;; 
+
+let explanations_opt pt =  
+   let (_,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+   explanation_on_pretranslated_opt  pretranslated_pt ;;   
 
 end ;;
 
 let eval_opt = Private.eval_opt ;; 
+
+let explanations_opt = Private.explanations_opt ;;
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -863,7 +889,7 @@ let deduce_using_decomposition pt (part1,sol1) (part2,sol2) =
    let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
    if Point.subset_is_admissible pt full_sol 
    then let mold = Mold.in_decomposition_case mold1 mold2 full_sol in 
-        let _ = One_more_small_step.unsafe_add pt mold in 
+        let _ = One_more_small_step.unsafe_add pt mold "external decomposition" in 
         mold
    else raise(Nonadmissible_whole_in_decomposition(pt,full_sol));;
 
@@ -888,7 +914,7 @@ let using_fork pt (i,j,k) =
     else 
     let molds = Image.image Option.get temp1 in 
     let mold = Mold.in_fork_case molds in 
-    let _ = One_more_small_step.unsafe_add pt mold in 
+    let _ = One_more_small_step.unsafe_add pt mold "External fork" in 
     mold ;;
 
 end ;;
@@ -1314,12 +1340,12 @@ epr3 200 [];;
 
 epr3 6 [2];;
 
-(*
-fpr3 7 [2;3] (1,4,7) ;;
-dpr3 7 [2] (FIS(7,[2;3]),[1;4;6]) (FIS(1,[]),[1]) ;; 
 
+fpr3 7 [2;6] (1,4,7) ;;
+dpr3 7 [2] (FIS(6,[1;2;3;4;5]),[6]) (FIS(7,[2;6]),[1;3;4]) ;; 
 
 fpr3 8 [2] (1,4,7) ;;
+(*
 epr3 9 [2] ;;
 *)
 
