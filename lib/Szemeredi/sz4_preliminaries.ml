@@ -52,6 +52,7 @@ let il_order = Total_ordering.silex_for_intlists ;;
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_insert = Ordered.insert il_order ;;
 let il_is_included_in = Ordered.is_included_in il_order ;;
+let il_mem = Ordered.mem il_order ;;
 let il_min= Ordered.min il_order ;;
 let il_merge = Ordered.merge il_order ;;
 let il_sort = Ordered.sort il_order ;;
@@ -1098,7 +1099,8 @@ type breaking_point_data = {
 } ;;
 
 type analysis_result =
-   Decomposition of decomposition_data
+   Extension
+  |Decomposition of decomposition_data
   |Breaking_point of breaking_point_data ;; 
 
 
@@ -1169,7 +1171,11 @@ let compute_data_around_decomposer (D(part1,part2)) full_sol=
 
 
 let analysis_in_decomposition_case pt real_decs = 
-   let chosen_second_part = List.hd real_decs in
+   let n = Finite_int_set.max (pt.base_set) in 
+   if il_mem [n] real_decs 
+   then Extension  
+   else
+   let chosen_second_part = List.find (i_mem n) real_decs in
    let whole = Finite_int_set.to_usual_int_list (pt.base_set) in 
    let chosen_first_part = i_setminus whole chosen_second_part in
    let chosen_dec =D(chosen_first_part,chosen_second_part) in  
@@ -1308,6 +1314,20 @@ epr3 200 [];;
 
 epr3 6 [2];;
 
+(*
+fpr3 7 [2;3] (1,4,7) ;;
+dpr3 7 [2] (FIS(7,[2;3]),[1;4;6]) (FIS(1,[]),[1]) ;; 
+
+
+fpr3 8 [2] (1,4,7) ;;
+epr3 9 [2] ;;
+*)
+
+
+(*
+dpr3 9 [2]  (FIS(9, [1;2]),[3;4;8;9]) (FIS(1,[]),[1]) ;; 
+dpr3 10 [2] (FIS(10,[1;2]),[3;4;8;9]) (FIS(1,[]),[1]) ;; 
+*)
 
 
 
