@@ -836,6 +836,7 @@ let check_individual_june_decomposition pt (right_pt,right_mold) =
     let m1 = Finite_int_set.max (right_pt.base_set)
     and m2 = Finite_int_set.max (pt.base_set) in 
     let offset = m2-m1 in 
+    if offset < 0 then None else
     let translated_fis = Finite_int_set.translate offset right_pt.base_set 
     and translated_sol = Image.image (fun x->x+offset) sol in
     let right_dom = Finite_int_set.to_usual_int_list translated_fis in 
@@ -860,13 +861,18 @@ let check_june_decompositions pt =
     List.find_map (check_individual_june_decomposition pt)
         (!june_decompositions_ref) ;; 
 
+let lower_level_eval_opt pt_with_1 = 
+   if Point.is_free pt_with_1 
+   then Some(Mold.in_free_case pt_with_1) 
+   else List.assoc_opt pt_with_1 (!impatient_ref) ;;
+
 let eval_without_remembering_opt pt =
    if Point.is_free pt 
    then Some(Mold.in_free_case pt) 
    else 
    let n = Finite_int_set.max (pt.base_set) in 
    let beheaded_pt = Point.remove pt [n] in 
-   let beheaded_mold_opt = List.assoc_opt beheaded_pt (!impatient_ref) in 
+   let beheaded_mold_opt = lower_level_eval_opt beheaded_pt in 
    let opt1 = check_extension_case pt n beheaded_mold_opt in 
    if opt1 <> None
    then opt1
@@ -899,12 +905,6 @@ let eval_opt pt =
       Point.decompose_wrt_translation pt in 
     Option.map(Mold.translate d)
      (eval_on_pretranslated_opt pretranslated_pt);;
-
-let eval_using_only_translation_opt pt =
-    let (d,pretranslated_pt) = 
-      Point.decompose_wrt_translation pt in 
-    Option.map(Mold.translate d)
-     (List.assoc_opt pretranslated_pt (!impatient_ref));;
 
 let unsafe_add pt mold = 
       (impatient_ref := (pt,mold) ::(!impatient_ref)) ;;
@@ -1065,7 +1065,7 @@ let finalize_decomposition_computation
           beheaded_mold ;;   
 
          
-let rec lower_level_eval_opt pt_with_1 = 
+let lower_level_eval_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else 
@@ -1239,7 +1239,7 @@ open Private ;;
 
 (* computing epr3 n [] *)
 
-(*
+
 epr3 6 [];;
 epr3 7 [4] ;; 
 fpr3 7 [] (1,4,7) ;;
@@ -1255,17 +1255,14 @@ fpr3 8 [5] (1,4,7) ;;
 fpr3 8 [] (2,5,8) ;;
 
 epr3 200 [];;
-*)
+
 
 (* computing epr3 n [2] *)
 
-(*
-epr3 6 [2];;
-*)
 
-(*
-dpr3 7 [2] (FIS(6,[1;2;4]),[3;5;6]) (FIS(7,[2;3;5;6]),[1;4]) ;; 
-*)
+epr3 6 [2];;
+
+
 
 
 end ;;
