@@ -1052,9 +1052,10 @@ let new_discoveries_ref = ref ([]: (point * mold) list) ;;
 
 
 let finalize_decomposition_computation 
-        beheaded_pt forced_pt data =
+        beheaded_pt forced_pt data n =
      let beheaded_mold = Option.get(List.assoc beheaded_pt data) 
-     and forced_mold = Option.get(List.assoc forced_pt data) in 
+     and pre_forced_mold = Option.get(List.assoc forced_pt data) in 
+     let forced_mold = Mold.successful_append pre_forced_mold n in 
      let m0 = (Mold.solution_size beheaded_mold)
      and m1 = (Mold.solution_size forced_mold) in 
      if m1 > m0 (* implying m1 = m0 + 1 *)
@@ -1083,7 +1084,7 @@ let lower_level_eval_opt pt_with_1 =
     |None -> None ));;   
 
 (*
-If we hav reached the end of the list, we return the last
+If we have reached the end of the list, we return the last
 computed value (which corresponds to the initially asked value),
 otherwise we store the result in new_discoveries_ref 
 and keep on computing
@@ -1116,7 +1117,7 @@ let rec eval_on_nonempty_list next_pt other_untreated_pts =
                          (next_pt::other_untreated_pts))
      else  
      let next_mold = finalize_decomposition_computation 
-        beheaded_pt forced_pt known in 
+        beheaded_pt forced_pt known n in 
      (
         match other_untreated_pts with  
         second_next_pt :: other_pts ->
@@ -1147,7 +1148,7 @@ let outer_eval pt_with_1 =
                      ((List.tl untreated_pts)@[pt_with_1])
      else  
      finalize_decomposition_computation 
-        beheaded_pt forced_pt known ;;
+        beheaded_pt forced_pt known n ;;
 
 
 
@@ -1174,6 +1175,54 @@ let eval pt =
 end ;;
 
 let eval = Private.eval ;; 
+
+end ;;
+
+module BuiltOnEval = struct 
+
+exception Find_sticky_vertex_exn ;;
+
+module Private = struct 
+
+let measure = Memoized.make(fun pt->
+    Mold.solution_size(Painstaking.eval pt)
+);;
+
+let check_for_sticky_vertex pt m_pt v= 
+    (measure(Point.remove pt [v])=m_pt) ;;
+
+let find_sticky_vertex pt m_pt = 
+    let base = Finite_int_set.to_usual_int_list (pt.base_set) in 
+    match List.find_opt (check_for_sticky_vertex pt m_pt) (List.rev base) with 
+     None -> raise Find_sticky_vertex_exn 
+     |Some v -> v ;; 
+
+let check_for_distinguished_part pt m_pt part = 
+     let pt1 = Point.remove pt part 
+     and pt2 = Point.restrict pt part in 
+     (measure pt1)+(measure pt2) = m_pt ;;
+
+let distinguished_parts = Memoized.recursive(fun old_f pt -> 
+    if Point.is_free pt 
+    then let base = Finite_int_set.to_usual_int_list (pt.base_set) in
+         let unordered_ps = List_again.power_set base in 
+         il_sort unordered_ps
+    else 
+    let m_pt = measure pt in 
+    let v = find_sticky_vertex pt m_pt in 
+    let smaller_pt = Point.remove pt [v] in 
+    let smaller_dps = old_f smaller_pt in 
+    let enlarged_smaller_dps = Image.image (i_insert v) smaller_dps in 
+    let temp1 = List.filter (check_for_distinguished_part pt m_pt) smaller_dps 
+    and temp2 = List.filter (check_for_distinguished_part pt m_pt) enlarged_smaller_dps in 
+    il_merge temp1 temp2
+) ;; 
+
+
+
+
+
+end ;;
 
 end ;;
 
