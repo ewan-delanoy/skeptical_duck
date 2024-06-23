@@ -607,29 +607,6 @@ end ;;
   
 module Small_size_set = struct 
 
-type decomposition_t = D of (int list)*(int list) ;;
-
-type decomposition_to_be_deduced_t = 
-    DTBD of ( finite_int_set * (int list) ) * 
-            ( finite_int_set * (int list) ) ;;
-
-type decomposition_data = {
-    decompositions : decomposition_t list ;
-    chosen_decomposition : decomposition_t ;
-    to_be_deduced : decomposition_to_be_deduced_t ;
-    canonical_solution : int list
-} ;;
-
-type breaking_point_data = {
-    breaking_constraint : constraint_t ;
-    broken_point : point ;
-    broken_mold : mold 
-} ;;
-
-type analysis_result =
-   Decomposition of decomposition_data
-  |Breaking_point of breaking_point_data ;; 
-
 
 exception Size_too_big of point ;; 
 
@@ -680,83 +657,6 @@ let eval pt =
      } ;; 
 
 
-let test_for_decomposer sols dec =
-    let m = List.length(i_intersect dec (List.hd sols)) in 
-    List.for_all (fun sol-> 
-       List.length(i_intersect dec sol) = m 
-    ) sols ;; 
-
-let decomposers =Memoized.make(fun pt ->
-  let base = Finite_int_set.to_usual_int_list pt.base_set in 
-  let beheaded_base = List.rev(List.tl(List.rev base)) in  
-  let power_subset_with_empty_set = il_sort(List_again.power_set beheaded_base) in 
-  let power_subset = List.tl power_subset_with_empty_set in 
-  let solutions = all_solutions pt 0 in 
-  List.filter_map (
-    fun part ->
-      if not(test_for_decomposer solutions part)
-      then None 
-      else let other_part = i_setminus base part in 
-           Some(D(part,other_part))
-  ) power_subset );; 
-
-
-let compute_data_around_decomposer (D(part1,part2)) full_sol= 
-    let t = (List.hd part2) - 1 in 
-    let translate = Image.image (fun x->x-t)  in  
-    let translated_part2 = translate part2 in  
-    let sol1 = i_intersect part1 full_sol 
-    and sol2 = translate(i_intersect part2 full_sol) in 
-    let fis1 = Finite_int_set.of_usual_int_list part1 
-    and fis2 = Finite_int_set.of_usual_int_list translated_part2 in 
-    DTBD((fis1,sol1),(fis2,sol2));;
-
-
-let analysis_in_decomposition_case pt decs = 
-   let sndd = (fun (D(_a,b)) ->b) in 
-   let second_parts = Image.image sndd decs in 
-   let chosen_second_part = 
-             Ordered.min il_order second_parts in
-   let chosen_dec = List.find (fun dec->
-     sndd(dec)=chosen_second_part) decs in 
-   let sol = canonical_solution pt in 
-   Decomposition(
-   {
-      decompositions = decs ;
-      chosen_decomposition = chosen_dec ;
-      to_be_deduced = compute_data_around_decomposer chosen_dec sol;
-      canonical_solution = sol 
-   });;
-
-let rec naive_helper_for_analysis (pt, size) = 
-    let decs = decomposers(pt) in 
-    if decs <> []
-    then analysis_in_decomposition_case pt decs 
-    else
-    let cstr = Option.get (Point.highest_constraint_opt pt) in 
-    let pt_before = Point.exclude pt cstr in 
-    let sol_before = eval pt_before in 
-    let size_before = Mold.solution_size sol_before in 
-    if size_before<>size  
-    then Breaking_point(
-        {
-          breaking_constraint = cstr ;
-          broken_point = pt_before ;
-          broken_mold = sol_before 
-        })
-   else naive_helper_for_analysis (pt_before, size) ;; 
-
-let error_ref = ref None ;;
-
-let helper_for_analysis (pt,size) = 
-    try naive_helper_for_analysis (pt, size)  with 
-    _ -> let _=(error_ref:=Some(pt,size)) in failwith("hhh") ;; 
-
-let analize pt = 
-    let mold = eval pt in 
-    let size = Mold.solution_size mold in
-    helper_for_analysis (pt, size) ;;  
-
 
 
 end ;;
@@ -764,10 +664,6 @@ end ;;
 let all_realizations = Private.all_realizations ;; 
     
 let all_solutions = Private.all_solutions ;;  
-
-let analize = Private.analize ;; 
-
-let decomposers = Private.decomposers ;; 
 
 let eval = Private.eval ;;  
 
