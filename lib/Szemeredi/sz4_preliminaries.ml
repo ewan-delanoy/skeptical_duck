@@ -541,9 +541,9 @@ module Mold = struct
      solutions = il_merge (il_sort sols) mold.solutions
   } ;;
 
-  let in_decomposition_case mold1 mold2 full_sol =
+  let in_decomposition_case mold1 mold2 full_sol extra_solutions =
   {
-             solutions = [full_sol];
+             solutions = il_merge (il_sort extra_solutions) [full_sol];
              mandatory_elements = 
              i_merge
              (mold1.mandatory_elements)
@@ -557,11 +557,11 @@ module Mold = struct
              (beheaded_mold.mandatory_elements)@[n]
   } ;; 
 
-  let in_fork_case molds =
+  let in_fork_case molds extra_solutions =
     let last_mold = List.hd(List.rev molds) in 
     
    { 
-     solutions  = last_mold.solutions; 
+     solutions  = il_merge (il_sort extra_solutions) last_mold.solutions; 
      mandatory_elements = i_fold_intersect (Image.image
       (fun mold -> mold.mandatory_elements) molds
    ); 
@@ -752,7 +752,8 @@ let check_individual_june_decomposition pt (right_pt,right_mold) =
          fun left_sol ->
            let full_sol = i_merge left_sol translated_sol in 
            if Point.subset_is_admissible pt full_sol 
-           then Some(Mold.in_decomposition_case left_mold right_mold full_sol)
+           then Some(Mold.in_decomposition_case 
+              left_mold right_mold full_sol [])
            else None
       ) left_mold.solutions ;;
 
@@ -870,7 +871,6 @@ let check_part_in_decomposition pt fis sol =
       then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
       else Mold.add_solutions mold [sol] ;; 
 
-
 let find_translation_index_in_between_intlists l l1 l2 = 
    let translated_l2 = i_setminus l l1 in 
    (List.hd translated_l2) - (List.hd l2);;
@@ -882,14 +882,14 @@ let find_translation_index_in_between fis fis1 fis2 =
      (Finite_int_set.to_usual_int_list fis2) ;;
 
 
-let deduce_using_decomposition pt (part1,sol1) (part2,sol2) = 
+let deduce_using_decomposition ?(extra_solutions=[]) pt (part1,sol1) (part2,sol2) = 
    let mold1 = check_part_in_decomposition pt part1 sol1 
    and pre_mold2 = check_part_in_decomposition pt part2 sol2 in 
    let t = find_translation_index_in_between pt.base_set part1 part2 in 
    let mold2 = Mold.translate t pre_mold2  in 
    let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
    if Point.subset_is_admissible pt full_sol 
-   then let mold = Mold.in_decomposition_case mold1 mold2 full_sol in 
+   then let mold = Mold.in_decomposition_case mold1 mold2 full_sol extra_solutions in 
         let _ = One_more_small_step.unsafe_add pt mold "external decomposition" in 
         mold
    else raise(Nonadmissible_whole_in_decomposition(pt,full_sol));;
@@ -900,7 +900,7 @@ end ;;
 
 let using_decomposition = Private.deduce_using_decomposition ;;
 
-let using_fork pt (i,j,k) = 
+let using_fork ?(extra_solutions=[]) pt (i,j,k) = 
     let cstr = C [i;j;k] in 
     if not(Point.constraint_can_apply pt cstr)
     then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
@@ -914,7 +914,7 @@ let using_fork pt (i,j,k) =
          raise(Incomplete_fork_exn(p,pt))
     else 
     let molds = Image.image Option.get temp1 in 
-    let mold = Mold.in_fork_case molds in 
+    let mold = Mold.in_fork_case molds extra_solutions in 
     let _ = One_more_small_step.unsafe_add pt mold "External fork" in 
     mold ;;
 
