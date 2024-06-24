@@ -519,6 +519,8 @@ module Point = struct
     Highest_constraint.below_maximal_width 
        pt.max_width pt.excluded_full_constraints domain ;;
 
+  let impose pt (C l) = force (exclude pt (C l)) l ;;  
+
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
   let remove = Private.remove ;;
@@ -703,21 +705,15 @@ let impatient_ref = ref ([]: (point * mold) list) ;;
 let explanations_ref = ref ([]: (point * string) list) ;; 
 
 
-let june_decompositions_ref = 
-   let p3 = (fun n-> {
-    base_set = FIS(n,[]);
-    max_width = W 3;
-    excluded_full_constraints = [];
-    added_partial_constraints = [];
-   }) 
-  and mold1 =  {
-    solutions = [[1; 2; 4; 5]];
-    mandatory_elements = []
-  } in  
+let june_left_decompositions_ref = 
   ref ([
-     (p3 7),mold1;
-     (p3 8),mold1;
-  ]: (point * mold) list) ;;
+    (Int_range.range 1 8),[1;2;4;5]  
+  ]) ;;
+
+let june_right_decompositions_ref = 
+  ref ([
+    (Int_range.range 1 8),[4;5;7;8]  
+  ]) ;;  
 
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
@@ -746,41 +742,89 @@ let check_filled_complement_case pt n beheaded_mold_opt =
        Some(Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
-let check_individual_june_decomposition pt (right_pt,right_mold) = 
-    let sol = List.hd right_mold.solutions in  
-    let m1 = Finite_int_set.max (right_pt.base_set)
-    and m2 = Finite_int_set.max (pt.base_set) in 
-    let offset = m2-m1 in 
-    if offset < 0 then None else
-    let translated_fis = Finite_int_set.translate offset right_pt.base_set 
-    and translated_sol = Image.image (fun x->x+offset) sol in
-    let right_dom = Finite_int_set.to_usual_int_list translated_fis in 
-    let side1 = Point.restrict pt right_dom 
-    and side2 = Point.translate offset right_pt in 
-    if side1<>side2
-    then None 
-    else  
-    let left_pt = Point.remove pt right_dom in 
-    match List.assoc_opt left_pt (!impatient_ref) with 
-     None -> None 
-    |Some left_mold ->
-      List.find_map (
-         fun left_sol ->
-           let full_sol = i_merge left_sol translated_sol in 
-           if Point.subset_is_admissible pt full_sol 
-           then Some(Mold.in_decomposition_case 
-              left_mold right_mold full_sol [])
-           else None
-      ) left_mold.solutions ;;
-
-let check_june_decompositions pt = 
-    List.find_map (check_individual_june_decomposition pt)
-        (!june_decompositions_ref) ;; 
-
 let lower_level_eval_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else List.assoc_opt pt_with_1 (!impatient_ref) ;;
+
+
+let check_individual_june_left_decomposition pt (left_domain,left_sol)=
+   let whole = Finite_int_set.to_usual_int_list pt.base_set in 
+   if not(i_is_included_in left_domain whole)
+   then None 
+   else 
+   let left_pt = Point.restrict pt left_domain in 
+   let left_opt = lower_level_eval_opt left_pt in 
+   if left_opt = None then None else  
+   let left_mold = Option.get left_opt in  
+   if (List.length(left_sol)<>Mold.solution_size left_mold)
+        ||
+        (not(Point.subset_is_admissible left_pt left_sol))
+   then None 
+   else 
+   let right_pt = Point.remove pt left_domain in 
+   let right_opt = lower_level_eval_opt right_pt in 
+   if (right_opt = None)||(Point.size right_pt = 0) then None else
+   let right_mold = Option.get right_opt in  
+   List.find_map (
+         fun right_sol ->
+           let full_sol = i_merge left_sol right_sol in 
+           if Point.subset_is_admissible pt full_sol 
+           then Some(Mold.in_decomposition_case 
+              left_mold right_mold full_sol [])
+           else None
+      ) right_mold.solutions ;;
+
+
+let prepare_june_right_decomposition pt (pre_right_domain,pre_right_sol) = 
+    let whole = Finite_int_set.to_usual_int_list pt.base_set in 
+    let m1 = List.hd (List.rev(pre_right_domain))
+    and m2 = List.hd (List.rev(whole)) in 
+    let offset = m2-m1 in 
+    if offset < 0 then None else
+    let right_domain =  Image.image (fun x->x+offset) pre_right_domain 
+    and right_sol =  Image.image (fun x->x+offset) pre_right_sol in 
+    Some(whole,right_domain,right_sol) ;; 
+ 
+
+let check_individual_june_right_decomposition pt (pre_right_domain,pre_right_sol)=
+   let opt1 = prepare_june_right_decomposition pt (pre_right_domain,pre_right_sol) in 
+   if opt1 = None then None else 
+   let (whole,right_domain,right_sol) = Option.get opt1 in 
+   if not(i_is_included_in right_domain whole)
+   then None 
+   else 
+   let right_pt = Point.restrict pt right_domain in 
+   let right_opt = lower_level_eval_opt right_pt in 
+   if right_opt = None then None else  
+   let right_mold = Option.get right_opt in  
+   if (List.length(right_sol)<>Mold.solution_size right_mold)
+        ||
+        (not(Point.subset_is_admissible right_pt right_sol))
+   then None 
+   else 
+   let left_pt = Point.remove pt right_domain in 
+   let left_opt = lower_level_eval_opt left_pt in 
+   if (left_opt = None)||(Point.size left_pt = 0) then None else
+   let left_mold = Option.get left_opt in  
+   List.find_map (
+         fun left_sol ->
+           let full_sol = i_merge left_sol right_sol in 
+           if Point.subset_is_admissible pt full_sol 
+           then Some(Mold.in_decomposition_case 
+              right_mold left_mold full_sol [])
+           else None
+      ) left_mold.solutions ;;
+
+
+let check_june_left_decompositions pt = 
+     List.find_map (check_individual_june_left_decomposition pt)
+        (!june_left_decompositions_ref) ;;
+
+let check_june_right_decompositions pt =         
+      List.find_map (check_individual_june_right_decomposition pt)
+        (!june_right_decompositions_ref) ;; 
+
 
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
@@ -802,10 +846,15 @@ let eval_without_remembering_opt pt =
    then let _ = add_explanation pt "filled complement" in 
         opt2
    else 
-   let opt3 = check_june_decompositions pt in 
+   let opt3 = check_june_left_decompositions pt in 
    if opt3 <> None
-   then let _ = add_explanation pt "June decompositions" in 
+   then let _ = add_explanation pt "June left decomposition" in 
         opt3
+   else 
+   let opt4 = check_june_right_decompositions pt in 
+   if opt4 <> None
+   then let _ = add_explanation pt "June right decomposition" in 
+        opt4
    else None ;;
 
 let eval_on_pretranslated_opt pt =
@@ -862,7 +911,7 @@ module Deduce = struct
 exception Incorrect_constraint_in_fork_exn 
    of int * int * int  * point ;;
 
-exception Incomplete_fork_exn of int * point ;;
+exception Incomplete_fork_exn of point ;;
 
 module Private = struct 
 
@@ -927,7 +976,7 @@ let using_fork ?(extra_solutions=[]) pt (i,j,k) =
     let m = List_again.find_index_of_in None temp1 in 
     if m > 0 
     then let p = List.nth [i;j;k] (m-1) in
-         raise(Incomplete_fork_exn(p,pt))
+         raise(Incomplete_fork_exn(Point.remove pt [p]))
     else 
     let molds = Image.image Option.get temp1 in 
     let mold = Mold.in_fork_case molds extra_solutions in 
@@ -1340,7 +1389,6 @@ let epr3 ?extra_solutions n r = e ?extra_solutions (pr3 n r);;
 let fpr3 ?extra_solutions n r = f ?extra_solutions (pr3 n r);;
 
 
-
 end ;;
 
 
@@ -1369,7 +1417,7 @@ epr3 200 [];;
 
 (* computing epr3 n [2] *)
 
-
+(*
 epr3 6 [2];;
 
 
@@ -1384,10 +1432,22 @@ dpr3 10 [2] (FIS(1,[]),[1]) (FIS(8,[]),[1;2;6;7]);;
 epr3 12 [2] ;;
 epr3 13 [2] ~extra_solutions:[[1;3;4;6;10;11;13]] ;;
 
+epr3 14 [2] ;;
 
-(*
-epr3 13 [2] ;;
-epr3 
+
+fpr3 7 [2;3] (1,4,7) ;;    
+epr3 9 [2;3;8] ;;     
+fpr3 9 [2;8] (3,6,9) ;;
+dpr3 15 [2] (FIS(9,[2;8]),[1;3;4;6]) (FIS(8,[2]),[3;4;6;7]);; 
+dpr3 16 [2] (FIS(8,[2]),[1;3;4;6]) (FIS(8,[]),[2;3;5;6])
+   ~extra_solutions:[[1;3;4;8;9;11;12;16]] ;; 
+epr3 17 [2] ;;
+
+
+
+
+
+
 *)
 
 
