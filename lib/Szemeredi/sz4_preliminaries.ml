@@ -742,11 +742,16 @@ let check_filled_complement_case pt n beheaded_mold_opt =
        Some(Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
-let lower_level_eval_opt pt_with_1 = 
+let lower_level_eval_on_pretranslated_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
+let lower_level_eval_opt pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Option.map(Mold.translate d)
+     (lower_level_eval_on_pretranslated_opt pretranslated_pt);;
 
 let check_individual_june_left_decomposition pt (left_domain,left_sol)=
    let whole = Finite_int_set.to_usual_int_list pt.base_set in 
@@ -829,45 +834,45 @@ let check_june_right_decompositions pt =
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
 
-let eval_without_remembering_opt pt =
-   if Point.is_free pt 
-   then Some(Mold.in_free_case pt) 
+let eval_without_remembering_opt pt_with_1 =
+   if Point.is_free pt_with_1 
+   then Some(Mold.in_free_case pt_with_1) 
    else 
-   let n = Finite_int_set.max (pt.base_set) in 
-   let beheaded_pt = Point.remove pt [n] in 
-   let beheaded_mold_opt = lower_level_eval_opt beheaded_pt in 
-   let opt1 = check_extension_case pt n beheaded_mold_opt in 
+   let n = Finite_int_set.max (pt_with_1.base_set) in 
+   let beheaded_pt = Point.remove pt_with_1 [n] in 
+   let beheaded_mold_opt = lower_level_eval_on_pretranslated_opt beheaded_pt in 
+   let opt1 = check_extension_case pt_with_1 n beheaded_mold_opt in 
    if opt1 <> None
-   then let _ = add_explanation pt "extension" in 
+   then let _ = add_explanation pt_with_1 "extension" in 
         opt1
    else 
-   let opt2 = check_filled_complement_case pt n beheaded_mold_opt in 
+   let opt2 = check_filled_complement_case pt_with_1 n beheaded_mold_opt in 
    if opt2 <> None
-   then let _ = add_explanation pt "filled complement" in 
+   then let _ = add_explanation pt_with_1 "filled complement" in 
         opt2
    else 
-   let opt3 = check_june_left_decompositions pt in 
+   let opt3 = check_june_left_decompositions pt_with_1 in 
    if opt3 <> None
-   then let _ = add_explanation pt "June left decomposition" in 
+   then let _ = add_explanation pt_with_1 "June left decomposition" in 
         opt3
    else 
-   let opt4 = check_june_right_decompositions pt in 
+   let opt4 = check_june_right_decompositions pt_with_1 in 
    if opt4 <> None
-   then let _ = add_explanation pt "June right decomposition" in 
+   then let _ = add_explanation pt_with_1 "June right decomposition" in 
         opt4
    else None ;;
 
-let eval_on_pretranslated_opt pt =
-  match List.assoc_opt pt (!impatient_ref) with 
+let eval_on_pretranslated_opt pt_with_1 =
+  match List.assoc_opt pt_with_1 (!impatient_ref) with 
   (Some old_answer) -> Some old_answer
   | None ->
    (
-      match eval_without_remembering_opt pt with 
+      match eval_without_remembering_opt pt_with_1 with 
       None -> None 
       |Some new_answer ->
         let _ = (
-            if not(Point.is_free pt) then  
-            impatient_ref := (pt,new_answer) :: 
+            if not(Point.is_free pt_with_1) then  
+            impatient_ref := (pt_with_1,new_answer) :: 
           (!impatient_ref)) in 
         Some new_answer
 
@@ -1069,7 +1074,7 @@ let finalize_decomposition_computation
           beheaded_mold ;;   
 
          
-let lower_level_eval_opt pt_with_1 = 
+let lower_level_eval_on_pretranslated_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else 
@@ -1095,7 +1100,7 @@ and keep on computing
 *)
 
 let rec eval_on_nonempty_list next_pt other_untreated_pts = 
-   match lower_level_eval_opt next_pt with 
+   match lower_level_eval_on_pretranslated_opt next_pt with 
   (Some next_mold) -> 
       (
         match other_untreated_pts with  
@@ -1108,7 +1113,7 @@ let rec eval_on_nonempty_list next_pt other_untreated_pts =
      let beheaded_pt = Point.remove next_pt [n] in 
      let forced_pt = Point.force next_pt [n] in
      let temp1 = Image.image (
-          fun pt -> (pt,lower_level_eval_opt pt)
+          fun pt -> (pt,lower_level_eval_on_pretranslated_opt pt)
      ) [beheaded_pt;forced_pt] in 
      let (known,unknown) = List.partition (
          fun (_pt,answer_opt) -> answer_opt <> None
@@ -1133,14 +1138,14 @@ let rec eval_on_nonempty_list next_pt other_untreated_pts =
 
 let outer_eval pt_with_1 = 
    let  _ = (new_discoveries_ref:=[]) in 
-   match lower_level_eval_opt pt_with_1 with 
+   match lower_level_eval_on_pretranslated_opt pt_with_1 with 
   (Some old_answer) -> old_answer
   | None ->
      let n = Finite_int_set.max (pt_with_1.base_set) in 
      let beheaded_pt = Point.remove pt_with_1 [n] in 
      let forced_pt = Point.force pt_with_1 [n] in
      let temp1 = Image.image (
-          fun pt -> (pt,lower_level_eval_opt pt)
+          fun pt -> (pt,lower_level_eval_on_pretranslated_opt pt)
      ) [beheaded_pt;forced_pt] in 
      let (known,unknown) = List.partition (
          fun (_pt,answer_opt) -> answer_opt <> None
