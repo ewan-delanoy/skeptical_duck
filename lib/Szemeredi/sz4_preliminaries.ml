@@ -300,6 +300,8 @@ module Point = struct
 
   *)
 
+  exception Excessive_forcing of point * int list ;; 
+
   module Private = struct
   
   let check_excluded_constraint base_set checked_max_width 
@@ -472,9 +474,19 @@ module Point = struct
      let base = Finite_int_set.to_usual_int_list pt.base_set in 
      remove pt (i_setminus base l) ;; 
 
+   let force pt vertices_to_be_forced = 
+     try List.fold_left force_one_vertex pt vertices_to_be_forced with 
+     Excessive_forcing_reached ->   
+       raise(Excessive_forcing(pt,vertices_to_be_forced)) ;; 
+ 
+   let decide pt decisions = 
+     let (paired_forcings,paired_removals) = List.partition snd decisions in 
+     let forcings = Image.image fst paired_forcings 
+     and removals = Image.image fst paired_removals in 
+     remove (remove pt removals) forcings ;;
+
   end ;;
 
-  exception Excessive_forcing of point * int list ;; 
   
   let complements = Private.complements ;; 
 
@@ -492,6 +504,23 @@ module Point = struct
 
   let constructor = Private.constructor ;; 
   
+  let decide_on_the_left pt l = 
+    let indexed_l = Int_range.index_everything l in 
+    let pairs = List.filter_map(fun (v,tag)->
+     if tag<0 then None else 
+     Some(v,tag<>0)
+    ) indexed_l in 
+    Private.decide pt pairs ;;
+ 
+  let decide_on_the_right pt l = 
+    let n = Finite_int_set.max pt.base_set in 
+    let indexed_l = Int_range.index_everything l in 
+    let pairs = List.filter_map(fun (v,tag)->
+     if tag<0 then None else 
+     Some(n+1-v,tag<>0)
+    ) indexed_l in 
+    Private.decide pt pairs ;;
+
   let decompose_wrt_translation pt =
      let (d,_) = Finite_int_set.decompose_wrt_translation pt.base_set in 
      (d,Private.translate (-d) pt) ;;  
@@ -504,10 +533,7 @@ module Point = struct
     then Private.exclude_full_arithmetic_progression pt constraint_to_be_excluded
     else Private.exclude_partial_arithmetic_progression pt constraint_to_be_excluded ;;
  
-  let force pt vertices_to_be_forced = 
-     try List.fold_left Private.force_one_vertex pt vertices_to_be_forced with 
-     Private.Excessive_forcing_reached ->   
-       raise(Excessive_forcing(pt,vertices_to_be_forced)) ;; 
+  let force = Private.force ;; 
  
   let highest_constraint_opt pt =
     if pt.added_partial_constraints <> []
@@ -519,7 +545,11 @@ module Point = struct
     Highest_constraint.below_maximal_width 
        pt.max_width pt.excluded_full_constraints domain ;;
 
-  let impose pt (C l) = force (exclude pt (C l)) l ;;  
+  let impose pt (C l) = 
+    let domain = Finite_int_set.to_usual_int_list pt.base_set in 
+    if not(i_is_included_in l domain)
+    then pt
+    else Private.force (exclude pt (C l)) l ;;  
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
@@ -1389,9 +1419,8 @@ let d = Deduce.using_decomposition;;
 let e = Linear.eval_opt ;;
 let f = Deduce.using_fork;;
 
-let dpr3 ?extra_solutions n r = d ?extra_solutions (pr3 n r);;
-let epr3 ?extra_solutions n r = e ?extra_solutions (pr3 n r);;
-let fpr3 ?extra_solutions n r = f ?extra_solutions (pr3 n r);;
+
+let tt1 n = Point.force (pr3 n []) [n] ;; 
 
 
 end ;;
@@ -1399,61 +1428,30 @@ end ;;
 
 open Private ;;
 
-(* computing epr3 n [] *)
+(* computing e(pr3 n []) *)
 
 
-epr3 6 [];;
-epr3 7 [4] ;; 
-fpr3 7 [] (1,4,7) ;;
+e(pr3 6 []);;
+e(pr3 7 [4]);; 
+f(pr3 7 []) (1,4,7);;
 
-epr3 8 [2;4] ;;
-dpr3 8 [2;7] (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) 
+e(pr3 8 [2;4]);;
+d(pr3 8 [2;7]) (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) 
    ~extra_solutions:[[1;3;4;8]];; 
-fpr3 8 [2] (1,4,7) ;;
+f(pr3 8 [2]) (1,4,7);;
 
-epr3 8 [5;4] ;;
-dpr3 8 [5;7] (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
+e(pr3 8 [5;4]);;
+d(pr3 8 [5;7]) (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
 
-fpr3 8 [5] (1,4,7) ;;
-fpr3 8 [] (2,5,8) ;;
+f(pr3 8 [5]) (1,4,7);;
+f(pr3 8 []) (2,5,8);;
 
-epr3 200 [];;
-
-
-(* computing epr3 n [2] *)
-
-(*
-epr3 6 [2];;
+e(pr3 200 []);;
 
 
-fpr3 7 [2;6] (1,4,7) ;;
-dpr3 7 [2] (FIS(6,[1;2;3;4;5]),[6]) (FIS(7,[2;6]),[1;3;4]) ;; 
-
-fpr3 8 [2] (1,4,7) ;;
-epr3 9 [2] ;; 
-
-dpr3 10 [2] (FIS(1,[]),[1]) (FIS(8,[]),[1;2;6;7]);; 
-
-epr3 12 [2] ;;
-epr3 13 [2] ~extra_solutions:[[1;3;4;6;10;11;13]] ;;
-
-epr3 14 [2] ;;
+(* computing e(tt1 n) *)
 
 
-fpr3 7 [2;3] (1,4,7) ;;    
-epr3 9 [2;3;8] ;;     
-fpr3 9 [2;8] (3,6,9) ;;
-dpr3 15 [2] (FIS(9,[2;8]),[1;3;4;6]) (FIS(8,[2]),[3;4;6;7]);; 
-dpr3 16 [2] (FIS(8,[2]),[1;3;4;6]) (FIS(8,[]),[2;3;5;6])
-   ~extra_solutions:[[1;3;4;8;9;11;12;16]] ;; 
-epr3 17 [2] ;;
-
-
-
-
-
-
-*)
 
 
 end ;;
