@@ -483,7 +483,7 @@ module Point = struct
      let (paired_forcings,paired_removals) = List.partition snd decisions in 
      let forcings = Image.image fst paired_forcings 
      and removals = Image.image fst paired_removals in 
-     remove (remove pt removals) forcings ;;
+     force (remove pt removals) forcings ;;
 
   end ;;
 
@@ -1420,7 +1420,9 @@ let e = Linear.eval_opt ;;
 let f = Deduce.using_fork;;
 
 
-let tt1 n = Point.force (pr3 n []) [n] ;; 
+let tt0 n = pr3 n [] ;;
+let tt1 n = Point.decide_on_the_right (pr3 n []) [1] ;; 
+
 
 
 end ;;
