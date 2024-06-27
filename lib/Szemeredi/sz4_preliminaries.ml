@@ -1059,6 +1059,9 @@ let eval_on_rails_opt pt =
      );; 
 
 let eval_opt ?(extra_solutions=[]) pt = 
+    if Point.is_free pt 
+    then Some(Mold.in_free_case pt)
+    else
     match eval_on_rails_opt pt with 
        None -> None 
       |Some mold -> 
