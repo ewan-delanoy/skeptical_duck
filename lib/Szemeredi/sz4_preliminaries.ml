@@ -944,7 +944,7 @@ end ;;
 module Deduce = struct 
 
 exception Incorrect_constraint_in_fork_exn 
-   of int * int * int  * point ;;
+   of constraint_t  * point ;;
 
 exception Incomplete_fork_exn of point ;;
 
@@ -984,7 +984,7 @@ let find_translation_index_in_between fis fis1 fis2 =
 
 let deduce_using_decomposition ?(extra_solutions=[]) pt (part1,sol1) (pre_part2,pre_sol2) = 
    let t = find_translation_index_in_between pt.base_set part1 pre_part2 in 
-   let part2 = Image.image((+)t) pre_part2 
+   let part2 = Finite_int_set.translate t pre_part2
    and sol2 = Image.image((+)t) pre_sol2 in 
    let mold1 = check_part_in_decomposition pt part1 sol1 
    and mold2 = check_part_in_decomposition pt part2 sol2 in 
@@ -1001,17 +1001,17 @@ end ;;
 
 let using_decomposition = Private.deduce_using_decomposition ;;
 
-let using_fork ?(extra_solutions=[]) pt (i,j,k) = 
-    let cstr = C [i;j;k] in 
+let using_fork ?(extra_solutions=[]) pt cstr = 
+    let (C l) = cstr in 
     if not(Point.constraint_can_apply pt cstr)
-    then raise(Incorrect_constraint_in_fork_exn(i,j,k,pt))
+    then raise(Incorrect_constraint_in_fork_exn(cstr,pt))
     else
     let temp1 = Image.image (fun t->
        One_more_small_step.eval_opt(Point.remove pt [t])
-    ) [i;j;k] in 
+    ) l in 
     let m = List_again.find_index_of_in None temp1 in 
     if m > 0 
-    then let p = List.nth [i;j;k] (m-1) in
+    then let p = List.nth l (m-1) in
          raise(Incomplete_fork_exn(Point.remove pt [p]))
     else 
     let molds = Image.image Option.get temp1 in 
@@ -1416,6 +1416,8 @@ module Initialization = struct
 
 module Private = struct 
 
+let chosen_limit = 200 ;; 
+
 let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
@@ -1439,27 +1441,31 @@ open Private ;;
 
 e(pr3 6 []);;
 e(pr3 7 [4]);; 
-f(pr3 7 []) (1,4,7);;
+f(pr3 7 []) (C[1;4;7]) ;;
 
 e(pr3 8 [2;4]);;
 d(pr3 8 [2;7]) (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) 
    ~extra_solutions:[[1;3;4;8]];; 
-f(pr3 8 [2]) (1,4,7);;
+f(pr3 8 [2]) (C[1;4;7]) ;;
 
 e(pr3 8 [5;4]);;
 d(pr3 8 [5;7]) (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
 
-f(pr3 8 [5]) (1,4,7);;
-f(pr3 8 []) (2,5,8);;
+f(pr3 8 [5]) (C[1;4;7]);;
+f(pr3 8 []) (C[2;5;8]);;
 
-e(pr3 200 []);;
+e(pr3 chosen_limit []);;
 
 
 (* computing e(tt1 n) *)
 
 for k=1 to 5 do let _ = e(tt1 k) in () done ;;
+
 d(tt1 6) (FIS(3,[]),[1;3]) (FIS(2,[]),[1]) ;; 
 
+(*
+d(tt1 7) (FIS(4,[]),[1;2]) (FIS(2,[]),[1]) ;; 
+*)
 
 
 end ;;
