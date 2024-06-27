@@ -982,12 +982,13 @@ let find_translation_index_in_between fis fis1 fis2 =
      (Finite_int_set.to_usual_int_list fis2) ;;
 
 
-let deduce_using_decomposition ?(extra_solutions=[]) pt (part1,sol1) (part2,sol2) = 
+let deduce_using_decomposition ?(extra_solutions=[]) pt (part1,sol1) (pre_part2,pre_sol2) = 
+   let t = find_translation_index_in_between pt.base_set part1 pre_part2 in 
+   let part2 = Image.image((+)t) pre_part2 
+   and sol2 = Image.image((+)t) pre_sol2 in 
    let mold1 = check_part_in_decomposition pt part1 sol1 
-   and pre_mold2 = check_part_in_decomposition pt part2 sol2 in 
-   let t = find_translation_index_in_between pt.base_set part1 part2 in 
-   let mold2 = Mold.translate t pre_mold2  in 
-   let full_sol = i_merge sol1 (Image.image((+)t) sol2) in 
+   and mold2 = check_part_in_decomposition pt part2 sol2 in 
+   let full_sol = i_merge sol1 sol2 in 
    if Point.subset_is_admissible pt full_sol 
    then let mold = Mold.in_decomposition_case mold1 mold2 full_sol extra_solutions in 
         let _ = One_more_small_step.unsafe_add pt mold "external decomposition" in 
@@ -1456,6 +1457,8 @@ e(pr3 200 []);;
 
 (* computing e(tt1 n) *)
 
+for k=1 to 5 do let _ = e(tt1 k) in () done ;;
+d(tt1 6) (FIS(3,[]),[1;3]) (FIS(2,[]),[1]) ;; 
 
 
 
