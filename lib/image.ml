@@ -14,7 +14,5 @@ let image f l=
    |a::peurrest->tempf(f(a)::graet,peurrest)
   ) in
   tempf([],l);;
-
  
- let year = 2020 ;;
-
+ let year = 2019 ;;
