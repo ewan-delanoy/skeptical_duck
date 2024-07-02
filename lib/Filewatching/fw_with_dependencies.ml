@@ -1187,7 +1187,13 @@ let decipher_module fw capitalized_or_not_x=
         let _ =  (
           if s_ending = "ml"
           then Put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
-        Unix_command.uc ("open -a \"/Applications/Sublime Text.app\" "^s_ap2);;      
+        (*
+           
+        On a Mac, this was 
+        Unix_command.uc ("open -a \"/Applications/Sublime Text.app\" "^s_ap2);; 
+
+        *)  
+        Unix_command.uc ("xdg-open "^s_ap2);;      
 
     let all_moduled_ml_absolute_paths fw =  
         List.filter_map (fun (mn,_)->
