@@ -25,19 +25,21 @@ let seek_html_footnote_at_index text i0=
   then None 
   else  
   let i1 = i0 + (String.length part1) in 
-  let i2 = Strung.char_finder_from (fun c->not(List.mem c blanks)) text i1 in 
-  if i2 < 1 
+  let i2_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c blanks)) text i1 in 
+  if i2_opt = None 
   then raise(Unterminated_div(i0))
   else
+  let i2 = Option.get i2_opt in 
   let part2 = "id=\"n" in 
   if not(Substring.is_a_substring_located_at part2 text i2)
   then None 
   else  
   let i3 = i2 + (String.length part2) in      
-  let i4 = Strung.char_finder_from (fun c->not(List.mem c digits)) text i3 in 
-  if i4 < 1 
+  let i4_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c digits)) text i3 in 
+  if i4_opt = None 
   then None
   else
+   let i4 = Option.get i4_opt in 
   let idx_in_str_form =  Cull_string.interval text i3 (i4-1) in 
   let footnote_idx = int_of_string(idx_in_str_form) in 
   let part3 = "\"><a href=\"#ln"^idx_in_str_form^"\">("^idx_in_str_form^")</a>" in 

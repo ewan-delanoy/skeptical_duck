@@ -26,14 +26,14 @@ let explode s=
     Int_range.scale (String.get s) 0 (n-1);;
     
  
-let char_finder_from f s w0=
+let char_finder_from_inclusive_opt f s w0=
    let n=(String.length s) in
    let rec tempf=(fun j->
-     if j>=n then 0 else
-     if f(String.get s  j) then j+1 else
+     if j>n then None else
+     if f(String.get s  (j-1)) then Some j else
      tempf(j+1)
    ) in
-   tempf(w0-1);;
+   tempf(w0);;
 
 let backwards_char_finder f s =
     let rec tempf=(fun j->

@@ -22,12 +22,13 @@ module Private = struct
   
   let snippet_analysis_at_index text idx=
     let i1 = idx + (String.length snippet_keyword) in 
-    let i2 = Strung.char_finder_from (fun c->not(List.mem c blanks)) text i1 in 
-    if i2 = 0 then None else 
+    let i2_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c blanks)) text i1 in 
+    if i2_opt = None then None else 
+    let i2 = Option.get i2_opt in    
     if not(List.mem (Strung.get text i2) digits) then None else 
     let extended_text = text ^ " " in   
-    let i3 = Strung.char_finder_from (fun c->not(List.mem c digits)) extended_text i2 in 
-    let i4 = i3 -1 in 
+    let i3_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c digits)) extended_text i2 in 
+    let i4 = (match i3_opt with None -> (-1) | Some i3 -> i3 -1) in 
     Some(i2,i4,int_of_string(Cull_string.interval text i2 i4)) ;;
   
   
