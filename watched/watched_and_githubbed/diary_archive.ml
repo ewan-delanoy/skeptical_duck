@@ -1,14 +1,155 @@
 (************************************************************************************************************************
-Snippet 138 : 
+Snippet 139 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 137 : Enhance a Java file with many printouts
+Snippet 138 : Intial code for Localdircopy module, when no type had been created yet
 ************************************************************************************************************************)
 
+module Snip138=struct
+
+  let allowed_number_of_digits = 3 ;;
+
+
+  let is_a_digit c = 
+     let i = int_of_char c in 
+     (48<=i) && (i<=57) ;; 
+  
+  let is_not_a_digit c = not(is_a_digit c) ;; 
+  
+  (*
+  let extract_v_number filename = 
+     if not(Supstring.begins_with filename "v")
+     then (None,"",filename)
+     else 
+     let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
+     if i1_opt = None
+     then (None,"",filename)
+     else 
+    let i1 = Option.get i1_opt in
+     if  (Strung.get filename i1)<>'_'
+     then (None,"",filename)
+     else 
+     let str = Cull_string.interval filename 2 (i1-1) in 
+     let v_number = int_of_string str in 
+     (Some v_number,Cull_string.beginning i1 filename,Cull_string.cobeginning i1 filename) ;;  
+  *)
+  
+  
+  exception Add_next_index_to_name_exn of string ;;
+  
+  let add_next_index_in_filename next_idx_opt filename = 
+     match next_idx_opt with 
+     None -> raise (Add_next_index_to_name_exn(filename))
+     | (Some next_idx) -> 
+        let str = string_of_int next_idx in 
+        let str2 = Strung.insert_repetitive_offset_on_the_left '0' allowed_number_of_digits str in 
+        "v"^str2^"_"^filename ;;
+  
+  let is_not_a_filler c = not(List.mem c [' ';'\t';'\r';'\n';'-';'_']) ;;
+  
+  exception Empty_subpath of string ;;
+  
+  let standardized_name_opt next_idx_opt filename = 
+     if not(Supstring.begins_with filename "v")
+     then Some(add_next_index_in_filename next_idx_opt filename)
+     else 
+     let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
+     if i1_opt = None
+     then Some(add_next_index_in_filename next_idx_opt filename)
+     else 
+     let i1 = Option.get i1_opt in
+     let v_string = Cull_string.interval filename 2 (i1-1) in 
+     let v_number = int_of_string v_string in
+     let standardized_v_string = Strung.insert_repetitive_offset_on_the_left '0' allowed_number_of_digits (string_of_int v_number) in 
+     let standardized_start = "v"^standardized_v_string^"_" in 
+     let path = Cull_string.cobeginning i1 filename in 
+     let i2_opt = Strung.char_finder_from_inclusive_opt is_not_a_filler filename (i1+1) in 
+     if i2_opt = None
+     then raise(Empty_subpath(filename))
+     else 
+     let i2 = Option.get i2_opt in   
+     let standardized_name = standardized_start ^ (Cull_string.cobeginning (i2-1) filename) in 
+     if  filename <> standardized_name
+     then Some(standardized_name)
+     else None ;;
+     
+  let myself = Sys.getenv "USER" ;;
+  
+  let remote_location = "/media/" ^ myself ^ "/HEAVY/Other/OC/" ;;
+  let remote_dir = Directory_name.of_string remote_location ;;
+     
+  let remote_files = Unix_again.beheaded_simple_ls remote_dir ;; 
+     
+     
+  let u1 = Image.image extract_v_number remote_files ;;   
+  
+  let u1 = Image.image (fun fn ->(fn,standardized_name_opt None fn) ) remote_files ;;
+  
+  let fixes = List.filter_map (
+        fun (old_fn,new_fn_opt) -> match new_fn_opt with 
+           None -> None 
+         | Some new_fn -> 
+           let old_ap = remote_location ^ old_fn 
+           and new_ap = remote_location ^ new_fn in 
+           Some( Filename.quote_command "mv" [old_ap;new_ap])
+  ) u1 ;; 
+     
+  let fix_act () = Image.image Sys.command fixes ;; 
+  
+  let ordered_filenames = 
+      let temp0 = Image.image (fun s ->
+        (Cull_string.cobeginning (allowed_number_of_digits+2) s,s) ) remote_files in 
+      let temp1 = Image.image fst temp0 in 
+      let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
+      Image.image (fun s->List.assoc s temp0 ) temp2;; 
+  
+  
+  let pass_point = (Sys.getenv "HOME") ^ "/Downloads/OC/Lennet";;
+  
+  let pass_dir = Directory_name.of_string pass_point ;; 
+  
+  let files_to_be_transferred = Unix_again.beheaded_simple_ls pass_dir ;;
+  
+  let dated_files = Image.image (
+     fun fn ->
+        let full_fn = pass_point ^ "/" ^ fn in 
+        ((Unix.stat full_fn).Unix.st_mtime, fn)
+  ) files_to_be_transferred ;;
+  
+  
+  let order_for_floats = ((fun (fl1:float) (fl2:float) ->
+     Total_ordering.standard fl1 fl2   
+  ) : float Total_ordering_t.t) ;; 
+  
+  let order_for_dated_files = Total_ordering.product 
+     order_for_floats Total_ordering.lex_for_strings ;; 
+  
+  let transfer_commands = 
+     let temp1 = Ordered.sort order_for_dated_files dated_files in 
+     let temp2 = Image.image snd temp1 in 
+     let n = List.length remote_files in 
+     let temp3 = Int_range.index_everything temp2 in 
+     let temp4 = Image.image (fun (idx,fn) ->
+       let new_fn = add_next_index_in_filename (Some(n+idx)) fn in 
+       let old_ap = pass_point ^ "/" ^ fn 
+       and new_ap = remote_location ^ new_fn in 
+        Filename.quote_command "mv" [old_ap;new_ap]
+     ) temp3 in 
+     temp4 ;; 
+  
+  let transfer_act () = Image.image Sys.command transfer_commands ;; 
+  
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 137 : Enhance a Java file with many printouts
+************************************************************************************************************************)
 module Snip137=struct
 
 let ap1 = Absolute_path.of_string 
