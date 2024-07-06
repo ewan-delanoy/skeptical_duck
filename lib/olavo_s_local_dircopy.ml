@@ -1,6 +1,6 @@
 (*
 
-#use"lib/local_dircopy_for_olavo.ml";;
+#use"lib/olavo_s_local_dircopy.ml";;
 
 If you wish to reinitialize the object from scratch, you can do 
 
