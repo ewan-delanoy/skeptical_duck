@@ -199,7 +199,8 @@ initialize_when_there_are_no_fixes ldc ;;
 
 let show_files locdir = 
    let shortened_names = Image.image (Cull_string.shortened_version 60) locdir.Local_dircopy_t.remote_files in 
-   let msg = "\n\n\n" ^ (String.concat "\n" shortened_names) ^ "\n\n\n" in 
+   let line_for_number = "    Total : "^(string_of_int(locdir.Local_dircopy_t.number_of_remote_files))^" files" in 
+   let msg = "\n\n\n" ^ (String.concat "\n" shortened_names) ^ "\n\n" ^ line_for_number ^"\n\n\n" in 
    print_string msg ;;
 
 
