@@ -181,12 +181,21 @@ let update locdir =
    let ldc = locdir.Local_dircopy_t.config in 
    let _ = update_from_config ldc in 
 initialize_when_there_are_no_fixes ldc ;;   
-        
+
+let show_files locdir = 
+   let shortened_names = Image.image (Cull_string.shortened_version 60) locdir.Local_dircopy_t.remote_files in 
+   let msg = "\n\n\n" ^ (String.concat "\n" shortened_names) ^ "\n\n\n" in 
+   print_string msg ;;
+
+
 end ;;
 
 let initialize = Private.initialize ;; 
 
 let reload = Private.reload ;;
+
+let show_files = Private.show_files ;;
+
 let update = Private.update ;; 
 
         
