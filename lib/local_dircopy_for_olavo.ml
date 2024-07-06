@@ -16,7 +16,7 @@ module Private = struct
 let config = {
    Local_dircopy_config_t.allowed_number_of_digits = 3;
    remote_dir = "/media/" ^ (Sys.getenv "USER") ^ "/HEAVY/Other/OC/" ;
-   frontier_dir = (Sys.getenv "HOME") ^ "/Downloads/OC/Lennet"; 
+   frontier_dir = (Sys.getenv "HOME") ^ "/Downloads/OC/Lennet/"; 
    file_for_persistence = "lib/videos_with_olavo.txt";
 } ;; 
 
