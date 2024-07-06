@@ -109,6 +109,14 @@ let order_for_floats = ((fun (fl1:float) (fl2:float) ->
 let order_for_dated_files = Total_ordering.product 
    order_for_floats Total_ordering.lex_for_strings ;; 
 
+let transfer_message data = 
+   if data =  [] 
+   then "\n\n There are no files to update the remote with. \n\n"
+   else   
+   "\n\n\n"^(String.concat "\n" 
+   ("The remote will be updated with the following files :\n"::
+   data))^"\n\n\n" ;; 
+
 let transfer_commands ldc = 
    let temp1 = Ordered.sort order_for_dated_files (dated_files ldc) in 
    let temp2 = Image.image snd temp1 in 
@@ -120,6 +128,10 @@ let transfer_commands ldc =
      and new_ap = (ldc.Local_dircopy_config_t.remote_dir)^ new_fn in 
       Filename.quote_command "mv" [old_ap;new_ap]
    ) temp3 in 
+   let temp5 = Image.image (fun (idx,fn) ->
+      fn ^" -> v"^(string_of_int (n+idx)) 
+    ) temp3 in 
+   let _ = (print_string(transfer_message temp5); flush stdout) in 
    temp4 ;; 
 
 let transfer_to_remote ldc = Image.image Sys.command (transfer_commands ldc);; 
@@ -130,16 +142,18 @@ let file_for_persistence ldc =
       ldc.Local_dircopy_config_t.file_for_persistence in 
     Absolute_path.create_file_if_absent s_ap_for_persistence ;;
     
+let persist_files ldc =     
+   let filelist = String.concat "\n" (ordered_filenames ldc) in 
+    let ap_for_persistence = file_for_persistence ldc in 
+    Io.overwrite_with ap_for_persistence filelist ;;  
 
 let update_from_config ldc = 
     let _ = transfer_to_remote ldc in 
-    let filelist = String.concat "\n" (ordered_filenames ldc) in 
-    let ap_for_persistence = file_for_persistence ldc in 
-    let _ = Io.overwrite_with ap_for_persistence filelist in 
-    () ;;   
+    persist_files ldc ;;   
 
         
 let initialize_when_there_are_no_fixes ldc = 
+   let _ = persist_files ldc in 
    let filenames = ordered_filenames ldc in 
 {
    Local_dircopy_t.config = ldc;
