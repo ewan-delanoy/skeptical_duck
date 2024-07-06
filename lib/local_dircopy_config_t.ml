@@ -6,8 +6,8 @@
 
 type t = {
    allowed_number_of_digits: int;
-   remote_dir: Directory_name_t.t ;
-   frontier_dir: Directory_name_t.t; 
+   remote_dir: string ;
+   frontier_dir: string ; 
    file_for_persistence : string;
 } ;;
 

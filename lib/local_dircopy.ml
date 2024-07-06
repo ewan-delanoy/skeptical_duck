@@ -66,12 +66,13 @@ let standardized_name_opt ldc next_idx_opt filename =
    then Some(standardized_name)
    else None ;;
    
-let remote_location ldc = Directory_name.connectable_to_subpath ldc.Local_dircopy_config_t.remote_dir ;;   
 
-let remote_files ldc = Unix_again.beheaded_simple_ls ldc.Local_dircopy_config_t.remote_dir ;; 
+let formal_remote_dir ldc = Directory_name.of_string ldc.Local_dircopy_config_t.remote_dir ;; 
+
+let remote_files ldc = Unix_again.beheaded_simple_ls (formal_remote_dir ldc) ;; 
  
 let compute_fixes ldc = 
-   let rem_loc = remote_location ldc in 
+   let rem_loc = ldc.Local_dircopy_config_t.remote_dir in 
    let temp1 = Image.image (fun fn ->(fn,standardized_name_opt ldc None fn) ) (remote_files ldc) in 
    List.filter_map (
       fun (old_fn,new_fn_opt) -> match new_fn_opt with 
@@ -89,13 +90,14 @@ let ordered_filenames ldc =
    let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
    Image.image (fun s->List.assoc s temp0 ) temp2;; 
 
-let pass_point ldc = Directory_name.connectable_to_subpath ldc.Local_dircopy_config_t.frontier_dir;;
+let formal_frontier_dir ldc = Directory_name.of_string ldc.Local_dircopy_config_t.frontier_dir ;; 
 
-let files_to_be_transferred ldc = Unix_again.beheaded_simple_ls ldc.Local_dircopy_config_t.frontier_dir ;;
+
+let files_to_be_transferred ldc = Unix_again.beheaded_simple_ls (formal_frontier_dir ldc) ;;
         
 let dated_files ldc = Image.image (
            fun fn ->
-              let full_fn = (pass_point ldc) ^ "/" ^ fn in 
+              let full_fn = (ldc.Local_dircopy_config_t.frontier_dir) ^ fn in 
               ((Unix.stat full_fn).Unix.st_mtime, fn)
 ) (files_to_be_transferred ldc) ;;
         
@@ -114,8 +116,8 @@ let transfer_commands ldc =
    let temp3 = Int_range.index_everything temp2 in 
    let temp4 = Image.image (fun (idx,fn) ->
      let new_fn = add_next_index_in_filename ldc (Some(n+idx)) fn in 
-     let old_ap = (pass_point ldc) ^ "/" ^ fn 
-     and new_ap = (remote_location ldc)^ new_fn in 
+     let old_ap = (ldc.Local_dircopy_config_t.frontier_dir)  ^ fn 
+     and new_ap = (ldc.Local_dircopy_config_t.remote_dir)^ new_fn in 
       Filename.quote_command "mv" [old_ap;new_ap]
    ) temp3 in 
    temp4 ;; 
@@ -131,8 +133,7 @@ let file_for_persistence ldc =
 
 let update_from_config ldc = 
     let _ = transfer_to_remote ldc in 
-    let filelist = String.concat "\n" 
-       (ordered_filenames ldc) in 
+    let filelist = String.concat "\n" (ordered_filenames ldc) in 
     let ap_for_persistence = file_for_persistence ldc in 
     let _ = Io.overwrite_with ap_for_persistence filelist in 
     () ;;   
