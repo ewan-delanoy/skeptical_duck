@@ -95,7 +95,12 @@ let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'
 
 let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
    
-              
+let shortened_version max_length s = 
+   let n = String.length s in 
+   if n<=max_length 
+   then s 
+   else (beginning max_length s)^"(...)" ;;                  
+
 
  let trim_spaces s=
    let n=String.length s in
