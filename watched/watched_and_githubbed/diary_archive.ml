@@ -1,8 +1,207 @@
 (************************************************************************************************************************
-Snippet 137 : 
+Snippet 139 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 138 : Makefile code, not using the Makefile_text module
+************************************************************************************************************************)
+
+module Snip138=struct
+
+  let ap1= Absolute_path.of_string "~/Teuliou/Experimenting_with_php/copiableMakefile";;
+
+  let beg_marker = "# Wild target starts here" ;;
+  let end_marker = "# Wild target ends here" ;;
+  
+  
+  let makefile_lines_for_indexed_command (cmd_idx,(cmd_content,comment,is_commented_out)) = 
+     let comment_box = (if is_commented_out then "#" else "") 
+     and s_idx = string_of_int cmd_idx in 
+     [
+     comment_box^
+     "\t@echo \"************************************************ Step "^s_idx^":"^comment^"\"";
+     comment_box^
+     "\t"^cmd_content   
+     ] ;; 
+  
+  let makefile_snippet_for_commands l = 
+    let indexed_l = Int_range.index_everything l in 
+    "\nfalbala:\n" ^
+    (String.concat "\n"
+    (List.flatten (Image.image makefile_lines_for_indexed_command indexed_l ))) ^ "\n";;   
+  
+  
+   
+      
+  let commands_ref = ref ([]: (string * string * bool) list ) ;;
+  
+  let makefile_ref  =  ref(Io.read_whole_file ap1) ;; 
+  
+  let act () = 
+    let snippet = makefile_snippet_for_commands (!commands_ref) in 
+    let _ = Replace_inside.overwrite_between_markers_inside_file
+       ~overwriter:snippet (beg_marker,end_marker) ap1 in 
+    makefile_ref :=  (Io.read_whole_file ap1)  ;; 
+  
+  
+  
+  let add_interval_if_nonempty (treated,text,starter,current_idx)=
+    if starter > current_idx 
+    then treated 
+    else (Cull_string.interval text starter current_idx) :: treated ;;   
+    
+        
+  
+  let rec helper_for_ingredients_extractor (treated,text,starter,current_idx,text_length) = 
+    if current_idx > text_length 
+    then  (List.rev(add_interval_if_nonempty (treated,text,starter,text_length)),text_length + 1)
+    else
+    let c = Strung.get text current_idx in 
+    if not(List.mem c [' ';'\t';'\r';'\n'])   
+    then  helper_for_ingredients_extractor (treated,text,starter,current_idx+1,text_length) 
+    else 
+    let treated2 = add_interval_if_nonempty (treated,text,starter,current_idx-1) in     
+    if c <> '\n'
+    then  helper_for_ingredients_extractor (treated2,text,current_idx+1,current_idx+1,text_length) 
+    else   
+    if (Strung.get text (current_idx-1))<>'\\'
+    then (List.rev treated2,current_idx+1)  
+    else     
+    let treated3 = add_interval_if_nonempty (treated,text,starter,current_idx-2) in     
+    helper_for_ingredients_extractor (treated3,text,current_idx+1,current_idx+1,text_length) ;;
+      
+      
+    let extract_ingredients text idx = 
+        helper_for_ingredients_extractor ([],text,idx,idx,String.length text)  ;;
+      
+  (*  
+    extract_ingredients ("123ab\\\n\tcdef \tghi\njk") 3;;
+  *)
+  
+  let get_ingredients_for_target target_name = 
+    let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
+    and prefix = target_name^":" in 
+    let (idx1,line1) = List.find (
+          fun (_,line) -> Supstring.begins_with line prefix
+    )  temp1 in 
+    let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
+    let left_offset = idx2 + (String.length prefix) in 
+    (idx1,extract_ingredients (!makefile_ref) left_offset) ;;
+    
+  let get_makefile_variable_list_value vname = 
+    let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
+    and prefix = vname^" = " in 
+    let (idx1,line1) = List.find (
+          fun (_,line) -> Supstring.begins_with line prefix
+    )  temp1 in 
+    let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
+    let left_offset = idx2 + (String.length prefix) in 
+    (idx1,fst(extract_ingredients (!makefile_ref) left_offset)) ;; 
+    
+  let get_makefile_variable_single_value vname = 
+     let (idx1,temp1) = get_makefile_variable_list_value vname in 
+     (idx1,List.hd temp1) ;;
+  
+  
+   let rec helper_for_recipes_extractor (treated,text,starter,current_idx,text_length) = 
+       if current_idx > text_length 
+       then  List.rev(add_interval_if_nonempty (treated,text,starter,text_length))
+       else
+       if ((Strung.get text current_idx)<>'\n')||(Strung.get text (current_idx-1)='\\')
+       then  helper_for_recipes_extractor (treated,text,starter,current_idx+1,text_length) 
+       else
+       let treated2 = add_interval_if_nonempty (treated,text,starter,current_idx-1) in   
+       if ( (Strung.get text (current_idx+1))<>'\t' ) || (current_idx+2 > text_length)
+       then  List.rev treated2
+       else 
+       helper_for_recipes_extractor (treated2,text,current_idx+2,current_idx+2,text_length) ;;
+     
+   let extract_recipes text idx = 
+       helper_for_recipes_extractor ([],text,idx,idx,String.length text)  ;;
+     
+     (*  
+     extract_recipes ("123ab\n\tcdef\n\tghi\njk") 3;;
+     *)
+   
+  let get_ingredients_and_recipes_for_target target_name = 
+    let (_,(ingredients,frontier_idx)) = get_ingredients_for_target target_name in 
+    (ingredients,extract_recipes (!makefile_ref) frontier_idx) ;;    
+  
+  let get_recipe_for_target target_name = 
+    snd(get_ingredients_and_recipes_for_target target_name) ;;
+  
+  
+  let (idx1,(list1,jdx1)) = get_ingredients_for_target "ext/opcache/opcache.la" ;; 
+  
+  let (idx2,list2) = get_makefile_variable_list_value "shared_objects_opcache" ;; 
+  
+  
+  
+  let part1_v1 = Image.image (fun tname ->("make "^tname,"",false)) list2 ;; 
+  
+  let cr1 = 
+   (part1_v1)@
+   [
+      ("make ext/opcache/opcache.la","",false);
+      ("$(LIBTOOL) --tag=CC --mode=install cp ext/opcache/opcache.la $(phplibdir)","",false);
+      ("make cli","",false); 
+      ("make phpdbg","",false); 
+      ("make cgi","",false); 
+      ("make pharcmd","",false)
+    ] ;; 
+  
+    let comp1 = Image.image (
+      fun target ->(target,get_ingredients_and_recipes_for_target target)
+   ) list2 ;;
+   
+   
+  
+  
+  commands_ref:= cr1 ;;
+  
+   
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 137 : Code snippet related to recipes in a makefile
+************************************************************************************************************************)
+module Snip137=struct
+
+let add_interval_if_nonempty (treated,text,starter,current_idx)=
+  if starter > current_idx 
+  then treated 
+  else (Cull_string.interval text starter current_idx) :: treated ;;   
+
+
+let rec helper_for_nt_analizer (treated,text,starter,current_idx,text_length) = 
+    if current_idx > text_length 
+    then  List.rev(add_interval_if_nonempty (treated,text,starter,current_idx))
+    else
+    if (Strung.get text current_idx)<>'\n'
+    then  helper_for_nt_analizer (treated,text,starter,current_idx+1,text_length) 
+    else
+    let treated2 = add_interval_if_nonempty (treated,text,starter,current_idx-1) in   
+    if ( (Strung.get text (current_idx+1))<>'\t' ) || (current_idx+2 > text_length)
+    then  List.rev treated2
+    else 
+    helper_for_nt_analizer (treated2,text,current_idx+2,current_idx+2,text_length) ;;
+  
+let nt_analize text idx = 
+    helper_for_nt_analizer ([],text,idx,idx,String.length text)  ;;
+  
+  (*  
+  nt_analize ("123ab\n\tcdef\n\tghi\njk") 3;;
+  *)
+
+
+end ;;
 
 
 (************************************************************************************************************************
