@@ -2,8 +2,11 @@
 
 #use"lib/makefile_text.ml";;
 
-*) (*
+*) 
 
+exception List_value_exn of (int * ((string list) * int)) list ;;
+
+exception Check_all_are_empty_but_last_exn of (int * (string list)) list ;;
 
 module Private = struct 
 
@@ -60,14 +63,25 @@ let rec helper_for_ingredients_extractor (treated,text,starter,current_idx,text_
 
 let extract_ingredients_after_prefix_at_index mt_text prefix idx= 
   let left_offset = idx + (String.length prefix) in 
-  extract_ingredients_from_index mt_text left_offset ;;
+  extract_ingredients_from_index mt_text left_offset;;
 
-let ingredients_for_target mt_text target_name = 
-  extract_ingredients_after_prefix mt_text (target_name^":") ;;
+let located_ingredients_for_prefix mt_text prefix = 
+  let (Makefile_text_t.MT text) = mt_text in 
+  let pairs = Lines_in_string.occurrences_of_in_at_beginnings_of_lines prefix text in 
+  Image.image (
+   fun (c_idx,l_idx) -> 
+    (l_idx,extract_ingredients_after_prefix_at_index mt_text prefix c_idx)
+  ) pairs ;;
+
+let located_ingredients_for_target mt_text target_name = 
+   located_ingredients_for_prefix mt_text (target_name^":") ;;
  
  
 let list_value mt_text ~variable_name = 
-  extract_ingredients_after_prefix mt_text (variable_name^" = ") ;;
+  let temp1 = located_ingredients_for_prefix mt_text (variable_name^" = ") in 
+  if List.length(temp1)<>1
+  then raise(List_value_exn(temp1))
+  else List.hd temp1;;
  
  
 let single_value mt_text ~variable_name = 
@@ -95,9 +109,47 @@ let extract_recipes (Makefile_text_t.MT text) idx =
   extract_recipes ("123ab\n\tcdef\n\tghi\njk") 3;;
   *)
 
-let ingredients_and_recipes_for_target mt_text target_name = 
- let (_,(ingredients,frontier_idx)) = ingredients_for_target mt_text target_name in 
- (ingredients,extract_recipes mt_text frontier_idx) ;;    
+let located_ingredients_and_recipes_for_target mt_text target_name = 
+ Image.image (
+  fun (start_idx,(ingredients,frontier_idx)) ->
+     (start_idx,(ingredients,extract_recipes mt_text frontier_idx))
+ ) (located_ingredients_for_target mt_text target_name) ;;
+ 
+(*
+   
+let mt1 = Makefile_text_t.MT
+  (String.concat "\n"
+  ["arthur: a.txt"; "\t@echo \"This is Arthur 1\""; "belinda: b.txt";
+  "\t@echo \"This is Belinda\""; "arthur: c.txt";
+  "\t@echo \"This is Arthur 2\""; "arthur: d.txt";
+  "\t@echo \"This is Arthur 3\"\t"; "a.txt:"; "\tcp origin.txt a.txt"; "b.txt:";
+  "\tcp origin.txt b.txt\t"; "c.txt:"; "\tcp origin.txt c.txt\t"; "d.txt:";
+  "\tcp origin.txt d.txt\t\t\t"; "clean:"; "\trm -f a.txt b.txt c.txt d.txt";
+  "\ttouch what_gnu_make_did.txt \t"; ""] 
+  ) ;; 
+
+let see1 = located_ingredients_and_recipes_for_target 
+    mt1 "arthur" ;;  
+
+*)
+
+let check_all_are_empty_but_last l =
+   let (h,t) = List_again.head_with_tail(List.rev l) in
+   if List.for_all (fun (_idx,recipes)->recipes=[]) t 
+   then snd h
+   else raise (Check_all_are_empty_but_last_exn l);;  
+
+ let ingredients_and_recipes_for_target mt_text target_name = 
+  let temp1 = located_ingredients_and_recipes_for_target mt_text target_name in 
+  let temp2 = Image.image (fun (_start_idx,(ingr,_recipe))->ingr ) temp1
+  and temp3 = Image.image (fun (start_idx,(_ingr,recipe))->(start_idx,recipe) ) temp1 in 
+  let ingredients = List.flatten temp2
+  and recipes = check_all_are_empty_but_last temp3 in 
+  (ingredients,recipes) ;;
+
+
+  let ingredients_for_target mt_text target_name = 
+    fst(ingredients_and_recipes_for_target mt_text target_name) ;;
 
 let recipes_for_target mt_text target_name = 
  snd(ingredients_and_recipes_for_target mt_text target_name) ;; 
@@ -113,5 +165,5 @@ let list_value = Private.list_value ;;
 
 let single_value = Private.single_value ;;
 
-let snippet  = Private.makefile_snippet_for_command ;; *)
+let snippet  = Private.makefile_snippet_for_command ;; 
 
