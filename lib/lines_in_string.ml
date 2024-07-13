@@ -24,7 +24,7 @@ module Private = struct
        |(line_idx,line) :: other_lines ->
         iterator_for_enchancement 
         (num_of_treated_chars+(String.length line)+1,
-         (num_of_treated_chars,line_idx,line)::treated_lines,other_lines)   ;;
+         (num_of_treated_chars+1,line_idx,line)::treated_lines,other_lines)   ;;
         
   let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
   
@@ -178,6 +178,30 @@ module Private = struct
      let new_text=shift_indentation_in_interval_in_string_with (i,j) ~text:old_text ~shift_amplitude ~forced  in
      Io.overwrite_with fn new_text;;     
 
+  let occurrences_of_in_at_beginnings_of_lines patt text = 
+    let temp1 = enhance (indexed_lines text) in 
+    List.filter_map (
+       fun (c_idx,l_idx,line) ->
+          if Supstring.begins_with line patt 
+          then Some(c_idx,l_idx)
+          else None
+    ) temp1 ;;  
+
+  (*
+
+  let patt1 = "Bart" ;;
+
+  let text1 = "Uv\nBart45\nJBart6\nBartAgain" ;;
+     
+  let z1 = occurrences_of_in_at_beginnings_of_lines patt1 text1 ;;
+
+  let check_z1 = List.for_all (fun (c_idx,l_idx) -> 
+        Substring.is_a_substring_located_at patt1 text1 c_idx
+  ) z1 ;;
+
+
+  *)  
+
   end ;;   
 
 let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
@@ -188,16 +212,6 @@ let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentat
 
   let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
   let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
-
-  let indexed_lines = Private.indexed_lines ;;
-  
-  (*
-  
-  indexed_lines "a\nb";;
-  indexed_lines "\na\nb";;
-  indexed_lines "a\nb\n";;
-  
-  *)
 
   let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
   
@@ -210,6 +224,17 @@ let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentat
   *)
 
  
+  let indexed_lines = Private.indexed_lines ;;
+  
+  (*
+  
+  indexed_lines "a\nb";;
+  indexed_lines "\na\nb";;
+  indexed_lines "a\nb\n";;
+  
+  *)
+
+  
 
 let interval = Private.interval ;;
 
@@ -217,6 +242,8 @@ let interval = Private.interval ;;
       1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
 
   let lines s= Image.image snd (indexed_lines s);;
+
+  let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
 
   let remove_interval s i j=
     let temp1=indexed_lines s in

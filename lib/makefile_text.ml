@@ -2,7 +2,7 @@
 
 #use"lib/makefile_text.ml";;
 
-*)
+*) (*
 
 
 module Private = struct 
@@ -58,15 +58,9 @@ let rec helper_for_ingredients_extractor (treated,text,starter,current_idx,text_
  extract_ingredients ("123ab\\\n\tcdef \tghi\njk") 3;;
 *)
 
-let extract_ingredients_after_prefix mt_text prefix = 
-  let  (Makefile_text_t.MT text) = mt_text in
-  let temp1 = Lines_in_string.indexed_lines text  in 
-  let (idx1,line1) = List.find (
-        fun (_,line) -> Supstring.begins_with line prefix
-  )  temp1 in 
-  let idx2 = Substring.leftmost_index_of_in line1 text in 
-  let left_offset = idx2 + (String.length prefix) in 
-  (idx1,extract_ingredients_from_index mt_text left_offset) ;;
+let extract_ingredients_after_prefix_at_index mt_text prefix idx= 
+  let left_offset = idx + (String.length prefix) in 
+  extract_ingredients_from_index mt_text left_offset ;;
 
 let ingredients_for_target mt_text target_name = 
   extract_ingredients_after_prefix mt_text (target_name^":") ;;
@@ -119,5 +113,5 @@ let list_value = Private.list_value ;;
 
 let single_value = Private.single_value ;;
 
-let snippet  = Private.makefile_snippet_for_command ;; 
+let snippet  = Private.makefile_snippet_for_command ;; *)
 
