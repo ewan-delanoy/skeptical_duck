@@ -141,6 +141,7 @@ let check_all_are_empty_but_last l =
 
  let ingredients_and_recipes_for_target mt_text target_name = 
   let temp1 = located_ingredients_and_recipes_for_target mt_text target_name in 
+  if temp1 = [] then ([],[]) else
   let temp2 = Image.image (fun (_start_idx,(ingr,_recipe))->ingr ) temp1
   and temp3 = Image.image (fun (start_idx,(_ingr,recipe))->(start_idx,recipe) ) temp1 in 
   let ingredients = List.flatten temp2
@@ -154,7 +155,33 @@ let check_all_are_empty_but_last l =
 let recipes_for_target mt_text target_name = 
  snd(ingredients_and_recipes_for_target mt_text target_name) ;; 
 
+ 
+let rec helper_for_target_list_expansion mt_text (treated,terminals,to_be_treated) = 
+  match to_be_treated with 
+  [] -> List.rev treated 
+ |(target,already_visited) :: others ->
+    if already_visited 
+    then  helper_for_target_list_expansion mt_text (target::treated,terminals,others)
+    else 
+    let (ingredients,recipes)  = ingredients_and_recipes_for_target mt_text target in 
+    if (ingredients,recipes)  = ([],[])
+    then  helper_for_target_list_expansion mt_text (treated,target::terminals,others) 
+    else 
+    let old_ingredients = treated @ terminals in 
+    let new_ingredients = List.filter (fun tgt ->not(List.mem tgt old_ingredients)) ingredients in 
+    if new_ingredients = []
+    then helper_for_target_list_expansion mt_text (target::treated,terminals,others)
+    else
+    let new_goal = (Image.image (fun x->(x,false)) new_ingredients)
+                    @( (target,true) :: others) in 
+    helper_for_target_list_expansion mt_text (treated,terminals,new_goal) ;;                    
+   
+let expand_target_list mt_text l = 
+  helper_for_target_list_expansion mt_text ([],[],Image.image (fun x->(x,false)) l) ;;
+
 end ;;
+
+let expand_target_list = Private.expand_target_list ;; 
 
 let ingredients_and_recipes_for_target = Private.ingredients_and_recipes_for_target ;;
 
