@@ -6,6 +6,8 @@
 
 exception List_value_exn of (int * ((string list) * int)) list ;;
 
+exception Ingredients_and_recipes_for_target_exn of string * ((int * (string list)) list) ;;
+
 exception Check_all_are_empty_but_last_exn of (int * (string list)) list ;;
 
 module Private = struct 
@@ -140,13 +142,16 @@ let check_all_are_empty_but_last l =
    else raise (Check_all_are_empty_but_last_exn l);;  
 
  let ingredients_and_recipes_for_target mt_text target_name = 
+  try(
   let temp1 = located_ingredients_and_recipes_for_target mt_text target_name in 
   if temp1 = [] then ([],[]) else
   let temp2 = Image.image (fun (_start_idx,(ingr,_recipe))->ingr ) temp1
   and temp3 = Image.image (fun (start_idx,(_ingr,recipe))->(start_idx,recipe) ) temp1 in 
   let ingredients = List.flatten temp2
   and recipes = check_all_are_empty_but_last temp3 in 
-  (ingredients,recipes) ;;
+  (ingredients,recipes))
+  with Check_all_are_empty_but_last_exn(l) ->
+    raise(Ingredients_and_recipes_for_target_exn(target_name,l));;
 
 
   let ingredients_for_target mt_text target_name = 
