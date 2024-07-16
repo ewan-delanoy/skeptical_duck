@@ -6,9 +6,47 @@ open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 138 : Makefile code, not using the Makefile_text module
+Snippet 138 : Code to delete some files in the same directory
 ************************************************************************************************************************)
+module Snip139=struct
 
+  let g1 = (!(Usual_coma_state.Private.main_ref)) ;;
+  let g2 = Fw_poly.watched_files g1 ;; 
+  
+  let g3 = Image.image (fun (rl,_)->
+    let (Dfa_module_t.M s) = Dfn_rootless.to_module rl in 
+     s 
+  ) g2 ;; 
+  
+  let g4 = List.filter (fun s->Supstring.begins_with s "por_") g3;; 
+  
+  let g5 = Image.image (fun x-> (x,dbel x)) g4 ;;
+  
+  
+  fgs  ["gw_with_archives"; "gw_with_batch_compilation"; "gw_poly";
+  "gw_guthib_configuration"; "gw_poly_t"; "gw_with_dependencies";
+  "gw_with_small_details"; "gw_life_watcher"; "gw_configuration";
+  "gw_with_githubbing"] ;;
+  
+  fgs [
+    "old_polymorphic_ocaml_record_t";
+    "opor_public_definition"; "opor_public_definition_t";
+    "opor_public_component"; "opor_common"; "opor_private_component"
+  ] ;;
+  
+  fgs ["por_space_example"; "por_public_definition_t"; "por_dependency_t";
+  "por_private_component"; "por_field_t"; "por_common"; "por_subclass_t";
+  "por_space_t"; "por_main_type_definition"; "por_public_definition";
+  "por_public_component"; "por_space"] ;;
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 137 : Makefile code, not using the Makefile_text module
+************************************************************************************************************************)
 module Snip138=struct
 
   let ap1= Absolute_path.of_string "~/Teuliou/Experimenting_with_php/copiableMakefile";;
@@ -170,7 +208,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 137 : Code snippet related to recipes in a makefile
+Snippet 136 : Code snippet related to recipes in a makefile
 ************************************************************************************************************************)
 module Snip137=struct
 
@@ -205,7 +243,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 136 : Intial code for Localdircopy module, when no type had been created yet
+Snippet 135 : Intial code for Localdircopy module, when no type had been created yet
 ************************************************************************************************************************)
 module Snip138=struct
 
@@ -345,7 +383,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 135 : Enhance a Java file with many printouts
+Snippet 134 : Enhance a Java file with many printouts
 ************************************************************************************************************************)
 module Snip137=struct
 
@@ -411,7 +449,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 134 : deduce package from path in a Java project
+Snippet 133 : deduce package from path in a Java project
 ************************************************************************************************************************)
 module Snip135=struct
 
@@ -909,7 +947,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 133 : computation of sources in a Java project
+Snippet 132 : computation of sources in a Java project
 ************************************************************************************************************************)
 module Snip134=struct
 
@@ -1069,7 +1107,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 132 : Storing an old version of code for the Szemeredi problem
+Snippet 131 : Storing an old version of code for the Szemeredi problem
 ************************************************************************************************************************)
 module Snip133=struct
 
@@ -2959,7 +2997,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 131 : Code to adapt copy-pasted text to LaTeX
+Snippet 130 : Code to adapt copy-pasted text to LaTeX
 ************************************************************************************************************************)
 module Snip132=struct
 
@@ -3024,7 +3062,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 130 : Parsing a YAML file
+Snippet 129 : Parsing a YAML file
 ************************************************************************************************************************)
 module Snip131=struct
 
@@ -3047,7 +3085,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 129 : Parsing a JSON file with short lines
+Snippet 128 : Parsing a JSON file with short lines
 ************************************************************************************************************************)
 module Snip129=struct
 
@@ -3081,7 +3119,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 128 : Parsing a JSON file with long lines
+Snippet 127 : Parsing a JSON file with long lines
 ************************************************************************************************************************)
 module Snip128=struct
 
@@ -3174,7 +3212,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 127 : Code used for a Kotlin project
+Snippet 126 : Code used for a Kotlin project
 ************************************************************************************************************************)
 module Snip127=struct
 
@@ -3232,7 +3270,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 126 : Bijections with finite difference set
+Snippet 125 : Bijections with finite difference set
 ************************************************************************************************************************)
 module Snip126=struct
 
@@ -3307,7 +3345,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 125 : For sudoku study 
+Snippet 124 : For sudoku study 
 ************************************************************************************************************************)
 module Snip125=struct
 
@@ -4007,7 +4045,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 124 : Combinatorics on sums of {0,+-1} vectors
+Snippet 123 : Combinatorics on sums of {0,+-1} vectors
 ************************************************************************************************************************)
 module Snip124=struct
 
@@ -4080,7 +4118,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 123 : Find/replace on two files
+Snippet 122 : Find/replace on two files
 ************************************************************************************************************************)
 module Snip123=struct
 
@@ -4101,7 +4139,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 122 : Looking for a particular non-ASCII charcater
+Snippet 121 : Looking for a particular non-ASCII charcater
 ************************************************************************************************************************)
 module Snip122=struct
 
@@ -4127,7 +4165,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 121 : Code to add a prefix to each line in a file
+Snippet 120 : Code to add a prefix to each line in a file
 ************************************************************************************************************************)
 module Snip121=struct
 
@@ -4143,7 +4181,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 120 : Multi-lingual OCR on cropped pngs 
+Snippet 119 : Multi-lingual OCR on cropped pngs 
 ************************************************************************************************************************)
 type spanish_or_latin = Spanish | Latin ;; 
 
@@ -4325,7 +4363,7 @@ let act2 () = Io.overwrite_with emptiable_ap new_text ;;
 
 
 (************************************************************************************************************************
-Snippet 119 : Preprocessing code for a variant type
+Snippet 118 : Preprocessing code for a variant type
 ************************************************************************************************************************)
 let this_root = Coma_big_constant.This_World.root ;;
 let s_ap1 = (Dfa_root.connectable_to_subpath this_root) ^ "lib/Szemeredi/sz3p.ml";;
@@ -4402,7 +4440,7 @@ let z9 () = print_string z8 ;;
 
 
 (************************************************************************************************************************
-Snippet 118 : Doing the accounts 
+Snippet 117 : Doing the accounts 
 ************************************************************************************************************************)
 let data = 
   [
@@ -4461,7 +4499,7 @@ let data4 = (List.rev(Ordered.sort Total_ordering.standard2 data3)) ;;
 let total2 = Basic.fold_sum (Image.image fst data3) ;;   
 
 (************************************************************************************************************************
-Snippet 117 : Interpolation in {0,1}^n 
+Snippet 116 : Interpolation in {0,1}^n 
 ************************************************************************************************************************)
 (*
 #require"zarith";;
@@ -4638,7 +4676,7 @@ let v3 = i_sort (Image.image Basic.fold_sum v2) ;;
 
 
 (************************************************************************************************************************
-Snippet 116 : Interpolation in {0,1}^n 
+Snippet 115 : Interpolation in {0,1}^n 
 ************************************************************************************************************************)
 (*
 #require"zarith";;
@@ -4741,7 +4779,7 @@ let ff n = iterator (seed n) ;;
 end ;;
 
 (************************************************************************************************************************
-Snippet 115 : Musings on primes of the form 5p+2
+Snippet 114 : Musings on primes of the form 5p+2
 ************************************************************************************************************************)
 let oi = Total_ordering.for_integers ;; 
 let i_sort = Ordered.sort oi ;; 
@@ -4779,86 +4817,6 @@ let (v5,v6) = Max.maximize_it_with_care
 (fun (_,l)->List.length l) v4;;
 
 *)
-
-(************************************************************************************************************************
-Snippet 114 : Test the Por_space.add_subclass feature 
-************************************************************************************************************************)
-let print_out_field (fmt:Format.formatter) fd=
-   Format.fprintf fmt "@[%s@]" (fd.Por_field_t.field_name);;
-
-(* #install_printer print_out_field ;; *)
-
-let gfd k = {
-  Por_field_t.field_name = "fd"^(string_of_int k);
-  field_type = "";
-  var_name ="";
-  default_value ="";
-  crobj_converters =None;
-} ;;
-
-let gscl (parent_opt,scl_name,field_indices) = {
-  Por_subclass_t.subclass_name = scl_name;
-   subclass_fields = Image.image gfd field_indices; 
-   parent = parent_opt;
-   extensions_leading_here = [];
-   has_restriction = false;
-   has_constructor = false;
-} ;; 
-
-
-let g1= gscl (Some "g7","g1",[1]);;
-let g2= gscl (Some "g6","g2",[2]);;
-let g3= gscl (Some "g7","g3",[3]);;
-let g4= gscl (Some "g1","g4",[4]);;
-let g5= gscl (Some "g3","g5",[5]);;
-let g6= gscl (Some "g7","g6",[6]);;
-let g7 = gscl (None,"g7",[7]);;
-
-let origin = 
-  let home = Sys.getenv "HOME" in 
-  let file_there = (fun s-> 
-    Absolute_path.create_file_if_absent(home^"/Teuliou/OCaml/skeptical_duck/lib/Filewatching/"^s^".ml")) in 
- {
-   Por_space_t.main_type_name = "main" ;
-   module_name = "main" ;
-   subclasses = [] ;
-   dependencies = [] ;
-   type_signature_file = (file_there "gw_poly_t") ;
-   implementation_file = (file_there "gw_poly") ;
-   has_crobj_conversion = false ;
-   incomplete_extensions = [];
-} ;;  
-
-let main_ref = ref origin ;; 
-Por_space.add_extension main_ref "g7" g1;;
-Por_space.add_extension main_ref "g6" g2;;
-Por_space.add_extension main_ref "g7" g3;;
-Por_space.add_extension main_ref "g1" g4;;
-Por_space.add_extension main_ref "g3" g5;;
-Por_space.add_extension main_ref "g7" g6;;
-
-let old_por = (!main_ref) ;;
-let new_por = Por_space.Private.add_subclass_on_nonref old_por g7;; 
-
-(*
-let scl = g7 ;;
-let old_subclasses = old_por.Por_space_t.subclasses 
-and scl_name = scl.Por_subclass_t.subclass_name ;;
-let initial_complete_subclasses = old_subclasses @ [scl] 
-and initial_incomplete_subclasses = old_por.Por_space_t.incomplete_extensions ;;
-let bad1 = Por_common.exhaust_possible_linkings
-~complete:initial_complete_subclasses
-~incomplete:initial_incomplete_subclasses ;;
-let v0 = (false,List.rev initial_complete_subclasses,initial_incomplete_subclasses) ;;
-let ff = Memoized.small 
-Por_common.pusher_for_possible_linkings_exhaustion v0 ;; 
-let gg n = let (b,a,c) = ff n in (b,
-Image.image (fun sc->sc.Por_subclass_t.subclass_name) a,
-Image.image (fun (_,sc)->sc.Por_subclass_t.subclass_name) c
-);;
-*)
-
-Por_space.add_subclass main_ref g7;;
 
 (************************************************************************************************************************
 Snippet 113 : Periodically remove a file in a fixed directory.
@@ -4975,7 +4933,7 @@ let cs1 = Usual_coma_state.Private.main_ref ;;
 
 
 (************************************************************************************************************************
-Snippet 109 : Construct a get_variant_name function from a long type definition 
+Snippet 110 : Construct a get_variant_name function from a long type definition 
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "lib/Padioleau/yp_php_lexer.mll" ;; 
 let old_text = Io.read_whole_file ap1;;
@@ -5002,7 +4960,7 @@ let new_text = before_u1 ^ u7 ^ after_u1 ;;
 Io.overwrite_with ap1 new_text ;; 
 
 (************************************************************************************************************************
-Snippet 109 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
+Snippet 110 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
 ************************************************************************************************************************)
 open Needed_values ;;
 
