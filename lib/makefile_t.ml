@@ -18,6 +18,8 @@ type rule = {
 } ;;
 
 
+type text = MT of string ;; 
+
 type t = {
    assignments : variable_assignment list;
    rules : rule list
