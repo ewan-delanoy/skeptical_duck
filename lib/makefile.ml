@@ -213,6 +213,10 @@ let rec helper_for_command_list_parsing (text,text_length) (treated,walking_idx)
    else     
    let next_idx = last_index_before_end_of_line (Makefile_t.MT text)  (wi_plus_one text walking_idx) in 
    let next_cmd = Cull_string.interval text (idx+1) (wi_to_char_index next_idx) in 
+   let treated2 = next_cmd::treated in 
+   if (wi_to_char_index next_idx)+2 > text_length 
+   then (List.rev treated2, None)
+   else   
    helper_for_command_list_parsing (text,text_length) (next_cmd::treated,wi_plus_two text next_idx) ;;
 
 
