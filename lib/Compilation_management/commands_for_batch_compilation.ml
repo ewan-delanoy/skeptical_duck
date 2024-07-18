@@ -7,15 +7,25 @@
 
 module Private = struct
 
-  let needed_dirs_and_libs_in_command cmod fw mn=
+   let line_for_libs cmod lib_names = 
     let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
+    (* Before OCaml 5.0, this used to be : *)
+      String.concat(" ") (Image.image(fun z->
+        let lib = Ocaml_library.file_for_library(z)in 
+        "-I +"^lib^" "^lib^extension) lib_names) 
+    
+    (* Since OCaml 5.0 *)
+    (* String.concat(" ") (Image.image(fun z->"-I +"^(Ocaml_library.file_for_library(z))) lib_names *);;
+
+
+  let needed_dirs_and_libs_in_command cmod fw mn=
+    
     let s_root=Dfa_root.connectable_to_subpath(Fw_with_dependencies.root fw) in
     let dirs=
     "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
-   and libs=String.concat(" ")
-     (Image.image(fun z->Ocaml_library.file_for_library(z)^extension)
-     (Fw_with_dependencies.needed_libs_for_module fw mn)) in
-     String.concat " " ["";dirs;libs;""];;
+   and prelibs = Fw_with_dependencies.needed_libs_for_module fw mn in 
+   let libs=line_for_libs cmod prelibs in 
+    String.concat " " ["";dirs;libs;""];;
   
   
   let command_for_cmi (cmod:Compilation_mode_t.t) dir fw hm=
@@ -225,9 +235,7 @@ module Private = struct
       let pre_libs1=Image.image 
        (fun (_,nm) -> Set_of_polys.sort(Fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-      let extension=".cma" in
-      let libs=String.concat(" ")
-        (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
+      let libs=line_for_libs cmod pre_libs2 in 
         Option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         (Compilation_mode.executioner cmod)^
@@ -272,9 +280,7 @@ module Private = struct
       let pre_libs1=Image.image 
        (fun (_,nm) -> Set_of_polys.sort(Fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-      let extension=(if cmod=Compilation_mode_t.Executable then ".cmxa" else ".cma") in
-      let libs=String.concat(" ")
-        (Image.image(fun z->Ocaml_library.file_for_library(z)^extension) pre_libs2) in 
+      let libs=line_for_libs cmod pre_libs2 in 
         Option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         ((Compilation_mode.executioner cmod)^
