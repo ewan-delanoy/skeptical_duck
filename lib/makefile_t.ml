@@ -17,10 +17,15 @@ type rule = {
    commands : string list
 } ;;
 
+type inclusion = {
+   inc_line_number : int ;
+   included_ones : string list ;
+} ;;
 
 type text = MT of string ;; 
 
 type t = {
    assignments : variable_assignment list;
-   rules : rule list
+   rules : rule list;
+   inclusions : inclusion list
 };; 

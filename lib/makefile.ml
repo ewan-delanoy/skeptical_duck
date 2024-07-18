@@ -133,7 +133,8 @@ let makefile_lines_for_indexed_command (cmd_idx,(cmd_content,comment)) =
 type instruction = 
      Comment 
     |Rule of Makefile_t.rule 
-    |Assignment of Makefile_t.variable_assignment ;;
+    |Assignment of Makefile_t.variable_assignment 
+    |Inclusion of Makefile_t.inclusion ;;
 
 let rec helper_for_noncancelled_linebreak_finder (text,fst_idx,last_idx) walking_idx= 
  let idx = wi_to_char_index walking_idx in  
@@ -241,7 +242,7 @@ let parse_next_rule mkf_text start_idx sep_idx =
 
 let parse_next_assignment mkf_text start_idx sep_idx = 
    let (Makefile_t.MT text) = mkf_text in 
-   let vname = Cull_string.trim_spaces (Cull_string.interval text (wi_to_line_index start_idx) ((wi_to_char_index sep_idx)-1)) in 
+   let vname = Cull_string.trim_spaces (Cull_string.interval text (wi_to_char_index start_idx) ((wi_to_char_index sep_idx)-1)) in 
    let next_idx_opt = next_noncancelled_linebreak_opt mkf_text sep_idx in 
    let last_idx_before_end_of_line  = 
      ( match next_idx_opt with 
@@ -257,11 +258,36 @@ let parse_next_assignment mkf_text start_idx sep_idx =
        
    }, next_idx_opt) ;;    
 
-let parse_next_instruction mkf_text nonblank_idx = 
+let prefix_for_inclusion = "-include ";;
+
+let parse_next_inclusion mkf_text start_idx = 
    let (Makefile_t.MT text) = mkf_text in 
-   if (Strung.get text (wi_to_char_index nonblank_idx)) = '#'
-   then (Comment,next_noncancelled_linebreak_opt mkf_text nonblank_idx)
+   (* here we use the fact that the prefix contains no line breaks *)
+   let sep_idx = WI(wi_to_line_index start_idx,(wi_to_char_index start_idx)+(String.length prefix_for_inclusion)) in 
+   let next_idx_opt = next_noncancelled_linebreak_opt mkf_text sep_idx in 
+   let last_idx_before_end_of_line  = 
+   ( match next_idx_opt with 
+   (Some walking_idx) -> wi_minus_one text walking_idx 
+   | None ->
+      let (Makefile_t.MT text) = mkf_text in 
+      WI(Strung.number_of_linebreaks text,String.length text) ) in    
+      let ctnt = parse_long_line mkf_text ((wi_to_char_index sep_idx)+1) (wi_to_char_index last_idx_before_end_of_line) in 
+      ({
+      Makefile_t.inc_line_number = wi_to_line_index start_idx;
+      included_ones = ctnt;
+   }, next_idx_opt) ;;    
+
+
+let parse_next_instruction mkf_text nonblank_idx = 
+   let (Makefile_t.MT text) = mkf_text 
+   and idx = wi_to_char_index nonblank_idx in 
+   if (Strung.get text idx) = '#'
+   then (Comment,next_noncancelled_linebreak_opt mkf_text nonblank_idx) 
    else  
+   if Substring.is_a_substring_located_at prefix_for_inclusion text idx
+   then let (incl,next_idx_opt) = parse_next_inclusion mkf_text nonblank_idx in 
+         (Inclusion incl,next_idx_opt)
+   else       
    match wi_to_char_index_finder_from_inclusive_opt mkf_text (fun c->
           List.mem c [':';'='])  (wi_plus_one text nonblank_idx) with 
     None -> raise (Parse_next_instruction_exn(wi_to_char_index nonblank_idx))
@@ -285,12 +311,15 @@ let parse_next_instruction_if_there_is_one mkf_text first_c_idx_in_line =
 
 let empty_one = { 
       Makefile_t.assignments = []; 
-      Makefile_t.rules = []
+      Makefile_t.rules = [];
+      Makefile_t.inclusions = [];
    } ;;     
 
 let rev_both mkf = { 
    Makefile_t.assignments = List.rev(mkf.Makefile_t.assignments); 
-   Makefile_t.rules = List.rev(mkf.Makefile_t.rules)
+   Makefile_t.rules = List.rev(mkf.Makefile_t.rules);
+   Makefile_t.inclusions = List.rev(mkf.Makefile_t.inclusions);
+   
 } ;;
 
 let add_assignment assg mkf = { 
@@ -303,6 +332,10 @@ let add_rule rule mkf = {
    Makefile_t.rules = rule :: (mkf.Makefile_t.rules)
 } ;;
 
+let add_inclusion inclusion mkf = { 
+   mkf with 
+   Makefile_t.inclusions = inclusion :: (mkf.Makefile_t.inclusions)
+} ;;
 
 let rec helper_for_makefile_parsing (text,text_length) (treated,walking_idx) = 
    let idx = wi_to_char_index walking_idx in  
@@ -318,6 +351,7 @@ let rec helper_for_makefile_parsing (text,text_length) (treated,walking_idx) =
        Comment -> treated 
        |Rule rule -> add_rule rule treated 
        |Assignment assg -> add_assignment assg treated   
+       |Inclusion incl -> add_inclusion incl treated
    ) in 
    match next_idx_opt with 
     None -> rev_both treated2 
