@@ -4,7 +4,6 @@
 
 *)
 
-exception Check_all_are_empty_but_last_exn  ;;
 
 exception List_value_exn of string * ( Makefile_t.variable_assignment list) ;; 
 
@@ -13,6 +12,11 @@ exception Parse_next_instruction_exn of int ;;
 exception Prerequisites_and_commands_for_target_exn of string * ( Makefile_t.rule list) ;; 
 
 exception Single_value_exn of string * (string list) ;; 
+
+
+module Private = struct 
+
+exception Check_all_are_empty_but_last_exn  ;;
 
 type walking_index = WI of int * int ;; (* first is line index, second is char index *)
 
@@ -362,7 +366,22 @@ let parse_makefile mkf_text =
    let (Makefile_t.MT text) = mkf_text in 
    helper_for_makefile_parsing (text,String.length text) (empty_one,wi_starter text) ;;
 
-   
+end ;;
+
+
+let expand_target_list = Private.expand_target_list ;;
+
+let list_value = Private.list_value;;
+
+let parse = Private.parse_makefile ;; 
+
+let prerequisites_and_commands_for_target = Private.prerequisites_and_commands_for_target ;; 
+
+let prerequisites_for_target = Private.prerequisites_for_target ;; 
+
+let single_value = Private.single_value ;;
+
+let write_rule_without_prerequisites = Private.write_rule_without_prerequisites ;; 
 
 (*
 
