@@ -54,11 +54,11 @@ let wi_to_char_index_finder_from_inclusive_opt mkf_text f walking_idx =
 
 
 let check_all_are_empty_but_last l =
+   if l = [] then [] else
    let (h,t) = List_again.head_with_tail(List.rev l) in
    if List.for_all (fun commands->commands=[]) t 
    then h
    else raise Check_all_are_empty_but_last_exn ;;  
-
 let prerequisites_and_commands_for_target mkf target_name = 
    let rules1 = List.filter (
       fun rule ->
@@ -72,7 +72,7 @@ let prerequisites_and_commands_for_target mkf target_name =
    (prerequisites,commands) 
    ) with 
    Check_all_are_empty_but_last_exn ->
-   raise(Prerequisites_and_commands_for_target_exn(target_name,rules1));;
+   raise(Prerequisites_and_commands_for_target_exn(target_name,rules1))  ;;
   
 let prerequisites_for_target mkf target_name = 
     fst(prerequisites_and_commands_for_target mkf target_name) ;; 
