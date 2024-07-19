@@ -108,7 +108,7 @@ module Private = struct
      let decorated_lines = Image.image (
        fun (idx2,line)->
           let prefix = 
-            Strung.insert_repetitive_offset_on_the_left ' ' 4 (string_of_int (idx2+startline_idx)) in 
+            Strung.insert_repetitive_offset_on_the_left ' ' 6 (string_of_int (idx2+startline_idx)) in 
           prefix^": "^line  
      ) lines in
      String.concat "\n" (""::decorated_lines) ;; 
