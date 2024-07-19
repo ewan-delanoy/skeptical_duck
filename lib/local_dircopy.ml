@@ -44,7 +44,7 @@ let add_next_index_in_filename ldc next_idx_opt filename =
 exception Empty_subpath of string ;;
 
 let standardized_name_opt ldc next_idx_opt filename = 
-   if not(Supstring.begins_with filename "v")
+   if not(String.starts_with ~prefix:"v" filename)
    then Some(add_next_index_in_filename ldc next_idx_opt filename)
    else 
    let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 

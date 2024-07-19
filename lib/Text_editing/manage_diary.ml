@@ -72,8 +72,8 @@ module Private = struct
   type line_kind = Opener | Closer | Ordinary_line ;;
   
   let compute_kind line =
-    if Supstring.begins_with line beginning_of_opener then Opener else 
-    if Supstring.begins_with line beginning_of_closer then Closer else 
+    if String.starts_with ~prefix:beginning_of_opener line  then Opener else 
+    if String.starts_with ~prefix:beginning_of_closer line  then Closer else 
     Ordinary_line ;;     
   
   let rec get_next_ordinary_lines (treated,to_be_treated) =

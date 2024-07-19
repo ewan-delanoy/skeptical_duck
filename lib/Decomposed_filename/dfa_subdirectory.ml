@@ -41,7 +41,7 @@ module Private = struct
      else s^"/";;
    
    let begins_with (Dfa_subdirectory_t.SD s1) (Dfa_subdirectory_t.SD s2)=
-      Supstring.begins_with s1 s2;;
+      String.starts_with ~prefix:s2 s1 ;;
        
    let extend (Dfa_subdirectory_t.SD s) subsub = Dfa_subdirectory_t.SD (s^"/"^subsub);;
    
@@ -55,7 +55,7 @@ module Private = struct
    
    let rename_endsubdirectory (Dfa_subdirectory_t.SD(old_subdir),new_esdname) 
       (Dfa_subdirectory_t.SD s)=
-      if Supstring.begins_with s old_subdir
+      if String.starts_with ~prefix:old_subdir s 
       then let sub_s=Cull_string.cobeginning (String.length old_subdir) s in
            let t=Cull_string.before_rightmost old_subdir '/' in
            let new_t=(if t="" then "" else t^"/") in

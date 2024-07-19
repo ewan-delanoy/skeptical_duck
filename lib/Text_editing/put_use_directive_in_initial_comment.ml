@@ -11,7 +11,7 @@ let detect_initial_comment_in_text text =
   match List.find_opt (fun (line_idx,line)->
      if (line_idx<=1) then false else
      let trimmed_line = Cull_string.trim_spaces line in 
-     Supstring.begins_with trimmed_line "#use"
+     String.starts_with ~prefix:"#use" trimmed_line 
   ) lines with 
   None -> None 
   |Some(i1,line1) ->

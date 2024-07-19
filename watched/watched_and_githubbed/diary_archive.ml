@@ -18,7 +18,7 @@ module Snip139=struct
      s 
   ) g2 ;; 
   
-  let g4 = List.filter (fun s->Supstring.begins_with s "por_") g3;; 
+  let g4 = List.filter (fun s->String.starts_with ~prefix:"por_" s ) g3;; 
   
   let g5 = Image.image (fun x-> (x,dbel x)) g4 ;;
   
@@ -123,7 +123,7 @@ module Snip138=struct
     let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
     and prefix = target_name^":" in 
     let (idx1,line1) = List.find (
-          fun (_,line) -> Supstring.begins_with line prefix
+          fun (_,line) -> String.starts_with ~prefix line 
     )  temp1 in 
     let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
     let left_offset = idx2 + (String.length prefix) in 
@@ -133,7 +133,7 @@ module Snip138=struct
     let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
     and prefix = vname^" = " in 
     let (idx1,line1) = List.find (
-          fun (_,line) -> Supstring.begins_with line prefix
+          fun (_,line) -> String.starts_with ~prefix line 
     )  temp1 in 
     let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
     let left_offset = idx2 + (String.length prefix) in 
@@ -258,7 +258,7 @@ module Snip138=struct
   
   
   let extract_v_number filename = 
-     if not(Supstring.begins_with filename "v")
+     if not(String.starts_with ~prefix:"v" filename )
      then (None,"",filename)
      else 
      let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
@@ -290,7 +290,7 @@ module Snip138=struct
   exception Empty_subpath of string ;;
   
   let standardized_name_opt next_idx_opt filename = 
-     if not(Supstring.begins_with filename "v")
+     if not(String.starts_with ~prefix:"v" filename)
      then Some(add_next_index_in_filename next_idx_opt filename)
      else 
      let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
@@ -406,7 +406,7 @@ let extract1 (length_before,line_index,line) =
   if i1_opt = None then None else
   let i1 = Option.get i1_opt in 
     let temp1 = Cull_string.cobeginning (i1-1) line in 
-  if not(Supstring.begins_with temp1 prefix1) 
+  if not(String.starts_with ~prefix:prefix1 temp1) 
   then None 
   else 
   let j1 = i1+(String.length prefix1) -1 in 
@@ -711,7 +711,7 @@ let java_files_under_source =
    List.filter (fun 
     ap->
      let s = Absolute_path.to_string ap in 
-     Supstring.ends_with s ".java"
+     String.ends_with ~suffix:".java" s 
    )
    all_files) ;;
 
@@ -754,7 +754,7 @@ let all_java_files_in_project =
    List.filter (
     fun ap ->
       let s_ap = Absolute_path.to_string ap in 
-      Supstring.ends_with s_ap ".java"
+      String.ends_with ~suffix:".java" s_ap 
    ) all_files_in_project ;; 
 
 
@@ -789,8 +789,8 @@ let package_from_line_opt untrimmed_line =
   let beginning = "package " 
   and ending = ";" in 
   if not(
-    (Supstring.begins_with line beginning) &&
-    (Supstring.ends_with line ending) 
+    (String.starts_with ~prefix:beginning line ) &&
+    (String.ends_with ~suffix:ending line) 
   )
   then None 
   else
@@ -820,8 +820,8 @@ let import_from_line_opt untrimmed_line =
   let beginning = "import " 
   and ending = ";" in 
   if not(
-    (Supstring.begins_with line beginning) &&
-    (Supstring.ends_with line ending) 
+    (String.starts_with ~prefix:beginning line ) &&
+    (String.ends_with ~suffix:ending line) 
   )
   then None 
   else
@@ -934,9 +934,6 @@ let sz3 = subdir_to_package (fst z2);;
 
 
 
-let check1 = List.filter (fun (a,b)->
-  not(Supstring.begins_with b "org.")) subdirs_and_packages ;; 
-
 
 
 
@@ -961,7 +958,7 @@ let files_in_project = List.filter (fun ap->
 
 let java_files_in_project = List.filter (fun ap->
   let s = Absolute_path.to_string ap in 
-  Supstring.ends_with s ".java"
+  String.ends_with ~suffix:".java" s 
 ) files_in_project ;; 
 
 let extract_classname_from_filename ap = 
@@ -3166,7 +3163,7 @@ let analize2 = Image.image ( fun (field,content) ->
    let i= Substring.leftmost_index_of_in "\n" content in 
    let content2= Cull_string.beginning (i-1) content  in
    let content3=(
-     if Supstring.ends_with content2 ","
+     if String.ends_with ~suffix:"," content2
      then Cull_string.coending 1 content2
      else content2  
    ) in
@@ -3219,9 +3216,9 @@ module Snip127=struct
   let dir1 = Directory_name.of_string "~/Downloads/Some_kotlin_files" ;;
 let all_files = Unix_again.complete_ls dir1 ;; 
 let u1 = Image.image Absolute_path.to_string all_files ;; 
-let u2 = List.filter (fun s->Supstring.ends_with s ".kt") u1;;
-let file1 = List.find (fun s->Supstring.ends_with s "ExampleJson2KtKotlin.kt") u2 ;;
-let file2 = List.find (fun s->Supstring.ends_with s "Items.kt") u2 ;;
+let u2 = List.filter (fun s->String.ends_with ~suffix:".kt" s ) u1;;
+let file1 = List.find (fun s->String.ends_with ~suffix:"ExampleJson2KtKotlin.kt" s) u2 ;;
+let file2 = List.find (fun s->String.ends_with ~suffix:"Items.kt" s ) u2 ;;
 let extracted_files = [file2;file1] ;; 
 let reordered_u2 = 
     (List.filter (fun x->not(List.mem x extracted_files)) u2) @ (extracted_files) ;; 
@@ -3239,7 +3236,7 @@ let select_files sub_path ending =
   let dir1 = Directory_name.of_string full_path in  
   let all_files = Unix_again.complete_ls dir1 in 
   let temp1 = Image.image (fun ap->(ap,Absolute_path.to_string ap)) all_files in
-  List.filter (fun (ap,s)->Supstring.ends_with s ending) temp1 ;;
+  List.filter (fun (ap,s)->String.ends_with ~suffix:ending s) temp1 ;;
 
 let g1 = select_files "java/com/example/animeapplication"  ".kt" ;;  
 let g2 = select_files "res/layout"  ".xml" ;; 
@@ -4192,7 +4189,7 @@ let u1 =
   else [] ;; 
 
 
-let (u2,u3) = List.partition (fun fn->Supstring.ends_with fn ".png" ) u1 ;; 
+let (u2,u3) = List.partition (fun fn->String.ends_with ~suffix:".png" fn ) u1 ;; 
 exception Bad_length of string list ;;
 let check_length l = if not(List.mem (List.length l) [3;4]) then raise(Bad_length(l)) else () ;; 
 exception Optional_fourth_elt of string list ;; 
@@ -4260,7 +4257,7 @@ let act1 () =
  
 let v1 = Unix_again.quick_beheaded_complete_ls 
   (home ^ "/Downloads/Text_building_site/") ;; 
-let (v2,v3) = List.partition (fun fn->Supstring.ends_with fn ".txt" ) v1 ;; 
+let (v2,v3) = List.partition (fun fn->String.ends_with ~suffix:".txt" fn ) v1 ;; 
 (*    
 let parse_filename_is_not_ok fn = 
    try (fun _->false)(parse_filename fn) with _ -> true ;;      
@@ -4421,7 +4418,7 @@ let secondary_array =
 let canonical_decomposition variant = 
   match List.find_map (
     fun (appendix,other_ending) -> 
-      if Supstring.ends_with variant appendix 
+      if String.ends_with ~suffix:appendix variant 
       then let sub_variant = 
             expand_abbreviation(Cull_string.two_sided_cutting ("",appendix) variant) in 
            Some("("^variant^",Some"^other_ending ^ sub_variant ^ "));" )
@@ -4845,10 +4842,7 @@ Snippet 112 : Successive renamings
 let z1 = ae () ;; 
 let z2 = Image.image (fun el->
   (Dfa_module.to_line(Dfn_endingless.to_module el),el)) z1 ;; 
-let z3 = List.filter (
-  fun (mn,el)->
-      Supstring.begins_with mn "opor_"
-) z2 ;; 
+
 *)
 
 let renamings = ref [
@@ -5483,7 +5477,7 @@ let path1 = home^"/Downloads/OCaml_packages/calendar-3.0.0/src" ;;
 
 let u1 = rf (path1^"/depend.txt") ;;
 let u2 = Str.split (Str.regexp_string " ") u1;;
-let u3 = List.filter (fun s->Supstring.ends_with s ".ml") u2;;
+let u3 = List.filter (fun s-> String.ends_with ~suffix:".ml" s) u2;;
 let u4 = Image.image (fun s->
     Absolute_path.of_string (path1^"/"^s)
   ) u3;;
@@ -5553,7 +5547,7 @@ let bad_contents = ["\\";"Titre";"Terminé";"Sermons";
 ] ;; 
 let u4 = List.filter (
   fun w->(List.for_all (
-    fun v-> not(Supstring.begins_with w v) 
+    fun v-> not(String.starts_with ~prefix:v  w) 
   ) bad_beginnings)
   &&
   (not(List.mem w bad_contents))
@@ -5668,7 +5662,7 @@ exception Ios_exn of string;;
 
 let ios x =
    try   int_of_string x with _ -> 
-    if Supstring.ends_with x "."
+    if String.ends_with ~suffix:"." x 
     then int_of_string(Cull_string.coending 1 x)  
     else raise(Ios_exn(x)) ;; 
 
@@ -5902,7 +5896,7 @@ Snippet 101 : Remove lines starting with a # in a file (can be used with ocamlle
 let ap3 = Absolute_path.of_string "Fads/jug.ml";; 
 let text3 = Io.read_whole_file ap3 ;;
 let lines = Lines_in_string.lines text3 ;; 
-let good_lines = List.filter (fun line->not(Supstring.begins_with line "#")) lines ;;
+let good_lines = List.filter (fun line->not(String.starts_with ~prefix:"#" line )) lines ;;
 let new_text3 = String.concat "\n" good_lines ;; 
 Io.overwrite_with ap3 new_text3 ;; 
 
@@ -7409,9 +7403,9 @@ open Needed_values ;;
 
 let select = List.filter(
   fun s-> (not(List.mem s ["";".gitignore"]))
-    &&(not(Supstring.ends_with s ".json"))
-    &&(not(Supstring.ends_with s "/"))
-    &&(not(Supstring.begins_with s "node_modules/"))
+    &&(not(String.ends_with ~suffix:".json" s ))
+    &&(not(String.ends_with ~suffix: "/" s ))
+    &&(not(String.starts_with ~prefix:"node_modules/" s ))
 ) ;;
  
 let dir1 = home^"/Downloads/YC" ;;
@@ -8122,7 +8116,7 @@ let il_sort = Ordered.sort Total_ordering.silex_for_intlists ;;
 
 let index_from_x unadbridged_x_form =
     let x_form = Cull_string.trim_spaces unadbridged_x_form in 
-    if not(Supstring.begins_with x_form "x") 
+    if not(String.starts_with ~prefix:"x" x_form ) 
     then None 
     else
     Some(int_of_string(Cull_string.cobeginning 1 x_form));;     
@@ -8236,7 +8230,7 @@ let i_sort = Ordered.sort Total_ordering.for_integers ;;
 
 let index_from_x unadbridged_x_form =
     let x_form = Cull_string.trim_spaces unadbridged_x_form in 
-    if not(Supstring.begins_with x_form "x") 
+    if not(String.starts_with ~prefix:"x" x_form) 
     then None 
     else
     Some(int_of_string(Cull_string.cobeginning 1 x_form));;     
@@ -11265,7 +11259,7 @@ let u2 = Image.image (fun eless ->
    Dfa_module.to_line(Dfn_endingless.to_module eless)  
 ) u1;;
 let u3 = List.filter (
-  fun x-> Supstring.ends_with x "_automatic"
+  fun x-> String.ends_with ~suffix:"_automatic" x 
 ) u2 ;;
 
 let computed_u3 = ["concrete_object_automatic"; "fw_wrapper_automatic"; "coma_state_automatic";
@@ -11543,7 +11537,7 @@ let v3 = Image.image (
 ) v2 ;;
 let tab = String.make 5 ' ' ;;
 let v3 = Image.image (fun (j,line) -> 
-  if Supstring.begins_with line tab
+  if String.starts_with ~prefix:tab line 
   then Cull_string.two_sided_cutting (tab,"") line
   else line   
     ) v2;;
@@ -11578,10 +11572,10 @@ Snippet  24 : Removing module wrappers in a set of files
 let remove_module_wrapper_in_text text =
   let lines = Lines_in_string.indexed_lines text in 
   let (i1,_)= List.find (fun (_,line)->
-    Supstring.begins_with (Cull_string.trim_spaces line) "module "
+    String.starts_with ~prefix:"module " (Cull_string.trim_spaces line) 
   ) lines in
   let (i2,_)= List.find (fun (_,line)->
-    Supstring.begins_with (Cull_string.trim_spaces line) "end"
+    String.starts_with ~prefix:"end" (Cull_string.trim_spaces line) 
   ) (List.rev lines) in 
   let selected_lines = List.filter_map (
     fun (i,line)->if List.mem i [i1;i2] then None else Some line
@@ -11722,7 +11716,7 @@ open Needed_values;;
 let blanks = String.make 3 ' ';; 
 
 let reform_line x=
-  if (x="")||(Supstring.begins_with x blanks) then x else blanks^x;; 
+  if (x="")||(String.starts_with ~prefix:blanks x ) then x else blanks^x;; 
 
 let reform_string s=
   let temp1 = Lines_in_string.lines s in 

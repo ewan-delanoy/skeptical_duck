@@ -13,11 +13,11 @@ let opener = "(*#" ;;
 let closer = "#*)" ;;
 
 let is_an_opening_line line = 
-    Supstring.begins_with 
-     (Cull_string.trim_spaces_on_the_left line) opener ;; 
+    String.starts_with ~prefix:opener
+     (Cull_string.trim_spaces_on_the_left line)  ;; 
 let is_a_closing_line line = 
-  Supstring.ends_with  
-  (Cull_string.trim_spaces_on_the_right line) closer ;; 
+  String.ends_with  ~suffix:closer
+  (Cull_string.trim_spaces_on_the_right line) ;; 
           
 let check_for_open_close_mismatch openers closers = 
   let num_of_openers = List.length openers 

@@ -62,7 +62,7 @@ let extension x=try (naive_extension x) with
 let select_by_prefix subdir forbidden_subdirs =
   List.filter_map (
      fun forb_subdir -> 
-        if Supstring.begins_with forb_subdir subdir 
+        if String.starts_with ~prefix:subdir  forb_subdir 
         then Some(Cull_string.two_sided_cutting (subdir,"") forb_subdir)
         else None
   ) forbidden_subdirs ;; 
@@ -72,7 +72,7 @@ let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
    let temp2 = List.filter_map (
       fun fname -> if List.for_all (
           fun forb_subdir -> 
-           not(Supstring.begins_with fname forb_subdir)
+           not(String.starts_with ~prefix:forb_subdir fname)
         )  forbidden_subdirs
            then Some(dir^fname)
            else None
@@ -258,7 +258,7 @@ let all_files_with_endings dir l_endings=
    fun ap->
      let s_ap=Absolute_path.to_string ap in
      List.exists( fun ending->
-       Supstring.ends_with s_ap ending)
+      String.ends_with ~suffix:ending s_ap)
      l_endings  
    ) temp1 in
    temp2;;  

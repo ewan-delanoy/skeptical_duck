@@ -24,13 +24,13 @@ let command cmd=
    let cd_prefix =prefix_for_changing_directories 
    and rp_prefix =prefix_for_replacing_patterns 
    and rvp_prefix =prefix_for_reverse_replacing_patterns in 
-   if Supstring.begins_with cmd cd_prefix 
+   if String.starts_with ~prefix:cd_prefix cmd 
    then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
    else 
-   if Supstring.begins_with cmd rp_prefix 
+   if String.starts_with ~prefix:rp_prefix cmd 
    then let  _= Compact_replacer.execute(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
    else 
-   if Supstring.begins_with cmd rvp_prefix 
+   if String.starts_with ~prefix:rvp_prefix cmd 
    then let  _= Compact_replacer.reverse_execute(Cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
    else 
    Sys.command cmd;;
@@ -92,7 +92,7 @@ let hardcore_uc = Private.hardcore_uc ;;
 
 let mv full_path new_location =
    let destination_equals_source=(
-     if not(Supstring.begins_with full_path new_location) then false else 
+     if not(String.starts_with ~prefix:new_location full_path) then false else 
      let naked_name=Cull_string.two_sided_cutting (new_location,"") full_path in 
      not(String.contains naked_name '/') 
    ) in 

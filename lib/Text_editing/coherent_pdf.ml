@@ -107,8 +107,8 @@ module Bare = struct
       and ending=pdf_name_end^".pdf" in 
       let temp2=List.filter(
           fun fn->
-            (Supstring.begins_with fn pdf_name_start)&&
-            (Supstring.ends_with fn ending)
+            (String.starts_with ~prefix:pdf_name_start fn )&&
+            (String.ends_with ~suffix:ending fn )
       ) temp1 in 
       let temp3=List.filter_map (
          fun fn->

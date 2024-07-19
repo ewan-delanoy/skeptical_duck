@@ -20,7 +20,7 @@ let select_files ks sub_path ending =
   let all_files = Unix_again.complete_ls dir1 in 
   List.filter (fun ap->
     let s = Absolute_path.to_string ap in 
-    Supstring.ends_with s ending) all_files ;;
+    String.ends_with ~suffix:ending s) all_files ;;
 
 let javacomexample = "java/com/example/" ;;
 let reslayout = "res/layout" ;;

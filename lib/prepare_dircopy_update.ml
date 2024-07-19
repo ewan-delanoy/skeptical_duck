@@ -10,7 +10,7 @@ let compute_deleted_in_diff sourcedir destdir=
    let temp1=Unix_again.quick_beheaded_complete_ls s_destdir in
    List.filter_map(
        fun s->if (s<>"README")
-              &&(not(Supstring.begins_with s ".git/")) 
+              &&(not(String.starts_with ~prefix:".git/" s )) 
               &&(not(Sys.file_exists(s_sourcedir^s)))
               then (if Sys.is_directory(s_destdir^s) 
                    then None
@@ -72,7 +72,7 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
    List.filter_map (fun ap->
      let s_ap = Absolute_path.to_string ap in 
      let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
-     if (List.exists(Supstring.begins_with s_rootless) ignored_subdirs1) ||
+     if (List.exists(fun s ->String.starts_with ~prefix:s s_rootless) ignored_subdirs1) ||
         (List.mem s_rootless ignored_files)
      then None
      else 

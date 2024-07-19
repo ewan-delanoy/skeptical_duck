@@ -10,8 +10,8 @@ exception Shift_indentation_in_line_exn of int * string ;;
 module Private = struct 
 
   let lines old_s=
-     let left_offset=(if Supstring.begins_with old_s "\n" then "\n" else "")
-     and right_offset=(if Supstring.ends_with old_s "\n" then "\n" else "") in
+     let left_offset=(if String.starts_with ~prefix:"\n" old_s  then "\n" else "")
+     and right_offset=(if String.ends_with ~suffix:"\n" old_s  then "\n" else "") in
      let s=left_offset^old_s^right_offset in
      Str.split (Str.regexp_string "\n") s ;;
 
@@ -182,7 +182,7 @@ module Private = struct
     let temp1 = enhance (indexed_lines text) in 
     List.filter_map (
        fun (c_idx,l_idx,line) ->
-          if Supstring.begins_with line patt 
+          if String.starts_with ~prefix:patt line  
           then Some(c_idx,l_idx)
           else None
     ) temp1 ;;  

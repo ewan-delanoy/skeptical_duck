@@ -17,7 +17,7 @@ let find_file_location dir l_subdir old_x=
   let s_dir=Dfa_root.connectable_to_subpath(dir) in
   let original_endings=Image.image Dfa_ending.connectable_to_modulename Dfa_ending.all_ocaml_endings in
   let endings=(
-     if List.exists (fun edg->Supstring.ends_with x edg) original_endings
+     if List.exists (fun edg->String.ends_with ~suffix:edg x) original_endings
      then [""]
      else original_endings
   ) in

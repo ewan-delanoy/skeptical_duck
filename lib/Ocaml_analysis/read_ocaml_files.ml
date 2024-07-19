@@ -14,9 +14,9 @@ module Private=struct
           let full_scope=current_full_scope^"."^included_module in
           let maybe_included_items=List.filter(
              fun y->let nm_y=y.Ocaml_gsyntax_item.name in
-             (Supstring.begins_with nm_y full_scope)
+             (String.starts_with ~prefix:full_scope nm_y )
              ||
-             (Supstring.begins_with nm_y included_module)  
+             (String.starts_with ~prefix:included_module nm_y )  
           ) graet in 
           (* local redifinition has priority over an outside definition *)
           let chosen_scope=(if

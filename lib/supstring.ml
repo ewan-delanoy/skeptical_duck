@@ -4,19 +4,6 @@
 
 *)
 
-
-
-let begins_with y x=
-      let lx=String.length(x) in
-      if String.length(y)<lx
-      then false
-      else (String.sub y 0 lx)=x;;  
-   
- let ends_with y x=
-      let lx=String.length(x) in
-      if String.length(y)<lx
-      then false
-      else (String.sub y ((String.length y)-lx) lx)=x;;  
    
  
 let contains y x=

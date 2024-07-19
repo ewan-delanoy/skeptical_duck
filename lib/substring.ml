@@ -40,10 +40,10 @@ let decorated_occurrences_of_in x y =
    ) ranges in 
    Image.image (fun (a,b)->String.sub y (a-1) (b-a+1)) arranged_ranges ;;
 
- let is_the_beginning_of y x=Supstring.begins_with x y;;     
+ let is_the_beginning_of y x=String.starts_with ~prefix:y x ;;     
 
    
- let is_the_ending_of y x=Supstring.ends_with x y;;  
+ let is_the_ending_of y x=String.ends_with ~suffix:y x ;;  
 
  let is_a_substring_located_at y x old_j =
     let j=old_j-1 in
