@@ -11554,7 +11554,7 @@ let old_text = Io.read_whole_file ap ;;
 let v1 = Lines_in_string.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (fun (j,line)->Cull_string.trim_spaces line) v2 ;;
-let v4 = List.filter (Substring.is_the_beginning_of "The value ") v3;;
+let v4 = List.filter (String.starts_with ~prefix:"The value ") v3;;
 let v5 = Image.image (
    fun line->
       let i1 = Substring.leftmost_index_of_in "`" line 
@@ -11848,7 +11848,7 @@ Snippet  14 : Cleaning up and fixing a chaotic mass download
 let downloads_s_dir = home ^ "/Downloads";; 
 
 let u1 = Unix_again.quick_beheaded_complete_ls downloads_s_dir  ;;
-let u2 = List.filter (Substring.is_the_beginning_of "iau") u1;;
+let u2 = List.filter (String.starts_with ~prefix:"iau") u1;;
 
 let p_value s =
      let j1 = Substring.leftmost_index_of_in_from "-" s 5 in 
