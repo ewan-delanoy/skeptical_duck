@@ -245,7 +245,7 @@ end ;;
 (************************************************************************************************************************
 Snippet 135 : Intial code for Localdircopy module, when no type had been created yet
 ************************************************************************************************************************)
-module Snip138=struct
+module Snap138=struct
 
   let allowed_number_of_digits = 3 ;;
 
@@ -385,7 +385,7 @@ end ;;
 (************************************************************************************************************************
 Snippet 134 : Enhance a Java file with many printouts
 ************************************************************************************************************************)
-module Snip137=struct
+module Snep134=struct
 
 let ap1 = Absolute_path.of_string 
   "~/Downloads/StepExploitationPropertiesConfiguration.java";;

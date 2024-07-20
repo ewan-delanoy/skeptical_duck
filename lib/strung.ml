@@ -370,7 +370,7 @@ let check =(to_intlist(z2)=z1);;
 *)  
 
 let soak (replacee,replacer) s=
-   if Substring.is_the_beginning_of replacee s 
+   if String.starts_with ~prefix:replacee s 
    then Some(replacer^(Cull_string.two_sided_cutting (replacee,"") s))
    else None ;;
 
