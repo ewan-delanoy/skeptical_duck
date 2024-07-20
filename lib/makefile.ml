@@ -366,8 +366,16 @@ let parse_makefile mkf_text =
    let (Makefile_t.MT text) = mkf_text in 
    helper_for_makefile_parsing (text,String.length text) (empty_one,wi_starter text) ;;
 
+
+let all_prerequisites mkf = 
+    let temp1 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.Makefile_t.rules in 
+    let temp2 = List.flatten temp1 in 
+    Ordered.sort Total_ordering.lex_for_strings temp2 ;;
+
+
 end ;;
 
+let all_prerequisites = Private.all_prerequisites ;;
 
 let expand_target_list = Private.expand_target_list ;;
 
