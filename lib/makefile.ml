@@ -18,41 +18,6 @@ module Private = struct
 
 exception Check_all_are_empty_but_last_exn  ;;
 
-type walking_index = WI of int * int ;; (* first is line index, second is char index *)
-
-let wi_to_char_index (WI(_,c_idx)) = c_idx ;;
-let wi_to_line_index (WI(l_idx,_)) = l_idx ;;
-let wi_minus_one text (WI(l_idx,c_idx)) = 
-   let new_l_idx = (if Strung.get text (c_idx-1) = '\n' then  l_idx-1 else l_idx) in 
-   WI(new_l_idx,c_idx-1) ;;
-
-let wi_plus_one text (WI(l_idx,c_idx)) = 
-   let new_l_idx = (if Strung.get text (c_idx+1) = '\n' then  l_idx+1 else l_idx) in 
-   WI(new_l_idx,c_idx+1) ;;
-
-let wi_plus_two text wi = wi_plus_one text (wi_plus_one text wi) ;;
-
-let wi_starter text =
-   let fst_c_idx = (if String.get text 0 ='\n' then 1 else 0) in 
-   WI(fst_c_idx,1)
-
-let rec helper_for_wi_finding (text,text_length,f) walking_idx = 
-   let idx = wi_to_char_index walking_idx in 
-   if idx > text_length 
-   then None 
-   else   
-   if f (Strung.get text idx) 
-   then Some walking_idx 
-   else     
-   let next_walking_idx = wi_plus_one text walking_idx in    
-   helper_for_wi_finding (text,text_length,f) next_walking_idx ;;
-            
-let wi_to_char_index_finder_from_inclusive_opt mkf_text f walking_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   helper_for_wi_finding (text,String.length text,f) walking_idx ;;
-   
-
-
 let check_all_are_empty_but_last l =
    if l = [] then [] else
    let (h,t) = List_again.head_with_tail(List.rev l) in
