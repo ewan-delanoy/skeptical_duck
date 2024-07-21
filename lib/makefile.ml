@@ -135,183 +135,67 @@ let makefile_lines_for_indexed_command (cmd_idx,(cmd_content,comment)) =
   (List.flatten (Image.image makefile_lines_for_indexed_command indexed_commands ))) ^ "\n";;   
  
 type instruction = 
-     Comment 
-    |Rule of Makefile_t.rule 
+     Rule of Makefile_t.rule 
     |Assignment of Makefile_t.variable_assignment 
     |Inclusion of Makefile_t.inclusion ;;
 
-let rec helper_for_noncancelled_linebreak_finder (text,fst_idx,last_idx) walking_idx= 
- let idx = wi_to_char_index walking_idx in  
- if idx > last_idx 
- then None 
- else    
- if (Strung.get text idx)<>'\n'
- then helper_for_noncancelled_linebreak_finder (text,fst_idx,last_idx) (wi_plus_one text walking_idx)
- else  
- if (idx = fst_idx) 
- then Some walking_idx 
- else
- if (Strung.get text (idx-1))='\\'
- then helper_for_noncancelled_linebreak_finder (text,fst_idx,last_idx) (wi_plus_one text walking_idx)
- else Some walking_idx ;;
-
-let next_noncancelled_linebreak_opt mkf_text start_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   helper_for_noncancelled_linebreak_finder (text,wi_to_char_index start_idx,String.length text) start_idx ;;
-
-(*
-
-let z1 = next_noncancelled_linebreak_opt (Makefile_t.MT "123\\\n6\\\n9\n12") 1 ;; 
-
-*)
-
-let add_interval_if_nonempty  treated text current_start idx=
- if current_start > idx 
- then treated 
- else (Cull_string.interval text current_start idx) :: treated ;;   
-
-let rec helper_for_long_line_parser (text,start_idx,end_idx) (treated,current_start,idx)= 
- let treated2 =add_interval_if_nonempty  treated text current_start (idx-1) in 
- if idx > end_idx 
- then List.rev (treated2)
- else    
- let c = Strung.get text idx in 
- if List.mem c [' ';'\t';'\r']
- then helper_for_long_line_parser (text,start_idx,end_idx) (treated2,idx+1,idx+1)
- else
- if c <> '\n'
- then helper_for_long_line_parser (text,start_idx,end_idx) (treated,current_start,idx+1)
- else  
- if (idx = start_idx) 
- then helper_for_long_line_parser (text,start_idx,end_idx) (treated2,idx+1,idx+1) 
- else
- if (Strung.get text (idx-1))='\\'
- then let treated3 =add_interval_if_nonempty  treated text current_start (idx-2) in 
-      helper_for_long_line_parser (text,start_idx,end_idx) (treated3,idx+1,idx+1) 
- else helper_for_long_line_parser (text,start_idx,end_idx) (treated,current_start,idx+1) ;;
-
-let parse_long_line mkf_text start_idx end_idx= 
-   let (Makefile_t.MT text) = mkf_text in 
-   helper_for_long_line_parser (text,start_idx,end_idx) ([],start_idx,start_idx) ;;
-
-(*
-let z2 = parse_long_line (Makefile_t.MT "123\\\n6\\\n9\t12") 1 12;; 
-*)
-
-let last_index_before_end_of_line mkf_text start_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   match next_noncancelled_linebreak_opt mkf_text start_idx with 
-   (Some walking_idx) -> wi_minus_one text walking_idx 
-   | None ->
-   let (Makefile_t.MT text) = mkf_text in 
-   WI(Strung.number_of_linebreaks text,String.length text);;
 
 
-
-let rec helper_for_command_list_parsing (text,text_length) (treated,walking_idx) = 
-   let idx = wi_to_char_index walking_idx in  
-   if idx > text_length 
-   then (List.rev treated,None) 
-   else   
-   if (Strung.get text idx)<>'\t'
-   then (List.rev treated,Some walking_idx) 
-   else     
-   let next_idx = last_index_before_end_of_line (Makefile_t.MT text)  (wi_plus_one text walking_idx) in 
-   let next_cmd = Cull_string.interval text (idx+1) (wi_to_char_index next_idx) in 
-   let treated2 = next_cmd::treated in 
-   if (wi_to_char_index next_idx)+2 > text_length 
-   then (List.rev treated2, None)
-   else   
-   helper_for_command_list_parsing (text,text_length) (next_cmd::treated,wi_plus_two text next_idx) ;;
-
-
-let parse_list_of_commands mkf_text start_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   helper_for_command_list_parsing (text,String.length text) ([],start_idx) ;; 
-
-
-let parse_next_rule mkf_text start_idx sep_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   let tgts = parse_long_line mkf_text (wi_to_char_index start_idx) ((wi_to_char_index sep_idx)-1) in 
-   let sep2_idx = last_index_before_end_of_line mkf_text (wi_plus_one text sep_idx) in       
-   let prereqs = parse_long_line mkf_text ((wi_to_char_index sep_idx)+1) (wi_to_char_index sep2_idx) in 
-   let (cmds,next_idx_opt) = parse_list_of_commands mkf_text (wi_plus_two text sep2_idx)  in 
+let parse_next_rule first_eline next_elines sep_idx = 
+   let (_c_idx,l_idx,line1) = first_eline in 
+   let tgts = Str.split (Str.regexp "[ \t\r]+") (Cull_string.beginning (sep_idx-1) line1) 
+   and prereqs = Str.split (Str.regexp "[ \t\r]+") (Cull_string.cobeginning sep_idx line1 ) in 
+   let (tabbed_elines,further_elines) = 
+    Hurried.partition_in_two_parts (fun (_,_,line)->String.starts_with ~prefix:"\t" line)  next_elines in 
+   let cmds= Image.image (fun (_,_,line) -> Cull_string.cobeginning 1 line) tabbed_elines in 
    ({
-      Makefile_t.ru_line_number = wi_to_line_index start_idx;
+      Makefile_t.ru_line_number = l_idx;
       targets = tgts ;
       prerequisites = prereqs ;
       commands =cmds ;
-   }, next_idx_opt) ;; 
+   }, further_elines) ;; 
 
 
-let parse_next_assignment mkf_text start_idx sep_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   let vname = Cull_string.trim_spaces (Cull_string.interval text (wi_to_char_index start_idx) ((wi_to_char_index sep_idx)-1)) in 
-   let next_idx_opt = next_noncancelled_linebreak_opt mkf_text sep_idx in 
-   let last_idx_before_end_of_line  = 
-     ( match next_idx_opt with 
-     (Some walking_idx) -> wi_minus_one text walking_idx 
-     | None ->
-     let (Makefile_t.MT text) = mkf_text in 
-     WI(Strung.number_of_linebreaks text,String.length text) ) in    
-   let ctnt = parse_long_line mkf_text ((wi_to_char_index sep_idx)+1) (wi_to_char_index last_idx_before_end_of_line) in 
+let parse_next_assignment first_eline next_elines sep_idx = 
+   let (_c_idx,l_idx,line1) = first_eline in 
+   let vname = Cull_string.trim_spaces (Cull_string.interval line1 1 (sep_idx-1)) 
+   and vcontent = Str.split (Str.regexp "[ \t\r]+") (Cull_string.cobeginning sep_idx line1 )  in 
+
    ({
-         Makefile_t.va_line_number = wi_to_line_index start_idx;
+         Makefile_t.va_line_number = l_idx;
          variable_name = vname;
-         content = ctnt;
+         content = vcontent;
        
-   }, next_idx_opt) ;;    
+   }, next_elines) ;;    
 
 let prefix_for_inclusion = "-include ";;
 
-let parse_next_inclusion mkf_text start_idx = 
-   let (Makefile_t.MT text) = mkf_text in 
-   (* here we use the fact that the prefix contains no line breaks *)
-   let sep_idx = WI(wi_to_line_index start_idx,(wi_to_char_index start_idx)+(String.length prefix_for_inclusion)) in 
-   let next_idx_opt = next_noncancelled_linebreak_opt mkf_text sep_idx in 
-   let last_idx_before_end_of_line  = 
-   ( match next_idx_opt with 
-   (Some walking_idx) -> wi_minus_one text walking_idx 
-   | None ->
-      let (Makefile_t.MT text) = mkf_text in 
-      WI(Strung.number_of_linebreaks text,String.length text) ) in    
-      let ctnt = parse_long_line mkf_text ((wi_to_char_index sep_idx)+1) (wi_to_char_index last_idx_before_end_of_line) in 
-      ({
-      Makefile_t.inc_line_number = wi_to_line_index start_idx;
-      included_ones = ctnt;
-   }, next_idx_opt) ;;    
+let parse_next_inclusion first_eline next_elines = 
+   let (_c_idx,l_idx,line1) = first_eline in 
+   let line2 = Cull_string.two_sided_cutting (prefix_for_inclusion,"") line1 in 
+({
+   Makefile_t.inc_line_number = l_idx;
+   included_ones = Str.split (Str.regexp "[ \t\r]+") line2;
+ 
+}, next_elines) ;;    
 
 
-let parse_next_instruction mkf_text nonblank_idx = 
-   let (Makefile_t.MT text) = mkf_text 
-   and idx = wi_to_char_index nonblank_idx in 
-   if (Strung.get text idx) = '#'
-   then (Comment,next_noncancelled_linebreak_opt mkf_text nonblank_idx) 
-   else  
-   if Substring.is_a_substring_located_at prefix_for_inclusion text idx
-   then let (incl,next_idx_opt) = parse_next_inclusion mkf_text nonblank_idx in 
-         (Inclusion incl,next_idx_opt)
-   else       
-   match wi_to_char_index_finder_from_inclusive_opt mkf_text (fun c->
-          List.mem c [':';'='])  (wi_plus_one text nonblank_idx) with 
-    None -> raise (Parse_next_instruction_exn(wi_to_char_index nonblank_idx))
+let parse_next_instruction first_eline next_elines = 
+   let (_c_idx,l_idx,line1) = first_eline in 
+   if String.starts_with ~prefix:prefix_for_inclusion line1
+   then   let (incl,remaining_lines) = parse_next_inclusion first_eline next_elines  in 
+         (Inclusion incl,remaining_lines)      
+   else     
+   match Strung.char_finder_from_inclusive_opt  (fun c->
+          List.mem c [':';'=']) line1 1 with 
+    None -> raise (Parse_next_instruction_exn(l_idx))
    |Some sep_idx ->
-      if (Strung.get text (wi_to_char_index sep_idx)) = ':'
-      then let (rule,next_idx_opt) = parse_next_rule mkf_text nonblank_idx sep_idx in 
-           (Rule rule,next_idx_opt)
-      else let (assg,next_idx_opt) = parse_next_assignment mkf_text nonblank_idx sep_idx in 
-           (Assignment assg,next_idx_opt) ;;
+      if (Strung.get line1 sep_idx) = ':'
+      then let (rule,remaining_lines) = parse_next_rule first_eline next_elines sep_idx in 
+           (Rule rule,remaining_lines)
+      else let (assg,remaining_lines) = parse_next_assignment first_eline next_elines sep_idx in 
+           (Assignment assg,remaining_lines) ;;
 
-
-
-let parse_next_instruction_if_there_is_one mkf_text first_c_idx_in_line = 
-  match wi_to_char_index_finder_from_inclusive_opt mkf_text ( 
-     fun c-> not(List.mem (c) [' ';'\t';'\r';'\n'])
-  ) first_c_idx_in_line with 
-  None -> (None,None)
-  |Some nonblank_idx -> 
-     let (instr,next_idx_opt)=parse_next_instruction mkf_text nonblank_idx in 
-     (Some instr,next_idx_opt) ;;
 
 let empty_one = { 
       Makefile_t.assignments = []; 
@@ -319,7 +203,7 @@ let empty_one = {
       Makefile_t.inclusions = [];
    } ;;     
 
-let rev_both mkf = { 
+let rev_all mkf = { 
    Makefile_t.assignments = List.rev(mkf.Makefile_t.assignments); 
    Makefile_t.rules = List.rev(mkf.Makefile_t.rules);
    Makefile_t.inclusions = List.rev(mkf.Makefile_t.inclusions);
@@ -341,36 +225,55 @@ let add_inclusion inclusion mkf = {
    Makefile_t.inclusions = inclusion :: (mkf.Makefile_t.inclusions)
 } ;;
 
-let rec helper_for_makefile_parsing (text,text_length) (treated,walking_idx) = 
-   let idx = wi_to_char_index walking_idx in  
-   if idx > text_length 
-   then rev_both treated
-   else 
-   let (instr_opt,next_idx_opt) =  parse_next_instruction_if_there_is_one (Makefile_t.MT text) walking_idx in 
-   if instr_opt = None 
-   then rev_both treated 
-   else     
-   let treated2 = (   
-      match Option.get instr_opt with 
-       Comment -> treated 
-       |Rule rule -> add_rule rule treated 
-       |Assignment assg -> add_assignment assg treated   
-       |Inclusion incl -> add_inclusion incl treated
-   ) in 
-   match next_idx_opt with 
-    None -> rev_both treated2 
-   |Some next_idx -> helper_for_makefile_parsing (text,text_length) (treated2,next_idx) ;;
+let add_instruction instr mkf = match instr with 
+  Rule rule -> add_rule rule mkf
+ |Assignment assg -> add_assignment assg mkf   
+ |Inclusion incl -> add_inclusion incl mkf ;;
 
+
+let rec helper_for_makefile_parsing (treated,remaining_elines) = 
+   match remaining_elines with 
+   [] -> rev_all treated 
+  | first_eline :: other_elines ->
+   let (instr,further_elines) =  parse_next_instruction first_eline other_elines in 
+   helper_for_makefile_parsing (add_instruction instr treated,further_elines) ;;
+
+
+let rec helper_for_gluing (treated,current_head,current_tail) =
+    match current_tail with 
+    [] -> List.rev (current_head :: treated)
+    | next_head :: further_tail ->
+       let (c_idx1,l_idx1,line1) = current_head 
+       and (_c_idx2,_l_idx2,line2) = next_head in 
+       if String.ends_with ~suffix:"\\" line1 
+       then  let glued_line = (Cull_string.coending 1 line1)^" "^line2 in  
+             helper_for_gluing (treated,(c_idx1,l_idx1,glued_line),further_tail)
+       else  helper_for_gluing (current_head::treated,next_head,further_tail) ;; 
+
+let glue_lines = function 
+  [] -> [] 
+  | head :: tail -> helper_for_gluing ([],head,tail) ;;   
 
 let parse_makefile mkf_text = 
    let (Makefile_t.MT text) = mkf_text in 
-   helper_for_makefile_parsing (text,String.length text) (empty_one,wi_starter text) ;;
+   let lines1 = Lines_in_string.enhanced_indexed_lines text in 
+   let lines2 = List.filter (fun (_c_idx,_l_idx,line)->
+        not(
+          (String.starts_with ~prefix:"#" line ) ||
+          (Cull_string.trim_spaces(line)="" )
+        )
+      ) lines1 in 
+   let lines3 = glue_lines lines2 in    
+   helper_for_makefile_parsing (empty_one,lines3) ;;
 
 
 let all_prerequisites mkf = 
     let temp1 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.Makefile_t.rules in 
     let temp2 = List.flatten temp1 in 
     Ordered.sort Total_ordering.lex_for_strings temp2 ;;
+
+type list_of_prereq_aliases = LPA of ( string * string )   ;;
+
 
 
 end ;;
