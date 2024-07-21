@@ -27,10 +27,7 @@ let after_whites s =after_star Charset.list_of_whites s;;
         then tempf(j+1)
         else 
         if Substring.is_a_substring_located_at "/*" s j
-        then let k=Substring.leftmost_index_of_in_from "*/" s (j+2) in
-             if k<0
-             then None
-             else tempf(k+2)
+        then Option.map (fun k-> k+2) (Substring.cunningham "*/" s (j+2)) 
         else Some(j)
     ) in
     tempf;;
@@ -99,17 +96,17 @@ let after_closing_character (lchar,rchar) s=
       then raise(Unbalanced_expression(lchar,rchar))
       else 
       if Substring.is_a_substring_located_at "/*" s k
-      then let j=Substring.leftmost_index_of_in_from "*/" s (k+2) in
+      then let j=Option.get(Substring.cunningham "*/" s (k+2)) in
            tempf(j+2,count)
       else 
       if Substring.is_a_substring_located_at "//" s k
-      then let j=Substring.leftmost_index_of_in_from "\n" s (k+2) in
+      then let j=Option.get(Substring.cunningham "\n" s (k+2)) in
            tempf(j+1,count)
       else 
       if (Substring.is_a_substring_located_at "<<<EOF\n" s k)
          ||
          (Substring.is_a_substring_located_at "<<<'EOF'\n" s k) 
-      then let j=Substring.leftmost_index_of_in_from "\nEOF;\n" s (k+7) in
+      then let j=Option.get(Substring.cunningham "\nEOF;\n" s (k+7)) in
            tempf(j+6,count)
       else 
       let c=String.get s (k-1) in
@@ -153,17 +150,17 @@ let next_in_list l s=
       then None
       else 
       if Substring.is_a_substring_located_at "/*" s k
-      then let j=Substring.leftmost_index_of_in_from "*/" s (k+2) in
+      then let j=Option.get(Substring.cunningham "*/" s (k+2)) in
            tempf(j+2)
       else 
       if Substring.is_a_substring_located_at "//" s k
-      then let j=Substring.leftmost_index_of_in_from "\n" s (k+2) in
+      then let j=Option.get(Substring.cunningham "\n" s (k+2))  in
            tempf(j+1)
       else 
       if (Substring.is_a_substring_located_at "<<<EOF\n" s k)
          ||
          (Substring.is_a_substring_located_at "<<<'EOF'\n" s k) 
-      then let j=Substring.leftmost_index_of_in_from "\nEOF;\n" s (k+7) in
+      then let j=Option.get(Substring.cunningham "\nEOF;\n" s (k+7))  in
            tempf(j+6)
       else 
       let c=String.get s (k-1) in
@@ -324,7 +321,7 @@ let rec main_helper_for_div (s,n,div_count,idx)=
     if not(Substring.is_a_substring_located_at "<div " s idx)
     then main_helper_for_div(s,n,div_count,idx+1)
     else  
-    let jdx=Substring.leftmost_index_of_in_from ">" s (idx+5) in
+    let jdx=Option.get(Substring.cunningham ">" s (idx+5))  in
     main_helper_for_div(s,n,div_count+1,jdx);;
 
 let after_div s idx=main_helper_for_div(s,String.length s,0,idx);;

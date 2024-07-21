@@ -12,10 +12,11 @@ let enclosure (left_encloser,right_encloser)=
    then None
    else 
    let i2=i1+(String.length left_encloser) in
-   let i3=Substring.leftmost_index_of_in_from right_encloser s i2 in
-   if i3<1
+   let i3_opt=Substring.cunningham right_encloser s i2 in
+   if i3_opt = None
    then None 
    else
+   let i3 = Option.get i3_opt in 
    let i4=i3+(String.length right_encloser)-1 in
    let res= Gparser_result.veil
                (i1,i4)

@@ -51,50 +51,19 @@ let decorated_occurrences_of_in x y =
       if (String.length(x)<j+ly)||(j<0)
       then false
       else (String.sub x j ly)=y;;
- 
-  let is_a_substring_of x y=Supstring.contains y x;; 
       
-  let leftmost_index_of_in x y=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      try (Option.get(Int_range.find_opt tester 0 (String.length(y)-lx))+1) with
-      _->(-1);;
-  
-  let rightmost_index_of_in x y=
+  let is_a_substring_of x y=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   Int_range.exists tester 0 (String.length(y)-lx);;               
+
+  let rightmost_index_of_in_opt x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 
       and temp1=List.rev(Int_range.range(0)(String.length(y)-lx)) in
-      try ((List.find tester temp1)+1) with
-      _->(-1);;
-  
-   let leftmost_index_of_in_from x y i= 
-    match Private.leftmost_index_of_in_from_opt x y i with 
-     None -> (-1)
-    | Some k -> k;;
+      try Some((List.find tester temp1)+1) with
+      _->None;;
 
-   
-  
-module Friend = struct
-
-let number_of_lines_before s i=
-   if i<1 then 0 else
-   let m=min i (String.length s) in
-   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Int_range.range 1 m));;
-
-
-end;;
-
-let leftmost_linedex_of_in x y=
-    let j=leftmost_index_of_in x y in
-    if j<0 then (-1) else
-    Friend.number_of_lines_before y j;;
-
-
-
-let leftmost_linedex_of_in_from x y i=
-        let j=leftmost_index_of_in_from x y i in
-        if j<0 then (-1) else
-        Friend.number_of_lines_before y j;;    
 
 
 

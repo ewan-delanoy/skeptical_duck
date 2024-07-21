@@ -161,7 +161,7 @@ let detect_phpbb_url_start_at_index s idx =
    if not(Substring.is_a_substring_located_at url_starter s idx)
    then None 
    else 
-   let idx2=Substring.leftmost_index_of_in_from "]" s (idx+(String.length url_starter)) in 
+   let idx2=Option.get(Substring.cunningham "]" s (idx+(String.length url_starter))) in 
    Some(idx2-idx+1,(idx,idx2));;
 
 let url_ender = "[/url]";;
@@ -180,12 +180,12 @@ let beautify_section_path x=
 
 let extract_post_index_in_topic s topic_idx = 
   let indices =  post_indices_in_topic topic_idx in 
-   let i1=Substring.leftmost_index_of_in "p=" s 
-   and i2=Substring.leftmost_index_of_in "#" s  in 
+   let i1=Option.get(Substring.cunningham "p=" s 1)
+   and i2=Option.get(Substring.cunningham "#" s 1) in 
    List_again.find_index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
 
 let extract_section_path s = 
-   let i1=Substring.leftmost_index_of_in "." s in 
+   let i1=Option.get(Substring.cunningham "." s 1) in 
    beautify_section_path(Cull_string.beginning  (i1-1) s);;
 
 let dissect topic_idx idx  (opt,content) = 
@@ -224,8 +224,8 @@ CHAPTER 7 : Extract sections from quotes
 exception Substring_not_found of int * string ;;
 
 let forced_leftmost_index_from helper pattern whole_string start =
-   let j= Substring.leftmost_index_of_in_from pattern whole_string start in 
-   if j<0 then raise(Substring_not_found(helper,pattern)) else j;;
+   let j_opt= Substring.cunningham pattern whole_string start in 
+   if j_opt=None then raise(Substring_not_found(helper,pattern)) else Option.get j_opt;;
 
 let part1 = "<QUOTE author=\"";;
 let part2 = "\"><s>[quote=\"";;
@@ -323,7 +323,7 @@ let detect_phpbb_yrl_start_at_index s idx =
    if not(Substring.is_a_substring_located_at yrl_starter s idx)
    then None 
    else 
-   let idx2=Substring.leftmost_index_of_in_from ">" s (idx+(String.length yrl_starter)) in 
+   let idx2=Option.get(Substring.cunningham ">" s (idx+(String.length yrl_starter))) in 
    Some(idx2-idx+1,(idx,idx2));;
 
 let yrl_ender = "</URL>";;

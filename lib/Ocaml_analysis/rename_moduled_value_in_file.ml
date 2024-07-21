@@ -8,10 +8,11 @@ exception No_module_given of string;;
 exception No_value_with_name of string;;
 
 let rename_moduled_value_in_file preceding_files old_name new_name path=
-   let j=Substring.leftmost_index_of_in "." old_name in
-   if j<0 
+   let j_opt=Substring.cunningham "." old_name 1 in
+   if j_opt = None
    then raise(No_module_given(old_name))
    else 
+   let j = Option.get j_opt in  
    let module_name=Cull_string.beginning (j-1) old_name in
    let temp3=Read_ocaml_files.read_ocaml_files preceding_files in
    let opt_temp4=List.find_opt (fun itm->

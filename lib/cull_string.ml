@@ -50,8 +50,9 @@ exception Ending_failure;;
      
 
 let before_and_after w x=
-  let j=Substring.leftmost_index_of_in(w)(x) in
-  if j=(-1) then None else 
+  let j_opt=Substring.cunningham(w)(x) 1 in
+  if j_opt=None then None else 
+   let j = Option.get j_opt in 
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
@@ -134,12 +135,12 @@ exception Absent_ending_marker of string;;
  
 let between_markers (bm,em) s=
      if (bm,em)=("","") then s else
-     let i1=Substring.leftmost_index_of_in_from bm s 1  in
-     if i1<1 then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm) in
-     let i2=Substring.leftmost_index_of_in_from em s (j1+1) in
-     if i2<1 then raise(Absent_ending_marker(bm)) else
-     interval s j1 (i2-1);; 
+     let i1_opt=Substring.cunningham bm s 1  in
+     if i1_opt=None then raise(Absent_beginning_marker(bm)) else
+     let j1=(Option.get i1_opt)+(String.length bm) in
+     let i2_opt=Substring.cunningham em s (j1+1) in
+     if i2_opt<None then raise(Absent_ending_marker(bm)) else
+     interval s j1 ((Option.get i2_opt)-1);; 
  
 let optional_between_markers p s=
    try Some(between_markers p s) with _->None;; 

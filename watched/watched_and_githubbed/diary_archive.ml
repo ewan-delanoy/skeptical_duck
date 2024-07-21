@@ -125,7 +125,7 @@ module Snip138=struct
     let (idx1,line1) = List.find (
           fun (_,line) -> String.starts_with ~prefix line 
     )  temp1 in 
-    let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
+    let idx2 = Option.get(Substring.cunningham line1 (!makefile_ref) 1) in 
     let left_offset = idx2 + (String.length prefix) in 
     (idx1,extract_ingredients (!makefile_ref) left_offset) ;;
     
@@ -135,7 +135,7 @@ module Snip138=struct
     let (idx1,line1) = List.find (
           fun (_,line) -> String.starts_with ~prefix line 
     )  temp1 in 
-    let idx2 = Substring.leftmost_index_of_in line1 (!makefile_ref) in 
+    let idx2 = Option.get(Substring.cunningham line1 (!makefile_ref) 1) in 
     let left_offset = idx2 + (String.length prefix) in 
     (idx1,fst(extract_ingredients (!makefile_ref) left_offset)) ;; 
     
@@ -968,7 +968,7 @@ let extract_classname_from_filename ap =
 
 let extract_source_from_filename ap = 
    let s = Absolute_path.to_string ap in 
-   let i1 = Substring.rightmost_index_of_in "/src/" s in
+   let i1 = Option.get(Substring.rightmost_index_of_in_opt "/src/" s) in
    let s2 = Cull_string.beginning (i1-1) s in 
    (Cull_string.after_rightmost s2 '/',s2) ;;
      
@@ -3096,11 +3096,11 @@ let improve_line line =
    if not(String.contains line ':')
    then line
    else 
-   let b = Substring.leftmost_index_of_in ":" line in
+   let b = Option.get(Substring.cunningham ":" line 1) in
    let before = Cull_string.beginning (b-1) line
    and after = Cull_string.cobeginning (b-1) line in
-   let i= Substring.leftmost_index_of_in "\"" before
-   and j = Substring.rightmost_index_of_in "\"" before in
+   let i= Option.get(Substring.cunningham "\"" before 1)
+   and j = Option.get(Substring.rightmost_index_of_in_opt "\"" before) in
    let name = Cull_string.interval before (i+1) (j-1) in 
    name^after ;;
 
@@ -3160,7 +3160,7 @@ let analize1 item =
 let u5 = Image.image analize1 u4 ;; 
 
 let analize2 = Image.image ( fun (field,content) ->
-   let i= Substring.leftmost_index_of_in "\n" content in 
+   let i= Option.get(Substring.cunningham "\n" content 1) in 
    let content2= Cull_string.beginning (i-1) content  in
    let content3=(
      if String.ends_with ~suffix:"," content2
@@ -3176,8 +3176,8 @@ let analize3 = Image.image ( fun pair ->
   if field<> "productType" 
   then pair
   else
-      let i= Substring.leftmost_index_of_in "\"" content 
-      and j = Substring.rightmost_index_of_in "\"" content in
+      let i= Option.get(Substring.cunningham "\"" content  1)
+      and j = Option.get(Substring.rightmost_index_of_in_opt "\"" content) in
       let name = Cull_string.interval content (i+1) (j-1) in
       (field," ProductType."^(String.capitalize_ascii name)) 
   );; 
@@ -5512,7 +5512,7 @@ let n1 = String.length left_tag ;;
 let u1 = Substring.occurrences_of_in left_tag text1 ;; 
 let u2 = Image.image (
   fun i->
-    let j = Substring.leftmost_index_of_in_from "\"" text1 (i+n1) in 
+    let j = Option.get(Substring.cunningham "\"" text1 (i+n1)) in 
     Cull_string.interval text1 (i+n1) (j-1)
 ) u1 ;;
 let u3 = Ordered.sort Total_ordering.lex_for_strings u2 ;;
@@ -5668,7 +5668,7 @@ let ios x =
 
 let unordered_numbered_titles_part1 = Image.image (
   fun s ->
-     let k = Substring.leftmost_index_of_in " " s in
+     let k = Option.get(Substring.cunningham " " s 1) in
      (ios (Cull_string.beginning (k-1) s),
      Cull_string.cobeginning k s
      )
@@ -5836,7 +5836,7 @@ let check_v1 = (v1=naive_v1) ;;
 
 let bigger_fountain_of_titles = Image.image (
   fun s ->
-     let k = Substring.leftmost_index_of_in "_" s in
+     let k = Option.get(Substring.cunningham "_" s 1) in
      (ios (Cull_string.beginning (k-1) s),
      Cull_string.coending 4 (Cull_string.cobeginning k s)
      )
@@ -5914,7 +5914,7 @@ let u6 = (List_again.universal_delta_list u5) @ [last_elt_in_u5,(String.length u
 let u7 = Image.image (fun (i,j)-> Cull_string.interval u4 i (j-1)) u6;; 
 let u8 = Image.image (
   fun t->
-     let j = Substring.leftmost_index_of_in_from ">" t 9 in 
+     let j = Option.get(Substring.cunningham ">" t 9) in 
      (Cull_string.interval t 9 (j-1),Cull_string.cobeginning j t)
 ) u7 ;;
 let u9 = Image.image (fun (typename,l)->(typename,Str.split (Str.regexp"[ \t\r\n]+") l)) u8;;    
@@ -11531,8 +11531,8 @@ let v1 = Lines_in_string.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (
    fun (j,line)->
-      let i1 = Substring.leftmost_index_of_in "val " line 
-      and i2 = Substring.leftmost_index_of_in ":" line in 
+      let i1 = Option.get(Substring.cunningham "val " line 1) 
+      and i2 = Option.get(Substring.cunningham ":" line 1) in 
       Cull_string.trim_spaces(Cull_string.interval line (i1+4) (i2-1))
 ) v2 ;;
 let tab = String.make 5 ' ' ;;
@@ -11557,8 +11557,8 @@ let v3 = Image.image (fun (j,line)->Cull_string.trim_spaces line) v2 ;;
 let v4 = List.filter (String.starts_with ~prefix:"The value ") v3;;
 let v5 = Image.image (
    fun line->
-      let i1 = Substring.leftmost_index_of_in "`" line 
-      and i2 = Substring.leftmost_index_of_in "'" line in 
+      let i1 = Option.get(Substring.cunningham "`" line 1) 
+      and i2 = Option.get(Substring.cunningham "'" line 1) in 
       Cull_string.trim_spaces(Cull_string.interval line (i1+1) (i2-1))
 ) v4 ;;
 let v6 = Ordered.sort Total_ordering.lex_for_strings v5;;
@@ -11851,8 +11851,8 @@ let u1 = Unix_again.quick_beheaded_complete_ls downloads_s_dir  ;;
 let u2 = List.filter (String.starts_with ~prefix:"iau") u1;;
 
 let p_value s =
-     let j1 = Substring.leftmost_index_of_in_from "-" s 5 in 
-     let j2 = Substring.leftmost_index_of_in_from "-" s (j1+1) in
+     let j1 = Option.get(Substring.cunningham "-" s 5) in 
+     let j2 = Option.get(Substring.cunningham "-" s (j1+1)) in
      int_of_string(Cull_string.interval s (j1+1) (j2-1));; 
 
 let min_pageNumber = 9 and max_pageNumber = 70 ;; 
@@ -11921,9 +11921,10 @@ let u4 = Image.image (fun (old_a,old_b)->
 exception RA of string ;; 
     
 let rhine_analysis s=
-  let j1 = Substring.leftmost_index_of_in "(" s in 
-  let j2 = Substring.leftmost_index_of_in ")" s in 
-  if (j1<0)||(j2<0) then raise(RA(s)) else    
+  let j1_opt = Substring.cunningham "(" s 1 in 
+  let j2_opt = Substring.cunningham ")" s 1 in 
+  if (j1_opt=None)||(j2_opt=None) then raise(RA(s)) else    
+  let j1 = Option.get j1_opt and  j2 = Option.get j2_opt in  
   let idx = int_of_string(Cull_string.interval s (j1+1) (j2-1)) in 
   (idx,Cull_string.cobeginning j2 s);;
 

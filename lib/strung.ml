@@ -47,7 +47,11 @@ let show_indices s=
   let n=String.length s in
   Int_range.scale (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
-let number_of_lines_before = Substring.Friend.number_of_lines_before;;
+let number_of_lines_before s i=
+  if i<1 then 0 else
+  let m=min i (String.length s) in
+  List.length(List.filter(fun j->(String.get s (j-1))='\n')(Int_range.range 1 m));;
+
 
 let number_of_linebreaks s =
     let n = String.length s 
@@ -402,7 +406,7 @@ print_string(escaped_and_quoted z1);;
 *)
 
 let reposition_whole_according_to_separator separator lines =
-      let temp1 = Image.image (fun line->(line,Substring.leftmost_index_of_in separator line)) lines in 
+      let temp1 = Image.image (fun line->(line,Option.get(Substring.cunningham separator line 1))) lines in 
       let max_idx = snd(Max.maximize_it snd temp1) in 
       Image.image (fun (line,idx)->
           let offset = max_idx-idx in 
@@ -411,7 +415,7 @@ let reposition_whole_according_to_separator separator lines =
 
 let reposition_left_hand_side_according_to_separator separator lines =
          let temp1 = Image.image (fun line->
-              let j = Substring.leftmost_index_of_in separator line in 
+              let j = Option.get(Substring.cunningham separator line 1) in 
               ((Cull_string.beginning (j-1) line,Cull_string.cobeginning (j-1) line),j)) lines in 
          let max_idx = snd(Max.maximize_it snd temp1) in 
          Image.image (fun ((left,right),idx)->

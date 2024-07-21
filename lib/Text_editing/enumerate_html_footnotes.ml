@@ -48,10 +48,11 @@ let seek_html_footnote_at_index text i0=
   else  
   let i5 = i4 + (String.length part3) in  
   let part5="</div>" in 
-  let i6 = Substring.leftmost_index_of_in_from part5 text i5 in 
-  if i6 < 0 
+  let i6_opt = Substring.cunningham part5 text i5 in 
+  if i6_opt = None 
   then raise(Unterminated_big_div(i0,i5))  
   else 
+  let i6 = Option.get i6_opt in  
   Some((i0,i6+(String.length part5)-1),(footnote_idx,Cull_string.interval text i5 (i6-1))) ;;
    
 let main text =

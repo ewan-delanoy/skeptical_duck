@@ -189,10 +189,12 @@
          if not(String.contains old_sov '.')
          then Reference.replace_string cs_ref old_sov new_sov 
          else 
-         let j=Substring.leftmost_index_of_in "." old_sov in
-         if j<0 
+         let j_opt=Substring.cunningham "." old_sov 1 in
+         if j_opt= None
          then raise(Rename_string_or_value_exn(old_sov))
-         else let module_name=Cull_string.beginning (j-1) old_sov in
+         else 
+         let j = Option.get j_opt in 
+         let module_name=Cull_string.beginning (j-1) old_sov in
          let endingless= Fw_with_dependencies.decipher_module (!cs_ref)  module_name 
          and path= Fw_with_dependencies.decipher_path (!cs_ref)  module_name in 
          let nm=Dfn_endingless.to_module endingless in

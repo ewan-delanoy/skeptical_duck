@@ -70,7 +70,7 @@ let seek_small_sized_paragraph_at_index text idx =
   match seek_substring_at_index size_opening_tag text idx with 
   None -> None 
   | Some idx2 -> 
-     let idx3 = Substring.leftmost_index_of_in_from size_closing_tag text idx2 in 
+     let idx3 = Option.get(Substring.cunningham size_closing_tag text idx2) in 
      let snippet_in_between = Cull_string.interval text idx2 (idx3-1) in
      Some(snippet_in_between,idx3+(String.length size_closing_tag)) ;;  
 
@@ -88,7 +88,7 @@ let seek_phpbb_footnote_at_index text idx =
       match seek_phpbb_footnote_number_at_index text idx2 with 
       None -> None 
       | Some (footnote_number,idx3) -> 
-        let idx4 = Substring.leftmost_index_of_in_from size_closing_tag text idx3 in 
+        let idx4 = Option.get(Substring.cunningham size_closing_tag text idx3) in 
         let snippet_in_between = Cull_string.interval text idx3 (idx4-1) in
         Some(footnote_number,snippet_in_between,idx4+(String.length size_closing_tag))
      );;

@@ -110,10 +110,11 @@ exception Missing_string_closer of int * string;;
 
 let next_basic_increase_in_push_string_case s idx=
    let idx1=idx+(String.length string_opener) in 
-   let idx2=Substring.leftmost_index_of_in_from string_closer s idx1 in 
-   if idx2<0
+   let idx2_opt=Substring.cunningham string_closer s idx1 in 
+   if idx2_opt = None
    then raise(Missing_string_closer(idx1,s))
    else
+   let idx2 = Option.get idx2_opt in    
    (* we know that the string is already encoded *)
    let encoded_s = Encoded_string.retrieve (Cull_string.interval s idx1 (idx2-1)) in 
    (Crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
@@ -124,11 +125,12 @@ let next_basic_increase_in_push_string_case s idx=
 exception Unreadable_increase of int * string ;;
 
 let next_basic_increase  s idx=
-   let idx1= Substring.leftmost_index_of_in_from salt s idx in 
-   if idx1<0 
+   let idx1_opt= Substring.cunningham salt s idx in 
+   if idx1_opt = None 
    then let i=parse_int (Cull_string.cobeginning (idx-1) s) in
         (Crobj_basic_increase_t.Push_int(i),String.length(s)+1)
    else      
+   let idx1 = Option.get idx1_opt in    
    if idx1>idx 
    then next_basic_increase_in_preludy_case s idx idx1
    else 

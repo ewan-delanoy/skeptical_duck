@@ -1156,7 +1156,7 @@ let decipher_module fw capitalized_or_not_x=
   let find_subdir_from_suffix fw possibly_slashed_suffix =
     let suffix = Cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
     let temp1 = List.filter (
-    fun subdir -> Supstring.contains (Dfa_subdirectory.without_trailing_slash subdir) suffix
+    fun subdir -> Substring.is_a_substring_of suffix (Dfa_subdirectory.without_trailing_slash subdir) 
     ) (All_subdirectories.get fw) in 
     let test_for_minimality = (fun subdir1->
      List.for_all (fun subdir2 ->
@@ -1168,7 +1168,7 @@ let decipher_module fw capitalized_or_not_x=
     if List.length(temp2)<>1
     then raise(Find_subdir_from_suffix_exn(suffix,temp2))
     else let (Dfa_subdirectory_t.SD container) = List.hd temp2 in 
-         let j1 = Substring.leftmost_index_of_in suffix container in 
+         let j1 = Option.get(Substring.cunningham suffix container 1) in 
          let j2 = j1 + (String.length suffix) -1 in 
         Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
 

@@ -78,7 +78,7 @@ ranges_for_marked_comments
 *)
 
 let unmark_opening_line line = 
-   let idx = Substring.leftmost_index_of_in opener line in 
+   let idx = Option.get(Substring.cunningham opener line 1) in 
    Cull_string.cobeginning (idx+(String.length opener)-1) line ;;
 
 (*
@@ -88,7 +88,7 @@ unmark_opening_line "abc(*#defghi" ;;
 *)
 
 let unmark_closing_line line = 
-    let idx = Substring.rightmost_index_of_in closer line in 
+    let idx = Option.get(Substring.rightmost_index_of_in_opt closer line) in 
     Cull_string.coending (idx-1) line ;;
 
 (*
