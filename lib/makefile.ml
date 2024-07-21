@@ -11,9 +11,6 @@ exception Parse_next_instruction_exn of int ;;
 
 exception Prerequisites_and_commands_for_target_exn of string * ( Makefile_t.rule list) ;; 
 
-exception Single_value_exn of string * (string list) ;; 
-
-
 module Private = struct 
 
 exception Check_all_are_empty_but_last_exn  ;;
@@ -56,10 +53,7 @@ let list_value mkf ~variable_name =
    let assg = List.hd temp1 in 
    assg.Makefile_t.content ;;
 let single_value mkf ~variable_name = 
-   let vals= list_value mkf ~variable_name in 
-   if List.length(vals)<>1 
-   then raise(Single_value_exn(variable_name,vals))   
-   else List.hd vals ;;
+   String.concat " " (list_value mkf ~variable_name);;
 
 
 let rec helper_for_target_list_expansion mkf (treated,terminals,to_be_treated) = 
@@ -232,18 +226,36 @@ let parse_makefile mkf_text =
    helper_for_makefile_parsing (empty_one,lines3) ;;
 
 
-let all_prerequisites mkf = 
-    let temp1 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.Makefile_t.rules in 
-    let temp2 = List.flatten temp1 in 
-    Ordered.sort Total_ordering.lex_for_strings temp2 ;;
+let all_elements mkf = 
+    let temp1 = Image.image (fun ru -> ru.Makefile_t.targets) mkf.Makefile_t.rules 
+    and temp2 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.Makefile_t.rules in 
+    let temp3 = List.flatten (temp1@temp2) in 
+    Ordered.sort Total_ordering.lex_for_strings temp3 ;;
 
-type list_of_prereq_aliases = LPA of ( string * string )   ;;
 
+let sl_order = Total_ordering.lex_for_strings ;;
+let sl_insert = Ordered.insert sl_order ;; 
+let sl_sort = Ordered.sort sl_order ;; 
 
+type dollar_var = 
+   Simple_var of string 
+   |Var_with_substitution of string * string * string ;; 
+
+type text_or_dollar_var 
+   = Txt of string 
+    |Dvar of dollar_var ;; 
+
+    
+(*
+let helper_for_todv_decomposition (line,line_length) (treated,idx) = 
+    if idx>line_length 
+    then List.rev treated 
+    else 
+    match String.index_from_opt line 0 '(' with 
+*)        
 
 end ;;
 
-let all_prerequisites = Private.all_prerequisites ;;
 
 let expand_target_list = Private.expand_target_list ;;
 

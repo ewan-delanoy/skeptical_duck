@@ -4,22 +4,24 @@
 
 *)
 
+
+
 module Private = struct 
 
-   let leftmost_index_of_in_from x y i=
+   let leftmost_index_of_in_from_opt x y i=
    let lx=String.length(x) in
    let tester=(function j->(String.sub y j lx)=x) in
    match Int_range.find_opt tester (i-1) (String.length(y)-lx) with
-      None->(-1)
-     |Some(k)->k+1;;
+      None->None
+     |Some(k)->Some(k+1);;
 
 let occurrences_of_in x y=
    let n=String.length y in
    let rec tempf=(fun (j,accu)->
       if j>n then List.rev(accu) else
-      let k=leftmost_index_of_in_from x y j in
-      if k<0 then List.rev(accu) else
-      tempf(k+1,k::accu)
+      match leftmost_index_of_in_from_opt x y j with
+      None -> List.rev(accu)
+      | Some k -> tempf(k+1,k::accu)
    )  in
    tempf (1,[]);;
 
@@ -30,6 +32,8 @@ let ranges_for_occurrences_of_in x y=
 
 
 end ;;    
+
+let cunningham = Private.leftmost_index_of_in_from_opt ;; 
 
 let decorated_occurrences_of_in x y =
    let ny = String.length y 
@@ -63,7 +67,12 @@ let decorated_occurrences_of_in x y =
       try ((List.find tester temp1)+1) with
       _->(-1);;
   
-   let leftmost_index_of_in_from = Private.leftmost_index_of_in_from ;;
+   let leftmost_index_of_in_from x y i= 
+    match Private.leftmost_index_of_in_from_opt x y i with 
+     None -> (-1)
+    | Some k -> k;;
+
+   
   
 module Friend = struct
 
