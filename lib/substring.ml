@@ -67,7 +67,7 @@ let decorated_occurrences_of_in x y =
 
 
 
-let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
+let leftmost_index_of_pattern_among_in_from_opt patterns whole_string start_idx=  
     let n=String.length(whole_string) in
     let temp1=Int_range.index_everything patterns in 
     let tester =(fun idx->List.find_map (

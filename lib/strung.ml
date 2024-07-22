@@ -328,7 +328,7 @@ exception Started_by_nonopener of int*string;;
 let parse_nested_parentheses 
   (openr,separatr,closr) s=
     let joiners = [openr;separatr;closr]  in  
-    let seeker = Substring.leftmost_index_of_pattern_among_in_from 
+    let seeker = Substring.leftmost_index_of_pattern_among_in_from_opt 
        [openr;separatr;closr] s in 
     
     let opt1=seeker 1 in 
