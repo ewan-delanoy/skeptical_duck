@@ -3,11 +3,11 @@
 
 In an emergency situation, 
 go up one directory, open a fresh terminal, load this 
-file with the above command and call 
+file with the commands below and call 
 Assistance_usual_coma_state.refresh() )
 
-#load"unix.cma";;
-#load"str.cma";;
+#require"unix" ;; (used to be #load"unix.cma";;)
+#require "str" (used to be #load"str.cma";;)
 #use"skeptical_duck/watched/watched_and_githubbed/assistance.ml";;
 
 *)
