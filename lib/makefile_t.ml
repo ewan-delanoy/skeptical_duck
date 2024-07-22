@@ -24,8 +24,3 @@ type inclusion = {
 
 type text = MT of string ;; 
 
-type t = {
-   assignments : variable_assignment list;
-   rules : rule list;
-   inclusions : inclusion list
-};; 

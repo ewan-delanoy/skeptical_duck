@@ -15,6 +15,13 @@ module Private = struct
 
 exception Check_all_are_empty_but_last_exn  ;;
 
+type t = {
+   assignments : Makefile_t.variable_assignment list;
+   rules : Makefile_t.rule list;
+   inclusions : Makefile_t.inclusion list
+};; 
+
+
 let check_all_are_empty_but_last l =
    if l = [] then [] else
    let (h,t) = List_again.head_with_tail(List.rev l) in
@@ -25,7 +32,7 @@ let prerequisites_and_commands_for_target mkf target_name =
    let rules1 = List.filter (
       fun rule ->
          List.mem target_name rule.Makefile_t.targets
-   ) mkf.Makefile_t.rules in 
+   ) mkf.rules in 
    try (
    let prerequisites1 = Image.image (fun rule -> rule.Makefile_t.prerequisites) rules1 
    and commands1 = Image.image (fun rule -> rule.Makefile_t.commands) rules1 in 
@@ -43,7 +50,7 @@ let prerequisites_for_target mkf target_name =
 let list_value mkf ~variable_name = 
    let temp1 = List.filter (
          fun assg-> assg.Makefile_t.variable_name = variable_name
-   ) mkf.Makefile_t.assignments in 
+   ) mkf.assignments in 
    if List.length(temp1)>1
    then  raise(List_value_exn(variable_name,temp1))
    else  
@@ -157,31 +164,31 @@ let parse_next_instruction first_eline next_elines =
 
 
 let empty_one = { 
-      Makefile_t.assignments = []; 
-      Makefile_t.rules = [];
-      Makefile_t.inclusions = [];
+      assignments = []; 
+      rules = [];
+      inclusions = [];
    } ;;     
 
 let rev_all mkf = { 
-   Makefile_t.assignments = List.rev(mkf.Makefile_t.assignments); 
-   Makefile_t.rules = List.rev(mkf.Makefile_t.rules);
-   Makefile_t.inclusions = List.rev(mkf.Makefile_t.inclusions);
+   assignments = List.rev(mkf.assignments); 
+   rules = List.rev(mkf.rules);
+   inclusions = List.rev(mkf.inclusions);
    
 } ;;
 
 let add_assignment assg mkf = { 
   mkf with    
-   Makefile_t.assignments = assg :: (mkf.Makefile_t.assignments); 
+   assignments = assg :: (mkf.assignments); 
 } ;;
 
 let add_rule rule mkf = { 
    mkf with 
-   Makefile_t.rules = rule :: (mkf.Makefile_t.rules)
+   rules = rule :: (mkf.rules)
 } ;;
 
 let add_inclusion inclusion mkf = { 
    mkf with 
-   Makefile_t.inclusions = inclusion :: (mkf.Makefile_t.inclusions)
+   inclusions = inclusion :: (mkf.inclusions)
 } ;;
 
 let add_instruction instr mkf = match instr with 
@@ -227,8 +234,8 @@ let parse_makefile mkf_text =
 
 
 let all_elements mkf = 
-    let temp1 = Image.image (fun ru -> ru.Makefile_t.targets) mkf.Makefile_t.rules 
-    and temp2 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.Makefile_t.rules in 
+    let temp1 = Image.image (fun ru -> ru.Makefile_t.targets) mkf.rules 
+    and temp2 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.rules in 
     let temp3 = List.flatten (temp1@temp2) in 
     Ordered.sort Total_ordering.lex_for_strings temp3 ;;
 
@@ -292,11 +299,11 @@ let mt2  =  Makefile_t.MT(Io.read_whole_file ap2) ;;
 
 let see2 = parse_makefile mt2 ;;
 
-let assgs2 = see2.Makefile_t.assignments ;; 
+let assgs2 = see2.assignments ;; 
 
 let assg = List.nth assgs2 50;;
 
-let rules2 = see2.Makefile_t.rules ;; 
+let rules2 = see2.rules ;; 
 
 let rule = List.nth rules2 340;;
 
