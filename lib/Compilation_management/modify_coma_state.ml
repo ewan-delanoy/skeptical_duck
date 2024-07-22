@@ -189,7 +189,7 @@
          if not(String.contains old_sov '.')
          then Reference.replace_string cs_ref old_sov new_sov 
          else 
-         let j_opt=Substring.cunningham "." old_sov 1 in
+         let j_opt=Substring.leftmost_index_of_in_from_opt "." old_sov 1 in
          if j_opt= None
          then raise(Rename_string_or_value_exn(old_sov))
          else 

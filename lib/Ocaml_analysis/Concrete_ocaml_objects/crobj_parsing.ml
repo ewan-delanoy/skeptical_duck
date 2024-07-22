@@ -110,7 +110,7 @@ exception Missing_string_closer of int * string;;
 
 let next_basic_increase_in_push_string_case s idx=
    let idx1=idx+(String.length string_opener) in 
-   let idx2_opt=Substring.cunningham string_closer s idx1 in 
+   let idx2_opt=Substring.leftmost_index_of_in_from_opt string_closer s idx1 in 
    if idx2_opt = None
    then raise(Missing_string_closer(idx1,s))
    else
@@ -125,7 +125,7 @@ let next_basic_increase_in_push_string_case s idx=
 exception Unreadable_increase of int * string ;;
 
 let next_basic_increase  s idx=
-   let idx1_opt= Substring.cunningham salt s idx in 
+   let idx1_opt= Substring.leftmost_index_of_in_from_opt salt s idx in 
    if idx1_opt = None 
    then let i=parse_int (Cull_string.cobeginning (idx-1) s) in
         (Crobj_basic_increase_t.Push_int(i),String.length(s)+1)

@@ -13,7 +13,7 @@ let detect_phpbb_quote_start_at_index s idx =
    if not(Substring.is_a_substring_located_at quote_starter s idx)
    then None 
    else 
-   let idx2 = Option.get(Substring.cunningham ">" s (idx+(String.length quote_starter))) in 
+   let idx2 = Option.get(Substring.leftmost_index_of_in_from_opt ">" s (idx+(String.length quote_starter))) in 
    Some(idx2-idx+1,(idx,idx2));;
 
 let quote_ender = "</QUOTE>";;

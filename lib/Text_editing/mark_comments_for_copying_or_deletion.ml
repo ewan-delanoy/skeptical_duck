@@ -78,7 +78,7 @@ ranges_for_marked_comments
 *)
 
 let unmark_opening_line line = 
-   let idx = Option.get(Substring.cunningham opener line 1) in 
+   let idx = Option.get(Substring.leftmost_index_of_in_from_opt opener line 1) in 
    Cull_string.cobeginning (idx+(String.length opener)-1) line ;;
 
 (*

@@ -33,7 +33,7 @@ let ranges_for_occurrences_of_in x y=
 
 end ;;    
 
-let cunningham = Private.leftmost_index_of_in_from_opt ;; 
+let leftmost_index_of_in_from_opt = Private.leftmost_index_of_in_from_opt ;; 
 
 let decorated_occurrences_of_in x y =
    let ny = String.length y 

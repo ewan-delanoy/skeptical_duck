@@ -50,7 +50,7 @@ exception Ending_failure;;
      
 
 let before_and_after w x=
-  let j_opt=Substring.cunningham(w)(x) 1 in
+  let j_opt=Substring.leftmost_index_of_in_from_opt(w)(x) 1 in
   if j_opt=None then None else 
    let j = Option.get j_opt in 
    Some(  beginning (j-1) x,
@@ -135,10 +135,10 @@ exception Absent_ending_marker of string;;
  
 let between_markers (bm,em) s=
      if (bm,em)=("","") then s else
-     let i1_opt=Substring.cunningham bm s 1  in
+     let i1_opt=Substring.leftmost_index_of_in_from_opt bm s 1  in
      if i1_opt=None then raise(Absent_beginning_marker(bm)) else
      let j1=(Option.get i1_opt)+(String.length bm) in
-     let i2_opt=Substring.cunningham em s (j1+1) in
+     let i2_opt=Substring.leftmost_index_of_in_from_opt em s (j1+1) in
      if i2_opt<None then raise(Absent_ending_marker(bm)) else
      interval s j1 ((Option.get i2_opt)-1);; 
  

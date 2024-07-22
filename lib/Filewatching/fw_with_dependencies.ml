@@ -1168,7 +1168,7 @@ let decipher_module fw capitalized_or_not_x=
     if List.length(temp2)<>1
     then raise(Find_subdir_from_suffix_exn(suffix,temp2))
     else let (Dfa_subdirectory_t.SD container) = List.hd temp2 in 
-         let j1 = Option.get(Substring.cunningham suffix container 1) in 
+         let j1 = Option.get(Substring.leftmost_index_of_in_from_opt suffix container 1) in 
          let j2 = j1 + (String.length suffix) -1 in 
         Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
 

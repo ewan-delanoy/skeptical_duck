@@ -12,7 +12,7 @@ let enclosure (left_encloser,right_encloser)=
    then None
    else 
    let i2=i1+(String.length left_encloser) in
-   let i3_opt=Substring.cunningham right_encloser s i2 in
+   let i3_opt=Substring.leftmost_index_of_in_from_opt right_encloser s i2 in
    if i3_opt = None
    then None 
    else

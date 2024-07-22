@@ -406,7 +406,7 @@ print_string(escaped_and_quoted z1);;
 *)
 
 let reposition_whole_according_to_separator separator lines =
-      let temp1 = Image.image (fun line->(line,Option.get(Substring.cunningham separator line 1))) lines in 
+      let temp1 = Image.image (fun line->(line,Option.get(Substring.leftmost_index_of_in_from_opt separator line 1))) lines in 
       let max_idx = snd(Max.maximize_it snd temp1) in 
       Image.image (fun (line,idx)->
           let offset = max_idx-idx in 
@@ -415,7 +415,7 @@ let reposition_whole_according_to_separator separator lines =
 
 let reposition_left_hand_side_according_to_separator separator lines =
          let temp1 = Image.image (fun line->
-              let j = Option.get(Substring.cunningham separator line 1) in 
+              let j = Option.get(Substring.leftmost_index_of_in_from_opt separator line 1) in 
               ((Cull_string.beginning (j-1) line,Cull_string.cobeginning (j-1) line),j)) lines in 
          let max_idx = snd(Max.maximize_it snd temp1) in 
          Image.image (fun ((left,right),idx)->

@@ -8,7 +8,7 @@ exception No_module_given of string;;
 exception No_value_with_name of string;;
 
 let rename_moduled_value_in_file preceding_files old_name new_name path=
-   let j_opt=Substring.cunningham "." old_name 1 in
+   let j_opt=Substring.leftmost_index_of_in_from_opt "." old_name 1 in
    if j_opt = None
    then raise(No_module_given(old_name))
    else 
