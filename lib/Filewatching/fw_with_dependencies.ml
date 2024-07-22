@@ -8,6 +8,7 @@
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
+exception Module_not_found_exn of string ;;
 
 module Private = struct
 
@@ -990,7 +991,8 @@ end ;;
   
   module Exit = All_printables ;; 
 
-  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;
+  let details_for_module  fw mn = try List.assoc mn (Modularized_details.get fw) with 
+   Not_found -> raise(Module_not_found_exn(Dfa_module.to_line mn));;
   let check_ending_on_module fw edg  mn=
    if edg=Fw_module_small_details.principal_ending (details_for_module fw mn)
    then true 
