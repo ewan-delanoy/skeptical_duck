@@ -420,25 +420,31 @@ type mixed_expander = Mx of full_expander * partial_expander ;;
 
 exception Unknown_variable_exn of string ;;
 
-let constant_for_varname_opt (Mx(FE l1,PE l2)) vname=
+let register_new_full_expansion (Mx(FE l1,PE l2)) (vname,vcontent) = 
+    let new_l1 = (vname,vcontent) :: l1 
+    and new_l2 = List.filter (fun (vname2,_) -> vname2 <> vname) l2 in 
+    Mx(FE new_l1,PE new_l2) ;;
+
+let eval (Mx(FE l1,PE l2)) vname=
   match List.assoc_opt vname l1 with 
-  (Some text1) -> (Some text1)
+  (Some text1) -> [Txt text1]
   | None ->
    (
       match List.assoc_opt vname l2 with 
-      (Some expr2) -> constant_for_todv_list_opt expr2
+      (Some expr2) -> expr2
       |  None ->
          (
             match Sys.getenv_opt vname with 
-             Some env_value -> (Some env_value)
+             Some env_value -> [Txt env_value]
              |None -> raise (Unknown_variable_exn(vname)) 
          )
    ) ;;
+
     
 let decision_for_todv mixed = function 
   (Txt txt) -> (Some txt,None)
   |DVar(vname,_reps) ->
-     match constant_for_varname_opt mixed vname with 
+     match constant_for_todv_list_opt (eval mixed vname) with 
       (Some cst) ->  (Some cst,None)
       |None -> (None,Some vname) ;; 
 
@@ -451,7 +457,27 @@ let decision_for_todv_list mixed l =
    |(Some (_,(_,bad_opt))) ->(None, bad_opt)   ;;
 
 
-
+(* let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
+   let (vname1,todv_list1) = chain_head in 
+   let (good_opt,bad_opt) = decision_for_todv_list mixed todv_list1 in 
+   if good_opt<>None 
+   then let new_mixed = register_new_full_expansion mixed (vname1, Option.get good_opt) in 
+        (
+         match chain_tail with 
+          next_pair :: other_pairs -> helper_for_full_expansion (new_mixed,next_pair,other_pairs)
+          |[] -> 
+             let (Mx(FE l1,PE l2)) = new_mixed in
+             (
+               match l2 with 
+               [] -> FE l1
+               |next_pair2 :: other_pairs2 -> helper_for_full_expansion (new_mixed,next_pair2,other_pairs2)
+             ) 
+        )   
+    else
+    let vname2 = Option.get bad_opt in 
+    let full_chain = chain_head :: chain_tail in 
+    let names = Image.image fst full_chain in 
+    let i_opt = List_again.find_index_of_in *)
 
 
 end ;;
