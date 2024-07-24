@@ -87,7 +87,7 @@ let sugar i=
    if (i<4)||(i>20) then [] else
    if i=11 then [5] else [i+1];;
     
-reconstruct_linear_poset sugar (ennig 1 30);;  
+reconstruct_linear_poset sugar (Int_range.range 1 30);;  
 
 let some_edges=
   [
@@ -99,7 +99,7 @@ let some_edges=
 
 let brown j=image fst (List.filter (fun x->snd(x)=j) some_edges);;
 
-reconstruct_linear_poset brown (ennig 1 21);;  
+reconstruct_linear_poset brown (Int_range.range 1 21);;  
 
 
 *)

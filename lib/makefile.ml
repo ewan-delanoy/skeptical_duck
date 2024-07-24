@@ -11,14 +11,23 @@ exception Parse_next_instruction_exn of int ;;
 
 exception Prerequisites_and_commands_for_target_exn of string * ( Makefile_t.rule list) ;; 
 
+exception Missing_variable_close_tag of string * int ;;
+
 module Private = struct 
 
 exception Check_all_are_empty_but_last_exn  ;;
 
+type text_or_dollar_var 
+   = Txt of string 
+    |DVar of string * ((string * string) list) ;; 
+
 type t = {
    assignments : Makefile_t.variable_assignment list;
    rules : Makefile_t.rule list;
-   inclusions : Makefile_t.inclusion list
+   inclusions : Makefile_t.inclusion list;
+   all_targets: (string list) option ;
+   all_prerequisites: (string list) option ;
+   all_variables: ((string * (text_or_dollar_var list)) list) option ;
 };; 
 
 
@@ -167,9 +176,13 @@ let empty_one = {
       assignments = []; 
       rules = [];
       inclusions = [];
+      all_targets = None ;
+      all_prerequisites = None  ;
+      all_variables = None  ;
    } ;;     
 
 let rev_all mkf = { 
+   mkf with 
    assignments = List.rev(mkf.assignments); 
    rules = List.rev(mkf.rules);
    inclusions = List.rev(mkf.inclusions);
@@ -244,22 +257,202 @@ let sl_order = Total_ordering.lex_for_strings ;;
 let sl_insert = Ordered.insert sl_order ;; 
 let sl_sort = Ordered.sort sl_order ;; 
 
-type dollar_var = 
-   Simple_var of string 
-   |Var_with_substitution of string * string * string ;; 
+  
 
-type text_or_dollar_var 
-   = Txt of string 
-    |Dvar of dollar_var ;; 
 
+let parse_dollar_var varcontent = 
+   let opt1 = String.index_from_opt varcontent 0 ':' in 
+   if opt1 = None 
+   then DVar(varcontent,[]) 
+   else 
+   let i1 = (Option.get opt1) + 1 in 
+   let opt2 = String.index_from_opt varcontent i1 '=' in  
+   if opt2 = None 
+   then DVar(varcontent,[]) 
+   else 
+   let i2 = (Option.get opt2) + 1 in 
+   let itv = Cull_string.interval varcontent in 
+   DVar(itv 1 (i1-1),[itv (i1+1) (i2-1),itv (i2+1) (String.length varcontent)]) ;;   
     
 (*
-let helper_for_todv_decomposition (line,line_length) (treated,idx) = 
+
+parse_dollar_var "The:brown=cat" ;; 
+parse_dollar_var "Again" ;; 
+
+*)
+
+let add_if_nonempty line i j treated = 
+   if i<=j 
+   then (Txt(Cull_string.interval line i j)) :: treated 
+   else treated ;;   
+
+let rec helper_for_todv_decomposition (line,line_length) (treated,idx) = 
     if idx>line_length 
     then List.rev treated 
     else 
-    match String.index_from_opt line 0 '(' with 
-*)        
+    let itv = Cull_string.interval line in   
+    match Substring.leftmost_index_of_pattern_among_in_from_opt ["${";"$("] line idx with 
+      None ->  List.rev ( (Txt(itv idx line_length)) :: treated )
+    |Some(_,idx2) -> 
+      let treated2 = add_if_nonempty line idx (idx2-1) treated in 
+      let opening_par = Strung.get line (idx2+1) in 
+      let closing_par = List.assoc opening_par ['(',")";'{',"}"] in 
+      let opt3 = Substring.leftmost_index_of_in_from_opt closing_par line idx2 in 
+      if opt3 = None 
+      then raise(Missing_variable_close_tag(line,idx))
+      else 
+      let idx3 = Option.get opt3 in 
+      let vrange = itv (idx2+2) (idx3-1) in 
+      helper_for_todv_decomposition (line,line_length) ((parse_dollar_var vrange) ::treated2,idx3+1) ;; 
+
+        
+let todv_decompose line = helper_for_todv_decomposition (line,String.length line) ([],1) ;; 
+
+(*
+   
+todv_decompose "When $(the) ${saints}\t\t${go} marching $(in) ..." ;; 
+
+*)
+
+let rec helper_for_regluing (treated,todv,to_be_treated) = 
+   match to_be_treated with 
+   [] -> List.rev(todv::treated)
+   |todv2 :: others ->
+      (
+         match todv with 
+         DVar(_,_) ->  helper_for_regluing (todv::treated,todv2,others)
+         |Txt(txt1) ->
+            (
+              match todv2 with 
+             DVar(_,_) ->  helper_for_regluing (todv::treated,todv2,others)
+            |Txt(txt2) ->  helper_for_regluing (treated,Txt(txt1^txt2),others)
+      )
+      ) ;;
+
+let reglue = function 
+   [] -> [] 
+  |todv :: others ->  helper_for_regluing ([],todv,others) ;;    
+  
+(*
+
+reglue [DVar("a",[]);Txt("1");Txt("2");Txt("3");DVar("b",[]);Txt("4");Txt("5");DVar("c",[])] ;;
+
+*)  
+
+let apply_low_level_substitution_to_todv (ab,ba) = function 
+  Txt(txt) -> Txt(Replace_inside.replace_inside_string (ab,ba) txt)
+  | DVar(vname,replacements) -> DVar(vname,replacements@[ab,ba]) ;;
+
+let apply_low_level_substitution_to_todv_list  l pair = 
+   Image.image (apply_low_level_substitution_to_todv pair) l ;;
+let apply_low_level_substitutions_to_todv_list  l pairs = 
+  List.fold_left apply_low_level_substitution_to_todv_list  l pairs ;;
+
+let expand_in_todv  (varname,new_varcontent) todv = 
+  match todv with  
+  Txt(_) -> (0,[todv])
+  | DVar(vname,replacements) ->
+     if vname<>varname 
+     then (0,[todv])
+     else (1,apply_low_level_substitutions_to_todv_list new_varcontent replacements) ;;
+
+let expand_in_todv_list (old_count,l) pair = 
+   let temp1 = Image.image (expand_in_todv pair) l in 
+   let offset = Basic.fold_sum (Image.image fst temp1)
+   and unglued = List.flatten(Image.image snd temp1) in 
+   (old_count + offset, reglue unglued);;
+
+let expand_several_in_todv_list (old_count,l) pairs = 
+   List.fold_left expand_in_todv_list (old_count,l) pairs ;;
+
+let compute_all_targets mkf = 
+   let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.targets ) mkf.rules) in 
+   Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
+
+let all_targets mkf_ref = 
+   let old_mkf = (!mkf_ref) in 
+   match old_mkf.all_targets with 
+ (Some already_computed) -> already_computed 
+ | None -> 
+    let tgts = compute_all_targets old_mkf in 
+    let _ = (mkf_ref:= {old_mkf with all_targets = Some tgts} ) in 
+    tgts ;; 
+
+
+let compute_all_prerequisites mkf = 
+   let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.prerequisites ) mkf.rules) in 
+   Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
+    
+let all_prerequisites mkf_ref = 
+   let old_mkf = (!mkf_ref) in 
+      match old_mkf.all_prerequisites with 
+   (Some already_computed) -> already_computed 
+   | None -> 
+       let prereqs = compute_all_prerequisites old_mkf in 
+       let _ = (mkf_ref:= {old_mkf with all_prerequisites = Some prereqs} ) in 
+       prereqs ;; 
+    
+let compute_all_variables mkf = 
+         let vars1 = Image.image (fun va -> va.Makefile_t.variable_name ) mkf.assignments in 
+         let vars = Ordered.sort Total_ordering.lex_for_strings vars1 in 
+         Image.image (fun v->(v,todv_decompose(single_value mkf ~variable_name:v))) vars ;;
+
+let all_variables mkf_ref = 
+   let old_mkf = (!mkf_ref) in 
+            match old_mkf.all_variables with 
+    (Some already_computed) -> already_computed 
+   | None -> 
+     let vars = compute_all_variables old_mkf in 
+     let _ = (mkf_ref:= {old_mkf with all_variables = Some vars} ) in 
+     vars ;; 
+
+let constant_for_todv_list_opt l = 
+   if List.length(l)<>1
+   then None
+   else 
+   match List.hd(l) with 
+   Txt txt ->(Some txt)
+   |DVar(_,_) -> None ;;     
+
+type full_expander = FE of ( string * string ) list ;;
+type partial_expander = PE of (string * (text_or_dollar_var list)) list ;;
+type mixed_expander = Mx of full_expander * partial_expander ;; 
+
+exception Unknown_variable_exn of string ;;
+
+let constant_for_varname_opt (Mx(FE l1,PE l2)) vname=
+  match List.assoc_opt vname l1 with 
+  (Some text1) -> (Some text1)
+  | None ->
+   (
+      match List.assoc_opt vname l2 with 
+      (Some expr2) -> constant_for_todv_list_opt expr2
+      |  None ->
+         (
+            match Sys.getenv_opt vname with 
+             Some env_value -> (Some env_value)
+             |None -> raise (Unknown_variable_exn(vname)) 
+         )
+   ) ;;
+    
+let decision_for_todv mixed = function 
+  (Txt txt) -> (Some txt,None)
+  |DVar(vname,_reps) ->
+     match constant_for_varname_opt mixed vname with 
+      (Some cst) ->  (Some cst,None)
+      |None -> (None,Some vname) ;; 
+
+let decision_for_todv_list mixed l = 
+   let temp1 = Image.image (fun todv ->(todv,decision_for_todv mixed todv)) l in       
+   match List.find_opt (fun (_,(_,bad_opt)) -> bad_opt<>None) temp1 with 
+   None ->
+         let texts = Image.image (fun (_,(good_opt,_)) ->Option.get good_opt) temp1 in 
+         (Some(String.concat "" texts), None)
+   |(Some (_,(_,bad_opt))) ->(None, bad_opt)   ;;
+
+
+
+
 
 end ;;
 
