@@ -34,6 +34,7 @@ type t = {
    expanded_variables: ((string * string) list) option;
    expanded_targets: ((string * string) list) option ;
    expanded_prerequisites: ((string * string) list) option ;
+   hidden_equivalences : ((string * string list) list) option;
 };; 
 
 
@@ -77,29 +78,6 @@ let list_value mkf ~variable_name =
 let single_value mkf ~variable_name = 
    String.concat " " (list_value mkf ~variable_name);;
 
-
-let rec helper_for_target_list_enhancement mkf (treated,terminals,to_be_treated) = 
-  match to_be_treated with 
-  [] -> List.rev treated 
- |(target,already_visited) :: others ->
-    if already_visited 
-    then  helper_for_target_list_enhancement mkf (target::treated,terminals,others)
-    else 
-    let (prerequisites,commands)  = prerequisites_and_commands_for_target mkf target in 
-    if (prerequisites,commands)  = ([],[])
-    then  helper_for_target_list_enhancement mkf (treated,target::terminals,others) 
-    else 
-    let old_prerequisites = treated @ terminals in 
-    let new_prerequisites = List.filter (fun tgt ->not(List.mem tgt old_prerequisites)) prerequisites in 
-    if new_prerequisites = []
-    then helper_for_target_list_enhancement mkf (target::treated,terminals,others)
-    else
-    let new_goal = (Image.image (fun x->(x,false)) new_prerequisites)
-                    @( (target,true) :: others) in 
-    helper_for_target_list_enhancement mkf (treated,terminals,new_goal) ;;                    
-   
-let enhance_target_list mkf l = 
-  helper_for_target_list_enhancement mkf ([],[],Image.image (fun x->(x,false)) l) ;;
 
 
 let makefile_lines_for_indexed_command (cmd_idx,(cmd_content,comment)) = 
@@ -188,6 +166,7 @@ let empty_one = {
       expanded_variables = None  ;
       expanded_targets = None ;
       expanded_prerequisites = None  ;
+      hidden_equivalences = None;
    } ;;     
 
 let rev_all mkf = { 
@@ -254,14 +233,6 @@ let parse_makefile mkf_text =
    let lines3 = glue_lines lines2 in    
    helper_for_makefile_parsing (empty_one,lines3) ;;
 
-
-let all_elements mkf = 
-    let temp1 = Image.image (fun ru -> ru.Makefile_t.targets) mkf.rules 
-    and temp2 = Image.image (fun ru -> ru.Makefile_t.prerequisites) mkf.rules in 
-    let temp3 = List.flatten (temp1@temp2) in 
-    Ordered.sort Total_ordering.lex_for_strings temp3 ;;
-
-
 let sl_order = Total_ordering.lex_for_strings ;;
 let sl_insert = Ordered.insert sl_order ;; 
 let sl_sort = Ordered.sort sl_order ;; 
@@ -297,14 +268,35 @@ let add_if_nonempty line i j treated =
    then (Txt(Cull_string.interval line i j)) :: treated 
    else treated ;;   
 
+let test_for_dollar_beginning line idx = 
+   (
+      List.exists (fun beg ->Substring.is_a_substring_located_at beg line idx) [
+         "${";"$("
+      ]
+   ) &&
+   (
+     List.for_all (fun beg2 ->not(Substring.is_a_substring_located_at beg2 line (idx+2))) [
+          "shell "
+     ] 
+   ) ;;
+
+let rec next_dollar_beginning_opt (line,line_length) idx = 
+   if idx > line_length 
+   then None 
+   else 
+   if test_for_dollar_beginning line idx 
+   then Some idx 
+   else next_dollar_beginning_opt (line,line_length) (idx+1) ;;
+   
+
 let rec helper_for_todv_decomposition (line,line_length) (treated,idx) = 
     if idx>line_length 
     then List.rev treated 
     else 
     let itv = Cull_string.interval line in   
-    match Substring.leftmost_index_of_pattern_among_in_from_opt ["${";"$("] line idx with 
+    match next_dollar_beginning_opt (line,line_length) idx with 
       None ->  List.rev ( (Txt(itv idx line_length)) :: treated )
-    |Some(_,idx2) -> 
+    |Some(idx2) -> 
       let treated2 = add_if_nonempty line idx (idx2-1) treated in 
       let opening_par = Strung.get line (idx2+1) in 
       let closing_par = List.assoc opening_par ['(',")";'{',"}"] in 
@@ -322,6 +314,8 @@ let todv_decompose line = helper_for_todv_decomposition (line,String.length line
 (*
    
 todv_decompose "When $(the) ${saints}\t\t${go} marching $(in) ..." ;; 
+
+todv_decompose "When $(shell the) ${saints}\t\t${go} marching $(in) ..." ;; 
 
 *)
 
@@ -437,7 +431,7 @@ let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
              (
                match l2 with 
                [] -> FE l1
-               |next_pair2 :: other_pairs2 -> helper_for_full_expansion (new_mixed,next_pair2,other_pairs2)
+               |next_pair2 :: _-> helper_for_full_expansion (new_mixed,next_pair2,[])
              ) 
         )   
     else
@@ -445,7 +439,7 @@ let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
     let full_chain = chain_head :: chain_tail in 
     let names = Image.image fst full_chain in 
     match List_again.find_index_of_in_opt vname2 names with  
-    (Some i) -> raise(Cyclic_dependency(vname2::(List_again.long_head (i-1) names)))
+    (Some i) -> raise(Cyclic_dependency(List.rev(vname2::(List_again.long_head (i-1) names))))
     |None ->
       helper_for_full_expansion (mixed,(vname2,eval mixed vname2),full_chain) ;;  
 
@@ -539,22 +533,6 @@ let expand_variables_in_target mkf_ref tgt =
 let expand_variables_in_prerequisites mkf_ref prereq = 
    List.assoc prereq (expanded_prerequisites mkf_ref) ;;   
 
-let compute_hidden_equivalences_for_prerequisite mkf_ref (prereq,expanded_prereq)=
-   let temp1 = List.filter_map (
-      fun (tgt,expanded_tgt) -> 
-          if (tgt<>prereq) && (expanded_tgt = expanded_prereq )
-          then Some tgt 
-          else None  
-    )(expanded_targets mkf_ref) in 
-   if temp1=[]
-   then None 
-   else Some(prereq,temp1) ;;     
-      
-let compute_hidden_equivalences mkf_ref = 
-   List.filter_map (
-      compute_hidden_equivalences_for_prerequisite mkf_ref
-   ) (expanded_prerequisites mkf_ref) ;; 
-
 let involved_variables_in_todv_list l =
    let unordered = List.filter_map (
       function 
@@ -581,6 +559,70 @@ let unknown_variables mkf_ref =
          (Sys.getenv_opt v=None)
     )(all_involved_variables mkf_ref) ;; 
 
+
+let compute_hidden_equivalences_for_prerequisite mkf_ref (prereq,expanded_prereq)=
+    let temp1 = List.filter_map (
+       fun (tgt,expanded_tgt) -> 
+           if (tgt<>prereq) && (expanded_tgt = expanded_prereq )
+           then Some tgt 
+           else None  
+     )(expanded_targets mkf_ref) in 
+    if temp1=[]
+    then None 
+    else Some(prereq,temp1) ;;     
+       
+let compute_hidden_equivalences mkf_ref = 
+    List.filter_map (
+       compute_hidden_equivalences_for_prerequisite mkf_ref
+    ) (expanded_prerequisites mkf_ref) ;; 
+ 
+
+let hidden_equivalences mkf_ref = 
+      let old_mkf = (!mkf_ref) in 
+                  match old_mkf.hidden_equivalences with 
+          (Some already_computed) -> already_computed 
+   | None -> 
+      let vars = compute_hidden_equivalences mkf_ref in 
+      let _ = (mkf_ref:= {old_mkf with hidden_equivalences = Some vars} ) in 
+      vars ;; 
+    
+let enhanced_prerequisites_and_commands_for_target mkf_ref target =
+   let eqvs = hidden_equivalences mkf_ref in
+   let (old_prereqs,cmds) = prerequisites_and_commands_for_target (!mkf_ref) target in 
+   let additional_prereqs = List.flatten(Image.image (
+      fun prereq -> match List.assoc_opt prereq eqvs with 
+      (Some others) -> others 
+      | None -> []
+   ) old_prereqs) in 
+   (old_prereqs@additional_prereqs,cmds) ;;
+
+let enhanced_prerequisites_for_target mkf_ref target = 
+  fst(enhanced_prerequisites_and_commands_for_target mkf_ref target);;
+
+let rec helper_for_target_list_enhancement mkf (treated,terminals,to_be_treated) = 
+      match to_be_treated with 
+      [] -> List.rev treated 
+   |(target,already_visited) :: others ->
+           if already_visited 
+           then  helper_for_target_list_enhancement mkf (target::treated,terminals,others)
+           else 
+           let (prerequisites,commands)  = enhanced_prerequisites_and_commands_for_target mkf target in 
+           if (prerequisites,commands)  = ([],[])
+           then  helper_for_target_list_enhancement mkf (treated,target::terminals,others) 
+           else 
+           let old_prerequisites = treated @ terminals in 
+           let new_prerequisites = List.filter (fun tgt ->not(List.mem tgt old_prerequisites)) prerequisites in 
+           if new_prerequisites = []
+           then helper_for_target_list_enhancement mkf (target::treated,terminals,others)
+           else
+           let new_goal = (Image.image (fun x->(x,false)) new_prerequisites)
+                           @( (target,true) :: others) in 
+           helper_for_target_list_enhancement mkf (treated,terminals,new_goal) ;;                    
+          
+let enhance_target_list mkf l = 
+   helper_for_target_list_enhancement mkf ([],[],Image.image (fun x->(x,false)) l) ;;
+
+
 end ;;
 
 
@@ -590,9 +632,9 @@ let list_value = Private.list_value;;
 
 let parse = Private.parse_makefile ;; 
 
-let prerequisites_and_commands_for_target = Private.prerequisites_and_commands_for_target ;; 
+let prerequisites_and_commands_for_target = Private.enhanced_prerequisites_and_commands_for_target ;; 
 
-let prerequisites_for_target = Private.prerequisites_for_target ;; 
+let prerequisites_for_target = Private.enhanced_prerequisites_for_target ;; 
 
 let single_value = Private.single_value ;;
 
