@@ -4,14 +4,17 @@
 
 *)
 
+exception Cyclic_dependency of string list ;;  
 
 exception List_value_exn of string * ( Makefile_t.variable_assignment list) ;; 
+
+exception Missing_variable_close_tag of string * int ;;
 
 exception Parse_next_instruction_exn of int ;;
 
 exception Prerequisites_and_commands_for_target_exn of string * ( Makefile_t.rule list) ;; 
 
-exception Missing_variable_close_tag of string * int ;;
+exception Unknown_variable_exn of string ;;
 
 module Private = struct 
 
@@ -19,15 +22,18 @@ exception Check_all_are_empty_but_last_exn  ;;
 
 type text_or_dollar_var 
    = Txt of string 
-    |DVar of string * ((string * string) list) ;; 
+    |DVar of string * ((string * string) option) ;; 
 
 type t = {
    assignments : Makefile_t.variable_assignment list;
    rules : Makefile_t.rule list;
    inclusions : Makefile_t.inclusion list;
-   all_targets: (string list) option ;
-   all_prerequisites: (string list) option ;
-   all_variables: ((string * (text_or_dollar_var list)) list) option ;
+   unexpanded_targets: (string list) option ;
+   unexpanded_prerequisites: (string list) option ;
+   unexpanded_variables: ((string * (text_or_dollar_var list)) list) option ;
+   expanded_variables: ((string * string) list) option;
+   expanded_targets: ((string * string) list) option ;
+   expanded_prerequisites: ((string * string) list) option ;
 };; 
 
 
@@ -72,28 +78,28 @@ let single_value mkf ~variable_name =
    String.concat " " (list_value mkf ~variable_name);;
 
 
-let rec helper_for_target_list_expansion mkf (treated,terminals,to_be_treated) = 
+let rec helper_for_target_list_enhancement mkf (treated,terminals,to_be_treated) = 
   match to_be_treated with 
   [] -> List.rev treated 
  |(target,already_visited) :: others ->
     if already_visited 
-    then  helper_for_target_list_expansion mkf (target::treated,terminals,others)
+    then  helper_for_target_list_enhancement mkf (target::treated,terminals,others)
     else 
     let (prerequisites,commands)  = prerequisites_and_commands_for_target mkf target in 
     if (prerequisites,commands)  = ([],[])
-    then  helper_for_target_list_expansion mkf (treated,target::terminals,others) 
+    then  helper_for_target_list_enhancement mkf (treated,target::terminals,others) 
     else 
     let old_prerequisites = treated @ terminals in 
     let new_prerequisites = List.filter (fun tgt ->not(List.mem tgt old_prerequisites)) prerequisites in 
     if new_prerequisites = []
-    then helper_for_target_list_expansion mkf (target::treated,terminals,others)
+    then helper_for_target_list_enhancement mkf (target::treated,terminals,others)
     else
     let new_goal = (Image.image (fun x->(x,false)) new_prerequisites)
                     @( (target,true) :: others) in 
-    helper_for_target_list_expansion mkf (treated,terminals,new_goal) ;;                    
+    helper_for_target_list_enhancement mkf (treated,terminals,new_goal) ;;                    
    
-let expand_target_list mkf l = 
-  helper_for_target_list_expansion mkf ([],[],Image.image (fun x->(x,false)) l) ;;
+let enhance_target_list mkf l = 
+  helper_for_target_list_enhancement mkf ([],[],Image.image (fun x->(x,false)) l) ;;
 
 
 let makefile_lines_for_indexed_command (cmd_idx,(cmd_content,comment)) = 
@@ -176,9 +182,12 @@ let empty_one = {
       assignments = []; 
       rules = [];
       inclusions = [];
-      all_targets = None ;
-      all_prerequisites = None  ;
-      all_variables = None  ;
+      unexpanded_targets = None ;
+      unexpanded_prerequisites = None  ;
+      unexpanded_variables = None  ;
+      expanded_variables = None  ;
+      expanded_targets = None ;
+      expanded_prerequisites = None  ;
    } ;;     
 
 let rev_all mkf = { 
@@ -263,16 +272,18 @@ let sl_sort = Ordered.sort sl_order ;;
 let parse_dollar_var varcontent = 
    let opt1 = String.index_from_opt varcontent 0 ':' in 
    if opt1 = None 
-   then DVar(varcontent,[]) 
+   then DVar(varcontent,None) 
    else 
    let i1 = (Option.get opt1) + 1 in 
    let opt2 = String.index_from_opt varcontent i1 '=' in  
    if opt2 = None 
-   then DVar(varcontent,[]) 
+   then DVar(varcontent,None) 
    else 
    let i2 = (Option.get opt2) + 1 in 
    let itv = Cull_string.interval varcontent in 
-   DVar(itv 1 (i1-1),[itv (i1+1) (i2-1),itv (i2+1) (String.length varcontent)]) ;;   
+   let ab = itv (i1+1) (i2-1) 
+   and ba = itv (i2+1) (String.length varcontent) in 
+   DVar(itv 1 (i1-1),Some(ab,ba)) ;;   
     
 (*
 
@@ -314,96 +325,46 @@ todv_decompose "When $(the) ${saints}\t\t${go} marching $(in) ..." ;;
 
 *)
 
-let rec helper_for_regluing (treated,todv,to_be_treated) = 
-   match to_be_treated with 
-   [] -> List.rev(todv::treated)
-   |todv2 :: others ->
-      (
-         match todv with 
-         DVar(_,_) ->  helper_for_regluing (todv::treated,todv2,others)
-         |Txt(txt1) ->
-            (
-              match todv2 with 
-             DVar(_,_) ->  helper_for_regluing (todv::treated,todv2,others)
-            |Txt(txt2) ->  helper_for_regluing (treated,Txt(txt1^txt2),others)
-      )
-      ) ;;
 
-let reglue = function 
-   [] -> [] 
-  |todv :: others ->  helper_for_regluing ([],todv,others) ;;    
-  
-(*
-
-reglue [DVar("a",[]);Txt("1");Txt("2");Txt("3");DVar("b",[]);Txt("4");Txt("5");DVar("c",[])] ;;
-
-*)  
-
-let apply_low_level_substitution_to_todv (ab,ba) = function 
-  Txt(txt) -> Txt(Replace_inside.replace_inside_string (ab,ba) txt)
-  | DVar(vname,replacements) -> DVar(vname,replacements@[ab,ba]) ;;
-
-let apply_low_level_substitution_to_todv_list  l pair = 
-   Image.image (apply_low_level_substitution_to_todv pair) l ;;
-let apply_low_level_substitutions_to_todv_list  l pairs = 
-  List.fold_left apply_low_level_substitution_to_todv_list  l pairs ;;
-
-let expand_in_todv  (varname,new_varcontent) todv = 
-  match todv with  
-  Txt(_) -> (0,[todv])
-  | DVar(vname,replacements) ->
-     if vname<>varname 
-     then (0,[todv])
-     else (1,apply_low_level_substitutions_to_todv_list new_varcontent replacements) ;;
-
-let expand_in_todv_list (old_count,l) pair = 
-   let temp1 = Image.image (expand_in_todv pair) l in 
-   let offset = Basic.fold_sum (Image.image fst temp1)
-   and unglued = List.flatten(Image.image snd temp1) in 
-   (old_count + offset, reglue unglued);;
-
-let expand_several_in_todv_list (old_count,l) pairs = 
-   List.fold_left expand_in_todv_list (old_count,l) pairs ;;
-
-let compute_all_targets mkf = 
+let compute_unexpanded_targets mkf = 
    let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.targets ) mkf.rules) in 
    Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
 
-let all_targets mkf_ref = 
+let unexpanded_targets mkf_ref = 
    let old_mkf = (!mkf_ref) in 
-   match old_mkf.all_targets with 
+   match old_mkf.unexpanded_targets with 
  (Some already_computed) -> already_computed 
  | None -> 
-    let tgts = compute_all_targets old_mkf in 
-    let _ = (mkf_ref:= {old_mkf with all_targets = Some tgts} ) in 
+    let tgts = compute_unexpanded_targets old_mkf in 
+    let _ = (mkf_ref:= {old_mkf with unexpanded_targets = Some tgts} ) in 
     tgts ;; 
 
 
-let compute_all_prerequisites mkf = 
+let compute_unexpanded_prerequisites mkf = 
    let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.prerequisites ) mkf.rules) in 
    Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
     
-let all_prerequisites mkf_ref = 
+let unexpanded_prerequisites mkf_ref = 
    let old_mkf = (!mkf_ref) in 
-      match old_mkf.all_prerequisites with 
+      match old_mkf.unexpanded_prerequisites with 
    (Some already_computed) -> already_computed 
    | None -> 
-       let prereqs = compute_all_prerequisites old_mkf in 
-       let _ = (mkf_ref:= {old_mkf with all_prerequisites = Some prereqs} ) in 
+       let prereqs = compute_unexpanded_prerequisites old_mkf in 
+       let _ = (mkf_ref:= {old_mkf with unexpanded_prerequisites = Some prereqs} ) in 
        prereqs ;; 
     
-let compute_all_variables mkf = 
+let compute_unexpanded_variables mkf = 
          let vars1 = Image.image (fun va -> va.Makefile_t.variable_name ) mkf.assignments in 
          let vars = Ordered.sort Total_ordering.lex_for_strings vars1 in 
          Image.image (fun v->(v,todv_decompose(single_value mkf ~variable_name:v))) vars ;;
 
-let all_variables mkf_ref = 
+let unexpanded_variables mkf_ref = 
    let old_mkf = (!mkf_ref) in 
-            match old_mkf.all_variables with 
+            match old_mkf.unexpanded_variables with 
     (Some already_computed) -> already_computed 
    | None -> 
-     let vars = compute_all_variables old_mkf in 
-     let _ = (mkf_ref:= {old_mkf with all_variables = Some vars} ) in 
+     let vars = compute_unexpanded_variables old_mkf in 
+     let _ = (mkf_ref:= {old_mkf with unexpanded_variables = Some vars} ) in 
      vars ;; 
 
 let constant_for_todv_list_opt l = 
@@ -418,7 +379,7 @@ type full_expander = FE of ( string * string ) list ;;
 type partial_expander = PE of (string * (text_or_dollar_var list)) list ;;
 type mixed_expander = Mx of full_expander * partial_expander ;; 
 
-exception Unknown_variable_exn of string ;;
+
 
 let register_new_full_expansion (Mx(FE l1,PE l2)) (vname,vcontent) = 
     let new_l1 = (vname,vcontent) :: l1 
@@ -443,9 +404,14 @@ let eval (Mx(FE l1,PE l2)) vname=
     
 let decision_for_todv mixed = function 
   (Txt txt) -> (Some txt,None)
-  |DVar(vname,_reps) ->
+  |DVar(vname,replacement_opt) ->
      match constant_for_todv_list_opt (eval mixed vname) with 
-      (Some cst) ->  (Some cst,None)
+      (Some cst) ->  
+         let final_cst = (match replacement_opt with 
+            None -> cst 
+            |Some(ab,ba) -> Replace_inside.replace_inside_string (ab,ba) cst
+         ) in 
+         (Some final_cst,None)
       |None -> (None,Some vname) ;; 
 
 let decision_for_todv_list mixed l = 
@@ -457,7 +423,8 @@ let decision_for_todv_list mixed l =
    |(Some (_,(_,bad_opt))) ->(None, bad_opt)   ;;
 
 
-(* let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
+
+let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
    let (vname1,todv_list1) = chain_head in 
    let (good_opt,bad_opt) = decision_for_todv_list mixed todv_list1 in 
    if good_opt<>None 
@@ -477,13 +444,147 @@ let decision_for_todv_list mixed l =
     let vname2 = Option.get bad_opt in 
     let full_chain = chain_head :: chain_tail in 
     let names = Image.image fst full_chain in 
-    let i_opt = List_again.find_index_of_in *)
+    match List_again.find_index_of_in_opt vname2 names with  
+    (Some i) -> raise(Cyclic_dependency(vname2::(List_again.long_head (i-1) names)))
+    |None ->
+      helper_for_full_expansion (mixed,(vname2,eval mixed vname2),full_chain) ;;  
 
+
+let mixed_to_full mixed = 
+   let (Mx(FE l1,PE l2)) = mixed in 
+   match l2 with 
+   [] -> FE l1 
+   | pair :: _ -> helper_for_full_expansion (mixed,pair,[]) ;; 
+
+let compute_expanded_variables mkf_ref = 
+   let mixed = Mx(FE[],PE(unexpanded_variables mkf_ref)) in 
+   let (FE expansions) = mixed_to_full mixed in 
+   expansions ;;  
+
+
+let expanded_variables mkf_ref = 
+   let old_mkf = (!mkf_ref) in 
+               match old_mkf.expanded_variables with 
+       (Some already_computed) -> already_computed 
+   | None -> 
+        let vars = compute_expanded_variables mkf_ref in 
+        let _ = (mkf_ref:= {old_mkf with expanded_variables = Some vars} ) in 
+        vars ;; 
+
+(*
+
+
+let text1 = String.concat "\n"
+[
+  "CASTLE=$(WAITRESS) $(OXFORD) $(NANNY)"; 
+  "MU=UM"; 
+  "NANNY=$(NI) $(NI)";
+  "NI=IN"; 
+  "OXFORD =A C$(MU)"; 
+  "WAITRESS =S$(MU)MER IS"
+] ;; 
+
+
+let text1 = String.concat "\n"
+[
+  "V1=$(V2)a$(V3)"; 
+  "V2=$(V3)b$(V4)"; 
+  "V3=$(V4)c$(V5)"; 
+  "V4=d";
+  "V5=e$(V1)"; 
+] ;; 
+
+
+let mkf1 = parse (MT text1) ;; 
+let mkf1_ref = ref mkf1 ;; 
+
+let check1 = expanded_variables mkf1_ref ;; 
+
+*)
+
+let expand_variables_in_expression mkf_ref expr = 
+    let todv_list = todv_decompose expr in 
+    let mixed = Mx(FE(expanded_variables mkf_ref),PE[]) in 
+    let (good_opt,_) = decision_for_todv_list mixed todv_list in 
+    Option.get good_opt;;
+
+let compute_expanded_targets mkf_ref = 
+   Image.image (fun tgt -> (tgt,expand_variables_in_expression mkf_ref tgt) ) (unexpanded_targets mkf_ref)  ;;
+    
+let expanded_targets mkf_ref = 
+      let old_mkf = (!mkf_ref) in 
+      match old_mkf.expanded_targets with 
+    (Some already_computed) -> already_computed 
+    | None -> 
+       let tgts = compute_expanded_targets mkf_ref in 
+       let _ = (mkf_ref:= {old_mkf with expanded_targets = Some tgts} ) in 
+       tgts ;; 
+
+
+let compute_expanded_prerequisites mkf_ref = 
+   Image.image (fun prereq -> (prereq,expand_variables_in_expression mkf_ref prereq) ) (unexpanded_prerequisites mkf_ref) ;;
+          
+let expanded_prerequisites mkf_ref = 
+   let old_mkf = (!mkf_ref) in 
+      match old_mkf.expanded_prerequisites with 
+   (Some already_computed) -> already_computed 
+   | None -> 
+      let prereqs = compute_expanded_prerequisites mkf_ref in 
+      let _ = (mkf_ref:= {old_mkf with expanded_prerequisites = Some prereqs} ) in 
+      prereqs ;; 
+
+let expand_variables_in_target mkf_ref tgt = 
+   List.assoc tgt (expanded_targets mkf_ref) ;;
+   
+let expand_variables_in_prerequisites mkf_ref prereq = 
+   List.assoc prereq (expanded_prerequisites mkf_ref) ;;   
+
+let compute_hidden_equivalences_for_prerequisite mkf_ref (prereq,expanded_prereq)=
+   let temp1 = List.filter_map (
+      fun (tgt,expanded_tgt) -> 
+          if (tgt<>prereq) && (expanded_tgt = expanded_prereq )
+          then Some tgt 
+          else None  
+    )(expanded_targets mkf_ref) in 
+   if temp1=[]
+   then None 
+   else Some(prereq,temp1) ;;     
+      
+let compute_hidden_equivalences mkf_ref = 
+   List.filter_map (
+      compute_hidden_equivalences_for_prerequisite mkf_ref
+   ) (expanded_prerequisites mkf_ref) ;; 
+
+let involved_variables_in_todv_list l =
+   let unordered = List.filter_map (
+      function 
+      Txt(_) -> None 
+      |DVar(vname,_) -> Some vname
+   )  l in 
+   Ordered.sort Total_ordering.lex_for_strings unordered ;;
+
+let all_involved_variables mkf_ref = 
+   let temp1 = 
+      (unexpanded_targets mkf_ref)
+     @(unexpanded_prerequisites mkf_ref) in 
+   let temp2 = (Image.image todv_decompose temp1)
+     @(Image.image snd (unexpanded_variables mkf_ref)) in 
+   let temp3 = Image.image involved_variables_in_todv_list temp2 in 
+   Ordered.fold_merge Total_ordering.lex_for_strings temp3 ;;
+
+let unknown_variables mkf_ref =
+   let uv = unexpanded_variables mkf_ref in 
+   List.filter (
+      fun v ->
+         ((List.assoc_opt v uv) = None)
+         && 
+         (Sys.getenv_opt v=None)
+    )(all_involved_variables mkf_ref) ;; 
 
 end ;;
 
 
-let expand_target_list = Private.expand_target_list ;;
+let enhance_target_list = Private.enhance_target_list ;;
 
 let list_value = Private.list_value;;
 
