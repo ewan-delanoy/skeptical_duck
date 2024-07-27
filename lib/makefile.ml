@@ -625,8 +625,9 @@ let enhance_target_list mkf l =
 
 end ;;
 
-
 let enhance_target_list = Private.enhance_target_list ;;
+
+let expand = Private.expand_variables_in_expression ;; 
 
 let list_value = Private.list_value;;
 
