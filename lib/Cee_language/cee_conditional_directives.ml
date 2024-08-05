@@ -11,6 +11,12 @@ exception Lonely_else of int ;;
 exception Lonely_endif of int ;;
 exception Two_elses of int * int * int ;;
 
+exception Elif_in_ether of int ;;
+exception Elif_after_else of int ;;
+exception Else_in_ether of int ;;
+exception Endif_in_ether of int ;;
+
+
 
 type initial_command_t = {
    short_path : string ;
@@ -23,6 +29,166 @@ type config_t = {
    destination : Directory_name_t.t ;
    commands : initial_command_t list;
 } ;;
+
+type line_beginning = 
+    Lb_If
+   |Lb_Elif
+   |Lb_Else 
+   |Lb_Endif 
+   |Lb_Usual ;; 
+
+module Line_beginning = struct 
+
+  let data = [
+    "if", Lb_If;
+    "elif", Lb_Elif;  
+    "else", Lb_Else;
+    "endif", Lb_Endif
+]  ;;  
+
+let compute line =
+  if not(String.starts_with line ~prefix:"#")
+  then Lb_Usual  
+  else  
+  match Strung.char_finder_from_inclusive_opt (fun c->
+          not(List.mem c [' ';'\t';'\r'])
+        ) line 2 with 
+  None -> Lb_Usual
+  |Some idx1 -> 
+    (match List.find_opt (fun (lb_name,_lb)->
+      Substring.is_a_substring_located_at lb_name line idx1
+      ) data with 
+    None -> Lb_Usual
+    |Some (_,lb) -> lb 
+    );;
+
+end ;;  
+
+
+
+type small_space_t = {
+   namespace : int ;
+   start_idx : int ;
+   end_idx  : int ;
+} ;;
+
+
+type walker_t = {
+    lines : (int *string) list ;
+    current_namespace : int ;
+    preceding_namespaces : int list ;
+    smallest_unused_namespace : int ;
+    start_index_opt : int option ;
+    unfinished_condition : bool;
+    last_directive_was_an_else : bool;
+    treated : small_space_t list;
+} ;; 
+
+module Walker = struct 
+
+  let make text = {
+    lines = Lines_in_string.indexed_lines text ;
+    current_namespace = 0 ;
+    preceding_namespaces = [] ;
+    smallest_unused_namespace = 1;
+    start_index_opt = None ;
+    unfinished_condition = false;
+    last_directive_was_an_else = false;
+    treated = [];
+  } ;; 
+
+  let register_new_small_space_if_needed old_w w line_idx= 
+    match old_w.start_index_opt with 
+    None -> w
+    |Some start_index ->
+      let small_space = {
+       namespace = old_w.current_namespace ;
+       start_idx = start_index ;
+       end_idx  = line_idx -1 ;
+      } in 
+     {
+       w with 
+       treated = small_space :: (w.treated)   
+    } ;; 
+
+  let deal_with_namespace_data old_w w line_beginning= 
+     match line_beginning with 
+     Lb_If ->
+      {
+        w with 
+        current_namespace = old_w.smallest_unused_namespace ;
+        smallest_unused_namespace = old_w.smallest_unused_namespace + 1;
+        preceding_namespaces = old_w.current_namespace :: old_w.preceding_namespaces
+      }
+    | Lb_Endif ->
+      {
+        w with 
+        current_namespace = List.hd(old_w.preceding_namespaces) ;
+        smallest_unused_namespace = old_w.smallest_unused_namespace;
+        preceding_namespaces = List.tl(old_w.preceding_namespaces)
+      }
+   | Lb_Elif | Lb_Else | Lb_Usual -> w ;;
+
+  let directive_step old_w line_idx line line_beginning= 
+    let cond_is_unfinished = (
+      if List.mem line_beginning [Lb_If;Lb_Elif]
+      then String.ends_with line ~suffix:"\\"
+      else false 
+    ) in 
+    let w1 ={
+    old_w with
+    start_index_opt = None ;
+    unfinished_condition = cond_is_unfinished;
+    last_directive_was_an_else = (line_beginning = Lb_Else) ;
+   } in 
+   let w2 = register_new_small_space_if_needed old_w w1 line_idx in 
+   deal_with_namespace_data old_w w2 line_beginning;; 
+  
+  let inner_usual_step w line_idx line = 
+    match w.start_index_opt with 
+    (Some _) -> w 
+    |None -> 
+    if not(w.unfinished_condition)
+    then 
+          {
+            w with 
+            start_index_opt = Some line_idx 
+          } 
+    else
+    if String.ends_with line ~suffix:"\\"
+    then w
+    else 
+      {
+        w with 
+        start_index_opt = Some line_idx ;
+        unfinished_condition = false
+      }     ;; 
+
+  let usual_step w line_idx line =
+    let w2 = inner_usual_step w line_idx line in 
+    if w2.lines = []
+    then register_new_small_space_if_needed w2 w2 (line_idx+1)
+    else w2 ;;    
+    
+
+  let step old_w = 
+    let (line_idx,line) = List.hd old_w.lines 
+    and w = {old_w with lines = List.tl(old_w.lines)} in 
+    let line_beginning = Line_beginning.compute line in 
+    match line_beginning with 
+    Lb_Usual -> usual_step w line_idx line 
+   |Lb_If |Lb_Elif |Lb_Else |Lb_Endif -> directive_step w line_idx line line_beginning ;;
+  
+
+  let rec iterate w =
+    if w.lines = [] 
+    then List.rev w.treated 
+    else iterate (step w) ;;   
+
+end ;;  
+
+let compute_small_spaces text =
+   Walker.iterate(Walker.make text) ;; 
 
 type multiline_t = {
    is_finished : bool ;
