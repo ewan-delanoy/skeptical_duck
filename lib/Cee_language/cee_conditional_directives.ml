@@ -379,7 +379,7 @@ let remove_cds_in_file config init_cmd  =
   let fourth_filename = 
       (dest_dir ^ init_cmd.Cee_initial_command_t.short_path ^ending) in 
   let fourth_file = Absolute_path.create_file_if_absent fourth_filename in  
-  let _ = announce("(unifdefed  "^
+  let _ = announce("(unifdeffed  "^
      (init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending)^") > "^
      (dest_last ^ init_cmd.Cee_initial_command_t.short_path ^ending)^")") in 
   Io.overwrite_with fourth_file new_text ;;
