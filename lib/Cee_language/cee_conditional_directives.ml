@@ -11,16 +11,12 @@ exception Endif_in_ether of int ;;
 
 module Private = struct 
 
-type initial_command_t = {
-   short_path : string ;
-   ending : string ;
-   core_of_command : string ;
-} ;;
+
 
 type config_t = {
    source : Directory_name_t.t ;
    destination : Directory_name_t.t ;
-   commands : initial_command_t list;
+   commands : Cee_initial_command_t.t list;
 } ;;
 
 type line_beginning = 
@@ -348,7 +344,7 @@ let make_initial_command raw_command =
   let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
   let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
   {
-    short_path = Cull_string.coending 2 short_filename ;
+    Cee_initial_command_t.short_path = Cull_string.coending 2 short_filename ;
     ending = Cull_string.ending 2 short_filename ;
     core_of_command =Cull_string.beginning (i1-1) raw_command ;
   }  ;;
@@ -365,8 +361,8 @@ let initialize_configuration
 
 let main_preprocessing_command config init_cmd = 
   let src_dir = Directory_name.connectable_to_subpath config.source in  
-  let core_of_command = adapt_command src_dir init_cmd.core_of_command in 
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+  let core_of_command = adapt_command src_dir init_cmd.Cee_initial_command_t.core_of_command in 
+  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
   and ending = Cull_string.ending 2 s_ap in
   let second_filename = 
@@ -384,9 +380,9 @@ let remove_cds_in_file config init_cmd  =
   and dest_dir = Directory_name.connectable_to_subpath config.destination in  
   let src_last = (Cull_string.after_rightmost (Cull_string.coending 1 src_dir) '/' ) ^ "/"
   and dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.ending in
+  and ending = init_cmd.Cee_initial_command_t.ending in
   let ap = Absolute_path.of_string s_ap in  
   let old_text = Io.read_whole_file ap in 
   let second_text = watermark_text old_text 
@@ -394,29 +390,23 @@ let remove_cds_in_file config init_cmd  =
        (short_s_ap^"_"^random_marker^"_second"^ending) in
   let second_file = Absolute_path.create_file_if_absent second_filename in
   let _ = announce("(watermark  "^
-     (init_cmd.short_path ^ init_cmd.ending)^") > "^
-     (src_last ^ init_cmd.short_path ^"_"^random_marker^"_second"^ending)^")") in 
+     (init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending)^") > "^
+     (src_last ^ init_cmd.Cee_initial_command_t.short_path ^"_"^random_marker^"_second"^ending)^")") in 
   let _ = Io.overwrite_with second_file second_text in 
-  let current_dir = Sys.getcwd () in 
-    let third_filename = 
+  let third_filename = 
       (short_s_ap^"_"^random_marker^"_third"^ending) in 
   let cmd1 = main_preprocessing_command config init_cmd in 
   let _ = announce(cmd1) in 
-  let cmds = [
-      " cd "^src_dir; 
-      cmd1;
-      " cd "^current_dir;      
-  ] in 
-  let _ = Unix_command.conditional_multiple_uc cmds in 
+  let _ = Unix_command.uc cmd1 in 
   let third_file = Absolute_path.of_string third_filename in 
   let third_text =Io.read_whole_file third_file in 
   let new_text = rewrite_using_watermarks old_text third_text in 
   let fourth_filename = 
-      (dest_dir ^ init_cmd.short_path ^ending) in 
+      (dest_dir ^ init_cmd.Cee_initial_command_t.short_path ^ending) in 
   let fourth_file = Absolute_path.create_file_if_absent fourth_filename in  
   let _ = announce("(unifdefed  "^
-     (init_cmd.short_path ^ init_cmd.ending)^") > "^
-     (dest_last ^ init_cmd.short_path ^ending)^")") in 
+     (init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending)^") > "^
+     (dest_last ^ init_cmd.Cee_initial_command_t.short_path ^ending)^")") in 
   Io.overwrite_with fourth_file new_text ;;
 
 let remove_cds_in_files config init_cmds = 
@@ -424,7 +414,7 @@ let remove_cds_in_files config init_cmds =
   and sn = string_of_int(List.length init_cmds) in 
   List.iter (fun (idx,init_cmd) ->
     let msg1 = " Step "^(string_of_int idx)^" of "^sn^" : "^
-    "removing cds in "^init_cmd.short_path^init_cmd.ending^"\n\n"
+    "removing cds in "^init_cmd.Cee_initial_command_t.short_path^init_cmd.Cee_initial_command_t.ending^"\n\n"
     and msg2 = " Finished step "^(string_of_int idx)^" of "^sn^".\n" in 
     print_string msg1;
     flush stdout;
@@ -437,9 +427,9 @@ let remove_cds config = remove_cds_in_files config config.commands ;;
 
 let cleanup_temporary_data_for_file config init_cmd  = 
   let src_dir = Directory_name.connectable_to_subpath config.source  in  
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.ending in
+  and ending = init_cmd.Cee_initial_command_t.ending in
   let second_filename = 
        (short_s_ap^"_"^random_marker^"_second"^ending) in
   let third_filename = 
