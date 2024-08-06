@@ -1,14 +1,621 @@
 (************************************************************************************************************************
-Snippet 139 : 
+Snippet 141 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 138 : Code to delete some files in the same directory
+Snippet 140 : Code to start analizing a snapshot of php-src
+************************************************************************************************************************)
+
+module Snip140=struct
+
+List.iter (fun v->Unix.putenv v "" ) [
+   "EXTRA_CFLAGS";"LDFLAGS"; 
+   "INSTALL_ROOT"; "OPCACHE_SHARED_DEPENDENCIES"; "PROF_FLAGS"
+] ;; 
+
+let ap1= Absolute_path.of_string "~/Teuliou/Experimenting_with_php/copiableMakefile";;
+
+let makefile_ref  =  ref(Makefile.parse(Makefile_t.MT(Io.read_whole_file ap1))) ;; 
+
+let prerequisites_and_commands_for_target = Makefile.prerequisites_and_commands_for_target makefile_ref ;;
+
+let prerequisites_for_target = Makefile.prerequisites_for_target makefile_ref ;;
+
+let list_value = Makefile.list_value (!makefile_ref) ;;
+
+let beg_marker = "# Wild target starts here" ;;
+let end_marker = "# Wild target ends here" ;;
+ 
+    
+let commands_ref = ref ([]: (string * string ) list ) ;;
+
+
+
+let act () = 
+  let snippet = Makefile.write_rule_without_prerequisites
+     ~target_name:"all" ~commands:(!commands_ref) in 
+  let _ = Replace_inside.overwrite_between_markers_inside_file
+     ~overwriter:snippet (beg_marker,end_marker) ap1 in 
+  makefile_ref :=  (Makefile.parse(Makefile_t.MT(Io.read_whole_file ap1)))  ;; 
+
+
+  let cr0 = 
+   [
+      ("make $(phplibdir)/opcache.la","");
+      ("make $(SAPI_CLI_PATH)","");
+    ] ;; 
+  
+  commands_ref:= cr0 ;;
+
+
+let see1 = prerequisites_for_target "ext/opcache/opcache.la" ;; 
+
+let see2 = prerequisites_for_target "$(SAPI_CLI_PATH)";;
+
+let part1 = list_value ~variable_name:"shared_objects_opcache" ;; 
+
+let part2 = list_value ~variable_name:"PHP_GLOBAL_OBJS";;
+
+let part3 = list_value ~variable_name:"PHP_BINARY_OBJS";;
+
+let part4 = list_value ~variable_name:"PHP_CLI_OBJS";;
+
+let last_in_part1 = List.hd (List.rev part1) ;;
+
+let unenhanced = part1@["ext/opcache/opcache.la"]@part2@part3@part4@["$(SAPI_CLI_PATH)"] ;; 
+
+let enhanced = Makefile.enhance_target_list makefile_ref unenhanced ;;
+
+let cr1 = Image.image (fun tgt->("make "^tgt,"")) enhanced ;;
+
+commands_ref:= cr1 ;;
+
+let pairs_for_enhanced_ones = 
+   List.filter_map (
+     fun tgt -> 
+      let cmds = snd(prerequisites_and_commands_for_target tgt) in 
+      if cmds = [] then None else
+      Some(tgt,snd(prerequisites_and_commands_for_target tgt))
+   ) enhanced ;;
+
+let check_pairs = List.filter (fun (tgt,l)->List.length(l)<>1) pairs_for_enhanced_ones ;;
+
+let list2 = List.flatten(Image.image (fun (tgt,l_cmd)->
+   Image.image (Replace_inside.replace_inside_string ("$@"," "^tgt)) l_cmd    
+) pairs_for_enhanced_ones) ;;
+
+let indexed_list2 = Int_range.index_everything list2 ;;
+
+(* let rec helper (redundancies,scanned,to_be_scanned) = match to_be_scanned with 
+ [] -> List.rev redundancies 
+ | (j,l_j) :: others ->
+    match List.find_opt (fun (i,l_i)->l_i = l_j) scanned with 
+    (Some(i,_)) -> helper ((i,j)::redundancies,scanned,others) 
+    | None -> helper (redundancies,(j,l_j)::scanned,others)  ;;
+
+let find_redundancies indexed_l = helper ([],[],indexed_l) ;;
+
+let res1 = find_redundancies indexed_list2 ;; 
+let redundant_indices = Image.image snd res1 ;; *)
+
+let redundant_indices = [338] ;;
+
+let list3 = List.filter_map ( 
+   fun (idx,cmd) -> if List.mem idx redundant_indices then None else Some cmd
+) indexed_list2 ;;
+
+let build_cli = String.concat " " (Makefile.list_value (!makefile_ref) ~variable_name:"BUILD_CLI") ;;
+
+let list4 = Image.image (fun cmd->if cmd="$(BUILD_CLI)" then build_cli else cmd) list3 ;;
+
+
+commands_ref := ( Image.image (fun cmd->(cmd,"")) list4)  ;;
+
+
+let cmd1 = "$(BUILD_CC) -D${IR_TARGET} -DIR_PHP -DIR_PHP_MM=0 -o  ext/opcache/jit/ir/gen_ir_fold_hash /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/opcache/jit/ir/gen_ir_fold_hash.c" ;;
+let cmd2 = "ext/opcache/jit/ir/gen_ir_fold_hash < /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/opcache/jit/ir/ir_fold.h > ext/opcache/jit/ir/ir_fold_hash.h" ;;
+
+let list5 = List.filter_map (
+   fun cmd ->
+       if cmd = cmd1 then None else 
+       if cmd = cmd2 then Some "cp ${EXPHP}/reservation-php-src/ir_fold_hash.h ${PHPSRC}/ext/opcache/jit/ir/"  else
+       Some cmd
+) list4 ;; 
+
+let cmd3 = "$(BUILD_CC) /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/opcache/jit/ir/dynasm/minilua.c -lm -o  ext/opcache/jit/ir/minilua" ;;
+let cmd4 = "ext/opcache/jit/ir/minilua /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/opcache/jit/ir/dynasm/dynasm.lua  $(DASM_FLAGS) -o  ext/opcache/jit/ir/ir_emit_$(DASM_ARCH).h /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/opcache/jit/ir/ir_$(DASM_ARCH).dasc" ;;
+
+let list6 = List.filter_map (
+   fun cmd ->
+       if cmd = cmd3 then Some "cp ${EXPHP}/reservation-php-src/ir_emit_x86.h ${PHPSRC}/ext/opcache/jit/ir/" else 
+       if cmd = cmd4 then Some "cp ${EXPHP}/reservation-php-src/ir_x86.dasc   ${PHPSRC}/ext/opcache/jit/ir/"  else
+       Some cmd
+) list5 ;; 
+
+let cmd5 = "@$(YACC) $(YFLAGS) --defines -l /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/json/json_parser.y -o /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/json/json_parser.tab.c" ;;
+
+let list7 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd5 then Some 
+         [
+           "cp ${EXPHP}/reservation-php-src/json_parser.tab.h ${PHPSRC}/ext/json/";
+           "cp ${EXPHP}/reservation-php-src/json_parser.tab.c ${PHPSRC}/ext/json/";
+         ]
+      else 
+       Some [cmd]
+) list6 );; 
+
+let cmd6 = "@$(RE2C) $(RE2C_FLAGS) -t /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/json/php_json_scanner_defs.h -bci -o /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/json/json_scanner.c /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/json/json_scanner.re" ;;
+
+let list8 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd6 then Some 
+         [
+           "cp ${EXPHP}/reservation-php-src/php_json_scanner_defs.h ${PHPSRC}/ext/json/";
+           "cp ${EXPHP}/reservation-php-src/json_scanner.c ${PHPSRC}/ext/json/";
+         ]
+      else 
+       Some [cmd]
+) list7 );; 
+
+let cmd7 = "@(cd $(top_srcdir);  \tif test -f ./pdo_sql_parser.re; then  \t\t$(RE2C) $(RE2C_FLAGS) -o pdo_sql_parser.c pdo_sql_parser.re;  \telse  \t\t$(RE2C) $(RE2C_FLAGS) -o ext/pdo/pdo_sql_parser.c ext/pdo/pdo_sql_parser.re;  \tfi)" ;;
+
+
+let list9 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd7 then Some 
+         [
+           "cp ${EXPHP}/reservation-php-src/pdo_sql_parser.h ${PHPSRC}/ext/pdo/";
+           "cp ${EXPHP}/reservation-php-src/pdo_sql_parser.c ${PHPSRC}/ext/pdo/";
+         ]
+      else 
+       Some [cmd]
+) list8 );; 
+
+let cmd8 = "@(cd $(top_srcdir);  \tif test -f ./sqlite_sql_parser.re; then  \t\t$(RE2C) $(RE2C_FLAGS) -o sqlite_sql_parser.c sqlite_sql_parser.re;  \telse  \t\t$(RE2C) $(RE2C_FLAGS) -o ext/pdo_sqlite/sqlite_sql_parser.c ext/pdo_sqlite/sqlite_sql_parser.re;  \tfi)";;
+
+let list10 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd8 then Some 
+         [
+           "cp ${EXPHP}/reservation-php-src/sqlite_sql_parser.c ${PHPSRC}/ext/pdo_sqlite/";
+         ]
+      else 
+       Some [cmd]
+) list9 );; 
+
+let cmd9 =  "@(cd $(top_srcdir);  \tif test -f ./php_phar.h; then  \t\t$(RE2C) $(RE2C_FLAGS) -b -o phar_path_check.c phar_path_check.re;  \telse  \t\t$(RE2C) $(RE2C_FLAGS) -b -o ext/phar/phar_path_check.c ext/phar/phar_path_check.re;  \tfi)";
+;;
+let list11 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd9 then Some 
+         [
+           "cp ${EXPHP}/reservation-php-src/phar_path_check.c ${PHPSRC}/ext/phar/";
+         ]
+      else 
+       Some [cmd]
+) list10 );; 
+
+
+let cmd10 = "@$(YACC) $(YFLAGS) -v -d /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.y -o  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.c" ;;
+
+let cmd11 = 
+   "@$(SED) -e 's,^int zendparse\\(.*\\),ZEND_API int zendparse\\1,g' <  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.c  \t>  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.c.tmp &&  " ^
+   "\tmv  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.c.tmp  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.c"
+ ;;
+
+let cmd12 = 
+   "@$(SED) -e 's,^int zendparse\\(.*\\),ZEND_API int zendparse\\1,g' < /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.h  \t> /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.h.tmp &&  \tm" ^
+   "v /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.h.tmp /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_language_parser.h"
+
+;;
+
+let list12 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd10 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/zend_language_parser.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_language_parser.c ${PHPSRC}/Zend/";
+         ]
+      else 
+      if List.mem cmd [cmd11;cmd12] then None else   
+       Some [cmd]
+) list11 );; 
+
+let cmd13 = 
+   "@(cd $(top_srcdir); $(RE2C) $(RE2C_FLAGS) -b -o ext/standard/url_scanner_ex.c\text/standard/url_scanner_ex.re)"
+;;
+
+let list13 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd13 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/url_scanner_ex.h ${PHPSRC}/ext/standard/"; 
+          "cp ${EXPHP}/reservation-php-src/url_scanner_ex.c ${PHPSRC}/ext/standard/";
+         ]
+      else  
+       Some [cmd]
+) list12 );; 
+
+
+
+let cmd14 = 
+   "@(cd $(top_srcdir); $(RE2C) $(RE2C_FLAGS) -b -o ext/standard/var_unserializer.c ext/standard/var_unserializer.re)"
+;;
+
+let list14 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd14 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/var_unserializer.c ${PHPSRC}/ext/standard/";
+         ]
+      else  
+       Some [cmd]
+) list13 );; 
+
+let cmd15 = 
+   "@(cd $(top_srcdir); $(RE2C) $(RE2C_FLAGS) --case-inverted -cbdFt Zend/zend_language_scanner_defs.h -oZend/zend_language_scanner.c Zend/zend_language_scanner.l)"
+;;
+
+let list15 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd15 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/zend_language_scanner_defs.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_language_scanner.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_language_scanner.c ${PHPSRC}/Zend/";
+         ]
+      else 
+       Some [cmd]
+) list14 );; 
+
+
+
+let cmd16 = "@if test ! -z \"$(PHP)\"; then  \t\t$(PHP) /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/ext/tokenizer/tokenizer_data_gen.php;  \tfi;";;
+let cmd17 = "@if test ! -z \"$(PHP)\"; then  \t\t$(PHP) /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/scripts/gdb/debug_gdb_scripts_gen.php;  \tfi;";;
+let cmd18 = "@if test ! -z \"$(PHP)\"; then  \t\t$(PHP) /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_vm_gen.php;  \tfi;";;
+
+let list16 = List.flatten(List.filter_map (
+   fun cmd ->
+       if List.mem cmd [cmd16;cmd17;cmd18] 
+       then None 
+       else Some [cmd]
+) list15 );; 
+
+
+let cmd19 = 
+   "@$(YACC) $(YFLAGS) -v -d /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_ini_parser.y -o  /home/ewandelanoy/Teuliou/Experimenting_with_php/php-src/Zend/zend_ini_parser.c"
+;;
+
+let list17 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd19 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/zend_ini_parser.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_ini_parser.c ${PHPSRC}/Zend/";
+         ]
+      else 
+       Some [cmd]
+) list16 );; 
+
+let cmd15 = 
+   "@(cd $(top_srcdir); $(RE2C) $(RE2C_FLAGS) --case-inverted -cbdFt Zend/zend_ini_scanner_defs.h -oZend/zend_ini_scanner.c Zend/zend_ini_scanner.l)" 
+;;
+
+
+let list18 = List.flatten(List.filter_map (
+   fun cmd ->
+       if cmd = cmd15 then Some 
+         [
+          "cp ${EXPHP}/reservation-php-src/zend_ini_scanner_defs.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_ini_scanner.h ${PHPSRC}/Zend/"; 
+          "cp ${EXPHP}/reservation-php-src/zend_ini_scanner.c ${PHPSRC}/Zend/";
+         ]
+      else 
+       Some [cmd]
+) list17 );; 
+
+
+let list19 = List.filter (fun cmd -> String.starts_with ~prefix:"$(LIBTOOL)" cmd ) list18 ;; 
+
+
+let old_val_for_libtool = Makefile.single_value (!makefile_ref) ~variable_name:"LIBTOOL" ;;
+
+let new_val_for_libtool = Replace_inside.replace_inside_string ("--silent","--dry-run") old_val_for_libtool ;;
+
+let list20 = Image.image (
+   fun (idx,cmd) ->
+      let cmd1 = Replace_inside.replace_inside_string ("$(LIBTOOL)",new_val_for_libtool) cmd 
+      and s_idx = string_of_int idx in  
+      String.concat "\n\t"
+      [
+       "@echo \"************************************************ Stap "^s_idx^":\" >> ${EXPHP}/what_libtool_did.txt";
+        cmd1^" >> ${EXPHP}/what_libtool_did.txt";
+        cmd
+      ]
+) (Int_range.index_everything list19) ;;
+
+
+let ap2= Absolute_path.of_string "~/Teuliou/Experimenting_with_php/snapshot1_for_libtool.txt";;
+
+let libtool_text  =  (Io.read_whole_file ap2)^"\n***" ;; 
+
+let libtool_lines = Lines_in_string.indexed_lines libtool_text ;;
+let table_for_star_index_to_line_index = 
+   Int_range.index_everything (List.filter_map (fun 
+   (line_idx,line) ->
+      if String.starts_with line ~prefix:"*"
+      then Some line_idx   
+      else None   ) libtool_lines) ;;
+
+let u1 = List_again.universal_delta_list table_for_star_index_to_line_index ;;
+let number_of_libtool_lines = List.length libtool_lines ;;
+
+let number_of_starred_lines = List.length table_for_star_index_to_line_index ;;
+
+let compute_star_index_from_line_index line_idx = 
+   if line_idx = number_of_libtool_lines then number_of_starred_lines else
+   let ((star_idx,_),_) = List.find (fun ((star_idx1,line_idx1),(star_idx2,line_idx2)) ->
+         (line_idx1<=line_idx) && (line_idx < line_idx2)
+      ) u1 in 
+   star_idx;;
+
+let nonstarred_lines = List.filter_map (fun 
+(line_idx,line) -> 
+   if String.starts_with line ~prefix:"*"
+   then None   
+   else Some(compute_star_index_from_line_index line_idx,line)
+) libtool_lines ;;
+
+let towards1_pre_list21 = Int_range.scale (
+  fun star_idx0 ->
+    List.filter_map (fun (star_idx,line)->
+      if star_idx = star_idx0
+      then Some line 
+      else None   
+      ) nonstarred_lines
+) 1 (number_of_starred_lines-1) ;;
+
+let u2 = Image.image (fun l->List.partition(fun line->String.starts_with line ~prefix:"creating ") l ) towards1_pre_list21 ;;
+let u3 = List.flatten(Image.image fst u2) ;;
+
+let pre_list21 = Image.image snd u2 ;;
+let list21 = Image.image (String.concat "\n\t") pre_list21 ;;
+
+let u4 = Image.image (fun l->List.partition(fun line->String.starts_with line ~prefix:"mkdir ") l ) pre_list21 ;;
+let u5 = List.flatten(Image.image fst u4) ;;
+
+let u6 = Image.image (fun s->"mkdir -p ${PHPSRC}/"^(Cull_string.cobeginning 6 s)) u5;;
+
+let u7 = "\n\n\n" ^ (String.concat "\n\t" (""::u6)) ^ "\n\n\n" ;;
+
+let a1 () = print_string u7 ;;
+
+let pre_list22 = Image.image snd u4 ;;
+let list22 = Image.image (String.concat "\n\t") pre_list22 ;;
+
+let root_dir = home ^ "/Teuliou/Experimenting_with_php/php-src/";;
+
+let pre_list23 = Image.image (Image.image (Replace_inside.replace_inside_string
+~display_number_of_matches:false (root_dir,"") )) pre_list22 ;;
+let list23 = Image.image (String.concat "\n\t") pre_list23 ;;
+
+let root_mention = "-I" ^ home ^ "/Teuliou/Experimenting_with_php/php-src";;
+
+let pre_list24 = Image.image (Image.image (Replace_inside.replace_inside_string 
+~display_number_of_matches:false (root_mention,"-I.") )) pre_list23 ;;
+let list24 = Image.image (String.concat "\n\t") pre_list24 ;;
+
+
+commands_ref := ( Image.image (fun cmd->(cmd,"")) list24)  ;;
+
+let old_shared_production = List.hd(List.nth pre_list24 28);;
+
+let new_shared_production = Replace_inside.replace_inside_string 
+~display_number_of_matches:false ("/.libs/","/")  old_shared_production ;;
+
+let pre_list25 = Image.image (fun l->if List.hd(l)=old_shared_production then [new_shared_production] else l ) pre_list24 ;;
+let list25 = Image.image (String.concat "\n\t") pre_list25 ;;
+
+let pre_list26 = Image.image (fun l->
+   if List.length(l)<>2  then l else 
+   if (List.nth l 1)=""  
+   then [List.nth l 0] 
+   else [List.nth l 1]) pre_list25 ;;
+let list26 = Image.image (String.concat "\n\t") pre_list26 ;;
+
+let pre_list27 = Image.image (Image.image (Replace_inside.replace_inside_string (" >/dev/null 2>&1","") )) pre_list26 ;;
+let list27 = Image.image (String.concat "\n\t") pre_list27 ;;
+
+
+let prepared_dir = (Sys.getenv "AHPSRC") ^ "/";;
+let simplified_dir = (Sys.getenv "SHPSRC") ^ "/";;
+let half_preprocessed_dir = (Sys.getenv "HAHPSRC") ^ "/";;
+
+let to_be_removed =
+   [
+      "libs/"; "UPGRADING.INTERNALS"; "tests/"; "codecov.yml"; "build/";
+      "CODING_STANDARDS.md";  "config.log"; "EXTENSIONS";
+      "README.REDIST.BINS"; "php.ini-development"; "LICENSE"; "travis/";
+      "SECURITY.md"; "modules/"; "buildconf.bat";  "UPGRADING";
+      "libtool"; "CONTRIBUTING.md"; "win32/"; "php.ini-production"; 
+      "Makefile.objects"; "autom4te.cache/"; "configure"; "config.nice";
+      "buildconf";  "run-tests.php"; "NEWS"; "pear/"; "docs/";
+      "README.md"; "docs-old/"; "benchmark/"; "Makefile.fragments"; "scripts/";
+      "configure.ac"; "config.status"; 
+   ] ;;
+   
+let commands_for_removal = Image.image (
+   fun x -> "rm -rf "^simplified_dir^"/"^x
+) to_be_removed ;;
+
+let act2 () = Image.image Sys.command commands_for_removal ;; 
+    
+let check_list27 = List.filter (fun cmd ->
+  not(Substring.is_a_substring_of " -o " cmd)   
+) list27 ;;
+
+let (usual_from_list27,extreme_from_list27) = List.partition (
+   Substring.is_a_substring_of " -c "   
+ ) list27 ;;
+
+let rewrite_command cmd = 
+   let temp1 = Str.split (Str.regexp "[ \t\r]+") cmd in 
+   let temp2 = Image.image (
+     fun s -> 
+      if (String.starts_with s ~prefix:"-I")&&
+          (not(String.ends_with s ~suffix:"/"))&&
+          (s<>"-I.")
+     then s^"/"
+     else s 
+   ) temp1 in 
+   let temp3 = List_again.nonredundant_version temp2 in 
+   let temp4 = Int_range.index_everything temp3 in 
+   let i1 = fst(List.find (fun (idx,s)->s="-c") temp4)
+   and i2 = fst(List.find (fun (idx,s)->s="-o") temp4) in 
+   let temp5 = List.filter_map (fun (idx,s)->
+      if List.mem idx [i1;i1+1;i2;i2+1] then None else Some s   
+   ) temp4
+   and src_file = List.assoc (i1+1) temp4
+   and dest_file = List.assoc (i2+1) temp4 in 
+   let temp6 = temp5 @ ["-c";src_file;"-o";dest_file] in 
+   String.concat " " temp6 ;; 
+
+let list28 = Image.image (
+      fun cmd ->
+         if Substring.is_a_substring_of " -c " cmd 
+         then rewrite_command cmd 
+        else cmd    
+    ) list27 ;;
+
+commands_ref := ( Image.image (fun cmd->(cmd,"")) list28)  ;;
+
+let extract_core_and_filename cmd = 
+   let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " cmd 1) in 
+   let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " cmd (i1+4)) in
+   (Cull_string.beginning (i1-1) cmd,Cull_string.interval cmd (i1+4) (i2-1));; 
+let base1 = List.filter_map (
+      fun cmd ->
+         if Substring.is_a_substring_of " -c " cmd 
+         then Some(extract_core_and_filename cmd) 
+        else None  
+) list28 ;;
+
+let base2 = List.flatten(Image.image (
+      fun (core,short_c_file) ->
+     let short_h_file = (Cull_string.coending 2 short_c_file)^".h" in 
+     if Sys.file_exists (simplified_dir ^ short_h_file) 
+     then [(core,short_h_file);(core,short_c_file)]
+     else [core,short_c_file]
+) base1);;
+
+let sub_list28 = List.filter(
+   Substring.is_a_substring_of " -c "
+) list28 ;;
+
+let config1 = Cee_transfer_between_projects.initialize 
+~source:(Directory_name.of_string simplified_dir)
+~destination:(Directory_name.of_string half_preprocessed_dir)
+ sub_list28 ;;
+
+
+let act0 () = Cee_conditional_directives.cleanup_temporary_data config1  ;; 
+let act1 () = Chronometer.it Cee_conditional_directives.remove_conditional_directives config1  ;; 
+
+ (*
+#use"watched/watched_not_githubbed/ham.ml";;
+
+ let ap1 = Absolute_path.of_string (simplified_dir ^ "ext/opcache/zend_file_cache.c") ;;
+let text0 = Io.read_whole_file ap1 ;;
+
+let text1 = Lines_in_string.interval text0 71 106 ;;
+
+let text2 = Cee_conditional_directives.watermark_text text1 ;;
+
+print_string(text2);;
+
+let text3 = List.assoc 28 (Lines_in_string.indexed_lines text2) ;;
+
+
+
+print_string(Cee_conditional_directives.rewrite_using_watermarks text1 text3);;
+
+
+
+
+let u2 = List_again.long_head 23 config1.Cee_conditional_directives.commands ;;
+
+let act2 () = Chronometer.it (Cee_conditional_directives.remove_cds_in_files config1) u2 ;; 
+
+
+let ic1 = List.nth (config1.Cee_conditional_directives.commands) 0 ;; 
+
+let ic2 = List.nth (config1.Cee_conditional_directives.commands) 1 ;; 
+
+let act1 () = Chronometer.it (Cee_conditional_directives.remove_cds_in_files config1) [ic1;ic2] ;; 
+
+let u1 = Unix_again.quick_beheaded_complete_ls simplified_dir ;;  
+
+let u2 = List.filter (fun x->List.exists(
+   fun edg->String.ends_with x ~suffix:edg) [".h";".c"] ) u1 ;;
+
+*)
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 139 : Code to write a long list of long strings in OCaml
 ************************************************************************************************************************)
 module Snip139=struct
+
+  let hun_decomposition s = 
+    let n = String.length(s) in 
+    let q = (n/100) in 
+    Int_range.scale (
+      fun j ->
+        if j<=q 
+        then Cull_string.interval s (100*(j-1)+1) (100*j)
+        else Cull_string.interval s (100*q+1) n
+    )  1 (q+1) ;;
+  
+  let hun_writing s =
+     let temp1 = Int_range.index_everything (hun_decomposition s) in 
+     let m = List.length temp1 in 
+     let temp2 = Image.image (
+       fun (idx,line) -> 
+        let prefix = (if idx=1 then "(" else " ")
+        and suffix = (if idx=m then ")" else "^") in 
+        prefix ^ (Strung.enclose line) ^ suffix
+     ) temp1 in 
+     String.concat "\n" temp2 ;;
+  
+  let hun_string_list l =
+     let temp1 = Image.image hun_writing l in 
+    "\n\n\nlet ll = [\n"^
+    (String.concat ";\n" temp1)^
+    "\n] ;;\n\n\n" ;;
+  
+  let list_to_be_written = [] ;;  
+  let haag3 = hun_string_list list_to_be_written ;;
+
+    let ap1 = Absolute_path.of_string "watched/watched_not_githubbed/cloth.ml" ;;
+    
+    let write () = Replace_inside.overwrite_between_markers_inside_file
+        ~overwriter:haag3 ("(" ^"*B*)","(*"^"E*)") ap1 ;; 
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 138 : Code to delete some files in the same directory
+************************************************************************************************************************)
+module Snap139=struct
 
   let g1 = (!(Usual_coma_state.Private.main_ref)) ;;
   let g2 = Fw_poly.watched_files g1 ;; 
@@ -858,7 +1465,7 @@ exception Java_separator_in_subdirname of string ;;
 
 let java_separator_in_subdirname subdir = 
   match List.find_opt (
-    Supstring.contains subdir
+    fun s -> Substring.is_a_substring_of s subdir
  )  ["/java/";"/javaTemplate/";"/javaTemplates/"] with 
  None -> raise (Java_separator_in_subdirname(subdir))
  |Some sep -> sep ;; 
@@ -3243,7 +3850,7 @@ let g2 = select_files "res/layout"  ".xml" ;;
 let g3 = List.filter (
    fun (ap,s) ->
      let text = Io.read_whole_file ap in 
-     Supstring.contains text "hoto"
+     Substring.is_a_substring_of "hoto" text 
 ) (g1 @ g2);; 
 
 let g4 = Image.image snd (g1 @ g2) ;;
@@ -3251,7 +3858,7 @@ let g5 = Detect_inside.occurrences_for_several_words_in_several_files
    ["anga"] g4 ;; 
 
 let g4 = rf "/Users/ewandelanoy/Downloads/main/java/com/example/animeapplication/MangaViewHolder.kt" ;;
-Supstring.contains g4 "hoto" ;; 
+
 Substring.occurrences_of_in "hoto" g4 ;; 
   
 let g5 = Cull_string.interval g4 750 1000 ;; 
@@ -4150,7 +4757,7 @@ let walker_ap = Absolute_path.of_string (building_site^"walker_cmist.txt") ;;
   let u2 = Lines_in_string.lines u1 ;; 
   let u3 = List.filter (fun line -> line<>"") u2 ;; 
   let u4 = List.filter (fun line -> 
-      Supstring.contains line "Conocimiento obscuro"
+      Substring.is_a_substring_of "Conocimiento obscuro" line 
     ) u3 ;;
   let u5 = List.hd u4 ;; 
   let u6 = Cull_string.cobeginning 126 u5 ;; 
@@ -10925,7 +11532,7 @@ let z0 = Sys.command cmd_for_z0 ;;
 let z1 = rf "~/Downloads/temp.txt";;
 let z2 = Lines_in_string.lines z1 ;;
 let z3 = List.filter (fun line->
-   Supstring.contains line "depth_one"
+   Substring.is_a_substring_of "depth_one" line 
   ) z2;;
 let z4 = Image.image (Cull_string.cobeginning 53) z3;;
 
