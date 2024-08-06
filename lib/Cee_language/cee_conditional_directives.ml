@@ -13,12 +13,6 @@ module Private = struct
 
 
 
-type config_t = {
-   source : Directory_name_t.t ;
-   destination : Directory_name_t.t ;
-   commands : Cee_initial_command_t.t list;
-} ;;
-
 type line_beginning = 
     Lb_If
    |Lb_Elif
@@ -338,17 +332,10 @@ print_string(Cee_conditional_directives.rewrite_using_watermarks text1 text3);;
 
 *)
 
-let initialize_configuration 
-  ~source:src ~destination:dest raw_commands = 
-  {
-    source = src ;
-    destination = dest ;
-    commands = Image.image Cee_initial_command.make raw_commands;
- } ;;
 
 
 let main_preprocessing_command config init_cmd = 
-  let src_dir = Directory_name.connectable_to_subpath config.source in  
+  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source in  
   let core_of_command = adapt_command src_dir init_cmd.Cee_initial_command_t.core_of_command in 
   let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
@@ -364,8 +351,8 @@ let announce cmd =
   flush stdout) ;;
 
 let remove_cds_in_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.source 
-  and dest_dir = Directory_name.connectable_to_subpath config.destination in  
+  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source 
+  and dest_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.destination in  
   let src_last = (Cull_string.after_rightmost (Cull_string.coending 1 src_dir) '/' ) ^ "/"
   and dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
   let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
@@ -411,10 +398,10 @@ let remove_cds_in_files config init_cmds =
     flush stdout;
     ) temp1 ;;
 
-let remove_cds config = remove_cds_in_files config config.commands ;; 
+let remove_cds config = remove_cds_in_files config config.Cee_transfer_between_projects_t.commands ;; 
 
 let cleanup_temporary_data_for_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.source  in  
+  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source  in  
   let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
   and ending = init_cmd.Cee_initial_command_t.ending in
@@ -428,7 +415,7 @@ let cleanup_temporary_data_for_file config init_cmd  =
   ]  ;;
   
 let cleanup_temporary_data config =   
-  Image.image (cleanup_temporary_data_for_file config) config.commands ;;
+  Image.image (cleanup_temporary_data_for_file config) config.Cee_transfer_between_projects_t.commands ;;
 
 end ;;
 
