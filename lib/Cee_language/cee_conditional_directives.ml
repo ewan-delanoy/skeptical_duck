@@ -4,19 +4,12 @@
 
 *)
 
-exception Else_with_elif of int * int * int ;;
-exception Endif_without_matching_non_elif of int ;;
-exception Lonely_elif of int * string ;;
-exception Lonely_else of int ;;
-exception Lonely_endif of int ;;
-exception Two_elses of int * int * int ;;
-
 exception Elif_in_ether of int ;;
 exception Elif_after_else of int ;;
 exception Else_in_ether of int ;;
 exception Endif_in_ether of int ;;
 
-
+module Private = struct 
 
 type initial_command_t = {
    short_path : string ;
@@ -160,7 +153,6 @@ module Walker = struct
     else 
       {
         w with 
-        start_index_opt = Some line_idx ;
         unfinished_condition = false
       }     ;; 
 
@@ -459,3 +451,9 @@ let cleanup_temporary_data_for_file config init_cmd  =
   
 let cleanup_temporary_data config =   
   Image.image (cleanup_temporary_data_for_file config) config.commands ;;
+
+end ;;
+
+let remove_conditional_directives = Private.remove_cds ;; 
+
+let cleanup_temporary_data = Private.cleanup_temporary_data ;;
