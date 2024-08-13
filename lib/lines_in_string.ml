@@ -6,6 +6,8 @@
 
 exception Shift_indentation_in_line_exn of int * string ;;
 
+exception Put_line_first_bad_line_index_exn  of int * int ;;
+exception Put_line_last_bad_line_index_exn  of int * int ;;
 
 module Private = struct 
 
@@ -202,6 +204,50 @@ module Private = struct
 
   *)  
 
+  let put_line_first_in_string line_idx text = 
+    if line_idx=1 then text else
+    let lines = indexed_lines text in 
+    match List.assoc_opt line_idx lines with 
+    None -> raise (Put_line_first_bad_line_index_exn (line_idx,List.length lines))
+    |Some(the_line) ->
+    let first_line = snd(List.hd lines) in
+    let lines2 = Image.image (
+     fun (idx,old_line) ->
+        if idx = 1 then the_line else
+        if idx = line_idx then first_line else old_line
+    )   lines in 
+    String.concat "\n" lines2 ;;
+
+  (* put_line_first_in_string 4 "1\n2\n3\n4\n5" ;; *)
+
+  let put_line_last_in_string line_idx text = 
+    let lines = indexed_lines text in 
+    let n = List.length lines in 
+    if line_idx=n then text else
+    match List.assoc_opt line_idx lines with 
+    None -> raise (Put_line_last_bad_line_index_exn (line_idx,n))
+    |Some(the_line) ->
+    let last_line = snd(List.hd(List.rev lines)) in
+    let lines2 = Image.image (
+      fun (idx,old_line) ->
+        if idx = n then the_line else
+        if idx = line_idx then last_line else old_line
+    )   lines in 
+    String.concat "\n" lines2 ;;
+  
+  (*  put_line_last_in_string 4 "1\n2\n3\n4\n5" ;; *)
+    
+  let put_line_first_in_file line_idx src_file  =
+    let old_text = Io.read_whole_file src_file  in 
+    let new_text = put_line_first_in_string line_idx  old_text in 
+    Io.overwrite_with src_file new_text ;; 
+
+  let put_line_last_in_file line_idx src_file  =
+    let old_text = Io.read_whole_file src_file  in 
+    let new_text = put_line_last_in_string line_idx  old_text in 
+    Io.overwrite_with src_file new_text ;; 
+
+
   end ;;   
 
 let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
@@ -244,6 +290,14 @@ let interval = Private.interval ;;
   let lines s= Image.image snd (indexed_lines s);;
 
   let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
+
+  let put_line_first_in_file = Private.put_line_first_in_file ;; 
+
+  let put_line_first_in_string = Private.put_line_first_in_string ;; 
+
+  let put_line_last_in_file = Private.put_line_last_in_file ;; 
+  
+  let put_line_last_in_string = Private.put_line_last_in_string ;; 
 
   let remove_interval s i j=
     let temp1=indexed_lines s in

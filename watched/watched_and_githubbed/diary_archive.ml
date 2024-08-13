@@ -1,14 +1,429 @@
 (************************************************************************************************************************
-Snippet 141 : 
+Snippet 142 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 140 : Code to start analizing a snapshot of php-src
+Snippet 141 : Question on integer sequences whose inverse is convex
 ************************************************************************************************************************)
 
+module Snip141=struct
+
+
+let unequal_floor x y =
+  (* we assume x,y > 0*)
+  let r = x mod y in 
+  if r = 0
+  then (x/y)-1
+  else (x-r)/y ;;  
+
+
+let ff a1 a2 =
+  if List.mem a1 [0;-1] then a1 else 
+  if List.mem a2 [0;-1] then a2 else  
+  if a2>=2*a1 then (-1)  else
+  if a2<2 then 0 else 
+  unequal_floor (a1*a2) (2*a1-a2) ;;  
+
+let rec helper_for_rubinson_chain (treated,a1,a2,number_of_iterations) =
+  if (number_of_iterations < 1)||(List.mem a2 [0;-1]) 
+  then List.rev(a1::treated)
+  else let a3 = ff a1 a2 in 
+        helper_for_rubinson_chain (a1::treated,a2,a3,number_of_iterations-1) ;;   
+
+let rubinson_chain a1 a2 = 
+  helper_for_rubinson_chain ([],a1,a2,60) ;;
+
+type end_point = 
+  Negative 
+  | Positive_but_too_small 
+  | Once_down_always_down ;;
+
+type period = Period of int ;;
+
+type rubinson_result = 
+   Eventually_arithmetic of int * (int * int) * period
+  |Stalls of int * end_point ;;
+
+let rubinson_pattern_opt a1 a2 = 
+  let d = (a2-a1) in 
+  if d<=0 then None else 
+  if a1>=d*(2*d+1)  then Some(Period(d)) else 
+  None ;;  
+
+exception Helper_for_rubinson_measure_exn ;;
+
+let rec helper_for_rubinson_measure (a1,a2,m) = 
+  if m>1000
+  then raise Helper_for_rubinson_measure_exn
+  else 
+  if a2 = (-1) then Stalls(m,Negative) else
+  if a2 = 0  then Stalls(m,Positive_but_too_small) else   
+  if a2 <= a1 then Stalls(m,Once_down_always_down) else       
+  match rubinson_pattern_opt a1 a2 with 
+  (Some p) -> Eventually_arithmetic(m,(a1,a2),p)
+  | None ->
+  let a3 = ff a1 a2 in 
+  helper_for_rubinson_measure (a2,a3,m+1) ;;
+
+exception Rubinson_measure_exn of int * int ;;
+
+let rubinson_measure = Memoized.make(fun (a1,a2)->
+  if a1 = (-1) then Stalls(1,Negative) else
+  if a1 = 0 then Stalls(1,Positive_but_too_small) else 
+  if a2 <= a1 then Stalls(1,Once_down_always_down) else       
+   try helper_for_rubinson_measure (a1,a2,2) with 
+   Helper_for_rubinson_measure_exn -> 
+    raise(Rubinson_measure_exn(a1,a2))
+) ;;
+
+
+let rec helper_for_rubinson_ground (n,(x1,y1,dy1),(x2,y2,dy2)) = 
+  if y2>n then x1 else 
+    helper_for_rubinson_ground (n,(x2,y2,dy2),(x2+1,y2+dy2,dy2+4)) ;;
+
+let rubinson_ground = Memoized.make(fun n ->
+   helper_for_rubinson_ground (n,(0,0,3),(1,3,7)) 
+);;
+
+let rubinson_image = Memoized.make(fun 
+  a1 -> Int_range.scale (fun a2 -> (a2,rubinson_measure (a1,a2)))
+    (a1+(rubinson_ground a1)+1) (2*a1-1)
+) ;;
+
+let rubinson_max a1 = 
+  let temp1 = rubinson_image a1 in 
+  let temp2 = List.filter_map (
+      fun (a2,res) -> match res with 
+      Eventually_arithmetic(_,_,_) -> None
+      |Stalls(m,_) -> Some(a2,m)
+  ) temp1 in 
+  let (m,sols) = Max.maximize_it_with_care snd temp2 in 
+  (m,Image.image fst sols);;
+
+  let rm = rubinson_max ;;
+
+let detailed_ff a1 a2 =
+    let b1 = a1 *a2 and b2 = 2*a1 - a2 in 
+    let g = Gcd.gcd b1 b2 in 
+    let c1 = b1/g and c2 = b2/g in 
+    (a1,a2,(c1,c2),ff a1 a2,c1-c2*(ff a1 a2)) ;;
+
+let extract_upper_bound l =  
+  if l=[] then 0 else snd(List.hd(l)) ;;
+
+let lower_bound = Memoized.make(fun a1 -> a1+rubinson_ground(a1)+1);;
+
+let range0 a1 = Int_range.range (lower_bound a1) (2*a1-1) ;;
+
+let rme a1 =
+   Max.maximize_it_with_care 
+   (fun a2 -> List.length(rubinson_chain a1 a2)) (range0 a1) ;;
+
+let upper_bound1 = Memoized.make(fun a1 ->
+  match List.assoc_opt a1 [3,0] with 
+  Some answer -> answer
+  | None ->
+      if a1 mod 2 = 0 then (3*a1)/2 else (3*a1-1)/2 
+);;
+
+let range1 a1 = Int_range.range (lower_bound a1) (upper_bound1 a1) ;;
+
+
+let upper_bound2 = Memoized.make(fun a1 ->
+  if a1<=5 then 0 else
+  match List.assoc_opt a1 [] with 
+  Some answer -> answer
+  | None ->(4*a1-(a1 mod 3))/3 
+);;
+
+
+let range2 a1 = Int_range.range (lower_bound a1) (upper_bound2 a1) ;;
+
+let upper_bound3 = Memoized.make(fun a1 ->
+  if (a1<=6)||(List.mem a1 [10;11]) then 0 else
+  match List.assoc_opt a1 [] with 
+  Some answer -> answer
+  | None ->
+    let r = a1 mod 12 in 
+    let s =(
+       if r<=2 then (-r) else 
+       if r<=6 then  4-r else 
+       8-r
+    ) in 
+    (5*a1+s)/4 
+);;
+
+let range3 a1 = Int_range.range (lower_bound a1) (upper_bound3 a1) ;;
+
+let upper_bound4 = Memoized.make(fun a1 ->
+  if (a1<=6)||(List.mem a1 [10;11]) then 0 else
+  match List.assoc_opt a1 [] with 
+  Some answer -> answer
+  | None ->
+    let r = a1 mod 60 in 
+    let s =(
+       if r<=1 then (-r) else 
+       if r<=9 then  5-r else 
+       if r<=11 then 10-r else  
+       if r<=19 then 15-r else
+       if r<=21 then 20-r else
+       if r<=29 then 25-r else    
+       8-r
+    ) in 
+    (5*a1+s)/4 
+);;
+
+let range4 a1 = Int_range.range (lower_bound a1) (upper_bound4 a1) ;;
+
+
+let cc0 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    List.mem (ff a1 a2) (range0 a2)
+  )(range0 a1) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let cc1 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    List.mem (ff a1 a2) (range1 a2)
+  )(range0 a1) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let cc2 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    List.mem (ff a1 a2) (range2 a2)
+  )(range0 a1) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let cc3 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    List.mem (ff a1 a2) (range3 a2)
+  )(range0 a1) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let computed_upper_bound a1 = extract_upper_bound(cc3 a1) ;;
+
+let u1 = Int_range.scale computed_upper_bound 2 1000 ;;
+let u2 = Arithmetic_list.delta u1 ;;
+let u3 = Int_range.scale (fun x->(x,computed_upper_bound x)) 2 100 ;;
+let u4 = List.filter (fun (x,y)->y<>upper_bound3 x) u3 ;;
+let u5 = Int_range.scale (fun r->
+  let n = 600 + r in
+  (r,5*computed_upper_bound(n)-6*n)) 0 59 ;;
+
+
+
+(*  
+
+#use"watched/watched_not_githubbed/jug.ml";;
+
+
+
+let u1 = Int_range.scale (fun q->(ff (4*q) (5*q)) ) 1 100 ;;
+let u2 = Arithmetic_list.delta u1 ;;
+
+let peggy1 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    3 * a1 * a2 < (4*a2 +3 ) * (2 *a1 -a2) 
+  )(Int_range.range (a1+1) (bound1 a1)) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let peggy2 a1 = snd(List.hd(peggy1 a1)) ;;
+
+let see1 = Int_range.scale peggy2 3 50 ;;
+
+let see2 = Arithmetic_list.delta see1 ;;
+
+let see3 = Int_range.scale (fun a1->4*(peggy2 a1)-5*a1) 3 50 ;;
+
+
+let peggy1 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    2 * a1 * a2 < (3*a2 +2 ) * (2 *a1 -a2) 
+  )(Int_range.range (a1+1) (bound1 a1)) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let peggy2 a1 = snd(List.hd(peggy1 a1)) ;;
+
+let see1 = Int_range.scale peggy2 3 50 ;;
+
+let see2 = Arithmetic_list.delta see1 ;;
+
+let see3 = Int_range.scale (fun a1->3*(peggy2 a1)-4*a1) 3 50 ;;
+
+
+let bound1 a1 = Basic.frac_ceiling (3*a1-1) 2 ;; 
+
+let peggy1 = Memoized.make(fun a1 ->
+  let temp1 = List.filter (fun a2->
+    2 * a1 * a2 < (3*a2 +1 ) * (2 *a1 -a2) 
+  )(Int_range.range (a1+1) (bound1 a1)) in 
+  Arithmetic_list.decompose_into_connected_components temp1
+);;
+
+let peggy2 a1 = snd(List.hd(peggy1 a1)) ;;
+
+let see1 = Int_range.scale peggy2 3 50 ;;
+
+let see2 = Arithmetic_list.delta see1 ;;
+
+let see3 = Int_range.scale (fun a1->3*(peggy2 a1)-4*a1) 3 50 ;;
+
+
+let g1 = rubinson_chain 40 45 ;;
+let g2 = List_again.universal_delta_list g1 ;; 
+let g3 = Image.image (fun (a1,a2) -> 2*a1 - a2) g2;;
+
+let peggy1 = Memoized.make(fun d ->
+   let a1 = d * (2*d +1) in 
+   List.filter_map (fun a2->
+      let l = rubinson_chain a1 a2 in 
+      if List.length(l)<>4 then None else 
+      let a3 = List.nth l 2 in 
+      Some(l,2*a1-a2,2*a2-a3)  
+   )(Int_range.range (a1+d+1) (a1+4*d+2)) 
+);;
+
+
+List.filter (fun n->snd(rm n)<>[n+rubinson_ground(n)+1]) (Int_range.range 2 50);;
+
+let hh n = rubinson_chain n (n+rubinson_ground(n)+1) ;;
+
+let pp n = 
+  let temp1 = hh n in 
+  let temp2 = List_again.universal_delta_list temp1 in  
+  let temp3 = Image.image (fun (a1,a2) -> 2*a1 - a2) temp2 in 
+  (temp1,temp3,dl temp3)  ;;
+
+  
+  (temp1,dl temp1)
+
+
+
+
+let upper_bound a1 = 
+  let q=(a1/2) and r=(a1 mod 2) in 
+  3*q+r ;;
+
+let cm a1 a2 = let d = a2-a1 in d*(2*d+1)-a1 ;;  
+let gg a1 = 
+   let a2 = 2*a1 - 5 in 
+   let a3 = ff a1 a2 in 
+  (a1,a2,a3,[cm a1 a2,cm a2 a3]) ;;
+
+
+let aa d = ff (2*d*d+d) (2*d*d+2*d+2) ;;
+
+Int_range.scale aa 20 23;;
+
+List.filter (fun d->(aa d)<>2*d*d+3*d+5) (Int_range.range 1 50);;
+
+Int_range.scale (fun d->(d,2*d*d+2*d+2)) 0 7;;
+let see d = [2*d*d+d;2*d*d+2*d+1] ;;
+
+let finder1 a1 = List.filter (fun a2 ->
+    let a3 = ff a1 a2 in 
+    let a4 = ff a2 a3 in 
+    a4<(3*a3-3*a2+a1)
+ )(Int_range.range (a1+1) (upper_bound a1)) ;;
+
+let finder2 a1 = List.filter (fun a2 ->
+  let a3 = ff a1 a2 in 
+  let a4 = ff a2 a3 in 
+  a2*a3-(2*a2-a3)<(3*a3-3*a2+a1)*(2*a2-a3)
+)(Int_range.range (a1+1) (upper_bound a1)) ;;
+
+let finder2 a1 = List.filter (fun a2 ->
+  let a3 = ff a1 a2 in 
+  let a4 = ff a2 a3 in 
+  a2*a3-(2*a2-a3)<(3*a3-3*a2+a1)*(2*a2-a3)
+)(Int_range.range (a1+1) (upper_bound a1)) ;;
+
+let finders = List.filter (fun a1->finder(a1)<>[]) (Int_range.range 2 50);;
+
+let ub a1 = List.hd(List.rev(finder a1) ) ;;
+
+let u1 = Int_range.scale ub 2 50 ;;
+let u2 = Arithmetic_list.delta u1 ;;
+
+let u3 = List.filter (fun a1->ub(a1)<>old_upper_bound(a1)) (Int_range.range 2 50);;
+
+
+let peggy1 a1 = Image.image(fun a2 ->
+   let a3 = ff a1 a2 in 
+   a3-2*a2+a1
+)(Int_range.range (a1+1) (upper_bound a1)) ;;
+
+let peggy2 a1 = Ordered.sort Total_ordering.for_integers (peggy1 a1) ;;
+
+let peggy3 a1 = List.filter(fun a2 ->
+  let a3 = ff a1 a2 in 
+  a3-2*a2+a1 = 1
+)(Int_range.range (a1+1) (upper_bound a1)) ;;
+
+
+
+
+let rm = rubinson_max ;;
+
+let gg x = rubinson_measure (x,x+rubinson_ground(x)+1) ;;
+
+let hh x = rubinson_chain x (x+rubinson_ground(x)+1) ;;
+
+let dl = Arithmetic_list.delta ;;
+
+let check = List.filter (fun n->
+   snd(rm n)<>[n+rubinson_ground(n)+1]
+  ) (Int_range.range 2 50) ;;
+
+let uu d = 
+  let a1=2*d*d+d 
+  and a2=2*d*d+2*d+1 in 
+  (a1,a2,ff a1 a2) ;;
+
+let uu d = 
+  let a1=2*d*d+2*d+1 
+  and a2=2*d*d+3*d+3 in 
+  (a1,a2,ff a1 a2) ;;  
+
+let uu d = 
+  let a1=2*d*d+3*d+3 
+  and a2=2*d*d+3*d+3 in 
+  (a1,a2,ff a1 a2) ;; 
+
+
+Int_range.scale (fun n->let (_,_,r)=uu n in r) 20 23 ;;  
+
+let check1 = List.filter (fun d->
+   ff (2*d*d+d) (2*d*d+2*d+1)<> (2*d*d+3*d+3)
+  ) (Int_range.range 1 50) ;;
+
+let check2 = List.filter (fun d->
+   ff (2*d*d+2*d+1) (2*d*d+3*d+3) <> (2*d*d+4*d+6) 
+  ) (Int_range.range 1 50) ;;
+
+let vv a b = 
+   let temp1 = 
+
+
+*)
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 140 : Code to start analizing a snapshot of php-src
+************************************************************************************************************************)
 module Snip140=struct
 
 List.iter (fun v->Unix.putenv v "" ) [
