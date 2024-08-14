@@ -5,8 +5,8 @@
 *)
 
 
-type t = {
+(* type t = {
    source : Directory_name_t.t ;
    destination : Directory_name_t.t ;
    commands : Cee_initial_command_t.t list;
-} ;;
+} ;; *)

@@ -5,9 +5,9 @@
 *)
 
 
-type t = {
+(* type t = {
    short_path : string ;
    ending : string ;
    core_of_command : string ;
-} ;;
+} ;; *)
 

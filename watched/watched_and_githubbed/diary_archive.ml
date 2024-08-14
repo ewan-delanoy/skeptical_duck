@@ -931,14 +931,14 @@ let sub_list28 = List.filter(
    Substring.is_a_substring_of " -c "
 ) list28 ;;
 
-let config1 = Cee_transfer_between_projects.initialize 
+let config1 = Cee_conditional_directives.make 
 ~source:(Directory_name.of_string simplified_dir)
 ~destination:(Directory_name.of_string half_preprocessed_dir)
  sub_list28 ;;
 
 
-let act0 () = Cee_conditional_directives.cleanup_temporary_data config1  ;; 
-let act1 () = Chronometer.it Cee_conditional_directives.remove_conditional_directives config1  ;; 
+let act0 () = Cee_conditional_directives.cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files config1  ;; 
+let act1 () = Chronometer.it Cee_conditional_directives.remove_conditional_directives_in_directly_compiled_files config1  ;; 
 
  (*
 #use"watched/watched_not_githubbed/ham.ml";;

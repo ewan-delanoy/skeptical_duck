@@ -11,7 +11,35 @@ exception Endif_in_ether of int ;;
 
 module Private = struct 
 
+  type initial_command = {
+   short_path : string ;
+   ending : string ;
+   core_of_command : string ;
+} ;;
 
+ type t = {
+    source : Directory_name_t.t ;
+    destination : Directory_name_t.t ;
+    commands : initial_command list;
+ } ;;
+
+ let make_initial_command raw_command = 
+  let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
+  let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
+  let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
+  {
+    short_path = Cull_string.coending 2 short_filename ;
+    ending = Cull_string.ending 2 short_filename ;
+    core_of_command =Cull_string.beginning (i1-1) raw_command ;
+  }  ;;
+
+ let make 
+ ~source:src ~destination:dest raw_commands = 
+ {
+   source = src ;
+   destination = dest ;
+   commands = Image.image make_initial_command raw_commands;
+} ;;
 
 type line_beginning = 
     Lb_If
@@ -193,7 +221,7 @@ let text1 = String.concat "\n"
    "#endif 15"
 ] ;;
 
-let check1 = Cee_conditional_directives.compute_small_spaces_in_text text1 ;;
+let check1 = compute_small_spaces_in_text text1 ;;
 
 let text2 = String.concat "\n" 
 [
@@ -213,7 +241,7 @@ let text2 = String.concat "\n"
    "14";
 ] ;;
 
-let check2 = Cee_conditional_directives.compute_small_spaces_in_text text2 ;;
+let check2 = compute_small_spaces_in_text text2 ;;
 
 *)   
 
@@ -320,24 +348,24 @@ let text1 = String.concat "\n"
    "#endif 15"
 ] ;;
 
-let text2 = Cee_conditional_directives.watermark_text text1 ;;
+let text2 = watermark_text text1 ;;
 
 print_string(text2);;
 
-print_string(Cee_conditional_directives.rewrite_using_watermarks text1 text2);;
+print_string(rewrite_using_watermarks text1 text2);;
 
-let text3 = Cee_conditional_directives.parametrized_line 3;;
+let text3 = parametrized_line 3;;
 
-print_string(Cee_conditional_directives.rewrite_using_watermarks text1 text3);;
+print_string(rewrite_using_watermarks text1 text3);;
 
 *)
 
 
 
 let main_preprocessing_command config init_cmd = 
-  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source in  
-  let core_of_command = adapt_command src_dir init_cmd.Cee_initial_command_t.core_of_command in 
-  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
+  let src_dir = Directory_name.connectable_to_subpath config.source in  
+  let core_of_command = adapt_command src_dir init_cmd.core_of_command in 
+  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
   and ending = Cull_string.ending 2 s_ap in
   let second_filename = 
@@ -351,13 +379,13 @@ let announce cmd =
   flush stdout) ;;
 
 let remove_cds_in_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source 
-  and dest_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.destination in  
+  let src_dir = Directory_name.connectable_to_subpath config.source 
+  and dest_dir = Directory_name.connectable_to_subpath config.destination in  
   let src_last = (Cull_string.after_rightmost (Cull_string.coending 1 src_dir) '/' ) ^ "/"
   and dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
-  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
+  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.Cee_initial_command_t.ending in
+  and ending = init_cmd.ending in
   let ap = Absolute_path.of_string s_ap in  
   let old_text = Io.read_whole_file ap in 
   let second_text = watermark_text old_text 
@@ -365,8 +393,8 @@ let remove_cds_in_file config init_cmd  =
        (short_s_ap^"_"^random_marker^"_second"^ending) in
   let second_file = Absolute_path.create_file_if_absent second_filename in
   let _ = announce("(watermark  "^
-     (init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending)^") > "^
-     (src_last ^ init_cmd.Cee_initial_command_t.short_path ^"_"^random_marker^"_second"^ending)^")") in 
+     (init_cmd.short_path ^ init_cmd.ending)^") > "^
+     (src_last ^ init_cmd.short_path ^"_"^random_marker^"_second"^ending)^")") in 
   let _ = Io.overwrite_with second_file second_text in 
   let third_filename = 
       (short_s_ap^"_"^random_marker^"_third"^ending) in 
@@ -377,11 +405,11 @@ let remove_cds_in_file config init_cmd  =
   let third_text =Io.read_whole_file third_file in 
   let new_text = rewrite_using_watermarks old_text third_text in 
   let fourth_filename = 
-      (dest_dir ^ init_cmd.Cee_initial_command_t.short_path ^ending) in 
+      (dest_dir ^ init_cmd.short_path ^ending) in 
   let fourth_file = Absolute_path.create_file_if_absent fourth_filename in  
   let _ = announce("(unifdeffed  "^
-     (init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending)^") > "^
-     (dest_last ^ init_cmd.Cee_initial_command_t.short_path ^ending)^")") in 
+     (init_cmd.short_path ^ init_cmd.ending)^") > "^
+     (dest_last ^ init_cmd.short_path ^ending)^")") in 
   Io.overwrite_with fourth_file new_text ;;
 
 let remove_cds_in_files config init_cmds = 
@@ -389,7 +417,7 @@ let remove_cds_in_files config init_cmds =
   and sn = string_of_int(List.length init_cmds) in 
   List.iter (fun (idx,init_cmd) ->
     let msg1 = " Step "^(string_of_int idx)^" of "^sn^" : "^
-    "removing cds in "^init_cmd.Cee_initial_command_t.short_path^init_cmd.Cee_initial_command_t.ending^"\n\n"
+    "removing cds in "^init_cmd.short_path^init_cmd.ending^"\n\n"
     and msg2 = " Finished step "^(string_of_int idx)^" of "^sn^".\n" in 
     print_string msg1;
     flush stdout;
@@ -398,13 +426,13 @@ let remove_cds_in_files config init_cmds =
     flush stdout;
     ) temp1 ;;
 
-let remove_cds config = remove_cds_in_files config config.Cee_transfer_between_projects_t.commands ;; 
+let remove_cds config = remove_cds_in_files config config.commands ;; 
 
 let cleanup_temporary_data_for_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.Cee_transfer_between_projects_t.source  in  
-  let s_ap = src_dir ^ init_cmd.Cee_initial_command_t.short_path ^ init_cmd.Cee_initial_command_t.ending in 
+  let src_dir = Directory_name.connectable_to_subpath config.source  in  
+  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.Cee_initial_command_t.ending in
+  and ending = init_cmd.ending in
   let second_filename = 
        (short_s_ap^"_"^random_marker^"_second"^ending) in
   let third_filename = 
@@ -414,11 +442,13 @@ let cleanup_temporary_data_for_file config init_cmd  =
        "rm -f "^third_filename
   ]  ;;
   
-let cleanup_temporary_data config =   
-  Image.image (cleanup_temporary_data_for_file config) config.Cee_transfer_between_projects_t.commands ;;
+let cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files config =   
+  Image.image (cleanup_temporary_data_for_file config) config.commands ;;
 
 end ;;
 
-let remove_conditional_directives = Private.remove_cds ;; 
+let make = Private.make ;;
 
-let cleanup_temporary_data = Private.cleanup_temporary_data ;;
+let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds ;; 
+
+let cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files = Private.cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files ;;
