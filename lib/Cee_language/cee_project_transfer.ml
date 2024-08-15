@@ -27,10 +27,8 @@ module type CAPSULE_TYPE = sig
    val make :
      source:Directory_name_t.t ->
      destination:Directory_name_t.t -> string list -> t
-   val all_h_or_c_files : t -> string list
-    
+   val all_h_or_c_files : t -> string list   
    val directly_compiled_files : t -> string list
- 
  
   end ;;
 
@@ -50,6 +48,7 @@ module Capsule = (struct
     destination : Directory_name_t.t ;
     commands : initial_command list;
     all_h_or_c_files_opt : (string list) option ;
+    directly_compiled_files_opt : (string list) option ;
  } ;;
 
  type t = immutable_t ref ;;
@@ -78,6 +77,7 @@ module Capsule = (struct
    destination = dest ;
    commands = Image.image make_initial_command raw_commands;
    all_h_or_c_files_opt = None ;
+   directly_compiled_files_opt = None ;
 }) ;;
 
 let compute_all_h_or_c_files cpt = 
@@ -100,11 +100,25 @@ let compute_all_h_or_c_files cpt =
     let _ = (cpsl_ref:=new_cpsl) in 
     answer ;;
 
-let directly_compiled_files cpsl_ref= str_sort(Image.image (
+  let compute_directly_compiled_files cpsl = 
+    str_sort(Image.image (
       fun cmd ->
        (cmd.short_path) ^ 
        (cmd.ending)
-    ) (!cpsl_ref).commands) ;;    
+    ) cpsl.commands) ;;    
+    
+  let directly_compiled_files cpsl_ref = 
+       let old_cpsl = (!cpsl_ref) in
+       match old_cpsl.all_h_or_c_files_opt with 
+      (Some old_answer) -> old_answer 
+      |None ->
+        let answer = compute_directly_compiled_files old_cpsl in 
+        let new_cpsl = {old_cpsl with 
+          directly_compiled_files_opt = Some answer 
+        } in 
+        let _ = (cpsl_ref:=new_cpsl) in 
+        answer ;;
+   
 
 end :CAPSULE_TYPE);; 
 
@@ -521,8 +535,9 @@ let cleanup_temporary_files_after_cds_removal cpsl =
   Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.commands cpsl) ;;
 
 let remove_cds_and_cleanup cpsl =
-   (remove_cds cpsl;
-   cleanup_temporary_files_after_cds_removal cpsl) ;;
+   let _ = (remove_cds cpsl;
+   cleanup_temporary_files_after_cds_removal cpsl) in 
+  ();;
    
 
    
