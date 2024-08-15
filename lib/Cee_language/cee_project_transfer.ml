@@ -21,6 +21,7 @@ module Private = struct
     source : Directory_name_t.t ;
     destination : Directory_name_t.t ;
     commands : initial_command list;
+    all_h_or_c_files : (string list) option ;
  } ;;
 
  let make_initial_command raw_command = 
@@ -39,6 +40,7 @@ module Private = struct
    source = src ;
    destination = dest ;
    commands = Image.image make_initial_command raw_commands;
+   all_h_or_c_files = None ;
 } ;;
 
 type line_beginning = 
@@ -442,13 +444,16 @@ let cleanup_temporary_data_for_file config init_cmd  =
        "rm -f "^third_filename
   ]  ;;
   
-let cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files config =   
+let cleanup_temporary_files_after_cds_removal config =   
   Image.image (cleanup_temporary_data_for_file config) config.commands ;;
+
+let remove_cds_and_cleanup config =
+   (remove_cds config;
+   cleanup_temporary_files_after_cds_removal config) ;;
 
 end ;;
 
 let make = Private.make ;;
 
-let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds ;; 
+let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_and_cleanup ;; 
 
-let cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files = Private.cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files ;;
