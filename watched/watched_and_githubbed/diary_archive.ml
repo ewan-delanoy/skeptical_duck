@@ -936,8 +936,10 @@ let config1 = Cee_project_transfer.make
 ~destination:(Directory_name.of_string half_preprocessed_dir)
  sub_list28 ;;
 
-
+(*
 let act0 () = Cee_project_transfer.cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files config1  ;; 
+*)
+
 let act1 () = Chronometer.it Cee_project_transfer.remove_conditional_directives_in_directly_compiled_files config1  ;; 
 
  (*

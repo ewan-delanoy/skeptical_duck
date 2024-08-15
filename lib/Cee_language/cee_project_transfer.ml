@@ -9,20 +9,57 @@ exception Elif_after_else of int ;;
 exception Else_in_ether of int ;;
 exception Endif_in_ether of int ;;
 
-module Private = struct 
+
+
+
+module type CAPSULE_TYPE = sig
+   
+  type initial_command = {
+    short_path : string;
+    ending : string;
+    core_of_command : string;
+  } ;;
+
+   type t 
+   val source : t -> Directory_name_t.t
+   val destination : t -> Directory_name_t.t
+   val commands : t -> initial_command list
+   val make :
+     source:Directory_name_t.t ->
+     destination:Directory_name_t.t -> string list -> t
+   val all_h_or_c_files : t -> string list
+    
+   val directly_compiled_files : t -> string list
+ 
+ 
+  end ;;
+
+
+
+ 
+module Capsule = (struct 
 
   type initial_command = {
-   short_path : string ;
-   ending : string ;
-   core_of_command : string ;
-} ;;
+  short_path : string;
+  ending : string;
+  core_of_command : string;
+  } ;;
 
- type t = {
+ type immutable_t = {
     source : Directory_name_t.t ;
     destination : Directory_name_t.t ;
     commands : initial_command list;
-    all_h_or_c_files : (string list) option ;
+    all_h_or_c_files_opt : (string list) option ;
  } ;;
+
+ type t = immutable_t ref ;;
+ let str_order = Total_ordering.lex_for_strings ;;
+ let str_sort = Ordered.sort str_order ;;  
+ let source cpsl = (!cpsl).source ;;
+
+ let destination cpsl = (!cpsl).destination ;; 
+
+ let commands cpsl = (!cpsl).commands ;;
 
  let make_initial_command raw_command = 
   let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
@@ -36,12 +73,48 @@ module Private = struct
 
  let make 
  ~source:src ~destination:dest raw_commands = 
- {
+ ref({
    source = src ;
    destination = dest ;
    commands = Image.image make_initial_command raw_commands;
-   all_h_or_c_files = None ;
-} ;;
+   all_h_or_c_files_opt = None ;
+}) ;;
+
+let compute_all_h_or_c_files cpt = 
+  let src = Directory_name.connectable_to_subpath cpt.source in 
+  let temp1 = Unix_again.quick_beheaded_complete_ls src in
+  str_sort(List.filter (
+    fun fn -> List.exists (fun edg ->
+       String.ends_with fn ~suffix:edg) [".h";".c";".macros"]
+ ) temp1 );;  
+
+ let all_h_or_c_files cpsl_ref = 
+   let old_cpsl = (!cpsl_ref) in
+   match old_cpsl.all_h_or_c_files_opt with 
+  (Some old_answer) -> old_answer 
+  |None ->
+    let answer = compute_all_h_or_c_files old_cpsl in 
+    let new_cpsl = {old_cpsl with 
+      all_h_or_c_files_opt = Some answer 
+    } in 
+    let _ = (cpsl_ref:=new_cpsl) in 
+    answer ;;
+
+let directly_compiled_files cpsl_ref= str_sort(Image.image (
+      fun cmd ->
+       (cmd.short_path) ^ 
+       (cmd.ending)
+    ) (!cpsl_ref).commands) ;;    
+
+end :CAPSULE_TYPE);; 
+
+module Private = struct 
+
+  type initial_command = Capsule.initial_command = {
+    short_path : string;
+    ending : string;
+    core_of_command : string;
+    } ;;
 
 type line_beginning = 
     Lb_If
@@ -364,8 +437,8 @@ print_string(rewrite_using_watermarks text1 text3);;
 
 
 
-let main_preprocessing_command config init_cmd = 
-  let src_dir = Directory_name.connectable_to_subpath config.source in  
+let main_preprocessing_command cpsl init_cmd = 
+  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl) in  
   let core_of_command = adapt_command src_dir init_cmd.core_of_command in 
   let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
@@ -380,9 +453,9 @@ let announce cmd =
   (print_string("Executing "^cmd^" ...\n\n");
   flush stdout) ;;
 
-let remove_cds_in_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.source 
-  and dest_dir = Directory_name.connectable_to_subpath config.destination in  
+let remove_cds_in_file cpsl init_cmd  = 
+  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl) 
+  and dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
   let src_last = (Cull_string.after_rightmost (Cull_string.coending 1 src_dir) '/' ) ^ "/"
   and dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
   let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
@@ -400,7 +473,7 @@ let remove_cds_in_file config init_cmd  =
   let _ = Io.overwrite_with second_file second_text in 
   let third_filename = 
       (short_s_ap^"_"^random_marker^"_third"^ending) in 
-  let cmd1 = main_preprocessing_command config init_cmd in 
+  let cmd1 = main_preprocessing_command cpsl init_cmd in 
   let _ = announce(cmd1) in 
   let _ = Unix_command.uc cmd1 in 
   let third_file = Absolute_path.of_string third_filename in 
@@ -414,7 +487,7 @@ let remove_cds_in_file config init_cmd  =
      (dest_last ^ init_cmd.short_path ^ending)^")") in 
   Io.overwrite_with fourth_file new_text ;;
 
-let remove_cds_in_files config init_cmds = 
+let remove_cds_in_files cpsl init_cmds = 
   let temp1 = Int_range.index_everything init_cmds 
   and sn = string_of_int(List.length init_cmds) in 
   List.iter (fun (idx,init_cmd) ->
@@ -423,15 +496,15 @@ let remove_cds_in_files config init_cmds =
     and msg2 = " Finished step "^(string_of_int idx)^" of "^sn^".\n" in 
     print_string msg1;
     flush stdout;
-    remove_cds_in_file config init_cmd;
+    remove_cds_in_file cpsl init_cmd;
     print_string msg2;
     flush stdout;
     ) temp1 ;;
 
-let remove_cds config = remove_cds_in_files config config.commands ;; 
+let remove_cds cpsl = remove_cds_in_files cpsl (Capsule.commands cpsl) ;; 
 
-let cleanup_temporary_data_for_file config init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath config.source  in  
+let cleanup_temporary_data_for_file cpsl init_cmd  = 
+  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl)  in  
   let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
   and ending = init_cmd.ending in
@@ -444,16 +517,20 @@ let cleanup_temporary_data_for_file config init_cmd  =
        "rm -f "^third_filename
   ]  ;;
   
-let cleanup_temporary_files_after_cds_removal config =   
-  Image.image (cleanup_temporary_data_for_file config) config.commands ;;
+let cleanup_temporary_files_after_cds_removal cpsl =   
+  Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.commands cpsl) ;;
 
-let remove_cds_and_cleanup config =
-   (remove_cds config;
-   cleanup_temporary_files_after_cds_removal config) ;;
+let remove_cds_and_cleanup cpsl =
+   (remove_cds cpsl;
+   cleanup_temporary_files_after_cds_removal cpsl) ;;
+   
+
+   
+
 
 end ;;
 
-let make = Private.make ;;
+let make = Capsule.make ;;
 
 let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_and_cleanup ;; 
 
