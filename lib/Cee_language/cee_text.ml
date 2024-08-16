@@ -394,6 +394,7 @@ let standardize_inclusion_line line =
 
 end ;;  
 
+let included_local_files_in_file = Private.included_local_files_in_file ;;
 let random_marker = Private.random_marker ;;
 let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
 let standardize_inclusion_line = Private.standardize_inclusion_line ;;
