@@ -109,7 +109,7 @@ let compute_all_h_or_c_files cpt =
     
   let directly_compiled_files cpsl_ref = 
        let old_cpsl = (!cpsl_ref) in
-       match old_cpsl.all_h_or_c_files_opt with 
+       match old_cpsl.directly_compiled_files_opt with 
       (Some old_answer) -> old_answer 
       |None ->
         let answer = compute_directly_compiled_files old_cpsl in 
@@ -129,6 +129,35 @@ module Private = struct
     ending : string;
     core_of_command : string;
     } ;;
+
+    let str_order = Total_ordering.lex_for_strings ;;
+    let str_mem = Ordered.mem str_order ;;  
+
+    let i_order = Total_ordering.for_integers ;;
+     let i_merge = Ordered.merge i_order ;; 
+
+     let sil_merge ox oy=
+     let rec tempf=(function (u,v,accu)->
+     if u=[] then (List.rev_append(accu)(v)) else
+     if v=[] then (List.rev_append(accu)(u)) else
+     let (xu,lxu)=List.hd(u) and yu=List.tl(u) 
+     and (xv,lxv)=List.hd(v) and yv=List.tl(v) in
+     match str_order(xu)(xv) with
+       Total_ordering_result_t.Lower->tempf(yu,v,(xu,lxu)::accu)
+     |Total_ordering_result_t.Equal->tempf(yu,yv,(xu,i_merge lxu lxv)::accu)
+     |Total_ordering_result_t.Greater->tempf(u,yv,(xv,lxv)::accu)
+     ) in
+     tempf(ox,oy,[]);;
+   
+   let rec sil_sort  x=
+     if List.length(x)<2
+     then x
+     else 
+     let temp1=Partition_list.split_in_half(x) in
+     let y1=sil_sort(fst temp1)
+     and y2=sil_sort(snd temp1) in
+     sil_merge y1 y2;;      
+   
 
 type line_beginning = 
     Lb_If
@@ -539,8 +568,134 @@ let remove_cds_and_cleanup cpsl =
    cleanup_temporary_files_after_cds_removal cpsl) in 
   ();;
    
+  exception Check_presence_in_project_exn of string ;;
 
+  let check_presence_in_project cpsl fn =
+     if str_mem fn (Capsule.all_h_or_c_files cpsl) 
+     then fn 
+     else raise(Check_presence_in_project_exn(fn));;  
    
+
+  
+exception Normalize_included_filename_exn of string * string ;;
+let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
+   match List.find_opt (fun nfn->
+     String.ends_with nfn ~suffix:included_fn   
+   ) (Capsule.all_h_or_c_files cpsl) with 
+  None -> raise (Normalize_included_filename_exn(includer_fn,included_fn))
+  |(Some nfn) -> nfn;;   
+
+  let rec normalize_pointed_included_filename cpsl includer_fn included_fn = 
+    if not(String.starts_with included_fn ~prefix:"../") 
+    then check_presence_in_project cpsl (includer_fn ^ "/" ^ included_fn) 
+    else 
+      let includer_fn2 = Cull_string.before_rightmost includer_fn '/'
+      and included_fn2 = Cull_string.cobeginning 3 included_fn in 
+      normalize_pointed_included_filename cpsl includer_fn2 included_fn2 ;;  
+       
+ let normalize_included_filename cpsl includer_dir included_fn = 
+    if String.starts_with included_fn ~prefix:"../" 
+    then normalize_pointed_included_filename cpsl includer_dir included_fn 
+    else normalize_nonpointed_included_filename cpsl includer_dir included_fn ;;   
+
+
+    let included_local_file_opt line =
+      if not(String.starts_with line ~prefix:"#")
+      then None  
+      else  
+      match Strung.char_finder_from_inclusive_opt (fun c->
+              not(List.mem c [' ';'\t';'\r'])
+            ) line 2 with 
+      None -> None
+      |Some idx1 -> 
+      if not(Substring.is_a_substring_located_at "include" line idx1)
+      then None
+      else   
+      match Strung.char_finder_from_inclusive_opt (fun c->
+            not(List.mem c [' ';'\t';'\r'])
+      ) line (idx1+7) with 
+      None -> None
+      |Some idx2 -> 
+      if (Strung.get line idx2)<>'"'
+      then None
+      else    
+      match Strung.char_finder_from_inclusive_opt (fun c->
+               c = '"'
+      ) line (idx2+1) with 
+      None -> None
+      |Some idx3 ->      
+        Some (Cull_string.interval line (idx2+1) (idx3-1))
+        ;;
+
+    let included_local_files_in_text text = 
+      let temp1 = Lines_in_string.indexed_lines text in 
+      let temp2 = List.filter_map (
+        fun (line_idx,line) ->
+          Option.map (fun included_fn ->
+              (included_fn,[line_idx])
+          ) (included_local_file_opt line)
+      ) temp1 in 
+      sil_sort temp2 ;;
+    
+    let included_local_files_in_file ap =
+      included_local_files_in_text (Io.read_whole_file ap) ;; 
+    
+    exception Included_files_exn of string * string * string ;;
+
+    let included_files cpsl includer_fn=
+      let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
+      let ap = Absolute_path.of_string (dest_dir ^ includer_fn) in 
+      let temp1 = included_local_files_in_file ap 
+      and includer_dir = Cull_string.before_rightmost includer_fn '/' in 
+      Image.image (fun (included_fn,indices)->
+            try (normalize_included_filename cpsl includer_dir included_fn,indices) with
+            Normalize_included_filename_exn(x,y) -> raise(Included_files_exn(includer_fn,x,y))
+            ) temp1;;
+      
+    let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn = 
+      let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
+      let ap = Absolute_path.of_string (dest_dir ^ includer_fn) in 
+      let temp1 = included_local_files_in_file ap 
+      and includer_dir = Cull_string.before_rightmost includer_fn '/' in 
+      let text = Io.read_whole_file ap in 
+      let lines = Lines_in_string.indexed_lines text in 
+       List.flatten( List.filter_map (fun (included_fn,indices)->
+          try (fun _->None)(normalize_included_filename cpsl includer_dir included_fn) with
+               Normalize_included_filename_exn(_,_) -> 
+                  Some(Image.image(fun idx->(includer_fn,List.assoc idx lines)) indices)
+               ) temp1) ;;
+      
+    let nonstandard_inclusion_formats_in_includers cpsl includers =
+      List.flatten(
+        Image.image (nonstandard_inclusion_formats_in_individual_includer cpsl) includers
+      ) ;;
+
+   exception Standardize_inclusion_line_exn of string ;;   
+   let standardize_inclusion_line line = 
+      let occs = Substring.occurrences_of_in "\"" line in 
+      if List.length(occs)<>2
+      then raise(Standardize_inclusion_line_exn(line))
+      else 
+      let i1 = List.nth occs 0 
+      and i2 = List.nth occs 1 in 
+      let b = Bytes.of_string line in 
+      let _ = (Bytes.set b (i1-1) '<';Bytes.set b (i2-1) '>') in 
+      Bytes.to_string b ;;
+
+   let standardize_inclusion_in_files cpsl includers ~dry_run= 
+     let temp1 = nonstandard_inclusion_formats_in_includers cpsl includers in 
+     let replacements_to_be_made = Image.image (
+       fun (includer,line)->(includer,line,standardize_inclusion_line line)
+     ) temp1 in 
+    let _ =(
+      if not(dry_run)
+      then  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
+            List.iter (fun (fn,ab,ba)->
+                let ap =  Absolute_path.of_string (dest_dir ^ fn) in 
+                Replace_inside.replace_inside_file (ab,ba) ap) replacements_to_be_made
+    ) in 
+    replacements_to_be_made;; 
+
 
 
 end ;;
@@ -549,3 +704,4 @@ let make = Capsule.make ;;
 
 let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_and_cleanup ;; 
 
+let standardize_inclusion_in_files = Private.standardize_inclusion_in_files ;;
