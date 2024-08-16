@@ -9,9 +9,6 @@ exception Elif_after_else of int ;;
 exception Else_in_ether of int ;;
 exception Endif_in_ether of int ;;
 
-
-
-
 module type CAPSULE_TYPE = sig
    
   type initial_command = {
