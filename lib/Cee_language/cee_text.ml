@@ -430,27 +430,27 @@ let standardize_guard_in_text text =
 
  let random_marker = "cgmvgtkcxvvxckt" ;;  
 
- let parametrized_marker k =
+ let parametrized_marker name_for_watermarkable_file k =
    let sk = string_of_int k in 
-   random_marker^sk^random_marker ;;
+   random_marker^name_for_watermarkable_file^sk^random_marker ;;
  
- let parametrized_line cd_idx =  
+ let parametrized_line name_for_watermarkable_file cd_idx =  
    "char* unused_string"^(string_of_int cd_idx)^"=\""^
-   random_marker^(parametrized_marker cd_idx)^random_marker^"\";" ;;
+   (parametrized_marker name_for_watermarkable_file cd_idx)^"\";" ;;
  
  let is_in_interval x (a,b) = (a<=x) && (x<=b) ;; 
  
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
- let rewrite_using_watermarks old_text watermarked_text =   
+ let rewrite_using_watermarks old_text ~name_for_watermarkable_file ~watermarked_text =   
    let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
       fun (ssp_idx,ssp) ->
        if ssp.namespace = 0 then true else 
-       Substring.is_a_substring_of (parametrized_marker ssp_idx) watermarked_text 
+       Substring.is_a_substring_of (parametrized_marker name_for_watermarkable_file ssp_idx) watermarked_text 
    ) indexed_ssps in 
    let accepted_intervals = Image.image (
      fun (_,ssp) -> (ssp.start_idx,ssp.end_idx)
@@ -471,7 +471,7 @@ let standardize_guard_in_text text =
         Some(ssp.start_idx,ssp_idx) 
     ) indexed_ssps ;;
   
-  let watermark_text text = 
+  let watermark_text ~name_for_watermarkable_file text = 
      let lines = Lines_in_string.indexed_lines text 
      and ssps = compute_small_spaces_in_text text in 
      let indexed_ssps = Int_range.index_everything ssps in
@@ -481,7 +481,7 @@ let standardize_guard_in_text text =
           match List.assoc_opt line_idx pairs with 
           None -> [line]
           | (Some ssp_idx) ->
-             [parametrized_line ssp_idx;line]
+             [parametrized_line name_for_watermarkable_file ssp_idx;line]
      ) lines in  
      (String.concat "\n" (List.flatten temp1)) ;;
 
