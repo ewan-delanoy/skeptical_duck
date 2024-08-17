@@ -8,6 +8,7 @@ exception Lonely_Elif_exn of int ;;
 exception Lonely_Else_exn of int ;;
 exception Lonely_Endif_exn of int ;;
 exception Double_Else_exn of int ;;
+exception Standardize_inclusion_line_exn of string ;;  
   
 module Private = struct 
 
@@ -556,10 +557,9 @@ let included_local_files_in_text text =
   ) temp1 in 
   sil_sort temp2 ;;
 
-let included_local_files_in_file ap =
-  included_local_files_in_text (Io.read_whole_file ap) ;; 
+
      
-  exception Standardize_inclusion_line_exn of string ;;   
+   
 let standardize_inclusion_line line = 
      let occs = Substring.occurrences_of_in "\"" line in 
      if List.length(occs)<>2
@@ -573,7 +573,7 @@ let standardize_inclusion_line line =
 
 end ;;  
 
-let included_local_files_in_file = Private.included_local_files_in_file ;;
+let included_local_files_in_text = Private.included_local_files_in_text ;;
 let random_marker = Private.random_marker ;;
 let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;

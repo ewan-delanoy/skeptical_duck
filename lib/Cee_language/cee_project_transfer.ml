@@ -178,55 +178,60 @@ let adapt_command root_dir cmd =
 
 
 
-let main_preprocessing_command cpsl init_cmd = 
-  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl) in  
-  let core_of_command = adapt_command src_dir init_cmd.core_of_command in 
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
-  let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = Cull_string.ending 2 s_ap in
-  let second_filename = 
-       (short_s_ap^"_"^Cee_text.random_marker^"_second"^ending) in
-  let third_filename = 
-      (short_s_ap^"_"^Cee_text.random_marker^"_third"^ending) in 
-  core_of_command^" -E "^second_filename^" -o "^third_filename  ;;
+let main_preprocessing_command cpsl init_cmd file_to_be_preprocessed preprocessed_file= 
+  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
+  let core_of_command = adapt_command dest_dir init_cmd.core_of_command in 
+  core_of_command^" -E "^file_to_be_preprocessed^" -o "^preprocessed_file  ;;
 
 let announce cmd = 
   (print_string("Executing "^cmd^" ...\n\n");
   flush stdout) ;;
 
+let keep_temporary_files_mode = ref false ;;  
+
+  let compute_preprocessing_output cpsl init_cmd text_to_be_preprocessed = 
+    let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
+    let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
+    let s_ap = dest_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+    let short_s_ap = Cull_string.coending 2 s_ap 
+    and ending = init_cmd.ending in
+    let second_filename = 
+         (short_s_ap^"_"^Cee_text.random_marker^"_second"^ending) in
+    let second_file = Absolute_path.create_file_if_absent second_filename in
+    let _ = announce("(watermark  "^
+       (init_cmd.short_path ^ init_cmd.ending)^") > "^
+       (dest_last ^ init_cmd.short_path ^"_"^Cee_text.random_marker^"_second"^ending)^")") in 
+    let _ = Io.overwrite_with second_file text_to_be_preprocessed in  
+   let third_filename = (short_s_ap^"_"^Cee_text.random_marker^"_third"^ending) in 
+   let cmd1 = main_preprocessing_command cpsl init_cmd second_filename third_filename in 
+   let _ = announce(cmd1) in 
+   let _ = Unix_command.uc cmd1 in 
+   let third_file = Absolute_path.of_string third_filename in 
+   let answer = Io.read_whole_file third_file in 
+   let _ = (
+    if (not(!keep_temporary_files_mode)) 
+    then let _ = Unix_command.conditional_multiple_uc [
+      "rm -f "^second_filename;
+      "rm -f "^third_filename
+    ] in ()
+   ) in 
+   answer;;
+
 let remove_cds_in_file cpsl init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl) 
-  and dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
-  let src_last = (Cull_string.after_rightmost (Cull_string.coending 1 src_dir) '/' ) ^ "/"
-  and dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
-  let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.ending in
-  let ap = Absolute_path.of_string s_ap in  
-  let old_text = Io.read_whole_file ap in 
-  let second_text = Cee_text.watermark_text old_text 
-  and second_filename = 
-       (short_s_ap^"_"^Cee_text.random_marker^"_second"^ending) in
-  let second_file = Absolute_path.create_file_if_absent second_filename in
-  let _ = announce("(watermark  "^
-     (init_cmd.short_path ^ init_cmd.ending)^") > "^
-     (src_last ^ init_cmd.short_path ^"_"^Cee_text.random_marker^"_second"^ending)^")") in 
-  let _ = Io.overwrite_with second_file second_text in 
-  let third_filename = 
-      (short_s_ap^"_"^Cee_text.random_marker^"_third"^ending) in 
-  let cmd1 = main_preprocessing_command cpsl init_cmd in 
-  let _ = announce(cmd1) in 
-  let _ = Unix_command.uc cmd1 in 
-  let third_file = Absolute_path.of_string third_filename in 
-  let third_text =Io.read_whole_file third_file in 
-  let new_text = Cee_text.rewrite_using_watermarks old_text third_text in 
-  let fourth_filename = 
+  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
+  let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
+  let ending = init_cmd.ending in
+  let old_text = Capsule.read_file cpsl (init_cmd.short_path ^ init_cmd.ending) in 
+  let text_to_be_preprocessed = Cee_text.watermark_text old_text in
+  let preprocessed_text = compute_preprocessing_output cpsl init_cmd text_to_be_preprocessed in 
+  let new_text = Cee_text.rewrite_using_watermarks old_text preprocessed_text in 
+  let target_filename = 
       (dest_dir ^ init_cmd.short_path ^ending) in 
-  let fourth_file = Absolute_path.create_file_if_absent fourth_filename in  
+  let target_file = Absolute_path.create_file_if_absent target_filename in  
   let _ = announce("(unifdeffed  "^
      (init_cmd.short_path ^ init_cmd.ending)^") > "^
      (dest_last ^ init_cmd.short_path ^ending)^")") in 
-  Io.overwrite_with fourth_file new_text ;;
+  Io.overwrite_with target_file new_text ;;
 
 let remove_cds_in_files cpsl init_cmds = 
   let temp1 = Int_range.index_everything init_cmds 
@@ -245,8 +250,8 @@ let remove_cds_in_files cpsl init_cmds =
 let remove_cds cpsl = remove_cds_in_files cpsl (Capsule.commands cpsl) ;; 
 
 let cleanup_temporary_data_for_file cpsl init_cmd  = 
-  let src_dir = Directory_name.connectable_to_subpath (Capsule.source cpsl)  in  
-  let s_ap = src_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
+  let s_ap = dest_dir ^ init_cmd.short_path ^ init_cmd.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
   and ending = init_cmd.ending in
   let second_filename = 
@@ -261,10 +266,6 @@ let cleanup_temporary_data_for_file cpsl init_cmd  =
 let cleanup_temporary_files_after_cds_removal cpsl =   
   Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.commands cpsl) ;;
 
-let remove_cds_and_cleanup cpsl =
-   let _ = (remove_cds cpsl;
-   cleanup_temporary_files_after_cds_removal cpsl) in 
-  ();;
    
   exception Check_presence_in_project_exn of string ;;
 
@@ -300,9 +301,7 @@ let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
     exception Included_files_exn of string * string * string ;;
 
     let included_files cpsl includer_fn=
-      let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
-      let ap = Absolute_path.of_string (dest_dir ^ includer_fn) in 
-      let temp1 = Cee_text.included_local_files_in_file ap 
+      let temp1 = Cee_text.included_local_files_in_text(Capsule.read_file cpsl includer_fn) 
       and includer_dir = Cull_string.before_rightmost includer_fn '/' in 
       Image.image (fun (included_fn,indices)->
             try (normalize_included_filename cpsl includer_dir included_fn,indices) with
@@ -310,11 +309,9 @@ let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
             ) temp1;;
       
     let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn = 
-      let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
-      let ap = Absolute_path.of_string (dest_dir ^ includer_fn) in 
-      let temp1 = Cee_text.included_local_files_in_file ap 
+      let text = Capsule.read_file cpsl includer_fn in 
+      let temp1 = Cee_text.included_local_files_in_text text
       and includer_dir = Cull_string.before_rightmost includer_fn '/' in 
-      let text = Io.read_whole_file ap in 
       let lines = Lines_in_string.indexed_lines text in 
        List.flatten( List.filter_map (fun (included_fn,indices)->
           try (fun _->None)(normalize_included_filename cpsl includer_dir included_fn) with
@@ -336,10 +333,10 @@ let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
      ) temp1 in 
     let _ =(
       if not(dry_run)
-      then  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
-            List.iter (fun (fn,ab,ba)->
-                let ap =  Absolute_path.of_string (dest_dir ^ fn) in 
-                Replace_inside.replace_inside_file (ab,ba) ap) replacements_to_be_made
+      then List.iter (fun (fn,ab,ba)->
+              let old_text = Capsule.read_file cpsl fn in 
+              let new_text = Replace_inside.replace_inside_string (ab,ba) old_text in 
+              Capsule.modify_file cpsl fn new_text) replacements_to_be_made
     ) in 
     replacements_to_be_made;; 
 
@@ -349,6 +346,6 @@ end ;;
 
 let make = Capsule.make ;;
 
-let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_and_cleanup ;; 
+let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds ;; 
 
 let standardize_inclusion_in_files = Private.standardize_inclusion_in_files ;;
