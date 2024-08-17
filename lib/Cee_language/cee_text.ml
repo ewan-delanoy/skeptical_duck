@@ -85,19 +85,40 @@ type small_space_t = {
    end_idx  : int ;
 } ;;
 
+type guard_pattern_indicators_t = {
+    first_ivy_index_opt : int option ;
+    elsie_or_elif_for_first_index_opt : int option;
+    endif_index_for_first_ivy_opt : int option ;
+    ivy_index_after_first_ivy_opt : int option;
+} ;; 
 
 type walker_t = {
     lines : (int *string) list ;
     current_namespace : int ;
     preceding_namespaces : int list ;
     smallest_unused_namespace_index : int ;
-    start_index_opt : int option ;
+    small_space_start_index_opt : int option ;
     unfinished_condition : bool;
     last_directive_was_an_else : bool;
     treated : small_space_t list;
+    gpi : guard_pattern_indicators_t ;
 } ;; 
 
 
+module Guard_Pattern = struct
+let origin = {
+  first_ivy_index_opt = None;
+  elsie_or_elif_for_first_index_opt = None;
+  endif_index_for_first_ivy_opt = None ;
+  ivy_index_after_first_ivy_opt = None;
+} ;; 
+
+let test gpi=
+  (gpi.endif_index_for_first_ivy_opt <> None) &&
+  (gpi.elsie_or_elif_for_first_index_opt = None) &&
+  (gpi.ivy_index_after_first_ivy_opt = None)  ;;   
+  
+end ;;
 
 module Walker = struct 
 
@@ -106,14 +127,15 @@ module Walker = struct
     current_namespace = 0 ;
     preceding_namespaces = [] ;
     smallest_unused_namespace_index = 1;
-    start_index_opt = None ;
+    small_space_start_index_opt = None ;
     unfinished_condition = false;
     last_directive_was_an_else = false;
     treated = [];
+    gpi = Guard_Pattern.origin ;
   } ;; 
 
   let register_new_small_space_if_needed old_w w line_idx= 
-    match old_w.start_index_opt with 
+    match old_w.small_space_start_index_opt with 
     None -> w
     |Some start_index ->
       let small_space = {
@@ -144,13 +166,42 @@ module Walker = struct
       }
    | Lb_Elif | Lb_Else | Lb_Usual -> w ;;
 
-  
+   let deal_with_guard_pattern_detection old_w w line_beginning line_idx = 
+    match line_beginning with 
+    Lb_If ->
+      (if (old_w.gpi.first_ivy_index_opt = None)
+       then let new_gpi = {w.gpi with first_ivy_index_opt = Some line_idx} in 
+            {w with gpi = new_gpi}
+       else 
+       if (old_w.gpi.endif_index_for_first_ivy_opt <> None) &&
+          (old_w.gpi.ivy_index_after_first_ivy_opt = None)
+       then let new_gpi = {w.gpi with ivy_index_after_first_ivy_opt = Some line_idx} in 
+            {w with gpi = new_gpi}
+       else  w
+       )
+   | Lb_Elif | Lb_Else ->
+    (if (old_w.gpi.first_ivy_index_opt <> None) &&
+         (old_w.current_namespace=1) &&
+         (old_w.gpi.elsie_or_elif_for_first_index_opt = None)
+      then let new_gpi = {w.gpi with elsie_or_elif_for_first_index_opt = Some line_idx} in 
+           {w with gpi = new_gpi}
+      else w  
+      )
+     
+   | Lb_Endif ->
+    (if (old_w.gpi.first_ivy_index_opt <> None) &&
+        (old_w.current_namespace=1) 
+     then let new_gpi = {w.gpi with endif_index_for_first_ivy_opt = Some line_idx} in 
+         {w with gpi = new_gpi}
+     else w  
+   )
+   | Lb_Usual -> w ;;
 
 
   let directive_step old_w line_idx line line_beginning= 
-    if (old_w.start_index_opt = None) && (line_beginning = Lb_Elif) then raise (Lonely_Elif_exn(line_idx)) else 
-    if (old_w.start_index_opt = None) && (line_beginning = Lb_Else) then raise (Lonely_Else_exn(line_idx)) else
-    if (old_w.start_index_opt = None) && (line_beginning = Lb_Endif) then raise (Lonely_Endif_exn(line_idx)) else
+    if (old_w.current_namespace = 0) && (line_beginning = Lb_Elif) then raise (Lonely_Elif_exn(line_idx)) else 
+    if (old_w.current_namespace = 0) && (line_beginning = Lb_Else) then raise (Lonely_Else_exn(line_idx)) else
+    if (old_w.current_namespace = 0) && (line_beginning = Lb_Endif) then raise (Lonely_Endif_exn(line_idx)) else
     if (old_w.last_directive_was_an_else) && (line_beginning = Lb_Else) then raise (Double_Else_exn(line_idx)) else
     let new_cond_is_unfinished = (
       if List.mem line_beginning [Lb_If;Lb_Elif]
@@ -159,22 +210,23 @@ module Walker = struct
     ) in 
     let w1 ={
     old_w with
-    start_index_opt = None ;
+    small_space_start_index_opt = None ;
     unfinished_condition = new_cond_is_unfinished;
     last_directive_was_an_else = (line_beginning = Lb_Else) ;
    } in 
    let w2 = register_new_small_space_if_needed old_w w1 line_idx in 
    let w3 = deal_with_namespace_data old_w w2 line_beginning in 
-   w3 ;;
+   let w4 = deal_with_guard_pattern_detection old_w w3 line_beginning line_idx in
+   w4 ;;
   let inner_usual_step w line_idx line = 
-    match w.start_index_opt with 
+    match w.small_space_start_index_opt with 
     (Some _) -> w 
     |None -> 
     if not(w.unfinished_condition)
     then 
           {
             w with 
-            start_index_opt = Some line_idx 
+            small_space_start_index_opt = Some line_idx 
           } 
     else
     if String.ends_with line ~suffix:"\\"
@@ -205,6 +257,13 @@ module Walker = struct
     if w.lines = [] 
     then List.rev w.treated 
     else iterate (step w) ;;   
+
+  
+  let rec iterate_for_guard_pattern_detection w =
+    if w.lines = [] 
+    then w.gpi 
+    else iterate_for_guard_pattern_detection (step w) ;;   
+    
 
 end ;;  
 
@@ -259,6 +318,69 @@ let check2 = compute_small_spaces_in_text text2 ;;
 
 let compute_small_spaces_in_file ap = 
  compute_small_spaces_in_text (Io.read_whole_file ap)  ;;  
+
+let test_text_for_guard_pattern text =
+   Guard_Pattern.test 
+   (Walker.iterate_for_guard_pattern_detection (Walker.make text)) ;; 
+
+(*
+
+let text1 = String.concat "\n" 
+[
+  "1";
+  "#if 2";
+  "3";
+  "#endif 4";
+  "#if 5";
+  "6";
+  "#endif 7";
+  "8"
+] ;;
+
+let check1 = Walker.iterate_for_guard_pattern_detection (Walker.make text1) ;;
+let chuck1 = test_text_for_guard_pattern text1 ;;
+
+let text2 = String.concat "\n" 
+[
+  "1";
+  "#if 2";
+  "3";
+  "4";
+  "#elif 5";
+  "6";
+  "#endif 7";
+  "8"
+] ;;
+
+let check2 = Walker.iterate_for_guard_pattern_detection (Walker.make text2) ;;
+let chuck2 = test_text_for_guard_pattern text2 ;;
+
+let text3 = String.concat "\n" 
+[
+  "1";
+  "#if 2";
+  "3";
+  "#if 4";
+  "5";
+  "#elif 6";
+  "7";
+  "#endif 8";
+  "9";
+  "#if 10";
+  "11";
+  "#endif 12";
+  "#endif 13";
+  "14"
+] ;;
+
+let check3 = Walker.iterate_for_guard_pattern_detection (Walker.make text3) ;;
+let chuck3 = test_text_for_guard_pattern text3 ;;
+
+
+*)
+
+let test_file_for_guard_pattern ap =
+  test_text_for_guard_pattern (Io.read_whole_file ap) ;;    
 
  let random_marker = "cgmvgtkcxvvxckt" ;;  
 
