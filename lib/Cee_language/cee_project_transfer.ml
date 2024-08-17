@@ -27,6 +27,10 @@ module type CAPSULE_TYPE = sig
    val all_h_or_c_files : t -> string list   
    val directly_compiled_files : t -> string list
  
+   val read_file : t -> string -> string  
+
+   val modify_file : t -> string -> string -> unit 
+
   end ;;
 
 
@@ -46,6 +50,7 @@ module Capsule = (struct
     commands : initial_command list;
     all_h_or_c_files_opt : (string list) option ;
     directly_compiled_files_opt : (string list) option ;
+    filecontents : (string, string) Hashtbl.t ;
  } ;;
 
  type t = immutable_t ref ;;
@@ -75,6 +80,7 @@ module Capsule = (struct
    commands = Image.image make_initial_command raw_commands;
    all_h_or_c_files_opt = None ;
    directly_compiled_files_opt = None ;
+   filecontents = Hashtbl.create 3000
 }) ;;
 
 let compute_all_h_or_c_files cpt = 
@@ -116,6 +122,22 @@ let compute_all_h_or_c_files cpt =
         let _ = (cpsl_ref:=new_cpsl) in 
         answer ;;
    
+  let read_file cpsl_ref fn =
+    let cpsl = (!cpsl_ref) in 
+    match Hashtbl.find_opt cpsl.filecontents fn with 
+    (Some old_answer) -> old_answer 
+    | None ->
+      let src_dir = Directory_name.connectable_to_subpath cpsl.source in 
+      let ap = Absolute_path.of_string (src_dir ^ fn) in 
+      let text = Io.read_whole_file ap in 
+      let _ = Hashtbl.add cpsl.filecontents fn text in 
+      text ;;
+      
+  let modify_file cpsl_ref fn new_content=
+    let cpsl = (!cpsl_ref) in 
+    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+    let ap = Absolute_path.of_string (dest_dir ^ fn) in
+    Io.overwrite_with ap new_content;;
 
 end :CAPSULE_TYPE);; 
 
