@@ -4,6 +4,11 @@
 
 *)
 
+exception Lonely_Elif_exn of int ;;
+exception Lonely_Else_exn of int ;;
+exception Lonely_Endif_exn of int ;;
+exception Double_Else_exn of int ;;
+  
 module Private = struct 
 
   let str_order = Total_ordering.lex_for_strings ;;
@@ -85,7 +90,7 @@ type walker_t = {
     lines : (int *string) list ;
     current_namespace : int ;
     preceding_namespaces : int list ;
-    smallest_unused_namespace : int ;
+    smallest_unused_namespace_index : int ;
     start_index_opt : int option ;
     unfinished_condition : bool;
     last_directive_was_an_else : bool;
@@ -100,7 +105,7 @@ module Walker = struct
     lines = Lines_in_string.indexed_lines text ;
     current_namespace = 0 ;
     preceding_namespaces = [] ;
-    smallest_unused_namespace = 1;
+    smallest_unused_namespace_index = 1;
     start_index_opt = None ;
     unfinished_condition = false;
     last_directive_was_an_else = false;
@@ -126,21 +131,28 @@ module Walker = struct
      Lb_If ->
       {
         w with 
-        current_namespace = old_w.smallest_unused_namespace ;
-        smallest_unused_namespace = old_w.smallest_unused_namespace + 1;
+        current_namespace = old_w.smallest_unused_namespace_index ;
+        smallest_unused_namespace_index = old_w.smallest_unused_namespace_index + 1;
         preceding_namespaces = old_w.current_namespace :: old_w.preceding_namespaces
       }
     | Lb_Endif ->
       {
         w with 
         current_namespace = List.hd(old_w.preceding_namespaces) ;
-        smallest_unused_namespace = old_w.smallest_unused_namespace;
+        smallest_unused_namespace_index = old_w.smallest_unused_namespace_index;
         preceding_namespaces = List.tl(old_w.preceding_namespaces)
       }
    | Lb_Elif | Lb_Else | Lb_Usual -> w ;;
 
+  
+
+
   let directive_step old_w line_idx line line_beginning= 
-    let cond_is_unfinished = (
+    if (old_w.start_index_opt = None) && (line_beginning = Lb_Elif) then raise (Lonely_Elif_exn(line_idx)) else 
+    if (old_w.start_index_opt = None) && (line_beginning = Lb_Else) then raise (Lonely_Else_exn(line_idx)) else
+    if (old_w.start_index_opt = None) && (line_beginning = Lb_Endif) then raise (Lonely_Endif_exn(line_idx)) else
+    if (old_w.last_directive_was_an_else) && (line_beginning = Lb_Else) then raise (Double_Else_exn(line_idx)) else
+    let new_cond_is_unfinished = (
       if List.mem line_beginning [Lb_If;Lb_Elif]
       then String.ends_with line ~suffix:"\\"
       else false 
@@ -148,12 +160,12 @@ module Walker = struct
     let w1 ={
     old_w with
     start_index_opt = None ;
-    unfinished_condition = cond_is_unfinished;
+    unfinished_condition = new_cond_is_unfinished;
     last_directive_was_an_else = (line_beginning = Lb_Else) ;
    } in 
    let w2 = register_new_small_space_if_needed old_w w1 line_idx in 
-   deal_with_namespace_data old_w w2 line_beginning;; 
-  
+   let w3 = deal_with_namespace_data old_w w2 line_beginning in 
+   w3 ;;
   let inner_usual_step w line_idx line = 
     match w.start_index_opt with 
     (Some _) -> w 
