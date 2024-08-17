@@ -379,8 +379,53 @@ let chuck3 = test_text_for_guard_pattern text3 ;;
 
 *)
 
-let test_file_for_guard_pattern ap =
-  test_text_for_guard_pattern (Io.read_whole_file ap) ;;    
+let find_directive_from_list_opt line directives=
+      if not(String.starts_with line ~prefix:"#")
+      then None
+      else  
+      match Strung.char_finder_from_inclusive_opt (fun c->
+              not(List.mem c [' ';'\t';'\r'])
+            ) line 2 with 
+      None -> None
+      |Some idx1 -> 
+        List.find_opt (fun drctv ->
+          Substring.is_a_substring_located_at drctv line idx1
+          ) directives ;;
+
+exception First_ivy_in_text_exn ;;   
+let first_ivy_in_text text =
+   let lines = Lines_in_string.indexed_lines text in 
+   match List.find_opt (fun (_line_idx,line)->
+      (find_directive_from_list_opt line ["if"])<>None
+   ) lines with 
+   None -> raise First_ivy_in_text_exn 
+   |Some(line_idx,_) -> line_idx ;;
+   
+exception Last_endif_in_text_exn ;;   
+let last_endif_in_text text =
+      let lines = List.rev(Lines_in_string.indexed_lines text) in 
+      match List.find_opt (fun (_line_idx,line)->
+         (find_directive_from_list_opt line ["endif"])<>None
+      ) lines with 
+      None -> raise Last_endif_in_text_exn 
+      |Some(line_idx,_) -> line_idx ;;   
+ 
+let put_first_ivy_on_first_line text = 
+  let line_idx = first_ivy_in_text text in 
+  Lines_in_string.put_line_first_in_string line_idx text ;;
+
+let put_last_endif_on_last_line text = 
+  let line_idx = last_endif_in_text text in 
+  Lines_in_string.put_line_last_in_string line_idx text ;;  
+
+let emphatize_first_ivy_and_last_endif text = 
+  let text2 = put_first_ivy_on_first_line text in 
+  put_last_endif_on_last_line text2 ;;
+
+let standardize_guard_in_text text = 
+  if test_text_for_guard_pattern text 
+  then Some(emphatize_first_ivy_and_last_endif text)
+  else None ;;   
 
  let random_marker = "cgmvgtkcxvvxckt" ;;  
 
@@ -531,6 +576,7 @@ end ;;
 let included_local_files_in_file = Private.included_local_files_in_file ;;
 let random_marker = Private.random_marker ;;
 let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
+let standardize_guard_in_text = Private.standardize_guard_in_text ;;
 let standardize_inclusion_line = Private.standardize_inclusion_line ;;
 let watermark_text= Private.watermark_text;;
 
