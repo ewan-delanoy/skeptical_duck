@@ -11,16 +11,12 @@ exception Endif_in_ether of int ;;
 
 module type CAPSULE_TYPE = sig
    
-  type initial_command = {
-    short_path : string;
-    ending : string;
-    core_of_command : string;
-  } ;;
+  
 
    type t 
    val source : t -> Directory_name_t.t
    val destination : t -> Directory_name_t.t
-   val commands : t -> initial_command list
+   val commands : t -> Cee_compilation_command_t.separate_t list
    val make :
      source:Directory_name_t.t ->
      destination:Directory_name_t.t -> string list -> t
@@ -38,16 +34,11 @@ module type CAPSULE_TYPE = sig
  
 module Capsule = (struct 
 
-  type initial_command = {
-  short_path : string;
-  ending : string;
-  core_of_command : string;
-  } ;;
 
  type immutable_t = {
     source : Directory_name_t.t ;
     destination : Directory_name_t.t ;
-    commands : initial_command list;
+    commands : Cee_compilation_command_t.separate_t list;
     all_h_or_c_files_opt : (string list) option ;
     directly_compiled_files_opt : (string list) option ;
     filecontents : (string, string) Hashtbl.t ;
@@ -62,22 +53,13 @@ module Capsule = (struct
 
  let commands cpsl = (!cpsl).commands ;;
 
- let make_initial_command raw_command = 
-  let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
-  let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
-  let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
-  {
-    short_path = Cull_string.coending 2 short_filename ;
-    ending = Cull_string.ending 2 short_filename ;
-    core_of_command =Cull_string.beginning (i1-1) raw_command ;
-  }  ;;
 
  let make 
  ~source:src ~destination:dest raw_commands = 
  ref({
    source = src ;
    destination = dest ;
-   commands = Image.image make_initial_command raw_commands;
+   commands = Image.image Cee_compilation_command.parse_separate raw_commands;
    all_h_or_c_files_opt = None ;
    directly_compiled_files_opt = None ;
    filecontents = Hashtbl.create 3000
@@ -106,8 +88,8 @@ let compute_all_h_or_c_files cpt =
   let compute_directly_compiled_files cpsl = 
     str_sort(Image.image (
       fun cmd ->
-       (cmd.short_path) ^ 
-       (cmd.ending)
+       (cmd.Cee_compilation_command_t.short_path) ^ 
+       (cmd.Cee_compilation_command_t.ending)
     ) cpsl.commands) ;;    
     
   let directly_compiled_files cpsl_ref = 
@@ -143,57 +125,27 @@ end :CAPSULE_TYPE);;
 
 module Private = struct 
 
-  type initial_command = Capsule.initial_command = {
-    short_path : string;
-    ending : string;
-    core_of_command : string;
-    } ;;
 
     let str_order = Total_ordering.lex_for_strings ;;
     let str_mem = Ordered.mem str_order ;;  
-  
-let adapt_ii_element root_dir i_elt = 
-  if i_elt="-I." then "-I"^root_dir else 
-  if (String.get i_elt 2)='/' then i_elt else 
-  "-I"^root_dir^(Cull_string.cobeginning 2 i_elt) ;;    
 
-let adapt_element root_dir (preceding_elt_opt,elt) = 
-  if String.starts_with elt ~prefix:"-I"
-  then adapt_ii_element root_dir elt
-  else 
-  match preceding_elt_opt with 
-  None -> elt 
-  |Some preceding_elt ->
-    if List.mem preceding_elt ["-MF";"-MT"]
-    then root_dir^elt
-    else elt;;
-
-let adapt_command root_dir cmd =
-  let temp1 = Str.split (Str.regexp "[ \t\r]+") cmd in 
-  let temp2 = List_again.universal_delta_list temp1 in 
-  let temp3 = (None,List.hd temp1):: (Image.image (fun (e1,e2)->(Some e1,e2) ) temp2) in 
-  let temp4 = Image.image (adapt_element root_dir) temp3 in 
-  String.concat " " temp4 ;;
-
-let short_names_for_temporary_files_during_preprocessing init_cmd  =  
-  let ending = init_cmd.ending in
-  (Cee_text.random_marker^"_second"^ending,Cee_text.random_marker^"_third"^ending) ;;
-  
-let names_for_temporary_files_during_preprocessing cpsl init_cmd  = 
+let names_for_temporary_files_during_preprocessing cpsl separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
-  let endingless = dest_dir ^ init_cmd.short_path  in 
-  let (short_preprocessable,short_preprocessed) = short_names_for_temporary_files_during_preprocessing init_cmd in 
+  let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
+  let (short_preprocessable,short_preprocessed) = 
+     Cee_compilation_command.short_names_for_temporary_files_during_preprocessing separate_cmd in 
   let file_to_be_preprocessed = 
        (endingless^"_"^short_preprocessable) 
   and preprocessed_file = 
       (endingless^"_"^short_preprocessed) in 
   (file_to_be_preprocessed,preprocessed_file) ;;
 
-let main_preprocessing_command cpsl init_cmd = 
+let main_preprocessing_command cpsl separate_cmd = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
-  let core_of_command = adapt_command dest_dir init_cmd.core_of_command in 
+  let core_of_command = Cee_compilation_command.adapt_command 
+    ~root_dir:dest_dir separate_cmd.Cee_compilation_command_t.core_of_command in 
   let (name_for_preprocessable_file,name_for_preprocessed_file) = 
-     names_for_temporary_files_during_preprocessing cpsl init_cmd in 
+     names_for_temporary_files_during_preprocessing cpsl separate_cmd in 
   core_of_command^" -E "^name_for_preprocessable_file^" -o "^name_for_preprocessed_file  ;;
 
 let announce cmd = 
@@ -202,21 +154,21 @@ let announce cmd =
 
 let keep_temporary_files_mode = ref false ;;  
 
-  let compute_preprocessing_output cpsl init_cmd text_to_be_preprocessed = 
+  let compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed = 
     let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
     let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
     let (short_preprocessable,short_preprocessed) = 
-       short_names_for_temporary_files_during_preprocessing init_cmd in 
-    let endingless = dest_dir ^ init_cmd.short_path  in 
+     Cee_compilation_command.short_names_for_temporary_files_during_preprocessing separate_cmd in 
+    let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
     let name_for_preprocessable_file = endingless^"_"^short_preprocessable
     and name_for_preprocessed_file = endingless^"_"^short_preprocessed in 
     let preprocessable_file = Absolute_path.create_file_if_absent name_for_preprocessable_file in
     let _ = announce("(watermark  "^
-       (init_cmd.short_path ^ init_cmd.ending)^") > "^
-       (dest_last ^ init_cmd.short_path ^"_"^short_preprocessable)^")") in 
+       (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^
+       (dest_last ^ separate_cmd.Cee_compilation_command_t.short_path ^"_"^short_preprocessable)^")") in 
     let _ = Io.overwrite_with preprocessable_file text_to_be_preprocessed in  
   
-   let cmd1 = main_preprocessing_command cpsl init_cmd in 
+   let cmd1 = main_preprocessing_command cpsl separate_cmd in 
    let _ = announce(cmd1) in 
    let _ = Unix_command.uc cmd1 in 
    let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in 
@@ -230,12 +182,12 @@ let keep_temporary_files_mode = ref false ;;
    ) in 
    answer;;
 
-let remove_cds_in_file cpsl ~name_for_watermarkable_file init_cmd  = 
+let remove_cds_in_file cpsl ~name_for_watermarkable_file separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
-  let old_text = Capsule.read_file cpsl (init_cmd.short_path ^ init_cmd.ending) in 
+  let old_text = Capsule.read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
   let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_watermarkable_file old_text in
-  let preprocessed_text = compute_preprocessing_output cpsl init_cmd text_to_be_preprocessed in 
+  let preprocessed_text = compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed in 
   let new_text = Cee_text.rewrite_using_watermarks old_text ~name_for_watermarkable_file ~watermarked_text:preprocessed_text in 
   let target_filename = dest_dir ^ name_for_watermarkable_file in 
   let target_file = Absolute_path.create_file_if_absent target_filename in  
@@ -243,31 +195,31 @@ let remove_cds_in_file cpsl ~name_for_watermarkable_file init_cmd  =
      (dest_last ^ name_for_watermarkable_file)^")") in 
   Io.overwrite_with target_file new_text ;;
 
-let remove_cds_in_directly_compiled_file cpsl  init_cmd  = 
- let name_for_watermarkable_file = init_cmd.short_path ^ init_cmd.ending in 
- remove_cds_in_file cpsl ~name_for_watermarkable_file init_cmd ;;
+let remove_cds_in_directly_compiled_file cpsl  separate_cmd  = 
+ let name_for_watermarkable_file = separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
+ remove_cds_in_file cpsl ~name_for_watermarkable_file separate_cmd ;;
 
-let remove_cds_in_directly_compiled_files cpsl init_cmds = 
-  let temp1 = Int_range.index_everything init_cmds 
-  and sn = string_of_int(List.length init_cmds) in 
-  List.iter (fun (idx,init_cmd) ->
+let remove_cds_in_directly_compiled_files cpsl separate_cmds = 
+  let temp1 = Int_range.index_everything separate_cmds 
+  and sn = string_of_int(List.length separate_cmds) in 
+  List.iter (fun (idx,separate_cmd) ->
     let msg1 = " Step "^(string_of_int idx)^" of "^sn^" : "^
-    "removing cds in "^init_cmd.short_path^init_cmd.ending^"\n\n"
+    "removing cds in "^separate_cmd.Cee_compilation_command_t.short_path^separate_cmd.Cee_compilation_command_t.ending^"\n\n"
     and msg2 = " Finished step "^(string_of_int idx)^" of "^sn^".\n" in 
     print_string msg1;
     flush stdout;
-    remove_cds_in_directly_compiled_file cpsl init_cmd;
+    remove_cds_in_directly_compiled_file cpsl separate_cmd;
     print_string msg2;
     flush stdout;
     ) temp1 ;;
 
 let remove_cds_in_all_directly_compiled_files cpsl = remove_cds_in_directly_compiled_files cpsl (Capsule.commands cpsl) ;; 
 
-let cleanup_temporary_data_for_file cpsl init_cmd  = 
+let cleanup_temporary_data_for_file cpsl separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
-  let s_ap = dest_dir ^ init_cmd.short_path ^ init_cmd.ending in 
+  let s_ap = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
   let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = init_cmd.ending in
+  and ending = separate_cmd.Cee_compilation_command_t.ending in
   let second_filename = 
        (short_s_ap^"_"^Cee_text.random_marker^"_second"^ending) in
   let third_filename = 
