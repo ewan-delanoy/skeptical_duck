@@ -16,11 +16,13 @@ module type CAPSULE_TYPE = sig
    type t 
    val source : t -> Directory_name_t.t
    val destination : t -> Directory_name_t.t
-   val commands : t -> Cee_compilation_command_t.separate_t list
+   val commands : t -> Cee_compilation_command_t.t list
    val make :
      source:Directory_name_t.t ->
      destination:Directory_name_t.t -> string list -> t
    val all_h_or_c_files : t -> string list   
+
+   val separate_commands : t -> Cee_compilation_command_t.separate_t list
    val directly_compiled_files : t -> string list
  
    val read_file : t -> string -> string  
@@ -38,8 +40,9 @@ module Capsule = (struct
  type immutable_t = {
     source : Directory_name_t.t ;
     destination : Directory_name_t.t ;
-    commands : Cee_compilation_command_t.separate_t list;
+    commands : Cee_compilation_command_t.t list;
     all_h_or_c_files_opt : (string list) option ;
+    separate_commands_opt : (Cee_compilation_command_t.separate_t list) option;
     directly_compiled_files_opt : (string list) option ;
     filecontents : (string, string) Hashtbl.t ;
  } ;;
@@ -59,8 +62,9 @@ module Capsule = (struct
  ref({
    source = src ;
    destination = dest ;
-   commands = Image.image Cee_compilation_command.parse_separate raw_commands;
+   commands = Image.image Cee_compilation_command.parse raw_commands;
    all_h_or_c_files_opt = None ;
+   separate_commands_opt = None ;
    directly_compiled_files_opt = None ;
    filecontents = Hashtbl.create 3000
 }) ;;
@@ -85,20 +89,37 @@ let compute_all_h_or_c_files cpt =
     let _ = (cpsl_ref:=new_cpsl) in 
     answer ;;
 
-  let compute_directly_compiled_files cpsl = 
+  let compute_separate_commands cpsl = 
+    List.filter_map (function 
+      (Cee_compilation_command_t.Batch(_)) -> None 
+      |Cee_compilation_command_t.Separate(s) -> Some s
+    ) cpsl.commands ;;
+      
+  let separate_commands cpsl_ref = 
+    let old_cpsl = (!cpsl_ref) in
+       match old_cpsl.separate_commands_opt with 
+      (Some old_answer) -> old_answer 
+      |None ->
+        let answer = compute_separate_commands old_cpsl in 
+        let new_cpsl = {old_cpsl with 
+        separate_commands_opt = Some answer 
+        } in 
+        let _ = (cpsl_ref:=new_cpsl) in 
+        answer ;;
+
+  let compute_directly_compiled_files cpsl_ref = 
     str_sort(Image.image (
       fun cmd ->
        (cmd.Cee_compilation_command_t.short_path) ^ 
        (cmd.Cee_compilation_command_t.ending)
-    ) cpsl.commands) ;;    
+    ) (separate_commands cpsl_ref)) ;;    
     
   let directly_compiled_files cpsl_ref = 
-       let old_cpsl = (!cpsl_ref) in
-       match old_cpsl.directly_compiled_files_opt with 
+       match (!cpsl_ref).directly_compiled_files_opt with 
       (Some old_answer) -> old_answer 
       |None ->
-        let answer = compute_directly_compiled_files old_cpsl in 
-        let new_cpsl = {old_cpsl with 
+        let answer = compute_directly_compiled_files cpsl_ref in 
+        let new_cpsl = {(!cpsl_ref) with 
           directly_compiled_files_opt = Some answer 
         } in 
         let _ = (cpsl_ref:=new_cpsl) in 
@@ -213,7 +234,8 @@ let remove_cds_in_directly_compiled_files cpsl separate_cmds =
     flush stdout;
     ) temp1 ;;
 
-let remove_cds_in_all_directly_compiled_files cpsl = remove_cds_in_directly_compiled_files cpsl (Capsule.commands cpsl) ;; 
+let remove_cds_in_all_directly_compiled_files cpsl = 
+  remove_cds_in_directly_compiled_files cpsl (Capsule.separate_commands cpsl) ;; 
 
 let cleanup_temporary_data_for_file cpsl separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
@@ -230,7 +252,7 @@ let cleanup_temporary_data_for_file cpsl separate_cmd  =
   ]  ;;
   
 let cleanup_temporary_files_after_cds_removal cpsl =   
-  Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.commands cpsl) ;;
+  Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.separate_commands cpsl) ;;
 
    
   exception Check_presence_in_project_exn of string ;;
