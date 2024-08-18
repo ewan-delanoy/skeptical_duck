@@ -354,8 +354,7 @@ let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
     ) in 
     replacements_to_be_made;; 
 
-    let standardize_guards cpsl = 
-      let files = Capsule.all_h_or_c_files cpsl in 
+    let standardize_guards_in_files cpsl files = 
       List.filter_map (fun 
          fn ->
           let old_text = Capsule.read_file cpsl fn in 
@@ -369,10 +368,10 @@ let normalize_nonpointed_included_filename cpsl includer_fn included_fn =
 
 end ;;
 
-let make = Capsule.make ;;
+let make_capsule = Capsule.make ;;
 
 let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_in_all_directly_compiled_files ;; 
 
-let standardize_guards = Private.standardize_guards ;; 
+let standardize_guards_in_files = Private.standardize_guards_in_files ;; 
 
 let standardize_inclusion_in_files = Private.standardize_inclusion_in_files ;;
