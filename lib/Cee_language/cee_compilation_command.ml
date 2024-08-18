@@ -79,9 +79,11 @@ let adapt_command ~root_dir cmd =
   let temp4 = Image.image (adapt_element root_dir) temp3 in 
   String.concat " " temp4 ;;
 
+let random_marker = "uAiuoAUYyo" ;; 
+
 let short_names_for_temporary_files_during_preprocessing separate_cmd  =  
   let ending = separate_cmd.Cee_compilation_command_t.ending in
-  (Cee_text.random_marker^"_second"^ending,Cee_text.random_marker^"_third"^ending) ;;
+  (random_marker^"_preprocessable"^ending,random_marker^"_preprocessed"^ending) ;;
  
 let write_separate cmd = 
     cmd.core_of_command ^ 
