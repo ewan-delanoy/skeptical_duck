@@ -6,12 +6,28 @@
 
 module Private = struct
 
+  type separate_t = Cee_compilation_command_t.separate_t = {
+    short_path : string;
+    ending : string;
+    core_of_command : string;
+    } ;;
+  
+  type batch_t = Cee_compilation_command_t.batch_t = {
+    beginning_of_command : string ;
+    litany: string list ;
+    end_of_command : string
+  } ;; 
+  
+  type t = Cee_compilation_command_t.t = 
+    Separate of separate_t 
+   |Batch of batch_t ;;
+
 let parse_separate raw_command = 
   let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
   let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
   let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
   {
-    Cee_compilation_command_t.short_path = Cull_string.coending 2 short_filename ;
+    short_path = Cull_string.coending 2 short_filename ;
     ending = Cull_string.ending 2 short_filename ;
     core_of_command =Cull_string.beginning (i1-1) raw_command ;
   }  ;;
@@ -26,7 +42,7 @@ let parse_batch raw_command =
   let (after,rev_middle) = List_again.long_head_with_tail (i2-1) rev_rest in 
   let middle = List.rev rev_middle  in  
   {
-      Cee_compilation_command_t.beginning_of_command = String.concat " " before ;
+      beginning_of_command = String.concat " " before ;
       litany =Image.image (Cull_string.coending 2) middle ;
       end_of_command = String.concat " " after
   }  ;;
@@ -36,8 +52,8 @@ parse_batch "The brown and astute fox.o jumped.o over.o the lazy dog" ;;
 *)
 let parse raw_command = 
   if Substring.is_a_substring_of " -c " raw_command 
-  then Cee_compilation_command_t.Separate(parse_separate raw_command)
-  else Cee_compilation_command_t.Batch(parse_batch raw_command) ;;
+  then Separate(parse_separate raw_command)
+  else Batch(parse_batch raw_command) ;;
 
 
 let adapt_ii_element root_dir i_elt = 
@@ -67,6 +83,19 @@ let short_names_for_temporary_files_during_preprocessing separate_cmd  =
   let ending = separate_cmd.Cee_compilation_command_t.ending in
   (Cee_text.random_marker^"_second"^ending,Cee_text.random_marker^"_third"^ending) ;;
  
+let write_separate cmd = 
+    cmd.core_of_command ^ 
+    " -c " ^ cmd.short_path ^ cmd.ending ^ 
+    " -o " ^ cmd.short_path ^ ".o" ;;
+
+let write_batch cmd = 
+  let middle = String.concat " " (Image.image (fun elt->elt^".o") cmd.litany) in 
+  cmd.beginning_of_command ^ middle ^ cmd.end_of_command ;;
+
+let write = function 
+  (Separate s) -> write_separate s 
+  |(Batch b) -> write_batch b ;;
+
 end ;;
 
 let adapt_command = Private.adapt_command ;;
@@ -75,3 +104,5 @@ let parse = Private.parse ;;
 let parse_separate = Private.parse_separate ;;
 
 let short_names_for_temporary_files_during_preprocessing = Private.short_names_for_temporary_files_during_preprocessing ;; 
+
+let write = Private.write ;;

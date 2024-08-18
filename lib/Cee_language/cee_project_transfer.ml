@@ -27,7 +27,9 @@ module type CAPSULE_TYPE = sig
  
    val read_file : t -> string -> string  
 
-   val modify_file : t -> string -> string -> unit 
+   val modify_file : t -> string -> string -> unit
+   
+   val write_makefile : t -> unit
 
   end ;;
 
@@ -141,6 +143,24 @@ let compute_all_h_or_c_files cpt =
     let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
     let ap = Absolute_path.of_string (dest_dir ^ fn) in
     Io.overwrite_with ap new_content;;
+
+  let text_for_makefile cpsl =
+    let temp1 = Int_range.index_everything cpsl.commands in 
+    let temp2 = Image.image (fun (cmd_idx,cmd)->
+      let s_idx = string_of_int cmd_idx in 
+    [
+    "\t@echo \"************************************************ Step "^s_idx^":\"";
+    "\t"^(Cee_compilation_command.write cmd)  
+    ]) temp1 in
+    let temp3 = ("make all:")::(List.flatten temp2) in 
+    String.concat "\n" temp3 ;; 
+    
+  let write_makefile cpsl_ref =
+    let cpsl = (!cpsl_ref) in 
+    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in  
+    let path_for_makefile = Absolute_path.of_string (dest_dir ^ "Makefile" ) in 
+    Io.overwrite_with path_for_makefile (text_for_makefile cpsl) ;;
+
 
 end :CAPSULE_TYPE);; 
 
