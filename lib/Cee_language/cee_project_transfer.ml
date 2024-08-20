@@ -246,7 +246,8 @@ module Private = struct
 
 
     let str_order = Total_ordering.lex_for_strings ;;
-    let str_mem = Ordered.mem str_order ;;  
+    let str_mem = Ordered.mem str_order ;; 
+    let str_sort = Ordered.sort str_order ;; 
 
 let names_for_temporary_files_during_preprocessing cpsl separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
@@ -374,19 +375,31 @@ let cleanup_temporary_files_after_cds_removal cpsl =
         Image.image (nonstandard_inclusion_formats_in_individual_includer cpsl) includers
       ) ;;   
 
-   let standardize_inclusion_in_files cpsl includers ~dry_run= 
+   let standardize_inclusions_in_files cpsl includers ~dry_run= 
      let temp1 = nonstandard_inclusion_formats_in_includers cpsl includers in 
-     let replacements_to_be_made = Image.image (
-       fun (includer,line)->(includer,line,Cee_text.standardize_inclusion_line line)
+     let replacements_to_be_made1 = Image.image (
+       fun (includer,line)->(includer,(line,Cee_text.standardize_inclusion_line line))
      ) temp1 in 
+     let includers_involved = str_sort(Image.image fst replacements_to_be_made1) in 
+     let replacements_to_be_made2 = Image.image (
+      fun includer ->
+        (includer,
+        List.filter_map (fun (includer2,pair)
+          -> if includer2 = includer 
+             then Some pair 
+             else None  
+        ) replacements_to_be_made1)
+    ) includers_involved in 
     let _ =(
       if not(dry_run)
-      then List.iter (fun (fn,ab,ba)->
+      then List.iter (fun (fn,replacements)->
               let old_text = Capsule.read_file cpsl fn in 
-              let new_text = Replace_inside.replace_inside_string (ab,ba) old_text in 
-              Capsule.modify_file cpsl fn new_text) replacements_to_be_made
+              let new_text = Replace_inside.replace_several_inside_string 
+               ~display_number_of_matches:true 
+               replacements old_text in 
+              Capsule.modify_file cpsl fn new_text) replacements_to_be_made2
     ) in 
-    replacements_to_be_made;; 
+    replacements_to_be_made2;; 
 
     let standardize_guards_in_files cpsl files  ~dry_run= 
       List.filter_map (fun 
@@ -411,4 +424,4 @@ let remove_conditional_directives_in_directly_compiled_files = Private.remove_cd
 
 let standardize_guards_in_files = Private.standardize_guards_in_files ;; 
 
-let standardize_inclusion_in_files = Private.standardize_inclusion_in_files ;;
+let standardize_inclusions_in_files = Private.standardize_inclusions_in_files ;;
