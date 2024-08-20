@@ -951,7 +951,7 @@ let sub_list28 = List.filter(
    Substring.is_a_substring_of " -c "
 ) list28 ;;
 
-let config1 = Cee_project_transfer.make 
+let config1 = Cee_project_transfer.make_capsule 
 ~source:(Directory_name.of_string simplified_dir)
 ~destination:(Directory_name.of_string half_preprocessed_dir)
  sub_list28 ;;

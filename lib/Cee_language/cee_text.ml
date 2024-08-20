@@ -18,6 +18,10 @@ module Private = struct
   let i_order = Total_ordering.for_integers ;;
    let i_merge = Ordered.merge i_order ;; 
 
+  let intstr_order = Total_ordering.product i_order str_order ;;
+
+  let intstr_sort = Ordered.sort intstr_order;;
+
    let sil_merge ox oy=
    let rec tempf=(function (u,v,accu)->
    if u=[] then (List.rev_append(accu)(v)) else
@@ -552,10 +556,10 @@ let included_local_files_in_text text =
   let temp2 = List.filter_map (
     fun (line_idx,line) ->
       Option.map (fun included_fn ->
-          (included_fn,[line_idx])
+          (line_idx,included_fn)
       ) (included_local_file_opt line)
   ) temp1 in 
-  sil_sort temp2 ;;
+  intstr_sort temp2 ;;
 
 
      
