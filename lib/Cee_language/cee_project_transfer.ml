@@ -83,6 +83,7 @@ module type CAPSULE_TYPE = sig
  
    val inclusions_in_dc_files : t -> ((string * int * string) list)
 
+   val directly_included_files : t -> string list
    val inclusions_for_di_file : t -> string -> (string * int) list
    val read_file : t -> string -> string  
 
