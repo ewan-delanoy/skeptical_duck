@@ -82,6 +82,8 @@ module type CAPSULE_TYPE = sig
    val directly_compiled_files : t -> string list
  
    val inclusions_in_dc_files : t -> ((string * int * string) list)
+
+   val inclusions_for_di_file : t -> string -> (string * int) list
    val read_file : t -> string -> string  
 
    val modify_file : t -> string -> string -> unit
@@ -105,11 +107,15 @@ module Capsule = (struct
     directly_compiled_files_opt : (string list) option ;
     filecontents : (string, string) Hashtbl.t ;
     inclusions_in_dc_files_opt : ((string * int * string) list) option;
+    directly_included_files_opt : (string list) option ;
+    inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
  } ;;
 
  type t = immutable_t ref ;;
  let str_order = Total_ordering.lex_for_strings ;;
- let str_sort = Ordered.sort str_order ;;  
+ let str_sort = Ordered.sort str_order ;;
+ 
+ let str_setminus = Ordered.setminus str_order ;;
  let source cpsl = (!cpsl).source ;;
 
  let destination cpsl = (!cpsl).destination ;; 
@@ -128,6 +134,8 @@ module Capsule = (struct
    directly_compiled_files_opt = None ;
    filecontents = Hashtbl.create 3000;
    inclusions_in_dc_files_opt = None;
+   directly_included_files_opt = None ;
+   inclusions_for_di_files = Hashtbl.create 600;
 }) ;;
 
 let compute_all_h_or_c_files cpt = 
@@ -239,6 +247,38 @@ let compute_all_h_or_c_files cpt =
           let _ = (cpsl_ref:=new_cpsl) in 
           answer ;;
 
+    let compute_directly_included_files cpsl_ref = 
+      let temp1 = inclusions_in_dc_files cpsl_ref in 
+      let temp2 = str_sort(Image.image ( fun 
+        (_includer,_line_number,included_one) -> included_one
+      ) temp1) in       
+      str_setminus temp2 (directly_compiled_files cpsl_ref) ;;    
+                
+    let directly_included_files cpsl_ref = 
+      match (!cpsl_ref).directly_included_files_opt with 
+      (Some old_answer) -> old_answer 
+      |None ->
+        let answer = compute_directly_included_files cpsl_ref in 
+        let new_cpsl = {(!cpsl_ref) with 
+                      directly_included_files_opt = Some answer 
+        } in 
+        let _ = (cpsl_ref:=new_cpsl) in 
+        answer ;;    
+        
+  let inclusions_for_di_file cpsl_ref fn =
+    let cpsl = (!cpsl_ref) in 
+    match Hashtbl.find_opt cpsl.inclusions_for_di_files fn with 
+    (Some old_answer) -> old_answer 
+    | None ->
+      let temp1 = inclusions_in_dc_files cpsl_ref in 
+      let answer = List.filter_map (
+        fun (includer,line_number,included_one) -> 
+          if included_one = fn 
+          then Some(includer,line_number) 
+          else None   
+         ) temp1 in 
+      let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in 
+      answer ;;
 
 end :CAPSULE_TYPE);; 
 
@@ -414,7 +454,8 @@ let cleanup_temporary_files_after_cds_removal cpsl =
             ) in 
             Some fn 
       ) files ;;
-
+   
+  
 
 end ;;
 
