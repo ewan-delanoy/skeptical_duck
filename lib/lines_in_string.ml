@@ -210,13 +210,12 @@ module Private = struct
     match List.assoc_opt line_idx lines with 
     None -> raise (Put_line_first_bad_line_index_exn (line_idx,List.length lines))
     |Some(the_line) ->
-    let first_line = snd(List.hd lines) in
-    let lines2 = Image.image (
-     fun (idx,old_line) ->
-        if idx = 1 then the_line else
-        if idx = line_idx then first_line else old_line
-    )   lines in 
-    String.concat "\n" lines2 ;;
+    let lines2 = List.filter_map
+       (fun (idx,old_line)->
+        if idx=line_idx 
+        then None 
+        else Some old_line) lines in 
+    String.concat "\n" (the_line::lines2) ;;
 
   (* put_line_first_in_string 4 "1\n2\n3\n4\n5" ;; *)
 
@@ -227,13 +226,12 @@ module Private = struct
     match List.assoc_opt line_idx lines with 
     None -> raise (Put_line_last_bad_line_index_exn (line_idx,n))
     |Some(the_line) ->
-    let last_line = snd(List.hd(List.rev lines)) in
-    let lines2 = Image.image (
-      fun (idx,old_line) ->
-        if idx = n then the_line else
-        if idx = line_idx then last_line else old_line
-    )   lines in 
-    String.concat "\n" lines2 ;;
+    let lines2 = List.filter_map
+      (fun (idx,old_line)->
+       if idx=line_idx 
+       then None 
+       else Some old_line) lines in 
+    String.concat "\n" (lines2@[the_line]) ;;
   
   (*  put_line_last_in_string 4 "1\n2\n3\n4\n5" ;; *)
     
