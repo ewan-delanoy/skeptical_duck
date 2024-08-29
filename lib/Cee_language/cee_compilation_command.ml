@@ -81,10 +81,14 @@ let adapt_command ~root_dir cmd =
 
 let random_marker = "uAiuoAUYyo" ;; 
 
-let short_names_for_temporary_files_during_preprocessing separate_cmd  =  
+let ending_for_temporary_preprocessable separate_cmd  =  
   let ending = separate_cmd.Cee_compilation_command_t.ending in
-  (random_marker^"_preprocessable"^ending,random_marker^"_preprocessed"^ending) ;;
+  random_marker^"_preprocessable"^ending ;;
  
+let ending_for_temporary_preprocessed separate_cmd  =  
+  let ending = separate_cmd.Cee_compilation_command_t.ending in
+  random_marker^"_preprocessed"^ending ;;  
+
 let write_separate cmd = 
     cmd.core_of_command ^ 
     " -c " ^ cmd.short_path ^ cmd.ending ^ 
@@ -102,9 +106,13 @@ end ;;
 
 let adapt_command = Private.adapt_command ;;
 
+let ending_for_temporary_preprocessable = 
+  Private.ending_for_temporary_preprocessable ;; 
+
+let ending_for_temporary_preprocessed = 
+    Private.ending_for_temporary_preprocessed ;;
+
 let parse = Private.parse ;;
 let parse_separate = Private.parse_separate ;;
-
-let short_names_for_temporary_files_during_preprocessing = Private.short_names_for_temporary_files_during_preprocessing ;; 
 
 let write = Private.write ;;

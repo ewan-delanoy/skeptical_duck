@@ -293,8 +293,12 @@ module Private = struct
 let names_for_temporary_files_during_preprocessing cpsl separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
   let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
-  let (short_preprocessable,short_preprocessed) = 
-     Cee_compilation_command.short_names_for_temporary_files_during_preprocessing separate_cmd in 
+  let short_preprocessable = 
+     Cee_compilation_command.ending_for_temporary_preprocessable 
+       separate_cmd in 
+  let short_preprocessed = 
+     Cee_compilation_command.ending_for_temporary_preprocessed 
+       separate_cmd in      
   let file_to_be_preprocessed = 
        (endingless^"_"^short_preprocessable) 
   and preprocessed_file = 
@@ -318,8 +322,12 @@ let keep_temporary_files_mode = ref false ;;
   let compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed = 
     let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
     let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
-    let (short_preprocessable,short_preprocessed) = 
-     Cee_compilation_command.short_names_for_temporary_files_during_preprocessing separate_cmd in 
+    let short_preprocessable = 
+      Cee_compilation_command.ending_for_temporary_preprocessable 
+        separate_cmd in 
+    let short_preprocessed = 
+      Cee_compilation_command.ending_for_temporary_preprocessed 
+        separate_cmd in  
     let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
     let name_for_preprocessable_file = endingless^"_"^short_preprocessable
     and name_for_preprocessed_file = endingless^"_"^short_preprocessed in 
