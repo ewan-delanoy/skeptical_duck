@@ -290,28 +290,10 @@ module Private = struct
     let str_mem = Ordered.mem str_order ;; 
     let str_sort = Ordered.sort str_order ;; 
 
-let names_for_temporary_files_during_preprocessing cpsl separate_cmd  = 
-  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
-  let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
-  let short_preprocessable = 
-     Cee_compilation_command.ending_for_temporary_preprocessable 
-       separate_cmd in 
-  let short_preprocessed = 
-     Cee_compilation_command.ending_for_temporary_preprocessed 
-       separate_cmd in      
-  let file_to_be_preprocessed = 
-       (endingless^"_"^short_preprocessable) 
-  and preprocessed_file = 
-      (endingless^"_"^short_preprocessed) in 
-  (file_to_be_preprocessed,preprocessed_file) ;;
-
 let main_preprocessing_command cpsl separate_cmd = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
-  let core_of_command = Cee_compilation_command.adapt_command 
-    ~root_dir:dest_dir separate_cmd.Cee_compilation_command_t.core_of_command in 
-  let (name_for_preprocessable_file,name_for_preprocessed_file) = 
-     names_for_temporary_files_during_preprocessing cpsl separate_cmd in 
-  core_of_command^" -E "^name_for_preprocessable_file^" -o "^name_for_preprocessed_file  ;;
+  Cee_compilation_command.preprocess_only_version
+     dest_dir separate_cmd ;; 
 
 let announce cmd = 
   (print_string("Executing "^cmd^" ...\n\n");
