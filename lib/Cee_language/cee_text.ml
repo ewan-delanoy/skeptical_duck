@@ -578,7 +578,6 @@ let standardize_inclusion_line line =
 end ;;  
 
 let included_local_files_in_text = Private.included_local_files_in_text ;;
-let marker_inside_text = Private.marker_inside_text ;;
 let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
 let standardize_inclusion_line = Private.standardize_inclusion_line ;;
