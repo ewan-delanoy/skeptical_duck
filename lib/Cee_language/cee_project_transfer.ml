@@ -377,24 +377,6 @@ let remove_cds_in_directly_compiled_files cpsl separate_cmds =
 let remove_cds_in_all_directly_compiled_files cpsl = 
   remove_cds_in_directly_compiled_files cpsl (Capsule.separate_commands cpsl) ;; 
 
-let cleanup_temporary_data_for_file cpsl separate_cmd  = 
-  let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl)  in  
-  let s_ap = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
-  let short_s_ap = Cull_string.coending 2 s_ap 
-  and ending = separate_cmd.Cee_compilation_command_t.ending in
-  let second_filename = 
-       (short_s_ap^"_"^Cee_text.random_marker^"_second"^ending) in
-  let third_filename = 
-      (short_s_ap^"_"^Cee_text.random_marker^"_third"^ending) in 
-  Unix_command.conditional_multiple_uc [
-       "rm -f "^second_filename;
-       "rm -f "^third_filename
-  ]  ;;
-  
-let cleanup_temporary_files_after_cds_removal cpsl =   
-  Image.image (cleanup_temporary_data_for_file cpsl) (Capsule.separate_commands cpsl) ;;
-
-   
  let normalize_included_filename cpsl includer_dir included_fn = 
    Private2.normalize_included_filename Capsule.all_h_or_c_files
    cpsl includer_dir included_fn;;

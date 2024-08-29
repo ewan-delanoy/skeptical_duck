@@ -432,11 +432,11 @@ let standardize_guard_in_text text =
   then Some(emphatize_first_ivy_and_last_endif text)
   else None ;;   
 
- let random_marker = "cgmvgtkcxvvxckt" ;;  
+ let marker_inside_text = "cgmvgtkcxvvxckt" ;;  
 
  let parametrized_marker name_for_watermarkable_file k =
    let sk = string_of_int k in 
-   random_marker^name_for_watermarkable_file^sk^random_marker ;;
+   marker_inside_text^name_for_watermarkable_file^sk^marker_inside_text ;;
  
  let parametrized_line name_for_watermarkable_file cd_idx =  
    "char* unused_string"^(string_of_int cd_idx)^"=\""^
@@ -578,7 +578,7 @@ let standardize_inclusion_line line =
 end ;;  
 
 let included_local_files_in_text = Private.included_local_files_in_text ;;
-let random_marker = Private.random_marker ;;
+let marker_inside_text = Private.marker_inside_text ;;
 let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
 let standardize_inclusion_line = Private.standardize_inclusion_line ;;
