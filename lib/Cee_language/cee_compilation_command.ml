@@ -131,8 +131,6 @@ let write = function
 
 end ;;
 
-let adapt_command = Private.adapt_command ;;
-
 let ending_for_temporary_preprocessable = 
   Private.ending_for_temporary_preprocessable ;; 
 
