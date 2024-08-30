@@ -333,22 +333,22 @@ let keep_temporary_files_mode = ref false ;;
    ) in 
    answer;;
 
-let remove_cds_in_file cpsl ~name_for_watermarkable_file separate_cmd  = 
+let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
   let old_text = Capsule.read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
-  let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_watermarkable_file old_text in
+  let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
   let preprocessed_text = compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed in 
-  let new_text = Cee_text.rewrite_using_watermarks old_text ~name_for_watermarkable_file ~watermarked_text:preprocessed_text in 
-  let target_filename = dest_dir ^ name_for_watermarkable_file in 
+  let new_text = Cee_text.rewrite_using_watermarks old_text ~name_for_container_file ~watermarked_text:preprocessed_text in 
+  let target_filename = dest_dir ^ name_for_container_file in 
   let target_file = Absolute_path.create_file_if_absent target_filename in  
-  let _ = announce("(unifdeffed  "^ name_for_watermarkable_file^") > "^
-     (dest_last ^ name_for_watermarkable_file)^")") in 
+  let _ = announce("(unifdeffed  "^ name_for_container_file^") > "^
+     (dest_last ^ name_for_container_file)^")") in 
   Io.overwrite_with target_file new_text ;;
 
 let remove_cds_in_directly_compiled_file cpsl  separate_cmd  = 
- let name_for_watermarkable_file = separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
- remove_cds_in_file cpsl ~name_for_watermarkable_file separate_cmd ;;
+ let name_for_container_file = separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
+ remove_cds_in_file cpsl ~name_for_container_file separate_cmd ;;
 
 let remove_cds_in_directly_compiled_files cpsl separate_cmds = 
   let temp1 = Int_range.index_everything separate_cmds 

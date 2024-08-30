@@ -447,14 +447,14 @@ let standardize_guard_in_text text =
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
- let rewrite_using_watermarks old_text ~name_for_watermarkable_file ~watermarked_text =   
+ let rewrite_using_watermarks old_text ~name_for_container_file ~watermarked_text =   
    let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
       fun (ssp_idx,ssp) ->
        if ssp.namespace = 0 then true else 
-       Substring.is_a_substring_of (parametrized_marker name_for_watermarkable_file ssp_idx) watermarked_text 
+       Substring.is_a_substring_of (parametrized_marker name_for_container_file ssp_idx) watermarked_text 
    ) indexed_ssps in 
    let accepted_intervals = Image.image (
      fun (_,ssp) -> (ssp.start_idx,ssp.end_idx)
@@ -475,7 +475,7 @@ let standardize_guard_in_text text =
         Some(ssp.start_idx,ssp_idx) 
     ) indexed_ssps ;;
   
-  let watermark_text ~name_for_watermarkable_file text = 
+  let watermark_text ~name_for_container_file text = 
      let lines = Lines_in_string.indexed_lines text 
      and ssps = compute_small_spaces_in_text text in 
      let indexed_ssps = Int_range.index_everything ssps in
@@ -485,7 +485,7 @@ let standardize_guard_in_text text =
           match List.assoc_opt line_idx pairs with 
           None -> [line]
           | (Some ssp_idx) ->
-             [parametrized_line name_for_watermarkable_file ssp_idx;line]
+             [parametrized_line name_for_container_file ssp_idx;line]
      ) lines in  
      (String.concat "\n" (List.flatten temp1)) ;;
 
