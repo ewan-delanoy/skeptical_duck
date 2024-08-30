@@ -105,9 +105,10 @@ module Capsule = (struct
     commands : Cee_compilation_command_t.t list;
     all_h_or_c_files_opt : (string list) option ;
     separate_commands_opt : (Cee_compilation_command_t.separate_t list) option;
-    directly_compiled_files_opt : (string list) option ;
     filecontents : (string, string) Hashtbl.t ;
+    directly_compiled_files_opt : (string list) option ;
     inclusions_in_dc_files_opt : ((string * int * string) list) option;
+    shadows_for_dc_files_opt : ((string * Cee_shadow_t.t) list) option;
     directly_included_files_opt : (string list) option ;
     inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
  } ;;
@@ -132,9 +133,10 @@ module Capsule = (struct
    commands = Image.image Cee_compilation_command.parse raw_commands;
    all_h_or_c_files_opt = None ;
    separate_commands_opt = None ;
-   directly_compiled_files_opt = None ;
    filecontents = Hashtbl.create 3000;
+   directly_compiled_files_opt = None ;
    inclusions_in_dc_files_opt = None;
+   shadows_for_dc_files_opt = None;
    directly_included_files_opt = None ;
    inclusions_for_di_files = Hashtbl.create 600;
 }) ;;
@@ -248,6 +250,24 @@ let compute_all_h_or_c_files cpt =
           let _ = (cpsl_ref:=new_cpsl) in 
           answer ;;
 
+  let compute_shadows_for_dc_files cpsl_ref = 
+    let cmds = separate_commands cpsl_ref in 
+    Image.image (
+      fun _ -> failwith("aaa")
+         (* compute_shadow_for_separate_command *)
+    ) cmds ;;    
+            
+  let shadows_for_dc_files cpsl_ref = 
+    match (!cpsl_ref).shadows_for_dc_files_opt with 
+    (Some old_answer) -> old_answer 
+    |None ->
+     let answer = compute_shadows_for_dc_files cpsl_ref in 
+     let new_cpsl = {(!cpsl_ref) with 
+         shadows_for_dc_files_opt = Some answer 
+     } in 
+     let _ = (cpsl_ref:=new_cpsl) in 
+     answer ;;
+
     let compute_directly_included_files cpsl_ref = 
       let temp1 = inclusions_in_dc_files cpsl_ref in 
       let temp2 = str_sort(Image.image ( fun 
@@ -332,6 +352,20 @@ let keep_temporary_files_mode = ref false ;;
     ] in ()
    ) in 
    answer;;
+
+  let cosha cpsl ~name_for_container_file separate_cmd  = 
+   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
+   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
+   let old_text = Capsule.read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
+   let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
+   let preprocessed_text = compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed in 
+   let shadow = Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text in 
+   let new_text = Cee_text.rewrite_using_shadow old_text shadow in 
+   let target_filename = dest_dir ^ name_for_container_file in 
+   let target_file = Absolute_path.create_file_if_absent target_filename in  
+   let _ = announce("(unifdeffed  "^ name_for_container_file^") > "^
+      (dest_last ^ name_for_container_file)^")") in 
+   Io.overwrite_with target_file new_text ;;
 
 let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  

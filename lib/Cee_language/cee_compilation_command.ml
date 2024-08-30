@@ -129,6 +129,11 @@ let write = function
   (Separate s) -> write_separate s 
   |(Batch b) -> write_batch b ;;
 
+let separate_to_file separate_cmd = 
+  separate_cmd.Cee_compilation_command_t.short_path ^ 
+  separate_cmd.Cee_compilation_command_t.ending ;;
+ 
+
 end ;;
 
 let ending_for_temporary_preprocessable = 
@@ -141,4 +146,6 @@ let parse = Private.parse ;;
 let parse_separate = Private.parse_separate ;;
 
 let preprocess_only_version = Private.preprocess_only_version ;; 
+
+let separate_to_file = Private.separate_to_file ;;
 let write = Private.write ;;
