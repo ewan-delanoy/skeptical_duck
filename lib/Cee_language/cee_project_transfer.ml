@@ -61,6 +61,61 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
       ) (included_files_in_single_file (cpsl_all_h_or_c_files,cpsl_read_file) cpsl includer_fn)
     ) includers);; 
 
+  let announce cmd = 
+      (print_string("Executing "^cmd^" ...\n\n");
+      flush stdout) ;;
+    
+  let keep_temporary_files_mode = ref false ;;  
+
+  let main_preprocessing_command_for_separate_shadow 
+  (cpsl_destination) cpsl separate_cmd = 
+  let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
+  Cee_compilation_command.preprocess_only_version
+     dest_dir separate_cmd ;; 
+
+ let compute_preprocessing_output_for_separate_shadow 
+   (cpsl_destination) cpsl separate_cmd text_to_be_preprocessed = 
+  let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
+  let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
+  let short_preprocessable = 
+    Cee_compilation_command.ending_for_temporary_preprocessable 
+      separate_cmd in 
+  let short_preprocessed = 
+    Cee_compilation_command.ending_for_temporary_preprocessed 
+      separate_cmd in  
+  let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
+  let name_for_preprocessable_file = endingless^"_"^short_preprocessable
+  and name_for_preprocessed_file = endingless^"_"^short_preprocessed in 
+  let preprocessable_file = Absolute_path.create_file_if_absent name_for_preprocessable_file in
+  let _ = announce("(watermark  "^
+     (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^
+     (dest_last ^ separate_cmd.Cee_compilation_command_t.short_path ^"_"^short_preprocessable)^")") in 
+  let _ = Io.overwrite_with preprocessable_file text_to_be_preprocessed in  
+  let cmd1 = main_preprocessing_command_for_separate_shadow
+     (cpsl_destination) cpsl separate_cmd in 
+  let _ = announce(cmd1) in 
+  let _ = Unix_command.uc cmd1 in 
+ let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in 
+ let answer = Io.read_whole_file preprocessed_file in 
+ let _ = (
+  if (not(!keep_temporary_files_mode)) 
+  then let _ = Unix_command.conditional_multiple_uc [
+    "rm -f "^name_for_preprocessable_file;
+    "rm -f "^name_for_preprocessed_file
+  ] in ()
+ ) in 
+ answer;;
+
+
+let shadow_for_separate_command (cpsl_destination,cpsl_read_file) cpsl separate_cmd  = 
+ let name_for_container_file = 
+  Cee_compilation_command.separate_to_file separate_cmd in 
+ let old_text = cpsl_read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
+ let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
+ let preprocessed_text = compute_preprocessing_output_for_separate_shadow 
+    cpsl_destination cpsl separate_cmd text_to_be_preprocessed in 
+ Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text  ;;
+
 
 end ;;  
 
@@ -82,7 +137,8 @@ module type CAPSULE_TYPE = sig
    val directly_compiled_files : t -> string list
  
    val inclusions_in_dc_files : t -> ((string * int * string) list)
-
+   
+   val shadows_for_dc_files : t -> ((string * Cee_shadow_t.t) list)
    val directly_included_files : t -> string list
    val inclusions_for_di_file : t -> string -> (string * int) list
    val read_file : t -> string -> string  
@@ -253,8 +309,10 @@ let compute_all_h_or_c_files cpt =
   let compute_shadows_for_dc_files cpsl_ref = 
     let cmds = separate_commands cpsl_ref in 
     Image.image (
-      fun _ -> failwith("aaa")
-         (* compute_shadow_for_separate_command *)
+      fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
+      Private2.shadow_for_separate_command 
+      (destination,read_file) cpsl_ref cmd 
+      )
     ) cmds ;;    
             
   let shadows_for_dc_files cpsl_ref = 
@@ -338,10 +396,9 @@ let keep_temporary_files_mode = ref false ;;
        (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^
        (dest_last ^ separate_cmd.Cee_compilation_command_t.short_path ^"_"^short_preprocessable)^")") in 
     let _ = Io.overwrite_with preprocessable_file text_to_be_preprocessed in  
-  
-   let cmd1 = main_preprocessing_command cpsl separate_cmd in 
-   let _ = announce(cmd1) in 
-   let _ = Unix_command.uc cmd1 in 
+    let cmd1 = main_preprocessing_command cpsl separate_cmd in 
+    let _ = announce(cmd1) in 
+    let _ = Unix_command.uc cmd1 in 
    let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in 
    let answer = Io.read_whole_file preprocessed_file in 
    let _ = (
@@ -353,20 +410,7 @@ let keep_temporary_files_mode = ref false ;;
    ) in 
    answer;;
 
-  let cosha cpsl ~name_for_container_file separate_cmd  = 
-   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
-   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
-   let old_text = Capsule.read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
-   let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
-   let preprocessed_text = compute_preprocessing_output cpsl separate_cmd text_to_be_preprocessed in 
-   let shadow = Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text in 
-   let new_text = Cee_text.rewrite_using_shadow old_text shadow in 
-   let target_filename = dest_dir ^ name_for_container_file in 
-   let target_file = Absolute_path.create_file_if_absent target_filename in  
-   let _ = announce("(unifdeffed  "^ name_for_container_file^") > "^
-      (dest_last ^ name_for_container_file)^")") in 
-   Io.overwrite_with target_file new_text ;;
-
+  
 let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in 
@@ -382,7 +426,8 @@ let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  =
   Io.overwrite_with target_file new_text ;;
 
 let remove_cds_in_directly_compiled_file cpsl  separate_cmd  = 
- let name_for_container_file = separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending in 
+ let name_for_container_file = 
+  Cee_compilation_command.separate_to_file separate_cmd in 
  remove_cds_in_file cpsl ~name_for_container_file separate_cmd ;;
 
 let remove_cds_in_directly_compiled_files cpsl separate_cmds = 
