@@ -447,15 +447,24 @@ let standardize_guard_in_text text =
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
- let rewrite_using_watermarks old_text ~name_for_container_file ~watermarked_text =   
-   let lines = Lines_in_string.indexed_lines old_text 
-   and ssps = compute_small_spaces_in_text old_text  in 
+let compute_shadow old_text ~name_for_container_file ~watermarked_text =   
+   let ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
-      fun (ssp_idx,ssp) ->
-       if ssp.namespace = 0 then true else 
-       Substring.is_a_substring_of (parametrized_marker name_for_container_file ssp_idx) watermarked_text 
+         fun (ssp_idx,ssp) ->
+          if ssp.namespace = 0 then true else 
+          Substring.is_a_substring_of 
+          (parametrized_marker name_for_container_file ssp_idx) watermarked_text 
    ) indexed_ssps in 
+   Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
+
+ let rewrite_using_shadow old_text (Cee_shadow_t.Sh(_,accepted_indices)) =   
+   let lines = Lines_in_string.indexed_lines old_text 
+   and ssps = compute_small_spaces_in_text old_text  in 
+   let accepted_ssps = Image.image(
+      fun ssp_idx ->
+       (ssp_idx,List.nth ssps (ssp_idx-1)) 
+   ) accepted_indices in 
    let accepted_intervals = Image.image (
      fun (_,ssp) -> (ssp.start_idx,ssp.end_idx)
    ) accepted_ssps in 
@@ -577,8 +586,9 @@ let standardize_inclusion_line line =
 
 end ;;  
 
+let compute_shadow = Private.compute_shadow ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
-let rewrite_using_watermarks = Private.rewrite_using_watermarks ;;
+let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
 let standardize_inclusion_line = Private.standardize_inclusion_line ;;
 let watermark_text= Private.watermark_text;;

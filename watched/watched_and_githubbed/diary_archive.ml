@@ -1,14 +1,52 @@
 (************************************************************************************************************************
-Snippet 144 : 
+Snippet 145 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 143 : Generate a random string
+Snippet 144 : Compare two filecontents
 ************************************************************************************************************************)
 
+module Snip144=struct
+
+
+  let u1 = Io.read_whole_file 
+  (Absolute_path.of_string
+  (home^"/Teuliou/OCaml/Githubbed_ocaml/lib/Cee_language/cee_text.ml"));;
+  
+  let u2 = Io.read_whole_file 
+  (Absolute_path.of_string
+  (home^"/Teuliou/OCaml/skeptical_duck/lib/Cee_language/cee_text.ml"));;
+  
+  let all_lines1 = Lines_in_string.lines u1 ;;
+  
+  let all_lines2 = Lines_in_string.lines u2 ;;
+  
+  let m = min (List.length all_lines1) (List.length all_lines2) ;;
+  
+  let lines1 = List_again.long_head m all_lines1;;
+  
+  let lines2 = List_again.long_head m all_lines2;;
+  
+  let lines_from_both =
+       Int_range.index_everything (
+         List.combine lines1 lines2
+       );;
+  
+  let different_lines = List.filter 
+    (fun (idx,(x,y))->x<>y)
+   lines_from_both ;;
+  
+  
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 143 : Generate a random string
+************************************************************************************************************************)
 module Snip143=struct
 
   let main_list =['a';'e';'i';'o';'u';'y';'A';'E';'I';'O';'U';'Y'];;
