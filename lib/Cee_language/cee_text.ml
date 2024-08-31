@@ -9,6 +9,7 @@ exception Lonely_Else_exn of int ;;
 exception Lonely_Endif_exn of int ;;
 exception Double_Else_exn of int ;;
 exception Standardize_inclusion_line_exn of string ;;  
+exception Add_extra_inclusion_line_exn of string ;;
   
 module Private = struct 
 
@@ -574,18 +575,42 @@ let included_local_files_in_text text =
      
    
 let standardize_inclusion_line line = 
-     let occs = Substring.occurrences_of_in "\"" line in 
-     if List.length(occs)<>2
-     then raise(Standardize_inclusion_line_exn(line))
-     else 
-     let i1 = List.nth occs 0 
-     and i2 = List.nth occs 1 in 
-     let b = Bytes.of_string line in 
-     let _ = (Bytes.set b (i1-1) '<';Bytes.set b (i2-1) '>') in 
-     Bytes.to_string b ;;
+  let occs = Substring.occurrences_of_in "\"" line in 
+  if List.length(occs)<>2
+  then raise(Standardize_inclusion_line_exn(line))
+  else 
+  let i1 = List.nth occs 0 
+  and i2 = List.nth occs 1 in 
+  let b = Bytes.of_string line in 
+  let _ = (Bytes.set b (i1-1) '<';Bytes.set b (i2-1) '>') in 
+  Bytes.to_string b ;;
+
+let add_extra_ending_in_filename ~extra fn = 
+  let (basename,ending) = Cull_string.split_wrt_rightmost fn '.'  in 
+  (basename^"_"^extra^"."^ending) ;;
+
+
+let add_extra_ending_in_inclusion_line ~extra line = 
+  let occs = Substring.occurrences_of_in "\"" line in 
+  if List.length(occs)<>2
+  then raise(Add_extra_inclusion_line_exn(line))
+  else 
+  let i1 = List.nth occs 0 
+  and i2 = List.nth occs 1 in 
+  let included_file = Cull_string.interval line (i1+1) (i2-1) in 
+  (Cull_string.beginning i1 line)^
+  (add_extra_ending_in_filename ~extra included_file)^
+  (Cull_string.interval line i2 (String.length line)) ;;
+
+(*  
+  add_extra_ending_in_inclusion_line 
+  ~extra:"fat" "# include \"The_brown.cat\"";;
+*)
 
 end ;;  
 
+let add_extra_ending_in_filename = Private.add_extra_ending_in_filename ;;
+let add_extra_ending_in_inclusion_line = Private.add_extra_ending_in_inclusion_line ;;
 let compute_shadow = Private.compute_shadow ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;

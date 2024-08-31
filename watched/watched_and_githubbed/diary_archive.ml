@@ -1,14 +1,64 @@
 (************************************************************************************************************************
-Snippet 145 : 
+Snippet 147 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 144 : Compare two filecontents
+Snippet 146 : add numbering to an interval of lines in a file 
 ************************************************************************************************************************)
 
+module Snip146=struct
+
+
+  let ap1 = Absolute_path.of_string (
+    home ^ "/Downloads/souplex.txt");;
+  
+  let text1 = Io.read_whole_file ap1 ;; 
+  
+  let lines1 = Lines_in_string.indexed_lines text1 ;; 
+  
+  let (lines2,lines3) = List.partition (
+    fun (idx,line) -> idx <= 56 
+  ) lines1 ;;
+  
+  let lines2_v2 = Image.image (
+    fun (idx,line) -> 
+      let s_idx = string_of_int idx in 
+      let t_idx = Strung.insert_repetitive_offset_on_the_left
+        '0' 2 s_idx in 
+      (idx,"   "^t_idx^". "^(Cull_string.trim_spaces_on_the_left line))
+  ) lines2;;
+  
+  let lines1_v2 = Image.image snd (lines2_v2@lines3) ;; 
+  
+  let text2 = String.concat "\n" lines1_v2 ;; 
+  
+  Io.overwrite_with ap1 text2 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 145 : Simple copy/replace in a file
+************************************************************************************************************************)
+module Snip145=struct
+
+  let ap1 = Absolute_path.of_string (
+    home ^ "/Teuliou/html_files/Translations/ws8_translated.txt");;
+  
+  Replace_inside.replace_inside_file 
+    ("oe","œ") ap1;;  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 144 : Compare two filecontents
+************************************************************************************************************************)
 module Snip144=struct
 
 
