@@ -607,10 +607,23 @@ let add_extra_ending_in_inclusion_line ~extra line =
   ~extra:"fat" "# include \"The_brown.cat\"";;
 *)
 
+let add_extra_ending_in_inclusions_inside_text ~extra text =
+  let lines_before = Lines_in_string.lines text 
+  and counter=ref 0 in 
+  let lines_after = Image.image(
+    fun line -> 
+      if (included_local_file_opt line)<>None
+      then let _ =(counter:=(!counter)+1) in 
+      add_extra_ending_in_inclusion_line ~extra line 
+      else line    
+  ) lines_before in 
+  (String.concat "\n" lines_after,!counter);;
+   
+
 end ;;  
 
 let add_extra_ending_in_filename = Private.add_extra_ending_in_filename ;;
-let add_extra_ending_in_inclusion_line = Private.add_extra_ending_in_inclusion_line ;;
+let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inclusions_inside_text ;;
 let compute_shadow = Private.compute_shadow ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
