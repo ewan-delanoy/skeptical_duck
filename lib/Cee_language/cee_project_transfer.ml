@@ -144,6 +144,8 @@ module type CAPSULE_INTERFACE = sig
    val read_file : t -> string -> string  
 
    val modify_file : t -> string -> string -> unit
+
+   val create_file : t -> string -> ?new_content_description:string -> string -> unit
    
    val write_makefile : t -> unit
 
@@ -269,6 +271,18 @@ let compute_all_h_or_c_files cpt =
     let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
     let ap = Absolute_path.of_string (dest_dir ^ fn) in
     Io.overwrite_with ap new_content;;
+
+  let create_file cpsl_ref fn ?new_content_description new_content =
+    let cpsl = (!cpsl_ref) in 
+    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+    let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
+    let _ = Io.overwrite_with ap new_content in
+    let end_of_msg = (
+      match new_content_description with 
+      None -> ""
+      |Some (descr) -> ", with content "^descr
+    )  in 
+    Private2.announce("Created file  "^fn^end_of_msg) ;;
 
   let text_for_makefile cpsl =
     let temp1 = Int_range.index_everything cpsl.commands in 
