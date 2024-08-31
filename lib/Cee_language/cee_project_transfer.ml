@@ -120,7 +120,7 @@ let shadow_for_separate_command (cpsl_destination,cpsl_read_file) cpsl separate_
 end ;;  
 
 
-module type CAPSULE_TYPE = sig
+module type CAPSULE_INTERFACE = sig
    
   
 
@@ -359,7 +359,7 @@ let compute_all_h_or_c_files cpt =
       let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in 
       answer ;;
 
-end :CAPSULE_TYPE);; 
+end :CAPSULE_INTERFACE);; 
 
 module Private = struct 
 
