@@ -585,10 +585,6 @@ let standardize_inclusion_line line =
   let _ = (Bytes.set b (i1-1) '<';Bytes.set b (i2-1) '>') in 
   Bytes.to_string b ;;
 
-let add_extra_ending_in_filename ~extra fn = 
-  let (basename,ending) = Cull_string.split_wrt_rightmost fn '.'  in 
-  (basename^"_"^extra^"."^ending) ;;
-
 
 let add_extra_ending_in_inclusion_line ~extra line = 
   let occs = Substring.occurrences_of_in "\"" line in 
@@ -599,7 +595,7 @@ let add_extra_ending_in_inclusion_line ~extra line =
   and i2 = List.nth occs 1 in 
   let included_file = Cull_string.interval line (i1+1) (i2-1) in 
   (Cull_string.beginning i1 line)^
-  (add_extra_ending_in_filename ~extra included_file)^
+  (Cee_common.add_extra_ending_in_filename ~extra included_file)^
   (Cull_string.interval line i2 (String.length line)) ;;
 
 (*  
@@ -622,7 +618,6 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
 
 end ;;  
 
-let add_extra_ending_in_filename = Private.add_extra_ending_in_filename ;;
 let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inclusions_inside_text ;;
 let compute_shadow = Private.compute_shadow ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
