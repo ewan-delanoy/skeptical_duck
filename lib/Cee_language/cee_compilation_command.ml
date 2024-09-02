@@ -81,16 +81,6 @@ let adapt_command ~root_dir cmd =
   let temp4 = Image.image (adapt_element root_dir) temp3 in 
   String.concat " " temp4 ;;
 
-let random_marker = "uAiuoAUYyo" ;; 
-
-let ending_for_temporary_preprocessable separate_cmd  =  
-  let ending = separate_cmd.Cee_compilation_command_t.ending in
-  random_marker^"_preprocessable"^ending ;;
- 
-let ending_for_temporary_preprocessed separate_cmd  =  
-  let ending = separate_cmd.Cee_compilation_command_t.ending in
-  random_marker^"_preprocessed"^ending ;;  
-
 let short_name_from_separate separate_cmd = 
   separate_cmd.Cee_compilation_command_t.short_path ^ 
   separate_cmd.Cee_compilation_command_t.ending ;; 
@@ -106,21 +96,7 @@ let name_for_preprocessable root_dir separate_cmd =
 let name_for_preprocessed root_dir separate_cmd = 
   Cee_common.add_extra_ending_in_filename
      ~extra:"preprocessed" (name_from_separate root_dir separate_cmd);; 
-    
 
-  let names_for_temporary_files_during_preprocessing root_dir separate_cmd  = 
-  let endingless = root_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
-  let short_preprocessable = 
-     ending_for_temporary_preprocessable 
-       separate_cmd in 
-  let short_preprocessed = 
-     ending_for_temporary_preprocessed 
-       separate_cmd in      
-  let file_to_be_preprocessed = 
-       (endingless^"_"^short_preprocessable) 
-  and preprocessed_file = 
-      (endingless^"_"^short_preprocessed) in 
-  (file_to_be_preprocessed,preprocessed_file) ;;
 
 let preprocess_only_version root_dir separate_cmd = 
     let core_of_command = adapt_command 
@@ -155,11 +131,6 @@ let separate_to_file separate_cmd =
 
 end ;;
 
-let ending_for_temporary_preprocessable = 
-  Private.ending_for_temporary_preprocessable ;; 
-
-let ending_for_temporary_preprocessed = 
-    Private.ending_for_temporary_preprocessed ;;
 
 let name_for_preprocessable = Private.name_for_preprocessable ;;
 let name_for_preprocessed = Private.name_for_preprocessed ;;

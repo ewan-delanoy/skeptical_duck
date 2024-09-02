@@ -77,16 +77,15 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
    (cpsl_destination) cpsl separate_cmd text_to_be_preprocessed = 
   let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
   let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
-  let short_preprocessable = 
-    Cee_compilation_command.ending_for_temporary_preprocessable 
-      separate_cmd in 
   let name_for_preprocessable_file = Cee_compilation_command.name_for_preprocessable dest_dir separate_cmd 
   and name_for_preprocessed_file = Cee_compilation_command.name_for_preprocessed dest_dir separate_cmd in 
-   
+  let short_name_for_preprocessable_file =  
+    Cee_common.add_extra_ending_in_filename
+    ~extra:"preprocessable" (Cee_compilation_command.short_name_from_separate separate_cmd) in  
   let preprocessable_file = Absolute_path.create_file_if_absent name_for_preprocessable_file in
   let _ = announce("(watermark  "^
      (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^
-     (dest_last ^ separate_cmd.Cee_compilation_command_t.short_path ^"_"^short_preprocessable)^")") in 
+     (dest_last ^ short_name_for_preprocessable_file)^")") in 
   let _ = Io.overwrite_with preprocessable_file text_to_be_preprocessed in  
   let cmd1 = main_preprocessing_command_for_separate_shadow
      (cpsl_destination) cpsl separate_cmd in 
