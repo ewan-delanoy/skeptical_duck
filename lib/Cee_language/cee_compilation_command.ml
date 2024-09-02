@@ -91,6 +91,20 @@ let ending_for_temporary_preprocessed separate_cmd  =
   let ending = separate_cmd.Cee_compilation_command_t.ending in
   random_marker^"_preprocessed"^ending ;;  
 
+let name_from_separate root_dir separate_cmd = 
+  root_dir ^ 
+  separate_cmd.Cee_compilation_command_t.short_path ^ 
+  separate_cmd.Cee_compilation_command_t.ending ;; 
+
+let name_for_preprocessable root_dir separate_cmd = 
+  Cee_common.add_extra_ending_in_filename
+     ~extra:"preprocessable" (name_from_separate root_dir separate_cmd) ;; 
+
+let name_for_preprocessed root_dir separate_cmd = 
+  Cee_common.add_extra_ending_in_filename
+     ~extra:"preprocessed" (name_from_separate root_dir separate_cmd);; 
+    
+
   let names_for_temporary_files_during_preprocessing root_dir separate_cmd  = 
   let endingless = root_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
   let short_preprocessable = 
@@ -108,8 +122,10 @@ let ending_for_temporary_preprocessed separate_cmd  =
 let preprocess_only_version root_dir separate_cmd = 
     let core_of_command = adapt_command 
       ~root_dir separate_cmd.Cee_compilation_command_t.core_of_command in 
-    let (name_for_preprocessable_file,name_for_preprocessed_file) = 
-       names_for_temporary_files_during_preprocessing root_dir separate_cmd in 
+    let name_for_preprocessable_file =
+      name_for_preprocessable root_dir separate_cmd 
+    and name_for_preprocessed_file =
+      name_for_preprocessed root_dir separate_cmd  in  
     core_of_command^" -E "^name_for_preprocessable_file^" -o "^name_for_preprocessed_file  ;;
   
 
@@ -141,6 +157,9 @@ let ending_for_temporary_preprocessable =
 
 let ending_for_temporary_preprocessed = 
     Private.ending_for_temporary_preprocessed ;;
+
+let name_for_preprocessable = Private.name_for_preprocessable ;;
+let name_for_preprocessed = Private.name_for_preprocessed ;;
 
 let parse = Private.parse ;;
 let parse_separate = Private.parse_separate ;;
