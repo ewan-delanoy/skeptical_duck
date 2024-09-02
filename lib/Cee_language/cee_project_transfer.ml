@@ -80,12 +80,9 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
   let short_preprocessable = 
     Cee_compilation_command.ending_for_temporary_preprocessable 
       separate_cmd in 
-  let short_preprocessed = 
-    Cee_compilation_command.ending_for_temporary_preprocessed 
-      separate_cmd in  
-  let endingless = dest_dir ^ separate_cmd.Cee_compilation_command_t.short_path  in 
-  let name_for_preprocessable_file = endingless^"_"^short_preprocessable
-  and name_for_preprocessed_file = endingless^"_"^short_preprocessed in 
+  let name_for_preprocessable_file = Cee_compilation_command.name_for_preprocessable dest_dir separate_cmd 
+  and name_for_preprocessed_file = Cee_compilation_command.name_for_preprocessed dest_dir separate_cmd in 
+   
   let preprocessable_file = Absolute_path.create_file_if_absent name_for_preprocessable_file in
   let _ = announce("(watermark  "^
      (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^

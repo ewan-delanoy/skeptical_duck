@@ -91,10 +91,13 @@ let ending_for_temporary_preprocessed separate_cmd  =
   let ending = separate_cmd.Cee_compilation_command_t.ending in
   random_marker^"_preprocessed"^ending ;;  
 
-let name_from_separate root_dir separate_cmd = 
-  root_dir ^ 
+let short_name_from_separate separate_cmd = 
   separate_cmd.Cee_compilation_command_t.short_path ^ 
   separate_cmd.Cee_compilation_command_t.ending ;; 
+
+let name_from_separate root_dir separate_cmd = 
+    root_dir ^ 
+   (short_name_from_separate separate_cmd) ;; 
 
 let name_for_preprocessable root_dir separate_cmd = 
   Cee_common.add_extra_ending_in_filename
@@ -167,4 +170,6 @@ let parse_separate = Private.parse_separate ;;
 let preprocess_only_version = Private.preprocess_only_version ;; 
 
 let separate_to_file = Private.separate_to_file ;;
+
+let short_name_from_separate = Private.short_name_from_separate ;;
 let write = Private.write ;;
