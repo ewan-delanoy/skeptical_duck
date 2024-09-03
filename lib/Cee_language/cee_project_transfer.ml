@@ -113,6 +113,227 @@ let shadow_for_separate_command (cpsl_destination,cpsl_read_file) cpsl separate_
  Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text  ;;
 
 
+module PreCapsule = struct 
+
+
+ type immutable_t = {
+  source : Directory_name_t.t ;
+  destination : Directory_name_t.t ;
+  commands : Cee_compilation_command_t.t list;
+  all_h_or_c_files_opt : (string list) option ;
+  separate_commands_opt : (Cee_compilation_command_t.separate_t list) option;
+  filecontents : (string, string) Hashtbl.t ;
+  directly_compiled_files_opt : (string list) option ;
+  inclusions_in_dc_files_opt : ((string * int * string) list) option;
+  shadows_for_dc_files_opt : ((string * Cee_shadow_t.t) list) option;
+  directly_included_files_opt : (string list) option ;
+  inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
+} ;;
+
+type t = immutable_t ref ;;
+let str_order = Total_ordering.lex_for_strings ;;
+let str_sort = Ordered.sort str_order ;;
+
+let str_setminus = Ordered.setminus str_order ;;
+let source cpsl = (!cpsl).source ;;
+
+let destination cpsl = (!cpsl).destination ;; 
+
+let commands cpsl = (!cpsl).commands ;;
+
+
+let make 
+~source:src ~destination:dest raw_commands = 
+ref({
+ source = src ;
+ destination = dest ;
+ commands = Image.image Cee_compilation_command.parse raw_commands;
+ all_h_or_c_files_opt = None ;
+ separate_commands_opt = None ;
+ filecontents = Hashtbl.create 3000;
+ directly_compiled_files_opt = None ;
+ inclusions_in_dc_files_opt = None;
+ shadows_for_dc_files_opt = None;
+ directly_included_files_opt = None ;
+ inclusions_for_di_files = Hashtbl.create 600;
+}) ;;
+
+let compute_all_h_or_c_files cpt = 
+let src = Directory_name.connectable_to_subpath cpt.source in 
+let temp1 = Unix_again.quick_beheaded_complete_ls src in
+str_sort(List.filter (
+  fun fn -> List.exists (fun edg ->
+     String.ends_with fn ~suffix:edg) [".h";".c";".macros"]
+) temp1 );;  
+
+let all_h_or_c_files cpsl_ref = 
+ let old_cpsl = (!cpsl_ref) in
+ match old_cpsl.all_h_or_c_files_opt with 
+(Some old_answer) -> old_answer 
+|None ->
+  let answer = compute_all_h_or_c_files old_cpsl in 
+  let new_cpsl = {old_cpsl with 
+    all_h_or_c_files_opt = Some answer 
+  } in 
+  let _ = (cpsl_ref:=new_cpsl) in 
+  answer ;;
+
+let compute_separate_commands cpsl = 
+  List.filter_map (function 
+    (Cee_compilation_command_t.Batch(_)) -> None 
+    |Cee_compilation_command_t.Separate(s) -> Some s
+  ) cpsl.commands ;;
+    
+let separate_commands cpsl_ref = 
+  let old_cpsl = (!cpsl_ref) in
+     match old_cpsl.separate_commands_opt with 
+    (Some old_answer) -> old_answer 
+    |None ->
+      let answer = compute_separate_commands old_cpsl in 
+      let new_cpsl = {old_cpsl with 
+      separate_commands_opt = Some answer 
+      } in 
+      let _ = (cpsl_ref:=new_cpsl) in 
+      answer ;;
+
+let compute_directly_compiled_files cpsl_ref = 
+  str_sort(Image.image (
+    fun cmd ->
+     (cmd.Cee_compilation_command_t.short_path) ^ 
+     (cmd.Cee_compilation_command_t.ending)
+  ) (separate_commands cpsl_ref)) ;;    
+  
+let directly_compiled_files cpsl_ref = 
+     match (!cpsl_ref).directly_compiled_files_opt with 
+    (Some old_answer) -> old_answer 
+    |None ->
+      let answer = compute_directly_compiled_files cpsl_ref in 
+      let new_cpsl = {(!cpsl_ref) with 
+        directly_compiled_files_opt = Some answer 
+      } in 
+      let _ = (cpsl_ref:=new_cpsl) in 
+      answer ;;
+ 
+let read_file cpsl_ref fn =
+  let cpsl = (!cpsl_ref) in 
+  match Hashtbl.find_opt cpsl.filecontents fn with 
+  (Some old_answer) -> old_answer 
+  | None ->
+    let src_dir = Directory_name.connectable_to_subpath cpsl.source in 
+    let ap = Absolute_path.of_string (src_dir ^ fn) in 
+    let text = Io.read_whole_file ap in 
+    let _ = Hashtbl.add cpsl.filecontents fn text in 
+    text ;;
+    
+let modify_file cpsl_ref fn new_content=
+  let cpsl = (!cpsl_ref) in 
+  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+  let ap = Absolute_path.of_string (dest_dir ^ fn) in
+  Io.overwrite_with ap new_content;;
+
+let create_file cpsl_ref fn ?new_content_description new_content =
+  let cpsl = (!cpsl_ref) in 
+  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+  let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
+  let _ = Io.overwrite_with ap new_content in
+  let end_of_msg = (
+    match new_content_description with 
+    None -> ""
+    |Some (descr) -> ", with content "^descr
+  )  in 
+  announce("Created file  "^fn^end_of_msg) ;;
+
+let text_for_makefile cpsl =
+  let temp1 = Int_range.index_everything cpsl.commands in 
+  let temp2 = Image.image (fun (cmd_idx,cmd)->
+    let s_idx = string_of_int cmd_idx in 
+  [
+  "\t@echo \"************************************************ Step "^s_idx^":\"";
+  "\t"^(Cee_compilation_command.write cmd)  
+  ]) temp1 in
+  let temp3 = ("make all:")::(List.flatten temp2) in 
+  String.concat "\n" temp3 ;; 
+  
+let write_makefile cpsl_ref =
+  let cpsl = (!cpsl_ref) in 
+  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in  
+  let path_for_makefile = Absolute_path.of_string (dest_dir ^ "Makefile" ) in 
+  Io.overwrite_with path_for_makefile (text_for_makefile cpsl) ;;
+
+  let included_files_in_several_files = 
+     included_files_in_several_files 
+  (all_h_or_c_files,read_file) ;;
+
+  let compute_inclusions_in_dc_files cpsl_ref = 
+    included_files_in_several_files cpsl_ref
+      (directly_compiled_files cpsl_ref) ;;    
+    
+  let inclusions_in_dc_files cpsl_ref = 
+       match (!cpsl_ref).inclusions_in_dc_files_opt with 
+      (Some old_answer) -> old_answer 
+      |None ->
+        let answer = compute_inclusions_in_dc_files cpsl_ref in 
+        let new_cpsl = {(!cpsl_ref) with 
+        inclusions_in_dc_files_opt = Some answer 
+        } in 
+        let _ = (cpsl_ref:=new_cpsl) in 
+        answer ;;
+
+let compute_shadows_for_dc_files cpsl_ref = 
+  let cmds = separate_commands cpsl_ref in 
+  Image.image (
+    fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
+    shadow_for_separate_command 
+    (destination,read_file) cpsl_ref cmd 
+    )
+  ) cmds ;;    
+          
+let shadows_for_dc_files cpsl_ref = 
+  match (!cpsl_ref).shadows_for_dc_files_opt with 
+  (Some old_answer) -> old_answer 
+  |None ->
+   let answer = compute_shadows_for_dc_files cpsl_ref in 
+   let new_cpsl = {(!cpsl_ref) with 
+       shadows_for_dc_files_opt = Some answer 
+   } in 
+   let _ = (cpsl_ref:=new_cpsl) in 
+   answer ;;
+
+  let compute_directly_included_files cpsl_ref = 
+    let temp1 = inclusions_in_dc_files cpsl_ref in 
+    let temp2 = str_sort(Image.image ( fun 
+      (_includer,_line_number,included_one) -> included_one
+    ) temp1) in       
+    str_setminus temp2 (directly_compiled_files cpsl_ref) ;;    
+              
+  let directly_included_files cpsl_ref = 
+    match (!cpsl_ref).directly_included_files_opt with 
+    (Some old_answer) -> old_answer 
+    |None ->
+      let answer = compute_directly_included_files cpsl_ref in 
+      let new_cpsl = {(!cpsl_ref) with 
+                    directly_included_files_opt = Some answer 
+      } in 
+      let _ = (cpsl_ref:=new_cpsl) in 
+      answer ;;    
+      
+let inclusions_for_di_file cpsl_ref fn =
+  let cpsl = (!cpsl_ref) in 
+  match Hashtbl.find_opt cpsl.inclusions_for_di_files fn with 
+  (Some old_answer) -> old_answer 
+  | None ->
+    let temp1 = inclusions_in_dc_files cpsl_ref in 
+    let answer = List.filter_map (
+      fun (includer,line_number,included_one) -> 
+        if included_one = fn 
+        then Some(includer,line_number) 
+        else None   
+       ) temp1 in 
+    let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in 
+    answer ;;
+
+end ;;
+
 end ;;  
 
 
@@ -150,226 +371,7 @@ module type CAPSULE_INTERFACE = sig
 
 
  
-module Capsule = (struct 
-
-
- type immutable_t = {
-    source : Directory_name_t.t ;
-    destination : Directory_name_t.t ;
-    commands : Cee_compilation_command_t.t list;
-    all_h_or_c_files_opt : (string list) option ;
-    separate_commands_opt : (Cee_compilation_command_t.separate_t list) option;
-    filecontents : (string, string) Hashtbl.t ;
-    directly_compiled_files_opt : (string list) option ;
-    inclusions_in_dc_files_opt : ((string * int * string) list) option;
-    shadows_for_dc_files_opt : ((string * Cee_shadow_t.t) list) option;
-    directly_included_files_opt : (string list) option ;
-    inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
- } ;;
-
- type t = immutable_t ref ;;
- let str_order = Total_ordering.lex_for_strings ;;
- let str_sort = Ordered.sort str_order ;;
- 
- let str_setminus = Ordered.setminus str_order ;;
- let source cpsl = (!cpsl).source ;;
-
- let destination cpsl = (!cpsl).destination ;; 
-
- let commands cpsl = (!cpsl).commands ;;
-
-
- let make 
- ~source:src ~destination:dest raw_commands = 
- ref({
-   source = src ;
-   destination = dest ;
-   commands = Image.image Cee_compilation_command.parse raw_commands;
-   all_h_or_c_files_opt = None ;
-   separate_commands_opt = None ;
-   filecontents = Hashtbl.create 3000;
-   directly_compiled_files_opt = None ;
-   inclusions_in_dc_files_opt = None;
-   shadows_for_dc_files_opt = None;
-   directly_included_files_opt = None ;
-   inclusions_for_di_files = Hashtbl.create 600;
-}) ;;
-
-let compute_all_h_or_c_files cpt = 
-  let src = Directory_name.connectable_to_subpath cpt.source in 
-  let temp1 = Unix_again.quick_beheaded_complete_ls src in
-  str_sort(List.filter (
-    fun fn -> List.exists (fun edg ->
-       String.ends_with fn ~suffix:edg) [".h";".c";".macros"]
- ) temp1 );;  
-
- let all_h_or_c_files cpsl_ref = 
-   let old_cpsl = (!cpsl_ref) in
-   match old_cpsl.all_h_or_c_files_opt with 
-  (Some old_answer) -> old_answer 
-  |None ->
-    let answer = compute_all_h_or_c_files old_cpsl in 
-    let new_cpsl = {old_cpsl with 
-      all_h_or_c_files_opt = Some answer 
-    } in 
-    let _ = (cpsl_ref:=new_cpsl) in 
-    answer ;;
-
-  let compute_separate_commands cpsl = 
-    List.filter_map (function 
-      (Cee_compilation_command_t.Batch(_)) -> None 
-      |Cee_compilation_command_t.Separate(s) -> Some s
-    ) cpsl.commands ;;
-      
-  let separate_commands cpsl_ref = 
-    let old_cpsl = (!cpsl_ref) in
-       match old_cpsl.separate_commands_opt with 
-      (Some old_answer) -> old_answer 
-      |None ->
-        let answer = compute_separate_commands old_cpsl in 
-        let new_cpsl = {old_cpsl with 
-        separate_commands_opt = Some answer 
-        } in 
-        let _ = (cpsl_ref:=new_cpsl) in 
-        answer ;;
-
-  let compute_directly_compiled_files cpsl_ref = 
-    str_sort(Image.image (
-      fun cmd ->
-       (cmd.Cee_compilation_command_t.short_path) ^ 
-       (cmd.Cee_compilation_command_t.ending)
-    ) (separate_commands cpsl_ref)) ;;    
-    
-  let directly_compiled_files cpsl_ref = 
-       match (!cpsl_ref).directly_compiled_files_opt with 
-      (Some old_answer) -> old_answer 
-      |None ->
-        let answer = compute_directly_compiled_files cpsl_ref in 
-        let new_cpsl = {(!cpsl_ref) with 
-          directly_compiled_files_opt = Some answer 
-        } in 
-        let _ = (cpsl_ref:=new_cpsl) in 
-        answer ;;
-   
-  let read_file cpsl_ref fn =
-    let cpsl = (!cpsl_ref) in 
-    match Hashtbl.find_opt cpsl.filecontents fn with 
-    (Some old_answer) -> old_answer 
-    | None ->
-      let src_dir = Directory_name.connectable_to_subpath cpsl.source in 
-      let ap = Absolute_path.of_string (src_dir ^ fn) in 
-      let text = Io.read_whole_file ap in 
-      let _ = Hashtbl.add cpsl.filecontents fn text in 
-      text ;;
-      
-  let modify_file cpsl_ref fn new_content=
-    let cpsl = (!cpsl_ref) in 
-    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
-    let ap = Absolute_path.of_string (dest_dir ^ fn) in
-    Io.overwrite_with ap new_content;;
-
-  let create_file cpsl_ref fn ?new_content_description new_content =
-    let cpsl = (!cpsl_ref) in 
-    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
-    let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
-    let _ = Io.overwrite_with ap new_content in
-    let end_of_msg = (
-      match new_content_description with 
-      None -> ""
-      |Some (descr) -> ", with content "^descr
-    )  in 
-    Private2.announce("Created file  "^fn^end_of_msg) ;;
-
-  let text_for_makefile cpsl =
-    let temp1 = Int_range.index_everything cpsl.commands in 
-    let temp2 = Image.image (fun (cmd_idx,cmd)->
-      let s_idx = string_of_int cmd_idx in 
-    [
-    "\t@echo \"************************************************ Step "^s_idx^":\"";
-    "\t"^(Cee_compilation_command.write cmd)  
-    ]) temp1 in
-    let temp3 = ("make all:")::(List.flatten temp2) in 
-    String.concat "\n" temp3 ;; 
-    
-  let write_makefile cpsl_ref =
-    let cpsl = (!cpsl_ref) in 
-    let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in  
-    let path_for_makefile = Absolute_path.of_string (dest_dir ^ "Makefile" ) in 
-    Io.overwrite_with path_for_makefile (text_for_makefile cpsl) ;;
-  
-    let included_files_in_several_files = 
-       Private2.included_files_in_several_files 
-    (all_h_or_c_files,read_file) ;;
-
-    let compute_inclusions_in_dc_files cpsl_ref = 
-      included_files_in_several_files cpsl_ref
-        (directly_compiled_files cpsl_ref) ;;    
-      
-    let inclusions_in_dc_files cpsl_ref = 
-         match (!cpsl_ref).inclusions_in_dc_files_opt with 
-        (Some old_answer) -> old_answer 
-        |None ->
-          let answer = compute_inclusions_in_dc_files cpsl_ref in 
-          let new_cpsl = {(!cpsl_ref) with 
-          inclusions_in_dc_files_opt = Some answer 
-          } in 
-          let _ = (cpsl_ref:=new_cpsl) in 
-          answer ;;
-
-  let compute_shadows_for_dc_files cpsl_ref = 
-    let cmds = separate_commands cpsl_ref in 
-    Image.image (
-      fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
-      Private2.shadow_for_separate_command 
-      (destination,read_file) cpsl_ref cmd 
-      )
-    ) cmds ;;    
-            
-  let shadows_for_dc_files cpsl_ref = 
-    match (!cpsl_ref).shadows_for_dc_files_opt with 
-    (Some old_answer) -> old_answer 
-    |None ->
-     let answer = compute_shadows_for_dc_files cpsl_ref in 
-     let new_cpsl = {(!cpsl_ref) with 
-         shadows_for_dc_files_opt = Some answer 
-     } in 
-     let _ = (cpsl_ref:=new_cpsl) in 
-     answer ;;
-
-    let compute_directly_included_files cpsl_ref = 
-      let temp1 = inclusions_in_dc_files cpsl_ref in 
-      let temp2 = str_sort(Image.image ( fun 
-        (_includer,_line_number,included_one) -> included_one
-      ) temp1) in       
-      str_setminus temp2 (directly_compiled_files cpsl_ref) ;;    
-                
-    let directly_included_files cpsl_ref = 
-      match (!cpsl_ref).directly_included_files_opt with 
-      (Some old_answer) -> old_answer 
-      |None ->
-        let answer = compute_directly_included_files cpsl_ref in 
-        let new_cpsl = {(!cpsl_ref) with 
-                      directly_included_files_opt = Some answer 
-        } in 
-        let _ = (cpsl_ref:=new_cpsl) in 
-        answer ;;    
-        
-  let inclusions_for_di_file cpsl_ref fn =
-    let cpsl = (!cpsl_ref) in 
-    match Hashtbl.find_opt cpsl.inclusions_for_di_files fn with 
-    (Some old_answer) -> old_answer 
-    | None ->
-      let temp1 = inclusions_in_dc_files cpsl_ref in 
-      let answer = List.filter_map (
-        fun (includer,line_number,included_one) -> 
-          if included_one = fn 
-          then Some(includer,line_number) 
-          else None   
-         ) temp1 in 
-      let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in 
-      answer ;;
-
-end :CAPSULE_INTERFACE);; 
+module Capsule = ( Private2.PreCapsule :CAPSULE_INTERFACE );; 
 
 module Private = struct 
 
