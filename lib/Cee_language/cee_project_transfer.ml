@@ -187,6 +187,7 @@ module PreCapsule = struct
   wardrobes_for_dc_files_opt : ((string * ((string * Cee_shadow_t.t) list)) list) option;
   directly_included_files_opt : (string list) option ;
   inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
+  wardrobes_for_di_files_opt : ((string * ((string * Cee_shadow_t.t) list)) list) option;
 } ;;
 
 type t = immutable_t ref ;;
@@ -215,6 +216,7 @@ ref({
  wardrobes_for_dc_files_opt = None;
  directly_included_files_opt = None ;
  inclusions_for_di_files = Hashtbl.create 600;
+ wardrobes_for_di_files_opt = None;
 }) ;;
 
 let compute_all_h_or_c_files cpt = 
@@ -412,6 +414,33 @@ let inclusions_for_di_file cpsl_ref fn =
     let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in 
     answer ;;
 
+
+let compute_wardrobes_for_di_files cpsl_ref = 
+  let temp1 = wardrobes_for_dc_files cpsl_ref in 
+  let di_files = directly_included_files cpsl_ref in 
+  Image.image (
+    fun included_one ->
+      (included_one,List.filter_map (
+        fun (includer,data) -> 
+          Option.map (fun shadow->(includer,shadow))
+          (List.assoc_opt included_one data)
+      ) temp1) 
+  ) di_files;;
+  ;;    
+                
+let wardrobes_for_di_files cpsl_ref = 
+  match (!cpsl_ref).wardrobes_for_di_files_opt with 
+  (Some old_answer) -> old_answer 
+  |None ->
+    let answer = compute_wardrobes_for_di_files cpsl_ref in 
+    let new_cpsl = {(!cpsl_ref) with 
+          wardrobes_for_di_files_opt = Some answer 
+    } in 
+    let _ = (cpsl_ref:=new_cpsl) in 
+    answer ;;
+
+
+
 end ;;
 
 end ;;  
@@ -440,6 +469,8 @@ module type CAPSULE_INTERFACE = sig
    val wardrobes_for_dc_files : t -> (string * (string * Cee_shadow_t.t) list) list
    val directly_included_files : t -> string list
    val inclusions_for_di_file : t -> string -> (string * int) list
+
+   val wardrobes_for_di_files : t -> (string * (string * Cee_shadow_t.t) list) list
    val read_file : t -> string -> string  
 
    val modify_file : t -> string -> string -> unit
