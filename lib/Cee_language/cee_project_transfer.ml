@@ -143,7 +143,7 @@ let create_copies_of_included_files_for_wardrobe
   
 
 
-(* let wardrobe_for_separate_command 
+let wardrobe_for_separate_command 
  (cpsl_destination,cpsl_read_file,cpsl_create_file,
   cpsl_inclusions_in_dc_files) cpsl separate_cmd  = 
  let name_for_container_file = 
@@ -163,11 +163,11 @@ let create_copies_of_included_files_for_wardrobe
  let _ = (
   if (not(!keep_temporary_files_mode)) 
   then let _ = Image.image 
-   (fun (_,fn) -> Unix_command.uc("rm -f "^dest_dir^fn)) 
+   (fun (_,_,fn) -> Unix_command.uc("rm -f "^dest_dir^fn)) 
       copied_includable_files
     in ()
  ) in 
- answer;; *)
+ answer;; 
 
 
 
@@ -184,6 +184,7 @@ module PreCapsule = struct
   directly_compiled_files_opt : (string list) option ;
   inclusions_in_dc_files_opt : ((string * int * string) list) option;
   shadows_for_dc_files_opt : ((string * Cee_shadow_t.t) list) option;
+  wardrobes_for_dc_files_opt : ((string * ((string * Cee_shadow_t.t) list)) list) option;
   directly_included_files_opt : (string list) option ;
   inclusions_for_di_files : (string, (string * int) list) Hashtbl.t;
 } ;;
@@ -211,6 +212,7 @@ ref({
  directly_compiled_files_opt = None ;
  inclusions_in_dc_files_opt = None;
  shadows_for_dc_files_opt = None;
+ wardrobes_for_dc_files_opt = None;
  directly_included_files_opt = None ;
  inclusions_for_di_files = Hashtbl.create 600;
 }) ;;
@@ -356,6 +358,27 @@ let shadows_for_dc_files cpsl_ref =
    let _ = (cpsl_ref:=new_cpsl) in 
    answer ;;
 
+let compute_wardrobes_for_dc_files cpsl_ref = 
+  let cmds = separate_commands cpsl_ref in 
+  Image.image (
+      fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
+      wardrobe_for_separate_command 
+      (destination,read_file,create_file,
+       inclusions_in_dc_files) cpsl_ref cmd 
+      )
+  ) cmds ;;    
+            
+let wardrobes_for_dc_files cpsl_ref = 
+  match (!cpsl_ref).wardrobes_for_dc_files_opt with 
+  (Some old_answer) -> old_answer 
+  |None ->
+    let answer = compute_wardrobes_for_dc_files cpsl_ref in 
+    let new_cpsl = {(!cpsl_ref) with 
+      wardrobes_for_dc_files_opt = Some answer 
+    } in 
+    let _ = (cpsl_ref:=new_cpsl) in 
+    answer ;;
+
   let compute_directly_included_files cpsl_ref = 
     let temp1 = inclusions_in_dc_files cpsl_ref in 
     let temp2 = str_sort(Image.image ( fun 
@@ -413,6 +436,8 @@ module type CAPSULE_INTERFACE = sig
    val inclusions_in_dc_files : t -> ((string * int * string) list)
    
    val shadows_for_dc_files : t -> ((string * Cee_shadow_t.t) list)
+
+   val wardrobes_for_dc_files : t -> (string * (string * Cee_shadow_t.t) list) list
    val directly_included_files : t -> string list
    val inclusions_for_di_file : t -> string -> (string * int) list
    val read_file : t -> string -> string  
