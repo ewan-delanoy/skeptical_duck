@@ -615,11 +615,22 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
   ) lines_before in 
   (String.concat "\n" lines_after,!counter);;
    
+let compute_wardrobe 
+  ~watermarked_text copied_includable_files = 
+  Image.image (
+    fun (old_name,old_content,new_name) ->
+      (old_name,compute_shadow 
+      old_content ~name_for_container_file:new_name ~watermarked_text
+      ) 
+  ) copied_includable_files;;
+
+
 
 end ;;  
 
 let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inclusions_inside_text ;;
 let compute_shadow = Private.compute_shadow ;;
+let compute_wardrobe = Private.compute_wardrobe ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;

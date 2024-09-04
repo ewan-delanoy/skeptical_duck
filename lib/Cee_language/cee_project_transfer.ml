@@ -67,7 +67,7 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
     
   let keep_temporary_files_mode = ref false ;;  
 
-  let main_preprocessing_command_for_separate_shadow 
+let main_preprocessing_command_for_separate_shadow 
   (cpsl_destination) cpsl separate_cmd = 
   let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
   Cee_compilation_command.preprocess_only_version
@@ -109,12 +109,65 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
 let shadow_for_separate_command (cpsl_destination,cpsl_read_file,cpsl_create_file) cpsl separate_cmd  = 
  let name_for_container_file = 
   Cee_compilation_command.separate_to_file separate_cmd in 
- let old_text = cpsl_read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
+ let old_text = cpsl_read_file cpsl name_for_container_file in 
  let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
  let preprocessed_text = compute_preprocessing_output_for_separate_shadow 
     (cpsl_destination,cpsl_create_file) cpsl separate_cmd text_to_be_preprocessed in 
  Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text  ;;
 
+let create_copies_of_included_files_for_wardrobe 
+(cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file)
+  cpsl short_filename =
+  (* returns the list of the filenames created*) 
+  let temp1 = cpsl_inclusions_in_dc_files cpsl in 
+  let included_files = List.filter_map (
+  fun (includer,_line_nbr,included_one) ->
+  if includer = short_filename
+  then Some(included_one)
+  else None   
+  ) temp1 in 
+  Image.image (
+    fun fn -> 
+      let new_fn = Cee_common.add_extra_ending_in_filename
+       ~extra:"includable" fn in 
+      let old_content = cpsl_read_file cpsl fn in
+      let new_content = Cee_text.watermark_text
+        ~name_for_container_file:new_fn old_content in 
+      let msg = "(watermark  "^fn^")" in 
+      let _ = cpsl_create_file cpsl new_fn 
+      ?new_content_description:(Some msg)
+      new_content in 
+      (fn,old_content,new_fn)  
+  ) included_files;;
+    
+  
+
+
+(* let wardrobe_for_separate_command 
+ (cpsl_destination,cpsl_read_file,cpsl_create_file,
+  cpsl_inclusions_in_dc_files) cpsl separate_cmd  = 
+ let name_for_container_file = 
+    Cee_compilation_command.separate_to_file separate_cmd in  
+ let copied_includable_files = 
+  create_copies_of_included_files_for_wardrobe 
+  (cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file) cpsl name_for_container_file in  
+  let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in 
+  let old_text = cpsl_read_file cpsl name_for_container_file in 
+ let (text_to_be_preprocessed,_nbr_of_inclusions) = 
+    Cee_text.add_extra_ending_in_inclusions_inside_text 
+    ~extra:"includable" old_text in
+ let preprocessed_text = compute_preprocessing_output_for_separate_shadow 
+    (cpsl_destination,cpsl_create_file) cpsl separate_cmd text_to_be_preprocessed in 
+ let answer = Cee_text.compute_wardrobe  
+   ~watermarked_text:preprocessed_text copied_includable_files in 
+ let _ = (
+  if (not(!keep_temporary_files_mode)) 
+  then let _ = Image.image 
+   (fun (_,fn) -> Unix_command.uc("rm -f "^dest_dir^fn)) 
+      copied_includable_files
+    in ()
+ ) in 
+ answer;; *)
 
 
 
