@@ -71,26 +71,29 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
   (cpsl_destination) cpsl separate_cmd = 
   let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
   Cee_compilation_command.preprocess_only_version
-     dest_dir separate_cmd ;; 
+     ~root_dir:dest_dir separate_cmd ;; 
 
  let compute_preprocessing_output_for_separate_shadow 
-   (cpsl_destination) cpsl separate_cmd text_to_be_preprocessed = 
-  let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in  
-  let dest_last = (Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ) ^ "/" in
-  let name_for_preprocessable_file = Cee_compilation_command.name_for_preprocessable dest_dir separate_cmd 
-  and name_for_preprocessed_file = Cee_compilation_command.name_for_preprocessed dest_dir separate_cmd in 
+   (cpsl_destination,cpsl_create_file) 
+   cpsl separate_cmd text_to_be_preprocessed = 
+  let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in 
+  let short_separate = Cee_compilation_command.short_name_from_separate separate_cmd in 
   let short_name_for_preprocessable_file =  
     Cee_common.add_extra_ending_in_filename
-    ~extra:"preprocessable" (Cee_compilation_command.short_name_from_separate separate_cmd) in  
-  let preprocessable_file = Absolute_path.create_file_if_absent name_for_preprocessable_file in
-  let _ = announce("(watermark  "^
-     (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending)^") > "^
-     (dest_last ^ short_name_for_preprocessable_file)^")") in 
-  let _ = Io.overwrite_with preprocessable_file text_to_be_preprocessed in  
-  let cmd1 = main_preprocessing_command_for_separate_shadow
+    ~extra:"preprocessable" short_separate 
+  and short_name_for_preprocessed_file =  
+    Cee_common.add_extra_ending_in_filename
+    ~extra:"preprocessed" short_separate in   
+  let name_for_preprocessable_file = dest_dir ^ short_name_for_preprocessable_file 
+  and name_for_preprocessed_file = dest_dir ^ short_name_for_preprocessed_file in 
+  let msg = "(watermark  "^short_separate^")" in 
+  let _ = cpsl_create_file  cpsl short_name_for_preprocessable_file 
+  ?new_content_description:(Some msg)
+  text_to_be_preprocessed in 
+  let cmd2 = main_preprocessing_command_for_separate_shadow
      (cpsl_destination) cpsl separate_cmd in 
-  let _ = announce(cmd1) in 
-  let _ = Unix_command.uc cmd1 in 
+  let _ = announce(cmd2) in 
+  let _ = Unix_command.uc cmd2 in 
  let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in 
  let answer = Io.read_whole_file preprocessed_file in 
  let _ = (
@@ -103,14 +106,16 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
  answer;;
 
 
-let shadow_for_separate_command (cpsl_destination,cpsl_read_file) cpsl separate_cmd  = 
+let shadow_for_separate_command (cpsl_destination,cpsl_read_file,cpsl_create_file) cpsl separate_cmd  = 
  let name_for_container_file = 
   Cee_compilation_command.separate_to_file separate_cmd in 
  let old_text = cpsl_read_file cpsl (separate_cmd.Cee_compilation_command_t.short_path ^ separate_cmd.Cee_compilation_command_t.ending) in 
  let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
  let preprocessed_text = compute_preprocessing_output_for_separate_shadow 
-    cpsl_destination cpsl separate_cmd text_to_be_preprocessed in 
+    (cpsl_destination,cpsl_create_file) cpsl separate_cmd text_to_be_preprocessed in 
  Cee_text.compute_shadow old_text ~name_for_container_file ~watermarked_text:preprocessed_text  ;;
+
+
 
 
 module PreCapsule = struct 
@@ -131,7 +136,6 @@ module PreCapsule = struct
 } ;;
 
 type t = immutable_t ref ;;
-let str_order = Total_ordering.lex_for_strings ;;
 let str_sort = Ordered.sort str_order ;;
 
 let str_setminus = Ordered.setminus str_order ;;
@@ -284,7 +288,7 @@ let compute_shadows_for_dc_files cpsl_ref =
   Image.image (
     fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
     shadow_for_separate_command 
-    (destination,read_file) cpsl_ref cmd 
+    (destination,read_file,create_file) cpsl_ref cmd 
     )
   ) cmds ;;    
           
