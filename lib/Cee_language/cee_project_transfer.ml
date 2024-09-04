@@ -108,7 +108,7 @@ let main_preprocessing_command_for_separate_shadow
 
 let shadow_for_separate_command (cpsl_destination,cpsl_read_file,cpsl_create_file) cpsl separate_cmd  = 
  let name_for_container_file = 
-  Cee_compilation_command.separate_to_file separate_cmd in 
+  Cee_compilation_command.short_name_from_separate separate_cmd in 
  let old_text = cpsl_read_file cpsl name_for_container_file in 
  let text_to_be_preprocessed = Cee_text.watermark_text ~name_for_container_file old_text in
  let preprocessed_text = compute_preprocessing_output_for_separate_shadow 
@@ -147,7 +147,7 @@ let wardrobe_for_separate_command
  (cpsl_destination,cpsl_read_file,cpsl_create_file,
   cpsl_inclusions_in_dc_files) cpsl separate_cmd  = 
  let name_for_container_file = 
-    Cee_compilation_command.separate_to_file separate_cmd in  
+    Cee_compilation_command.short_name_from_separate separate_cmd in  
  let copied_includable_files = 
   create_copies_of_included_files_for_wardrobe 
   (cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file) cpsl name_for_container_file in  
@@ -343,7 +343,7 @@ let write_makefile cpsl_ref =
 let compute_shadows_for_dc_files cpsl_ref = 
   let cmds = separate_commands cpsl_ref in 
   Image.image (
-    fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
+    fun cmd -> (Cee_compilation_command.short_name_from_separate cmd,    
     shadow_for_separate_command 
     (destination,read_file,create_file) cpsl_ref cmd 
     )
@@ -363,7 +363,7 @@ let shadows_for_dc_files cpsl_ref =
 let compute_wardrobes_for_dc_files cpsl_ref = 
   let cmds = separate_commands cpsl_ref in 
   Image.image (
-      fun cmd -> (Cee_compilation_command.separate_to_file cmd,    
+      fun cmd -> (Cee_compilation_command.short_name_from_separate cmd,    
       wardrobe_for_separate_command 
       (destination,read_file,create_file,
        inclusions_in_dc_files) cpsl_ref cmd 
@@ -511,7 +511,7 @@ let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  =
 
 let remove_cds_in_directly_compiled_file cpsl  separate_cmd  = 
  let name_for_container_file = 
-  Cee_compilation_command.separate_to_file separate_cmd in 
+  Cee_compilation_command.short_name_from_separate separate_cmd in 
  remove_cds_in_file cpsl ~name_for_container_file separate_cmd ;;
 
 let remove_cds_in_directly_compiled_files cpsl separate_cmds = 

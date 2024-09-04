@@ -127,11 +127,6 @@ let write = function
   (Separate s) -> write_separate s 
   |(Batch b) -> write_batch b ;;
 
-let separate_to_file separate_cmd = 
-  separate_cmd.Cee_compilation_command_t.short_path ^ 
-  separate_cmd.Cee_compilation_command_t.ending ;;
- 
-
 end ;;
 
 let parse = Private.parse ;;
@@ -139,12 +134,10 @@ let parse_separate = Private.parse_separate ;;
 
 let preprocess_only_version = Private.preprocess_only_version ;; 
 
-let separate_to_file = Private.separate_to_file ;;
 
 let short_name_for_preprocessable = Private.short_name_for_preprocessable ;;
 
 let short_name_for_preprocessed = Private.short_name_for_preprocessed ;;
-
 
 let short_name_from_separate = Private.short_name_from_separate ;;
 let write = Private.write ;;
