@@ -4,4 +4,6 @@
 
 *)
 
-type  t = Sh of int * (int list) ;; 
+type  t = 
+   No_conditional_directive_present
+ | Sh of int * (int list) ;; 
