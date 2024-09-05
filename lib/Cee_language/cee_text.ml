@@ -571,9 +571,6 @@ let included_local_files_in_text text =
   ) temp1 in 
   intstr_sort temp2 ;;
 
-
-     
-   
 let standardize_inclusion_line line = 
   let occs = Substring.occurrences_of_in "\"" line in 
   if List.length(occs)<>2

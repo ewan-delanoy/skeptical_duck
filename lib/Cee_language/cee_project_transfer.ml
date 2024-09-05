@@ -29,13 +29,29 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
 
   let rec normalize_pointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn = 
     if not(String.starts_with included_fn ~prefix:"../") 
-    then check_presence_in_project cpsl_all_h_or_c_files  cpsl (includer_fn ^ "/" ^ included_fn) 
+    then 
+        let joined_form = (
+          if String.starts_with included_fn ~prefix:"/"
+          then includer_fn       ^ included_fn
+          else includer_fn ^ "/" ^ included_fn
+        ) in 
+        check_presence_in_project cpsl_all_h_or_c_files  cpsl joined_form 
     else 
       let includer_fn2 = Cull_string.before_rightmost includer_fn '/'
       and included_fn2 = Cull_string.cobeginning 3 included_fn in 
       normalize_pointed_included_filename cpsl_all_h_or_c_files cpsl includer_fn2 included_fn2 ;;  
        
- let normalize_included_filename cpsl_all_h_or_c_files cpsl includer_dir included_fn = 
+ let normalize_included_filename cpsl_all_h_or_c_files cpsl includer_dir initial_included_fn = 
+    (*
+       The following hack is necessary to deal with the
+       case when some filename is a prefix of another,
+       e.g. with ir_php.h and php.h
+    *)
+    let included_fn = (
+      if String.contains initial_included_fn '/'
+      then initial_included_fn
+      else "/"^initial_included_fn 
+    ) in 
     if String.starts_with included_fn ~prefix:"../" 
     then normalize_pointed_included_filename cpsl_all_h_or_c_files cpsl includer_dir included_fn 
     else normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_dir included_fn ;;   
@@ -62,8 +78,11 @@ let normalize_nonpointed_included_filename cpsl_all_h_or_c_files cpsl includer_f
     ) includers);; 
 
   let announce cmd = 
-      (print_string("Executing "^cmd^" ...\n\n");
+      (print_string(cmd^" ...\n\n");
       flush stdout) ;;
+
+  let announce_execution cmd = 
+    announce("Executing "^cmd) ;;    
     
   let keep_temporary_files_mode = ref false ;;  
 
@@ -92,7 +111,7 @@ let main_preprocessing_command_for_separate_shadow
   text_to_be_preprocessed in 
   let cmd2 = main_preprocessing_command_for_separate_shadow
      (cpsl_destination) cpsl separate_cmd in 
-  let _ = announce(cmd2) in 
+  let _ = announce_execution(cmd2) in 
   let _ = Unix_command.uc cmd2 in 
  let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in 
  let answer = Io.read_whole_file preprocessed_file in 
@@ -140,19 +159,18 @@ let create_copies_of_included_files_for_wardrobe
       (fn,old_content,new_fn)  
   ) included_files;;
     
-  
-
-
 let wardrobe_for_separate_command 
  (cpsl_destination,cpsl_read_file,cpsl_create_file,
   cpsl_inclusions_in_dc_files) cpsl separate_cmd  = 
- let name_for_container_file = 
+ 
+ let short_name = 
     Cee_compilation_command.short_name_from_separate separate_cmd in  
- let copied_includable_files = 
+ let _ = announce("Computing the wardrobe for "^short_name)  in
+  let copied_includable_files = 
   create_copies_of_included_files_for_wardrobe 
-  (cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file) cpsl name_for_container_file in  
+  (cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file) cpsl short_name in  
   let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in 
-  let old_text = cpsl_read_file cpsl name_for_container_file in 
+  let old_text = cpsl_read_file cpsl short_name in 
  let (text_to_be_preprocessed,_nbr_of_inclusions) = 
     Cee_text.add_extra_ending_in_inclusions_inside_text 
     ~extra:"includable" old_text in
@@ -167,6 +185,8 @@ let wardrobe_for_separate_command
       copied_includable_files
     in ()
  ) in 
+ let _ = announce("Computation of wardrobe finished for "^
+      separate_cmd.Cee_compilation_command_t.short_path ^ ".")  in
  answer;; 
 
 
@@ -493,9 +513,7 @@ module Private = struct
     let str_mem = Ordered.mem str_order ;; 
     let str_sort = Ordered.sort str_order ;; 
 
-let announce cmd = 
-  (print_string("Executing "^cmd^" ...\n\n");
-  flush stdout) ;; 
+
 
 let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  = 
   let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in  
@@ -505,7 +523,7 @@ let remove_cds_in_file cpsl ~name_for_container_file separate_cmd  =
   let new_text = Cee_text.rewrite_using_shadow old_text shadow in 
   let target_filename = dest_dir ^ name_for_container_file in 
   let target_file = Absolute_path.create_file_if_absent target_filename in  
-  let _ = announce("(unifdeffed  "^ name_for_container_file^") > "^
+  let _ = Private2.announce_execution("(unifdeffed  "^ name_for_container_file^") > "^
      (dest_last ^ name_for_container_file)^")") in 
   Io.overwrite_with target_file new_text ;;
 
