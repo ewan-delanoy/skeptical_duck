@@ -398,6 +398,12 @@ let find_directive_from_list_opt line directives=
           Substring.is_a_substring_located_at drctv line idx1
           ) directives ;;
 
+let text_has_ivy text =
+   let lines = Lines_in_string.lines text in 
+   List.exists (
+    fun line -> (find_directive_from_list_opt line ["if"])<>None
+   ) lines ;;          
+
 exception First_ivy_in_text_exn ;;   
 let first_ivy_in_text text =
    let lines = Lines_in_string.indexed_lines text in 
@@ -449,6 +455,9 @@ let standardize_guard_in_text text =
     List.exists (is_in_interval x) intervals ;;
  
 let compute_shadow old_text ~name_for_container_file ~watermarked_text =   
+   if not(text_has_ivy old_text)
+   then Cee_shadow_t.Sh(1,[1])
+   else   
    let ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
@@ -459,7 +468,9 @@ let compute_shadow old_text ~name_for_container_file ~watermarked_text =
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
- let rewrite_using_shadow old_text (Cee_shadow_t.Sh(_,accepted_indices)) =   
+ let rewrite_using_shadow old_text shadow =
+   match shadow with 
+   (Cee_shadow_t.Sh(_,accepted_indices)) ->  
    let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let accepted_ssps = Image.image(
