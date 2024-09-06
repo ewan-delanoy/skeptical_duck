@@ -159,13 +159,15 @@ let create_copies_of_included_files_for_wardrobe
       (fn,old_content,new_fn)  
   ) included_files;;
     
-let wardrobe_for_separate_command 
+let wardrobe_for_indexed_separate_command 
  (cpsl_destination,cpsl_read_file,cpsl_create_file,
-  cpsl_inclusions_in_dc_files) cpsl separate_cmd  = 
+  cpsl_inclusions_in_dc_files) cpsl (idx,separate_cmd) s_num_of_cmds  = 
  
  let short_name = 
-    Cee_compilation_command.short_name_from_separate separate_cmd in  
- let _ = announce("Computing the wardrobe for "^short_name)  in
+    Cee_compilation_command.short_name_from_separate separate_cmd 
+ and s_idx = string_of_int(idx) in  
+ let indexed_name = short_name ^ " ("^s_idx^" of "^s_num_of_cmds^")" in 
+ let _ = announce("Computing the wardrobe for "^indexed_name)  in
   let copied_includable_files = 
   create_copies_of_included_files_for_wardrobe 
   (cpsl_inclusions_in_dc_files,cpsl_read_file,cpsl_create_file) cpsl short_name in  
@@ -186,7 +188,7 @@ let wardrobe_for_separate_command
     in ()
  ) in 
  let _ = announce("Computation of wardrobe finished for "^
-      separate_cmd.Cee_compilation_command_t.short_path ^ ".")  in
+  indexed_name ^ ".")  in
  answer;; 
 
 
@@ -382,13 +384,15 @@ let shadows_for_dc_files cpsl_ref =
 
 let compute_wardrobes_for_dc_files cpsl_ref = 
   let cmds = separate_commands cpsl_ref in 
+  let indexed_cmds = Int_range.index_everything cmds 
+  and s_num_of_cmds = string_of_int(List.length cmds) in 
   Image.image (
-      fun cmd -> (Cee_compilation_command.short_name_from_separate cmd,    
-      wardrobe_for_separate_command 
+      fun (idx,cmd) -> (Cee_compilation_command.short_name_from_separate cmd,    
+      wardrobe_for_indexed_separate_command 
       (destination,read_file,create_file,
-       inclusions_in_dc_files) cpsl_ref cmd 
+       inclusions_in_dc_files) cpsl_ref (idx,cmd) s_num_of_cmds
       )
-  ) cmds ;;    
+  ) indexed_cmds ;;    
             
 let wardrobes_for_dc_files cpsl_ref = 
   match (!cpsl_ref).wardrobes_for_dc_files_opt with 
