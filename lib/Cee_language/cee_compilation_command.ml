@@ -5,6 +5,7 @@
 *)
 
 type separate_t = Cee_compilation_command_t.separate_t = {
+    root : Directory_name_t.t;
     short_path : string;
     ending : string;
     core_of_command : string;
@@ -24,11 +25,12 @@ type t = Cee_compilation_command_t.t =
 module Private = struct
 
   
-let parse_separate raw_command = 
+let parse_separate root_dir raw_command = 
   let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
   let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
   let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
   {
+    root = root_dir;
     short_path = Cull_string.coending 2 short_filename ;
     ending = Cull_string.ending 2 short_filename ;
     core_of_command =Cull_string.beginning (i1-1) raw_command ;
@@ -52,9 +54,9 @@ let parse_batch raw_command =
 (*  
 parse_batch "The brown and astute fox.o jumped.o over.o the lazy dog" ;;
 *)
-let parse raw_command = 
+let parse root_dir raw_command = 
   if Substring.is_a_substring_of " -c " raw_command 
-  then Separate(parse_separate raw_command)
+  then Separate(parse_separate root_dir raw_command)
   else Batch(parse_batch raw_command) ;;
 
 
@@ -96,9 +98,10 @@ let short_name_for_preprocessed separate_cmd =
 
 
 
-let preprocess_only_version ~root_dir separate_cmd = 
+let preprocess_only_version separate_cmd = 
+  let root_dir = Directory_name.connectable_to_subpath separate_cmd.root in 
   let core_of_command = adapt_command 
-      ~root_dir separate_cmd.Cee_compilation_command_t.core_of_command in 
+       ~root_dir separate_cmd.Cee_compilation_command_t.core_of_command in 
   let short_separate = short_name_from_separate separate_cmd in 
   let short_name_for_preprocessable_file =  
         Cee_common.add_extra_ending_in_filename
