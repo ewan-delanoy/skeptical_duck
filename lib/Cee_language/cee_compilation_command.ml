@@ -6,6 +6,12 @@
 
 type separate_t = Cee_compilation_command_t.separate_t = {
     root : Directory_name_t.t;
+    included_header_dirs : Directory_name_t.t list;
+    included_source_dirs : string list;
+    deffers : (string * (string option)) list;
+    undeffers : string list;
+    dep_file : string option;
+    libobj_file : string option;
     short_path : string;
     ending : string;
     core_of_command : string;
@@ -24,16 +30,61 @@ type t = Cee_compilation_command_t.t =
 
 module Private = struct
 
-  
+let extract_and_classify_data_from_command raw_command = 
+  let c2 = Cull_string.cobeginning 2 in 
+  let starts_with = (fun pref l ->
+    List.partition (fun (_,elt) -> String.starts_with
+    elt ~prefix:pref) l
+  ) 
+  and is_preceded_by=(fun prec l ->
+    let (a,b)=List.partition (fun (opt,_elt) -> opt=Some prec) l in
+    if a= [] then (None,b) else (Some(snd(List.hd a)),b)
+  ) in
+  let temp1 = Str.split (Str.regexp "[ \t\r]+") raw_command in 
+  let temp2 = List_again.universal_delta_list temp1 in 
+  let temp3 = (None,List.hd temp1):: (Image.image (fun (e1,e2)->(Some e1,e2) ) temp2) in 
+  let (header_dirs1,others1) = starts_with "-I/" temp3 in 
+  let header_dirs = Image.image (fun (_,elt) -> 
+       Directory_name.of_string(c2 elt)
+    ) header_dirs1 in
+  let (source_dirs1,others2) = starts_with "-I" others1 in 
+  let source_dirs = Image.image (fun (_,elt) -> 
+     let y = c2 elt in if y="." then "" else y) source_dirs1 in 
+  let (deffings1,others3) = starts_with "-D" others2 in
+  let deffings = Image.image (fun (_,elt) -> 
+    let y = c2 elt in 
+    match String.index_opt y '=' with 
+    None -> (y,None)
+    |Some i ->
+       (Cull_string.beginning i y,Some(Cull_string.cobeginning (i+1) y))
+    ) deffings1 in 
+    let (undeffings1,others4) = starts_with "-U" others3 in
+    let undeffings = Image.image (fun (_,elt) -> 
+      c2 elt ) undeffings1 in   
+    let (dep_file_opt,others5) = is_preceded_by "-MF" others4 in
+    let (libobj_file_opt,others6) = is_preceded_by "-MT" others5 in
+    let gutted_command = String.concat " " (Image.image snd others6) in    
+    (header_dirs,source_dirs,deffings,undeffings,
+     dep_file_opt,libobj_file_opt,gutted_command) ;;
+
 let parse_separate root_dir raw_command = 
   let i1 = Option.get(Substring.leftmost_index_of_in_from_opt " -c " raw_command 1) in 
   let i2 = Option.get(Substring.leftmost_index_of_in_from_opt " " raw_command (i1+4)) in
   let short_filename = Cull_string.interval raw_command (i1+4) (i2-1) in 
+  let (header_dirs,source_dirs,deffings,undeffings,
+     dep_file_opt,libobj_file_opt,gutted_command) = 
+     extract_and_classify_data_from_command raw_command in 
   {
     root = root_dir;
+    included_header_dirs = header_dirs;
+    included_source_dirs = source_dirs;
+    deffers = deffings;
+    undeffers = undeffings;
+    dep_file = dep_file_opt;
+    libobj_file = libobj_file_opt ;
     short_path = Cull_string.coending 2 short_filename ;
     ending = Cull_string.ending 2 short_filename ;
-    core_of_command =Cull_string.beginning (i1-1) raw_command ;
+    core_of_command = gutted_command ;
   }  ;;
  
 let parse_batch raw_command = 
