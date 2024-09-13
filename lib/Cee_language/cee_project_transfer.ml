@@ -39,67 +39,83 @@ let analize_double_pointed_included_filename cpsl_all_h_or_c_files  cpsl include
     else (None,[])) in
   Individual_inclusion_analysis.make final_result l;; 
 
-let analize_slashed_nonpointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn = 
+let choose_candidate_from_list includer_fn included_fn l inc_source_dirs = 
+  if List.length(l)=1 
+  then (Some(List.hd l))
+  else 
+  if str_mem included_fn l 
+  then Some included_fn 
+  else 
+  let includer_dir = Cull_string.before_rightmost includer_fn '/' in 
+  let neighbor = includer_dir ^ "/" ^ included_fn in 
+  if str_mem neighbor l 
+  then Some neighbor 
+  else 
+  let indicated_ones = List.filter_map (
+     fun indicated_dir -> 
+       let indicated_fn = indicated_dir ^ included_fn in 
+       if List.mem indicated_fn l 
+       then Some indicated_fn 
+       else None  
+  ) inc_source_dirs in   
+  if List.length(indicated_ones)=1 
+  then (Some(List.hd indicated_ones))
+  else None;; 
+
+let analize_slashed_nonpointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn inc_source_dirs = 
   let l = List.filter (
     fun nfn->String.ends_with nfn ~suffix:included_fn
   )(cpsl_all_h_or_c_files cpsl) in 
-  let final_result = (if List.length(l)=1 
-    then (Some(List.hd l))
-    else 
-    let includer_dir = Cull_string.before_rightmost includer_fn '/' in 
-    if str_mem included_fn l 
-    then Some included_fn 
-    else 
-    let neighbor = includer_dir ^ "/" ^ included_fn in 
-    if str_mem neighbor l 
-    then Some neighbor 
-    else None) in 
+  let final_result = choose_candidate_from_list includer_fn included_fn l inc_source_dirs in 
   Individual_inclusion_analysis.make final_result l;; 
  
-let analize_slashed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn = 
+let analize_slashed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn inc_source_dirs= 
   if String.starts_with included_fn ~prefix:"../" 
   then analize_double_pointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn
-  else analize_slashed_nonpointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn;;
+  else analize_slashed_nonpointed_included_filename cpsl_all_h_or_c_files  cpsl includer_fn included_fn inc_source_dirs;;
 
-let analize_nonslashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn = 
+let analize_nonslashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn inc_source_dirs= 
     let l = List.filter (
       fun nfn->String.ends_with nfn ~suffix:("/"^included_fn)
     ) (cpsl_all_h_or_c_files cpsl) in 
-    let final_result = (if List.length(l)=1 
-    then (Some(List.hd l))
-    else 
-    let includer_dir = Cull_string.before_rightmost includer_fn '/' in 
-    let neighbor = includer_dir ^ "/" ^ included_fn in 
-    if List.mem neighbor l 
-    then Some neighbor 
-    else None) in 
+    let final_result = choose_candidate_from_list includer_fn included_fn l inc_source_dirs in 
     Individual_inclusion_analysis.make final_result l;;     
 
- let analize_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn = 
+ let analize_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn inc_source_dirs = 
   if String.contains included_fn '/'
-  then analize_slashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn
-  else analize_nonslashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn ;; 
+  then analize_slashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn inc_source_dirs
+  else analize_nonslashed_included_filename cpsl_all_h_or_c_files cpsl includer_fn included_fn inc_source_dirs;; 
     
+let included_source_dirs_for_file (cpsl_separate_commands) 
+    cpsl includer_fn =
+   let cmds = cpsl_separate_commands cpsl in 
+   match List.find_opt ( 
+      fun cmd -> 
+        Cee_compilation_command.short_name_from_separate cmd = includer_fn
+   ) cmds with 
+   None -> []
+   |Some cmd -> cmd.Cee_compilation_command_t.included_source_dirs;;
 
 
-  exception Included_files_exn of string * int * string ;;
+exception Included_files_exn of string * int * string ;;
 
-  let included_files_in_single_file (cpsl_all_h_or_c_files,cpsl_read_file) cpsl includer_fn=
+  let included_files_in_single_file (cpsl_separate_commands,cpsl_all_h_or_c_files,cpsl_read_file) cpsl includer_fn=
+    let inc_source_files = included_source_dirs_for_file (cpsl_separate_commands) cpsl includer_fn in 
     let temp1 = Cee_text.included_local_files_in_text(cpsl_read_file cpsl includer_fn) in 
     Image.image (fun (line_nbr,included_fn)->
       let iar = analize_included_filename cpsl_all_h_or_c_files cpsl 
-        includer_fn included_fn in 
+        includer_fn included_fn inc_source_files in 
       match Individual_inclusion_analysis.read iar with   
       None -> raise(Included_files_exn(includer_fn,line_nbr,included_fn))
       |Some clean_included_fn -> (line_nbr,clean_included_fn)
     ) temp1;;
 
   let included_files_in_several_files 
-    (cpsl_all_h_or_c_files,cpsl_read_file) cpsl includers =
+    (cpsl_separate_commands,cpsl_all_h_or_c_files,cpsl_read_file) cpsl includers =
     List.flatten(Image.image (fun includer_fn ->
       Image.image (fun 
       (idx,included_fn) -> (includer_fn,idx,included_fn)
-      ) (included_files_in_single_file (cpsl_all_h_or_c_files,cpsl_read_file) cpsl includer_fn)
+      ) (included_files_in_single_file (cpsl_separate_commands,cpsl_all_h_or_c_files,cpsl_read_file) cpsl includer_fn)
     ) includers);; 
 
   let announce cmd = 
@@ -308,9 +324,7 @@ let separate_commands cpsl_ref =
 
 let compute_directly_compiled_files cpsl_ref = 
   str_sort(Image.image (
-    fun cmd ->
-     (cmd.Cee_compilation_command_t.short_path) ^ 
-     (cmd.Cee_compilation_command_t.ending)
+    Cee_compilation_command.short_name_from_separate
   ) (separate_commands cpsl_ref)) ;;    
   
 let directly_compiled_files cpsl_ref = 
@@ -372,7 +386,7 @@ let write_makefile cpsl_ref =
 
   let included_files_in_several_files = 
      included_files_in_several_files 
-  (all_h_or_c_files,read_file) ;;
+  (separate_commands,all_h_or_c_files,read_file) ;;
 
   let compute_inclusions_in_dc_files cpsl_ref = 
     included_files_in_several_files cpsl_ref
@@ -582,12 +596,13 @@ let remove_cds_in_all_directly_compiled_files cpsl =
 
 
 let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn = 
+  let inc_source_dirs = Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn in 
   let text = Capsule.read_file cpsl includer_fn in 
   let temp1 = Cee_text.included_local_files_in_text text
   and lines = Lines_in_string.indexed_lines text in 
   List.filter_map (fun (line_nbr,included_fn)->
     let iar = Private2.analize_included_filename Capsule.all_h_or_c_files cpsl 
-    includer_fn included_fn in 
+    includer_fn included_fn inc_source_dirs in 
     if (Private2.Individual_inclusion_analysis.read iar)=None 
     then Some(includer_fn,List.assoc line_nbr lines)
     else None 
@@ -600,11 +615,12 @@ let nonstandard_inclusion_formats_in_includers cpsl includers =
 
 (* For debugging purposes *)
 let unusual_inclusion_formats_in_individual_includer cpsl includer_fn = 
+  let inc_source_dirs = Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn in 
   let text = Capsule.read_file cpsl includer_fn in 
   let temp1 = Cee_text.included_local_files_in_text text in 
   List.filter_map (fun (line_nbr,included_fn)->
     let iar = Private2.analize_included_filename Capsule.all_h_or_c_files cpsl 
-    includer_fn included_fn in 
+    includer_fn included_fn inc_source_dirs in 
     let l = Private2.Individual_inclusion_analysis.possibilities iar in  
     if List.length(l)<>1 
     then Some(includer_fn,line_nbr,included_fn,l)
