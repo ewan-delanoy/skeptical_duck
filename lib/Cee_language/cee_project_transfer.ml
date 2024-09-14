@@ -240,8 +240,10 @@ module PreCapsule = struct
 
 
  type immutable_t = {
-  source : Directory_name_t.t ;
-  destination : Directory_name_t.t ;
+  source_envname : string ;
+  destination_envname : string ;
+  source_opt : Directory_name_t.t option ;
+  destination_opt : Directory_name_t.t option ;
   commands : Cee_compilation_command_t.t list;
   all_h_or_c_files_opt : (string list) option ;
   separate_commands_opt : (Cee_compilation_command_t.separate_t list) option;
@@ -259,19 +261,54 @@ type t = immutable_t ref ;;
 let str_sort = Ordered.sort str_order ;;
 
 let str_setminus = Ordered.setminus str_order ;;
-let source cpsl = (!cpsl).source ;;
 
-let destination cpsl = (!cpsl).destination ;; 
+let source_envname cpsl_ref = ((!cpsl_ref).source_envname) ;;
+
+let destination_envname cpsl_ref = ((!cpsl_ref).destination_envname) ;;
+let compute_source cpsl = 
+   Directory_name.of_string(cpsl.source_envname) ;;
+
+let source cpsl_ref = 
+    let old_cpsl = (!cpsl_ref) in
+    match old_cpsl.source_opt with 
+   (Some old_answer) -> old_answer 
+   |None ->
+     let answer = compute_source old_cpsl in 
+     let new_cpsl = {old_cpsl with 
+       source_opt = Some answer 
+     } in 
+     let _ = (cpsl_ref:=new_cpsl) in 
+     answer ;;
+
+
+let compute_destination cpsl = 
+  Directory_name.of_string(cpsl.destination_envname) ;;
+    
+let destination cpsl_ref = 
+  let old_cpsl = (!cpsl_ref) in
+       match old_cpsl.destination_opt with 
+      (Some old_answer) -> old_answer 
+      |None ->
+        let answer = compute_destination old_cpsl in 
+        let new_cpsl = {old_cpsl with 
+          destination_opt = Some answer 
+        } in 
+        let _ = (cpsl_ref:=new_cpsl) in 
+        answer ;;
+
 
 let commands cpsl = (!cpsl).commands ;;
 
 
 let make 
-~source:src ~destination:dest raw_commands = 
+~source_envname:src_envname ~destination_envname:dest_envname raw_commands = 
+ let dest = Directory_name.of_string(dest_envname) in 
 ref({
- source = src ;
- destination = dest ;
+ source_envname = src_envname ;
+ destination_envname = dest_envname ;
  commands = Image.image (Cee_compilation_command.parse dest) raw_commands;
+ source_opt = None ;
+ destination_opt = Some dest;
  all_h_or_c_files_opt = None ;
  separate_commands_opt = None ;
  filecontents = Hashtbl.create 3000;
@@ -284,8 +321,8 @@ ref({
  wardrobes_for_di_files_opt = None;
 }) ;;
 
-let compute_all_h_or_c_files cpt = 
-let src = Directory_name.connectable_to_subpath cpt.source in 
+let compute_all_h_or_c_files cpsl_ref = 
+let src = Directory_name.connectable_to_subpath (source cpsl_ref) in 
 let temp1 = Unix_again.quick_beheaded_complete_ls src in
 str_sort(List.filter (
   fun fn -> List.exists (fun edg ->
@@ -297,7 +334,7 @@ let all_h_or_c_files cpsl_ref =
  match old_cpsl.all_h_or_c_files_opt with 
 (Some old_answer) -> old_answer 
 |None ->
-  let answer = compute_all_h_or_c_files old_cpsl in 
+  let answer = compute_all_h_or_c_files cpsl_ref in 
   let new_cpsl = {old_cpsl with 
     all_h_or_c_files_opt = Some answer 
   } in 
@@ -343,21 +380,19 @@ let read_file cpsl_ref fn =
   match Hashtbl.find_opt cpsl.filecontents fn with 
   (Some old_answer) -> old_answer 
   | None ->
-    let src_dir = Directory_name.connectable_to_subpath cpsl.source in 
+    let src_dir = Directory_name.connectable_to_subpath (source cpsl_ref) in 
     let ap = Absolute_path.of_string (src_dir ^ fn) in 
     let text = Io.read_whole_file ap in 
     let _ = Hashtbl.add cpsl.filecontents fn text in 
     text ;;
     
 let modify_file cpsl_ref fn new_content=
-  let cpsl = (!cpsl_ref) in 
-  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+  let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in 
   let ap = Absolute_path.of_string (dest_dir ^ fn) in
   Io.overwrite_with ap new_content;;
 
 let create_file cpsl_ref fn ?new_content_description new_content =
-  let cpsl = (!cpsl_ref) in 
-  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in 
+  let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in 
   let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
   let _ = Io.overwrite_with ap new_content in
   let end_of_msg = (
@@ -380,9 +415,29 @@ let text_for_makefile cpsl =
   
 let write_makefile cpsl_ref =
   let cpsl = (!cpsl_ref) in 
-  let dest_dir = Directory_name.connectable_to_subpath cpsl.destination in  
+  let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in  
   let path_for_makefile = Absolute_path.of_string (dest_dir ^ "Makefile" ) in 
   Io.overwrite_with path_for_makefile (text_for_makefile cpsl) ;;
+
+let text_for_upper_makefile cpsl =
+  let temp1 = Int_range.index_everything cpsl.commands in 
+  let temp2 = Image.image (fun (cmd_idx,cmd)->
+      let s_idx = string_of_int cmd_idx in 
+  [
+    "\t@echo \"************************************************ Step "^s_idx^":\"";
+    "\t"^(Cee_compilation_command.write cmd)  
+  ]) temp1 in
+  let temp3 = ("make all:")::(List.flatten temp2) in 
+  String.concat "\n" temp3 ;; 
+    
+let write_to_upper_makefile cpsl_ref =
+  let cpsl = (!cpsl_ref) in 
+  let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in  
+  let upper_dir = Cull_string.before_rightmost (Cull_string.coending 1 dest_dir) '/' in 
+  let path_for_upper_makefile = Absolute_path.of_string (upper_dir ^ "/myMakefile" ) in  
+  Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl) ;;
+  
+
 
   let included_files_in_several_files = 
      included_files_in_several_files 
@@ -516,12 +571,14 @@ module type CAPSULE_INTERFACE = sig
   
 
    type t 
+   val source_envname : t -> string
+   val destination_envname : t -> string
    val source : t -> Directory_name_t.t
    val destination : t -> Directory_name_t.t
    val commands : t -> Cee_compilation_command_t.t list
    val make :
-     source:Directory_name_t.t ->
-     destination:Directory_name_t.t -> string list -> t
+     source_envname:string ->
+     destination_envname:string -> string list -> t
    val all_h_or_c_files : t -> string list   
 
    val separate_commands : t -> Cee_compilation_command_t.separate_t list
