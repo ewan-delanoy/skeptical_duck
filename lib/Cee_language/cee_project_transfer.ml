@@ -657,6 +657,29 @@ let remove_cds_in_directly_compiled_files cpsl separate_cmds =
 let remove_cds_in_all_directly_compiled_files cpsl = 
   remove_cds_in_directly_compiled_files cpsl (Capsule.separate_commands cpsl) ;; 
 
+let unusual_header_inclusion_formats_in_individual_includer cpsl includer_fn = 
+    let inc_source_dirs = Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn in 
+    let text = Capsule.read_file cpsl includer_fn in 
+    let lines = Lines_in_string.indexed_lines text in 
+    let temp5 = Cee_text.included_nonlocal_files_in_text text in 
+    let temp6 = List.filter_map (fun (line_nbr,included_fn)->
+      let iar = Private2.analize_included_filename Capsule.all_h_or_c_files cpsl 
+      includer_fn included_fn inc_source_dirs in 
+      match  Private2.Individual_inclusion_analysis.read iar with 
+      None -> None  
+      |Some answer ->Some(List.assoc line_nbr lines,"#include \""^answer^"\"")
+    ) temp5 in 
+    temp6 ;;
+        
+  
+let unusual_header_inclusion_formats_in_includers cpsl includers =
+    List.filter_map( fun includer ->
+          let l = unusual_header_inclusion_formats_in_individual_includer cpsl includer in 
+          if l= []
+          then None  
+          else Some(includer,l)
+    ) includers ;;   
+  
 
 let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn = 
   let inc_source_dirs = Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn in 
@@ -673,56 +696,40 @@ let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn =
   (fun (_line_nbr,_vague_included_fn,_line,solution_opt)->
     solution_opt = None 
   ) temp2 in 
-  (includer_fn,
-  (Image.image(fun 
-    (_line_nbr,vague_included_fn,original_line,_) ->
-       (original_line,"#include <"^vague_included_fn^">")
-    ) temp3,
-    List.filter_map(fun 
-    (_line_nbr,vague_included_fn,original_line,solution_opt) ->
-       let included_fn = Option.get solution_opt in 
-       if included_fn <> vague_included_fn
-       then Some(original_line,"#include \""^included_fn^"\"")
-       else None
-    ) temp4)
-  ) ;;
-      
-let nonstandard_inclusion_formats_in_includers cpsl includers = 
-  let temp1 = Image.image (
-    nonstandard_inclusion_formats_in_individual_includer cpsl 
-  ) includers in 
-  let select = (fun f -> 
-    List.filter_map (fun (fn,p)->
-      let y = f p in 
-      if y = [] then None else Some(fn,y)
-   ) temp1) in 
-  (
-    select fst,select snd
-  ) ;;   
-
-(* For debugging purposes *)
-let unusual_inclusion_formats_in_individual_includer cpsl includer_fn = 
-  let inc_source_dirs = Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn in 
-  let text = Capsule.read_file cpsl includer_fn in 
-  let temp1 = Cee_text.included_local_files_in_text text in 
-  List.filter_map (fun (line_nbr,included_fn)->
+  let temp5 = Cee_text.included_nonlocal_files_in_text text in 
+  let part1 = Image.image(fun 
+  (_line_nbr,vague_included_fn,original_line,_) ->
+     (original_line,"#include <"^vague_included_fn^">")
+  ) temp3 
+  and part2 = List.filter_map(fun 
+  (_line_nbr,vague_included_fn,original_line,solution_opt) ->
+     let included_fn = Option.get solution_opt in 
+     if included_fn <> vague_included_fn
+     then Some(original_line,"#include \""^included_fn^"\"")
+     else None
+  ) temp4 
+  and part3 = List.filter_map (fun (line_nbr,included_fn)->
     let iar = Private2.analize_included_filename Capsule.all_h_or_c_files cpsl 
     includer_fn included_fn inc_source_dirs in 
-    let l = Private2.Individual_inclusion_analysis.possibilities iar in  
-    if List.length(l)<>1 
-    then Some(includer_fn,line_nbr,included_fn,l)
-    else None 
-  ) temp1 ;;
+    match  Private2.Individual_inclusion_analysis.read iar with 
+    None -> None  
+    |Some answer ->Some(List.assoc line_nbr lines,"#include \""^answer^"\"")
+  ) temp5 in 
+  part1 @ part2 @ part3 ;;
       
-(* For debugging purposes *)  
-let unusual_inclusion_formats_in_includers cpsl includers =
-      List.flatten(
-        Image.image (unusual_inclusion_formats_in_individual_includer cpsl) includers
-) ;;   
+let nonstandard_inclusion_formats_in_includers cpsl includers = 
+  List.filter_map (
+    fun includer ->
+    let l = nonstandard_inclusion_formats_in_individual_includer cpsl includer in 
+    if l = []
+    then None 
+    else Some(includer,l)  
+  ) includers ;;   
+
+
 
 let standardize_inclusions_in_files cpsl includers ~dry_run= 
-   let temp1 = nonstandard_inclusion_formats_in_includers cpsl includers in 
-   let replacements_to_be_made = (fst temp1)@(snd temp1) in 
+   let replacements_to_be_made = nonstandard_inclusion_formats_in_includers cpsl includers in  
    let _ =(
       if not(dry_run)
       then List.iter (fun (fn,replacements)->
@@ -748,13 +755,6 @@ let standardize_inclusions_in_files cpsl includers ~dry_run=
             ) in 
             Some fn 
       ) files ;;
-   
-(* For debugging purposes *)
-
-(* let ambiguous_inclusions_in_single_file cpsl includer_fn=
-  let temp1 = Cee_text.included_local_files_in_text
-      (Capsule.read_file cpsl includer_fn) in 
-  () ;; *)
   
 
 end ;;
