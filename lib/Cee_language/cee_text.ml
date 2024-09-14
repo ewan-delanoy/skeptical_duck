@@ -583,18 +583,6 @@ let included_local_files_in_text text =
   ) temp1 in 
   intstr_sort temp2 ;;
 
-let standardize_inclusion_line line = 
-  let occs = Substring.occurrences_of_in "\"" line in 
-  if List.length(occs)<>2
-  then raise(Standardize_inclusion_line_exn(line))
-  else 
-  let i1 = List.nth occs 0 
-  and i2 = List.nth occs 1 in 
-  let b = Bytes.of_string line in 
-  let _ = (Bytes.set b (i1-1) '<';Bytes.set b (i2-1) '>') in 
-  Bytes.to_string b ;;
-
-
 let add_extra_ending_in_inclusion_line ~extra line = 
   let occs = Substring.occurrences_of_in "\"" line in 
   if List.length(occs)<>2
@@ -643,7 +631,6 @@ let compute_wardrobe = Private.compute_wardrobe ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
-let standardize_inclusion_line = Private.standardize_inclusion_line ;;
 let watermark_text= Private.watermark_text;;
 
 

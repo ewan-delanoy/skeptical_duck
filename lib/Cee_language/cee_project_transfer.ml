@@ -266,7 +266,7 @@ let source_envname cpsl_ref = ((!cpsl_ref).source_envname) ;;
 
 let destination_envname cpsl_ref = ((!cpsl_ref).destination_envname) ;;
 let compute_source cpsl = 
-   Directory_name.of_string(cpsl.source_envname) ;;
+   Directory_name.of_string(Sys.getenv(cpsl.source_envname)) ;;
 
 let source cpsl_ref = 
     let old_cpsl = (!cpsl_ref) in
@@ -282,7 +282,7 @@ let source cpsl_ref =
 
 
 let compute_destination cpsl = 
-  Directory_name.of_string(cpsl.destination_envname) ;;
+  Directory_name.of_string(Sys.getenv(cpsl.destination_envname)) ;;
     
 let destination cpsl_ref = 
   let old_cpsl = (!cpsl_ref) in
@@ -302,7 +302,7 @@ let commands cpsl = (!cpsl).commands ;;
 
 let make 
 ~source_envname:src_envname ~destination_envname:dest_envname raw_commands = 
- let dest = Directory_name.of_string(dest_envname) in 
+ let dest = Directory_name.of_string(Sys.getenv(dest_envname)) in 
 ref({
  source_envname = src_envname ;
  destination_envname = dest_envname ;
@@ -663,18 +663,42 @@ let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn =
   let text = Capsule.read_file cpsl includer_fn in 
   let temp1 = Cee_text.included_local_files_in_text text
   and lines = Lines_in_string.indexed_lines text in 
-  List.filter_map (fun (line_nbr,included_fn)->
+  let temp2 = Image.image (fun (line_nbr,vague_included_fn)->
     let iar = Private2.analize_included_filename Capsule.all_h_or_c_files cpsl 
-    includer_fn included_fn inc_source_dirs in 
-    if (Private2.Individual_inclusion_analysis.read iar)=None 
-    then Some(includer_fn,List.assoc line_nbr lines)
-    else None 
-  ) temp1 ;;
+    includer_fn vague_included_fn inc_source_dirs in 
+    (includer_fn,vague_included_fn,List.assoc line_nbr lines,
+    Private2.Individual_inclusion_analysis.read iar)
+  ) temp1 in 
+  let (temp3,temp4) = List.partition 
+  (fun (_line_nbr,_vague_included_fn,_line,solution_opt)->
+    solution_opt = None 
+  ) temp2 in 
+  (includer_fn,
+  (Image.image(fun 
+    (_line_nbr,vague_included_fn,original_line,_) ->
+       (original_line,"#include <"^vague_included_fn^">")
+    ) temp3,
+    List.filter_map(fun 
+    (_line_nbr,vague_included_fn,original_line,solution_opt) ->
+       let included_fn = Option.get solution_opt in 
+       if included_fn <> vague_included_fn
+       then Some(original_line,"#include \""^included_fn^"\"")
+       else None
+    ) temp4)
+  ) ;;
       
-let nonstandard_inclusion_formats_in_includers cpsl includers =
-      List.flatten(
-        Image.image (nonstandard_inclusion_formats_in_individual_includer cpsl) includers
-) ;;   
+let nonstandard_inclusion_formats_in_includers cpsl includers = 
+  let temp1 = Image.image (
+    nonstandard_inclusion_formats_in_individual_includer cpsl 
+  ) includers in 
+  let select = (fun f -> 
+    List.filter_map (fun (fn,p)->
+      let y = f p in 
+      if y = [] then None else Some(fn,y)
+   ) temp1) in 
+  (
+    select fst,select snd
+  ) ;;   
 
 (* For debugging purposes *)
 let unusual_inclusion_formats_in_individual_includer cpsl includer_fn = 
@@ -696,37 +720,20 @@ let unusual_inclusion_formats_in_includers cpsl includers =
         Image.image (unusual_inclusion_formats_in_individual_includer cpsl) includers
 ) ;;   
 
-
-
-      
-         
-
-
-   let standardize_inclusions_in_files cpsl includers ~dry_run= 
-     let temp1 = nonstandard_inclusion_formats_in_includers cpsl includers in 
-     let replacements_to_be_made1 = Image.image (
-       fun (includer,line)->(includer,(line,Cee_text.standardize_inclusion_line line))
-     ) temp1 in 
-     let includers_involved = str_sort(Image.image fst replacements_to_be_made1) in 
-     let replacements_to_be_made2 = Image.image (
-      fun includer ->
-        (includer,
-        List.filter_map (fun (includer2,pair)
-          -> if includer2 = includer 
-             then Some pair 
-             else None  
-        ) replacements_to_be_made1)
-    ) includers_involved in 
-    let _ =(
+let standardize_inclusions_in_files cpsl includers ~dry_run= 
+   let temp1 = nonstandard_inclusion_formats_in_includers cpsl includers in 
+   let replacements_to_be_made = (fst temp1)@(snd temp1) in 
+   let _ =(
       if not(dry_run)
       then List.iter (fun (fn,replacements)->
               let old_text = Capsule.read_file cpsl fn in 
               let new_text = Replace_inside.replace_several_inside_string 
                ~display_number_of_matches:true 
                replacements old_text in 
-              Capsule.modify_file cpsl fn new_text) replacements_to_be_made2
+              Capsule.modify_file cpsl fn new_text) replacements_to_be_made;
+           Capsule.write_to_upper_makefile cpsl   
     ) in 
-    replacements_to_be_made2;; 
+    replacements_to_be_made;; 
 
     let standardize_guards_in_files cpsl files  ~dry_run= 
       List.filter_map (fun 
