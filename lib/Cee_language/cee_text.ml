@@ -544,8 +544,7 @@ print_string(rewrite_using_watermarks text1 text3);;
 
 *)
 
-
-let included_local_file_opt line =
+let generic_included_file_opt (opening_char,closing_char) line =
   if not(String.starts_with line ~prefix:"#")
   then None  
   else  
@@ -562,16 +561,20 @@ let included_local_file_opt line =
   ) line (idx1+7) with 
   None -> None
   |Some idx2 -> 
-  if (Strung.get line idx2)<>'"'
+  if (Strung.get line idx2)<>opening_char
   then None
   else    
   match Strung.char_finder_from_inclusive_opt (fun c->
-           c = '"'
+           c = closing_char
   ) line (idx2+1) with 
   None -> None
   |Some idx3 ->      
     Some (Cull_string.interval line (idx2+1) (idx3-1))
     ;;
+
+let included_local_file_opt = generic_included_file_opt ('"','"');;
+let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
+
 
 let included_local_files_in_text text = 
   let temp1 = Lines_in_string.indexed_lines text in 
@@ -582,6 +585,17 @@ let included_local_files_in_text text =
       ) (included_local_file_opt line)
   ) temp1 in 
   intstr_sort temp2 ;;
+
+let included_nonlocal_files_in_text text = 
+  let temp1 = Lines_in_string.indexed_lines text in 
+  let temp2 = List.filter_map (
+      fun (line_idx,line) ->
+        Option.map (fun included_fn ->
+            (line_idx,included_fn)
+        ) (included_nonlocal_file_opt line)
+  ) temp1 in 
+  intstr_sort temp2 ;;
+
 
 let add_extra_ending_in_inclusion_line ~extra line = 
   let occs = Substring.occurrences_of_in "\"" line in 
@@ -629,6 +643,7 @@ let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inc
 let compute_shadow = Private.compute_shadow ;;
 let compute_wardrobe = Private.compute_wardrobe ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
+let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
 let watermark_text= Private.watermark_text;;
