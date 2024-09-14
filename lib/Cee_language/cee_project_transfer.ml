@@ -420,26 +420,30 @@ let write_makefile cpsl_ref =
   Io.overwrite_with path_for_makefile (text_for_makefile cpsl) ;;
 
 let text_for_upper_makefile cpsl =
-  let temp1 = Int_range.index_everything cpsl.commands in 
-  let temp2 = Image.image (fun (cmd_idx,cmd)->
-      let s_idx = string_of_int cmd_idx in 
+  let dest = destination_envname cpsl in 
+  String.concat "\n" 
   [
-    "\t@echo \"************************************************ Step "^s_idx^":\"";
-    "\t"^(Cee_compilation_command.write cmd)  
-  ]) temp1 in
-  let temp3 = ("make all:")::(List.flatten temp2) in 
-  String.concat "\n" temp3 ;; 
+    "diverka:"; 
+    "\tcat /dev/null > ${EXPHP}/what_make_did.txt ";
+    "\trm -rf ${PHPSRC}/* "; 
+    "\tcp -R ${"^dest^"}/* ${PHPSRC}/ ";
+    "\tcp ${ST02PHPSRC}/.gdbinit ${PHPSRC}/";
+    "\tcp ${EXPHP}/copiableMakefile ${PHPSRC}/Makefile "; 
+    ""; 
+    "adober:";
+    ("\tmake -C ${PHPSRC} -f ${PHPSRC}/Makefile all -j4 | "^
+     "tee ${EXPHP}/what_make_did.txt");
+    ("#\tmake -C ${PHPSRC} -f ${PHPSRC}/Makefile install -j4 | "^
+     "tee ${EXPHP}/what_make_install_did.txt ")
+    ] ;; 
     
 let write_to_upper_makefile cpsl_ref =
-  let cpsl = (!cpsl_ref) in 
   let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in  
   let upper_dir = Cull_string.before_rightmost (Cull_string.coending 1 dest_dir) '/' in 
   let path_for_upper_makefile = Absolute_path.of_string (upper_dir ^ "/myMakefile" ) in  
-  Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl) ;;
+  Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl_ref) ;;
   
-
-
-  let included_files_in_several_files = 
+let included_files_in_several_files = 
      included_files_in_several_files 
   (separate_commands,all_h_or_c_files,read_file) ;;
 
@@ -600,6 +604,8 @@ module type CAPSULE_INTERFACE = sig
    val create_file : t -> string -> ?new_content_description:string -> string -> unit
    
    val write_makefile : t -> unit
+
+   val write_to_upper_makefile : t -> unit
 
   end ;;
 
