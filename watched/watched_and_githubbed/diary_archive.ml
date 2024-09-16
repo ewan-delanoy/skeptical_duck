@@ -1,14 +1,123 @@
 (************************************************************************************************************************
-Snippet 147 : 
+Snippet 148 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 146 : add numbering to an interval of lines in a file 
+Snippet 147 : Snippet from Stackoverflow Code Review
 ************************************************************************************************************************)
 
+module Snip147=struct
+
+  let string_contains_at_index str substr idx =
+    let str_len = String.length str in
+    let substr_len = String.length substr in
+    idx + substr_len <= str_len &&
+    String.sub str idx substr_len = substr ;;
+  
+  type tok =
+    | Text of string
+    | Delim of string ;;
+  
+  let token_seq delims str =
+    let str_len = String.length str in
+    let rec aux i text_acc () =
+      if i >= str_len && text_acc <> "" then
+        Seq.Cons (Text text_acc, Seq.empty)
+      else if i >= str_len then
+        Seq.Nil
+      else 
+        let check delim = string_contains_at_index str delim i in
+        match List.find_opt check delims with
+        | None -> 
+          aux (i + 1) (text_acc ^ String.sub str i 1) ()
+        | Some delim when text_acc = "" -> 
+          Seq.Cons (Delim delim, aux (i + String.length delim) "")
+        | Some delim -> 
+          Seq.Cons (Text text_acc, aux i "")
+    in
+    aux 0 "" ;;
+  
+  let sample = 
+      "How (much (research effort) is {expected} when) BEGIN posting a"^
+      "Code Review ENDquestion? A "^
+      "lot. {{(An absurd amount)}}. More BEGIN than  BEGIN you think END"^
+      "you ENDare capable of.";;
+  
+      let delims = [
+        ("(", ")");
+        ("{", "}");
+        ("BEGIN", "END")
+      ];;    
+  
+  type block =
+    | Text_block of string 
+    | Paren_block of string * string * string ;;
+  
+  module StrMap = Map.Make (String) ;;
+  
+  let start_to_end_map = StrMap.of_list delims ;;
+  let end_to_start_map = 
+      StrMap.of_seq 
+      @@ Seq.map (fun (a, b) -> (b, a)) 
+      @@ List.to_seq delims  ;;
+    
+  let decomposed_seq (s_to_e_map, e_to_s_map) chunks =
+    let is_start_delim d = StrMap.mem d s_to_e_map in
+    let is_end_delim d = StrMap.mem d e_to_s_map in
+    let extract_text (Delim t | Text t) = t in
+    let rec aux chunks acc delim_stack () =
+          match chunks (), acc, delim_stack with
+      | Seq.Nil, [], _ -> Seq.Nil
+      | Seq.Nil, _, _ -> 
+            Seq.Cons (
+              Text_block (acc |> List.rev |> List.map extract_text |> String.concat ""), 
+              Seq.empty
+            )     
+      | Seq.Cons ((Delim delim as wd), seq'), [], [] 
+            when is_start_delim delim ->
+            aux seq' [wd] [delim] ()
+      | Seq.Cons ((Delim delim as wd), seq'), _, [] 
+            when is_start_delim delim ->
+          Seq.Cons (
+              Text_block (acc |> List.rev |> List.map extract_text |> String.concat ""),
+              aux seq' [wd] [delim]
+            )
+      | Seq.Cons ((Delim delim as wd), seq'), _, _::_ 
+            when is_start_delim delim ->
+            aux seq' (wd :: acc) (delim :: delim_stack) ()
+      | Seq.Cons ((Delim delim as wd), seq'), _, [] 
+            when is_end_delim delim ->
+            aux seq' (wd :: acc) [] ()
+      | Seq.Cons (Delim delim, seq'), _, [ld]
+            when is_end_delim delim 
+              && StrMap.find ld s_to_e_map = delim ->
+        Seq.Cons (
+              Paren_block (
+                ld, delim, 
+                (acc |> List.rev |> List.tl |> List.map extract_text |> String.concat "")
+              ),
+              aux seq' [] []
+            )
+          | Seq.Cons ((Delim delim as wd), seq'), _, d::ds
+            when is_end_delim delim 
+              && StrMap.find d s_to_e_map = delim ->
+            aux seq' (wd :: acc) ds ()
+          | Seq.Cons (Text _ as t, seq'), _, _ -> 
+            aux seq' (t :: acc) delim_stack ()
+          | Seq.Cons (Delim delim, seq'), _, _ -> failwith "This shouldn't happen!"
+        in
+        aux chunks [] []   ;;  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 146 : add numbering to an interval of lines in a file 
+************************************************************************************************************************)
 module Snip146=struct
 
 
@@ -1056,18 +1165,18 @@ let sub_list28 = List.filter(
    Substring.is_a_substring_of " -c "
 ) list28 ;;
 
+(*
 let config1 = Cee_project_transfer.make_capsule 
 ~source:(Directory_name.of_string simplified_dir)
 ~destination:(Directory_name.of_string half_preprocessed_dir)
  sub_list28 ;;
 
-(*
+
 let act0 () = Cee_project_transfer.cleanup_temporary_files_after_removing_conditional_directives_in_directly_compiled_files config1  ;; 
-*)
 
 let act1 () = Chronometer.it Cee_project_transfer.remove_conditional_directives_in_directly_compiled_files config1  ;; 
 
- (*
+ 
 #use"watched/watched_not_githubbed/ham.ml";;
 
  let ap1 = Absolute_path.of_string (simplified_dir ^ "ext/opcache/zend_file_cache.c") ;;
