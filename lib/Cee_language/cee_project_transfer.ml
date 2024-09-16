@@ -756,9 +756,20 @@ let standardize_inclusions_in_files cpsl includers ~dry_run=
             Some fn 
       ) files ;;
   
+let reinitialize_destination_directory cpsl =
+    let src = Directory_name.connectable_to_subpath(Capsule.source cpsl)
+    and slashed_dest = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in 
+    let dest = Cull_string.coending 1 slashed_dest in 
+    Unix_command.conditional_multiple_uc [
+       "rm -rf "^dest^"/*";
+       "cp -R "^src^"/* "^dest^"/*";
+       "cp "^src^"/.gdbinit "^dest^"/";
+    ] ;;
+
 
 end ;;
 
+let reinitialize_destination_directory = Private.reinitialize_destination_directory ;;
 let make_capsule = Capsule.make ;;
 
 let remove_conditional_directives_in_directly_compiled_files = Private.remove_cds_in_all_directly_compiled_files ;; 
