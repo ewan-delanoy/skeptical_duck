@@ -1,14 +1,396 @@
 (************************************************************************************************************************
-Snippet 148 : 
+Snippet 149 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 147 : Snippet from Stackoverflow Code Review
+Snippet 148 : 
 ************************************************************************************************************************)
 
+module Snip148=struct
+
+  module XSum = struct 
+
+    type t = XS of bool * bool * bool * bool ;;
+    
+    let x k = XS(k=1,k=2,k=3,k=4);;
+    
+    let x_sum l = let m = (fun i->List.mem i l) in 
+        XS(m 1,m 2,m 3,m 4);;
+    
+    let degree (XS(b1,b2,b3,b4)) = 
+      match List.find_opt snd [4,b4;3,b3;2,b2;1,b1] with 
+      None -> 0
+      |Some(d,_) -> d ;;
+    
+    let cardinality (XS(b1,b2,b3,b4)) = 
+       List.length(List.filter (fun b->b) [b1;b2;b3;b4]);;
+    
+    let naive_base =
+      let temp1 = Cartesian.square [false;true] in 
+      let temp2 = Cartesian.square temp1 in 
+      Image.image (fun ((b1,b2),(b3,b4)) -> 
+         XS(b1,b2,b3,b4) ) temp2 ;;
+    
+    let comparison_at_separation_point 
+       (XS(b1,b2,b3,b4)) (XS(c1,c2,c3,c4)) = 
+       match List.find_opt (fun (b,c)->b<>c) 
+          [b4,c4;b3,c3;b2,c2;b1,c1] with 
+       None -> Total_ordering_result_t.Equal 
+       |Some(b,c) ->
+          if b 
+          then Total_ordering_result_t.Greater 
+          else Total_ordering_result_t.Lower ;; 
+    
+    
+    let pre_xs_order xs1 xs2 = 
+      let trial1 = Total_ordering.standard (cardinality xs1) (cardinality xs2) in 
+      if trial1<>Total_ordering_result_t.Equal then trial1 else 
+      comparison_at_separation_point xs1 xs2 ;;     
+    
+    let xs_order = (pre_xs_order: t Total_ordering_t.t) ;; 
+    
+    let base = List.tl(Ordered.sort xs_order naive_base);; 
+    
+    let zero = XS(false,false,false,false) ;; 
+    
+    let rec helper_for_colin_decomposition (treated,to_be_treated) =
+      match to_be_treated with 
+      [] -> (treated,to_be_treated)
+      | xs :: others -> 
+        if xs = x(treated+1)
+        then helper_for_colin_decomposition (treated+1,others)
+        else (treated,to_be_treated) ;;
+    
+    let colin_decomposition l =  
+      helper_for_colin_decomposition (0,l) ;;   
+    
+    let redundant_patterns = [
+        [x 1;x 2;x 3;x_sum [1;3]];
+        [x 1;x 2;x 3;x_sum [2;3]];
+        [x 1;x 2;x 3;x_sum [1;3];x_sum [2;3]];
+        [x 1;x 2;x 3;x_sum [1;2];x_sum [2;3]]; 
+        [x 1;x 2;x 3;x_sum [1;2];x_sum [1;3];x_sum [1;2;3]]; (* nontrivial *)
+        [x 1;x 2;x 3;x_sum [1;2];x_sum [1;2;3]]; (* nontrivial *)
+        [x 1;x 2;x 3;x 4;x_sum [1;3]]; 
+        [x 1;x 2;x 3;x 4;x_sum [2;3]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [2;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [3;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;2;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;3;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [2;3;4]];
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [2;3]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [1;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [2;4]]; 
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [1;2;3]]; (* nontrivial *)
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [1;2;4]];
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [2;3;4]];  
+        [x 1;x 2;x 3;x 4;x_sum [1;2];x_sum [1;2;3;4]]; (* nontrivial *)
+        [x 1;x 2;x 3;x 4;x_sum [1;2;3];x_sum [1;3;4]];
+        [x 1;x 2;x 3;x 4;x_sum [1;2;3];x_sum [2;3;4]];  
+        [x 1;x 2;x 3;x 4;x_sum [1;2;3];x_sum [1;2;3;4]]; (* nontrivial *)
+        
+    ] ;;
+    
+    
+    let test_for_insertability l xs = 
+      if List.mem xs l then false else 
+      if l = [] then xs = x 1 else  
+      let (d,others) = colin_decomposition l in 
+      if cardinality(xs)=1
+      then (others=[])&&(d<4)&&(xs=x(d+1))    
+      else  
+      if List.mem (l@[xs]) redundant_patterns then false else  
+      let last_elt = List.hd (List.rev l) in 
+      (degree(xs)<=d) && ((xs_order last_elt xs)
+      <>Total_ordering_result_t.Greater) ;;   
+       
+    let sons_of_one_father l = 
+      List.filter_map (
+        fun xs -> 
+          if test_for_insertability l xs
+          then Some(l@[xs])
+          else None  
+      ) base ;;
+    
+    let sons ll = List.flatten (Image.image sons_of_one_father ll) ;;  
+    
+    let sphere = Memoized.recursive(fun old_f k->
+      if k<1 then [[]] else sons (old_f (k-1))
+    )
+    
+    let boolean_add (b1:bool) b2 = (b2<>b1) ;; 
+    
+    let add (XS(b1,b2,b3,b4))  (XS(c1,c2,c3,c4)) = 
+    XS(b1<>c1,b2<>c2,b3<>c3,b4<>c4) ;;
+    
+    let add_several l = List.fold_left add zero l ;; 
+    
+    let partial_sum l indices =
+       add_several(Image.image (fun k->List.nth l (k-1)) indices) ;;
+    
+    let all_combinations = Memoized.make(fun n->
+      List.tl(Ordered.sort Total_ordering.silex_for_intlists
+      (List_again.power_set (Int_range.range 1 n))));;   
+    
+    let zero_sums l = 
+      let n = List.length l in 
+       List.filter (fun indices ->
+        (partial_sum l indices) = zero  
+      )(all_combinations n) ;;
+    
+    let shadow =Memoized.make(fun l ->
+       let n = List.length l in 
+       let z_sums = zero_sums l in 
+       Image.image (fun t->
+         List.length (List.filter(fun z->List.length(z)=t) z_sums)  
+      ) (Int_range.range 3 n) );;
+    
+    let classify_by_shadow ll = 
+       let temp1 = Image.image shadow ll in 
+       let temp2 = List_again.nonredundant_version temp1 in 
+       Image.image (
+         fun sha -> (sha,List.filter(fun l->shadow(l)=sha) ll)
+       ) temp2 ;;
+    
+    let naive_cs = Memoized.make(fun n ->
+       classify_by_shadow (sphere n) );;
+    
+    let enhanced_cs = Memoized.make(fun n -> Image.image 
+       (fun (x,y)->(x,List.hd y)) (naive_cs n) );;
+    
+    let to_string (XS(b1,b2,b3,b4)) = 
+      if (b1,b2,b3,b4)=(false,false,false,false) 
+      then "0"
+      else
+      let indices = List.filter_map (
+        fun (i,b) -> 
+          if b 
+          then Some ("X"^(string_of_int i)) 
+          else None 
+      ) [1,b1;2,b2;3,b3;4,b4] in 
+      String.concat " + " indices ;;  
+    
+    let print_out (fmt:Format.formatter) xs=
+     Format.fprintf fmt "@[%s@]" (to_string xs);;
+    
+    
+    end ;;
+    
+    let s = XSum.sphere ;;
+    let cs = XSum.enhanced_cs ;; 
+    
+    let term1 = cs 7 ;; 
+    let (_,term2) = List.nth term1 1;;
+    let term3 = List_again.long_head 5 term2 ;; 
+    let s_term3 = XSum.add_several term3 ;;
+    
+    let excluded_elements = Ordered.sort XSum.xs_order 
+      (XSum.zero::s_term3::term3@(Image.image (XSum.add s_term3) term3)) ;; 
+    
+    let allowed_elements = Ordered.setminus XSum.xs_order 
+       XSum.base excluded_elements ;;
+    
+    let rings = Image.image (
+       fun x -> 
+        term3 @ [x;XSum.add s_term3 x]
+    ) allowed_elements ;;
+    
+    let permutation_base = Permutation.permutations (Int_range.range 1 7) ;;
+    
+    let analize_ring =Memoized.make(fun ring -> 
+      (ring,List.filter_map (
+        fun perm -> 
+           let adjusted_ring = Permutation.product ring perm in 
+           if (XSum.partial_sum adjusted_ring [1;2;5]=XSum.zero) &&
+              (XSum.partial_sum adjusted_ring [1;3;6]=XSum.zero) &&
+              (XSum.partial_sum adjusted_ring [1;4;7]=XSum.zero) 
+           then Some(perm,adjusted_ring)
+           else None    
+      ) permutation_base) 
+    ) ;;
+    
+    let res1 = Image.image analize_ring rings ;;
+    
+    let res2 = Image.image (
+       fun (ring,l) ->
+        let temp = Image.image (fun t->List.hd(fst t)) l in 
+        (ring,Ordered.sort Total_ordering.for_integers temp ) 
+    ) res1 ;;
+    
+    let example1 = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+      [x 1;x 2;x 3;x 4;
+       x_sum [1;2];x_sum [1;3];x_sum [1;3;4]] ;;
+    
+    let example2 = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+        [x 1;x 2;x 3;x 4;
+         x_sum [1;2];x_sum [1;2;3];x_sum [1;2;3;4]] ;;   
+    
+    let example3 = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+          [x 1;x 2;x 3;x 4;
+           x_sum [1;2];x_sum [2;3];x_sum [2;3;4]] ;;
+    
+    
+    let partial = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+          [x 1;x 2;x 3;x 4;
+           x_sum [1;2];x_sum [3;4]] ;;
+    let allowed_elements = Ordered.setminus XSum.xs_order 
+        XSum.base partial ;;
+    
+    analize_ring(partial @ [XSum.x_sum[1;3]]) ;; 
+    
+    analize_ring(partial @ [XSum.x_sum[1;3;4]]) ;; 
+    
+    analize_ring(partial @ [XSum.x_sum[1;2;3;4]]) ;; 
+    
+    let partial2 = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+          [x 1;x 2;x 3;x 4;
+           x_sum [1;2]] ;;
+    let whole = XSum.x_sum[1;2;3;4] ;; 
+    
+    let excluded_elements = Ordered.sort XSum.xs_order 
+      (XSum.zero::whole::partial2@(Image.image (XSum.add whole) partial2)) ;; 
+    
+    let allowed_elements = Ordered.setminus XSum.xs_order 
+       XSum.base excluded_elements ;;
+    
+    
+    
+    
+       let analize_ring =Memoized.make(fun ring -> 
+        (ring,List.filter_map (
+          fun perm -> 
+             let adjusted_ring = Permutation.product ring perm in 
+             if (XSum.partial_sum adjusted_ring [1;2;5]=XSum.zero) &&
+                (XSum.partial_sum adjusted_ring [1;3;6]=XSum.zero) &&
+                (XSum.partial_sum adjusted_ring [2;4;7]=XSum.zero) 
+             then Some(perm,adjusted_ring)
+             else None    
+        ) permutation_base) 
+      ) ;;
+    
+      let example4 = 
+        let x= XSum.x and x_sum = XSum.x_sum in 
+            [x 1;x 2;x 3;x 4;
+             x_sum [1;2];x_sum [1;3];x_sum [2;3;4]] ;;
+      
+    let x= XSum.x and x_sum = XSum.x_sum ;;         
+    let partial3 = 
+      let x= XSum.x and x_sum = XSum.x_sum in 
+      [x 1;x 2;x 3;x 4;
+         x_sum [1;2];x_sum[1;2;3;4]] ;;
+    let excluded_elements = Ordered.sort XSum.xs_order 
+      (XSum.zero::partial3@
+      [x_sum [3;4];x_sum [1;2;3];x_sum[1;2;4]]) ;; 
+            
+    let allowed_elements = Ordered.setminus XSum.xs_order 
+               XSum.base excluded_elements ;;
+    
+    
+    let analize_ring =Memoized.make(fun ring -> 
+      (ring,List.filter_map (
+        fun perm -> 
+         let adjusted_ring = Permutation.product ring perm in 
+         if (XSum.partial_sum adjusted_ring [1;2;5]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [1;3;6]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [2;3;4;7]=XSum.zero) 
+         then Some(perm,adjusted_ring)
+         else None    
+      ) permutation_base) 
+    ) ;;
+    
+    analize_ring(partial3 @ [XSum.x_sum[1;3]]) ;; 
+    analize_ring(partial3 @ [XSum.x_sum[1;3;4]]) ;; 
+    
+    let partial4 = 
+      [x 1;x 2;x 3;x 4;
+         x_sum [1;2];x_sum[1;2;3]] ;;
+    
+    XSum.zero_sums (partial4 @ [x_sum[1;3]]) ;;
+    XSum.zero_sums (partial4 @ [x_sum[2;3]]) ;;
+    XSum.zero_sums (partial4 @ [x_sum[1;4]]) ;;
+    XSum.zero_sums (partial4 @ [x_sum[2;4]]) ;;
+    XSum.zero_sums (partial4 @ [x_sum[3;4]]) ;;
+    XSum.zero_sums (partial4 @ [x_sum[1;2;4]]) ;;
+    
+    let analize_ring =Memoized.make(fun ring -> 
+      (ring,List.filter_map (
+        fun perm -> 
+         let adjusted_ring = Permutation.product ring perm in 
+         if (XSum.partial_sum adjusted_ring [1;2;5]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [1;3;6]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [2;3;7]=XSum.zero) 
+         then Some(perm,adjusted_ring)
+         else None    
+      ) permutation_base) 
+    ) ;;
+    
+    analize_ring(partial4 @ [x_sum[1;3]]) ;;
+    
+    let partial5 = 
+      [x 1;x 2;x 3;x 4;
+         x_sum [1;2];x_sum[1;4]] ;;
+    
+    XSum.zero_sums (partial5 @ [x_sum[1;3]]) ;;
+    XSum.zero_sums (partial5 @ [x_sum[2;3]]) ;;
+    XSum.zero_sums (partial5 @ [x_sum[2;4]]) ;;
+    XSum.zero_sums (partial5 @ [x_sum[3;4]]) ;;
+    
+    let partial6 = 
+      [x 1;x 2;x 3;x 4;
+         x_sum [1;2];x_sum[3;4]] ;;
+    
+    XSum.zero_sums (partial6 @ [x_sum[1;3]]) ;;
+    XSum.zero_sums (partial6 @ [x_sum[2;3]]) ;;
+    
+    
+    (*
+    
+    #use"watched/watched_not_githubbed/jug.ml";;
+    
+    #install_printer XSum.print_out ;; 
+    
+    s 1 ;;
+    
+    let term1 = cs 7 ;; 
+    let (_,term2) = List.nth term1 1;;
+    
+    
+    
+    
+    
+    let term3 = List.nth term2 1 ;;
+    
+    let term4 = Permutation.permutations term3 ;;
+    let term5 = List.filter (
+     fun l->
+      (XSum.partial_sum l [1;2;4]=XSum.zero) &&
+      (XSum.partial_sum l [1;3;5]=XSum.zero) &&
+      (0=0)  
+    ) term4 ;;
+    
+    let term7 = Image.image 
+      (fun (x,y)->(x,List.hd y)) (cs 7) ;;
+    
+    
+    
+    *)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 147 : Snippet from Stackoverflow Code Review
+************************************************************************************************************************)
 module Snip147=struct
 
   let string_contains_at_index str substr idx =
