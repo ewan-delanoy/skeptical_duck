@@ -11,7 +11,23 @@ Snippet 149 : Use example of the Marshal module
 
 module Snip149=struct
 
+  let hard1 = ([]: int list) ;; 
 
+let chan = home ^"/Teuliou/OCaml/skeptical_duck/"^
+ "nonml_files/nongithubbed_nonml_files/horse.marshal" ;;
+
+let outer_chan = open_out_bin chan ;;
+
+Marshal.to_channel outer_chan hard1 [] ;;
+
+close_out outer_chan ;;
+
+let inner_chan = open_in_bin chan ;;
+
+let hard2 = ((Marshal.from_channel inner_chan): 
+(string * (string * Cee_shadow_t.t) list) list) ;;
+
+close_in inner_chan ;;
 
 
 end ;;
