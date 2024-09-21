@@ -1,14 +1,25 @@
 (************************************************************************************************************************
-Snippet 149 : 
+Snippet 150 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 148 : 
+Snippet 149 : Use example of the Marshal module
 ************************************************************************************************************************)
 
+module Snip149=struct
+
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 148 : 
+************************************************************************************************************************)
 module Snip148=struct
 
   module XSum = struct 
@@ -314,6 +325,28 @@ module Snip148=struct
       [x 1;x 2;x 3;x 4;
          x_sum [1;2];x_sum[1;2;3]] ;;
     
+let example5 = 
+  [x 1;x 2;x 3;x 4;
+    x_sum[1;2;3];x_sum[1;2;4];x_sum[1;2;3;4] ] ;;
+
+let example6 = 
+  [x 1;x 2;x 3;x 4;
+        x_sum[1;2];x_sum[1;3];x_sum[2;3;4] ] ;;
+
+
+let analize_ring =Memoized.make(fun ring -> 
+      (ring,List.filter_map (
+        fun perm -> 
+         let adjusted_ring = Permutation.product ring perm in 
+         if (XSum.partial_sum adjusted_ring [1;2;5]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [1;3;6]=XSum.zero) &&
+            (XSum.partial_sum adjusted_ring [2;3;4;7]=XSum.zero) 
+         then Some(perm,adjusted_ring)
+         else None    
+      ) permutation_base) 
+) ;;
+
+
     XSum.zero_sums (partial4 @ [x_sum[1;3]]) ;;
     XSum.zero_sums (partial4 @ [x_sum[2;3]]) ;;
     XSum.zero_sums (partial4 @ [x_sum[1;4]]) ;;
