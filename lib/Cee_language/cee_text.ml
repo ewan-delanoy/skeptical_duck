@@ -455,9 +455,6 @@ let standardize_guard_in_text text =
     List.exists (is_in_interval x) intervals ;;
  
 let compute_shadow old_text ~name_for_container_file ~watermarked_text =   
-   if not(text_has_ivy old_text)
-   then Cee_shadow_t.No_conditional_directive_present
-   else   
    let ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
@@ -470,8 +467,7 @@ let compute_shadow old_text ~name_for_container_file ~watermarked_text =
 
  let rewrite_using_shadow old_text shadow =
    match shadow with 
-   Cee_shadow_t.No_conditional_directive_present -> old_text 
-   |(Cee_shadow_t.Sh(_,accepted_indices)) ->  
+   (Cee_shadow_t.Sh(_,accepted_indices)) ->  
    let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let accepted_ssps = Image.image(

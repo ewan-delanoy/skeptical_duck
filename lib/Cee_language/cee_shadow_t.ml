@@ -5,5 +5,4 @@
 *)
 
 type  t = 
-   No_conditional_directive_present
- | Sh of int * (int list) ;; 
+   Sh of int * (int list) ;; 

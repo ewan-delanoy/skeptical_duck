@@ -211,7 +211,7 @@ let write_separate cmd =
     needed_dirs ~write_out_root_in_source_inclusions:false cmd in
   core_of_command^" "^included_dirs^" "^(deffers cmd)^" "^(undeffers cmd)^
   " -c " ^ cmd.short_path ^ cmd.ending ^ 
-  " -o " ^ cmd.short_path ^ ".o"
+  " -o " ^ cmd.short_path ^ ".o" ;;
 
 (*
 
