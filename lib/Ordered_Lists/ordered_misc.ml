@@ -117,8 +117,11 @@ let rec helper_for_generated_algebra ord (treated,to_be_treated) =
     helper_for_generated_algebra ord (List.flatten temp1,others) ;;
 
 let generated_algebra ord ll = 
+  match ll with 
+  [] -> []
+  | elt :: others ->
   Ordered.sort (Total_ordering.lex_compare ord)
-    (helper_for_generated_algebra ord ([],ll)) ;;
+    (helper_for_generated_algebra ord ([elt],others)) ;;
 
 end ;;        
 
