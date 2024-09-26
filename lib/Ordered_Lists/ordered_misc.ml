@@ -102,10 +102,30 @@ let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
  let greedy_transversal ll =
   helper_for_greedy_transversal ([],[],ll) ;;
    
+let generated_algebra_for_two ord x y = 
+  let setminus = Ordered.setminus ord 
+  and intersect = Ordered.intersect ord in 
+  List.filter (fun z->z<>[])
+    [setminus x y;intersect x y;setminus y x] ;;
+
+let rec helper_for_generated_algebra ord (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> treated 
+  |elt :: others ->
+    let temp1 = Image.image
+     (generated_algebra_for_two ord elt) treated in 
+    helper_for_generated_algebra ord (List.flatten temp1,others) ;;
+
+let generated_algebra ord ll = 
+  Ordered.sort (Total_ordering.lex_compare ord)
+    (helper_for_generated_algebra ord ([],ll)) ;;
+
 end ;;        
 
 
 let commonest_elements = Private.commonest_elements ;;
+
+let generated_algebra = Private.generated_algebra ;;
 
 let greedy_transversal = Private.greedy_transversal ;;
 
