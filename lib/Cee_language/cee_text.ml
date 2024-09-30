@@ -454,14 +454,15 @@ let standardize_guard_in_text text =
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
-let compute_shadow old_text ~name_for_container_file ~watermarked_text =   
+let compute_shadow old_text ~inclusion_index ~name_for_included_file 
+  ~preprocessed_includer_text =   
    let ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
    let accepted_ssps = List.filter(
          fun (ssp_idx,ssp) ->
           if ssp.namespace = 0 then true else 
           Substring.is_a_substring_of 
-          (parametrized_marker name_for_container_file ssp_idx) watermarked_text 
+          (parametrized_marker name_for_included_file ssp_idx) preprocessed_includer_text 
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
@@ -493,7 +494,7 @@ let compute_shadow old_text ~name_for_container_file ~watermarked_text =
         Some(ssp.start_idx,ssp_idx) 
     ) indexed_ssps ;;
   
-  let watermark_text ~name_for_container_file text = 
+  let tattoo_regions_between_conditional_directives ~name_for_included_file text = 
      let lines = Lines_in_string.indexed_lines text 
      and ssps = compute_small_spaces_in_text text in 
      let indexed_ssps = Int_range.index_everything ssps in
@@ -503,7 +504,7 @@ let compute_shadow old_text ~name_for_container_file ~watermarked_text =
           match List.assoc_opt line_idx pairs with 
           None -> [line]
           | (Some ssp_idx) ->
-             [parametrized_line name_for_container_file ssp_idx;line]
+             [parametrized_line name_for_included_file ssp_idx;line]
      ) lines in  
      (String.concat "\n" (List.flatten temp1)) ;;
 
@@ -623,11 +624,15 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
   (String.concat "\n" lines_after,!counter);;
    
 let compute_wardrobe 
-  ~watermarked_text copied_includable_files = 
+  ~preprocessed_includer_text 
+  copied_includable_files = 
   Image.image (
-    fun (old_name,old_content,new_name) ->
+    fun (old_name,old_content,new_name,inclusion_index) ->
       (old_name,compute_shadow 
-      old_content ~name_for_container_file:new_name ~watermarked_text
+      old_content 
+       ~inclusion_index
+       ~name_for_included_file:new_name 
+        ~preprocessed_includer_text
       ) 
   ) copied_includable_files;;
 
@@ -642,6 +647,6 @@ let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text = Private.standardize_guard_in_text ;;
-let watermark_text= Private.watermark_text;;
+let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 
 

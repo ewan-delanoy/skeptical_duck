@@ -266,14 +266,14 @@ module Private2 = struct
     cpsl
     separate_cmd
     =
-    let name_for_container_file =
+    let name_for_included_file =
       Cee_compilation_command.short_name_from_separate separate_cmd
     in
-    let old_text = cpsl_read_file cpsl name_for_container_file in
+    let old_text = cpsl_read_file cpsl name_for_included_file in
     let text_to_be_preprocessed =
-      Cee_text.watermark_text ~name_for_container_file old_text
+      Cee_text.tattoo_regions_between_conditional_directives ~name_for_included_file old_text
     in
-    let preprocessed_text =
+    let preprocessed_includer_text =
       compute_preprocessing_output_for_separate_shadow
         (cpsl_destination, cpsl_create_file)
         cpsl
@@ -282,8 +282,9 @@ module Private2 = struct
     in
     Cee_text.compute_shadow
       old_text
-      ~name_for_container_file
-      ~watermarked_text:preprocessed_text
+      ~inclusion_index:123456789
+      ~name_for_included_file
+      ~preprocessed_includer_text
   ;;
 
   let create_copies_of_included_files_for_wardrobe
@@ -293,25 +294,27 @@ module Private2 = struct
     =
     (* returns the list of the filenames created*)
     let temp1 = cpsl_inclusions_in_dc_files cpsl in
-    let included_files =
+    let temp2 = Int_range.index_everything temp1 in 
+    let indexed_inclusions =
       List.filter_map
-        (fun (includer, _line_nbr, included_one) ->
-          if includer = short_filename then Some included_one else None)
-        temp1
+        (fun (inclusion_idx,(includer, _line_nbr, included_one)) ->
+          if includer = short_filename 
+          then Some (inclusion_idx,included_one) else None)
+        temp2
     in
     Image.image
-      (fun fn ->
+      (fun (inclusion_idx,fn) ->
         let new_fn = Cee_common.add_extra_ending_in_filename ~extra:"includable" fn in
         let old_content = cpsl_read_file cpsl fn in
         let new_content =
-          Cee_text.watermark_text ~name_for_container_file:new_fn old_content
+          Cee_text.tattoo_regions_between_conditional_directives ~name_for_included_file:new_fn old_content
         in
-        let msg = "(watermark  " ^ fn ^ ")" in
+        let msg = "(tattoo_regions  " ^ fn ^ ")" in
         let _ =
           cpsl_create_file cpsl new_fn ?new_content_description:(Some msg) new_content
         in
-        fn, old_content, new_fn)
-      included_files
+        fn, old_content, new_fn,inclusion_idx)
+      indexed_inclusions
   ;;
 
   let wardrobe_for_indexed_separate_command
@@ -335,7 +338,7 @@ module Private2 = struct
     let text_to_be_preprocessed, _nbr_of_inclusions =
       Cee_text.add_extra_ending_in_inclusions_inside_text ~extra:"includable" old_text
     in
-    let preprocessed_text =
+    let preprocessed_includer_text =
       compute_preprocessing_output_for_separate_shadow
         (cpsl_destination, cpsl_create_file)
         cpsl
@@ -344,7 +347,7 @@ module Private2 = struct
     in
     let answer =
       Cee_text.compute_wardrobe
-        ~watermarked_text:preprocessed_text
+        ~preprocessed_includer_text
         copied_includable_files
     in
     let _ =
@@ -352,7 +355,7 @@ module Private2 = struct
       then (
         let _ =
           Image.image
-            (fun (_, _, fn) -> Unix_command.uc ("rm -f " ^ dest_dir ^ fn))
+            (fun (_, _, fn,_) -> Unix_command.uc ("rm -f " ^ dest_dir ^ fn))
             copied_includable_files
         in
         ())
