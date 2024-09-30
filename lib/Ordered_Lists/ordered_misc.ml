@@ -108,20 +108,48 @@ let generated_algebra_for_two ord x y =
   List.filter (fun z->z<>[])
     [setminus x y;intersect x y;setminus y x] ;;
 
-let rec helper_for_generated_algebra ord (treated,to_be_treated) = 
+let rec find_atom intersect candidate testers = 
+  match List.find_map ( 
+    fun x -> 
+      let y = intersect x candidate in 
+      if (y<>[])&&(y<>candidate)
+      then Some y 
+      else None  
+  ) testers with
+  None -> candidate 
+  | Some better_candidate ->
+     find_atom intersect better_candidate testers ;;
+
+
+let rec helper_for_generated_algebra 
+     (intersect,setminus) (treated,to_be_treated) = 
   match to_be_treated with 
   [] -> treated 
-  |elt :: others ->
-    let temp1 = Image.image
-     (generated_algebra_for_two ord elt) treated in 
-    helper_for_generated_algebra ord (List.flatten temp1,others) ;;
+  |elt :: _ ->
+    let new_atom = find_atom intersect elt to_be_treated in 
+    let to_be_treated2 = List.filter_map (
+      fun x -> 
+        let y = setminus x new_atom in 
+        if y<>[]
+        then Some y 
+        else None  
+    ) to_be_treated in 
+    helper_for_generated_algebra 
+    (intersect,setminus) (new_atom::treated,to_be_treated2) ;;
 
-let generated_algebra ord ll = 
-  match ll with 
-  [] -> []
-  | elt :: others ->
-  Ordered.sort (Total_ordering.lex_compare ord)
-    (helper_for_generated_algebra ord ([elt],others)) ;;
+let generated_algebra ord l = 
+  let intersect = Ordered.intersect ord 
+  and setminus = Ordered.setminus ord in 
+  Ordered.sort (Total_ordering.silex_compare ord)(
+  helper_for_generated_algebra 
+    (intersect,setminus) ([],l)) ;; 
+
+(*
+
+generated_algebra Total_ordering.for_integers 
+ [[1;3;5;72;73];[2;3;6;72;73];[4;5;6;72;73]] ;; 
+
+*)
 
 end ;;        
 
