@@ -377,10 +377,10 @@ module Private2 = struct
       ; directly_compiled_files_opt : string list option
       ; inclusions_in_dc_files_opt : (string * int * string) list option
       ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
-      ; wardrobes_for_dc_files_opt : (string * (string * Cee_shadow_t.t) list) list option
+      ; wardrobes_for_dc_files_opt : (string * Cee_wardrobe_t.t) list option
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
-      ; wardrobes_for_di_files_opt : (string * (string * Cee_shadow_t.t) list) list option
+      ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
       }
 
     type t = immutable_t ref
@@ -687,12 +687,12 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       Image.image
         (fun included_one ->
           ( included_one
-          , List.filter_map
-              (fun (includer, data) ->
+          , Cee_wardrobe_t.Wr (List.filter_map
+              (fun (includer, (Cee_wardrobe_t.Wr data)) ->
                 Option.map
                   (fun shadow -> includer, shadow)
                   (List.assoc_opt included_one data))
-              temp1 ))
+              temp1 )))
         di_files
     ;;
 
@@ -746,10 +746,10 @@ module type CAPSULE_INTERFACE = sig
   val directly_compiled_files : t -> string list
   val inclusions_in_dc_files : t -> (string * int * string) list
   val shadows_for_dc_files : t -> (string * Cee_shadow_t.t) list
-  val wardrobes_for_dc_files : t -> (string * (string * Cee_shadow_t.t) list) list
+  val wardrobes_for_dc_files : t -> (string * Cee_wardrobe_t.t) list
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
-  val wardrobes_for_di_files : t -> (string * (string * Cee_shadow_t.t) list) list
+  val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> string -> unit
@@ -759,7 +759,7 @@ module type CAPSULE_INTERFACE = sig
   val unsafe_constructor :
   source_envname:string ->
   destination_envname:string ->
-  wardrobes_for_dc_files:(string * (string * Cee_shadow_t.t) list) list ->
+  wardrobes_for_dc_files:(string * Cee_wardrobe_t.t) list ->
   raw_commands:string list ->t 
 end
 

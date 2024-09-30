@@ -626,7 +626,7 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
 let compute_wardrobe 
   ~preprocessed_includer_text 
   copied_includable_files = 
-  Image.image (
+  Cee_wardrobe_t.Wr(Image.image (
     fun (old_name,old_content,new_name,inclusion_index) ->
       (old_name,compute_shadow 
       old_content 
@@ -634,7 +634,7 @@ let compute_wardrobe
        ~name_for_included_file:new_name 
         ~preprocessed_includer_text
       ) 
-  ) copied_includable_files;;
+  ) copied_includable_files);;
 
 
 
