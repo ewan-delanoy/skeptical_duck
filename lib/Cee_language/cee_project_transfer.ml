@@ -336,7 +336,8 @@ module Private2 = struct
     let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in
     let old_text = cpsl_read_file cpsl short_name in
     let text_to_be_preprocessed, _nbr_of_inclusions =
-      Cee_text.add_extra_ending_in_inclusions_inside_text ~extra:"includable" old_text
+      Cee_text.highlight_and_add_extra_ending_in_inclusions_inside_text 
+        ~extra:"includable" old_text
     in
     let preprocessed_includer_text =
       compute_preprocessing_output_for_separate_shadow

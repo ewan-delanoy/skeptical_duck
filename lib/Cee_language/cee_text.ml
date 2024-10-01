@@ -693,13 +693,18 @@ print_string text2 ;;
 
 *)
 
+let highlight_and_add_extra_ending_in_inclusions_inside_text 
+   ~extra text =
+    add_extra_ending_in_inclusions_inside_text ~extra 
+     (highlight_inclusions_in_text text)
+    ;;
+
 
 end ;;  
 
-let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inclusions_inside_text ;;
 let compute_shadow = Private.compute_shadow ;;
 let compute_wardrobe = Private.compute_wardrobe ;;
-let highlight_inclusions_in_text= Private.highlight_inclusions_in_text ;;
+let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
