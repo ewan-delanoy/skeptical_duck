@@ -454,15 +454,30 @@ let standardize_guard_in_text text =
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
-let compute_shadow old_text ~inclusion_index ~name_for_included_file 
+let markers_for_inclusion_highlighting inclusion_idx = 
+   let idx = string_of_int inclusion_idx in 
+   ("/* SfWtCVHNDS Inclusion number "^idx^" starts here */\n",
+    "\n/* SfWtCVHNDS Inclusion number "^idx^" ends here */"
+   );;
+
+let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
   ~preprocessed_includer_text =   
    let ssps = compute_small_spaces_in_text old_text  in 
    let indexed_ssps = Int_range.index_everything ssps in 
+   let subtext = (
+      match inclusion_index_opt with 
+      None -> preprocessed_includer_text 
+      |Some inclusion_idx -> 
+        let markers = 
+          markers_for_inclusion_highlighting inclusion_idx in 
+        Cull_string.between_markers 
+         markers preprocessed_includer_text
+   ) in 
    let accepted_ssps = List.filter(
          fun (ssp_idx,ssp) ->
           if ssp.namespace = 0 then true else 
           Substring.is_a_substring_of 
-          (parametrized_marker name_for_included_file ssp_idx) preprocessed_includer_text 
+          (parametrized_marker name_for_included_file ssp_idx) subtext 
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
@@ -630,12 +645,53 @@ let compute_wardrobe
     fun (old_name,old_content,new_name,inclusion_index) ->
       (old_name,compute_shadow 
       old_content 
-       ~inclusion_index
+       ~inclusion_index_opt:(Some inclusion_index)
        ~name_for_included_file:new_name 
         ~preprocessed_includer_text
       ) 
   ) copied_includable_files);;
 
+let highlight_inclusions_in_text text = 
+  let temp1 = Lines_in_string.indexed_lines text in 
+  let all_lines = Image.image (
+    fun (line_idx,line) ->
+      ((line_idx,line),(included_local_file_opt line)<>None)
+  ) temp1 in 
+  let inclusion_lines = List.filter snd all_lines in 
+  let indexed_inclusion_lines = Int_range.index_everything inclusion_lines in 
+  let line_idx_to_incl_idx = Image.image (
+    fun (incl_idx,((line_idx,_),_)) -> (line_idx,incl_idx)
+  ) indexed_inclusion_lines in 
+  let modified_lines = Image.image (
+    fun ((line_idx,line),line_is_an_inclusion) ->
+      if not(line_is_an_inclusion) then line else 
+      let incl_idx = List.assoc line_idx line_idx_to_incl_idx in 
+      let (marker_before,marker_after) = 
+       markers_for_inclusion_highlighting incl_idx in 
+      marker_before ^line^ marker_after 
+  ) all_lines in 
+  String.concat "\n" modified_lines ;;
+
+(*
+
+
+let text1 = String.concat "\n" 
+[
+   "1";
+   "2";
+   "#include \"abc\"";
+   "4";
+   "#include \"def\"";
+   "#include \"ghi\"";
+   "7";
+] ;;
+
+let text2 = highlight_inclusions_in_text text1 ;;
+
+print_string text2 ;;
+
+
+*)
 
 
 end ;;  
@@ -643,6 +699,7 @@ end ;;
 let add_extra_ending_in_inclusions_inside_text = Private.add_extra_ending_in_inclusions_inside_text ;;
 let compute_shadow = Private.compute_shadow ;;
 let compute_wardrobe = Private.compute_wardrobe ;;
+let highlight_inclusions_in_text= Private.highlight_inclusions_in_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;

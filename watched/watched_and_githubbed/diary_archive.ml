@@ -639,13 +639,33 @@ Snippet 143 : Generate a random string
 ************************************************************************************************************************)
 module Snip143=struct
 
+  let full_list = 
+     ['a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h'; 'i'; 'j'; 
+      'k'; 'l'; 'm'; 'n'; 'o'; 'p'; 'q'; 'r'; 's'; 't'; 
+      'u'; 'v'; 'w'; 'x'; 'y'; 'z';
+      'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 
+      'K'; 'L'; 'M'; 'N'; 'O'; 'P'; 'Q'; 'R'; 'S'; 'T'; 
+      'U'; 'V'; 'W'; 'X'; 'Y'; 'Z'
+      ] ;; 
+
   let main_list =['a';'e';'i';'o';'u';'y';'A';'E';'I';'O';'U';'Y'];;
 
-  let g1 = Int_range.scale (fun x->List.nth main_list (Random.int 12)) 1 10 ;;
+  let main_list = 
+     [ 'b'; 'c'; 'd';  'f'; 'g'; 'h';  'j'; 
+      'k'; 'l'; 'm'; 'n';  'p'; 'q'; 'r'; 's'; 't'; 
+       'v'; 'w'; 'x';  'z';
+       'B'; 'C'; 'D'; 'F'; 'G'; 'H';  'J'; 
+      'K'; 'L'; 'M'; 'N';  'P'; 'Q'; 'R'; 'S'; 'T'; 
+       'V'; 'W'; 'X';  'Z'
+      ] ;; 
+
+  let n1 = List.length main_list ;;
+
+  let g1 = Int_range.scale (fun x->List.nth main_list (Random.int n1)) 1 10 ;;
   let g2 = String.concat "" (Image.image (String.make 1) g1) ;;
   let n = List.length main_list ;;
   
-  Int_range.scale (fun x->((x*x) mod 12)+1) 1 100;;
+  Int_range.scale (fun x->((x*x) mod n1)+1) 1 100;;
 
 
 end ;;

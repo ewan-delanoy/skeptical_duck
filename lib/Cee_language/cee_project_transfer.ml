@@ -282,7 +282,7 @@ module Private2 = struct
     in
     Cee_text.compute_shadow
       old_text
-      ~inclusion_index:123456789
+      ~inclusion_index_opt:None
       ~name_for_included_file
       ~preprocessed_includer_text
   ;;
