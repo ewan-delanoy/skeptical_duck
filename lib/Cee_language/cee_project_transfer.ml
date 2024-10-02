@@ -294,14 +294,13 @@ module Private2 = struct
     =
     (* returns the list of the filenames created*)
     let temp1 = cpsl_inclusions_in_dc_files cpsl in
-    let temp2 = Int_range.index_everything temp1 in 
-    let indexed_inclusions =
+    let temp2 =
       List.filter_map
-        (fun (inclusion_idx,(includer, _line_nbr, included_one)) ->
+        (fun (includer, _line_nbr, included_one) ->
           if includer = short_filename 
-          then Some (inclusion_idx,included_one) else None)
-        temp2
-    in
+          then Some (included_one) else None)
+        temp1 in
+    let indexed_inclusions = Int_range.index_everything temp2 in 
     Image.image
       (fun (inclusion_idx,fn) ->
         let new_fn = Cee_common.add_extra_ending_in_filename ~extra:"includable" fn in
