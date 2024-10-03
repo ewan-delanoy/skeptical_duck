@@ -439,26 +439,34 @@ let standardize_guard_in_text text =
   then Some(emphatize_first_ivy_and_last_endif text)
   else None ;;   
 
- let marker_inside_text = "cgmvgtkcxvvxckt" ;;  
-
- let parametrized_marker name_for_watermarkable_file k =
+ let marker_for_cd_defined_region = "cgmvgtkcxvvxckt" ;;  
+ let parametrized_marker_for_cd_defined_region name_for_watermarkable_file k =
    let sk = string_of_int k in 
-   marker_inside_text^name_for_watermarkable_file^sk^marker_inside_text ;;
+   marker_for_cd_defined_region^name_for_watermarkable_file^sk^marker_for_cd_defined_region ;;
  
- let parametrized_line name_for_watermarkable_file cd_idx =  
+ let parametrized_line_for_cd_defined_region name_for_watermarkable_file cd_idx =  
    "char* unused_string"^(string_of_int cd_idx)^"=\""^
-   (parametrized_marker name_for_watermarkable_file cd_idx)^"\";" ;;
+   (parametrized_marker_for_cd_defined_region name_for_watermarkable_file cd_idx)^"\";" ;;
  
  let is_in_interval x (a,b) = (a<=x) && (x<=b) ;; 
  
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
-let markers_for_inclusion_highlighting inclusion_idx = 
-   let idx = string_of_int inclusion_idx in 
-   ("/* SfWtCVHNDS Inclusion number "^idx^" starts here */\n",
-    "\n/* SfWtCVHNDS Inclusion number "^idx^" ends here */"
+let marker_for_inclusion_highlighting = "cgmvgtkcxvvxckt" ;;  
+let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
+   let s_idx = string_of_int inclusion_idx in 
+   "char* unused_string_for_inclusion_highlighting"^s_idx^"_"^verb^
+   "=\""^marker_for_inclusion_highlighting^" Inclusion number "^s_idx^
+   " "^verb^"s here \";";;
+    ;;
+ 
+ let markers_for_inclusion_highlighting inclusion_idx =  
+   (
+     parametrized_marker_for_inclusion_highlighting inclusion_idx "start",
+     parametrized_marker_for_inclusion_highlighting inclusion_idx "end"
    );;
+
 
 let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
   ~preprocessed_includer_text =   
@@ -477,7 +485,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
          fun (ssp_idx,ssp) ->
           if ssp.namespace = 0 then true else 
           Substring.is_a_substring_of 
-          (parametrized_marker name_for_included_file ssp_idx) subtext 
+          (parametrized_marker_for_cd_defined_region name_for_included_file ssp_idx) subtext 
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
@@ -519,7 +527,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
           match List.assoc_opt line_idx pairs with 
           None -> [line]
           | (Some ssp_idx) ->
-             [parametrized_line name_for_included_file ssp_idx;line]
+             [parametrized_line_for_cd_defined_region name_for_included_file ssp_idx;line]
      ) lines in  
      (String.concat "\n" (List.flatten temp1)) ;;
 
@@ -550,7 +558,7 @@ print_string(text2);;
 
 print_string(rewrite_using_watermarks text1 text2);;
 
-let text3 = parametrized_line 3;;
+let text3 = parametrized_line_for_cd_defined_region 3;;
 
 print_string(rewrite_using_watermarks text1 text3);;
 
@@ -668,7 +676,7 @@ let highlight_inclusions_in_text text =
       let incl_idx = List.assoc line_idx line_idx_to_incl_idx in 
       let (marker_before,marker_after) = 
        markers_for_inclusion_highlighting incl_idx in 
-      marker_before ^line^ marker_after 
+      "\n"^marker_before ^"\n"^line^"\n"^marker_after 
   ) all_lines in 
   String.concat "\n" modified_lines ;;
 
