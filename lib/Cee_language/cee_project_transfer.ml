@@ -681,18 +681,30 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         answer
     ;;
 
+    let symmetric_version included_one wardrobe_for_includers = 
+      let temp1 = List.filter_map (
+        fun (includer, (Cee_wardrobe_t.Wr data)) ->
+          let list_form = List.filter_map (
+            fun ((inclusion_idx,included_one2),shadow) ->
+              if included_one = included_one2
+              then Some((inclusion_idx,includer),shadow) 
+              else None 
+          ) data in 
+          if list_form = []
+          then None 
+          else Some list_form
+      ) wardrobe_for_includers in 
+      Cee_wardrobe_t.Wr (List.flatten temp1) ;;
+
+
     let compute_wardrobes_for_di_files cpsl_ref =
-      let temp1 = wardrobes_for_dc_files cpsl_ref in
+      let wardrobe_for_includers = wardrobes_for_dc_files cpsl_ref in
       let di_files = directly_included_files cpsl_ref in
       Image.image
         (fun included_one ->
           ( included_one
-          , Cee_wardrobe_t.Wr (List.filter_map
-              (fun (includer, (Cee_wardrobe_t.Wr data)) ->
-                Option.map
-                  (fun shadow -> includer, shadow)
-                  (List.assoc_opt included_one data))
-              temp1 )))
+          , symmetric_version included_one
+              wardrobe_for_includers ))
         di_files
     ;;
 

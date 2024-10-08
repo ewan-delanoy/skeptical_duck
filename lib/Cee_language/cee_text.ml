@@ -651,7 +651,7 @@ let compute_wardrobe
   copied_includable_files = 
   Cee_wardrobe_t.Wr(Image.image (
     fun (old_name,old_content,new_name,inclusion_index) ->
-      (old_name,compute_shadow 
+      ((inclusion_index,old_name),compute_shadow 
       old_content 
        ~inclusion_index_opt:(Some inclusion_index)
        ~name_for_included_file:new_name 
