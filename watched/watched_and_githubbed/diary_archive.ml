@@ -1,14 +1,172 @@
 (************************************************************************************************************************
-Snippet 150 : 
+Snippet 151 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 149 : Use example of the Marshal module
+Snippet 150 : Boilerplate code for C project management
 ************************************************************************************************************************)
 
+module Snip150=struct
+
+  (*
+
+#use"watched/watched_not_githubbed/large_data.ml";;
+#use"watched/watched_not_githubbed/ham.ml";;
+
+module Pri = Cee_project_transfer.Private2 ;;
+module Prec = Pri.PreCapsule ;;
+
+let cpsl_ref = Prec.make 
+  ~source_envname:"ST01PHPSRC" 
+   ~destination_envname:"ST02PHPSRC" 
+   list28 ;;
+let all_cmds = Prec.separate_commands cpsl_ref ;;
+
+let cmds = List_again.long_head 3 all_cmds ;;
+
+let indexed_cmds = Int_range.index_everything cmds ;;
+let s_num_of_cmds = string_of_int (List.length cmds) ;; 
+
+let hard1 = Image.image
+        (fun (idx, cmd) ->
+          ( Cee_compilation_command.short_name_from_separate cmd
+          , Pri.wardrobe_for_indexed_separate_command
+              (Prec.destination, Prec.read_file, Prec.create_file, Prec.inclusions_in_dc_files)
+              cpsl_ref
+              (idx, cmd)
+              s_num_of_cmds ))
+        indexed_cmds ;;
+
+
+let cmd = List.hd cmds ;;
+
+let separate_cmd = cmd ;;
+let cpsl = cpsl_ref ;;
+let s_num_of_cmds = "1" ;;
+
+let (cpsl_destination, cpsl_read_file, cpsl_create_file, cpsl_inclusions_in_dc_files) = 
+(Prec.destination, Prec.read_file, Prec.create_file, Prec.inclusions_in_dc_files) ;;
+
+let short_name = Cee_compilation_command.short_name_from_separate separate_cmd
+and s_idx = string_of_int 1 ;;
+
+let indexed_name = short_name ^ " (" ^ s_idx ^ " of " ^ s_num_of_cmds ^ ")" ;;
+    
+let short_filename = short_name ;; 
+
+let temp1 = cpsl_inclusions_in_dc_files cpsl ;;
+
+let dest_dir = Directory_name.connectable_to_subpath 
+(cpsl_destination cpsl) ;;
+
+
+let old_text = cpsl_read_file cpsl short_name ;;
+
+let text_to_be_preprocessed, _nbr_of_inclusions =
+      Cee_text.highlight_and_add_extra_ending_in_inclusions_inside_text 
+        ~extra:"includable" old_text ;;
+    
+      
+let preprocessed_includer_text =
+      Pri.compute_preprocessing_output_for_separate_shadow
+        (cpsl_destination, cpsl_create_file)
+        cpsl
+        separate_cmd
+        text_to_be_preprocessed ;; 
+
+let answer =
+      Cee_text.compute_wardrobe
+        ~preprocessed_includer_text
+        copied_includable_files ;;
+    in
+    let _ =
+      if not !keep_temporary_files_mode
+      then (
+        let _ =
+          Image.image
+            (fun (_, _, fn,_) -> Unix_command.uc ("rm -f " ^ dest_dir ^ fn))
+            copied_includable_files
+        in
+        ())
+    in
+    let _ = announce ("Computation of wardrobe finished for " ^ indexed_name ^ ".") in
+    answer
+  ;;
+
+let bad3 =
+      Pri.create_copies_of_included_files_for_wardrobe
+        (cpsl_inclusions_in_dc_files, cpsl_read_file, cpsl_create_file)
+        cpsl
+        short_name ;;
+
+
+let bad2 =
+Pri.wardrobe_for_indexed_separate_command
+              (Prec.destination, Prec.read_file, Prec.create_file, Prec.inclusions_in_dc_files)
+              cpsl_ref
+              (1, cmd)
+              "1" ;;
+
+let bad1 = Image.image
+        (fun (idx, cmd) ->
+          ( Cee_compilation_command.short_name_from_separate cmd
+          , Pri.wardrobe_for_indexed_separate_command
+              (Prec.destination, Prec.read_file, Prec.create_file, Prec.inclusions_in_dc_files)
+              cpsl_ref
+              (idx, cmd)
+              s_num_of_cmds ))
+        indexed_cmds ;;
+
+*)
+
+
+(* 
+
+#use"watched/watched_not_githubbed/large_data.ml";;
+#use"watched/watched_not_githubbed/ham.ml";;
+
+let hard1 = Chronometer.it 
+  Cap.wardrobes_for_dc_files cpsl3 ;; 
+
+
+
+
+
+#use"watched/watched_not_githubbed/large_data.ml";;
+
+Large_data.store_as_wardrobe1 hard1 ;;
+
+#use"watched/watched_not_githubbed/large_data.ml";;
+
+
+let hurd1 = Large_data.encode_wardrobe hard1 ;;
+
+let check_hurd1 = ((Large_data.decode_wardrobe hurd1) = hard1 ) ;;
+
+
+ 
+let check1 = (snd(Large_data.data) = hard1) ;;  
+
+let u1 = Cap.wardrobes_for_di_files cpsl3 ;; 
+
+let u2 = Image.image (fun (included_fn,l)->
+   (included_fn,Image.image snd l)  
+) u1 ;;
+
+
+*)
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 149 : Use example of the Marshal module
+************************************************************************************************************************)
 module Snip149=struct
 
   let hard1 = ([]: int list) ;; 

@@ -381,6 +381,7 @@ module Private2 = struct
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
       ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
+      ; shadow_algebra_for_di_files_opt : ( (string * (int * int list list)) list) option
       }
 
     type t = immutable_t ref
@@ -437,6 +438,7 @@ module Private2 = struct
         ; directly_included_files_opt = None
         ; inclusions_for_di_files = Hashtbl.create 600
         ; wardrobes_for_di_files_opt = None
+        ; shadow_algebra_for_di_files_opt = None
         }
     ;;
 
@@ -739,7 +741,9 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         ; directly_included_files_opt = None
         ; inclusions_for_di_files = Hashtbl.create 600
         ; wardrobes_for_di_files_opt = None
+        ; shadow_algebra_for_di_files_opt = None
         }
+        
     ;;
   end
 end
