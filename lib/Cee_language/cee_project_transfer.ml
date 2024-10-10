@@ -3,8 +3,11 @@
 *)
 
 module Private2 = struct
-  let str_order = Total_ordering.lex_for_strings
-  let str_mem = Ordered.mem str_order
+  let str_order = Total_ordering.lex_for_strings ;; 
+  let str_mem = Ordered.mem str_order ;;
+
+  let il_order = Total_ordering.silex_for_intlists;;
+  let il_sort = Ordered.sort il_order ;;
 
   let rec parse_double_points_in_filename container_dir included_fn =
     if not (String.starts_with included_fn ~prefix:"../")
@@ -381,8 +384,8 @@ module Private2 = struct
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
       ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; shadow_algebra_for_di_files_opt : ( (string * (int * int list list)) list) option
-      }
+      ; shadow_algebras_for_di_files_opt : ( (string * (int * int list list)) list) option
+      } ;;
 
     type t = immutable_t ref
 
@@ -438,7 +441,7 @@ module Private2 = struct
         ; directly_included_files_opt = None
         ; inclusions_for_di_files = Hashtbl.create 600
         ; wardrobes_for_di_files_opt = None
-        ; shadow_algebra_for_di_files_opt = None
+        ; shadow_algebras_for_di_files_opt = None
         }
     ;;
 
@@ -720,6 +723,31 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         answer
     ;;
 
+    let extract_data_from_wardrobe (included_one,
+   (Cee_wardrobe_t.Wr l)) =
+      let (_,Cee_shadow_t.Sh (n,_)) = List.hd l 
+   and shadows = Image.image
+     (fun (_,Cee_shadow_t.Sh (_,z)) -> z ) l
+    in
+   let shadows2 = il_sort shadows in    
+   (included_one,(n,
+    Ordered_misc.generated_algebra
+    Total_ordering.for_integers shadows2)) ;;
+
+    let compute_shadow_algebras_for_di_files cpsl_ref =
+      let wardrobes = wardrobes_for_di_files cpsl_ref in
+      Image.image extract_data_from_wardrobe wardrobes;;
+
+    let shadow_algebras_for_di_files cpsl_ref =
+      match !cpsl_ref.shadow_algebras_for_di_files_opt with
+      | Some old_answer -> old_answer
+      | None ->
+        let answer = compute_shadow_algebras_for_di_files cpsl_ref in
+        let new_cpsl = { !cpsl_ref with shadow_algebras_for_di_files_opt = Some answer } in
+        let _ = cpsl_ref := new_cpsl in
+        answer
+    ;;
+ 
     let unsafe_constructor 
        ~source_envname:src_envname 
         ~destination_envname:dest_envname 
@@ -741,7 +769,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         ; directly_included_files_opt = None
         ; inclusions_for_di_files = Hashtbl.create 600
         ; wardrobes_for_di_files_opt = None
-        ; shadow_algebra_for_di_files_opt = None
+        ; shadow_algebras_for_di_files_opt = None
         }
         
     ;;
@@ -766,6 +794,7 @@ module type CAPSULE_INTERFACE = sig
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
   val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
+  val shadow_algebras_for_di_files : t -> (string * (int * int list list)) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> string -> unit
