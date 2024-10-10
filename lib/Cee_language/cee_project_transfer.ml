@@ -534,6 +534,21 @@ module Private2 = struct
       announce ("Created file  " ^ fn ^ end_of_msg)
     ;;
 
+    let marker_for_shadowed_copies = "QhzFTSnAQA" ;; 
+
+    let create_shadowed_copy 
+      cpsl_ref fn shadow ~copy_level ~shadow_index = 
+      let (basename,extension) =
+          Cull_string.split_wrt_rightmost fn '.' in 
+      let copy_name = basename ^ marker_for_shadowed_copies ^
+      "level_"^(string_of_int copy_level)^
+      "shadow_"^(string_of_int shadow_index)^"."^extension in
+      let old_content = read_file cpsl_ref fn in 
+      let new_content = 
+         Cee_text.rewrite_using_shadow old_content shadow in   
+      create_file cpsl_ref copy_name  new_content ;;
+
+
     let text_for_makefile cpsl =
       let temp1 = Int_range.index_everything cpsl.commands in
       let temp2 =
