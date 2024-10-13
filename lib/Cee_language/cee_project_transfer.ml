@@ -548,7 +548,6 @@ module Private2 = struct
          Cee_text.rewrite_using_shadow old_content shadow in   
       create_file cpsl_ref copy_name  new_content ;;
 
-
     let text_for_makefile cpsl =
       let temp1 = Int_range.index_everything cpsl.commands in
       let temp2 =

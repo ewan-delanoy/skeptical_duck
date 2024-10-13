@@ -28,8 +28,6 @@ type mold = {
     mandatory_elements : int list;
 } ;;
 
-type decomposition_hook = DH of (int list) * (int list) ;; 
-
 
 
 

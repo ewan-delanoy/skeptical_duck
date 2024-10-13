@@ -27,10 +27,6 @@ type mold = Sz4_types.mold = {
     mandatory_elements : int list;
 } ;;
 
-type decomposition_hook = 
-   Sz4_types.decomposition_hook = DH of (int list) * (int list) ;; 
-
-
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
