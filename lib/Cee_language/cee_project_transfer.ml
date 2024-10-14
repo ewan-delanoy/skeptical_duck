@@ -534,7 +534,7 @@ module Private2 = struct
       announce ("Created file  " ^ fn ^ end_of_msg)
     ;;
 
-    let marker_for_shadowed_copies = "QhzFTSnAQA" ;; 
+    let marker_for_shadowed_copies = "_QhzFTSnAQA_" ;; 
 
     let create_shadowed_copy 
       cpsl_ref fn shadow ~copy_level ~shadow_index = 

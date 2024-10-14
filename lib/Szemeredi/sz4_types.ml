@@ -28,6 +28,11 @@ type mold = {
     mandatory_elements : int list;
 } ;;
 
+type explanation =
+   Extension 
+  |Filled_complement of int * int 
+  |Decomposition of (int list) * (int list) * (int list) 
+  |Breaking_point of int * int * int ;; 
 
 
 

@@ -27,6 +27,13 @@ type mold = Sz4_types.mold = {
     mandatory_elements : int list;
 } ;;
 
+type explanation = Sz4_types.explanation = 
+   Extension 
+  |Filled_complement of int * int 
+  |Decomposition of (int list) * (int list) * (int list) 
+  |Breaking_point of int * int * int ;; 
+
+
 
 let i_order = Total_ordering.for_integers ;;
 let i_does_not_intersect = Ordered.does_not_intersect i_order ;;
