@@ -30,9 +30,8 @@ type mold = Sz4_types.mold = {
 type explanation = Sz4_types.explanation = 
    Extension_expl 
   |Filled_complement of int * int 
-  |Decomposition of (int list) * (int list) * (int list) 
+  |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
-
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -885,16 +884,16 @@ let check_part_in_decomposition pt fis sol =
       else Mold.add_solutions mold [sol] ;; 
 
 let deduce_using_decomposition 
-   ?(extra_solutions=[]) pt (part1,part2,sol) = 
+   ?(extra_solutions=[]) pt (fis1,fis2,sol) = 
+   let part1 = Finite_int_set.to_usual_int_list fis1 
+   and part2 = Finite_int_set.to_usual_int_list fis2 in 
    let sol1 = i_intersect part1 sol 
    and sol2 = i_intersect part2 sol in 
-   let fis1 = Finite_int_set.of_usual_int_list part1 
-   and fis2 = Finite_int_set.of_usual_int_list part2 in 
    let mold1 = check_part_in_decomposition pt fis1 sol1 
    and mold2 = check_part_in_decomposition pt fis2 sol2 in 
    if Point.subset_is_admissible pt sol 
    then let mold = Mold.in_decomposition_case mold1 mold2 sol extra_solutions in 
-        let _ = One_more_small_step.unsafe_add pt mold (Decomposition(part1,part2,sol)) in 
+        let _ = One_more_small_step.unsafe_add pt mold (Decomposition(fis1,fis2,sol)) in 
         mold
    else raise(Nonadmissible_whole_in_decomposition(pt,sol));;
 
@@ -1153,7 +1152,9 @@ let canonical_solution = Memoized.make(fun pt->
 
 module Choose_preferred_decomposition = struct 
 
-
+let adhoc_order = (fun (p1,p2) (q1,q2) ->
+   ()
+) ;;   
 
 end ;;  
 
