@@ -700,7 +700,7 @@ let canonical_solution = Memoized.make(fun pt->
    helper_for_solution_chooser (sols,base)
 ) ;; 
 
-let eval pt = 
+let eval_on_pretranslated pt = 
      let base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
      and sols = all_solutions pt 0 in 
      {
@@ -709,7 +709,10 @@ let eval pt =
      } ;; 
 
 
-
+let eval pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Mold.translate d (eval_on_pretranslated pretranslated_pt);;
 
 end ;;
 
@@ -881,17 +884,6 @@ let check_part_in_decomposition pt fis sol =
       then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
       else Mold.add_solutions mold [sol] ;; 
 
-let find_translation_index_in_between_intlists l l1 l2 = 
-   let translated_l2 = i_setminus l l1 in 
-   (List.hd translated_l2) - (List.hd l2);;
-
-let find_translation_index_in_between fis fis1 fis2 = 
-   find_translation_index_in_between_intlists 
-     (Finite_int_set.to_usual_int_list fis)
-     (Finite_int_set.to_usual_int_list fis1)
-     (Finite_int_set.to_usual_int_list fis2) ;;
-
-
 let deduce_using_decomposition 
    ?(extra_solutions=[]) pt (part1,part2,sol) = 
    let sol1 = i_intersect part1 sol 
@@ -970,6 +962,9 @@ let lower_level_eval_on_pretranslated_opt pt_with_1 =
     (match List.assoc_opt pt_with_1 (!new_discoveries_ref) with 
   (Some old_answer) -> Some old_answer
   | None ->
+    if (Point.size pt_with_1)<= Small_size_set.max_size 
+    then Some (Small_size_set.eval pt_with_1)
+    else      
    (match One_more_small_step.eval_opt pt_with_1 with  
     (Some lower_level_answer) -> 
        let _ = (new_discoveries_ref := (pt_with_1,lower_level_answer) :: 
