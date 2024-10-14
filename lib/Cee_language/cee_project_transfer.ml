@@ -6,7 +6,7 @@ module Private2 = struct
   let str_order = Total_ordering.lex_for_strings ;; 
   let str_mem = Ordered.mem str_order ;;
 
-  let il_order = Total_ordering.silex_for_intlists;;
+  let il_order = Total_ordering.lex_compare Total_ordering.for_integers;;
   let il_sort = Ordered.sort il_order ;;
 
   let rec parse_double_points_in_filename container_dir included_fn =
@@ -737,6 +737,10 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         answer
     ;;
 
+  let connected_components l =
+     let temp1 = Arithmetic_list.decompose_into_connected_components l in 
+     Image.image (fun (i,j)->Int_range.range i j) temp1 ;; 
+
     let extract_data_from_wardrobe (included_one,
    (Cee_wardrobe_t.Wr l)) =
       let (_,Cee_shadow_t.Sh (n,_)) = List.hd l 
@@ -744,9 +748,9 @@ let compute_wardrobes_for_dc_files cpsl_ref =
      (fun (_,Cee_shadow_t.Sh (_,z)) -> z ) l
     in
    let shadows2 = il_sort shadows in    
-   (included_one,(n,
-    Ordered_misc.generated_algebra
-    Total_ordering.for_integers shadows2)) ;;
+   let shadows3 = Ordered_misc.generated_algebra Total_ordering.for_integers shadows2 in 
+   let shadows4 = List.flatten (Image.image connected_components shadows3) in 
+   (included_one,(n,il_sort shadows4)) ;;
 
     let compute_shadow_algebras_for_di_files cpsl_ref =
       let wardrobes = wardrobes_for_di_files cpsl_ref in
@@ -812,6 +816,9 @@ module type CAPSULE_INTERFACE = sig
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> string -> unit
+  val create_shadowed_copy :
+      t ->
+      string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> unit
   val write_makefile : t -> unit
   val write_to_upper_makefile : t -> unit
 
@@ -1039,10 +1046,28 @@ module Private = struct
       ; "cp " ^ src ^ "/.gdbinit " ^ dest ^ "/"
       ]
   ;;
-end
+
+  let create_level_1_copies cpsl = 
+    let temp1 = Capsule.shadow_algebras_for_di_files cpsl in 
+    let temp2 = List.flatten(Image.image (
+      fun (fn,(nbr_of_parts,parts)) ->
+        let ttemp3 = Int_range.index_everything parts in 
+        Image.image (fun (part_idx,part)->
+          (fn,Cee_shadow_t.Sh(nbr_of_parts,part),part_idx)
+        ) ttemp3
+    ) temp1) in 
+    List.iter 
+    (fun (fn,shadow,shadow_index)->
+      Capsule.create_shadowed_copy 
+       cpsl fn shadow ~copy_level:1 ~shadow_index 
+      ) temp2;; 
+
+end ;; 
+
+let create_level_1_copies = Private.create_level_1_copies ;;
+let make_capsule = Capsule.make ;;
 
 let reinitialize_destination_directory = Private.reinitialize_destination_directory
-let make_capsule = Capsule.make
 
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
