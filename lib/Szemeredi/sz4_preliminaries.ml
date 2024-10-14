@@ -28,7 +28,7 @@ type mold = Sz4_types.mold = {
 } ;;
 
 type explanation = Sz4_types.explanation = 
-   Extension 
+   Extension_expl 
   |Filled_complement of int * int 
   |Decomposition of (int list) * (int list) * (int list) 
   |Breaking_point of int * int * int ;; 
@@ -1024,67 +1024,6 @@ let using_fork ?(extra_solutions=[]) pt cstr =
 
 end ;;
 
-module Linear = struct 
-
-module Private = struct 
-
-let rec helper_for_rails_computing 
-   (treated,current,vertices_to_be_removed) =
- match vertices_to_be_removed with 
-  [] -> current :: treated 
- |v :: other_vertices ->
-   let next_one = Point.remove current [v] in 
-   helper_for_rails_computing 
-   (current :: treated,next_one,other_vertices) ;;
-    
-let compute_rails pt =
-   let base = List.tl(Finite_int_set.to_usual_int_list pt.base_set) in 
-   helper_for_rails_computing 
-   ([],pt,List.rev base) ;; 
-
-let rec helper_for_rails_evaluation (current,to_be_treated) =
-  match to_be_treated with 
-  [] -> Some current 
-  | pt :: other_points ->
-     match One_more_small_step.eval_opt pt with 
-       None -> None  
-      |Some next_one ->
-        helper_for_rails_evaluation (next_one,other_points) ;; 
-
-let eval_on_rails_opt pt = 
-   match compute_rails pt with 
-   [] -> One_more_small_step.eval_opt pt 
-   | spark :: rails ->
-     (
-      match One_more_small_step.eval_opt spark with 
-      None -> None 
-      |Some spark_mold ->
-       helper_for_rails_evaluation (spark_mold,rails) 
-     );; 
-
-let eval_opt ?(extra_solutions=[]) pt = 
-    if Point.is_free pt 
-    then Some(Mold.in_free_case pt)
-    else
-    match eval_on_rails_opt pt with 
-       None -> None 
-      |Some mold -> 
-        let new_mold = Mold.add_solutions mold extra_solutions 
-        and old_mold = Option.get (One_more_small_step.eval_opt pt) in 
-        let _ = (
-          if new_mold <> old_mold 
-          then 
-          let expl = Option.get(One_more_small_step.explanation_opt pt) in 
-          One_more_small_step.unsafe_add pt new_mold expl
-        ) in 
-        Some(Mold.add_solutions mold extra_solutions) ;;
-
-end ;;
-
-
-let eval_opt = Private.eval_opt ;; 
-
-end ;;
 
 module Painstaking = struct 
 
@@ -1121,7 +1060,7 @@ let lower_level_eval_on_pretranslated_opt pt_with_1 =
     (match List.assoc_opt pt_with_1 (!new_discoveries_ref) with 
   (Some old_answer) -> Some old_answer
   | None ->
-   (match Linear.eval_opt pt_with_1 with  
+   (match One_more_small_step.eval_opt pt_with_1 with  
     (Some lower_level_answer) -> 
        let _ = (new_discoveries_ref := (pt_with_1,lower_level_answer) :: 
         (!new_discoveries_ref)) in
@@ -1425,7 +1364,7 @@ let p3 n = PointExample.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
 let d = Deduce.using_decomposition;;
-let e = Linear.eval_opt ;;
+let e = One_more_small_step.eval_opt ;;
 let f = Deduce.using_fork;;
 
 
@@ -1436,7 +1375,7 @@ let tt1 n = Point.decide_on_the_right (pr3 n []) [1] ;;
 
 end ;;
 
-
+(*
 open Private ;;
 
 (* computing e(pr3 n []) *)
@@ -1458,15 +1397,17 @@ f(pr3 8 [5]) (C[1;4;7]);;
 f(pr3 8 []) (C[2;5;8]);;
 
 e(pr3 chosen_limit []);;
+*)
 
 
 (* computing e(tt1 n) *)
 
+(*
 for k=1 to 5 do let _ = e(tt1 k) in () done ;;
 
 d(tt1 6) (FIS(3,[]),[1;3]) (FIS(2,[]),[1]) ;; 
 
-(*
+
 d(tt1 7) (FIS(4,[]),[1;2]) (FIS(2,[]),[1]) ;; 
 *)
 

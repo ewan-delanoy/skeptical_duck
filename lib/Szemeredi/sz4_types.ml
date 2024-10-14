@@ -29,7 +29,7 @@ type mold = {
 } ;;
 
 type explanation =
-   Extension 
+   Extension_expl 
   |Filled_complement of int * int 
   |Decomposition of (int list) * (int list) * (int list) 
   |Breaking_point of int * int * int ;; 
