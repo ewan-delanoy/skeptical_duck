@@ -75,7 +75,16 @@ helper_for_cc_writing
 ]) ;;
 *)
 
+let rec helper_for_connectedness_test i = function 
+ [] -> true 
+ |j :: others -> 
+    if j = i+1 
+    then helper_for_connectedness_test j others 
+    else false ;;
 
+let is_connected = function 
+  [] -> true 
+  |i :: others -> helper_for_connectedness_test i others ;;
 
 end ;;
 
@@ -142,6 +151,8 @@ let delta l=
   []->[]
   |u::v->sub_f([],u,v);;
            
+let is_connected = Private.is_connected ;;
+
 let write_using_connected_components l = 
     let temp1 = decompose_into_connected_components l in 
     let temp2 = Private.helper_for_cc_writing ([],temp1) in 

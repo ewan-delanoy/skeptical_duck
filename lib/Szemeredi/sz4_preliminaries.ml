@@ -1151,6 +1151,13 @@ let canonical_solution = Memoized.make(fun pt->
    helper_for_solution_chooser (pt,m,[],rev_base)
 ) ;; 
 
+module Choose_preferred_decomposition = struct 
+
+
+
+end ;;  
+
+
 let compute_data_around_decomposer (D(part1,part2)) full_sol= 
     let t = (List.hd part2) - 1 in 
     let translate = Image.image (fun x->x-t)  in  
