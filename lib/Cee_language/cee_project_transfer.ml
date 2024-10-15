@@ -801,33 +801,18 @@ let compute_wardrobes_for_dc_files cpsl_ref =
    ) in 
     new_cpsl ;;
 
-    let unsafe_constructor 
-       ~source_envname:src_envname 
-        ~destination_envname:dest_envname 
-         ~wardrobes_for_dc_files ~raw_commands =
-      let dest = Directory_name.of_string (Sys.getenv dest_envname) in
-      ref
-        { source_envname = src_envname
-        ; destination_envname = dest_envname
-        ; commands = Image.image (Cee_compilation_command.parse dest) raw_commands
-        ; source_opt = None
-        ; destination_opt = Some dest
-        ; all_h_or_c_files_opt = None
-        ; separate_commands_opt = None
-        ; filecontents = Hashtbl.create 3000
-        ; directly_compiled_files_opt = None
-        ; inclusions_in_dc_files_opt = None
-        ; shadows_for_dc_files_opt = None
-        ; wardrobes_for_dc_files_opt = Some wardrobes_for_dc_files
-        ; directly_included_files_opt = None
-        ; inclusions_for_di_files = Hashtbl.create 600
-        ; wardrobes_for_di_files_opt = None
-        ; shadow_algebras_for_di_files_opt = None
-        }
-        
-    ;;
-  end
-end
+    let unsafe_set_wardrobes_for_dc_files 
+       cpsl_ref precomputed_wardrobes_for_dc_files = 
+      let old_cpsl = (!cpsl_ref) in 
+      let new_cpsl = {
+        old_cpsl with 
+        wardrobes_for_dc_files_opt = Some precomputed_wardrobes_for_dc_files
+      } in 
+      ref new_cpsl ;;
+
+    
+  end ;;
+end ;;
 
 module type CAPSULE_INTERFACE = sig
   type t
@@ -856,11 +841,11 @@ module type CAPSULE_INTERFACE = sig
       string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
 
   val replicate : t -> next_envname:string -> t
-  val unsafe_constructor :
-  source_envname:string ->
-  destination_envname:string ->
-  wardrobes_for_dc_files:(string * Cee_wardrobe_t.t) list ->
-  raw_commands:string list ->t 
+
+  val unsafe_set_wardrobes_for_dc_files :
+      t -> (string * Cee_wardrobe_t.t) list -> t
+
+  
 end
 
 module Capsule : CAPSULE_INTERFACE = Private2.PreCapsule
