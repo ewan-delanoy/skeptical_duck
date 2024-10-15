@@ -423,12 +423,12 @@ module Private2 = struct
 
     let commands cpsl = !cpsl.commands
 
-    let make ~source_envname:src_envname ~destination_envname:dest_envname raw_commands =
+    let first_constructor ~source_envname:src_envname ~destination_envname:dest_envname processed_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in
       ref
         { source_envname = src_envname
         ; destination_envname = dest_envname
-        ; commands = Image.image (Cee_compilation_command.parse dest) raw_commands
+        ; commands = processed_commands
         ; source_opt = None
         ; destination_opt = Some dest
         ; all_h_or_c_files_opt = None
@@ -445,6 +445,11 @@ module Private2 = struct
         }
     ;;
 
+    let make ~source_envname:src_envname ~destination_envname:dest_envname raw_commands =
+      let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
+      let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
+      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname processed_commands ;;
+    
     let compute_all_h_or_c_files cpsl_ref =
       let src = Directory_name.connectable_to_subpath (source cpsl_ref) in
       let temp1 = Unix_again.quick_beheaded_complete_ls src in
@@ -522,7 +527,8 @@ module Private2 = struct
       Io.overwrite_with ap new_content
     ;;
 
-    let create_file cpsl_ref fn ?new_content_description new_content =
+    let create_file_in_a_list cpsl_ref fn 
+      ?new_content_description new_content index_msg=
       let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
       let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
       let _ = Io.overwrite_with ap new_content in
@@ -531,13 +537,18 @@ module Private2 = struct
         | None -> ""
         | Some descr -> ", with content " ^ descr
       in
-      announce ("Created file  " ^ fn ^ end_of_msg)
+      announce ("Created file  " ^ fn ^ end_of_msg ^ index_msg)
+    ;;
+
+    let create_file cpsl_ref fn ?new_content_description new_content =
+     create_file_in_a_list cpsl_ref fn 
+      ?new_content_description new_content ""
     ;;
 
     let marker_for_shadowed_copies = "_QhzFTSnAQA_" ;; 
 
     let create_shadowed_copy 
-      cpsl_ref fn shadow ~copy_level ~shadow_index = 
+      cpsl_ref fn shadow ~copy_level ~shadow_index index_msg = 
       let (basename,extension) =
           Cull_string.split_wrt_rightmost fn '.' in 
       let copy_name = basename ^ marker_for_shadowed_copies ^
@@ -546,7 +557,7 @@ module Private2 = struct
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
          Cee_text.rewrite_using_shadow old_content shadow in   
-      create_file cpsl_ref copy_name  new_content ;;
+      create_file_in_a_list cpsl_ref copy_name  new_content index_msg;;
 
     let text_for_makefile cpsl =
       let temp1 = Int_range.index_everything cpsl.commands in
@@ -580,7 +591,7 @@ module Private2 = struct
         ; "\tcat /dev/null > ${EXPHP}/what_make_did.txt "
         ; "\trm -rf ${PHPSRC}/* "
         ; "\tcp -R ${" ^ dest ^ "}/* ${PHPSRC}/ "
-        ; "\tcp ${ST02PHPSRC}/.gdbinit ${PHPSRC}/"
+        ; "\tcp ${" ^ dest ^ "}/.gdbinit ${PHPSRC}/"
         ; "\tcp ${EXPHP}/copiableMakefile ${PHPSRC}/Makefile "
         ; ""
         ; "adober:"
@@ -766,6 +777,30 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         answer
     ;;
  
+  let reinitialize_destination_directory cpsl =
+    let src = Directory_name.connectable_to_subpath (source cpsl)
+    and slashed_dest = Directory_name.connectable_to_subpath (destination cpsl) in
+    let dest = Cull_string.coending 1 slashed_dest in
+    Unix_command.conditional_multiple_uc
+      [ "rm -rf " ^ dest ^ "/*"
+      ; "cp -R " ^ src ^ "/* " ^ dest ^ "/*"
+      ; "cp " ^ src ^ "/.gdbinit " ^ dest ^ "/"
+      ] 
+  ;;
+
+  let replicate cpsl ~next_envname = 
+    let new_cpsl = 
+       first_constructor
+   ~source_envname:(((!cpsl).destination_envname))
+   ~destination_envname:next_envname 
+    ((!cpsl).commands) in 
+   let _ = (
+     write_makefile new_cpsl;
+     write_to_upper_makefile new_cpsl;
+     reinitialize_destination_directory new_cpsl;
+   ) in 
+    new_cpsl ;;
+
     let unsafe_constructor 
        ~source_envname:src_envname 
         ~destination_envname:dest_envname 
@@ -818,10 +853,9 @@ module type CAPSULE_INTERFACE = sig
   val create_file : t -> string -> ?new_content_description:string -> string -> unit
   val create_shadowed_copy :
       t ->
-      string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> unit
-  val write_makefile : t -> unit
-  val write_to_upper_makefile : t -> unit
+      string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
 
+  val replicate : t -> next_envname:string -> t
   val unsafe_constructor :
   source_envname:string ->
   destination_envname:string ->
@@ -1019,7 +1053,6 @@ module Private = struct
             in
             Capsule.modify_file cpsl fn new_text)
           replacements_to_be_made;
-      Capsule.write_to_upper_makefile cpsl
     in
     replacements_to_be_made
   ;;
@@ -1036,16 +1069,7 @@ module Private = struct
       files
   ;;
 
-  let reinitialize_destination_directory cpsl =
-    let src = Directory_name.connectable_to_subpath (Capsule.source cpsl)
-    and slashed_dest = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in
-    let dest = Cull_string.coending 1 slashed_dest in
-    Unix_command.conditional_multiple_uc
-      [ "rm -rf " ^ dest ^ "/*"
-      ; "cp -R " ^ src ^ "/* " ^ dest ^ "/*"
-      ; "cp " ^ src ^ "/.gdbinit " ^ dest ^ "/"
-      ]
-  ;;
+  
 
   let create_level_1_copies cpsl = 
     let temp1 = Capsule.shadow_algebras_for_di_files cpsl in 
@@ -1056,18 +1080,22 @@ module Private = struct
           (fn,Cee_shadow_t.Sh(nbr_of_parts,part),part_idx)
         ) ttemp3
     ) temp1) in 
+    let temp4 = Int_range.index_everything temp2  in 
+    let s_total = string_of_int(List.length temp2) in 
     List.iter 
-    (fun (fn,shadow,shadow_index)->
+    (fun (global_idx,(fn,shadow,shadow_index))->
+       let idx_msg = "( "^(string_of_int global_idx)^"of "^s_total^")" in 
       Capsule.create_shadowed_copy 
-       cpsl fn shadow ~copy_level:1 ~shadow_index 
-      ) temp2;; 
+       cpsl fn shadow ~copy_level:1 ~shadow_index idx_msg
+      ) temp4;; 
+
+ 
 
 end ;; 
 
 let create_level_1_copies = Private.create_level_1_copies ;;
 let make_capsule = Capsule.make ;;
 
-let reinitialize_destination_directory = Private.reinitialize_destination_directory
 
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
