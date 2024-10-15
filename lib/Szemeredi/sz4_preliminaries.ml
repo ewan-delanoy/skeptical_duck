@@ -201,6 +201,12 @@ module Finite_int_set = struct
   let oe_decomposer_for_usual_lists l = 
      helper_for_oe_decomposer ([],[],l) ;;
 
+  let diameter fis = 
+   let (FIS(n,_scr)) = fis in 
+   if n= 0 then 0 else 
+   let m = List.hd(to_usual_int_list fis) in 
+   n-(m-1);;   
+
   end ;;
 
   let constraint_can_apply (FIS(n,scrappers)) (C l) =
@@ -219,6 +225,8 @@ module Finite_int_set = struct
                    )
     ) in 
     (d,Private.of_usual_int_list core_domain) ;; 
+
+   let diameter = Private.diameter ;; 
 
   let effective_max_width fis excluded_constraints proposed_width = 
        Highest_constraint.effective_max_width 
@@ -1152,9 +1160,32 @@ let canonical_solution = Memoized.make(fun pt->
 
 module Choose_preferred_decomposition = struct 
 
+let biconnected_measure (l1,l2) = 
+   match 
+   (
+      Arithmetic_list.is_connected l1,
+      Arithmetic_list.is_connected l2
+   )
+   with    
+   (true,true) -> 1 
+   |(false,true) -> 2
+   |(true,false) -> 3 
+   |(false,false) -> 4 ;;  
+
+(*   
 let adhoc_order = (fun (p1,p2) (q1,q2) ->
+    let lp1 = Finite_int_set.to_usual_int_list p1 
+    and lp2 = Finite_int_set.to_usual_int_list p2 
+    and lq1 = Finite_int_set.to_usual_int_list q1 
+    and lq2 = Finite_int_set.to_usual_int_list q2 in
+    let trial1 =i_order 
+       (biconnected_measure (lp1,lp2))
+       (biconnected_measure (lq1,lq2)) in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else 
+    let trial2 = i_order (Finite_int_set.size q2) (Finite_int_set.size p2) in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else    
    ()
-) ;;   
+) ;;   *)
 
 end ;;  
 
