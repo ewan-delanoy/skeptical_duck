@@ -160,6 +160,8 @@ module Finite_int_set = struct
 
   exception Translation_goes_negative of int * finite_int_set ;; 
 
+  exception Empty_set_has_no_diameter ;;
+
   module Private = struct
 
   let to_usual_int_list (FIS(n,scrappers)) = i_setminus (Int_range.range 1 n) scrappers ;; 
@@ -203,9 +205,25 @@ module Finite_int_set = struct
 
   let diameter fis = 
    let (FIS(n,_scr)) = fis in 
-   if n= 0 then 0 else 
+   let l = to_usual_int_list fis in 
+   if l = [] then raise Empty_set_has_no_diameter else 
    let m = List.hd(to_usual_int_list fis) in 
    n-(m-1);;   
+  
+   let is_connected fis = 
+      let (FIS(_n,scr)) = fis in 
+      match scr with 
+      [] -> true 
+      |min_scr :: others ->
+         if min_scr<>1 then false else 
+         (
+            match (List.rev others) with 
+            [] -> true 
+            |max_scr :: _ -> 
+              scr = Int_range.range min_scr max_scr 
+         )   ;;
+          
+  
 
   end ;;
 
@@ -234,6 +252,7 @@ module Finite_int_set = struct
 
   let empty_set = Private.empty_set ;;
 
+  let is_connected = Private.is_connected ;;
   let max (FIS(n,_)) = n ;; 
 
   let name (FIS(n,l)) =
