@@ -423,34 +423,7 @@ module Private2 = struct
 
     let commands cpsl = !cpsl.commands
 
-    let first_constructor ~source_envname:src_envname ~destination_envname:dest_envname processed_commands =
-      let dest = Directory_name.of_string (Sys.getenv dest_envname) in
-      ref
-        { source_envname = src_envname
-        ; destination_envname = dest_envname
-        ; commands = processed_commands
-        ; source_opt = None
-        ; destination_opt = Some dest
-        ; all_h_or_c_files_opt = None
-        ; separate_commands_opt = None
-        ; filecontents = Hashtbl.create 3000
-        ; directly_compiled_files_opt = None
-        ; inclusions_in_dc_files_opt = None
-        ; shadows_for_dc_files_opt = None
-        ; wardrobes_for_dc_files_opt = None
-        ; directly_included_files_opt = None
-        ; inclusions_for_di_files = Hashtbl.create 600
-        ; wardrobes_for_di_files_opt = None
-        ; shadow_algebras_for_di_files_opt = None
-        }
-    ;;
-
-    let make ~source_envname:src_envname ~destination_envname:dest_envname raw_commands =
-      let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
-      let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
-      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname processed_commands ;;
-    
-    let compute_all_h_or_c_files cpsl_ref =
+        let compute_all_h_or_c_files cpsl_ref =
       let src = Directory_name.connectable_to_subpath (source cpsl_ref) in
       let temp1 = Unix_again.quick_beheaded_complete_ls src in
       str_sort
@@ -781,25 +754,59 @@ let compute_wardrobes_for_dc_files cpsl_ref =
     let src = Directory_name.connectable_to_subpath (source cpsl)
     and slashed_dest = Directory_name.connectable_to_subpath (destination cpsl) in
     let dest = Cull_string.coending 1 slashed_dest in
-    Unix_command.conditional_multiple_uc
+    let _ = Unix_command.conditional_multiple_uc
       [ "rm -rf " ^ dest ^ "/*"
       ; "cp -R " ^ src ^ "/* " ^ dest ^ "/*"
       ; "cp " ^ src ^ "/.gdbinit " ^ dest ^ "/"
-      ] 
-  ;;
+      ] in 
+    ()
+    ;;
+  
+  let first_constructor ~source_envname:src_envname ~destination_envname:dest_envname 
+    ~refill_files
+    processed_commands =
+      let dest = Directory_name.of_string (Sys.getenv dest_envname) in
+      let new_cpsl = ref
+        { source_envname = src_envname
+        ; destination_envname = dest_envname
+        ; commands = processed_commands
+        ; source_opt = None
+        ; destination_opt = Some dest
+        ; all_h_or_c_files_opt = None
+        ; separate_commands_opt = None
+        ; filecontents = Hashtbl.create 3000
+        ; directly_compiled_files_opt = None
+        ; inclusions_in_dc_files_opt = None
+        ; shadows_for_dc_files_opt = None
+        ; wardrobes_for_dc_files_opt = None
+        ; directly_included_files_opt = None
+        ; inclusions_for_di_files = Hashtbl.create 600
+        ; wardrobes_for_di_files_opt = None
+        ; shadow_algebras_for_di_files_opt = None
+        } in 
+      let _ = (
+         if refill_files 
+         then  
+          (write_makefile new_cpsl;
+     write_to_upper_makefile new_cpsl;
+     reinitialize_destination_directory new_cpsl;)
+      )  in  
+      new_cpsl
+    ;;
 
-  let replicate cpsl ~next_envname = 
-    let new_cpsl = 
+    let make ~source_envname:src_envname ~destination_envname:dest_envname 
+        ~refill_files raw_commands =
+      let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
+      let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
+      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname ~refill_files processed_commands ;;
+
+  let replicate ?(refill_files=false) ~next_envname cpsl  =      
        first_constructor
    ~source_envname:(((!cpsl).destination_envname))
-   ~destination_envname:next_envname 
-    ((!cpsl).commands) in 
-   let _ = (
-     write_makefile new_cpsl;
-     write_to_upper_makefile new_cpsl;
-     reinitialize_destination_directory new_cpsl;
-   ) in 
-    new_cpsl ;;
+   ~destination_envname:next_envname
+   ~refill_files 
+    ((!cpsl).commands) 
+   ;;
 
     let unsafe_set_wardrobes_for_dc_files 
        cpsl_ref precomputed_wardrobes_for_dc_files = 
@@ -822,7 +829,7 @@ module type CAPSULE_INTERFACE = sig
   val source : t -> Directory_name_t.t
   val destination : t -> Directory_name_t.t
   val commands : t -> Cee_compilation_command_t.t list
-  val make : source_envname:string -> destination_envname:string -> string list -> t
+  
   val all_h_or_c_files : t -> string list
   val separate_commands : t -> Cee_compilation_command_t.separate_t list
   val directly_compiled_files : t -> string list
@@ -840,7 +847,15 @@ module type CAPSULE_INTERFACE = sig
       t ->
       string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
 
-  val replicate : t -> next_envname:string -> t
+   val make :
+      source_envname:string ->
+      destination_envname:string ->
+      refill_files:bool -> string list -> t
+    val replicate :
+      ?refill_files:bool ->
+      next_envname:string -> t -> t
+
+
 
   val unsafe_set_wardrobes_for_dc_files :
       t -> (string * Cee_wardrobe_t.t) list -> t
@@ -1079,7 +1094,6 @@ module Private = struct
 end ;; 
 
 let create_level_1_copies = Private.create_level_1_copies ;;
-let make_capsule = Capsule.make ;;
 
 
 let remove_conditional_directives_in_directly_compiled_files =
