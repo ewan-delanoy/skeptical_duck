@@ -552,7 +552,7 @@ module Private2 = struct
     let write_makefile cpsl_ref =
       let cpsl = !cpsl_ref in
       let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
-      let path_for_makefile = Absolute_path.of_string (dest_dir ^ "Makefile") in
+      let path_for_makefile = Absolute_path.create_file_if_absent (dest_dir ^ "Makefile") in
       Io.overwrite_with path_for_makefile (text_for_makefile cpsl)
     ;;
 
@@ -756,7 +756,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
     let dest = Cull_string.coending 1 slashed_dest in
     let _ = Unix_command.conditional_multiple_uc
       [ "rm -rf " ^ dest ^ "/*"
-      ; "cp -R " ^ src ^ "/* " ^ dest ^ "/*"
+      ; "cp -R " ^ src ^ "/* " ^ dest ^ "/"
       ; "cp " ^ src ^ "/.gdbinit " ^ dest ^ "/"
       ] in 
     ()
@@ -794,8 +794,8 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       new_cpsl
     ;;
 
-    let make ~source_envname:src_envname ~destination_envname:dest_envname 
-        ~refill_files raw_commands =
+    let make ?(refill_files=false) ~source_envname:src_envname ~destination_envname:dest_envname 
+        raw_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
       let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
       first_constructor ~source_envname:src_envname ~destination_envname:dest_envname ~refill_files processed_commands ;;
@@ -848,9 +848,10 @@ module type CAPSULE_INTERFACE = sig
       string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
 
    val make :
+      ?refill_files:bool ->
       source_envname:string ->
       destination_envname:string ->
-      refill_files:bool -> string list -> t
+       string list -> t
     val replicate :
       ?refill_files:bool ->
       next_envname:string -> t -> t
