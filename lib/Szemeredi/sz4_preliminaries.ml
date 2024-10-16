@@ -28,7 +28,7 @@ type mold = Sz4_types.mold = {
 } ;;
 
 type explanation = Sz4_types.explanation = 
-   Extension_expl 
+   Extension 
   |Filled_complement of int * int 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
@@ -222,9 +222,7 @@ module Finite_int_set = struct
             |max_scr :: _ -> 
               scr = Int_range.range min_scr max_scr 
          )   ;;
-          
-  
-
+         
   end ;;
 
   let constraint_can_apply (FIS(n,scrappers)) (C l) =
@@ -822,7 +820,7 @@ let eval_without_remembering_opt pt_with_1 =
    let beheaded_mold_opt = lower_level_eval_on_pretranslated_opt beheaded_pt in 
    let opt1 = check_extension_case pt_with_1 n beheaded_mold_opt in 
    if opt1 <> None
-   then let _ = add_explanation pt_with_1 Extension_expl in 
+   then let _ = add_explanation pt_with_1 Extension in 
         opt1
    else 
    let opt2 = check_filled_complement_case pt_with_1 n beheaded_mold_opt in 
@@ -1097,33 +1095,6 @@ module BuiltOnEval = struct
 
 exception Find_sticky_vertex_exn ;;
 
-type decomposition_t = D of (int list) * (int list) ;; 
-
-type decomposition_to_be_deduced_t = 
-    DTBD of ( finite_int_set * (int list) ) * 
-            ( finite_int_set * (int list) ) ;;
-
-type decomposition_data = {
-    decompositions : decomposition_t list ;
-    chosen_decomposition : decomposition_t ;
-    to_be_deduced : decomposition_to_be_deduced_t ;
-    canonical_solution : int list
-} ;;
-
-type breaking_point_data = {
-    breaking_constraint : constraint_t ;
-    broken_point : point ;
-    broken_mold : mold 
-} ;;
-
-type analysis_result =
-   Extension
-  |Decomposition of decomposition_data
-  |Breaking_point of breaking_point_data ;; 
-
-
-
-
 module Private = struct 
 
 let measure = Memoized.make(fun pt->
@@ -1179,11 +1150,11 @@ let canonical_solution = Memoized.make(fun pt->
 
 module Choose_preferred_decomposition = struct 
 
-let biconnected_measure (l1,l2) = 
+let biconnected_measure (fis1,fis2) = 
    match 
    (
-      Arithmetic_list.is_connected l1,
-      Arithmetic_list.is_connected l2
+      Finite_int_set.is_connected fis1,
+      Finite_int_set.is_connected fis2
    )
    with    
    (true,true) -> 1 
@@ -1191,85 +1162,93 @@ let biconnected_measure (l1,l2) =
    |(true,false) -> 3 
    |(false,false) -> 4 ;;  
 
-(*   
-let adhoc_order = (fun (p1,p2) (q1,q2) ->
-    let lp1 = Finite_int_set.to_usual_int_list p1 
-    and lp2 = Finite_int_set.to_usual_int_list p2 
-    and lq1 = Finite_int_set.to_usual_int_list q1 
-    and lq2 = Finite_int_set.to_usual_int_list q2 in
+
+let adhoc_order = ((fun (p1,p2) (q1,q2) ->
     let trial1 =i_order 
-       (biconnected_measure (lp1,lp2))
-       (biconnected_measure (lq1,lq2)) in 
+       (biconnected_measure (p1,p2))
+       (biconnected_measure (q1,q2)) in 
     if trial1<>Total_ordering_result_t.Equal then trial1 else 
     let trial2 = i_order (Finite_int_set.size q2) (Finite_int_set.size p2) in 
-    if trial2<>Total_ordering_result_t.Equal then trial2 else    
-   ()
-) ;;   *)
+    if trial2<>Total_ordering_result_t.Equal then trial2 else  
+    let trial3 = i_order (Finite_int_set.diameter q2) (Finite_int_set.diameter p2) in 
+    if trial3<>Total_ordering_result_t.Equal then trial2 else    
+    let lp1 = Finite_int_set.to_usual_int_list p1 
+    and lq1 = Finite_int_set.to_usual_int_list q1 in 
+    il_order lp1 lq1
+): (finite_int_set * finite_int_set) Total_ordering_t.t) ;;   
+
+let adhoc_min = Ordered.min adhoc_order ;;
+
+let pairs_from_distinguished_parts n parts= Image.image (
+  fun p -> 
+   let q = i_setminus (Int_range.range 1 n) p in 
+   let fp = Finite_int_set.of_usual_int_list p 
+   and fq = Finite_int_set.of_usual_int_list q in 
+   if Finite_int_set.max(fp) = n
+   then (fq,fp)
+   else (fp,fq)    
+) parts;;
+
+let choose n parts = 
+  adhoc_min(pairs_from_distinguished_parts n parts);;
 
 end ;;  
 
-
-let compute_data_around_decomposer (D(part1,part2)) full_sol= 
-    let t = (List.hd part2) - 1 in 
-    let translate = Image.image (fun x->x-t)  in  
-    let translated_part2 = translate part2 in  
-    let sol1 = i_intersect part1 full_sol 
-    and sol2 = translate(i_intersect part2 full_sol) in 
-    let fis1 = Finite_int_set.of_usual_int_list part1 
-    and fis2 = Finite_int_set.of_usual_int_list translated_part2 in 
-    DTBD((fis1,sol1),(fis2,sol2));;
-
-
-let analysis_in_decomposition_case pt real_decs = 
+let extension_case_opt pt = 
+   let m = measure pt in 
    let n = Finite_int_set.max (pt.base_set) in 
-   if il_mem [n] real_decs 
-   then Extension  
-   else
-   let chosen_second_part = List.find (i_mem n) real_decs in
-   let whole = Finite_int_set.to_usual_int_list (pt.base_set) in 
-   let chosen_first_part = i_setminus whole chosen_second_part in
-   let chosen_dec =D(chosen_first_part,chosen_second_part) in  
-   let sol = canonical_solution pt in 
+   let beheaded_pt = Point.remove pt [n] in 
+   if measure(beheaded_pt) = (m-1) 
+   then Some Extension 
+   else None ;;   
+
+let filled_complement_opt pt = 
+   let m = measure pt in 
    let n = Finite_int_set.max (pt.base_set) in 
-   let formal_decs = List.filter_map (
-      fun part ->
-       let other_part = i_setminus whole part in 
-       if i_mem n other_part 
-       then Some(D(part,other_part))
-       else None
-   ) real_decs in 
-   Decomposition(
-   {
-      decompositions = formal_decs ;
-      chosen_decomposition = chosen_dec ;
-      to_be_deduced = compute_data_around_decomposer chosen_dec sol;
-      canonical_solution = sol 
-   });;
+   let tempf = (fun i->
+      measure(Point.remove pt [i]) = m - 1
+   ) in 
+   let complements = Point.complements pt n in 
+   match List.find_opt (
+        fun c-> List.for_all tempf c
+   ) complements with 
+   None -> None 
+   |(Some c) -> 
+     let nt = (fun k->List.nth c (k-1)) in 
+     Some(Filled_complement(nt 1,nt 2));;   
 
-
-let rec helper_for_analysis (pt, size) = 
-    let decs = distinguished_parts(pt) in 
-    let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
-    if real_decs <> []
-    then analysis_in_decomposition_case pt real_decs 
-    else
+let decomposition_opt pt =
+   let n = Finite_int_set.max (pt.base_set) in 
+   let decs = distinguished_parts pt in 
+   let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
+   if real_decs = []
+   then None 
+   else 
+   let (fis1,fis2) = Choose_preferred_decomposition.choose n real_decs in 
+   Some(Decomposition(fis1,fis2,canonical_solution pt))  ;; 
+   
+let rec compute_breaking_constraint (pt, size) = 
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
     let sol_before = Painstaking.eval pt_before in 
     let size_before = Mold.solution_size sol_before in 
     if size_before<>size  
-    then Breaking_point(
-        {
-          breaking_constraint = cstr ;
-          broken_point = pt_before ;
-          broken_mold = sol_before 
-        })
-   else helper_for_analysis (pt_before, size) ;; 
+    then cstr
+    else compute_breaking_constraint (pt_before, size) ;;    
+let breaking_point_case pt =   
+   let m = measure pt in 
+   let (C cstr) = compute_breaking_constraint (pt, m) in 
+   let nt = (fun k->List.nth cstr (k-1)) in 
+   Breaking_point(nt 1,nt 2,nt 3) ;;
 
 let analize pt = 
-    let mold = Painstaking.eval pt in 
-    let size = Mold.solution_size mold in
-    helper_for_analysis (pt, size) ;;  
+   let opt1 = extension_case_opt pt in
+   if opt1<>None then Option.get opt1 else 
+   let opt2 = filled_complement_opt pt in
+   if opt2<>None then Option.get opt2 else 
+   let opt3 = decomposition_opt pt in
+   if opt3<>None then Option.get opt3 else   
+   breaking_point_case pt ;;  
 
 
 end ;;
