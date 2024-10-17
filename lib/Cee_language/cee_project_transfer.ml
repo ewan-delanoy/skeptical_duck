@@ -865,7 +865,7 @@ module type CAPSULE_INTERFACE = sig
 
   val  write_to_upper_makefile : t -> unit  
   
-end
+end ;;
 
 module Capsule : CAPSULE_INTERFACE = Private2.PreCapsule
 

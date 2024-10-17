@@ -843,7 +843,7 @@ let lower_level_eval_opt pt =
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
 
-let eval_without_remembering_opt pt_with_1 =
+let expand_pt_with_1_without_remembering_opt pt_with_1 =
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else 
@@ -863,12 +863,12 @@ let eval_without_remembering_opt pt_with_1 =
         Some mold
    else None ;;
 
-let eval_on_pretranslated_opt pt_with_1 =
+let eval_on_pretranslated_and_remember_opt pt_with_1 =
   match List.assoc_opt pt_with_1 (!impatient_ref) with 
   (Some old_answer) -> Some old_answer
   | None ->
    (
-      match eval_without_remembering_opt pt_with_1 with 
+      match expand_pt_with_1_without_remembering_opt pt_with_1 with 
       None -> None 
       |Some new_answer ->
         let _ = (
@@ -879,13 +879,30 @@ let eval_on_pretranslated_opt pt_with_1 =
 
    ) ;;      
 
-   
 
-let eval_opt pt =
+let eval_and_remember_opt pt =
     let (d,pretranslated_pt) = 
       Point.decompose_wrt_translation pt in 
     Option.map(Mold.translate d)
-     (eval_on_pretranslated_opt pretranslated_pt);;
+     (eval_on_pretranslated_and_remember_opt pretranslated_pt);;
+
+let eval_on_pretranslated_without_remembering_opt pt_with_1 =
+  match List.assoc_opt pt_with_1 (!impatient_ref) with 
+  (Some old_answer) -> Some old_answer
+  | None ->
+   expand_pt_with_1_without_remembering_opt pt_with_1 ;;
+
+
+let eval_without_remembering_opt pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Option.map(Mold.translate d)
+     (eval_on_pretranslated_without_remembering_opt pretranslated_pt);;     
+
+let eval_opt ?(without_remembering=false) pt = 
+   if without_remembering 
+   then eval_without_remembering_opt pt
+   else eval_and_remember_opt pt ;;
 
 let unsafe_add pt mold expl = 
       (impatient_ref := (pt,mold) ::(!impatient_ref);
@@ -1300,7 +1317,8 @@ let direct_parents pt = match analize pt with
       Image.image (fun t->Point.remove pt [t]) [i;j;k];; 
 
 let important_parents pt = List.filter(
-   fun pt -> One_more_small_step.eval_opt(pt)=None
+   fun pt -> One_more_small_step.eval_opt
+   ~without_remembering:true pt=None
 )(direct_parents pt) ;;
 
 let rec helper_for_ancestors_computation (treated,to_be_treated) =
