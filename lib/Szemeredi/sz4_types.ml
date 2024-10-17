@@ -29,10 +29,10 @@ type mold = {
 } ;;
 
 type explanation =
-   Extension 
+   Free
+  |Extension 
   |Filled_complement of int * int 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
-
 
 

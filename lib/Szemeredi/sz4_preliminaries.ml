@@ -28,7 +28,8 @@ type mold = Sz4_types.mold = {
 } ;;
 
 type explanation = Sz4_types.explanation = 
-   Extension 
+   Free
+  |Extension 
   |Filled_complement of int * int 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
@@ -1259,7 +1260,7 @@ let canonical_solution = Private.canonical_solution ;;
 end ;;
 
 
-module PointExample = struct 
+module PointConstructor = struct 
 
 let segment 
    ?imposed_max_width ?rightmost_cut n= 
@@ -1302,7 +1303,7 @@ module Private = struct
 
 let chosen_limit = 200 ;; 
 
-let p3 n = PointExample.segment n ~imposed_max_width:3;;
+let p3 n = PointConstructor.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
 let d = Deduce.using_decomposition;;
