@@ -513,6 +513,38 @@ module Point = struct
      and removals = Image.image fst paired_removals in 
      force (remove pt removals) forcings ;;
 
+  let order_on_points_containing_1 pt1 pt2 =
+   let (W w1) = pt1.max_width 
+   and (W w2) = pt2.max_width in 
+   let trial1 = Total_ordering.for_integers w1 w2 in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   let (FIS(n1,scr1)) = pt1.base_set 
+   and (FIS(n2,scr2)) = pt2.base_set in 
+   let trial2 = Total_ordering.for_integers n1 n2 in 
+   if trial2 <> Total_ordering_result_t.Equal then trial2 else 
+   let trial3 = Total_ordering.silex_for_intlists scr2 scr1 in 
+   if trial3 <> Total_ordering_result_t.Equal then trial3 else  
+   let ill_order = Total_ordering.silex_compare il_order in 
+   let efc1 = Image.image (fun (C l)->l) pt1.excluded_full_constraints 
+   and efc2 = Image.image (fun (C l)->l) pt2.excluded_full_constraints in 
+   let trial4 = ill_order efc1 efc2 in 
+   if trial4 <> Total_ordering_result_t.Equal then trial4 else  
+   let apc1 = Image.image (fun (C l)->l) pt1.added_partial_constraints 
+   and apc2 = Image.image (fun (C l)->l) pt2.added_partial_constraints in 
+   ill_order apc1 apc2 ;;    
+   
+  let decompose_wrt_translation pt =
+     let (d,_) = Finite_int_set.decompose_wrt_translation pt.base_set in 
+     (d,translate (-d) pt) ;;  
+
+  let order = ((fun pt1 pt2 ->
+    let (d1,translated_pt1) = decompose_wrt_translation pt1 
+    and (d2,translated_pt2) = decompose_wrt_translation pt2 in 
+    let trial1 = order_on_points_containing_1 translated_pt1 translated_pt2 in 
+    if trial1 <> Total_ordering_result_t.Equal then trial1 else
+    Total_ordering.for_integers d1 d2  
+  ) : point Total_ordering_t.t) ;; 
+
   end ;;
 
   
@@ -549,9 +581,7 @@ module Point = struct
     ) indexed_l in 
     Private.decide pt pairs ;;
 
-  let decompose_wrt_translation pt =
-     let (d,_) = Finite_int_set.decompose_wrt_translation pt.base_set in 
-     (d,Private.translate (-d) pt) ;;  
+  let decompose_wrt_translation = Private.decompose_wrt_translation ;;  
 
   let exclude pt constraint_to_be_excluded = 
     if Private.check_excluded_constraint 
@@ -581,6 +611,7 @@ module Point = struct
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
+  let order = Private.order ;;
   let remove = Private.remove ;;
 
   let restrict = Private.restrict ;;  
@@ -1243,6 +1274,7 @@ let breaking_point_case pt =
    Breaking_point(nt 1,nt 2,nt 3) ;;
 
 let analize pt = 
+   if Point.is_free pt then Free else
    let opt1 = extension_case_opt pt in
    if opt1<>None then Option.get opt1 else 
    let opt2 = filled_complement_opt pt in
@@ -1251,9 +1283,41 @@ let analize pt =
    if opt3<>None then Option.get opt3 else   
    breaking_point_case pt ;;  
 
+let adapt_to_subset pt fis = 
+   let l = Finite_int_set.to_usual_int_list fis in 
+   let pt2 = Point.restrict pt l in 
+   let (_,pt3) = Point.decompose_wrt_translation pt2 in 
+   pt3 ;;
+
+let direct_parents pt = match analize pt with 
+   Free -> []
+  |Extension 
+  |Filled_complement(_,_)-> let n = Finite_int_set.max (pt.base_set) in 
+                 [Point.remove pt [n]]
+  |Decomposition(fis1,fis2,_sol) -> 
+      Image.image (adapt_to_subset pt) [fis1;fis2]
+  |Breaking_point(i,j,k) ->
+      Image.image (fun t->Point.remove pt [t]) [i;j;k];; 
+
+let important_parents pt = List.filter(
+   fun pt -> One_more_small_step.eval_opt(pt)=None
+)(direct_parents pt) ;;
+
+let rec helper_for_ancestors_computation (treated,to_be_treated) =
+   match to_be_treated with 
+   [] -> treated 
+   |pt :: others ->
+       helper_for_ancestors_computation (pt::treated,
+       (important_parents pt)@others)
+
+let all_ancestors pt =
+    helper_for_ancestors_computation ([],
+       (important_parents pt)) ;;
+
 
 end ;;
 
+let all_ancestors = Private.all_ancestors ;;
 let analize = Private.analize ;;
 let canonical_solution = Private.canonical_solution ;; 
 
