@@ -861,6 +861,7 @@ module type CAPSULE_INTERFACE = sig
   val unsafe_set_wardrobes_for_dc_files :
       t -> (string * Cee_wardrobe_t.t) list -> t
 
+  val  reinitialize_destination_directory : t -> unit  
   
 end
 
