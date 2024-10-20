@@ -1329,8 +1329,9 @@ let rec helper_for_ancestors_computation (treated,to_be_treated) =
        (important_parents pt)@others)
 
 let all_ancestors pt =
-    helper_for_ancestors_computation ([],
-       (important_parents pt)) ;;
+   Ordered.sort Point.order
+    (helper_for_ancestors_computation ([],
+       (important_parents pt))) ;;
 
 
 end ;;
@@ -1400,42 +1401,16 @@ let tt1 n = Point.decide_on_the_right (pr3 n []) [1] ;;
 
 end ;;
 
-(*
+
 open Private ;;
 
 (* computing e(pr3 n []) *)
 
+for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
 
-e(pr3 6 []);;
-e(pr3 7 [4]);; 
-f(pr3 7 []) (C[1;4;7]) ;;
+d (pr3 7 [4]) (FIS (3, []),FIS (7, [1;2;3]),[1;2;5;6]) ;;
 
-e(pr3 8 [2;4]);;
-d(pr3 8 [2;7]) (FIS(5,[2;4]),[1;3]) (FIS(5,[2;4]),[1;3]) 
-   ~extra_solutions:[[1;3;4;8]];; 
-f(pr3 8 [2]) (C[1;4;7]) ;;
-
-e(pr3 8 [5;4]);;
-d(pr3 8 [5;7]) (FIS(3,[]),[1;3]) (FIS(5,[2;4]),[1;3]) ;; 
-
-f(pr3 8 [5]) (C[1;4;7]);;
-f(pr3 8 []) (C[2;5;8]);;
-
-e(pr3 chosen_limit []);;
-*)
-
-
-(* computing e(tt1 n) *)
-
-(*
-for k=1 to 5 do let _ = e(tt1 k) in () done ;;
-
-d(tt1 6) (FIS(3,[]),[1;3]) (FIS(2,[]),[1]) ;; 
-
-
-d(tt1 7) (FIS(4,[]),[1;2]) (FIS(2,[]),[1]) ;; 
-*)
-
+f (pr3 7 []) (C[1;4;7]) ;;
 
 end ;;
 

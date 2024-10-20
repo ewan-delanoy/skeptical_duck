@@ -1,14 +1,87 @@
 (************************************************************************************************************************
-Snippet 151 : 
+Snippet 153 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 150 : Boilerplate code for C project management
+Snippet 152 : Extract and reorder pages in a PDF
 ************************************************************************************************************************)
 
+module Snip152=struct
+
+let s_dir1 = home ^ "/Teuliou/Heavy/Workshop" ;;
+
+let dir1 = Directory_name.of_string s_dir1 ;; 
+
+let command_for_page_extraction k = 
+  let sk = string_of_int k in 
+  "cpdf whole.pdf "^sk^"-"^sk^" -o p"^sk^".pdf" ;;
+
+let text_for_extraction_script  nbr_of_pages =
+ "#! Extract pages from a pdf using cpdf\n\n\n"^
+ (String.concat "\n" 
+ (Int_range.scale command_for_page_extraction 1 nbr_of_pages))^
+ "\n\n\n" ;;
+
+let extractor_file = Absolute_path.of_string 
+  (home ^ "/Teuliou/Heavy/Workshop/extract_pages.sh") ;;
+
+let write_extraction_script  nbr_of_pages =
+ Io.overwrite_with extractor_file
+(text_for_extraction_script nbr_of_pages) ;;
+
+let basic_block_for_page_reunion k = 
+  let p = (fun j->"p"^(string_of_int j)^".pdf ") in 
+  (p(4*k+4))^(p(4*k+1))^(p(4*k+3))^(p(4*k+2)) ;;
+
+let text_for_reunion_script  nbr_of_pages =
+ "#! Reorder pages from a pdf using cpdf\n\n\n"^
+ "cpdf "^
+ (String.concat "" 
+ (Int_range.scale basic_block_for_page_reunion 
+ 0 ((nbr_of_pages/4)-1)))^
+ " -o reordered.pdf"^
+ "\n\n\n" ;;
+
+let reuniter_file = Absolute_path.of_string 
+  (home ^ "/Teuliou/Heavy/Workshop/reunite_pages.sh") ;;
+
+let write_reunion_script  nbr_of_pages =
+ Io.overwrite_with reuniter_file
+(text_for_reunion_script nbr_of_pages) ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 151 : 
+************************************************************************************************************************)
+module Snip151=struct
+let heim = Cull_string.two_sided_cutting ("/home/","") 
+    Needed_values.home ;;
+
+let s_dir1 = "/media/"^heim^"/HEAVY/French/Cinq_dernieres_minutes/" ;; 
+let dir1 = Directory_name.of_string s_dir1 ;; 
+
+let u1 = Unix_again.beheaded_simple_ls dir1 ;; 
+
+let u2 = Image.image (fun s->
+  "mv "^s_dir1^s^" "^s_dir1^"CDM_"^s
+  ) u1 ;; 
+
+let u3 = Image.image Sys.command u2 ;;   
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 150 : Boilerplate code for C project management
+************************************************************************************************************************)
 module Snip150=struct
 
   (*
