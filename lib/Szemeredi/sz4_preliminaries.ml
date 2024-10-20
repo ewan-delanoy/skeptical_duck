@@ -190,20 +190,7 @@ module Finite_int_set = struct
     let new_max = List.hd(List.rev new_z) in 
     FIS(new_max,List.filter (fun t->t<new_max) scrappers) ;;         
 
-  let rec helper_for_oe_decomposer (half1,half2,l) = 
-    match l with 
-    [] -> (List.rev half1,List.rev half2)
-    |a1 :: others1 ->
-      (
-        match others1 with 
-        [] -> (List.rev (a1::half1),List.rev half2)
-        |a2 :: others2 ->
-           helper_for_oe_decomposer (a1::half1,a2::half2,others2)
-      ) ;;
-
-  let oe_decomposer_for_usual_lists l = 
-     helper_for_oe_decomposer ([],[],l) ;;
-
+  
   let diameter fis = 
    let (FIS(n,_scr)) = fis in 
    let l = to_usual_int_list fis in 
@@ -251,6 +238,7 @@ module Finite_int_set = struct
 
   let empty_set = Private.empty_set ;;
 
+  let interval i j = FIS(j,Int_range.range 1 (i-1)) ;;
   let is_connected = Private.is_connected ;;
   let max (FIS(n,_)) = n ;; 
 
@@ -258,11 +246,6 @@ module Finite_int_set = struct
      "FIS("^(string_of_int n)^",["^
      (String.concat ";" (Image.image string_of_int l))
      ^"])";;
-
-  let oddeven_decomposition fis = 
-    Private.oe_decomposer_for_usual_lists(
-        Private.to_usual_int_list fis
-    );;
 
   let of_usual_int_list = Private.of_usual_int_list ;; 
 
@@ -1393,6 +1376,7 @@ let d = Deduce.using_decomposition;;
 let e = One_more_small_step.eval_opt ;;
 let f = Deduce.using_fork;;
 
+let fi = Finite_int_set.interval ;;
 
 let tt0 n = pr3 n [] ;;
 let tt1 n = Point.decide_on_the_right (pr3 n []) [1] ;; 
@@ -1408,7 +1392,7 @@ open Private ;;
 
 for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
 
-d (pr3 7 [4]) (FIS (3, []),FIS (7, [1;2;3]),[1;2;5;6]) ;;
+d (pr3 7 [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
 
 f (pr3 7 []) (C[1;4;7]) ;;
 
