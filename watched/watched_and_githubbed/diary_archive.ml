@@ -1,14 +1,62 @@
 (************************************************************************************************************************
-Snippet 153 : 
+Snippet 154 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 152 : Extract and reorder pages in a PDF
+Snippet 153 : Combinatorics on double transversals
 ************************************************************************************************************************)
 
+module Snip153=struct
+
+let g1 = Ordered_misc.minimal_transversals ;; 
+
+let i_order = Total_ordering.for_integers ;;
+let i_intersection = Ordered.intersect i_order ;;
+let i_merge = Ordered.merge i_order ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+let il_sort = Ordered.sort il_order ;;
+
+
+let rec helper_for_double_transversals (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> il_sort already_treated 
+    | a :: others ->
+      let temp1 = Cartesian.product already_treated (Uple.list_of_pairs a) in 
+      let temp2 = Image.image (fun (x,(a,b))->i_merge x [a;b]) temp1 in 
+      let temp3 = Ordered_misc.minimal_elts_wrt_inclusion temp2 in 
+      helper_for_double_transversals (temp3,others) ;;  
+
+let double_transversals ll = 
+   helper_for_double_transversals ([[]],ll);;      
+
+let test_by_one x1 x2 = 
+  (List.length(i_intersection x1 x2)>=2) ;;   
+
+let test_by_several lx1 x2 = 
+   List.for_all (test_by_one x2) lx1 ;;
+
+let base = il_sort(List_again.power_set (Int_range.range 1 6))    ;;
+
+
+let example1 = [[1;2;3;4];[1;2;5;6];[3;4;5;6]] ;;
+
+let base1 = List.filter (test_by_several example1) base ;;
+
+let g1 = double_transversals example1 ;;
+
+let other_g1 = Ordered_misc.minimal_elts_wrt_inclusion base1 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 152 : Extract and reorder pages in a PDF
+************************************************************************************************************************)
 module Snip152=struct
 
 let s_dir1 = home ^ "/Teuliou/Heavy/Workshop" ;;

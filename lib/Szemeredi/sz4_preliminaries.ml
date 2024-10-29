@@ -1200,9 +1200,9 @@ let adhoc_order = ((fun (p1,p2) (q1,q2) ->
        (biconnected_measure (p1,p2))
        (biconnected_measure (q1,q2)) in 
     if trial1<>Total_ordering_result_t.Equal then trial1 else 
-    let trial2 = i_order (Finite_int_set.size q2) (Finite_int_set.size p2) in 
+    let trial2 = i_order (Finite_int_set.size p2) (Finite_int_set.size q2) in 
     if trial2<>Total_ordering_result_t.Equal then trial2 else  
-    let trial3 = i_order (Finite_int_set.diameter q2) (Finite_int_set.diameter p2) in 
+    let trial3 = i_order (Finite_int_set.diameter p2) (Finite_int_set.diameter q2) in 
     if trial3<>Total_ordering_result_t.Equal then trial2 else    
     let lp1 = Finite_int_set.to_usual_int_list p1 
     and lq1 = Finite_int_set.to_usual_int_list q1 in 
@@ -1211,9 +1211,12 @@ let adhoc_order = ((fun (p1,p2) (q1,q2) ->
 
 let adhoc_min = Ordered.min adhoc_order ;;
 
-let pairs_from_distinguished_parts n parts= Image.image (
+let pairs_from_distinguished_parts pt parts= Image.image (
   fun p -> 
-   let q = i_setminus (Int_range.range 1 n) p in 
+   let fis = pt.base_set in 
+   let n = Finite_int_set.max fis in 
+   let whole = Finite_int_set.to_usual_int_list fis in 
+   let q = i_setminus whole p in 
    let fp = Finite_int_set.of_usual_int_list p 
    and fq = Finite_int_set.of_usual_int_list q in 
    if Finite_int_set.max(fp) = n
@@ -1221,8 +1224,8 @@ let pairs_from_distinguished_parts n parts= Image.image (
    else (fp,fq)    
 ) parts;;
 
-let choose n parts = 
-  adhoc_min(pairs_from_distinguished_parts n parts);;
+let choose pt parts = 
+  adhoc_min(pairs_from_distinguished_parts pt parts);;
 
 end ;;  
 
@@ -1250,13 +1253,12 @@ let filled_complement_opt pt =
      Some(Filled_complement(nt 1,nt 2));;   
 
 let decomposition_opt pt =
-   let n = Finite_int_set.max (pt.base_set) in 
    let decs = distinguished_parts pt in 
    let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
    if real_decs = []
    then None 
    else 
-   let (fis1,fis2) = Choose_preferred_decomposition.choose n real_decs in 
+   let (fis1,fis2) = Choose_preferred_decomposition.choose pt real_decs in 
    Some(Decomposition(fis1,fis2,canonical_solution pt))  ;; 
    
 let rec compute_breaking_constraint (pt, size) = 
@@ -1373,28 +1375,84 @@ let p3 n = PointConstructor.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
 let d = Deduce.using_decomposition;;
-let e = One_more_small_step.eval_opt ;;
-let f = Deduce.using_fork;;
+let e = One_more_small_step.eval_opt ~without_remembering:false ;;
+let f ?(extra_solutions=[]) pt cstr = 
+    Deduce.using_fork ~extra_solutions pt (C cstr);;
+
+let ud 
+   ?(extra_solutions=[]) pt tr = 
+   let _ = d ~extra_solutions pt tr in () ;;
+
+let ue pt = let _ = e pt in () ;;
+
+let uf ?(extra_solutions=[]) pt cstr = 
+    let _ = f ~extra_solutions pt cstr in ();;
+
 
 let fi = Finite_int_set.interval ;;
+let fu = Finite_int_set.of_usual_int_list ;;
 
-let tt0 n = pr3 n [] ;;
-let tt1 n = Point.decide_on_the_right (pr3 n []) [1] ;; 
+let u3 n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5]) 
+  (Int_range.range 1 n) ;;
 
-
+let current_bound = 100;;  
 
 end ;;
 
 
 open Private ;;
 
+(*
 (* computing e(pr3 n []) *)
 
 for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
 
+(* computing e(pr3 7 []) *)
 d (pr3 7 [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
+f (pr3 7 []) [1;4;7] ;;
 
-f (pr3 7 []) (C[1;4;7]) ;;
+(* computing e(pr3 8 []) *)
+d (pr3 8 [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]) ;;
+d (pr3 8 [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) ;;
+d (pr3 8 [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) ;;
+d (pr3 8 [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) ;;
+f (pr3 8 [5]) [1;4;7] ;;
+f (pr3 8 [2]) [1;4;7] ;;
+f (pr3 8 []) [2;5;8] ;;
+
+for j= 1 to ((current_bound/8)+1) do
+ue(pr3 (8*j+1) []);
+ue(pr3 (8*j+2) []);
+ud (pr3 (8*j+3) []) (fi 1 (8*j),fi (8*j+1) (8*j+3),u3(8*j+3)) ;
+ue(pr3 (8*j+4) []);
+ue(pr3 (8*j+5) []);
+ud (pr3 (8*j+6) []) (fi 1 (8*j+3),fi (8*j+4) (8*j+6),u3(8*j+6)) ;
+ud (pr3 (8*j+7) []) (fi 1 (8*j),fi (8*j+1) (8*j+7),u3(8*j+7)) ;
+ud (pr3 (8*j+8) []) (fi 1 (8*j),fi (8*j+1) (8*j+8),u3(8*j+7)) ;
+done;
+
+f (pr3 4 [1]) [2;3;4] ;;
+d (pr3 5 [2]) (fi 1 1,fi 3 5,[1;3;4]) ;;
+d (pr3 6 [3]) (fi 1 2,fi 4 6,[1;2;4;5]) ;;
+d (pr3 7 [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
+f (pr3 8 [5]) [2;3;4] ;;
+   f (pr3 7 [5;6]) [1;4;7] ;;
+   f (pr3 7 [2;6]) [1;4;7] ;;
+   d (pr3 7 [6]) (fi 2 2,fu [1;3;4;5;7],[1;2;4;5]) ;;
+   e (pr3 8 [5;6]) ;;
+   e (pr3 8 [2;6]) ;;
+   f (pr3 8 [6])   [2;5;8] ;;
+e (pr3 9 [6]) ;;
+   f (pr3 8 [7])   [2;5;8] ;;
+   e (pr3 9 [7]) ;;
+e (pr3 10 [7]) ;;
+d (pr3 11 [8]) (fi 1 7,fi 9 11,u3 11) ;;
+d (pr3 (8*1+4) [8*1+1]) (fi 1 (8*1),  fi (8*1+2) (8*1+4),(u3 8)@[10;11]) ;;
+d (pr3 (8*1+5) [8*1+2]) (fi 1 (8*1+1),fi (8*1+3) (8*1+5),(u3 9)@[11;12]) ;;
+d (pr3 (8*1+6) [8*1+3]) (fi 1 (8*1+2),fi (8*1+4) (8*1+6),(u3 10)@[12;13]) ;;
+d (pr3 (8*1+7) [8*1+4]) (fi 1 (8*1+3),fi (8*1+5) (8*1+7),(u3 10)@[13;14]) ;;
+
+*)
 
 end ;;
 

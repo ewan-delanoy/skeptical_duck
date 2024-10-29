@@ -122,7 +122,7 @@ module Private2 = struct
     Individual_inclusion_analysis.make final_result l
   ;;
 
-  let analize_included_filename
+  let parse_cee_inclusion_line
     cpsl_all_h_or_c_files
     cpsl
     includer_fn
@@ -171,7 +171,7 @@ module Private2 = struct
     Image.image
       (fun (line_nbr, included_fn) ->
         let iar =
-          analize_included_filename
+          parse_cee_inclusion_line
             cpsl_all_h_or_c_files
             cpsl
             includer_fn
@@ -946,7 +946,7 @@ module Private = struct
       List.filter_map
         (fun (line_nbr, included_fn) ->
           let iar =
-            Private2.analize_included_filename
+            Private2.parse_cee_inclusion_line
               Capsule.all_h_or_c_files
               cpsl
               includer_fn
@@ -980,7 +980,7 @@ module Private = struct
       Image.image
         (fun (line_nbr, vague_included_fn) ->
           let iar =
-            Private2.analize_included_filename
+            Private2.parse_cee_inclusion_line
               Capsule.all_h_or_c_files
               cpsl
               includer_fn
@@ -1016,7 +1016,7 @@ module Private = struct
       List.filter_map
         (fun (line_nbr, included_fn) ->
           let iar =
-            Private2.analize_included_filename
+            Private2.parse_cee_inclusion_line
               Capsule.all_h_or_c_files
               cpsl
               includer_fn
