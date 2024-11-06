@@ -70,10 +70,17 @@ module Private2 = struct
     included_fn
     inc_source_dirs
     =
+    let current_dir = Cull_string.before_rightmost includer_fn '/' in
+    let candidates = List.filter (
+      fun fn -> List.exists (fun 
+        source_dir -> String.starts_with 
+        ~prefix:source_dir  fn
+      ) (current_dir::inc_source_dirs)
+    )(cpsl_all_h_or_c_files cpsl) in  
     let l =
       List.filter
         (fun nfn -> String.ends_with nfn ~suffix:included_fn)
-        (cpsl_all_h_or_c_files cpsl)
+        candidates
     in
     let final_result =
       choose_candidate_from_list includer_fn included_fn l inc_source_dirs
@@ -111,10 +118,17 @@ module Private2 = struct
     included_fn
     inc_source_dirs
     =
+    let current_dir = Cull_string.before_rightmost includer_fn '/' in
+    let candidates = List.filter (
+      fun fn -> List.exists (fun 
+        source_dir -> String.starts_with 
+        ~prefix:source_dir  fn
+      ) (current_dir::inc_source_dirs)
+    )(cpsl_all_h_or_c_files cpsl) in  
     let l =
       List.filter
         (fun nfn -> String.ends_with nfn ~suffix:("/" ^ included_fn))
-        (cpsl_all_h_or_c_files cpsl)
+        candidates
     in
     let final_result =
       choose_candidate_from_list includer_fn included_fn l inc_source_dirs
