@@ -168,7 +168,13 @@ module Private2 = struct
         cmds
     with
     | None -> []
-    | Some cmd -> cmd.Cee_compilation_command_t.included_source_dirs
+    | Some cmd -> 
+      Image.image(fun dir->
+         if dir=""
+         then Cull_string.before_rightmost includer_fn '/' 
+         else dir 
+        )
+      (cmd.Cee_compilation_command_t.included_source_dirs)
   ;;
 
   exception Included_files_exn of string * int * string ;;
