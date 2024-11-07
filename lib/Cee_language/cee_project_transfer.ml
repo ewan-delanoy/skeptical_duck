@@ -546,7 +546,7 @@ module Private2 = struct
           Cull_string.split_wrt_rightmost fn '.' in 
       let copy_name = basename ^ marker_for_shadowed_copies ^
       "level_"^(string_of_int copy_level)^
-      "shadow_"^(string_of_int shadow_index)^"."^extension in
+      "_shadow_"^(string_of_int shadow_index)^"."^extension in
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
          Cee_text.rewrite_using_shadow old_content shadow in   
@@ -835,9 +835,9 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         old_cpsl with 
         wardrobes_for_dc_files_opt = Some precomputed_wardrobes_for_dc_files
       } in 
-      ref new_cpsl ;;
+      let _ = (cpsl_ref:=new_cpsl) in 
+      cpsl_ref ;;
 
-    
   end ;;
 end ;;
 
@@ -883,7 +883,7 @@ module type CAPSULE_INTERFACE = sig
 
   val  reinitialize_destination_directory : t -> unit  
 
-  val  write_to_upper_makefile : t -> unit  
+  val  write_to_upper_makefile : t -> unit 
   
 end ;;
 
@@ -1012,18 +1012,19 @@ module Private = struct
          (not(is_an_alphabetic_char c))
          ||
          (List.exists (fun fn->String.ends_with
-           fn ~suffix:includer_fn 
+           fn ~suffix:("/"^included_fn) 
          ) all_files) 
      ) temp1 ;;
 
   let ambiguous_nonstandard_inclusions_in_files 
       cpsl includer_fns =
-    List.flatten (
-      Image.image (
-        ambiguous_nonstandard_inclusions_in_individual_includer 
-      cpsl 
-      ) includer_fns
-    )  ;;  
+    List.filter_map ( fun includer_fn ->
+      let l =  ambiguous_nonstandard_inclusions_in_individual_includer 
+      cpsl includer_fn in  
+      if l= []
+      then None 
+      else  Some(includer_fn,l) 
+      ) includer_fns;;  
 
   let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn =
     let inc_source_dirs =
@@ -1144,7 +1145,7 @@ module Private = struct
     let s_total = string_of_int(List.length temp2) in 
     List.iter 
     (fun (global_idx,(fn,shadow,shadow_index))->
-       let idx_msg = "( "^(string_of_int global_idx)^"of "^s_total^")" in 
+       let idx_msg = " ("^(string_of_int global_idx)^" of "^s_total^")" in 
       Capsule.create_shadowed_copy 
        cpsl fn shadow ~copy_level:1 ~shadow_index idx_msg
       ) temp4;; 
