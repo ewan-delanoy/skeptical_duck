@@ -1,14 +1,232 @@
 (************************************************************************************************************************
-Snippet 154 : 
+Snippet 156 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 153 : Combinatorics on double transversals
+Snippet 155 : Another debugging session on Cee_project_transfer
 ************************************************************************************************************************)
 
+module Snip155=struct
+
+  module Cap = Cee_project_transfer.Capsule
+
+let list28, wardrobe1 = [],[] ;;
+let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
+let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
+
+let cpsl0 =
+  Cap.make ~source_envname:"SHPSRC" ~destination_envname:"HAHPSRC" list28
+
+let change1 () =
+  Chronometer.it
+    Cee_project_transfer
+    .remove_conditional_directives_in_directly_compiled_files cpsl0
+
+    
+let cpsl1 =
+   Cap.replicate ~next_envname:"ST01PHPSRC" cpsl0 
+   (* ~refill_files:true *) ;; 
+
+let change2 =
+  Cee_project_transfer.standardize_inclusions_in_files cpsl1
+    (Cap.directly_compiled_files cpsl1) ;;
+
+(* (* DEBUGDEBUGDEBUG BEGIN *)
+
+module Pri = Cee_project_transfer.Private ;;
+module Pri2 = Cee_project_transfer.Private2 ;;
+module Prec = Pri2.PreCapsule ;;
+
+
+let u1 = Cap.directly_compiled_files cpsl1 ;;
+let fn1 = List.nth u1 382 ;; 
+
+(* let bad1 = 
+Cee_project_transfer.standardize_inclusions_in_files cpsl1
+    [fn1] ~dry_run:true ;; *)
+
+
+let bad2 =
+    Pri.nonstandard_inclusion_formats_in_individual_includer 
+    cpsl1 fn1 ;; 
+
+let includer_fn = fn1 ;;    
+
+let inc_source_dirs =
+      Pri2.included_source_dirs_for_file 
+      Cap.separate_commands cpsl1 includer_fn ;;
+
+let text = Cap.read_file cpsl1 includer_fn ;;
+
+let old_temp1 = Cee_text.included_local_files_in_text text ;;
+
+let temp1 = [List.nth old_temp1 16] ;;
+let lines = Lines_in_string.indexed_lines text ;; 
+
+let bad3 =
+      Image.image
+        (fun (line_nbr, vague_included_fn) ->
+          let iar =
+            Pri2.parse_cee_inclusion_line
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              vague_included_fn
+              inc_source_dirs
+          in
+          ( includer_fn
+          , vague_included_fn
+          , List.assoc line_nbr lines
+          , Pri2.Individual_inclusion_analysis.read iar ))
+        temp1 ;;
+
+let (line_nbr, vague_included_fn) = List.nth old_temp1 16 ;;     
+
+let bad4 =
+            Pri2.parse_cee_inclusion_line
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              vague_included_fn
+              inc_source_dirs ;;
+ 
+let included_fn = vague_included_fn ;;              
+
+let bad5 =
+            Pri2.analize_slashed_included_filename
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              vague_included_fn
+              inc_source_dirs ;;
+
+let bad6 =
+            Pri2.analize_slashed_nonpointed_included_filename
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              vague_included_fn
+              inc_source_dirs ;;
+
+
+(* DEBUGDEBUGDEBUG END *) *)
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 154 : Debugging session on Cee_project_transfer
+************************************************************************************************************************)
+module Snip154=struct
+
+module Cap = Cee_project_transfer.Capsule
+
+let list28, wardrobe1 = [],[](* Large_data.data *) ;;
+let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
+let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
+
+let cpsl0 =
+  Cap.make ~source_envname:"SHPSRC" ~destination_envname:"HAHPSRC" list28
+
+let change1 () =
+  Chronometer.it
+    Cee_project_transfer
+    .remove_conditional_directives_in_directly_compiled_files cpsl0
+
+    
+let cpsl1 =
+   Cap.replicate ~next_envname:"ST01PHPSRC" cpsl0 
+   (* ~refill_files:true *) ;; 
+
+let change2 =
+  Cee_project_transfer.standardize_inclusions_in_files cpsl1
+    (Cap.directly_compiled_files cpsl1) ;;
+
+(* (* DEBUGDEBUGDEBUG BEGIN *)
+
+module Pri = Cee_project_transfer.Private ;;
+module Pri2 = Cee_project_transfer.Private2 ;;
+module Prec = Pri2.PreCapsule ;;
+
+
+let u1 = Cap.directly_compiled_files cpsl1 ;;
+let fn1 = List.nth u1 382 ;; 
+
+(* let bad1 = 
+Cee_project_transfer.standardize_inclusions_in_files cpsl1
+    [fn1] ~dry_run:true ;; *)
+
+
+let bad2 =
+    Pri.nonstandard_inclusion_formats_in_individual_includer 
+    cpsl1 fn1 ;;
+
+let includer_fn = fn1 ;;    
+
+let inc_source_dirs =
+      Pri2.included_source_dirs_for_file 
+      Cap.separate_commands cpsl1 includer_fn ;;
+
+let text = Cap.read_file cpsl1 includer_fn ;;
+
+let lines = Lines_in_string.indexed_lines text ;; 
+
+let temp5 = Cee_text.included_nonlocal_files_in_text text ;;
+
+(* let bad3 =
+      List.filter_map
+        (fun (line_nbr, included_fn) ->
+          let iar =
+            Pri2.parse_cee_inclusion_line
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              included_fn
+              inc_source_dirs
+          in
+          match Pri2.Individual_inclusion_analysis.read iar with
+          | None -> None
+          | Some answer -> Some (List.assoc line_nbr lines, "#include \"" ^ answer ^ "\""))
+        temp5 ;; *)
+
+let (line_nbr, included_fn) = List.nth temp5 12 ;; 
+
+(* let bad4 =
+            Pri2.parse_cee_inclusion_line
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              included_fn
+              inc_source_dirs ;; *)
+
+let bad5 =
+            Pri2.analize_nonslashed_included_filename
+              Cap.all_h_or_c_files
+              cpsl1
+              includer_fn
+              included_fn
+              inc_source_dirs ;; 
+
+let current_dir = Cull_string.before_rightmost includer_fn '/' ;;
+
+let all_files = Cap.all_h_or_c_files cpsl1 ;; 
+
+
+
+(* DEBUGDEBUGDEBUG END *) *)
+
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 153 : Combinatorics on double transversals
+************************************************************************************************************************)
 module Snip153=struct
 
 let g1 = Ordered_misc.minimal_transversals ;; 

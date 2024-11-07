@@ -72,9 +72,9 @@ module Private2 = struct
     =
     let current_dir = Cull_string.before_rightmost includer_fn '/' in
     let candidates = List.filter (
-      fun fn -> List.exists (fun 
-        source_dir -> String.starts_with 
-        ~prefix:source_dir  fn
+      fun fn -> (fn = included_fn) || List.exists (fun 
+        source_dir -> (String.starts_with 
+        ~prefix:source_dir  fn)
       ) (current_dir::inc_source_dirs)
     )(cpsl_all_h_or_c_files cpsl) in  
     let l =
@@ -989,6 +989,42 @@ module Private = struct
       includers
   ;;
 
+  let is_an_alphabetic_lowercase_char c = 
+    let i= int_of_char c in 
+    (97<=i)&&(i<=122);;
+  let is_an_alphabetic_uppercase_char c = 
+    let i= int_of_char c in 
+    (65<=i)&&(i<=90);;
+
+  let is_an_alphabetic_char c =
+     (is_an_alphabetic_lowercase_char c) 
+     ||
+     (is_an_alphabetic_uppercase_char c) ;;
+
+  let ambiguous_nonstandard_inclusions_in_individual_includer 
+      cpsl includer_fn = 
+     let text = Capsule.read_file cpsl includer_fn in
+     let temp1 = Cee_text.included_nonlocal_files_in_text text 
+     and all_files = Capsule.all_h_or_c_files cpsl in 
+     List.filter (
+       fun (_line_nbr, included_fn) -> 
+         let c=String.get included_fn 0 in
+         (not(is_an_alphabetic_char c))
+         ||
+         (List.exists (fun fn->String.ends_with
+           fn ~suffix:includer_fn 
+         ) all_files) 
+     ) temp1 ;;
+
+  let ambiguous_nonstandard_inclusions_in_files 
+      cpsl includer_fns =
+    List.flatten (
+      Image.image (
+        ambiguous_nonstandard_inclusions_in_individual_includer 
+      cpsl 
+      ) includer_fns
+    )  ;;  
+
   let nonstandard_inclusion_formats_in_individual_includer cpsl includer_fn =
     let inc_source_dirs =
       Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn
@@ -1116,6 +1152,10 @@ module Private = struct
  
 
 end ;; 
+
+
+let ambiguous_nonstandard_inclusions_in_files =
+    Private.ambiguous_nonstandard_inclusions_in_files ;;
 
 let create_level_1_copies = Private.create_level_1_copies ;;
 
