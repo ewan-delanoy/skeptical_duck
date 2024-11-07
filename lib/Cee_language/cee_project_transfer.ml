@@ -642,7 +642,7 @@ module Private2 = struct
         answer
     ;;
 
-let compute_wardrobes_for_dc_files cpsl_ref =
+let mathusalem_compute_wardrobes_for_dc_files cpsl_ref =
       let cmds = separate_commands cpsl_ref in
       let indexed_cmds = Int_range.index_everything cmds
       and s_num_of_cmds = string_of_int (List.length cmds) in
@@ -657,11 +657,11 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         indexed_cmds
     ;;
 
-    let wardrobes_for_dc_files cpsl_ref =
+    let mathusalem_wardrobes_for_dc_files cpsl_ref =
       match !cpsl_ref.wardrobes_for_dc_files_opt with
       | Some old_answer -> old_answer
       | None ->
-        let answer = compute_wardrobes_for_dc_files cpsl_ref in
+        let answer = mathusalem_compute_wardrobes_for_dc_files cpsl_ref in
         let new_cpsl = { !cpsl_ref with wardrobes_for_dc_files_opt = Some answer } in
         let _ = cpsl_ref := new_cpsl in
         answer
@@ -720,8 +720,8 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       Cee_wardrobe_t.Wr (List.flatten temp1) ;;
 
 
-    let compute_wardrobes_for_di_files cpsl_ref =
-      let wardrobe_for_includers = wardrobes_for_dc_files cpsl_ref in
+    let mathusalem_compute_wardrobes_for_di_files cpsl_ref =
+      let wardrobe_for_includers = mathusalem_wardrobes_for_dc_files cpsl_ref in
       let di_files = directly_included_files cpsl_ref in
       Image.image
         (fun included_one ->
@@ -731,11 +731,11 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         di_files
     ;;
 
-    let wardrobes_for_di_files cpsl_ref =
+    let mathusalem_wardrobes_for_di_files cpsl_ref =
       match !cpsl_ref.wardrobes_for_di_files_opt with
       | Some old_answer -> old_answer
       | None ->
-        let answer = compute_wardrobes_for_di_files cpsl_ref in
+        let answer = mathusalem_compute_wardrobes_for_di_files cpsl_ref in
         let new_cpsl = { !cpsl_ref with wardrobes_for_di_files_opt = Some answer } in
         let _ = cpsl_ref := new_cpsl in
         answer
@@ -756,15 +756,15 @@ let compute_wardrobes_for_dc_files cpsl_ref =
    let shadows4 = List.flatten (Image.image connected_components shadows3) in 
    (included_one,(n,il_sort shadows4)) ;;
 
-    let compute_shadow_algebras_for_di_files cpsl_ref =
-      let wardrobes = wardrobes_for_di_files cpsl_ref in
+    let mathusalem_compute_shadow_algebras_for_di_files cpsl_ref =
+      let wardrobes = mathusalem_wardrobes_for_di_files cpsl_ref in
       Image.image extract_data_from_wardrobe wardrobes;;
 
-    let shadow_algebras_for_di_files cpsl_ref =
+    let mathusalem_shadow_algebras_for_di_files cpsl_ref =
       match !cpsl_ref.shadow_algebras_for_di_files_opt with
       | Some old_answer -> old_answer
       | None ->
-        let answer = compute_shadow_algebras_for_di_files cpsl_ref in
+        let answer = mathusalem_compute_shadow_algebras_for_di_files cpsl_ref in
         let new_cpsl = { !cpsl_ref with shadow_algebras_for_di_files_opt = Some answer } in
         let _ = cpsl_ref := new_cpsl in
         answer
@@ -828,7 +828,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
     ((!cpsl).commands) 
    ;;
 
-    let unsafe_set_wardrobes_for_dc_files 
+    let mathusalem_unsafe_set_wardrobes_for_dc_files 
        cpsl_ref precomputed_wardrobes_for_dc_files = 
       let old_cpsl = (!cpsl_ref) in 
       let new_cpsl = {
@@ -855,11 +855,11 @@ module type CAPSULE_INTERFACE = sig
   val directly_compiled_files : t -> string list
   val inclusions_in_dc_files : t -> (string * int * string) list
   val shadows_for_dc_files : t -> (string * Cee_shadow_t.t) list
-  val wardrobes_for_dc_files : t -> (string * Cee_wardrobe_t.t) list
+  val mathusalem_wardrobes_for_dc_files : t -> (string * Cee_wardrobe_t.t) list
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
-  val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
-  val shadow_algebras_for_di_files : t -> (string * (int * int list list)) list
+  val mathusalem_wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
+  val mathusalem_shadow_algebras_for_di_files : t -> (string * (int * int list list)) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> string -> unit
@@ -878,7 +878,7 @@ module type CAPSULE_INTERFACE = sig
 
 
 
-  val unsafe_set_wardrobes_for_dc_files :
+  val mathusalem_unsafe_set_wardrobes_for_dc_files :
       t -> (string * Cee_wardrobe_t.t) list -> t
 
   val  reinitialize_destination_directory : t -> unit  
@@ -1132,8 +1132,8 @@ module Private = struct
 
   
 
-  let create_level_1_copies cpsl = 
-    let temp1 = Capsule.shadow_algebras_for_di_files cpsl in 
+  let mathusalem_create_level_1_copies cpsl = 
+    let temp1 = Capsule.mathusalem_shadow_algebras_for_di_files cpsl in 
     let temp2 = List.flatten(Image.image (
       fun (fn,(nbr_of_parts,parts)) ->
         let ttemp3 = Int_range.index_everything parts in 
@@ -1158,7 +1158,7 @@ end ;;
 let ambiguous_nonstandard_inclusions_in_files =
     Private.ambiguous_nonstandard_inclusions_in_files ;;
 
-let create_level_1_copies = Private.create_level_1_copies ;;
+let mathusalem_create_level_1_copies = Private.mathusalem_create_level_1_copies ;;
 
 
 let remove_conditional_directives_in_directly_compiled_files =
