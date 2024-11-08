@@ -1,14 +1,13 @@
 (************************************************************************************************************************
-Snippet 156 : 
+Snippet 149 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 155 : Another debugging session on Cee_project_transfer
+Snippet 148 : Another debugging session on Cee_project_transfer
 ************************************************************************************************************************)
-
 module Snip155=struct
 
   module Cap = Cee_project_transfer.Capsule
@@ -118,7 +117,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 154 : Debugging session on Cee_project_transfer
+Snippet 147 : Debugging session on Cee_project_transfer
 ************************************************************************************************************************)
 module Snip154=struct
 
@@ -225,7 +224,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 153 : Combinatorics on double transversals
+Snippet 146 : Combinatorics on double transversals
 ************************************************************************************************************************)
 module Snip153=struct
 
@@ -273,7 +272,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 152 : Extract and reorder pages in a PDF
+Snippet 145 : Extract and reorder pages in a PDF
 ************************************************************************************************************************)
 module Snip152=struct
 
@@ -324,7 +323,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 151 : 
+Snippet 144 : 
 ************************************************************************************************************************)
 module Snip151=struct
 let heim = Cull_string.two_sided_cutting ("/home/","") 
@@ -346,7 +345,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 150 : Boilerplate code for C project management
+Snippet 143 : Boilerplate code for C project management
 ************************************************************************************************************************)
 module Snip150=struct
 
@@ -504,7 +503,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 149 : Use example of the Marshal module
+Snippet 142 : Use example of the Marshal module
 ************************************************************************************************************************)
 module Snip149=struct
 
@@ -531,7 +530,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 148 : 
+Snippet 141 : 
 ************************************************************************************************************************)
 module Snip148=struct
 
@@ -935,7 +934,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 147 : Snippet from Stackoverflow Code Review
+Snippet 140 : Snippet from Stackoverflow Code Review
 ************************************************************************************************************************)
 module Snip147=struct
 
@@ -1044,7 +1043,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 146 : add numbering to an interval of lines in a file 
+Snippet 139 : add numbering to an interval of lines in a file 
 ************************************************************************************************************************)
 module Snip146=struct
 
@@ -1079,7 +1078,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 145 : Simple copy/replace in a file
+Snippet 138 : Simple copy/replace in a file
 ************************************************************************************************************************)
 module Snip145=struct
 
@@ -1094,7 +1093,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 144 : Compare two filecontents
+Snippet 137 : Compare two filecontents
 ************************************************************************************************************************)
 module Snip144=struct
 
@@ -1132,7 +1131,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 143 : Generate a random string
+Snippet 136 : Generate a random string
 ************************************************************************************************************************)
 module Snip143=struct
 
@@ -1169,7 +1168,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 142 : Example with an "immutable" Hashtbl field
+Snippet 135 : Example with an "immutable" Hashtbl field
 ************************************************************************************************************************)
 module Snip142=struct
 
@@ -1189,7 +1188,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 141 : Question on integer sequences whose inverse is convex
+Snippet 134 : Question on integer sequences whose inverse is convex
 ************************************************************************************************************************)
 module Snip141=struct
 
@@ -1604,7 +1603,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 140 : Code to start analizing a snapshot of php-src
+Snippet 133 : Code to start analizing a snapshot of php-src
 ************************************************************************************************************************)
 module Snip140=struct
 
@@ -2169,7 +2168,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 139 : Code to write a long list of long strings in OCaml
+Snippet 132 : Code to write a long list of long strings in OCaml
 ************************************************************************************************************************)
 module Snip139=struct
 
@@ -2212,7 +2211,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 138 : Code to delete some files in the same directory
+Snippet 131 : Code to delete some files in the same directory
 ************************************************************************************************************************)
 module Snap139=struct
 
@@ -2251,7 +2250,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 137 : Makefile code, not using the Makefile_text module
+Snippet 130 : Makefile code, not using the Makefile_text module
 ************************************************************************************************************************)
 module Snip138=struct
 
@@ -2414,7 +2413,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 136 : Code snippet related to recipes in a makefile
+Snippet 129 : Code snippet related to recipes in a makefile
 ************************************************************************************************************************)
 module Snip137=struct
 
@@ -2449,7 +2448,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 135 : Intial code for Localdircopy module, when no type had been created yet
+Snippet 128 : Intial code for Localdircopy module, when no type had been created yet
 ************************************************************************************************************************)
 module Snap138=struct
 
@@ -2589,7 +2588,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 134 : Enhance a Java file with many printouts
+Snippet 127 : Enhance a Java file with many printouts
 ************************************************************************************************************************)
 module Snep134=struct
 
@@ -2655,7 +2654,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 133 : deduce package from path in a Java project
+Snippet 126 : deduce package from path in a Java project
 ************************************************************************************************************************)
 module Snip135=struct
 
@@ -3150,7 +3149,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 132 : computation of sources in a Java project
+Snippet 125 : computation of sources in a Java project
 ************************************************************************************************************************)
 module Snip134=struct
 
@@ -3310,7 +3309,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 131 : Storing an old version of code for the Szemeredi problem
+Snippet 124 : Storing an old version of code for the Szemeredi problem
 ************************************************************************************************************************)
 module Snip133=struct
 
@@ -5200,7 +5199,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 130 : Code to adapt copy-pasted text to LaTeX
+Snippet 123 : Code to adapt copy-pasted text to LaTeX
 ************************************************************************************************************************)
 module Snip132=struct
 
@@ -5265,7 +5264,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 129 : Parsing a YAML file
+Snippet 122 : Parsing a YAML file
 ************************************************************************************************************************)
 module Snip131=struct
 
@@ -5288,7 +5287,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 128 : Parsing a JSON file with short lines
+Snippet 121 : Parsing a JSON file with short lines
 ************************************************************************************************************************)
 module Snip129=struct
 
@@ -5322,7 +5321,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 127 : Parsing a JSON file with long lines
+Snippet 120 : Parsing a JSON file with long lines
 ************************************************************************************************************************)
 module Snip128=struct
 
@@ -5415,7 +5414,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 126 : Code used for a Kotlin project
+Snippet 119 : Code used for a Kotlin project
 ************************************************************************************************************************)
 module Snip127=struct
 
@@ -5473,7 +5472,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 125 : Bijections with finite difference set
+Snippet 118 : Bijections with finite difference set
 ************************************************************************************************************************)
 module Snip126=struct
 
@@ -5548,7 +5547,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 124 : For sudoku study 
+Snippet 117 : For sudoku study 
 ************************************************************************************************************************)
 module Snip125=struct
 
@@ -6248,7 +6247,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 123 : Combinatorics on sums of {0,+-1} vectors
+Snippet 116 : Combinatorics on sums of {0,+-1} vectors
 ************************************************************************************************************************)
 module Snip124=struct
 
@@ -6321,7 +6320,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 122 : Find/replace on two files
+Snippet 115 : Find/replace on two files
 ************************************************************************************************************************)
 module Snip123=struct
 
@@ -6342,7 +6341,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 121 : Looking for a particular non-ASCII charcater
+Snippet 114 : Looking for a particular non-ASCII charcater
 ************************************************************************************************************************)
 module Snip122=struct
 
@@ -6368,7 +6367,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 120 : Code to add a prefix to each line in a file
+Snippet 113 : Code to add a prefix to each line in a file
 ************************************************************************************************************************)
 module Snip121=struct
 
@@ -6384,7 +6383,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 119 : Multi-lingual OCR on cropped pngs 
+Snippet 112 : Multi-lingual OCR on cropped pngs 
 ************************************************************************************************************************)
 type spanish_or_latin = Spanish | Latin ;; 
 
@@ -6566,7 +6565,7 @@ let act2 () = Io.overwrite_with emptiable_ap new_text ;;
 
 
 (************************************************************************************************************************
-Snippet 118 : Preprocessing code for a variant type
+Snippet 111 : Preprocessing code for a variant type
 ************************************************************************************************************************)
 let this_root = Coma_big_constant.This_World.root ;;
 let s_ap1 = (Dfa_root.connectable_to_subpath this_root) ^ "lib/Szemeredi/sz3p.ml";;
@@ -6643,7 +6642,7 @@ let z9 () = print_string z8 ;;
 
 
 (************************************************************************************************************************
-Snippet 117 : Doing the accounts 
+Snippet 110 : Doing the accounts 
 ************************************************************************************************************************)
 let data = 
   [
@@ -6702,7 +6701,7 @@ let data4 = (List.rev(Ordered.sort Total_ordering.standard2 data3)) ;;
 let total2 = Basic.fold_sum (Image.image fst data3) ;;   
 
 (************************************************************************************************************************
-Snippet 116 : Interpolation in {0,1}^n 
+Snippet 109 : Interpolation in {0,1}^n 
 ************************************************************************************************************************)
 (*
 #require"zarith";;
@@ -6879,7 +6878,7 @@ let v3 = i_sort (Image.image Basic.fold_sum v2) ;;
 
 
 (************************************************************************************************************************
-Snippet 115 : Interpolation in {0,1}^n 
+Snippet 108 : Interpolation in {0,1}^n 
 ************************************************************************************************************************)
 (*
 #require"zarith";;
@@ -6982,7 +6981,7 @@ let ff n = iterator (seed n) ;;
 end ;;
 
 (************************************************************************************************************************
-Snippet 114 : Musings on primes of the form 5p+2
+Snippet 107 : Musings on primes of the form 5p+2
 ************************************************************************************************************************)
 let oi = Total_ordering.for_integers ;; 
 let i_sort = Ordered.sort oi ;; 
@@ -7022,7 +7021,7 @@ let (v5,v6) = Max.maximize_it_with_care
 *)
 
 (************************************************************************************************************************
-Snippet 113 : Periodically remove a file in a fixed directory.
+Snippet 106 : Periodically remove a file in a fixed directory.
 ************************************************************************************************************************)
 let calc () = let _ = Ordered.sort Total_ordering.silex_for_intlists
   (List_again.power_set (Int_range.range 1 16)) in ();;
@@ -7042,7 +7041,7 @@ let circular () =
   done ;;
 
 (************************************************************************************************************************
-Snippet 112 : Successive renamings
+Snippet 105 : Successive renamings
 ************************************************************************************************************************)
 (*    
 let z1 = ae () ;; 
@@ -7103,7 +7102,7 @@ dm "opor_public_definition" "por_public_definition" ;;
 dm "opor_public_component" "por_public_component" ;;
 
 (************************************************************************************************************************
-Snippet 111 : Cleanup unused modules
+Snippet 104 : Cleanup unused modules
 ************************************************************************************************************************)
 open Needed_values ;; 
 
@@ -7133,7 +7132,7 @@ let cs1 = Usual_coma_state.Private.main_ref ;;
 
 
 (************************************************************************************************************************
-Snippet 110 : Construct a get_variant_name function from a long type definition 
+Snippet 102 : Construct a get_variant_name function from a long type definition 
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "lib/Padioleau/yp_php_lexer.mll" ;; 
 let old_text = Io.read_whole_file ap1;;
@@ -7160,7 +7159,7 @@ let new_text = before_u1 ^ u7 ^ after_u1 ;;
 Io.overwrite_with ap1 new_text ;; 
 
 (************************************************************************************************************************
-Snippet 110 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
+Snippet 102 : PARI-GP code to compute an explicit primitive element for a Galois extension with group S5
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -7190,7 +7189,7 @@ let ap1 = Absolute_path.of_string
 Io.append_string_to_file z1 ap1 ;;  
 
 (************************************************************************************************************************
-Snippet 108 : Musings on permutations
+Snippet 101 : Musings on permutations
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_intersect  = Ordered.intersect i_order ;;
@@ -7437,39 +7436,7 @@ let triples = List.filter (fun x->List.length x=3) power5 ;;
 let frob = generated_subgroup [11;34] ;;
 let frob_on_intlist l = il_sort (Image.image (fun f->act_on_intlist f l) frob) ;; 
 (************************************************************************************************************************
-Snippet 107 : Mass renamings, using the Coherent_pdf module
-************************************************************************************************************************)
-(*
-open Skeptical_duck_lib ;; 
-*)
-
-open Needed_values ;;
-
-Coherent_pdf.workspace_directory := (home ^ "/Downloads/Building_site/Older_pages/") ;;
-let current_letter = ref "q" 
-and current_offset = ref 100 ;; 
-
-(current_letter:="p";current_offset:=100) ;;
-
-(current_letter:="r";current_offset:=200) ;;
-
-(current_letter:="s";current_offset:=300) ;;
-
-let see_commands () = Coherent_pdf.Command.mass_rename 
-   ~old_prefix:(!current_letter) ~new_prefix:"p" (!current_offset);; 
-
-let act () = Coherent_pdf.mass_rename 
-  ~old_prefix:(!current_letter) ~new_prefix:"p" (!current_offset);; 
-
-let see_indices () = Coherent_pdf.present_indices "p" ;; 
-
-Coherent_pdf.implode ("p","") ;; 
-  
-Coherent_pdf.workspace_directory := (home ^ "/Downloads/MOM/Suilding_bite") ;;
-
-
-(************************************************************************************************************************
-Snippet 106 : Musing on discrepancy problem
+Snippet 100 : Musing on discrepancy problem
 ************************************************************************************************************************)
 module Container106 = struct 
 module Z = struct
@@ -7616,7 +7583,7 @@ let z1 = List.filter tt (Int_range.range 1 2000) ;;
 end ;; 
 
 (************************************************************************************************************************
-Snippet 105 : Examples of "translating" ppx_deriving into usual OCaml code
+Snippet 99 : Examples of "translating" ppx_deriving into usual OCaml code
 ************************************************************************************************************************)
 (*
 let stork1 = {
@@ -7676,7 +7643,7 @@ let check2 = List.filter (fun yj->
 *)
 
 (************************************************************************************************************************
-Snippet 104 : Local modularization
+Snippet 98 : Local modularization
 ************************************************************************************************************************)
 open Needed_values ;; 
 let path1 = home^"/Downloads/OCaml_packages/calendar-3.0.0/src" ;; 
@@ -7695,7 +7662,7 @@ let ap1 = Absolute_path.of_string (path2^"/wrapped_calendarlib.ml") ;;
 Io.overwrite_with ap1 u6 ;; 
 
 (************************************************************************************************************************
-Snippet 103 : Copy large interval of text from a file to another
+Snippet 97 : Copy large interval of text from a file to another
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 let ap1 = Absolute_path.of_string "Fads/nap.ml" ;;
@@ -7707,7 +7674,7 @@ Manage_diary.extract_at_index_and_append_to_file 95 ap2 ;;
 
 
 (************************************************************************************************************************
-Snippet 102 : Sorting and comparing two overlapping list fo files
+Snippet 96 : Sorting and comparing two overlapping list fo files
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "~/Downloads/temp.html" ;; 
 let text1 = Io.read_whole_file ap1 ;; 
@@ -8097,7 +8064,7 @@ let data = (remaining_indices_not_in_part1,remaining_titles_in_part2) ;;
 
 
 (************************************************************************************************************************
-Snippet 101 : Remove lines starting with a # in a file (can be used with ocamllex)
+Snippet 95 : Remove lines starting with a # in a file (can be used with ocamllex)
 ************************************************************************************************************************)
 let ap3 = Absolute_path.of_string "Fads/jug.ml";; 
 let text3 = Io.read_whole_file ap3 ;;
@@ -8107,7 +8074,7 @@ let new_text3 = String.concat "\n" good_lines ;;
 Io.overwrite_with ap3 new_text3 ;; 
 
 (************************************************************************************************************************
-Snippet 100 : Extract token types from a .mli file 
+Snippet 94 : Extract token types from a .mli file 
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Originals/parser_php.mly" ;; 
 let u1 = Io.read_whole_file ap1 ;;
@@ -8133,7 +8100,7 @@ let u15 () = print_string ("\n\n\n" ^ u14 ^ "\n\n\n") ;;
 
 
 (************************************************************************************************************************
-Snippet 99 : Musings on a random walk (version 2, with stopping times)
+Snippet 93 : Musings on a random walk (version 2, with stopping times)
 ************************************************************************************************************************)
 let first_base = Memoized.make (fun n->Cartesian.general_product 
  (Int_range.scale (fun k->[-2;1]) 1 n)
@@ -8172,7 +8139,7 @@ let ac = admissible_cases ;;
 
 
 (************************************************************************************************************************
-Snippet 98 : Musings on a random walk
+Snippet 92 : Musings on a random walk
 ************************************************************************************************************************)
 type dyadic = D of int * int ;; 
 type linear_combination = LC of (dyadic * int ) list ;;
@@ -8246,7 +8213,7 @@ let gg = Memoized.make (fun n->
   ) ;; 
 
 (************************************************************************************************************************
-Snippet 97 : Read a file and remove tabs in each line
+Snippet 91 : Read a file and remove tabs in each line
 ************************************************************************************************************************)
 let ap3 = Absolute_path.of_string "Fads/pan.ml" ;;
 let z4 = Io.read_whole_file ap3 ;;
@@ -8267,7 +8234,7 @@ let z10 = [(53, "Veni de Libano"); (55, "Paulus"); (56, "Pitra"); (57, "Fulgurat
 let z11 = String.concat "," (Image.image snd z10) ;;
 
 (************************************************************************************************************************
-Snippet 96 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 
+Snippet 90 : Musing on the Alon-Knuth theorem (episode 3). Contains some code 
 to compute the maximal elts in an upwards filter and the minimal elts outside
 it (see the "butterfly" function). It should work even for a filter on a large
 base set, as long as the minimal and maximal elts have small size and are not
@@ -8453,7 +8420,7 @@ and temp7 = Image.image (fun x->i_sort (x@addendum) ) temp5 ;;
 *)   
 
 (************************************************************************************************************************
-Snippet 95 : Musing on the Alon-Knuth theorem (episode 2)
+Snippet 89 : Musing on the Alon-Knuth theorem (episode 2)
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -8500,7 +8467,7 @@ let u6 = Int_range.index_everything unattended
 
 
 (************************************************************************************************************************
-Snippet 94 : Musing on the Alon-Knuth theorem
+Snippet 88 : Musing on the Alon-Knuth theorem
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_fold_intersect = Ordered.fold_intersect i_order ;;
@@ -8574,7 +8541,7 @@ let z2 =
 
 
 (************************************************************************************************************************
-Snippet 93 : Musing on the simplicity of An
+Snippet 87 : Musing on the simplicity of An
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_sort = Ordered.sort i_order ;;
@@ -8645,7 +8612,7 @@ let v2 = expand_pookabi_result v1;;
 
 
 (************************************************************************************************************************
-Snippet 92 : Define a cycle from list of successive elts
+Snippet 86 : Define a cycle from list of successive elts
 ************************************************************************************************************************)
 let cycle_from_perm perm =
   let n = List.length perm in 
@@ -8658,7 +8625,7 @@ let cycle_from_perm perm =
    Int_range.scale next 1 n ;;
 
 (************************************************************************************************************************
-Snippet 91 : An attempt at creating an algorithm that (given enough time) can compute sytematically
+Snippet 85 : An attempt at creating an algorithm that (given enough time) can compute sytematically
 any value of the Szemeredi function. (Version 1)
 ************************************************************************************************************************)
 module SN98 = struct 
@@ -9380,7 +9347,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 90 : Code that lead to the discovery of a linear algorithm to compute, given any
+Snippet 84 : Code that lead to the discovery of a linear algorithm to compute, given any
 finite set X of integers, the largest subset Y of X, containing no AP of length 3 and
 width <=2. The algorithm uses an automaton with 8 states where the transitions are
 the successive differences in Y.
@@ -9603,7 +9570,7 @@ let rec dougherty_helper (to_be_treated,treated) =
       
 
 (************************************************************************************************************************
-Snippet 89 : Compare two copies of the same directory
+Snippet 83 : Compare two copies of the same directory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -9635,7 +9602,7 @@ let u1 = Image.image read_both v1 ;;
 let u2 = List.filter (fun (fn,(x,y))-> x<>y) u1;;
 let u3 = Image.image fst u2 ;;
 (************************************************************************************************************************
-Snippet 88 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
+Snippet 82 : Typical combination of the Check_polished_ocr and Incremental_replace_on_a_set_of_files modules
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -9851,7 +9818,7 @@ let f =  check_pages_and_footnotes ;;
 
 
 (************************************************************************************************************************
-Snippet 87 : Code to OCR-size PDF's into .html  (see also Snippet 84 for .txt instead of html)
+Snippet 81 : Code to OCR-size PDF's into .html  (see also Snippet 78 for .txt instead of html)
 ************************************************************************************************************************)
 open Needed_values ;; 
 
@@ -9910,7 +9877,7 @@ let html_ending = String.concat "\n"
 
 
 (************************************************************************************************************************
-Snippet 86 : Code using the Parse_js module 
+Snippet 80 : Code using the Parse_js module 
 ************************************************************************************************************************)
 (*
 
@@ -9927,7 +9894,7 @@ let res3 = Parse_js.program_of_string text1 ;;
 
 
 (************************************************************************************************************************
-Snippet 85 : Absorbing code from Y. Padioleau's codebase
+Snippet 79 : Absorbing code from Y. Padioleau's codebase
 ************************************************************************************************************************)
 let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
 let fw_config = Fw_configuration.of_root root ;;
@@ -9994,7 +9961,7 @@ let text2 = String.concat "\n" [a;new_b;c] ;;
 
 
 (************************************************************************************************************************
-Snippet 84 : Code to OCR-size PDF's into .txt 
+Snippet 78 : Code to OCR-size PDF's into .txt 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -10041,7 +10008,7 @@ let partial_texts_for_txt = Int_range.scale (fun k->
 
 
 (************************************************************************************************************************
-Snippet 83 : Musing on Egyptian fractions
+Snippet 77 : Musing on Egyptian fractions
 ************************************************************************************************************************)
 let rec next_gcd_correct_index (l,walker) = 
   if List.for_all (fun t->(Gcd.gcd t walker) =1) l
@@ -10075,7 +10042,7 @@ let ff = Memoized.small next_state v0 ;;
 
 
 (************************************************************************************************************************
-Snippet 82 : Linear algebra on variables indexed by Z^2
+Snippet 76 : Linear algebra on variables indexed by Z^2
 ************************************************************************************************************************)
 let w1 n =Int_range.scale (fun y->(n,y-1)) 1 (n+1) ;;
 let w2 n =Int_range.scale (fun x->(n-x,n)) 1 (2*n) ;;
@@ -10140,7 +10107,7 @@ let ff k = List.nth base6 (k-1) ;;
 
 
 (************************************************************************************************************************
-Snippet 81 : Short code related to similar matrices exercise
+Snippet 75 : Short code related to similar matrices exercise
 ************************************************************************************************************************)
 let test1 n = List.exists (fun a->((a*(4-a)+1) mod n)= 0) (Int_range.range 0 (n-1)) ;;
     
@@ -10167,7 +10134,7 @@ let good_moduli = see1 abs_b ;;
 let ff a = tf1(a,current_b) ;;
 
 (************************************************************************************************************************
-Snippet 80 : Exercise related to Cantor set 
+Snippet 74 : Exercise related to Cantor set 
 ************************************************************************************************************************)
 let read_fraction s = 
   let (a,b) = Cull_string.split_wrt_rightmost s '/' in 
@@ -10260,7 +10227,7 @@ let u2 = Partition_list.according_to_map u1 fst ;;
 let tf k = List.nth u2 (k-1) ;; 
 
 (************************************************************************************************************************
-Snippet 79 : Enumeration of multi-degrees related to symmetric polynomials
+Snippet 73 : Enumeration of multi-degrees related to symmetric polynomials
 ************************************************************************************************************************)
 let order_for_triples = ((
   fun (x1,x2,x3) (y1,y2,y3) ->
@@ -10286,35 +10253,7 @@ let tf k = List.nth u3 (k-1) ;;
 
 
 (************************************************************************************************************************
-Snippet 78 : Reindex pages of a book for printing
-************************************************************************************************************************)
-let ap1 = Absolute_path.of_string (Needed_values.home^"/Downloads/Gwenn/");;
-let s_ap1 = Absolute_path.to_string ap1 ;;
-
-Coherent_pdf.workspace_directory := s_ap1 ;;
-Coherent_pdf.explode ("p","") 248;;
-
-let print_transform n =
-    let pre_q=(n/8) in 
-    let pre_r= n-8*pre_q in 
-    let (q,old_r)=(if pre_r=0 then (pre_q-1,8) else (pre_q,pre_r) ) in 
-    let new_r = List.nth [4;1;8;5;2;3;6;7] (old_r-1) in 
-    8*q+new_r ;; 
-
-let command_for_index i =
-    let j = print_transform i in 
-    let si = string_of_int i 
-    and sj = string_of_int j in 
-    "mv "^s_ap1^"p"^sj^".pdf "^s_ap1^"q"^si^".pdf" ;;
-
-let number_of_chunks = 31 ;;
-let reindexing_commands = Int_range.scale command_for_index 1 (8*number_of_chunks) ;;
-let act () = Image.image Sys.command reindexing_commands ;;
-
-Coherent_pdf.implode ("q","") ;;
-
-(************************************************************************************************************************
-Snippet 77 : Musing on Steinhaus triangles
+Snippet 72 : Musing on Steinhaus triangles
 ************************************************************************************************************************)
 let i_fold_merge = Ordered.fold_merge Total_ordering.for_integers ;;
 let i_sort = Ordered.sort Total_ordering.for_integers ;;
@@ -10427,7 +10366,7 @@ let (_,shadowers) = Max.maximize_it_with_care (fun sh->List.length(big_proj sh))
 
 
 (************************************************************************************************************************
-Snippet 76 : Draft to preprocess a file using data from PARI-GP
+Snippet 71 : Draft to preprocess a file using data from PARI-GP
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -10483,7 +10422,7 @@ let prprpr () =
 
 
 (************************************************************************************************************************
-Snippet 75 : Lower bounds on linear recurrent sequences of order 2
+Snippet 70 : Lower bounds on linear recurrent sequences of order 2
 ************************************************************************************************************************)
 let nachste (x,y) = (y,4*y-5*x) ;;
 
@@ -10546,7 +10485,7 @@ let sm = see_measure ;;
 let nb = next_breaker ;;
 
 (************************************************************************************************************************
-Snippet 74 : Debugging compiling of mll and mly files
+Snippet 69 : Debugging compiling of mll and mly files
 ************************************************************************************************************************)
 let (root,backup_dir,githubbing)=Coma_big_constant.Third_World.triple ;;
 let fw_config = Fw_configuration.of_root root ;;
@@ -10662,7 +10601,7 @@ let a0 =
 *)
 
 (************************************************************************************************************************
-Snippet 73 : Duplicating a paragraph in a file 
+Snippet 68 : Duplicating a paragraph in a file 
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string  
    "Compilation_management/commands_for_batch_compilation.ml" ;;
@@ -10676,7 +10615,7 @@ Io.overwrite_with ap1 text2 ;;
 
 
 (************************************************************************************************************************
-Snippet 72 : Write mathjax text for answer on chain additions
+Snippet 67 : Write mathjax text for answer on chain additions
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11094,7 +11033,7 @@ let act () = Io.overwrite_with the_ap arrays_in_mathjax  ;;
 *)
 
 (************************************************************************************************************************
-Snippet 71 : Transfer a large snippet from one file to another
+Snippet 66 : Transfer a large snippet from one file to another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11111,7 +11050,7 @@ let simplest_case i x = (accu:=(S i)::(!accu)) ;;
 let pointed_card a b c = (accu:=(P a)::(!accu)) ;;
 
 (************************************************************************************************************************
-Snippet 70 : Third stab at boundary operator combinatorics 
+Snippet 65 : Third stab at boundary operator combinatorics 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11320,7 +11259,7 @@ let v4 = Option.filter_and_unpack (fun (a,b,m)->if m=v3 then Some(a,b) else None
 
 
 (************************************************************************************************************************
-Snippet 69 : Second stab at boundary operator combinatorics 
+Snippet 64 : Second stab at boundary operator combinatorics 
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let il_order = Total_ordering.silex_compare i_order ;;
@@ -11571,7 +11510,7 @@ let v2 = List.filter (
 
 
 (************************************************************************************************************************
-Snippet 68 : First stab at boundary operator combinatorics 
+Snippet 63 : First stab at boundary operator combinatorics 
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let il_order = Total_ordering.silex_compare i_order ;;
@@ -11608,7 +11547,7 @@ let v3 = List.filter (fun (x1,x2,x3) -> not(i_is_included_in x3 (i_merge x1 x2))
 
 
 (************************************************************************************************************************
-Snippet 67 : Preprocess some PARI/GP code
+Snippet 62 : Preprocess some PARI/GP code
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11641,7 +11580,7 @@ Ordered.setminus Total_ordering.for_integers (Int_range.range 1 32)
 
 
 (************************************************************************************************************************
-Snippet 66 : Transform a text in an Ocaml string 
+Snippet 61 : Transform a text in an Ocaml string 
 ************************************************************************************************************************)
 let z1 = Needed_values.rf "Fads/nap.ml"  ;;
 let z2 = Lines_in_string.interval z1 12 25 ;;
@@ -11652,7 +11591,7 @@ let z6 = "\n\n\n" ^ (String.concat ";\n" z5) ^ "\n\n\n" ;;
 let z7 () = print_string z6 ;;
 
 (************************************************************************************************************************
-Snippet 65 : Find and replace on several files 
+Snippet 60 : Find and replace on several files 
 ************************************************************************************************************************)
 let reps_ref = ref [ ];;
 
@@ -11703,7 +11642,7 @@ let tr x = Replace_inside.replace_several_inside_file (!reps_ref) (Absolute_path
 let act () = List.iter tr (!files_ref) ;;
 
 (************************************************************************************************************************
-Snippet 64 : Modifying line intervals in a file
+Snippet 59 : Modifying line intervals in a file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "../Idaho/Filewatching/fw_with_githubbing.ml" ;;
 let text1 = Io.read_whole_file ap1 ;;
@@ -11717,7 +11656,7 @@ Io.overwrite_with ap1 new_text1 ;;
 Lines_in_string.remove_interval_in_file ap1 169 253 ;;
 
 (************************************************************************************************************************
-Snippet 63 : Enumerating subgroups of S4 
+Snippet 58 : Enumerating subgroups of S4 
 ************************************************************************************************************************)
 let i_order = Total_ordering.for_integers ;;
 let i_sort  = Ordered.sort i_order ;;
@@ -11802,7 +11741,7 @@ let halves_for_whole = halves full_subgroup ;;
     
 
 (************************************************************************************************************************
-Snippet 62 : Finding a polynomial x^4+p*x+q with Galois group A4
+Snippet 57 : Finding a polynomial x^4+p*x+q with Galois group A4
 ************************************************************************************************************************)
 let u1 = Int_range.range (-50) 50 ;;
 let u2 = Cartesian.square u1 ;;
@@ -11827,7 +11766,7 @@ let check = List.filter is_a_square (Int_range.range 0 100) ;;
 let u6 = List.filter (fun (p,q)->is_a_square(-27*p*p*p*p + 256*q*q*q)) u5 ;;
 
 (************************************************************************************************************************
-Snippet 61 : Removing indentation in a paragraph in a file  
+Snippet 56 : Removing indentation in a paragraph in a file  
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
@@ -11844,7 +11783,7 @@ let act2 () = Lines_in_string.remove_interval_in_file
  (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 346 580 ;; 
 
 (************************************************************************************************************************
-Snippet 60 : Intertwining prints for debugging purposes
+Snippet 55 : Intertwining prints for debugging purposes
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -11861,7 +11800,7 @@ let z6 = Image.image (
 let z7 = "\n\n\n" ^ (String.concat "\n" z6) ^ "\n\n\n" ;;  
 
 (************************************************************************************************************************
-Snippet 59 : Problem involving periodicity
+Snippet 54 : Problem involving periodicity
 ************************************************************************************************************************)
 let find_periodicity l= 
   let rl = List.rev l in 
@@ -11902,7 +11841,7 @@ let ratio = (float_of_int(largest_in_motif-List.hd(motif))) /. (float_of_int max
 
 
 (************************************************************************************************************************
-Snippet 58 : Musings on the Szemeredi problem, chapter V
+Snippet 53 : Musings on the Szemeredi problem, chapter V
 ************************************************************************************************************************)
 let current_width = 3 ;; 
 let max_width = Sz_max_width_t.MW current_width ;;
@@ -12379,7 +12318,7 @@ asc (Ennig.ennig 1 4, 3)  [[2]; [1; 3]; [3; 4]] ;;
 *)
 
 (************************************************************************************************************************
-Snippet 57 : Musings on the 1234 problem
+Snippet 52 : Musings on the 1234 problem
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12553,7 +12492,7 @@ walker:=([],[]) ;;
 
 
 (************************************************************************************************************************
-Snippet 56 : Removes unnecessary blanks at the beginning of lines in an interval
+Snippet 51 : Removes unnecessary blanks at the beginning of lines in an interval
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12572,7 +12511,7 @@ let new_text = part1 ^ "\n" ^ new_part2 ;;
 Io.overwrite_with ap new_text ;;
 
 (************************************************************************************************************************
-Snippet 55 : Find all modules whose ml file contains a certain substring
+Snippet 50 : Find all modules whose ml file contains a certain substring
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12586,7 +12525,7 @@ let z3 = Explicit.filter (
 ) z2 ;;
 
 (************************************************************************************************************************
-Snippet 54 : 
+Snippet 49 : 
 ************************************************************************************************************************)
 open Needed_values ;;
 let mixer (a,b,ll)= Image.image (fun l->a@(Image.image (fun t->t+b) l)) ll;;
@@ -12703,7 +12642,7 @@ let check_sizes = (sizes = [1; 2; 6; 12; 20; 34; 56; 88; 136; 208; 314; 470; 700
 3330; 4896; 7192; 10558; 15492; 22724; 33324; 48860; 71630]) ;;
 
 (************************************************************************************************************************
-Snippet 53 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2 
+Snippet 48 : Musing on permutations satisfying |i-j|<1 -> |p(i)-p(j)|<=2 
 ************************************************************************************************************************)
 open Needed_values ;;
 let ointlist = Total_ordering.silex_compare Total_ordering.for_integers ;;
@@ -12842,29 +12781,7 @@ let zz n=(na n,nb n,nc n,nd n,nk n,ne n);;
 
 
 (************************************************************************************************************************
-Snippet 52 : Rename scanned files
-************************************************************************************************************************)
-open Needed_values ;;
-
-let ap1 = Absolute_path.of_string (home^"/Downloads/Building_site/");;
-let s_ap1 = Absolute_path.to_string ap1 ;;
-let u2 = Unix_again.beheaded_simple_ls (Directory_name.of_string s_ap1) ;;
-let u3 = Image.image (fun s->(int_of_string(Cull_string.interval s 8 14),s)) u2 ;;
-let (Set_of_poly_pairs_t.S u4) = Set_of_poly_pairs.safe_set u3 ;;
-let u5 = Int_range.index_everything (Image.image fst u4) ;;
-let u6 = Image.image (
-  fun (k,old_k)->
-    let sk = string_of_int k 
-     and sok = string_of_int old_k in 
-  "mv "^s_ap1^"korres\\ "^sok^".jpg "^s_ap1^"p"^sk^".jpg"
-) u5 ;; 
-let u7 = Image.image Sys.command u6 ;;
-
-Coherent_pdf.workspace_directory := s_ap1 ;;
-Coherent_pdf.implode ("p","") ;;
-
-(************************************************************************************************************************
-Snippet 51 : Write repetitive code for PARI-GP
+Snippet 47 : Write repetitive code for PARI-GP
 ************************************************************************************************************************)
 let s_ap = home^
 "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp" ;;
@@ -12898,14 +12815,14 @@ let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
 *)
 
 (************************************************************************************************************************
-Snippet 50 : A useful shortcut using Lines_in_string.remove_interval_in_file 
+Snippet 46 : A useful shortcut using Lines_in_string.remove_interval_in_file 
 ************************************************************************************************************************)
 let ri fn x y =
      Lines_in_string.remove_interval_in_file 
       (Absolute_path.of_string fn) x y ;;
 
 (************************************************************************************************************************
-Snippet 49 : Test the prepare_fw_with_dependencies.ml file
+Snippet 45 : Test the prepare_fw_with_dependencies.ml file
 ************************************************************************************************************************)
 let the_other_one = 
    Absolute_path.of_string "../Idaho/Filewatching/fw_with_dependencies.ml" ;;
@@ -12915,7 +12832,7 @@ let the_other_one =
  write_all_to_file the_other_one ;;  *)
 
 (************************************************************************************************************************
-Snippet 48 : Typical use of marked comments
+Snippet 44 : Typical use of marked comments
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -12929,7 +12846,7 @@ let act2 () = Shorten_long_blank_intervals.in_file dest1 ;;
 
 
 (************************************************************************************************************************
-Snippet 47 : Replacements on several files
+Snippet 43 : Replacements on several files
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13059,7 +12976,7 @@ rep ("Afd_sybdirectoru.","Dfa_subdirectory.")   ;;
 
 
 (************************************************************************************************************************
-Snippet 46 : Extract a line interval from a file and treat it
+Snippet 42 : Extract a line interval from a file and treat it
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13088,7 +13005,7 @@ let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
 let g3 = String.concat " " g2;;
 
 (************************************************************************************************************************
-Snippet 45 : Remove all modules in a subdirectory
+Snippet 41 : Remove all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13105,7 +13022,7 @@ let z3 = Image.image (
 let act () = fgs z3 ;;  
 
 (************************************************************************************************************************
-Snippet 44 : Replacing a long interval in a file with another
+Snippet 40 : Replacing a long interval in a file with another
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13119,7 +13036,7 @@ let replacement = Lines_in_string.interval towards_complement 9 240 ;;
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
 (************************************************************************************************************************
-Snippet 43 : Visualize Git tree
+Snippet 39 : Visualize Git tree
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13144,7 +13061,7 @@ let cmds3 = cmds1 @ cmds2 ;;
 let anse1 = Image.image Sys.command cmds3 ;;
 
 (************************************************************************************************************************
-Snippet 42 : Miscellaneous tests on compilation management
+Snippet 38 : Miscellaneous tests on compilation management
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13188,7 +13105,7 @@ reco "1";;
 fgs ["tf_one";"tf_two";"tf_three";"tf_four";"tf_five"] ;;
 
 (************************************************************************************************************************
-Snippet 41 : Extracting lines from a file and modifying them
+Snippet 37 : Extracting lines from a file and modifying them
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13248,7 +13165,7 @@ let z7 = "\n\n\n" ^(String.concat "\n" (Image.image write2 z4)) ^ "\n\n\n";;
 let z8 () = print_string z7 ;;
 
 (************************************************************************************************************************
-Snippet 40 : Get a list of value names from an interval of lines in a file
+Snippet 36 : Get a list of value names from an interval of lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13266,7 +13183,7 @@ let compute_names = Image.image (
 
 
 (************************************************************************************************************************
-Snippet 39 : Using intervals of line indices to extract values from a module
+Snippet 35 : Using intervals of line indices to extract values from a module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13387,7 +13304,7 @@ main ((1842,1874),"Try_to_register") Curcuma;;
 *)
 
 (************************************************************************************************************************
-Snippet 38 : Remove all snippets containing a given substring (todo : integrate it
+Snippet 34 : Remove all snippets containing a given substring (todo : integrate it
 into the Manage_diary module directly)
 ************************************************************************************************************************)
 open Needed_values ;;
@@ -13412,7 +13329,7 @@ let z1 = List.nth l_diary1 (84-1) ;;
 
 
 (************************************************************************************************************************
-Snippet 37 : Search/replace following some module refactoring
+Snippet 33 : Search/replace following some module refactoring
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13438,7 +13355,7 @@ let act1 () = List.iter
      (!list_for_reps)) (!aps);
 
 (************************************************************************************************************************
-Snippet 36 : Extracting modules in a subdirectory
+Snippet 32 : Extracting modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13456,7 +13373,7 @@ let u3 = Image.image (
 ) u2 ;;
 
 (************************************************************************************************************************
-Snippet 35 : Remove all "automatic" modules 
+Snippet 31 : Remove all "automatic" modules 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13486,7 +13403,7 @@ let h3 = List.iter (
 
 
 (************************************************************************************************************************
-Snippet 34 : Typical use of the Manage_diary module
+Snippet 30 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
 let act1 () = Manage_diary.fix_indexation ();;
 
@@ -13498,7 +13415,7 @@ let diary_text = Io.read_whole_file ap_for_diary ;;
 let (g1,g2) =  Manage_diary.Private.read_and_parse ap_for_diary ;;
 
 (************************************************************************************************************************
-Snippet  33 : Deduce the lower measure from the usual measure (related to Vdw)
+Snippet  29 : Deduce the lower measure from the usual measure (related to Vdw)
 ************************************************************************************************************************)
 let measure n =
   if n<1 then 0 else 
@@ -13538,7 +13455,7 @@ let compute_lower_measure n =
 
 
 (************************************************************************************************************************
-Snippet  32 : Relocate all modules in a subdirectory
+Snippet  28 : Relocate all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13559,7 +13476,7 @@ let u3 = Image.image ( fun
 let act1 () = Explicit.image (fun mn->relo mn sd2) u3 ;;
 
 (************************************************************************************************************************
-Snippet  31 : Delete all modules in a subdirectory
+Snippet  27 : Delete all modules in a subdirectory
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13578,7 +13495,7 @@ let act1 () = fgs u3 ;;
 
 
 (************************************************************************************************************************
-Snippet  30 : Code from an abandoned, self-contained module
+Snippet  26 : Code from an abandoned, self-contained module
 ************************************************************************************************************************)
 exception Too_many_arguments of int ;;
 
@@ -13606,7 +13523,7 @@ let add_appendix_to_last_line appendix lines =
       List.rev ((last_line^appendix)::other_lines) ;;    
 
 (************************************************************************************************************************
-Snippet  29 : Permutations far (wrt Hamming distance) from shift with constants. 
+Snippet  25 : Permutations far (wrt Hamming distance) from shift with constants. 
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13639,7 +13556,7 @@ Int_range.scale (fun x->(x,hh x)) 3 10;;
 let hf n = List.hd(ff n) ;;
 
 (************************************************************************************************************************
-Snippet  28 : Mass inheritance from a Private submodule 
+Snippet  24 : Mass inheritance from a Private submodule 
 ************************************************************************************************************************)
 let z1 = 
   ["conventional_files_with_full_content";
@@ -13654,7 +13571,7 @@ let z2 = Image.image (fun x->" let "^x^" = Private."^x^" ;;") z1;;
 let z3 = "\n\n\n" ^ (String.concat "\n" z2) ^ "\n\n\n" ;; 
 
 (************************************************************************************************************************
-Snippet  27 : Typical use of the Other_coma_state module 
+Snippet  23 : Typical use of the Other_coma_state module 
 ************************************************************************************************************************)
 let act1 () = 
    Other_coma_state.repopulate 
@@ -13691,7 +13608,7 @@ Other_coma_state.Private.ref_for_unofficial_changes :=
 
 
 (************************************************************************************************************************
-Snippet  26 : Testing freezing and unfreezing of world copies
+Snippet  22 : Testing freezing and unfreezing of world copies
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13729,7 +13646,7 @@ Then, you can cd to the separate dir, launch utop in it, and enjoy.
 
 
 (************************************************************************************************************************
-Snippet  25 : Remove interval of lines in a file 
+Snippet  21 : Remove interval of lines in a file 
 ************************************************************************************************************************)
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
@@ -13773,7 +13690,7 @@ let v8 = "\n\n\n" ^ (String.concat "\n" v7) ^ "\n\n\n";;
 let v9 = print_string v8 ;;
 
 (************************************************************************************************************************
-Snippet  24 : Removing module wrappers in a set of files
+Snippet  20 : Removing module wrappers in a set of files
 ************************************************************************************************************************)
 let remove_module_wrapper_in_text text =
   let lines = Lines_in_string.indexed_lines text in 
@@ -13799,7 +13716,7 @@ let u1 = Unix_again.simple_ls the_dir ;;
 let act1 () = List.iter remove_module_wrapper_in_file u1 ;;
 
 (************************************************************************************************************************
-Snippet  23 : Sorting names in the dictionary order
+Snippet  19 : Sorting names in the dictionary order
 ************************************************************************************************************************)
 let z1 = Ordered.sort Total_ordering.lex_for_strings 
 [
@@ -13821,7 +13738,7 @@ let z2 = "\n\n\n" ^ (String.concat "\n" z1) ^ "\n\n\n" ;;
 print_string z2;;
 
 (************************************************************************************************************************
-Snippet  22 : Remove phpbb links to footnotes 
+Snippet  18 : Remove phpbb links to footnotes 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -13841,7 +13758,7 @@ let act1 () = Replace_inside.replace_several_inside_file reps ap1;;
 
 
 (************************************************************************************************************************
-Snippet  21 : Typical use of Html_to_phpbb.translate
+Snippet  17 : Typical use of Html_to_phpbb.translate
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -13855,7 +13772,7 @@ let ap1 = Absolute_path.of_string
 Io.overwrite_with ap1 u2;;  
 
 (************************************************************************************************************************
-Snippet  20 : Interaction between "beginning" and "end" of a large tex file
+Snippet  16 : Interaction between "beginning" and "end" of a large tex file
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -13915,7 +13832,7 @@ let usual_cleaning () =
 
 
 (************************************************************************************************************************
-Snippet  19 : Add blank space at the beginning of lines (to make copy&paste easier )
+Snippet  15 : Add blank space at the beginning of lines (to make copy&paste easier )
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -13941,7 +13858,7 @@ Io.overwrite_with the_ap new_text;;
 
 
 (************************************************************************************************************************
-Snippet  18 : Delete some HTML footnotes (with their links) and reindex
+Snippet  14 : Delete some HTML footnotes (with their links) and reindex
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -14003,7 +13920,7 @@ Io.overwrite_with ap1 new_text ;;
 
 
 (************************************************************************************************************************
-Snippet  17 : Remove contiguous lines in a file
+Snippet  13 : Remove contiguous lines in a file
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -14018,7 +13935,7 @@ Replace_inside.replace_inside_file (to_be_deleted,"") the_ap ;;
 
 
 (************************************************************************************************************************
-Snippet  16 : Put fillable footnotes in an html draft 
+Snippet  12 : Put fillable footnotes in an html draft 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -14035,132 +13952,7 @@ let memo = String.concat "\n\n" (Int_range.scale write1 121 170) ;;
 Io.overwrite_with ap memo ;; 
 
 (************************************************************************************************************************
-Snippet  15 : Aggregate pages
-************************************************************************************************************************)
-let home = Sys.getenv "HOME" ;;
-let workdir = home^"/Downloads/Adrifor";;
-
-Coherent_pdf.workspace_directory := workdir ;;
-
-Coherent_pdf.extract_page_range "main" (5,5) ;;
-
-Coherent_pdf.implode ("p","") ;;
-
-Coherent_pdf.merge ["part1";"part2";"part3"] "whole";;
-
-(************************************************************************************************************************
-Snippet  14 : Cleaning up and fixing a chaotic mass download
-************************************************************************************************************************)
-let downloads_s_dir = home ^ "/Downloads";; 
-
-let u1 = Unix_again.quick_beheaded_complete_ls downloads_s_dir  ;;
-let u2 = List.filter (String.starts_with ~prefix:"iau") u1;;
-
-let p_value s =
-     let j1 = Option.get(Substring.leftmost_index_of_in_from_opt "-" s 5) in 
-     let j2 = Option.get(Substring.leftmost_index_of_in_from_opt "-" s (j1+1)) in
-     int_of_string(Cull_string.interval s (j1+1) (j2-1));; 
-
-let min_pageNumber = 9 and max_pageNumber = 70 ;; 
-
-let pre_u3 = Image.image (fun s->(s,p_value s)) u2 ;;
-let (bad_ones1,u3) = List.partition (fun (s,p)->(p<min_pageNumber) || (p>max_pageNumber)) pre_u3 ;;
-let cmds1 = Image.image (fun (s,_)->"rm "^downloads_s_dir^"/"^s) bad_ones1;;
-let act1 () = Image.image Sys.command cmds1 ;;
-
-let reached_page_numbers = Ordered.sort Total_ordering.for_integers (Image.image snd u3) ;; 
-
-let u4 = Int_range.scale (
-   fun p->(p,List.filter_map (fun (s,q)->if q=p then Some s else None) u3)
-) min_pageNumber max_pageNumber;;
-
-let u5 = List.filter (fun (p,representatives) -> List.length(representatives)>1) u4 ;;
-let bad_ones2 =List.flatten 
-  (Image.image (fun (p,representatives) -> List.tl(representatives)) u5);;
-let cmds2 = Image.image (fun s->"rm "^downloads_s_dir^"/"^s) bad_ones2;;
-let act2 () = Image.image Sys.command cmds2 ;;
-
-let bad_ones3 = List.filter_map 
-  (fun (p,representatives) -> 
-     if List.length(representatives)=0 then Some p else None) u4 ;;
-
-    
-let cmds3 = Image.image (fun (p,l)->
-    let fn = List.hd l in 
-    let sk = string_of_int(p-6) in 
-    "mv "^downloads_s_dir^"/"^fn^" "^downloads_s_dir^"/p"^sk^".pdf") u4;;
-let act3 () = Image.image Sys.command cmds3 ;;
-
-let workdir = home^"/Downloads/";;
-
-Coherent_pdf.workspace_directory := workdir ;;
-
-Coherent_pdf.implode ("p","") ;;
-
-
-
-(************************************************************************************************************************
-Snippet  13 : Update footnote format in old phpbb text
-************************************************************************************************************************)
-open Needed_values ;;
-
-let home = Sys.getenv "HOME" ;;
-
-let ap = Absolute_path.of_string 
-(home^"/Teuliou/html_files/OCRed_texts/barenton_on_loisy.txt");;
-
-let main_text = Io.read_whole_file ap ;; 
-
-let opening_tag= "[color=blue]";;
-let closing_tag = "[/color]";;
-
-let u1 = Substring.occurrences_of_in opening_tag main_text ;;
-let u2 = Substring.occurrences_of_in closing_tag main_text ;;
-
-let u3 = List.combine u1 u2;;
-let opening_length = String.length opening_tag ;;
-let closing_length = String.length closing_tag ;;
-let u4 = Image.image (fun (old_a,old_b)->
-    let a = old_a+opening_length and b=old_b-1 in 
-    ((a,b),Cull_string.interval main_text a b)
-    ) u3;;
-exception RA of string ;; 
-    
-let rhine_analysis s=
-  let j1_opt = Substring.leftmost_index_of_in_from_opt "(" s 1 in 
-  let j2_opt = Substring.leftmost_index_of_in_from_opt ")" s 1 in 
-  if (j1_opt=None)||(j2_opt=None) then raise(RA(s)) else    
-  let j1 = Option.get j1_opt and  j2 = Option.get j2_opt in  
-  let idx = int_of_string(Cull_string.interval s (j1+1) (j2-1)) in 
-  (idx,Cull_string.cobeginning j2 s);;
-
-let u5 = Image.image (
-   fun ((a,b),text) -> (((a,b),text),rhine_analysis text)
-)  u4 ;; 
-
-let (redundant_u6,redundant_u7)=List.partition (fun (_,(idx,content))->content="") u5;;
-
-let u6 = Image.image (fun (((a,b),text),(idx,content))->
-      ((a-opening_length,b+closing_length),idx) ) redundant_u6;;
-
-let u7 = Image.image (fun (((a,b),text),(idx,content))->
-        ((a-opening_length,b+closing_length),idx,content) ) redundant_u7;;      
-
-let check1 = ( (List.length u6) = (List.length u7) ) ;;        
-
-let u8 = Image.image (
-   fun ((a,b),idx,content) ->
-      let s_idx=string_of_int idx in 
-      ((a,b),"[size=90][b][color=blue]("^s_idx^")[/color][/b]"^content^"[/size]")
-) u7;;
-let corrected_text = Strung.replace_ranges_in u8 main_text;;
-
-Io.overwrite_with ap corrected_text ;;
-
-
-
-(************************************************************************************************************************
-Snippet  12 : Combinatorial musings
+Snippet  11 : Combinatorial musings
 ************************************************************************************************************************)
 exception Hard_computation of string * int ;;
 
@@ -14282,7 +14074,7 @@ let res1 = Int_range.scale (fun x->fst(ff x)) 1 30;;
 
 
 (************************************************************************************************************************
-Snippet  11 : Massive conversion of audios into videos using ffmepgs
+Snippet  10 : Massive conversion of audios into videos using ffmepgs
 ************************************************************************************************************************)
 let base1 =
   [
@@ -14459,7 +14251,7 @@ let cmds = cmds1 @ cmds2 @ cmds3 ;;
 
 
 (************************************************************************************************************************
-Snippet  10 : Removing misinterpreted characters from a freshly OCR-ed doc
+Snippet  9 : Removing misinterpreted characters from a freshly OCR-ed doc
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -14506,7 +14298,7 @@ Replace_inside.replace_several_inside_file
    ["\n\012\n","\n"] tex_ap ;;
 
 (************************************************************************************************************************
-Snippet  9 : Typical use of the Trim_text_between_tags module
+Snippet  8 : Typical use of the Trim_text_between_tags module
 ************************************************************************************************************************)
 let home = Sys.getenv "HOME" ;;
 let ap = Absolute_path.of_string 
@@ -14516,7 +14308,7 @@ Trim_text_between_tags.in_file [("[i]","[/i]")] ap;;
 
 
 (************************************************************************************************************************
-Snippet  8 : Put fillable footnotes in a phpbb draft 
+Snippet  7 : Put fillable footnotes in a phpbb draft 
 ************************************************************************************************************************)
 let write1 k=
   let sk = string_of_int k in 
@@ -14531,7 +14323,7 @@ let memo = String.concat "\n\n" (Int_range.scale write1 1 5) ;;
 Io.overwrite_with ap memo ;; 
 
 (************************************************************************************************************************
-Snippet  7 : Finding extremal vertices in a polytope
+Snippet  6 : Finding extremal vertices in a polytope
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -14609,9 +14401,9 @@ let u3 = List.filter (
 *)
 
 (************************************************************************************************************************
-Snippet  6 : Abandoned code snippet to remove paragraph containing footnotes.
+Snippet  5 : Abandoned code snippet to remove paragraph containing footnotes.
 It is much simpler to add html paragraph tags only when the region of text
-does not contain footnotes (see the Htmlize module and snippet 4)
+does not contain footnotes (see the Htmlize module and snippet 3)
 ************************************************************************************************************************)
 exception Unbalanced_html_paragraph_tags of int * int ;;
 exception Nested_html_paragraphs of (int * int) * (int * int) ;;
@@ -14654,7 +14446,7 @@ let remove_paragraphs_containing_footnotes txt l= ();;
 
 
 (************************************************************************************************************************
-Snippet  5 : Mass deletion of modules 
+Snippet  4 : Mass deletion of modules 
 ************************************************************************************************************************)
 open Needed_values;;
 
@@ -14685,7 +14477,7 @@ let u6 = List.filter (
 let u7=List.rev(Image.image fst u6);;
 
 (************************************************************************************************************************
-Snippet  4 : Code to OCR-size PDF's into .txt (and later html)
+Snippet  3 : Code to OCR-size PDF's into .txt (and later html)
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -14762,7 +14554,7 @@ Io.overwrite_with full_ap full_text;;
 
 
 (************************************************************************************************************************
-Snippet  3 : Typical use of the Read_russian module
+Snippet  2 : Typical use of the Read_russian module
 ************************************************************************************************************************)
 open Needed_values ;;
 
@@ -14780,7 +14572,7 @@ Replace_inside.overwrite_between_markers_inside_file
   ("\\begin{document}","\\end{document}") ap1;;
 
 (************************************************************************************************************************
-Snippet  2 : Convert footnotes between phpBB and HTML
+Snippet  1 : Convert footnotes between phpBB and HTML
 ************************************************************************************************************************)
 let peggy j =
    let sj=string_of_int j in 
@@ -14799,81 +14591,3 @@ let peggy j =
  
  let u2 ="\n\n\n"^(String.concat "\n\n" u1) ^"\n\n\n";;
  
-
-(************************************************************************************************************************
-Snippet  1 : Typical use of the Coherent_pdf module on a freshly scanned doc
-************************************************************************************************************************)
-let home = Sys.getenv "HOME" ;;
-let workdir = home^"/Downloads/Building_Site";;
-
-let workdir = home^"/Downloads/Arno/Towards";;
-
-Coherent_pdf.workspace_directory := workdir ;;
-
-let cmd1 = "cp "^workdir^"/moncunill.pdf "^workdir^"/whole.pdf";;
-
-let act1 () = Sys.command cmd1;;
-
-let act2 () = Coherent_pdf.remove_page_range_in_in_a_total_of 
-~range_start:1 ~range_end:1 ~deflated_one:"whole" 
-~total_length:28;;
-
-let act3 () = Coherent_pdf.append_on_the_right "whole" "velaza" ;;
-
-let act5 () = Coherent_pdf.transfer_range_to_rightmost
-~range_start:91 ~range_end:91 ~deflated_one:"whole" 
-~total_length:592 ~receiving_one:"p90" ;;
-
-let act6 ()= Coherent_pdf.insert_in_just_after 
-    ~inserted_one: "p90" ~receiving_one: "whole"
-     ~page_number:89 ~initial_total_length:591;;
-
-let act7 () = Coherent_pdf.delete_file "p90";;     
-
-let act8 k = Coherent_pdf.replace_page_number_in_by 
-~page_number:k ~receiving_one:"whole"  ~inserted_one:("p"^(string_of_int k)) 
-~total_length:133;;
-
-Image.image act8 [36;40;42;44;68;70;72;90;100] ;;
-
-let act9 () = Coherent_pdf.extract_page_range "whole" (10,10);;
-
-let act10 () = Coherent_pdf.extract_odd_pages "russia" ;;
-
-let act11 () = Coherent_pdf.intertwine 
-~odd_pages:"odd" ~even_pages:"even" 
-~num_odd:81  ~num_even:81 ~final_name:"118_to_279" ;;
-
-let phoebe n=
-  let q =(n/4) in 
-  let r= n - 4*q in 
-  (4*q)+List.assoc r [0,(-3);1,2;2,3;3,4;];; 
-    
-let act12 () =   
-   Explicit.image (
-     fun k-> 
-      let j = phoebe k in 
-      Coherent_pdf.rename 
-      ("p"^(string_of_int k)) ("q"^(string_of_int j))
-   ) (Int_range.range 1 260) ;;
-
-let act13 ()= Coherent_pdf.implode ("q","") ;; 
-
-let workdir = home^"/Downloads";;
-
-Coherent_pdf.workspace_directory := workdir ;;
-
-let act1 () = Coherent_pdf.extract_page_range "mariage" (24,24);;
-
-let act2 ()= Coherent_pdf.insert_in_just_after 
-    ~inserted_one: "xx" ~receiving_one: "mariage"
-     ~page_number:22 ~initial_total_length:732;;
-
-let act3 () = Coherent_pdf.remove_page_range_in_in_a_total_of 
-~range_start:25 ~range_end:25 ~deflated_one:"mariage" 
-~total_length:733;;
-
-let act4 ()= Coherent_pdf.insert_in_just_after 
-    ~inserted_one: "p272" ~receiving_one: "mariage"
-     ~page_number:315 ~initial_total_length:732;;
-
