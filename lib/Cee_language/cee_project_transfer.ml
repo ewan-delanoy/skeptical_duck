@@ -828,7 +828,7 @@ let mathusalem_compute_wardrobes_for_dc_files cpsl_ref =
     ((!cpsl).commands) 
    ;;
 
-    let mathusalem_unsafe_set_wardrobes_for_dc_files 
+    let unsafe_set_wardrobe_for_dc_files 
        cpsl_ref precomputed_wardrobes_for_dc_files = 
       let old_cpsl = (!cpsl_ref) in 
       let new_cpsl = {
@@ -878,7 +878,7 @@ module type CAPSULE_INTERFACE = sig
 
 
 
-  val mathusalem_unsafe_set_wardrobes_for_dc_files :
+  val unsafe_set_wardrobe_for_dc_files :
       t -> (string * Cee_wardrobe_t.t) list -> t
 
   val  reinitialize_destination_directory : t -> unit  

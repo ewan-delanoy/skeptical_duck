@@ -85,13 +85,13 @@ module OnSiteCommand = struct
 
   let reverse_pages_in_corep_subset page_prefix ~number_of_pages= 
     let corep_subset = List.filter (
-      fun idx -> List.mem(idx mod 4)[2;3]
+      fun idx -> List.mem(idx mod 4)[0;2]
     ) (Int_range.range 1 number_of_pages) in 
     reverse_several page_prefix corep_subset ;;
 
   let corep_transform onsite_input outputfile_name padded_nbr= 
     let corep_order = List.flatten (Int_range.scale (fun q->
-        [4*q;4*q-3;4*q-1;4*q-2]
+        [4*q-1;4*q-3;4*q;4*q-2]
       ) 1 (padded_nbr/4)) in 
     (pad_up_to_multiple onsite_input  4 "padded")::
     (explode  "padded" "page")::
