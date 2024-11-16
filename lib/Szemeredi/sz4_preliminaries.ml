@@ -900,11 +900,21 @@ let explanation_opt pt =
       Point.decompose_wrt_translation pt in 
    explanation_on_pretranslated_opt  pretranslated_pt ;;   
 
+let lookup_opt pt =
+    let (d,pretranslated_pt) = 
+      Point.decompose_wrt_translation pt in 
+    Option.map(Mold.translate d)
+     (List.assoc_opt pretranslated_pt (!impatient_ref));;
+
+
+
 end ;;
 
 let eval_opt = Private.eval_opt ;; 
 
 let explanation_opt = Private.explanation_opt ;;
+
+let lookup_opt = Private.lookup_opt ;;
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1404,6 +1414,7 @@ module Private = struct
 
 let chosen_limit = 200 ;; 
 
+let p2 n = PointConstructor.segment n ~imposed_max_width:2;;
 let p3 n = PointConstructor.segment n ~imposed_max_width:3;;
 let pr3 n r = Point.remove (p3 n) r ;;
 
