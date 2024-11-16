@@ -1136,11 +1136,19 @@ end ;;
 module BuiltOnEval = struct 
 
 exception Find_sticky_vertex_exn ;;
+exception Lazy_mode_failed of point ;;
 
 module Private = struct 
 
+let lazy_mode = ref false ;;
+
+let eval pt = 
+   match One_more_small_step.lookup_opt pt with 
+   (Some answer) -> answer 
+   |None -> Painstaking.eval pt ;;
+
 let measure = Memoized.make(fun pt->
-    Mold.solution_size(Painstaking.eval pt)
+    Mold.solution_size(eval pt)
 );;
 
 let check_for_sticky_vertex pt m_pt v= 
@@ -1307,7 +1315,7 @@ let decomposition_opt pt =
 let rec compute_breaking_constraint (pt, size) = 
     let cstr = Option.get (Point.highest_constraint_opt pt) in 
     let pt_before = Point.exclude pt cstr in 
-    let sol_before = Painstaking.eval pt_before in 
+    let sol_before = eval pt_before in 
     let size_before = Mold.solution_size sol_before in 
     if size_before<>size  
     then cstr
@@ -1361,12 +1369,14 @@ let all_ancestors pt =
     (helper_for_ancestors_computation ([],
        (important_parents pt))) ;;
 
+let set_lazy_mode lm = (lazy_mode:=lm) ;;
 
 end ;;
 
 let all_ancestors = Private.all_ancestors ;;
 let analize = Private.analize ;;
 let canonical_solution = Private.canonical_solution ;; 
+let set_lazy_mode = Private.set_lazy_mode ;;
 
 end ;;
 
