@@ -1,8 +1,34 @@
 (************************************************************************************************************************
-Snippet 149 : 
+Snippet 150 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 149 : Using the Coherent_pdf module
+************************************************************************************************************************)
+
+module Snip149=struct
+
+let ap1 = Absolute_path.of_string (
+   "~/Teuliou/OCaml/skeptical_duck/nonml_files/"^
+   "nongithubbed_nonml_files/pdf_workspace/numbers.pdf") ;;
+
+let act1 () = Coherent_pdf.corep_transform 
+    ap1 ~outputfile_name:"example";;
+
+let act2 () = Int_range.scale(fun k->
+    let sk = string_of_int k in 
+    let ap = Absolute_path.of_string 
+  ("~/Teuliou/Heavy/planiol_hib_"^sk^".pdf") in 
+    Coherent_pdf.corep_transform ap
+    ~outputfile_name:("printable_hib_"^sk)
+  ) 1 3 ;;    
+
+
+
+end ;;
 
 
 (************************************************************************************************************************

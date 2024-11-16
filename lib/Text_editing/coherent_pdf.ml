@@ -84,22 +84,25 @@ module OnSiteCommand = struct
       indices );;   
 
   let reverse_pages_in_corep_subset page_prefix ~number_of_pages= 
-    let corep_subset = List.filter (
-      fun idx -> List.mem(idx mod 4)[0;2]
-    ) (Int_range.range 1 number_of_pages) in 
+    let q = (number_of_pages/4) in
+    let corep_subset = List.flatten (Int_range.scale (fun j->
+        [2*j;2*q+2*j]
+      ) 1 q) in 
     reverse_several page_prefix corep_subset ;;
 
   let corep_transform onsite_input outputfile_name padded_nbr= 
-    let corep_order = List.flatten (Int_range.scale (fun q->
-        [4*q-1;4*q-3;4*q;4*q-2]
-      ) 1 (padded_nbr/4)) in 
+    let q = (padded_nbr/4) in
+    let corep_order = List.flatten (Int_range.scale (fun j->
+        [2*j-1;2*q+2*j-1;2*j;2*q+2*j]
+      ) 1 q) in 
     (pad_up_to_multiple onsite_input  4 "padded")::
     (explode  "padded" "page")::
     (reverse_pages_in_corep_subset  "page" ~number_of_pages:padded_nbr)@
     (
      [
-       (implode "page" outputfile_name corep_order);
-       "rm page*.pdf padded.pdf";
+       (implode "page" "reaggregated" corep_order);
+       ("cpdf -twoup reaggregated.pdf -o "^outputfile_name^".pdf");
+       "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
     );; 
 
@@ -107,20 +110,20 @@ end ;;
 
 
 module Command = struct 
-  let corep_transform ap = 
+  let corep_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 4)*4 in 
     let current_dir = Sys.getcwd () in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
-   (OnSiteCommand.corep_transform "initial_copy" "corepped" padded_nbr) @
+   (OnSiteCommand.corep_transform "initial_copy" outputfile_name padded_nbr) @
     ["cd "^current_dir];;
 
 end ;;  
 
-let corep_transform ap = 
+let corep_transform ap ~outputfile_name= 
    Unix_command.conditional_multiple_uc 
-    (Command.corep_transform ap) ;;
+    (Command.corep_transform ap outputfile_name) ;;
 
 let number_of_pages_in_pdf = 
     Private.number_of_pages_in_pdf ;;

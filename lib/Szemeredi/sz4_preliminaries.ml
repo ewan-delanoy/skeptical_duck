@@ -1163,22 +1163,55 @@ let distinguished_parts = Memoized.recursive(fun old_f pt ->
     il_merge temp1 temp2
 ) ;; 
 
-let rec helper_for_solution_chooser (pt,m,obtained_so_far,to_be_treated) =
+let hashtbl_for_canonical_solutions = 
+    (Hashtbl.create 100: (point, int list) Hashtbl.t ) ;;
+
+let pre_helper_for_solution_chooser_in_hard_case old_f (pt,beheaded_pt,m,obtained_so_far,v,others) =
+   if measure(beheaded_pt) = m 
+   then old_f (beheaded_pt,m,obtained_so_far,others)
+   else 
+   let forced_pt = Point.force pt [v] in
+   old_f (forced_pt,m-1,v::obtained_so_far,others) ;;
+       
+
+let pre_helper_for_solution_chooser old_f (pt,m,obtained_so_far,to_be_treated) =
      match to_be_treated with 
       [] -> obtained_so_far
-     |v::others ->
-       let beheaded_pt = Point.remove pt [v] in 
-       if measure(beheaded_pt) = m 
-       then helper_for_solution_chooser (beheaded_pt,m,obtained_so_far,others)
-       else 
-       let forced_pt = Point.force pt [v] in
-       helper_for_solution_chooser (forced_pt,m-1,v::obtained_so_far,others)
+     |v::others -> 
+      let beheaded_pt = Point.remove pt [v] in  
+      (
+       match Hashtbl.find_opt hashtbl_for_canonical_solutions pt with 
+       (Some beheaded_csol) ->
+         let csol = beheaded_csol @ (v::obtained_so_far) in 
+         if Point.subset_is_admissible pt csol 
+         then csol     
+         else 
+         if (List.length beheaded_csol)<m    
+         then let csol2 = beheaded_csol @ (obtained_so_far) in
+              if Point.subset_is_admissible pt csol2 
+              then csol2     
+              else  
+              pre_helper_for_solution_chooser_in_hard_case old_f (pt,beheaded_pt,m,obtained_so_far,v,others) 
+         else 
+         pre_helper_for_solution_chooser_in_hard_case old_f (pt,beheaded_pt,m,obtained_so_far,v,others)
+      | None -> 
+         pre_helper_for_solution_chooser_in_hard_case old_f (pt,beheaded_pt,m,obtained_so_far,v,others)
+      );;
        
-let canonical_solution = Memoized.make(fun pt->
+let rec helper_for_solution_chooser (pt,m,obtained_so_far,to_be_treated) =
+    pre_helper_for_solution_chooser helper_for_solution_chooser 
+      (pt,m,obtained_so_far,to_be_treated) ;;
+
+
+let canonical_solution pt = 
+   match Hashtbl.find_opt hashtbl_for_canonical_solutions pt with 
+   (Some old_answer) -> old_answer 
+   |None ->
    let rev_base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
    and m = measure pt  in 
-   helper_for_solution_chooser (pt,m,[],rev_base)
-) ;; 
+   let answer = helper_for_solution_chooser (pt,m,[],rev_base) in 
+   let _ = Hashtbl.add hashtbl_for_canonical_solutions pt answer in 
+   answer ;; 
 
 module Choose_preferred_decomposition = struct 
 
@@ -1400,9 +1433,11 @@ let current_bound = 100;;
 end ;;
 
 
-open Private ;;
+
 
 (*
+
+open Private ;;
 (* computing e(pr3 n []) *)
 
 for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
