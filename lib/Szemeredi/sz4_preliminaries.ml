@@ -806,9 +806,6 @@ let lower_level_eval_opt pt =
     Option.map(Mold.translate d)
      (lower_level_eval_on_pretranslated_opt pretranslated_pt);;
 
-
-
-
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
 
@@ -886,21 +883,12 @@ let explanation_opt pt =
       Point.decompose_wrt_translation pt in 
    explanation_on_pretranslated_opt  pretranslated_pt ;;   
 
-let lookup_opt pt =
-    let (d,pretranslated_pt) = 
-      Point.decompose_wrt_translation pt in 
-    Option.map(Mold.translate d)
-     (List.assoc_opt pretranslated_pt (!impatient_ref));;
-
-
 
 end ;;
 
 let eval_opt = Private.eval_opt ;; 
 
 let explanation_opt = Private.explanation_opt ;;
-
-let lookup_opt = Private.lookup_opt ;;
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1131,7 +1119,10 @@ let lazy_mode = ref false ;;
 let eval pt = 
    match One_more_small_step.lookup_opt pt with 
    (Some answer) -> answer 
-   |None -> Painstaking.eval pt ;;
+   |None -> 
+      if !lazy_mode 
+      then raise(Lazy_mode_failed(pt))   
+      else Painstaking.eval pt ;;
 
 let measure = Memoized.make(fun pt->
     Mold.solution_size(eval pt)
@@ -1426,13 +1417,11 @@ let current_bound = 100;;
 
 end ;;
 
+(*
 open Private ;;
 
 for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
 
-(*
-
-open Private ;;
 (* computing e(pr3 n []) *)
 
 for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
