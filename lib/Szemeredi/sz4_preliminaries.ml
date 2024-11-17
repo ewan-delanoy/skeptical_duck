@@ -18,8 +18,7 @@ type fan = Sz4_types.fan = F of int list list ;;
 type point = Sz4_types.point = {
     base_set : finite_int_set;
     max_width: width;
-    excluded_full_constraints: constraint_t list;
-    added_partial_constraints: constraint_t list
+    added_constraints: constraint_t list
 } ;;
 
 type mold = Sz4_types.mold = {
@@ -293,11 +292,13 @@ module Point = struct
 
   (*
 
+   UPDATE : the excluded_full_constraints field has been removed.
+
   The record { 
     base_set:b, 
     max_width:w, 
     excluded_full_constraints: efc,
-    added_partial_constraints: apc
+    added_constraints: apc
   } 
   represents the hypergraph (b,H) 
   where H=(Sz(b,w) \ E) u A= (Sz(b,w) u A) \ E 
@@ -305,69 +306,42 @@ module Point = struct
   - Sz(b,w) is the set of all arithmetic progressions 
   inside b with width <=w (in particular, this set is 
   empty when w = 0)
-  - A is a set of added constraints of cardinality <= 2.
+  - A is a set of added constraints.
   - E is a set of excluded arithmetic progressions inside
   b  
 
   *)
 
   exception Excessive_forcing of point * int list ;; 
+  exception Exclusion_not_implemented of point * constraint_t ;;
 
   module Private = struct
   
-  let check_excluded_constraint base_set checked_max_width 
-       ~checked_added_constraints excl_constraint=
-     if Constraint.width(excl_constraint)>checked_max_width 
-     then false 
-     else if List.exists (Constraint.is_weaker_than excl_constraint) checked_added_constraints 
-     then false
-     else Finite_int_set.constraint_can_apply base_set excl_constraint ;; 
   
   let constructor base 
      ~max_width:unchecked_max_width 
-     ~excluded_full_constraints ~added_partial_constraints = 
-      let checked_max_width = Finite_int_set.effective_max_width base excluded_full_constraints unchecked_max_width in 
+     ~added_constraints = 
+      let checked_max_width = Finite_int_set.effective_max_width base [] unchecked_max_width in 
       let base_list = Finite_int_set.to_usual_int_list base in 
-      let checked_added_constraints = Constraint.cleanup_list added_partial_constraints base_list in 
-      let checked_excluded_constraints = Constraint.cleanup_list(
-         List.filter (check_excluded_constraint base checked_max_width ~checked_added_constraints)
-         ( excluded_full_constraints)
-      ) base_list in 
+      let checked_added_constraints = Constraint.cleanup_list added_constraints base_list in 
       {
         base_set = base;
         max_width = checked_max_width;
-        excluded_full_constraints = checked_excluded_constraints;
-        added_partial_constraints = checked_added_constraints;
+        added_constraints = checked_added_constraints;
      } ;; 
   
 
-  let exclude_full_arithmetic_progression pt constraint_to_be_excluded = 
-    let new_excluded_fcs = constraint_to_be_excluded :: pt.excluded_full_constraints in 
-    constructor pt.base_set 
-     ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_fcs
-       ~added_partial_constraints:(pt.added_partial_constraints);;
-   
-  let exclude_partial_arithmetic_progression pt constraint_to_be_excluded = 
-    let new_added_pcs = 
-    List.filter (fun c -> c <> constraint_to_be_excluded) 
-       pt.added_partial_constraints in 
-    constructor pt.base_set 
-     ~max_width:pt.max_width 
-      ~excluded_full_constraints:pt.excluded_full_constraints
-       ~added_partial_constraints:new_added_pcs;;
+  
    
   let remove pt vertices_to_be_removed =
     let new_base = Finite_int_set.remove pt.base_set vertices_to_be_removed 
     and selector = List.filter (
         fun (C l) -> i_does_not_intersect l vertices_to_be_removed
     ) in 
-    let new_excluded_pcs = selector pt.excluded_full_constraints 
-    and new_added_pcs = selector pt.added_partial_constraints in  
+    let new_added_pcs = selector pt.added_constraints in  
     constructor new_base 
      ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_pcs
-       ~added_partial_constraints:new_added_pcs;; 
+       ~added_constraints:new_added_pcs;; 
 
   let left_complementary_pairs domain (W max_w) j = 
     let v_max = List.hd(List.rev domain) in 
@@ -419,32 +393,28 @@ module Point = struct
            if i_mem j l 
            then Some(i_outsert j l) 
            else None  
-     ) pt.added_partial_constraints) ;; 
+     ) pt.added_constraints) ;; 
 
   
   let translate t pt =   
      let new_base = Finite_int_set.translate t pt.base_set in 
-     let new_full = Image.image (fun (C l) ->
+     let new_partial = Image.image (fun (C l) ->
         C(Image.image ((+) t) l)
-     ) pt.excluded_full_constraints
-     and new_partial = Image.image (fun (C l) ->
-        C(Image.image ((+) t) l)
-     ) pt.added_partial_constraints
+     ) pt.added_constraints
      in  
      {
         base_set = new_base;
         max_width = pt.max_width;
-        excluded_full_constraints = new_full;
-        added_partial_constraints = new_partial;
+        added_constraints = new_partial;
      } ;; 
    
    let subset_is_admissible pt subset =
       ((Highest_constraint.below_maximal_width 
-       pt.max_width pt.excluded_full_constraints subset) 
+       pt.max_width [] subset) 
        =None) && 
        (List.for_all (fun (C l)->
          not(i_is_included_in l subset)
-       ) pt.added_partial_constraints);;
+       ) pt.added_constraints);;
 
     let complements pt j = 
      let domain = Finite_int_set.to_usual_int_list pt.base_set 
@@ -457,10 +427,7 @@ module Point = struct
 
    let force_one_vertex pt vertex_to_be_forced =
     let new_base = Finite_int_set.remove pt.base_set [vertex_to_be_forced] in 
-    let new_excluded_pcs = List.filter (
-        fun (C l) -> not(i_mem vertex_to_be_forced l)
-    )  pt.excluded_full_constraints 
-    and new_added_pcs = complements pt vertex_to_be_forced in  
+    let new_added_pcs = complements pt vertex_to_be_forced in  
     if List.mem [] new_added_pcs 
     then raise(Excessive_forcing_reached)
     else 
@@ -470,13 +437,12 @@ module Point = struct
     and retained_added_pcs = 
        List.filter_map(fun ( C l)-> 
          if not(i_mem vertex_to_be_forced l) then Some l else None) 
-       pt.added_partial_constraints in 
+       pt.added_constraints in 
     let final_added_pcs = Image.image(fun l-> C l) 
        (il_merge retained_added_pcs non_automatic) in 
     let draft = constructor new_base 
      ~max_width:pt.max_width 
-      ~excluded_full_constraints:new_excluded_pcs
-       ~added_partial_constraints:final_added_pcs in 
+       ~added_constraints:final_added_pcs in 
     if mandatory_elements = []
     then draft
     else remove draft mandatory_elements;;
@@ -507,13 +473,9 @@ module Point = struct
    if trial2 <> Total_ordering_result_t.Equal then trial2 else 
    let trial3 = Total_ordering.silex_for_intlists scr2 scr1 in 
    if trial3 <> Total_ordering_result_t.Equal then trial3 else  
-   let ill_order = Total_ordering.silex_compare il_order in 
-   let efc1 = Image.image (fun (C l)->l) pt1.excluded_full_constraints 
-   and efc2 = Image.image (fun (C l)->l) pt2.excluded_full_constraints in 
-   let trial4 = ill_order efc1 efc2 in 
-   if trial4 <> Total_ordering_result_t.Equal then trial4 else  
-   let apc1 = Image.image (fun (C l)->l) pt1.added_partial_constraints 
-   and apc2 = Image.image (fun (C l)->l) pt2.added_partial_constraints in 
+   let ill_order = Total_ordering.silex_compare il_order in  
+   let apc1 = Image.image (fun (C l)->l) pt1.added_constraints 
+   and apc2 = Image.image (fun (C l)->l) pt2.added_constraints in 
    ill_order apc1 apc2 ;;    
    
   let decompose_wrt_translation pt =
@@ -528,21 +490,56 @@ module Point = struct
     Total_ordering.for_integers d1 d2  
   ) : point Total_ordering_t.t) ;; 
 
+  let three_term_arithmetic_progression_opt (C l) =
+    if List.length(l)<>3 then None else 
+    let nt = (fun k ->List.nth l (k-1)) in 
+    let d1 =nt(2)-nt(1) and d2 =nt(3)-nt(2) in 
+    if (d1<>d2)||(d1<=0) then None else 
+    Some(nt(1),d1) ;;      
+    
+  let exclude pt cstr = 
+   let old_ac = pt.added_constraints in 
+    if List.mem cstr pt.added_constraints
+    then {pt with 
+     added_constraints = List.filter(fun t->t<>cstr) old_ac}
+    else 
+    match three_term_arithmetic_progression_opt cstr with 
+    None -> pt 
+    |(Some(start,ratio)) ->
+        let (C l) =cstr 
+        and base = Finite_int_set.to_usual_int_list pt.base_set 
+        and (W w) = pt.max_width in 
+        if not(i_is_included_in l base)||(ratio>w) then pt else
+        if ratio <> w then raise(Exclusion_not_implemented(pt,cstr)) else
+        let n = Finite_int_set.max pt.base_set in 
+        let upper_constraints = List.filter_map (
+          fun i->
+            let l2 = [i;i+w;i+2*w] in 
+            if not(i_is_included_in l2 base)||(i=start)
+            then None   
+            else Some (C l2)
+        )(Int_range.range (List.hd base) n) in 
+        {
+          pt with
+        max_width = (W(w-1));
+        added_constraints = upper_constraints;
+        } ;; 
+    
+
+
   end ;;
 
   
   let complements = Private.complements ;; 
 
   let constraint_can_apply pt cstr =
-     if List.mem cstr pt.added_partial_constraints 
+     if List.mem cstr pt.added_constraints 
      then true 
      else 
      if not(Constraint.is_an_arithmetic_progression cstr)
      then false 
      else 
-     if List.mem cstr pt.excluded_full_constraints 
-     then false 
-     else Finite_int_set.constraint_can_apply pt.base_set cstr ;; 
+     Finite_int_set.constraint_can_apply pt.base_set cstr ;; 
   
 
   let constructor = Private.constructor ;; 
@@ -566,31 +563,20 @@ module Point = struct
 
   let decompose_wrt_translation = Private.decompose_wrt_translation ;;  
 
-  let exclude pt constraint_to_be_excluded = 
-    if Private.check_excluded_constraint 
-        pt.base_set pt.max_width 
-        ~checked_added_constraints:[] 
-        constraint_to_be_excluded
-    then Private.exclude_full_arithmetic_progression pt constraint_to_be_excluded
-    else Private.exclude_partial_arithmetic_progression pt constraint_to_be_excluded ;;
- 
+  let exclude = Private.exclude ;;
+
   let force = Private.force ;; 
  
   let highest_constraint_opt pt =
-    if pt.added_partial_constraints <> []
-    then Some(List.hd(List.rev(pt.added_partial_constraints)))
+    if pt.added_constraints <> []
+    then Some(List.hd(List.rev(pt.added_constraints)))
     else 
     let (W w) = pt.max_width in 
     if w < 1 then None else  
     let domain = Finite_int_set.to_usual_int_list pt.base_set in 
     Highest_constraint.below_maximal_width 
-       pt.max_width pt.excluded_full_constraints domain ;;
-
-  let impose pt (C l) = 
-    let domain = Finite_int_set.to_usual_int_list pt.base_set in 
-    if not(i_is_included_in l domain)
-    then pt
-    else Private.force (exclude pt (C l)) l ;;  
+       pt.max_width [] domain ;;
+ 
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
@@ -1198,13 +1184,13 @@ let pre_helper_for_solution_chooser old_f (pt,m,obtained_so_far,to_be_treated) =
      |v::others -> 
       let beheaded_pt = Point.remove pt [v] in  
       (
-       match Hashtbl.find_opt hashtbl_for_canonical_solutions pt with 
+       match Hashtbl.find_opt hashtbl_for_canonical_solutions beheaded_pt with 
        (Some beheaded_csol) ->
          let csol = beheaded_csol @ (v::obtained_so_far) in 
          if Point.subset_is_admissible pt csol 
          then csol     
          else 
-         if (List.length beheaded_csol)<m    
+         if (List.length beheaded_csol) = m    
          then let csol2 = beheaded_csol @ (obtained_so_far) in
               if Point.subset_is_admissible pt csol2 
               then csol2     
@@ -1384,37 +1370,21 @@ end ;;
 module PointConstructor = struct 
 
 let segment 
-   ?imposed_max_width ?rightmost_cut n= 
+   ?imposed_max_width ?(number_of_extra_obstructions=0) n= 
    let default_width = ((n-1)/2) in 
-   let effective_max_width = (
+   let final_width = (
      match imposed_max_width with
       None -> default_width
      |Some(width) -> min width default_width 
    ) in 
-   let maximal_rightmostcut_length = n-2*effective_max_width in
-   let rightmost_cut_length = (
-      match rightmost_cut with
-      None -> 0
-     |Some(r) -> max 0 (min r maximal_rightmostcut_length)
-   ) in 
-   let (final_width,final_constraints)= (
-      if (rightmost_cut_length = maximal_rightmostcut_length)
-      then (* the whole upper level has been erased,
-              we go down one level *)
-              (effective_max_width-1,[])
-      else (effective_max_width,
-            Int_range.scale(fun t->
-              let p = n + rightmost_cut_length -t in 
-              C[p-2*effective_max_width;p-effective_max_width;p]
-            ) 1 rightmost_cut_length
-            )
-   ) in 
-{
-  base_set = FIS (n, []);
-  max_width = (W final_width);
-  excluded_full_constraints = final_constraints; 
-  added_partial_constraints = []
-} ;; 
+   let extra_obstructions = Int_range.scale (
+      fun k->C[k;k+(final_width+1);k+2*(final_width+1)]
+   ) 1 number_of_extra_obstructions in 
+  {
+   base_set = FIS (n, []);
+   max_width = (W final_width);
+   added_constraints = extra_obstructions
+  } ;; 
 
 end ;; 
 
@@ -1424,9 +1394,8 @@ module Private = struct
 
 let chosen_limit = 200 ;; 
 
-let p2 n = PointConstructor.segment n ~imposed_max_width:2;;
-let p3 n = PointConstructor.segment n ~imposed_max_width:3;;
-let pr3 n r = Point.remove (p3 n) r ;;
+let p2 n o = PointConstructor.segment n 
+    ~imposed_max_width:2 ~number_of_extra_obstructions:o;;
 
 let d = Deduce.using_decomposition;;
 let e = One_more_small_step.eval_opt ~without_remembering:false ;;
@@ -1446,15 +1415,20 @@ let uf ?(extra_solutions=[]) pt cstr =
 let fi = Finite_int_set.interval ;;
 let fu = Finite_int_set.of_usual_int_list ;;
 
+let cs = BuiltOnEval.canonical_solution ;;
+
 let u3 n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5]) 
   (Int_range.range 1 n) ;;
+
+let ecs pt = let temp = e pt in (temp,cs pt) ;;
 
 let current_bound = 100;;  
 
 end ;;
 
+open Private ;;
 
-
+for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
 
 (*
 

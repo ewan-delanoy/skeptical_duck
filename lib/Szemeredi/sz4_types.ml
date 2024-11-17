@@ -19,8 +19,7 @@ type fan = F of int list list ;;
 type point = {
     base_set : finite_int_set;
     max_width: width;
-    excluded_full_constraints: constraint_t list;
-    added_partial_constraints: constraint_t list
+    added_constraints: constraint_t list
 } ;;
 
 type mold = {
