@@ -1117,7 +1117,7 @@ module Private = struct
 let lazy_mode = ref false ;;
 
 let eval pt = 
-   match One_more_small_step.lookup_opt pt with 
+   match One_more_small_step.eval_opt pt with 
    (Some answer) -> answer 
    |None -> 
       if !lazy_mode 
@@ -1368,9 +1368,18 @@ let segment
       None -> default_width
      |Some(width) -> min width default_width 
    ) in 
-   let extra_obstructions = Int_range.scale (
-      fun k->C[k;k+(final_width+1);k+2*(final_width+1)]
-   ) 1 number_of_extra_obstructions in 
+   let outer_width = (
+     match imposed_max_width with
+      None -> default_width
+     |Some(width) -> width 
+   ) in 
+   let extra_obstructions = List.filter_map (
+      fun k->
+         let m = k+2*(outer_width+1) in 
+         if m<=n 
+         then Some(C[k;k+(outer_width+1);m])
+         else None
+   ) (Int_range.range 1 number_of_extra_obstructions) in 
   {
    base_set = FIS (n, []);
    max_width = (W final_width);
@@ -1417,18 +1426,21 @@ let current_bound = 100;;
 
 end ;;
 
-(*
+
 open Private ;;
+
+BuiltOnEval.set_lazy_mode true ;;
 
 for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
 
-(* computing e(pr3 n []) *)
+for k=3 to 6 do let _ =ecs(p2 k 1) in () done ;;
 
-for k=3 to 6 do let _ =e(pr3 k []) in () done ;;
+d (Point.remove(p2 7 1) [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
+f (p2 7 1) [1;4;7] ;;
 
-(* computing e(pr3 7 []) *)
-d (pr3 7 [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
-f (pr3 7 []) [1;4;7] ;;
+BuiltOnEval.set_lazy_mode false ;;
+
+(*
 
 (* computing e(pr3 8 []) *)
 d (pr3 8 [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]) ;;
