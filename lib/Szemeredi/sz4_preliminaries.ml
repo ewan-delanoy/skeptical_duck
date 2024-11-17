@@ -29,7 +29,7 @@ type mold = Sz4_types.mold = {
 type explanation = Sz4_types.explanation = 
    Free
   |Extension 
-  |Filled_complement of int * int 
+  |Filled_complement of int list 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
 
@@ -824,8 +824,7 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    let opt2 = check_filled_complement_case pt_with_1 n beheaded_mold_opt in 
    if opt2 <> None
    then let (complement,mold) = Option.get opt2 in 
-        let nt = (fun k->List.nth complement (k-1)) in 
-        let _ = add_explanation pt_with_1 (Filled_complement(nt 1,nt 2)) in 
+        let _ = add_explanation pt_with_1 (Filled_complement(complement)) in 
         Some mold
    else None ;;
 
@@ -1277,8 +1276,7 @@ let filled_complement_opt pt =
    ) complements with 
    None -> None 
    |(Some c) -> 
-     let nt = (fun k->List.nth c (k-1)) in 
-     Some(Filled_complement(nt 1,nt 2));;   
+     Some(Filled_complement(c));;   
 
 let decomposition_opt pt =
    let decs = distinguished_parts pt in 
@@ -1322,7 +1320,7 @@ let adapt_to_subset pt fis =
 let direct_parents pt = match analize pt with 
    Free -> []
   |Extension 
-  |Filled_complement(_,_)-> let n = Finite_int_set.max (pt.base_set) in 
+  |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
   |Decomposition(fis1,fis2,_sol) -> 
       Image.image (adapt_to_subset pt) [fis1;fis2]

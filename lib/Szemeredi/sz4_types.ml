@@ -30,7 +30,7 @@ type mold = {
 type explanation =
    Free
   |Extension 
-  |Filled_complement of int * int 
+  |Filled_complement of int list 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int ;; 
 
