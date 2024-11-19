@@ -10,8 +10,7 @@ module Private = struct
 
   let work_path = 
           home ^ 
-        "/Teuliou/OCaml/skeptical_duck/nonml_files/"^
-        "nongithubbed_nonml_files/pdf_workspace/" ;;
+        "/Teuliou/Printabler/" ;;
 
   let commands_for_number_of_pages_in_pdf ap = 
     let temp_file = work_path ^ "temp.txt" in 

@@ -1429,59 +1429,59 @@ open Private ;;
 
 BuiltOnEval.set_lazy_mode true ;;
 
+(*
 for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
 
 for k=3 to 6 do let _ =ecs(p2 k 1) in () done ;;
 
 d (Point.remove(p2 7 1) [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
 f (p2 7 1) [1;4;7] ;;
+cs(p2 7 1);;
 
-BuiltOnEval.set_lazy_mode false ;;
+for k=8 to current_bound do let _ =ecs(p2 k 1) in () done ;;
+
+d (Point.remove(p2 8 2) [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]);;
+d (Point.remove(p2 8 2) [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) ;;
+f (Point.remove(p2 8 2) [5]) [1;4;7] ;;
+
+d (Point.remove(p2 8 2) [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) ;;
+d (Point.remove(p2 8 2) [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) ;;
+f (Point.remove(p2 8 2) [2]) [1;4;7] ;;
+
+f (p2 8 2) [2;5;8] ;;
+cs(p2 8 2) ;;
+for k=9 to current_bound do let _ =ecs(p2 k 2) in () done ;;
+
+for k=9 to current_bound do let _ =ecs(p2 k 3) in () done ;;
+
+for k=10 to current_bound do let _ =ecs(p2 k 4) in () done ;;
+
+for k=11 to current_bound do let _ =ecs(p2 k 5) in () done ;;
+
+for k=12 to current_bound do let _ =ecs(p2 k 6) in () done ;;
+
+for k=13 to current_bound do let _ =ecs(p2 k 7) in () done ;;
+
+for k=14 to current_bound do let _ =ecs(p2 k 8) in () done ;;
+
+d (p2 15 9) (fi 1 8,fi 9 15,u3 15) ;;
+
+for k=16 to current_bound do let _ =ecs(p2 k 9) in () done ;;
+
+d (p2 16 10) (fi 1 8,fi 9 16,u3 16) ;;
+
+for k=17 to current_bound do let _ =ecs(p2 k 10) in () done ;;
+*)
 
 (*
 
-(* computing e(pr3 8 []) *)
-d (pr3 8 [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]) ;;
-d (pr3 8 [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) ;;
-d (pr3 8 [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) ;;
-d (pr3 8 [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) ;;
-f (pr3 8 [5]) [1;4;7] ;;
-f (pr3 8 [2]) [1;4;7] ;;
-f (pr3 8 []) [2;5;8] ;;
+for k=17 to current_bound do let _ =ecs(p2 k 10) in () done ;;
 
-for j= 1 to ((current_bound/8)+1) do
-ue(pr3 (8*j+1) []);
-ue(pr3 (8*j+2) []);
-ud (pr3 (8*j+3) []) (fi 1 (8*j),fi (8*j+1) (8*j+3),u3(8*j+3)) ;
-ue(pr3 (8*j+4) []);
-ue(pr3 (8*j+5) []);
-ud (pr3 (8*j+6) []) (fi 1 (8*j+3),fi (8*j+4) (8*j+6),u3(8*j+6)) ;
-ud (pr3 (8*j+7) []) (fi 1 (8*j),fi (8*j+1) (8*j+7),u3(8*j+7)) ;
-ud (pr3 (8*j+8) []) (fi 1 (8*j),fi (8*j+1) (8*j+8),u3(8*j+7)) ;
-done;
-
-f (pr3 4 [1]) [2;3;4] ;;
-d (pr3 5 [2]) (fi 1 1,fi 3 5,[1;3;4]) ;;
-d (pr3 6 [3]) (fi 1 2,fi 4 6,[1;2;4;5]) ;;
-d (pr3 7 [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
-f (pr3 8 [5]) [2;3;4] ;;
-   f (pr3 7 [5;6]) [1;4;7] ;;
-   f (pr3 7 [2;6]) [1;4;7] ;;
-   d (pr3 7 [6]) (fi 2 2,fu [1;3;4;5;7],[1;2;4;5]) ;;
-   e (pr3 8 [5;6]) ;;
-   e (pr3 8 [2;6]) ;;
-   f (pr3 8 [6])   [2;5;8] ;;
-e (pr3 9 [6]) ;;
-   f (pr3 8 [7])   [2;5;8] ;;
-   e (pr3 9 [7]) ;;
-e (pr3 10 [7]) ;;
-d (pr3 11 [8]) (fi 1 7,fi 9 11,u3 11) ;;
-d (pr3 (8*1+4) [8*1+1]) (fi 1 (8*1),  fi (8*1+2) (8*1+4),(u3 8)@[10;11]) ;;
-d (pr3 (8*1+5) [8*1+2]) (fi 1 (8*1+1),fi (8*1+3) (8*1+5),(u3 9)@[11;12]) ;;
-d (pr3 (8*1+6) [8*1+3]) (fi 1 (8*1+2),fi (8*1+4) (8*1+6),(u3 10)@[12;13]) ;;
-d (pr3 (8*1+7) [8*1+4]) (fi 1 (8*1+3),fi (8*1+5) (8*1+7),(u3 10)@[13;14]) ;;
 
 *)
+BuiltOnEval.set_lazy_mode false ;;
+
+
 
 end ;;
 
