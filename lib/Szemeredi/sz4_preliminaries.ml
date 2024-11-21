@@ -795,6 +795,7 @@ let check_filled_complement_case pt n beheaded_mold_opt =
        Some(complement,Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
+
 let lower_level_eval_on_pretranslated_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
@@ -808,6 +809,46 @@ let lower_level_eval_opt pt =
 
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
+
+let prefilled_decomposers = [
+   (FIS(7,[]),[1;2;4;5]);
+   (FIS(8,[]),[1;2;4;5])
+] ;;
+
+let check_prefilled_decomposition pt_with_1 n (fis3,sol3)= 
+   let n3 = Finite_int_set.max fis3 in 
+   let fis2 = Finite_int_set.translate (n-n3) fis3 
+   and sol2 = Image.image (fun t->t+n-n3) sol3 in 
+   let dom2 = Finite_int_set.to_usual_int_list fis2 
+   and dom = Finite_int_set.to_usual_int_list pt_with_1.base_set in 
+   let dom1 = i_setminus dom dom2 in 
+   let fis1 = Finite_int_set.of_usual_int_list dom1 in 
+   let pt1 = Point.remove pt_with_1 dom2 
+   and pt2 = Point.restrict pt_with_1 dom2 in 
+   let opt1 = lower_level_eval_opt pt1 
+   and opt2 = lower_level_eval_opt pt2 in 
+   if (opt1=None)||(opt2=None) then None else 
+   let mold1 = Option.get opt1 and mold2 = Option.get opt2 in 
+   if not(List.mem sol2 mold2.solutions) then None else 
+   match List.find_map (
+     fun sol1 -> let sol = i_merge sol1 sol2 in 
+     if Point.subset_is_admissible pt_with_1 sol 
+     then Some sol 
+     else None
+   ) mold1.solutions with 
+   None -> None 
+  |(Some sol)->
+    let mold = Mold.in_decomposition_case mold1 mold2 sol [] in 
+    Some(Decomposition(fis1,fis2,sol),mold)  ;;
+
+
+let check_prefilled_decomposition_case pt_with_1 n = 
+   List.find_map (
+      check_prefilled_decomposition pt_with_1 n
+   )  prefilled_decomposers ;;
+
+
+
 
 let expand_pt_with_1_without_remembering_opt pt_with_1 =
    if Point.is_free pt_with_1 
@@ -826,7 +867,14 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    then let (complement,mold) = Option.get opt2 in 
         let _ = add_explanation pt_with_1 (Filled_complement(complement)) in 
         Some mold
-   else None ;;
+   else 
+   let opt3 = check_prefilled_decomposition_case pt_with_1 n  in 
+   if opt3 <> None
+   then let (expl,mold) = Option.get opt3 in 
+        let _ = add_explanation pt_with_1 expl in 
+        Some mold
+   else    
+   None ;;
 
 let eval_on_pretranslated_and_remember_opt pt_with_1 =
   match List.assoc_opt pt_with_1 (!impatient_ref) with 
@@ -1429,7 +1477,7 @@ open Private ;;
 
 BuiltOnEval.set_lazy_mode true ;;
 
-(*
+
 for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
 
 for k=3 to 6 do let _ =ecs(p2 k 1) in () done ;;
@@ -1450,35 +1498,14 @@ f (Point.remove(p2 8 2) [2]) [1;4;7] ;;
 
 f (p2 8 2) [2;5;8] ;;
 cs(p2 8 2) ;;
+
 for k=9 to current_bound do let _ =ecs(p2 k 2) in () done ;;
 
-for k=9 to current_bound do let _ =ecs(p2 k 3) in () done ;;
-
-for k=10 to current_bound do let _ =ecs(p2 k 4) in () done ;;
-
-for k=11 to current_bound do let _ =ecs(p2 k 5) in () done ;;
-
-for k=12 to current_bound do let _ =ecs(p2 k 6) in () done ;;
-
-for k=13 to current_bound do let _ =ecs(p2 k 7) in () done ;;
-
-for k=14 to current_bound do let _ =ecs(p2 k 8) in () done ;;
-
-d (p2 15 9) (fi 1 8,fi 9 15,u3 15) ;;
-
-for k=16 to current_bound do let _ =ecs(p2 k 9) in () done ;;
-
-d (p2 16 10) (fi 1 8,fi 9 16,u3 16) ;;
-
-for k=17 to current_bound do let _ =ecs(p2 k 10) in () done ;;
-*)
-
-(*
-
-for k=17 to current_bound do let _ =ecs(p2 k 10) in () done ;;
+for j=3 to current_bound-6 do
+   for k=(j+6) to current_bound do let _ =ecs(p2 k j) in () done
+done ;;   
 
 
-*)
 BuiltOnEval.set_lazy_mode false ;;
 
 
