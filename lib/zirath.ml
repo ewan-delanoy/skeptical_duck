@@ -6,7 +6,7 @@ A simplified version of the Zarith library.
 
 *)
 
-module Private = struct 
+module Private2 = struct 
 
 module Z = struct 
 
@@ -39,6 +39,39 @@ let print_out (fmt:Format.formatter) (I(x))=
    Format.fprintf fmt "@[%s@]" (string_of_int x);;  
 
 end ;;
+
+end ;;
+
+module type Z_TYPE =
+      sig
+        type t 
+        val add : t -> t -> t
+
+        val equals : t -> t -> bool
+        
+        val div : t -> t -> t
+        val gcd : t -> t -> t
+
+        val geq : t -> t -> bool
+        val leq : t -> t -> bool
+        val of_int : int -> t
+        val of_string : string -> t
+        val one : t
+        val opposite : t -> t
+
+        val mul : t -> t -> t
+
+        val print_out : Format.formatter -> t -> unit
+        val sub : t -> t -> t
+        val to_string : t -> string
+        val zero : t
+        
+end ;;
+
+module Z = (Private2.Z:Z_TYPE) ;;
+
+
+module Private = struct
 
 module Q = struct 
 
@@ -111,6 +144,27 @@ let geq q1 q2 = Z.geq
  (Z.mul q1.den q2.num)
  ;;  
 
+let floor q = 
+  if Z.equals q.den Z.one
+  then q.num  
+  else 
+  if Z.leq q.num Z.zero 
+  then let onum = Z.opposite q.num in 
+       let ofloor = Z.div onum q.den in 
+       Z.opposite(Z.add ofloor Z.one)
+  else Z.div q.num q.den ;;
+  
+let ceil q = 
+  if Z.equals q.den Z.one
+  then q.num  
+  else 
+  if Z.leq q.num Z.zero 
+  then let onum = Z.opposite q.num in 
+       let ofloor = Z.div onum q.den in 
+       Z.opposite(ofloor)
+  else Z.add (Z.div q.num q.den) Z.one ;;  
+  
+
 let print_out (fmt:Format.formatter) q=
    Format.fprintf fmt "@[%s@]" (to_string q);;  
 
@@ -120,45 +174,20 @@ end ;;
 
 end ;;
 
-module type Z_TYPE =
-      sig
-        type t 
-        val add : t -> t -> t
-
-        val equals : t -> t -> bool
-        
-        val div : t -> t -> t
-        val gcd : t -> t -> t
-
-        val geq : t -> t -> bool
-        val leq : t -> t -> bool
-        val of_int : int -> t
-        val of_string : string -> t
-        val one : t
-        val opposite : t -> t
-
-        val mul : t -> t -> t
-
-        val print_out : Format.formatter -> t -> unit
-        val sub : t -> t -> t
-        val to_string : t -> string
-        val zero : t
-        
-end ;;
-
-module Z = (Private.Z:Z_TYPE) 
 
 module type Q_TYPE =
       sig
         
         exception Zero_denominator 
 
-        type t  
+        type t = {den: Z.t ; num: Z.t}
         val add : t -> t -> t
 
+        val ceil : t -> Z.t
         val div : t -> t -> t
         val equals : t -> t -> bool
         
+        val floor : t -> Z.t 
         val geq : t -> t -> bool
 
         val inv : t -> t 
