@@ -752,9 +752,17 @@ let max_size = Private.max_size ;;
 
 end ;;  
 
+module Level_one = struct 
+  
+
+end ;;   
+
+module Precomputed = struct 
 
 
+let eval_opt (pt:point) = None ;;  
 
+end ;;   
 
 
 

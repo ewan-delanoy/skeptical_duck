@@ -1,14 +1,110 @@
 (************************************************************************************************************************
-Snippet 150 : 
+Snippet 152 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 149 : Using the Coherent_pdf module
+Snippet 151 : Using the Zarith module
 ************************************************************************************************************************)
 
+module Snip151=struct
+
+
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 150 : Check a successor function
+************************************************************************************************************************)
+module Snip150=struct
+
+let order1 x y =
+   let trial1= Total_ordering.standard (abs x) (abs y) in 
+   if trial1<> Total_ordering_result_t.Equal then trial1 else 
+   if x = y then  Total_ordering_result_t.Equal else 
+   Total_ordering.standard y x ;; 
+
+let see1 = Ordered.sort order1 (Int_range.range (-5) 5) ;;   
+
+let measure (x1,x2,x3) = Max.list (Image.image abs [x1;x2;x3]) ;;
+
+let order2 tx ty =
+   let trial1= Total_ordering.standard (measure tx) (measure ty) in 
+   if trial1<> Total_ordering_result_t.Equal then trial1 else 
+   let (x1,x2,x3) = tx and (y1,y2,y3) = ty in 
+   let trial2= order1 x1 y1 in 
+   if trial2<> Total_ordering_result_t.Equal then trial2 else  
+   let trial3= order1 x2 y2 in 
+   if trial3<> Total_ordering_result_t.Equal then trial3 else   
+   order1 x3 y3;; 
+
+let u1 = Cartesian.cube (Int_range.range (-11) 11) ;; 
+
+let u2 =Ordered.sort order2 u1 ;;
+
+let sp k = List.filter (fun t->measure(t)=k) u2 ;;
+
+let ml k = List.hd(List.rev (sp k)) ;; 
+
+let depth (x1,x2,x3) =
+   let m = measure (x1,x2,x3) in 
+   if abs(x1)=m then 1 else 
+   if abs(x2)=m then 2 else  3 ;;
+
+let u3 = List_again.universal_delta_list u2 ;;   
+
+let sp1 k = List.filter (fun (t1,t2)->(measure t1=k)&&(depth t1=1)) u3 ;;
+
+let sp2 k = List.filter_map (fun (t1,t2)->
+  let (x1,x2,x3) = t1 in 
+  if (measure t1=k)&&(x3=(-k))
+  then Some((x1,x2),t2)  
+  else None  ) u3 ;;
+
+
+let successor_for_order1 k = 
+   if k=0 then 1 else 
+   if k>0 then (-k) else (-k)+1 ;; 
+
+
+
+let adjust1 m x1  =
+  let y1 = successor_for_order1 x1 in 
+  if Max.list [abs y1] = m 
+  then 0
+  else m ;;  
+
+let adjust2 m x1 x2 =
+  let y2 = successor_for_order1 x2 in 
+  if Max.list [abs x1;abs y2] = m 
+  then 0
+  else m ;;  
+
+
+
+let successor (x1,x2,x3) =
+  let m = measure (x1,x2,x3) in 
+  if x3<>(-m) then (x1,x2,successor_for_order1 x3) else 
+  if x2<>(-m) then (x1,successor_for_order1 x2,adjust2 m x1 x2) else 
+  if x1<>(-m) then (successor_for_order1 x1,0,adjust1 m x1) else   
+  (0,0,m+1) ;;  
+       
+let check_successors = List.filter (
+   fun (t1,t2) -> t2 <> successor t1
+) u3 ;; 
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 149 : Using the Coherent_pdf module
+************************************************************************************************************************)
 module Snip149=struct
 
 let ap1 = Absolute_path.of_string (
