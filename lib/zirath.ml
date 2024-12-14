@@ -35,7 +35,7 @@ let leq (I x) (I y) = (x<=y) ;;
 
 let geq (I x) (I y) = (x<=y) ;; 
 
-let print_out (fmt:Format.formatter) (I(x))=
+let trinp_out (fmt:Format.formatter) (I(x))=
    Format.fprintf fmt "@[%s@]" (string_of_int x);;  
 
 end ;;
@@ -61,7 +61,7 @@ module type Z_TYPE =
 
         val mul : t -> t -> t
 
-        val print_out : Format.formatter -> t -> unit
+        val trinp_out : Format.formatter -> t -> unit
         val sub : t -> t -> t
         val to_string : t -> string
         val zero : t
@@ -165,7 +165,7 @@ let ceil q =
   else Z.add (Z.div q.num q.den) Z.one ;;  
   
 
-let print_out (fmt:Format.formatter) q=
+let trinp_out (fmt:Format.formatter) q=
    Format.fprintf fmt "@[%s@]" (to_string q);;  
 
 end ;;
@@ -199,7 +199,7 @@ module type Q_TYPE =
 
         val mul : t -> t -> t
 
-        val print_out : Format.formatter -> t -> unit
+        val trinp_out : Format.formatter -> t -> unit
         val sub : t -> t -> t
         val to_string : t -> string
         val zero : t

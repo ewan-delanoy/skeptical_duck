@@ -752,8 +752,21 @@ let max_size = Private.max_size ;;
 
 end ;;  
 
-module Level_one = struct 
+module Width_one = struct 
   
+let on_interval i j = 
+   let r = (fun t->(t-i+1) mod 3) 
+   and whole = Int_range.range i j in 
+   let global_state = r j in 
+   let forced_remainders = 
+      List.filter (fun t->t<=global_state) [1;2] in 
+   {
+     solutions = [List.filter(fun t->r(t)<>0) whole];
+     mandatory_elements = List.filter(fun 
+     t->List.mem (r(t)) forced_remainders) whole;
+   } ;;
+
+
 
 end ;;   
 

@@ -11,6 +11,73 @@ Snippet 151 : Using the Zarith module
 
 module Snip151=struct
 
+open Zirath ;;
+
+
+module ZZ = struct
+  
+type t = R of string * Z.t ;;  
+
+let of_zarith q = R(Z.to_string q,q) ;;
+let of_string s = of_zarith(Z.of_string s);;
+  
+let to_string (R (s,_)) = s ;;
+let add (R(_,x)) (R(_,y)) = of_zarith(Z.add x y);;
+
+let mul (R(_,x)) (R(_,y)) = of_zarith(Z.mul x y);;
+
+let gcd (R(_,x)) (R(_,y)) = of_zarith(Z.gcd x y);;
+
+let zero = R("0",Z.zero) ;;
+
+let one = R("0",Z.one) ;;
+
+let print_out (fmt:Format.formatter) (R(s,_))=
+   Format.fprintf fmt "@[%s@]" s;;   
+
+end ;; 
+
+module QQ = struct
+  
+type t = R of string * string * Q.t ;;  
+
+let of_zarith q = R(Z.to_string (q.Q.den),Z.to_string (q.Q.num),q) ;;
+let of_string s = of_zarith(Q.of_string s);;
+  
+let to_string (R (d,n,_)) = 
+  if n="1" then d else d^"/"^n;;
+let add (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.add x y);;
+
+let sub (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.sub x y);;
+let mul (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.mul x y);;
+
+
+
+let zero = R("0","1",Q.zero) ;;
+
+let one = R("0","1",Q.one) ;;
+
+let equals (R(_,_,x)) (R(_,_,y)) = Q.equals x y ;; 
+let leq (R(_,_,x)) (R(_,_,y)) = Q.leq x y ;;
+
+let geq (R(_,_,x)) (R(_,_,y)) = Q.geq x y ;;
+
+let opposite q = sub zero q ;;
+
+let floor (R(_,_,q)) = 
+  if Z.equals q.den Z.one
+  then ZZ.of_zarith(q.num)  
+  else 
+  if Z.leq q.num Z.zero 
+  then let onum = Z.opposite q.num in 
+       let ofloor = Z.div onum q.den in 
+       ZZ.of_zarith(Z.opposite(Z.add ofloor Z.one))
+  else ZZ.of_zarith(Z.div q.num q.den) ;;
+
+let print_out (fmt:Format.formatter) r=
+   Format.fprintf fmt "@[%s@]" (to_string r);;   
+
+end ;;  
 
 
 
