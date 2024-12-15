@@ -754,6 +754,7 @@ end ;;
 
 module Width_one = struct 
   
+module Private = struct   
 let on_interval i j = 
    let r = (fun t->(t-i+1) mod 3) 
    and whole = Int_range.range i j in 
@@ -780,6 +781,10 @@ let on_arbitrary_set l =
       (Image.image (fun mold->mold.mandatory_elements) temp1);
    } ;;
 
+end ;;   
+
+let eval fis = Private.on_arbitrary_set 
+  (Finite_int_set.to_usual_int_list fis) ;;
 
 end ;;   
 
