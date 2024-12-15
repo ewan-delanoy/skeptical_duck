@@ -791,7 +791,10 @@ end ;;
 module Precomputed = struct 
 
 
-let eval_opt (pt:point) = None ;;  
+let eval_opt (pt:point) = 
+   if (pt.max_width = W 1)&&(pt.added_constraints=[])
+   then Some(Width_one.eval pt.base_set)  
+   else None ;;  
 
 end ;;   
 
@@ -1514,6 +1517,32 @@ end ;;
 
 open Private ;;
 
+let initialize () = 
+ let _ = BuiltOnEval.set_lazy_mode true in 
+ let _ = for k=3 to current_bound do let _ =ecs(p2 k 0) in () done in 
+ let _ = for k=3 to 6 do let _ =ecs(p2 k 1) in () done in 
+ let _ = d (Point.remove(p2 7 1) [4]) (fi 1 3,fi 5 7,[1;2;5;6]) in 
+ let _ = f (p2 7 1) [1;4;7] in
+ let _ = cs(p2 7 1) in 
+ let _ = for k=8 to current_bound do let _ =ecs(p2 k 1) in () done in 
+ let _ = d (Point.remove(p2 8 2) [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]) in 
+ let _ = d (Point.remove(p2 8 2) [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) in
+ let _ = f (Point.remove(p2 8 2) [5]) [1;4;7] in 
+ let _ = d (Point.remove(p2 8 2) [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) in
+ let _ = d (Point.remove(p2 8 2) [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) in
+ let _ = f (Point.remove(p2 8 2) [2]) [1;4;7] in 
+ let _ = f (p2 8 2) [2;5;8] in
+ let _ = cs(p2 8 2) in 
+ let _ = for k=9 to current_bound do let _ =ecs(p2 k 2) in () done in 
+ let _=
+ (for j=3 to current_bound-6 do
+   for k=(j+6) to current_bound do let _ =ecs(p2 k j) in () done
+ done)  in
+ BuiltOnEval.set_lazy_mode false ;;
+
+
+(* 
+
 BuiltOnEval.set_lazy_mode true ;;
 
 
@@ -1547,7 +1576,7 @@ done ;;
 
 BuiltOnEval.set_lazy_mode false ;;
 
-
+*)
 
 end ;;
 
