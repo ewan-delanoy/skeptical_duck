@@ -766,6 +766,19 @@ let on_interval i j =
      t->List.mem (r(t)) forced_remainders) whole;
    } ;;
 
+let on_arbitrary_set l =
+   let components = Arithmetic_list.decompose_into_connected_components l in 
+   let temp1 = Image.image (fun (i,j) -> on_interval i j) components in 
+    
+   {
+     solutions = [
+      List.flatten (Image.image (fun mold->
+         List.hd(mold.solutions)) temp1)
+     ];
+     mandatory_elements = 
+      List.flatten 
+      (Image.image (fun mold->mold.mandatory_elements) temp1);
+   } ;;
 
 
 end ;;   
