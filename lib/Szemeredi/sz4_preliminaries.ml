@@ -121,20 +121,7 @@ module Highest_constraint = struct
   let for_exact_width (W w) domain =
      if w<1 then None else for_exact_positive_width (W w) domain (List.rev domain) ;;
 
-  let rec all_for_exact_positive_width (W w)  
-     domain (treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> treated 
-    |p::others ->
-       if p<=2*w then treated else 
-       if (i_is_included_in [p-2*w;p-w] domain)
-       then all_for_exact_positive_width (W w)  domain (C[p-2*w;p-w;p]::treated,others)
-       else all_for_exact_positive_width (W w)  domain (treated,others) ;;    
-       
-  let all_for_exact_width (W w) domain =
-     if w<1 then [] else all_for_exact_positive_width (W w) domain ([],List.rev domain) ;;
-
-
+  
   let rec below_maximal_width (W w) domain =
         match for_exact_width (W w)  domain with 
         Some (cstr) -> Some(cstr)
@@ -142,14 +129,23 @@ module Highest_constraint = struct
            if w<2 then None else 
            below_maximal_width (W (w-1)) domain ;;       
   
+   let effective_max_width base_set proposed_width =
+     match below_maximal_width proposed_width  base_set with 
+     None -> W 0
+     |Some(cstr) -> Constraint.width cstr ;; 
+
+   let compute_max_width_without_help base_set =
+       let a=List.hd base_set and b=List.hd(List.rev base_set) in 
+       effective_max_width base_set (W((b-a)/2)) ;;  
+
   end ;;
 
   let below_maximal_width = Private.below_maximal_width ;;
 
-  let effective_max_width base_set proposed_width =
-     match Private.below_maximal_width proposed_width  base_set with 
-     None -> W 0
-     |Some(cstr) -> Constraint.width cstr ;; 
+  let effective_max_width base_set ?(proposed_width_opt=None) =
+     match proposed_width_opt with 
+     None -> Private.compute_max_width_without_help base_set 
+     |Some(proposed_width) ->  Private.effective_max_width base_set proposed_width ;; 
   
   
 
@@ -230,9 +226,9 @@ module Finite_int_set = struct
 
    let diameter = Private.diameter ;; 
 
-  let effective_max_width fis proposed_width = 
+  let effective_max_width fis ?(proposed_width_opt=None) = 
        Highest_constraint.effective_max_width 
-       (Private.to_usual_int_list fis) proposed_width ;; 
+       (Private.to_usual_int_list fis) ~proposed_width_opt ;; 
 
   let empty_set = Private.empty_set ;;
 
@@ -318,9 +314,10 @@ module Point = struct
   
   
   let constructor base 
-     ~max_width:unchecked_max_width 
+     ?(max_width_opt=None) 
      ~added_constraints = 
-      let checked_max_width = Finite_int_set.effective_max_width base unchecked_max_width in 
+      let checked_max_width = Finite_int_set.effective_max_width 
+         base ~proposed_width_opt:max_width_opt in 
       let base_list = Finite_int_set.to_usual_int_list base in 
       let checked_added_constraints = Constraint.cleanup_list added_constraints base_list in 
       {
@@ -339,7 +336,7 @@ module Point = struct
     ) in 
     let new_added_pcs = selector pt.added_constraints in  
     constructor new_base 
-     ~max_width:pt.max_width 
+     ~max_width_opt:(Some pt.max_width) 
        ~added_constraints:new_added_pcs;; 
 
   let left_complementary_pairs domain (W max_w) j = 
@@ -440,7 +437,7 @@ module Point = struct
     let final_added_pcs = Image.image(fun l-> C l) 
        (il_merge retained_added_pcs non_automatic) in 
     let draft = constructor new_base 
-     ~max_width:pt.max_width 
+     ~max_width_opt:(Some pt.max_width) 
        ~added_constraints:final_added_pcs in 
     if mandatory_elements = []
     then draft
@@ -579,6 +576,12 @@ module Point = struct
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
+  let usual ?max_width fis = 
+    let max_width_opt = 
+      Option.map (fun w->W w) max_width in   
+    constructor fis 
+     ~max_width_opt
+       ~added_constraints:[];;
   let order = Private.order ;;
   let remove = Private.remove ;;
 
@@ -788,11 +791,6 @@ let eval fis = Private.on_arbitrary_set
 end ;;   
 
 
-module PointConstructor = struct 
-
-
-
-end ;; 
 
 module Precomputed = struct 
 
