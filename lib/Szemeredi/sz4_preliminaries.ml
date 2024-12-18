@@ -31,7 +31,8 @@ type explanation = Sz4_types.explanation =
   |Extension 
   |Filled_complement of int list 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
-  |Breaking_point of int * int * int ;; 
+  |Breaking_point of int * int * int 
+  |Width_one ;; 
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -841,7 +842,10 @@ let check_filled_complement_case pt n beheaded_mold_opt =
 let lower_level_eval_on_pretranslated_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
-   else List.assoc_opt pt_with_1 (!impatient_ref) ;;
+   else 
+   match Precomputed.eval_opt pt_with_1 with 
+   (Some old_answer) -> Some old_answer 
+   | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
 let lower_level_eval_opt pt =
     let (d,pretranslated_pt) = 
@@ -1408,7 +1412,7 @@ let adapt_to_subset pt fis =
    pt3 ;;
 
 let direct_parents pt = match analize pt with 
-   Free -> []
+   Free | Width_one -> []
   |Extension 
   |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
@@ -1508,7 +1512,7 @@ let cs = BuiltOnEval.canonical_solution ;;
 let u3 n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5]) 
   (Int_range.range 1 n) ;;
 
-let ecs pt = let temp = e pt in (temp,cs pt) ;;
+let ecs pt = let temp = e pt in (temp,cs  pt) ;;
 
 let current_bound = 100;;  
 
