@@ -981,7 +981,7 @@ let eval_opt = Private.eval_opt ;;
 
 let explanation_opt = Private.explanation_opt ;;
 
-let stepless_get_opt = Private.lower_level_eval_opt ;; 
+(* let stepless_get_opt = Private.lower_level_eval_opt ;; *)
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1484,8 +1484,6 @@ module Initialization = struct
 
 module Private = struct 
 
-let chosen_limit = 200 ;; 
-
 let p2 n o = PointConstructor.segment n 
     ~imposed_max_width:2 ~number_of_extra_obstructions:o;;
 
@@ -1520,6 +1518,11 @@ end ;;
 
 
 open Private ;;
+
+let width_two () = 
+ let _ = BuiltOnEval.set_lazy_mode true in 
+ let _ = for k=3 to current_bound do let _ =ecs(p2 k 0) in () done in 
+ BuiltOnEval.set_lazy_mode false ;;
 
 let initialize () = 
  let _ = BuiltOnEval.set_lazy_mode true in 
