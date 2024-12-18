@@ -142,7 +142,7 @@ module Highest_constraint = struct
 
   let below_maximal_width = Private.below_maximal_width ;;
 
-  let effective_max_width base_set ?(proposed_width_opt=None) =
+  let effective_max_width ?(proposed_width_opt=None) base_set =
      match proposed_width_opt with 
      None -> Private.compute_max_width_without_help base_set 
      |Some(proposed_width) ->  Private.effective_max_width base_set proposed_width ;; 
@@ -226,9 +226,9 @@ module Finite_int_set = struct
 
    let diameter = Private.diameter ;; 
 
-  let effective_max_width fis ?(proposed_width_opt=None) = 
+  let effective_max_width ?(proposed_width_opt=None) fis= 
        Highest_constraint.effective_max_width 
-       (Private.to_usual_int_list fis) ~proposed_width_opt ;; 
+       ~proposed_width_opt (Private.to_usual_int_list fis)  ;; 
 
   let empty_set = Private.empty_set ;;
 
@@ -313,8 +313,8 @@ module Point = struct
   module Private = struct
   
   
-  let constructor base 
-     ?(max_width_opt=None) 
+  let constructor 
+     ?(max_width_opt=None) base 
      ~added_constraints = 
       let checked_max_width = Finite_int_set.effective_max_width 
          base ~proposed_width_opt:max_width_opt in 
@@ -576,10 +576,10 @@ module Point = struct
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
 
-  let usual ?max_width fis = 
+  let usual ?max_width n scrappers = 
     let max_width_opt = 
       Option.map (fun w->W w) max_width in   
-    constructor fis 
+    constructor (FIS(n,scrappers)) 
      ~max_width_opt
        ~added_constraints:[];;
   let order = Private.order ;;
@@ -790,9 +790,37 @@ let eval fis = Private.on_arbitrary_set
 
 end ;;   
 
+module Util = struct 
+   
+let current_bound = 200 ;;
+
+let width2_subset n = List.filter (fun k->List.mem(k mod 3)[1;2]) 
+  (Int_range.range 1 n) ;;
+let width3_subset n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5]) 
+  (Int_range.range 1 n) ;;
+
+end ;;   
 
 
 module Precomputed = struct 
+
+module Private = struct 
+
+let test_width_two_usual pt =
+   let (W w) = pt.max_width 
+   and n=Finite_int_set.max pt.base_set in 
+   (w<=2)&&(pt.base_set=FIS(n,[]))&&(pt.added_constraints=[]) ;;
+
+let width_two n = 
+     {solutions =[Util.width2_subset n];
+  mandatory_elements = 
+    (
+     if n=4 then [1;4] else 
+     if n=5 then [1;4;5] else   
+     if n mod 3 = 0 then [] else List.filter (fun x->
+     (x>0)&&((x mod 3)>0) ) [n-1; n])} ;;   
+
+end ;;   
 
 
 let eval_opt (pt:point) = 
@@ -970,6 +998,7 @@ let explanation_on_pt_with_1_opt pt_with_1 =
    match Precomputed.eval_opt pt_with_1 with 
    (Some old_answer) -> Some (snd old_answer) 
    | None -> 
+    if Point.is_free pt_with_1 then Some Free else  
    List.assoc_opt pt_with_1 (!explanations_ref) ;; 
 
 let explanation_opt pt =  
@@ -977,14 +1006,17 @@ let explanation_opt pt =
       Point.decompose_wrt_translation pt in 
    explanation_on_pt_with_1_opt  pt_with_1 ;;   
 
+let explained_eval pt = 
+   let opt = eval_opt ~without_remembering:false pt in 
+   (Option.get opt,Option.get (explanation_opt pt)) ;;  
 
 end ;;
 
 let eval_opt = Private.eval_opt ;; 
 
-let explanation_opt = Private.explanation_opt ;;
+let explained_eval = Private.explained_eval ;;
 
-(* let stepless_get_opt = Private.lower_level_eval_opt ;; *)
+let explanation_opt = Private.explanation_opt ;;
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1512,19 +1544,31 @@ let u3 n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5])
 
 let ecs pt = let temp = e pt in (temp,cs  pt) ;;
 
-let current_bound = 100;;  
+ 
 
 end ;;
 
 
 open Private ;;
 
-let width_two () = 
+let width_two k = 
+   Option.get(One_more_small_step.eval_opt(Point.usual ~max_width:2 k []));;
+    
+let recompute_width_two_line () = 
  let _ = BuiltOnEval.set_lazy_mode true in 
- let _ = for k=3 to current_bound do let _ =ecs(p2 k 0) in () done in 
+ let _ = for k=1 to Util.current_bound do let _ =width_two k in () done in 
  BuiltOnEval.set_lazy_mode false ;;
 
+let check_width_two_line f = 
+ let _ = recompute_width_two_line () in 
+ let temp1 = Int_range.scale (fun k->
+    (k, width_two k, f k)  
+ ) 1 Util.current_bound in 
+ List.filter (fun (_k,x,y) -> x<>y) temp1;; 
+
+
 let initialize () = 
+ let current_bound = Util.current_bound in   
  let _ = BuiltOnEval.set_lazy_mode true in 
  let _ = for k=3 to current_bound do let _ =ecs(p2 k 0) in () done in 
  let _ = for k=3 to 6 do let _ =ecs(p2 k 1) in () done in 
