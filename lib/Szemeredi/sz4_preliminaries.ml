@@ -32,7 +32,7 @@ type explanation = Sz4_types.explanation =
   |Filled_complement of int list 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int 
-  |Width_one ;; 
+  |Width_one_expl ;; 
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -794,7 +794,7 @@ module Precomputed = struct
 
 let eval_opt (pt:point) = 
    if (pt.max_width = W 1)&&(pt.added_constraints=[])
-   then Some(Width_one.eval pt.base_set)  
+   then Some(Width_one.eval pt.base_set,Width_one_expl)  
    else None ;;  
 
 end ;;   
@@ -844,7 +844,7 @@ let lower_level_eval_on_pretranslated_opt pt_with_1 =
    then Some(Mold.in_free_case pt_with_1) 
    else 
    match Precomputed.eval_opt pt_with_1 with 
-   (Some old_answer) -> Some old_answer 
+   (Some old_answer) -> Some (fst old_answer) 
    | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
 let lower_level_eval_opt pt =
@@ -1412,7 +1412,7 @@ let adapt_to_subset pt fis =
    pt3 ;;
 
 let direct_parents pt = match analize pt with 
-   Free | Width_one -> []
+   Free | Width_one_expl -> []
   |Extension 
   |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
