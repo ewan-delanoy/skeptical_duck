@@ -726,7 +726,7 @@ let canonical_solution = Memoized.make(fun pt->
    helper_for_solution_chooser (sols,base)
 ) ;; 
 
-let eval_on_pretranslated pt = 
+let eval_on_pt_with_1 pt = 
      let base = List.rev(Finite_int_set.to_usual_int_list pt.base_set) 
      and sols = all_solutions pt 0 in 
      {
@@ -736,9 +736,9 @@ let eval_on_pretranslated pt =
 
 
 let eval pt =
-    let (d,pretranslated_pt) = 
+    let (d,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
-    Mold.translate d (eval_on_pretranslated pretranslated_pt);;
+    Mold.translate d (eval_on_pt_with_1 pt_with_1);;
 
 end ;;
 
@@ -839,7 +839,7 @@ let check_filled_complement_case pt n beheaded_mold_opt =
      | None -> None );;  
 
 
-let lower_level_eval_on_pretranslated_opt pt_with_1 = 
+let lower_level_eval_on_pt_with_1_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else 
@@ -848,10 +848,10 @@ let lower_level_eval_on_pretranslated_opt pt_with_1 =
    | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
 let lower_level_eval_opt pt =
-    let (d,pretranslated_pt) = 
+    let (d,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
     Option.map(Mold.translate d)
-     (lower_level_eval_on_pretranslated_opt pretranslated_pt);;
+     (lower_level_eval_on_pt_with_1_opt pt_with_1);;
 
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
@@ -897,12 +897,13 @@ let check_prefilled_decomposition_case pt_with_1 n =
 
 
 let expand_pt_with_1_without_remembering_opt pt_with_1 =
-   if Point.is_free pt_with_1 
-   then Some(Mold.in_free_case pt_with_1) 
-   else 
+   let opt0 = lower_level_eval_on_pt_with_1_opt pt_with_1 in 
+   if opt0 <> None 
+   then opt0
+   else   
    let n = Finite_int_set.max (pt_with_1.base_set) in 
    let beheaded_pt = Point.remove pt_with_1 [n] in 
-   let beheaded_mold_opt = lower_level_eval_on_pretranslated_opt beheaded_pt in 
+   let beheaded_mold_opt = lower_level_eval_on_pt_with_1_opt beheaded_pt in 
    let opt1 = check_extension_case pt_with_1 n beheaded_mold_opt in 
    if opt1 <> None
    then let _ = add_explanation pt_with_1 Extension in 
@@ -922,41 +923,35 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    else    
    None ;;
 
-let eval_on_pretranslated_and_remember_opt pt_with_1 =
-  match List.assoc_opt pt_with_1 (!impatient_ref) with 
-  (Some old_answer) -> Some old_answer
-  | None ->
-   (
-      match expand_pt_with_1_without_remembering_opt pt_with_1 with 
-      None -> None 
-      |Some new_answer ->
+let eval_on_pt_with_1_and_remember_opt pt_with_1 = 
+   let opt0 = lower_level_eval_on_pt_with_1_opt pt_with_1 in 
+   if opt0 <> None 
+   then opt0
+   else 
+    match expand_pt_with_1_without_remembering_opt pt_with_1 with 
+    None -> None 
+   |Some new_answer ->
         let _ = (
-            if not(Point.is_free pt_with_1) then  
             impatient_ref := (pt_with_1,new_answer) :: 
           (!impatient_ref)) in 
         Some new_answer
 
-   ) ;;      
+   ;;      
 
 
 let eval_and_remember_opt pt =
-    let (d,pretranslated_pt) = 
+    let (d,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
     Option.map(Mold.translate d)
-     (eval_on_pretranslated_and_remember_opt pretranslated_pt);;
+     (eval_on_pt_with_1_and_remember_opt pt_with_1);;
 
-let eval_on_pretranslated_without_remembering_opt pt_with_1 =
-  match List.assoc_opt pt_with_1 (!impatient_ref) with 
-  (Some old_answer) -> Some old_answer
-  | None ->
-   expand_pt_with_1_without_remembering_opt pt_with_1 ;;
 
 
 let eval_without_remembering_opt pt =
-    let (d,pretranslated_pt) = 
+    let (d,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
     Option.map(Mold.translate d)
-     (eval_on_pretranslated_without_remembering_opt pretranslated_pt);;     
+     (expand_pt_with_1_without_remembering_opt pt_with_1);;     
 
 let eval_opt ?(without_remembering=false) pt = 
    if without_remembering 
@@ -968,13 +963,16 @@ let unsafe_add pt mold expl =
        explanations_ref := (pt,expl) ::(!explanations_ref);
       ) ;;
 
-let explanation_on_pretranslated_opt pt_with_1 = 
+let explanation_on_pt_with_1_opt pt_with_1 = 
+   match Precomputed.eval_opt pt_with_1 with 
+   (Some old_answer) -> Some (snd old_answer) 
+   | None -> 
    List.assoc_opt pt_with_1 (!explanations_ref) ;; 
 
 let explanation_opt pt =  
-   let (_,pretranslated_pt) = 
+   let (_,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
-   explanation_on_pretranslated_opt  pretranslated_pt ;;   
+   explanation_on_pt_with_1_opt  pt_with_1 ;;   
 
 
 end ;;
@@ -982,6 +980,8 @@ end ;;
 let eval_opt = Private.eval_opt ;; 
 
 let explanation_opt = Private.explanation_opt ;;
+
+let stepless_get_opt = Private.lower_level_eval_opt ;; 
 
 let unsafe_add = Private.unsafe_add ;;
 
@@ -1085,7 +1085,7 @@ let finalize_decomposition_computation
           beheaded_mold ;;   
 
          
-let lower_level_eval_on_pretranslated_opt pt_with_1 = 
+let lower_level_eval_on_pt_with_1_opt pt_with_1 = 
    if Point.is_free pt_with_1 
    then Some(Mold.in_free_case pt_with_1) 
    else 
@@ -1114,7 +1114,7 @@ and keep on computing
 *)
 
 let rec eval_on_nonempty_list next_pt other_untreated_pts = 
-   match lower_level_eval_on_pretranslated_opt next_pt with 
+   match lower_level_eval_on_pt_with_1_opt next_pt with 
   (Some next_mold) -> 
       (
         match other_untreated_pts with  
@@ -1127,7 +1127,7 @@ let rec eval_on_nonempty_list next_pt other_untreated_pts =
      let beheaded_pt = Point.remove next_pt [n] in 
      let forced_pt = Point.force next_pt [n] in
      let temp1 = Image.image (
-          fun pt -> (pt,lower_level_eval_on_pretranslated_opt pt)
+          fun pt -> (pt,lower_level_eval_on_pt_with_1_opt pt)
      ) [beheaded_pt;forced_pt] in 
      let (known,unknown) = List.partition (
          fun (_pt,answer_opt) -> answer_opt <> None
@@ -1152,14 +1152,14 @@ let rec eval_on_nonempty_list next_pt other_untreated_pts =
 
 let outer_eval pt_with_1 = 
    let  _ = (new_discoveries_ref:=[]) in 
-   match lower_level_eval_on_pretranslated_opt pt_with_1 with 
+   match lower_level_eval_on_pt_with_1_opt pt_with_1 with 
   (Some old_answer) -> old_answer
   | None ->
      let n = Finite_int_set.max (pt_with_1.base_set) in 
      let beheaded_pt = Point.remove pt_with_1 [n] in 
      let forced_pt = Point.force pt_with_1 [n] in
      let temp1 = Image.image (
-          fun pt -> (pt,lower_level_eval_on_pretranslated_opt pt)
+          fun pt -> (pt,lower_level_eval_on_pt_with_1_opt pt)
      ) [beheaded_pt;forced_pt] in 
      let (known,unknown) = List.partition (
          fun (_pt,answer_opt) -> answer_opt <> None
@@ -1174,7 +1174,7 @@ let outer_eval pt_with_1 =
 
 
 
-let eval_on_pretranslated pt_with_1 =
+let eval_on_pt_with_1 pt_with_1 =
   match List.assoc_opt pt_with_1 (!painstaking_ref) with 
   (Some old_answer) -> old_answer
   | None ->
@@ -1189,10 +1189,10 @@ let eval_on_pretranslated pt_with_1 =
 
 
 let eval pt =
-    let (d,pretranslated_pt) = 
+    let (d,pt_with_1) = 
       Point.decompose_wrt_translation pt in 
     Mold.translate d
-     (eval_on_pretranslated pretranslated_pt);;
+     (eval_on_pt_with_1 pt_with_1);;
 
 end ;;
 
