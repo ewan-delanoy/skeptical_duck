@@ -807,18 +807,25 @@ module Precomputed = struct
 module Private = struct 
 
 let test_width_two_usual pt =
-   let (W w) = pt.max_width 
-   and n=Finite_int_set.max pt.base_set in 
-   (w<=2)&&(pt.base_set=FIS(n,[]))&&(pt.added_constraints=[]) ;;
+   let n=Finite_int_set.max pt.base_set in 
+   pt=Point.usual ~max_width:2 n [] ;;
 
-let width_two n = 
-     {solutions =[Util.width2_subset n];
+let width_two_usual n = 
+    let expl = (
+        if n<=2 then Free else 
+        if n<=4 then Width_one_expl else    
+        if (n mod 3)=0 
+        then Filled_complement [n-2;n-1]
+        else Extension
+    ) in
+    ({solutions =[Util.width2_subset n];
   mandatory_elements = 
     (
      if n=4 then [1;4] else 
      if n=5 then [1;4;5] else   
      if n mod 3 = 0 then [] else List.filter (fun x->
-     (x>0)&&((x mod 3)>0) ) [n-1; n])} ;;   
+     (x>0)&&((x mod 3)>0) ) [n-1; n])},
+    expl) ;;  
 
 end ;;   
 
@@ -826,6 +833,10 @@ end ;;
 let eval_opt (pt:point) = 
    if (pt.max_width = W 1)&&(pt.added_constraints=[])
    then Some(Width_one.eval pt.base_set,Width_one_expl)  
+   else 
+   let n=Finite_int_set.max pt.base_set in    
+   if Private.test_width_two_usual pt 
+   then Some(Private.width_two_usual n)
    else None ;;  
 
 end ;;   
@@ -894,6 +905,7 @@ let prefilled_decomposers = [
 
 let check_prefilled_decomposition pt_with_1 n (fis3,sol3)= 
    let n3 = Finite_int_set.max fis3 in 
+   if n < n3 then None else
    let fis2 = Finite_int_set.translate (n-n3) fis3 
    and sol2 = Image.image (fun t->t+n-n3) sol3 in 
    let dom2 = Finite_int_set.to_usual_int_list fis2 
@@ -917,7 +929,6 @@ let check_prefilled_decomposition pt_with_1 n (fis3,sol3)=
   |(Some sol)->
     let mold = Mold.in_decomposition_case mold1 mold2 sol [] in 
     Some(Decomposition(fis1,fis2,sol),mold)  ;;
-
 
 let check_prefilled_decomposition_case pt_with_1 n = 
    List.find_map (
@@ -1552,7 +1563,7 @@ end ;;
 open Private ;;
 
 let width_two k = 
-   Option.get(One_more_small_step.eval_opt(Point.usual ~max_width:2 k []));;
+   One_more_small_step.explained_eval(Point.usual ~max_width:2 k []);;
     
 let recompute_width_two_line () = 
  let _ = BuiltOnEval.set_lazy_mode true in 
@@ -1564,7 +1575,15 @@ let check_width_two_line f =
  let temp1 = Int_range.scale (fun k->
     (k, width_two k, f k)  
  ) 1 Util.current_bound in 
- List.filter (fun (_k,x,y) -> x<>y) temp1;; 
+ let temp2 = List.filter_map (
+    fun (k,(x1,_x2),(y1,_y2)) ->
+      if x1<>y1 then Some(k,x1,y1) else None
+ ) temp1 
+ and temp3 = List.filter_map (
+     fun (k,(_x1,x2),(_y1,y2)) ->
+      if x2<>y2 then Some(k,x2,y2) else None
+ ) temp1 in 
+ (temp2,temp3);; 
 
 
 let initialize () = 
