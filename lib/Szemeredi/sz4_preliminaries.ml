@@ -108,48 +108,46 @@ module Highest_constraint = struct
 
    module Private = struct
 
-  let rec for_exact_positive_width (W w) excluded_constraints 
+  let rec for_exact_positive_width (W w) 
      domain to_be_treated =
     match to_be_treated with 
     [] -> None 
     |p::others ->
        if p<=2*w then None else 
-       if (i_is_included_in [p-2*w;p-w] domain)
-           &&(not(List.mem (C[p-2*w;p-w;p]) excluded_constraints)) 
+       if (i_is_included_in [p-2*w;p-w] domain) 
        then Some (C[p-2*w;p-w;p])
-       else for_exact_positive_width (W w) excluded_constraints domain others ;;    
+       else for_exact_positive_width (W w) domain others ;;    
        
-  let for_exact_width (W w) excluded_constraints domain =
-     if w<1 then None else for_exact_positive_width (W w) excluded_constraints domain (List.rev domain) ;;
+  let for_exact_width (W w) domain =
+     if w<1 then None else for_exact_positive_width (W w) domain (List.rev domain) ;;
 
-  let rec all_for_exact_positive_width (W w) excluded_constraints 
+  let rec all_for_exact_positive_width (W w)  
      domain (treated,to_be_treated) =
     match to_be_treated with 
     [] -> treated 
     |p::others ->
        if p<=2*w then treated else 
        if (i_is_included_in [p-2*w;p-w] domain)
-           &&(not(List.mem (C[p-2*w;p-w;p]) excluded_constraints)) 
-       then all_for_exact_positive_width (W w) excluded_constraints domain (C[p-2*w;p-w;p]::treated,others)
-       else all_for_exact_positive_width (W w) excluded_constraints domain (treated,others) ;;    
+       then all_for_exact_positive_width (W w)  domain (C[p-2*w;p-w;p]::treated,others)
+       else all_for_exact_positive_width (W w)  domain (treated,others) ;;    
        
-  let all_for_exact_width (W w) excluded_constraints domain =
-     if w<1 then [] else all_for_exact_positive_width (W w) excluded_constraints domain ([],List.rev domain) ;;
+  let all_for_exact_width (W w) domain =
+     if w<1 then [] else all_for_exact_positive_width (W w) domain ([],List.rev domain) ;;
 
 
-  let rec below_maximal_width (W w) excluded_constraints domain =
-        match for_exact_width (W w) excluded_constraints domain with 
+  let rec below_maximal_width (W w) domain =
+        match for_exact_width (W w)  domain with 
         Some (cstr) -> Some(cstr)
         |None ->
            if w<2 then None else 
-           below_maximal_width (W (w-1)) excluded_constraints domain ;;       
+           below_maximal_width (W (w-1)) domain ;;       
   
   end ;;
 
   let below_maximal_width = Private.below_maximal_width ;;
 
-  let effective_max_width base_set excluded_constraints proposed_width =
-     match Private.below_maximal_width proposed_width excluded_constraints base_set with 
+  let effective_max_width base_set proposed_width =
+     match Private.below_maximal_width proposed_width  base_set with 
      None -> W 0
      |Some(cstr) -> Constraint.width cstr ;; 
   
@@ -232,9 +230,9 @@ module Finite_int_set = struct
 
    let diameter = Private.diameter ;; 
 
-  let effective_max_width fis excluded_constraints proposed_width = 
+  let effective_max_width fis proposed_width = 
        Highest_constraint.effective_max_width 
-       (Private.to_usual_int_list fis) excluded_constraints proposed_width ;; 
+       (Private.to_usual_int_list fis) proposed_width ;; 
 
   let empty_set = Private.empty_set ;;
 
@@ -322,7 +320,7 @@ module Point = struct
   let constructor base 
      ~max_width:unchecked_max_width 
      ~added_constraints = 
-      let checked_max_width = Finite_int_set.effective_max_width base [] unchecked_max_width in 
+      let checked_max_width = Finite_int_set.effective_max_width base unchecked_max_width in 
       let base_list = Finite_int_set.to_usual_int_list base in 
       let checked_added_constraints = Constraint.cleanup_list added_constraints base_list in 
       {
@@ -411,7 +409,7 @@ module Point = struct
    
    let subset_is_admissible pt subset =
       ((Highest_constraint.below_maximal_width 
-       pt.max_width [] subset) 
+       pt.max_width subset) 
        =None) && 
        (List.for_all (fun (C l)->
          not(i_is_included_in l subset)
@@ -576,7 +574,7 @@ module Point = struct
     if w < 1 then None else  
     let domain = Finite_int_set.to_usual_int_list pt.base_set in 
     Highest_constraint.below_maximal_width 
-       pt.max_width [] domain ;;
+       pt.max_width domain ;;
  
 
   let is_free pt = ((highest_constraint_opt pt) =None );;
@@ -788,6 +786,13 @@ let eval fis = Private.on_arbitrary_set
   (Finite_int_set.to_usual_int_list fis) ;;
 
 end ;;   
+
+
+module PointConstructor = struct 
+
+
+
+end ;; 
 
 module Precomputed = struct 
 
@@ -1450,8 +1455,11 @@ let set_lazy_mode = Private.set_lazy_mode ;;
 end ;;
 
 
-module PointConstructor = struct 
 
+
+module Initialization = struct 
+
+module Private = struct 
 let segment 
    ?imposed_max_width ?(number_of_extra_obstructions=0) n= 
    let default_width = ((n-1)/2) in 
@@ -1478,13 +1486,7 @@ let segment
    added_constraints = extra_obstructions
   } ;; 
 
-end ;; 
-
-module Initialization = struct 
-
-module Private = struct 
-
-let p2 n o = PointConstructor.segment n 
+let p2 n o = segment n 
     ~imposed_max_width:2 ~number_of_extra_obstructions:o;;
 
 let d = Deduce.using_decomposition;;
