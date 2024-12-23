@@ -310,7 +310,7 @@ module Point = struct
 
   exception Excessive_forcing of point * int list ;; 
   exception Exclusion_not_implemented of point * constraint_t ;;
-  exception Bad_dimensions_in_segment_cut ;; 
+  exception Bad_dimensions_in_segment_cut of point * int *int ;; 
 
   module Private = struct
   
@@ -592,10 +592,11 @@ module Point = struct
   let segment_cut pt (i,j) =
    let n = Finite_int_set.size pt.base_set in 
    if n<>i+j
-   then raise Bad_dimensions_in_segment_cut
+   then raise (Bad_dimensions_in_segment_cut(pt,i,j))
    else  
    let l = Finite_int_set.to_usual_int_list pt.base_set in 
-   let (left,right) =List_again.long_head_with_tail i l in   
+   let (rev_left,right) =List_again.long_head_with_tail i l in  
+   let left = List.rev rev_left in 
    (Private.restrict pt left,Private.restrict pt right) ;;
 
   let size pt = Finite_int_set.size pt.base_set ;; 
@@ -632,11 +633,11 @@ module Mold = struct
 
   let in_decomposition_case mold1 mold2 full_sol extra_solutions =
   {
-             solutions = Private.add_carefully extra_solutions [full_sol];
-             mandatory_elements = 
-             i_merge
-             (mold1.mandatory_elements)
-             (mold2.mandatory_elements)
+      solutions = Private.add_carefully extra_solutions [full_sol];
+      mandatory_elements = 
+         i_merge
+         (mold1.mandatory_elements)
+         (mold2.mandatory_elements)
   } ;; 
 
   let in_extension_case extended_sols beheaded_mold n =
@@ -958,6 +959,39 @@ let lower_level_eval_opt pt =
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
 
+let check_individual_segment_cut_case pt_with_1 (i,j) = 
+   let (pt1,pt2) = Point.segment_cut pt_with_1 (i,j) in
+   let opt1 = lower_level_eval_opt pt1 
+   and opt2 = lower_level_eval_opt pt2 in 
+   if (opt1=None)||(opt2=None)
+   then None 
+   else
+   let mold1 = Option.get opt1 
+   and mold2 = Option.get opt2 in       
+   let temp1 = Cartesian.product mold1.solutions mold2.solutions in 
+   let final_sols = List.filter_map (
+      fun (sol1,sol2) ->
+         let sol = sol1@sol2 in 
+         if Point.subset_is_admissible pt_with_1 sol 
+         then Some sol 
+         else None   
+   ) temp1 in 
+   if final_sols=[] then None else 
+   let mold = {
+     solutions = final_sols;
+     mandatory_elements = 
+      mold1.mandatory_elements @ mold2.mandatory_elements
+   } in 
+   Some(Segment_cut(i,j),mold);;
+
+
+let check_segment_cut_case pt_with_1 n = 
+   let candidates = Int_range.scale (fun j->(n+1-j,j)) 1 n in 
+   List.find_map (
+      check_individual_segment_cut_case pt_with_1
+   )  candidates ;;
+
+
 let prefilled_decomposers = [
    (FIS(7,[]),[1;2;4;5]);
    (FIS(8,[]),[1;2;4;5])
@@ -1015,9 +1049,15 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
         let _ = add_explanation pt_with_1 (Filled_complement(complement)) in 
         Some mold
    else 
-   let opt3 = check_prefilled_decomposition_case pt_with_1 n  in 
+   let opt3 = check_segment_cut_case pt_with_1 n  in 
    if opt3 <> None
    then let (expl,mold) = Option.get opt3 in 
+        let _ = add_explanation pt_with_1 expl in 
+        Some mold
+   else   
+   let opt4 = check_prefilled_decomposition_case pt_with_1 n  in 
+   if opt4 <> None
+   then let (expl,mold) = Option.get opt4 in 
         let _ = add_explanation pt_with_1 expl in 
         Some mold
    else    
