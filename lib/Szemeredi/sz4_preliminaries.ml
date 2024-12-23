@@ -32,7 +32,8 @@ type explanation = Sz4_types.explanation =
   |Filled_complement of int list 
   |Decomposition of finite_int_set * finite_int_set * (int list) 
   |Breaking_point of int * int * int 
-  |Width_one_expl ;; 
+  |Width_one_expl 
+  |Segment_cut of int * int;; 
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -309,6 +310,7 @@ module Point = struct
 
   exception Excessive_forcing of point * int list ;; 
   exception Exclusion_not_implemented of point * constraint_t ;;
+  exception Bad_dimensions_in_segment_cut ;; 
 
   module Private = struct
   
@@ -587,6 +589,15 @@ module Point = struct
 
   let restrict = Private.restrict ;;  
 
+  let segment_cut pt (i,j) =
+   let n = Finite_int_set.size pt.base_set in 
+   if n<>i+j
+   then raise Bad_dimensions_in_segment_cut
+   else  
+   let l = Finite_int_set.to_usual_int_list pt.base_set in 
+   let (left,right) =List_again.long_head_with_tail i l in   
+   (Private.restrict pt left,Private.restrict pt right) ;;
+
   let size pt = Finite_int_set.size pt.base_set ;; 
 
   let subset_is_admissible = Private.subset_is_admissible ;;
@@ -827,6 +838,51 @@ let width_two_usual n =
      (x>0)&&((x mod 3)>0) ) [n-1; n])},
     expl) ;;  
 
+let list_for_preparation_of_width_three = 
+ [(Point.usual 7 [4],
+    ({solutions = [[1; 2; 5; 6]];
+      mandatory_elements = []},
+     Decomposition
+      (FIS (3, []),
+      FIS (7, [1; 2; 3; 4]), [1; 2; 5; 6])));
+   (Point.usual 8 [4;5],
+    ({solutions = [[1; 2; 6; 7]];
+      mandatory_elements = []},
+     Decomposition
+      (FIS (3, []),
+      FIS (8, [1; 2; 3; 4; 5]),
+      [1; 2; 6; 7])));
+   (Point.usual 8 [5;7],
+    ({solutions = [[1; 3; 4; 6]];
+      mandatory_elements = []},
+     Decomposition
+      (FIS (3, []),
+      FIS (8, [1; 2; 3; 5; 7]),
+      [1; 3; 4; 6])));
+   (Point.usual 8 [5],
+    ({solutions = [[1; 3; 4; 6]];
+      mandatory_elements = []},
+     Breaking_point (1, 4, 7)));
+   (Point.usual 8 [2;4],
+    ({solutions = [[1; 3; 6; 7]];
+      mandatory_elements = []},
+     Decomposition
+      (FIS (5, [2; 4]),
+      FIS (8, [1; 2; 3; 4; 5]),
+      [1; 3; 6; 7])));
+   (Point.usual 8 [2;7],
+    ({solutions = [[1; 3; 4; 6]];
+      mandatory_elements = []},
+     Decomposition
+      (FIS (5, [2; 4]),
+      FIS (8, [1; 2; 3; 5; 7]),
+      [1; 3; 4; 6])));
+   (Point.usual 8 [2],
+    ({solutions = [[1; 3; 4; 6]];
+      mandatory_elements = []},
+     Breaking_point (1, 4, 7)))] ;;
+
+
 end ;;   
 
 
@@ -837,6 +893,10 @@ let eval_opt (pt:point) =
    let n=Finite_int_set.max pt.base_set in    
    if Private.test_width_two_usual pt 
    then Some(Private.width_two_usual n)
+   else 
+   let opt1 = List.assoc_opt pt Private.list_for_preparation_of_width_three in 
+   if opt1<>None 
+   then opt1 
    else None ;;  
 
 end ;;   
@@ -934,8 +994,6 @@ let check_prefilled_decomposition_case pt_with_1 n =
    List.find_map (
       check_prefilled_decomposition pt_with_1 n
    )  prefilled_decomposers ;;
-
-
 
 
 let expand_pt_with_1_without_remembering_opt pt_with_1 =
@@ -1465,7 +1523,11 @@ let direct_parents pt = match analize pt with
   |Decomposition(fis1,fis2,_sol) -> 
       Image.image (adapt_to_subset pt) [fis1;fis2]
   |Breaking_point(i,j,k) ->
-      Image.image (fun t->Point.remove pt [t]) [i;j;k];; 
+      Image.image (fun t->Point.remove pt [t]) [i;j;k]
+  |Segment_cut(i,j) ->
+    let (pt1,pt2) = Point.segment_cut pt (i,j) in 
+    let (_,pt3) = Point.decompose_wrt_translation pt2 in 
+    [pt1;pt3];; 
 
 let important_parents pt = List.filter(
    fun pt -> One_more_small_step.eval_opt
@@ -1500,68 +1562,6 @@ end ;;
 
 module Initialization = struct 
 
-module Private = struct 
-let segment 
-   ?imposed_max_width ?(number_of_extra_obstructions=0) n= 
-   let default_width = ((n-1)/2) in 
-   let final_width = (
-     match imposed_max_width with
-      None -> default_width
-     |Some(width) -> min width default_width 
-   ) in 
-   let outer_width = (
-     match imposed_max_width with
-      None -> default_width
-     |Some(width) -> width 
-   ) in 
-   let extra_obstructions = List.filter_map (
-      fun k->
-         let m = k+2*(outer_width+1) in 
-         if m<=n 
-         then Some(C[k;k+(outer_width+1);m])
-         else None
-   ) (Int_range.range 1 number_of_extra_obstructions) in 
-  {
-   base_set = FIS (n, []);
-   max_width = (W final_width);
-   added_constraints = extra_obstructions
-  } ;; 
-
-let p2 n o = segment n 
-    ~imposed_max_width:2 ~number_of_extra_obstructions:o;;
-
-let d = Deduce.using_decomposition;;
-let e = One_more_small_step.eval_opt ~without_remembering:false ;;
-let f ?(extra_solutions=[]) pt cstr = 
-    Deduce.using_fork ~extra_solutions pt (C cstr);;
-
-let ud 
-   ?(extra_solutions=[]) pt tr = 
-   let _ = d ~extra_solutions pt tr in () ;;
-
-let ue pt = let _ = e pt in () ;;
-
-let uf ?(extra_solutions=[]) pt cstr = 
-    let _ = f ~extra_solutions pt cstr in ();;
-
-
-let fi = Finite_int_set.interval ;;
-let fu = Finite_int_set.of_usual_int_list ;;
-
-let cs = BuiltOnEval.canonical_solution ;;
-
-let u3 n = List.filter (fun k->List.mem(k mod 8)[1;2;4;5]) 
-  (Int_range.range 1 n) ;;
-
-let ecs pt = let temp = e pt in (temp,cs  pt) ;;
-
- 
-
-end ;;
-
-
-open Private ;;
-
 let width_two k = 
    One_more_small_step.explained_eval(Point.usual ~max_width:2 k []);;
     
@@ -1586,67 +1586,41 @@ let check_width_two_line f =
  (temp2,temp3);; 
 
 
-let initialize () = 
- let current_bound = Util.current_bound in   
- let _ = BuiltOnEval.set_lazy_mode true in 
- let _ = for k=3 to current_bound do let _ =ecs(p2 k 0) in () done in 
- let _ = for k=3 to 6 do let _ =ecs(p2 k 1) in () done in 
- let _ = d (Point.remove(p2 7 1) [4]) (fi 1 3,fi 5 7,[1;2;5;6]) in 
- let _ = f (p2 7 1) [1;4;7] in
- let _ = cs(p2 7 1) in 
- let _ = for k=8 to current_bound do let _ =ecs(p2 k 1) in () done in 
- let _ = d (Point.remove(p2 8 2) [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]) in 
- let _ = d (Point.remove(p2 8 2) [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) in
- let _ = f (Point.remove(p2 8 2) [5]) [1;4;7] in 
- let _ = d (Point.remove(p2 8 2) [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) in
- let _ = d (Point.remove(p2 8 2) [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) in
- let _ = f (Point.remove(p2 8 2) [2]) [1;4;7] in 
- let _ = f (p2 8 2) [2;5;8] in
- let _ = cs(p2 8 2) in 
- let _ = for k=9 to current_bound do let _ =ecs(p2 k 2) in () done in 
- let _=
- (for j=3 to current_bound-6 do
-   for k=(j+6) to current_bound do let _ =ecs(p2 k j) in () done
- done)  in
- BuiltOnEval.set_lazy_mode false ;;
+let list_for_preparation_of_width_three =
+   [
+      Point.usual 7 [4];
+      Point.usual 8 [4;5];
+      Point.usual 8 [5;7];
+      Point.usual 8 [5];
+      Point.usual 8 [2;4];
+      Point.usual 8 [2;7];
+      Point.usual 8 [2];
+   ] ;;
+let preparation_of_width_three pt = 
+   (Painstaking.eval pt,BuiltOnEval.analize pt);;
+    
+let recompute_preparation_of_width_three_line () = 
+ Image.image (fun pt->
+   (pt,preparation_of_width_three pt)) 
+     list_for_preparation_of_width_three  ;;
+
+let check_preparation_of_width_three_line l_assoc = 
+ let _ = recompute_preparation_of_width_three_line () in 
+ let temp1 = Image.image (fun pt->
+    (pt, preparation_of_width_three pt, List.assoc pt l_assoc)  
+ ) list_for_preparation_of_width_three in 
+ let temp2 = List.filter_map (
+    fun (k,(x1,_x2),(y1,_y2)) ->
+      if x1<>y1 then Some(k,x1,y1) else None
+ ) temp1 
+ and temp3 = List.filter_map (
+     fun (k,(_x1,x2),(_y1,y2)) ->
+      if x2<>y2 then Some(k,x2,y2) else None
+ ) temp1 in 
+ (temp2,temp3);; 
 
 
-(* 
 
-BuiltOnEval.set_lazy_mode true ;;
-
-
-for k=3 to current_bound do let _ =ecs(p2 k 0) in () done ;;
-
-for k=3 to 6 do let _ =ecs(p2 k 1) in () done ;;
-
-d (Point.remove(p2 7 1) [4]) (fi 1 3,fi 5 7,[1;2;5;6]) ;;
-f (p2 7 1) [1;4;7] ;;
-cs(p2 7 1);;
-
-for k=8 to current_bound do let _ =ecs(p2 k 1) in () done ;;
-
-d (Point.remove(p2 8 2) [4;5]) (fi 1 3,fi 6 8,[1;2;6;7]);;
-d (Point.remove(p2 8 2) [5;7]) (fi 1 3,fu [4;6;8],[1;3;4;6]) ;;
-f (Point.remove(p2 8 2) [5]) [1;4;7] ;;
-
-d (Point.remove(p2 8 2) [2;4]) (fu [1;3;5],fi 6 8,[1;3;6;7]) ;;
-d (Point.remove(p2 8 2) [2;7]) (fu [1;3;5],fu [4;6;8],[1;3;4;6]) ;;
-f (Point.remove(p2 8 2) [2]) [1;4;7] ;;
-
-f (p2 8 2) [2;5;8] ;;
-cs(p2 8 2) ;;
-
-for k=9 to current_bound do let _ =ecs(p2 k 2) in () done ;;
-
-for j=3 to current_bound-6 do
-   for k=(j+6) to current_bound do let _ =ecs(p2 k j) in () done
-done ;;   
-
-
-BuiltOnEval.set_lazy_mode false ;;
-
-*)
 
 end ;;
 
