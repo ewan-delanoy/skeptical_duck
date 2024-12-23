@@ -902,7 +902,176 @@ let eval_opt (pt:point) =
 
 end ;;   
 
+module Deduce = struct 
 
+exception Not_free of point ;;
+exception Not_width_one of point ;;
+exception Unknown_extension of point ;;
+exception Missing_details_in_extension of point ;;
+exception Unknown_filled_complement of (point * (int list));;
+exception Missing_details_in_filled_complement of (point * (int list));;
+exception Nonadmissible_whole_in_decomposition of (point * (int list));;
+exception Nonadmissible_part_in_decomposition of (point * (int list));;
+exception Badly_sized_part_in_decomposition of (point * (int list));;
+exception Unknown_part_in_decomposition of point ;;
+exception Unknown_part_in_segment_cut of point ;;
+exception No_join_found_in_segment_cut of point ;;
+exception Incorrect_constraint_in_fork_exn 
+   of constraint_t  * point ;;
+exception Incomplete_fork_exn of point ;;
+
+module Private = struct
+  
+   let free pt = 
+      if Point.is_free pt 
+      then Mold.in_free_case pt   
+      else raise(Not_free pt) ;;
+   let free_opt pt = 
+      try Some(free pt) with 
+      Not_free _ -> None ;;
+
+   let width_one pt = 
+     let (W w) = pt.max_width in  
+     if (w<=1)&&(pt.added_constraints=[]) 
+     then Width_one.eval pt.base_set   
+     else raise(Not_width_one pt) ;;
+
+   let width_one_opt pt = 
+      try Some(width_one pt) with 
+      Not_width_one _ -> None ;;
+
+   let extension lower_level_eval_opt pt  = 
+     let n = Finite_int_set.max (pt.base_set) in 
+      let beheaded_pt = Point.remove pt [n] in 
+      match lower_level_eval_opt beheaded_pt with  
+    None -> raise(Unknown_extension(pt)) 
+   |Some beheaded_mold ->
+   let extended_sols = List.filter_map (
+       fun sol -> let extended_sol = sol @ [n] in 
+         if Point.subset_is_admissible pt extended_sol 
+         then Some extended_sol
+         else None 
+     ) beheaded_mold.solutions in 
+     if extended_sols = []
+     then raise(Missing_details_in_extension pt)
+     else Mold.in_extension_case extended_sols beheaded_mold n ;; 
+
+
+   let filled_complement lower_level_eval_opt pt complement =
+      let n = Finite_int_set.max (pt.base_set) in 
+      let beheaded_pt = Point.remove pt [n] in 
+      match lower_level_eval_opt beheaded_pt with  
+    None -> raise(Unknown_filled_complement(pt,complement)) 
+   |Some beheaded_mold ->
+    if not(i_is_included_in complement beheaded_mold.mandatory_elements) 
+    then raise(Missing_details_in_filled_complement(pt,complement)) 
+   else Mold.in_stagnation_case beheaded_mold ;; 
+
+   
+
+   let segment_cut lower_level_eval_opt pt (i,j) = 
+   let (pt1,pt2) = Point.segment_cut pt (i,j) in
+   let opt1 = lower_level_eval_opt pt1 
+   and opt2 = lower_level_eval_opt pt2 in 
+   if (opt1=None) then raise(Unknown_part_in_segment_cut pt1) else 
+   if (opt2=None) then raise(Unknown_part_in_segment_cut pt2) else   
+   let mold1 = Option.get opt1 
+   and mold2 = Option.get opt2 in       
+   let candidate_sols = Cartesian.product mold1.solutions mold2.solutions in 
+   let final_sols = List.filter_map (
+      fun (sol1,sol2) ->
+         let sol = sol1@sol2 in 
+         if Point.subset_is_admissible pt sol 
+         then Some sol 
+         else None   
+   ) candidate_sols in 
+   if final_sols=[] then raise(No_join_found_in_segment_cut pt) else 
+   let mold = {
+     solutions = final_sols;
+     mandatory_elements = 
+      mold1.mandatory_elements @ mold2.mandatory_elements
+   } in 
+   mold;;
+
+  let segment_cut_opt lower_level_eval_opt pt (i,j) = 
+      try Some(segment_cut lower_level_eval_opt pt (i,j)) with 
+      Unknown_part_in_segment_cut _ 
+      | No_join_found_in_segment_cut _ -> None ;;
+
+  let check_part_in_decomposition lower_level_eval_opt pt fis sol = 
+    let domain = Finite_int_set.to_usual_int_list fis in 
+    let smaller_pt = Point.restrict pt domain in 
+    match lower_level_eval_opt smaller_pt with 
+    None -> raise(Unknown_part_in_decomposition(smaller_pt))
+    |Some mold ->
+      let m = Mold.solution_size mold in 
+      if not(Point.subset_is_admissible smaller_pt sol)
+      then raise(Nonadmissible_part_in_decomposition(smaller_pt,sol))
+      else 
+      if List.length(sol)<>m
+      then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
+      else Mold.add_solutions mold [sol] ;; 
+
+let decomposition lower_level_eval_opt pt (fis1,fis2,sol) = 
+   let part1 = Finite_int_set.to_usual_int_list fis1 
+   and part2 = Finite_int_set.to_usual_int_list fis2 in 
+   let sol1 = i_intersect part1 sol 
+   and sol2 = i_intersect part2 sol in 
+   let mold1 = check_part_in_decomposition lower_level_eval_opt pt fis1 sol1 
+   and mold2 = check_part_in_decomposition lower_level_eval_opt pt fis2 sol2 in 
+   if Point.subset_is_admissible pt sol 
+   then Mold.in_decomposition_case mold1 mold2 sol [] 
+   else raise(Nonadmissible_whole_in_decomposition(pt,sol));;
+
+
+
+let breaking_point lower_level_eval_opt pt i j k = 
+    let l = [i;j;k] in  
+    let cstr = (C l) in 
+    if not(Point.constraint_can_apply pt cstr)
+    then raise(Incorrect_constraint_in_fork_exn(cstr,pt))
+    else
+    let temp1 = Image.image (fun t->
+       lower_level_eval_opt(Point.remove pt [t])
+    ) l in 
+    let get_in_l = (fun k->List.nth l (k-1)) in 
+    let m = List_again.find_index_of_in None temp1 in 
+    if m > 0 
+    then let p = get_in_l m in
+         raise(Incomplete_fork_exn(Point.remove pt [p]))
+    else 
+    let molds = Image.image Option.get temp1 in 
+    Mold.in_fork_case molds [] ;;
+
+
+   let deduce lower_level_eval_opt pt = function
+    Free -> free pt
+  | Width_one_expl -> width_one pt
+  | Extension -> extension lower_level_eval_opt pt  
+  | Filled_complement(l) -> filled_complement lower_level_eval_opt pt l 
+  | Segment_cut(a,b) -> segment_cut lower_level_eval_opt pt (a,b)
+  | Decomposition(fis1,fis2,sol) -> decomposition lower_level_eval_opt pt (fis1,fis2,sol)
+  | Breaking_point (i,j,k) -> breaking_point lower_level_eval_opt pt i j k ;;
+  
+   let deduce_opt lower_level_eval pt expl = 
+       try Some(deduce lower_level_eval pt expl) with 
+       _ -> None ;;
+
+  let a_priori_opt pt =
+    let opt1 = free_opt pt in 
+    if opt1<>None then Some(Option.get opt1,Free) else 
+    let opt2 = width_one_opt pt in 
+    if opt2<>None then Some(Option.get opt2,Width_one_expl) else    
+    Precomputed.eval_opt pt ;;
+
+
+end ;;
+
+let a_priori_opt = Private.a_priori_opt ;;
+
+let segment_cut_opt = Private.segment_cut_opt ;;
+
+end ;;   
 
 module One_more_small_step = struct 
 
@@ -910,9 +1079,6 @@ module Private = struct
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
 let explanations_ref = ref ([]: (point * explanation) list) ;; 
-
-
-
 
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
@@ -936,17 +1102,14 @@ let check_filled_complement_case pt n beheaded_mold_opt =
      match List.find_opt (
         fun c-> i_is_included_in c 
         beheaded_mold.mandatory_elements
-     ) complements with 
+     ) (complements) with 
      (Some complement) ->
        Some(complement,Mold.in_stagnation_case beheaded_mold)
      | None -> None );;  
 
 
 let lower_level_eval_on_pt_with_1_opt pt_with_1 = 
-   if Point.is_free pt_with_1 
-   then Some(Mold.in_free_case pt_with_1) 
-   else 
-   match Precomputed.eval_opt pt_with_1 with 
+   match Deduce.a_priori_opt pt_with_1 with 
    (Some old_answer) -> Some (fst old_answer) 
    | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
@@ -959,36 +1122,13 @@ let lower_level_eval_opt pt =
 let add_explanation pt expl = 
      (explanations_ref := (pt,expl) :: (!explanations_ref));;
 
-let check_individual_segment_cut_case pt_with_1 (i,j) = 
-   let (pt1,pt2) = Point.segment_cut pt_with_1 (i,j) in
-   let opt1 = lower_level_eval_opt pt1 
-   and opt2 = lower_level_eval_opt pt2 in 
-   if (opt1=None)||(opt2=None)
-   then None 
-   else
-   let mold1 = Option.get opt1 
-   and mold2 = Option.get opt2 in       
-   let temp1 = Cartesian.product mold1.solutions mold2.solutions in 
-   let final_sols = List.filter_map (
-      fun (sol1,sol2) ->
-         let sol = sol1@sol2 in 
-         if Point.subset_is_admissible pt_with_1 sol 
-         then Some sol 
-         else None   
-   ) temp1 in 
-   if final_sols=[] then None else 
-   let mold = {
-     solutions = final_sols;
-     mandatory_elements = 
-      mold1.mandatory_elements @ mold2.mandatory_elements
-   } in 
-   Some(Segment_cut(i,j),mold);;
-
 
 let check_segment_cut_case pt_with_1 n = 
-   let candidates = Int_range.scale (fun j->(n+1-j,j)) 1 n in 
+   let candidates = Int_range.scale (fun j->(n-j,j)) 1 (n-1) in 
    List.find_map (
-      check_individual_segment_cut_case pt_with_1
+      fun (i,j)->
+      Option.map(fun mold->(mold,Segment_cut(i,j)))   
+      (Deduce.segment_cut_opt lower_level_eval_opt pt_with_1 (i,j))
    )  candidates ;;
 
 
@@ -1051,7 +1191,7 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    else 
    let opt3 = check_segment_cut_case pt_with_1 n  in 
    if opt3 <> None
-   then let (expl,mold) = Option.get opt3 in 
+   then let (mold,expl) = Option.get opt3 in 
         let _ = add_explanation pt_with_1 expl in 
         Some mold
    else   
@@ -1130,79 +1270,6 @@ let explanation_opt = Private.explanation_opt ;;
 let unsafe_add = Private.unsafe_add ;;
 
 end ;;
-
-module Deduce = struct 
-
-exception Incorrect_constraint_in_fork_exn 
-   of constraint_t  * point ;;
-
-exception Incomplete_fork_exn of point ;;
-
-module Private = struct 
-
-exception Nonadmissible_whole_in_decomposition of (point * (int list));;
-exception Nonadmissible_part_in_decomposition of (point * (int list));;
-exception Badly_sized_part_in_decomposition of (point * (int list));;
-exception Unknown_part_in_decomposition of point ;;
-
-
-
-let check_part_in_decomposition pt fis sol = 
-    let domain = Finite_int_set.to_usual_int_list fis in 
-    let smaller_pt = Point.restrict pt domain in 
-    match One_more_small_step.eval_opt smaller_pt with 
-    None -> raise(Unknown_part_in_decomposition(smaller_pt))
-    |Some mold ->
-      let m = Mold.solution_size mold in 
-      if not(Point.subset_is_admissible smaller_pt sol)
-      then raise(Nonadmissible_part_in_decomposition(smaller_pt,sol))
-      else 
-      if List.length(sol)<>m
-      then raise(Badly_sized_part_in_decomposition(smaller_pt,sol)) 
-      else Mold.add_solutions mold [sol] ;; 
-
-let deduce_using_decomposition 
-   ?(extra_solutions=[]) pt (fis1,fis2,sol) = 
-   let part1 = Finite_int_set.to_usual_int_list fis1 
-   and part2 = Finite_int_set.to_usual_int_list fis2 in 
-   let sol1 = i_intersect part1 sol 
-   and sol2 = i_intersect part2 sol in 
-   let mold1 = check_part_in_decomposition pt fis1 sol1 
-   and mold2 = check_part_in_decomposition pt fis2 sol2 in 
-   if Point.subset_is_admissible pt sol 
-   then let mold = Mold.in_decomposition_case mold1 mold2 sol extra_solutions in 
-        let _ = One_more_small_step.unsafe_add pt mold (Decomposition(fis1,fis2,sol)) in 
-        mold
-   else raise(Nonadmissible_whole_in_decomposition(pt,sol));;
-
-
-
-end ;;
-
-let using_decomposition = Private.deduce_using_decomposition ;;
-
-let using_fork ?(extra_solutions=[]) pt cstr = 
-    let (C l) = cstr in 
-    if not(Point.constraint_can_apply pt cstr)
-    then raise(Incorrect_constraint_in_fork_exn(cstr,pt))
-    else
-    let temp1 = Image.image (fun t->
-       One_more_small_step.eval_opt(Point.remove pt [t])
-    ) l in 
-    let get_in_l = (fun k->List.nth l (k-1)) in 
-    let m = List_again.find_index_of_in None temp1 in 
-    if m > 0 
-    then let p = get_in_l m in
-         raise(Incomplete_fork_exn(Point.remove pt [p]))
-    else 
-    let molds = Image.image Option.get temp1 in 
-    let mold = Mold.in_fork_case molds extra_solutions in 
-    let _ = One_more_small_step.unsafe_add pt mold 
-       (Breaking_point(get_in_l 1,get_in_l 2,get_in_l 3)) in 
-    mold ;;
-
-end ;;
-
 
 module Painstaking = struct 
 
