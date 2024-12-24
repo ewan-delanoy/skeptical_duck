@@ -1583,6 +1583,24 @@ let filled_complement_opt pt =
    |(Some c) -> 
      Some(Filled_complement(c));;   
 
+let segment_cut_opt pt =
+   let decs = distinguished_parts pt in 
+   let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
+   if real_decs = []
+   then None 
+   else 
+   let n = Finite_int_set.size pt.base_set 
+   and l = Finite_int_set.to_usual_int_list pt.base_set in
+   let candidates = Int_range.scale (fun j->(n-j,j)) 1 (n-1) in 
+   List.find_map (
+      fun (i,j)->
+     let (rev_left,right) =List_again.long_head_with_tail i l in  
+     let left = List.rev rev_left in 
+     if (List.mem left real_decs) && (List.mem right real_decs)
+     then Some(Segment_cut(i,j))
+     else None 
+   )  candidates  ;; 
+
 let decomposition_opt pt =
    let decs = distinguished_parts pt in 
    let real_decs = List.rev(List.tl(List.rev(List.tl decs))) in 
@@ -1612,8 +1630,10 @@ let analize pt =
    if opt1<>None then Option.get opt1 else 
    let opt2 = filled_complement_opt pt in
    if opt2<>None then Option.get opt2 else 
-   let opt3 = decomposition_opt pt in
-   if opt3<>None then Option.get opt3 else   
+   let opt3 = segment_cut_opt pt in
+   if opt3<>None then Option.get opt3 else    
+   let opt4 = decomposition_opt pt in
+   if opt4<>None then Option.get opt4 else   
    breaking_point_case pt ;;  
 
 let adapt_to_subset pt fis = 
