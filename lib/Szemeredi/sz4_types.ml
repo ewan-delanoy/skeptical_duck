@@ -27,13 +27,17 @@ type mold = {
     mandatory_elements : int list;
 } ;;
 
-type explanation =
+type easy_explanation =
    Free
-  |Extension 
-  |Filled_complement of int list 
-  |Decomposition of finite_int_set * finite_int_set * (int list) 
-  |Breaking_point of int * int * int 
   |Width_one_expl 
+  |Extension 
+  |Filled_complement of int list ;;
+
+type hard_explanation =  
+   Decomposition of finite_int_set * finite_int_set * (int list) 
+  |Breaking_point of int * int * int  
   |Segment_cut of int * int;; 
 
-
+type eh_explanation =
+  Easy_expl of easy_explanation 
+  |Hard_expl of hard_explanation ;;  

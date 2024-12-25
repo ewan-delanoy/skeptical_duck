@@ -26,14 +26,21 @@ type mold = Sz4_types.mold = {
     mandatory_elements : int list;
 } ;;
 
-type explanation = Sz4_types.explanation = 
+
+type easy_explanation = Sz4_types.easy_explanation = 
    Free
-  |Extension 
-  |Filled_complement of int list 
-  |Decomposition of finite_int_set * finite_int_set * (int list) 
-  |Breaking_point of int * int * int 
   |Width_one_expl 
+  |Extension 
+  |Filled_complement of int list ;;
+
+type hard_explanation =  Sz4_types.hard_explanation = 
+   Decomposition of finite_int_set * finite_int_set * (int list) 
+  |Breaking_point of int * int * int  
   |Segment_cut of int * int;; 
+
+type eh_explanation =
+  Easy_expl of easy_explanation 
+  |Hard_expl of hard_explanation ;;  
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -840,7 +847,9 @@ let width_two_usual n =
     expl) ;;  
 
 let list_for_preparation_of_width_three = 
- [(Point.usual 7 [4],
+ [
+ (*  
+ (Point.usual 7 [4],
     ({solutions = [[1; 2; 5; 6]];
       mandatory_elements = []},
      Decomposition
@@ -881,7 +890,9 @@ let list_for_preparation_of_width_three =
    (Point.usual 8 [2],
     ({solutions = [[1; 3; 4; 6]];
       mandatory_elements = []},
-     Breaking_point (1, 4, 7)))] ;;
+     Breaking_point (1, 4, 7)))
+   *)
+   ] ;;
 
 
 end ;;   
@@ -889,12 +900,12 @@ end ;;
 
 let eval_opt (pt:point) = 
    if (pt.max_width = W 1)&&(pt.added_constraints=[])
-   then Some(Width_one.eval pt.base_set,Width_one_expl)  
+   then Some(Width_one.eval pt.base_set,Easy_expl(Width_one_expl)) 
    else 
-   let n=Finite_int_set.max pt.base_set in    
+   (* let n=Finite_int_set.max pt.base_set in    
    if Private.test_width_two_usual pt 
    then Some(Private.width_two_usual n)
-   else 
+   else *)
    let opt1 = List.assoc_opt pt Private.list_for_preparation_of_width_three in 
    if opt1<>None 
    then opt1 
@@ -1045,11 +1056,7 @@ let breaking_point lower_level_eval_opt pt i j k =
 
 
    let deduce lower_level_eval_opt pt = function
-    Free -> free pt
-  | Width_one_expl -> width_one pt
-  | Extension -> extension lower_level_eval_opt pt  
-  | Filled_complement(l) -> filled_complement lower_level_eval_opt pt l 
-  | Segment_cut(a,b) -> segment_cut lower_level_eval_opt pt (a,b)
+    Segment_cut(a,b) -> segment_cut lower_level_eval_opt pt (a,b)
   | Decomposition(fis1,fis2,sol) -> decomposition lower_level_eval_opt pt (fis1,fis2,sol)
   | Breaking_point (i,j,k) -> breaking_point lower_level_eval_opt pt i j k ;;
   
@@ -1059,9 +1066,9 @@ let breaking_point lower_level_eval_opt pt i j k =
 
   let a_priori_opt pt =
     let opt1 = free_opt pt in 
-    if opt1<>None then Some(Option.get opt1,Free) else 
+    if opt1<>None then Some(Option.get opt1,Easy_expl(Free)) else 
     let opt2 = width_one_opt pt in 
-    if opt2<>None then Some(Option.get opt2,Width_one_expl) else    
+    if opt2<>None then Some(Option.get opt2,Easy_expl(Width_one_expl)) else    
     Precomputed.eval_opt pt ;;
 
 
@@ -1078,7 +1085,7 @@ module One_more_small_step = struct
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
-let explanations_ref = ref ([]: (point * explanation) list) ;; 
+let explanations_ref = ref ([]: (point * eh_explanation) list) ;; 
 
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
@@ -1180,25 +1187,25 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    let beheaded_mold_opt = lower_level_eval_on_pt_with_1_opt beheaded_pt in 
    let opt1 = check_extension_case pt_with_1 n beheaded_mold_opt in 
    if opt1 <> None
-   then let _ = add_explanation pt_with_1 Extension in 
+   then let _ = add_explanation pt_with_1 (Easy_expl Extension) in 
         opt1
    else 
    let opt2 = check_filled_complement_case pt_with_1 n beheaded_mold_opt in 
    if opt2 <> None
    then let (complement,mold) = Option.get opt2 in 
-        let _ = add_explanation pt_with_1 (Filled_complement(complement)) in 
+        let _ = add_explanation pt_with_1 (Easy_expl(Filled_complement complement)) in 
         Some mold
    else 
    let opt3 = check_segment_cut_case pt_with_1 n  in 
    if opt3 <> None
    then let (mold,expl) = Option.get opt3 in 
-        let _ = add_explanation pt_with_1 expl in 
+        let _ = add_explanation pt_with_1 (Hard_expl expl) in 
         Some mold
    else   
    let opt4 = check_prefilled_decomposition_case pt_with_1 n  in 
    if opt4 <> None
    then let (expl,mold) = Option.get opt4 in 
-        let _ = add_explanation pt_with_1 expl in 
+        let _ = add_explanation pt_with_1 (Hard_expl expl) in 
         Some mold
    else    
    None ;;
@@ -1247,7 +1254,7 @@ let explanation_on_pt_with_1_opt pt_with_1 =
    match Precomputed.eval_opt pt_with_1 with 
    (Some old_answer) -> Some (snd old_answer) 
    | None -> 
-    if Point.is_free pt_with_1 then Some Free else  
+    if Point.is_free pt_with_1 then Some (Easy_expl Free) else  
    List.assoc_opt pt_with_1 (!explanations_ref) ;; 
 
 let explanation_opt pt =  
@@ -1625,16 +1632,16 @@ let breaking_point_case pt =
    Breaking_point(nt 1,nt 2,nt 3) ;;
 
 let analize pt = 
-   if Point.is_free pt then Free else
+   if Point.is_free pt then Easy_expl(Free) else
    let opt1 = extension_case_opt pt in
-   if opt1<>None then Option.get opt1 else 
+   if opt1<>None then Easy_expl(Option.get opt1) else 
    let opt2 = filled_complement_opt pt in
-   if opt2<>None then Option.get opt2 else 
+   if opt2<>None then Easy_expl(Option.get opt2) else 
    let opt3 = segment_cut_opt pt in
-   if opt3<>None then Option.get opt3 else    
+   if opt3<>None then Hard_expl(Option.get opt3) else    
    let opt4 = decomposition_opt pt in
-   if opt4<>None then Option.get opt4 else   
-   breaking_point_case pt ;;  
+   if opt4<>None then Hard_expl(Option.get opt4) else   
+   Hard_expl(breaking_point_case pt) ;;  
 
 let adapt_to_subset pt fis = 
    let l = Finite_int_set.to_usual_int_list fis in 
@@ -1643,10 +1650,16 @@ let adapt_to_subset pt fis =
    pt3 ;;
 
 let direct_parents pt = match analize pt with 
-   Free | Width_one_expl -> []
-  |Extension 
-  |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
+  Easy_expl(easy_expl) -> 
+   (
+      match easy_expl with 
+      Free | Width_one_expl -> []
+     |Extension 
+     |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
+   )
+  |Hard_expl(hard_expl) -> match hard_expl with 
+   
   |Decomposition(fis1,fis2,_sol) -> 
       Image.image (adapt_to_subset pt) [fis1;fis2]
   |Breaking_point(i,j,k) ->
