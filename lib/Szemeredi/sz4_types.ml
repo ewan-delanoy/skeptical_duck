@@ -38,6 +38,10 @@ type hard_explanation =
   |Breaking_point of int * int * int  
   |Segment_cut of int * int;; 
 
-type eh_explanation =
+type explanation =
   Easy_expl of easy_explanation 
   |Hard_expl of hard_explanation ;;  
+
+type precomputed_data =
+  Preparation of width * ( point * (mold * explanation)) list 
+  |Layer of width * ( point -> (mold * explanation) ) ;;

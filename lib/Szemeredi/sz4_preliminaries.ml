@@ -38,9 +38,13 @@ type hard_explanation =  Sz4_types.hard_explanation =
   |Breaking_point of int * int * int  
   |Segment_cut of int * int;; 
 
-type eh_explanation =
+type explanation = Sz4_types.explanation = 
   Easy_expl of easy_explanation 
   |Hard_expl of hard_explanation ;;  
+
+type precomputed_data = Sz4_types.precomputed_data = 
+  Preparation of width * ( point * (mold * explanation)) list 
+  |Layer of width * ( point -> (mold * explanation) ) ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -1085,7 +1089,7 @@ module One_more_small_step = struct
 module Private = struct 
 
 let impatient_ref = ref ([]: (point * mold) list) ;; 
-let explanations_ref = ref ([]: (point * eh_explanation) list) ;; 
+let explanations_ref = ref ([]: (point * explanation) list) ;; 
 
 let check_extension_case pt n beheaded_mold_opt = 
    match beheaded_mold_opt with 
