@@ -29,9 +29,12 @@ type mold = Sz4_types.mold = {
 
 type easy_explanation = Sz4_types.easy_explanation = 
    Free
-  |Width_one_expl 
-  |Extension 
+  |Width_one_expl ;;
+
+type medium_explanation =  Sz4_types.medium_explanation = 
+   Extension 
   |Filled_complement of int list ;;
+
 
 type hard_explanation =  Sz4_types.hard_explanation = 
    Decomposition of finite_int_set * finite_int_set * (int list) 
@@ -40,6 +43,7 @@ type hard_explanation =  Sz4_types.hard_explanation =
 
 type explanation = Sz4_types.explanation = 
   Easy_expl of easy_explanation 
+  |Medium_expl of medium_explanation
   |Hard_expl of hard_explanation ;;  
 
 type precomputed_data = Sz4_types.precomputed_data = 
@@ -833,7 +837,7 @@ let test_width_two_usual pt =
    let n=Finite_int_set.max pt.base_set in 
    pt=Point.usual ~max_width:2 n [] ;;
 
-let width_two_usual n = 
+(* let width_two_usual n = 
     let expl = (
         if n<=2 then Free else 
         if n<=4 then Width_one_expl else    
@@ -848,7 +852,7 @@ let width_two_usual n =
      if n=5 then [1;4;5] else   
      if n mod 3 = 0 then [] else List.filter (fun x->
      (x>0)&&((x mod 3)>0) ) [n-1; n])},
-    expl) ;;  
+    expl) ;;  *)
 
 let list_for_preparation_of_width_three = 
  [
@@ -1191,13 +1195,13 @@ let expand_pt_with_1_without_remembering_opt pt_with_1 =
    let beheaded_mold_opt = lower_level_eval_on_pt_with_1_opt beheaded_pt in 
    let opt1 = check_extension_case pt_with_1 n beheaded_mold_opt in 
    if opt1 <> None
-   then let _ = add_explanation pt_with_1 (Easy_expl Extension) in 
+   then let _ = add_explanation pt_with_1 (Medium_expl Extension) in 
         opt1
    else 
    let opt2 = check_filled_complement_case pt_with_1 n beheaded_mold_opt in 
    if opt2 <> None
    then let (complement,mold) = Option.get opt2 in 
-        let _ = add_explanation pt_with_1 (Easy_expl(Filled_complement complement)) in 
+        let _ = add_explanation pt_with_1 (Medium_expl(Filled_complement complement)) in 
         Some mold
    else 
    let opt3 = check_segment_cut_case pt_with_1 n  in 
@@ -1638,9 +1642,9 @@ let breaking_point_case pt =
 let analize pt = 
    if Point.is_free pt then Easy_expl(Free) else
    let opt1 = extension_case_opt pt in
-   if opt1<>None then Easy_expl(Option.get opt1) else 
+   if opt1<>None then Medium_expl(Option.get opt1) else 
    let opt2 = filled_complement_opt pt in
-   if opt2<>None then Easy_expl(Option.get opt2) else 
+   if opt2<>None then Medium_expl(Option.get opt2) else 
    let opt3 = segment_cut_opt pt in
    if opt3<>None then Hard_expl(Option.get opt3) else    
    let opt4 = decomposition_opt pt in
@@ -1654,14 +1658,10 @@ let adapt_to_subset pt fis =
    pt3 ;;
 
 let direct_parents pt = match analize pt with 
-  Easy_expl(easy_expl) -> 
-   (
-      match easy_expl with 
-      Free | Width_one_expl -> []
-     |Extension 
-     |Filled_complement(_)-> let n = Finite_int_set.max (pt.base_set) in 
+  Easy_expl(_) -> []
+  |Medium_expl(_) ->  
+    let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
-   )
   |Hard_expl(hard_expl) -> match hard_expl with 
    
   |Decomposition(fis1,fis2,_sol) -> 

@@ -30,7 +30,9 @@ type mold = {
 type easy_explanation =
    Free
   |Width_one_expl 
-  |Extension 
+
+type medium_explanation =  
+   Extension 
   |Filled_complement of int list ;;
 
 type hard_explanation =  
@@ -40,6 +42,7 @@ type hard_explanation =
 
 type explanation =
   Easy_expl of easy_explanation 
+  |Medium_expl of medium_explanation
   |Hard_expl of hard_explanation ;;  
 
 type precomputed_data =
