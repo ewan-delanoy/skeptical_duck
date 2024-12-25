@@ -47,8 +47,8 @@ type explanation = Sz4_types.explanation =
   |Hard_expl of hard_explanation ;;  
 
 type precomputed_data = Sz4_types.precomputed_data = 
-  Preparation of width * ( point * (mold * explanation)) list 
-  |Layer of width * ( point -> (mold * explanation) ) ;;
+  Preparation of  ( point * (mold * explanation)) list 
+  |Layer of width * ( int -> (mold * explanation) ) ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -833,75 +833,29 @@ module Precomputed = struct
 
 module Private = struct 
 
-let test_width_two_usual pt =
-   let n=Finite_int_set.max pt.base_set in 
-   pt=Point.usual ~max_width:2 n [] ;;
+let scan_preparation prep pt = 
+    List.assoc pt prep ;;
 
-(* let width_two_usual n = 
-    let expl = (
-        if n<=2 then Free else 
-        if n<=4 then Width_one_expl else    
-        if (n mod 3)=0 
-        then Filled_complement [n-2;n-1]
-        else Extension
-    ) in
-    ({solutions =[Util.width2_subset n];
-  mandatory_elements = 
-    (
-     if n=4 then [1;4] else 
-     if n=5 then [1;4;5] else   
-     if n mod 3 = 0 then [] else List.filter (fun x->
-     (x>0)&&((x mod 3)>0) ) [n-1; n])},
-    expl) ;;  *)
+let scan_layer (W w0) f pt = 
+   let n = Finite_int_set.max pt.base_set  in 
+   if pt = Point.usual ~max_width:w0 n [] 
+   then Some(f n) 
+   else None ;;  
 
-let list_for_preparation_of_width_three = 
- [
- (*  
- (Point.usual 7 [4],
-    ({solutions = [[1; 2; 5; 6]];
-      mandatory_elements = []},
-     Decomposition
-      (FIS (3, []),
-      FIS (7, [1; 2; 3; 4]), [1; 2; 5; 6])));
-   (Point.usual 8 [4;5],
-    ({solutions = [[1; 2; 6; 7]];
-      mandatory_elements = []},
-     Decomposition
-      (FIS (3, []),
-      FIS (8, [1; 2; 3; 4; 5]),
-      [1; 2; 6; 7])));
-   (Point.usual 8 [5;7],
-    ({solutions = [[1; 3; 4; 6]];
-      mandatory_elements = []},
-     Decomposition
-      (FIS (3, []),
-      FIS (8, [1; 2; 3; 5; 7]),
-      [1; 3; 4; 6])));
-   (Point.usual 8 [5],
-    ({solutions = [[1; 3; 4; 6]];
-      mandatory_elements = []},
-     Breaking_point (1, 4, 7)));
-   (Point.usual 8 [2;4],
-    ({solutions = [[1; 3; 6; 7]];
-      mandatory_elements = []},
-     Decomposition
-      (FIS (5, [2; 4]),
-      FIS (8, [1; 2; 3; 4; 5]),
-      [1; 3; 6; 7])));
-   (Point.usual 8 [2;7],
-    ({solutions = [[1; 3; 4; 6]];
-      mandatory_elements = []},
-     Decomposition
-      (FIS (5, [2; 4]),
-      FIS (8, [1; 2; 3; 5; 7]),
-      [1; 3; 4; 6])));
-   (Point.usual 8 [2],
-    ({solutions = [[1; 3; 4; 6]];
-      mandatory_elements = []},
-     Breaking_point (1, 4, 7)))
-   *)
-   ] ;;
 
+let scan pt = function 
+ Preparation(l) -> List.assoc_opt pt l
+  | Layer(w,f) -> scan_layer w f pt ;;
+
+let rec scan_several pt = function 
+ [] -> None 
+ | next_elt :: others ->
+   match scan pt next_elt with 
+    (Some answer) -> Some answer 
+    | None ->  scan_several pt others ;;
+
+
+let current_data = [] ;;
 
 end ;;   
 
@@ -910,14 +864,7 @@ let eval_opt (pt:point) =
    if (pt.max_width = W 1)&&(pt.added_constraints=[])
    then Some(Width_one.eval pt.base_set,Easy_expl(Width_one_expl)) 
    else 
-   (* let n=Finite_int_set.max pt.base_set in    
-   if Private.test_width_two_usual pt 
-   then Some(Private.width_two_usual n)
-   else *)
-   let opt1 = List.assoc_opt pt Private.list_for_preparation_of_width_three in 
-   if opt1<>None 
-   then opt1 
-   else None ;;  
+   Private.scan_several pt Private.current_data;;  
 
 end ;;   
 
@@ -1663,7 +1610,6 @@ let direct_parents pt = match analize pt with
     let n = Finite_int_set.max (pt.base_set) in 
                  [Point.remove pt [n]]
   |Hard_expl(hard_expl) -> match hard_expl with 
-   
   |Decomposition(fis1,fis2,_sol) -> 
       Image.image (adapt_to_subset pt) [fis1;fis2]
   |Breaking_point(i,j,k) ->

@@ -46,5 +46,5 @@ type explanation =
   |Hard_expl of hard_explanation ;;  
 
 type precomputed_data =
-  Preparation of width * ( point * (mold * explanation)) list 
-  |Layer of width * ( point -> (mold * explanation) ) ;;
+  Preparation of ( point * (mold * explanation)) list 
+  |Layer of width * ( int -> (mold * explanation) ) ;;
