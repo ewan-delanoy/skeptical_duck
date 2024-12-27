@@ -45,6 +45,10 @@ type explanation =
   |Medium_expl of medium_explanation
   |Hard_expl of hard_explanation ;;  
 
+type upper_explanation =
+   Medium_uexpl of medium_explanation
+  |Hard_uexpl of hard_explanation ;;  
+
 type precomputed_data =
-  Preparation of ( point * (mold * explanation)) list 
+  Preparation of ( point * (mold * upper_explanation)) list 
   |Layer of width * ( int -> (mold * explanation) ) ;;

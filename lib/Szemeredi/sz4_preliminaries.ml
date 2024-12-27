@@ -46,8 +46,12 @@ type explanation = Sz4_types.explanation =
   |Medium_expl of medium_explanation
   |Hard_expl of hard_explanation ;;  
 
+type upper_explanation = Sz4_types.upper_explanation = 
+   Medium_uexpl of medium_explanation
+  |Hard_uexpl of hard_explanation ;;  
+
 type precomputed_data = Sz4_types.precomputed_data = 
-  Preparation of  ( point * (mold * explanation)) list 
+  Preparation of  ( point * (mold * upper_explanation)) list 
   |Layer of width * ( int -> (mold * explanation) ) ;;
 
 
@@ -842,9 +846,15 @@ let scan_layer (W w0) f pt =
    then Some(f n) 
    else None ;;  
 
+let upper_to_usual = function 
+  (Medium_uexpl e) -> Medium_expl e
+  |Hard_uexpl e -> Hard_expl e ;;  
+
 
 let scan pt = function 
- Preparation(l) -> List.assoc_opt pt l
+ Preparation(l) -> Option.map
+                  (fun (mold,expl)  -> (mold,upper_to_usual expl))
+                   (List.assoc_opt pt l)
   | Layer(w,f) -> scan_layer w f pt ;;
 
 let rec scan_several pt = function 
@@ -1647,6 +1657,14 @@ let set_lazy_mode = Private.set_lazy_mode ;;
 
 end ;;
 
+module CheckPrecomputedData = struct 
+
+module Private = struct
+  
+
+end ;; 
+
+end ;;   
 
 
 
