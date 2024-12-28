@@ -1034,7 +1034,7 @@ let breaking_point lower_level_eval_opt pt i j k =
     if opt1<>None then Some(Option.get opt1,Easy_expl(Free)) else 
     let opt2 = width_one_opt pt in 
     if opt2<>None then Some(Option.get opt2,Easy_expl(Width_one_expl)) else    
-    Precomputed.eval_opt pt ;;
+    None ;;
 
 
 end ;;
@@ -1083,7 +1083,10 @@ let check_filled_complement_case pt n beheaded_mold_opt =
 let lower_level_eval_on_pt_with_1_opt pt_with_1 = 
    match Deduce.a_priori_opt pt_with_1 with 
    (Some old_answer) -> Some (fst old_answer) 
-   | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
+   | None -> 
+      match Precomputed.eval_opt pt_with_1 with 
+      (Some old_answer2) -> Some (fst old_answer2)
+      | None -> List.assoc_opt pt_with_1 (!impatient_ref) ;;
 
 let lower_level_eval_opt pt =
     let (d,pt_with_1) = 
