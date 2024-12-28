@@ -1031,9 +1031,9 @@ let breaking_point lower_level_eval_opt pt i j k =
 
   let a_priori_opt pt =
     let opt1 = free_opt pt in 
-    if opt1<>None then Some(Option.get opt1,Easy_expl(Free)) else 
+    if opt1<>None then Some(Option.get opt1,Free) else 
     let opt2 = width_one_opt pt in 
-    if opt2<>None then Some(Option.get opt2,Easy_expl(Width_one_expl)) else    
+    if opt2<>None then Some(Option.get opt2,Width_one_expl) else    
     None ;;
 
 
