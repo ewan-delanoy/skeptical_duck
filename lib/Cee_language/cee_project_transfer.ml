@@ -1154,10 +1154,6 @@ module Private = struct
 
 end ;; 
 
-
-let ambiguous_nonstandard_inclusions_in_files =
-    Private.ambiguous_nonstandard_inclusions_in_files ;;
-
 let create_level_1_copies = Private.create_level_1_copies ;;
 
 

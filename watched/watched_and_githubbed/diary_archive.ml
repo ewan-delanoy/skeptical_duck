@@ -1,14 +1,63 @@
 (************************************************************************************************************************
-Snippet 152 : 
+Snippet 153 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 151 : Using the Zarith module
+Snippet 152 : Code to prepare a phpBB upgrade
 ************************************************************************************************************************)
 
+module Snip152=struct
+
+let dir1 = Directory_name.of_string 
+"~/Downloads//phpBB-3.3.14-files/phpBB-3.3.10_to_3.3.14" ;;
+
+let s1 = Directory_name.connectable_to_subpath dir1 ;;
+let u1 = Unix_again.complete_ls_with_nondirectories_only dir1 ;;
+
+let u2 = Image.image Absolute_path.to_string u1 ;;
+
+let u3 = Image.image 
+  (Cull_string.cobeginning (String.length s1)) u2 ;;
+
+let u4 = Image.image (fun x->
+  let y = Cull_string.before_rightmost x '/' in 
+  let z = (if y="" then "/" else "/"^y^"/") in
+  "cp $PREP/phpBB_3_3_10_to_3_3_14/"^x^" $MAIN"^z
+) u3 ;;  
+
+let u5 = "\n\n\n"^(String.concat "\n" u4)^"\n\n\n" ;;
+
+let s2 = home ^ "/Downloads/Comparison/" ;;
+
+let tt fn = Io.read_whole_file(Absolute_path.of_string(s2^fn)) ;;
+
+let txt1 = tt "common_before.css" ;;
+let txt2 = tt "common_now.css" ;;
+
+let txt1 = tt "colours_before.css" ;;
+let txt2 = tt "colours_now.css" ;;
+
+let l_txt1 = Lines_in_string.indexed_lines txt1 ;;
+
+let l_txt2 = Lines_in_string.indexed_lines txt2 ;;
+
+let m1 = min(List.length l_txt1)(List.length l_txt2) ;; 
+
+let l_12 = Int_range.scale (fun j->
+  (j,List.assoc j l_txt1,List.assoc j l_txt2)) 1 m1 ;;
+
+let u6 = List.filter (fun (j,x,y)->x<>y) l_12 ;;  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 151 : Using the Zarith module
+************************************************************************************************************************)
 module Snip151=struct
 
 open Zirath ;;
@@ -463,7 +512,7 @@ end ;;
 (************************************************************************************************************************
 Snippet 145 : Extract and reorder pages in a PDF
 ************************************************************************************************************************)
-module Snip152=struct
+module Snipp145=struct
 
 let s_dir1 = home ^ "/Teuliou/Heavy/Workshop" ;;
 
@@ -514,7 +563,7 @@ end ;;
 (************************************************************************************************************************
 Snippet 144 : 
 ************************************************************************************************************************)
-module Snip151=struct
+module Snipp144=struct
 let heim = Cull_string.two_sided_cutting ("/home/","") 
     Needed_values.home ;;
 
@@ -536,7 +585,7 @@ end ;;
 (************************************************************************************************************************
 Snippet 143 : Boilerplate code for C project management
 ************************************************************************************************************************)
-module Snip150=struct
+module Snipp143=struct
 
   (*
 
