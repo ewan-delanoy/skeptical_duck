@@ -101,6 +101,19 @@ let decode_wardrobe l = rev_transform1 (rev_transform2 l) ;;
 
 end ;;
 
+ module Cache_Content = struct 
+
+      (* 
+       Those values will be set in another place
+        to avoid lengthening the utop launch
+      *)
+    let list28_ref = ref ([]: (string list)) ;;
+
+    let wardrobe1_ref = ref ([]:((string * Cee_wardrobe_t.t) list)) ;; 
+
+
+end ;;
+
 let decode_wardrobe = Private.decode_wardrobe ;;
 
 let encode_wardrobe = Private.encode_wardrobe ;;

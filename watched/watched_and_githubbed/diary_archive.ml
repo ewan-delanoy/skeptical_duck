@@ -1,14 +1,49 @@
 (************************************************************************************************************************
-Snippet 153 : 
+Snippet 154 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 152 : Code to prepare a phpBB upgrade
+Snippet 153 : Fix error in an indexed list of files
 ************************************************************************************************************************)
 
+module Snip153=struct
+
+module Pri = Olavo_s_local_dircopy.Private ;;
+
+Pri.main_ref := Local_dircopy.initialize Pri.config ;;
+
+let u1 = (!(Pri.main_ref)).Local_dircopy_t.remote_files ;;
+
+let u2 = Image.image (fun fn ->
+  let s= String.sub fn 1 3 in 
+   (int_of_string s,fn)
+  ) u1;;
+
+let u3 = Int_range.scale  (fun j->(j,List.assoc j u2) ) 72 98 ;;
+
+let u4 = Image.image (
+  fun (j,fn) ->
+    let ldc = Pri.config in 
+    let rem_loc = ldc.Local_dircopy_config_t.remote_dir in 
+    let str = string_of_int (j-1) in 
+    let str2 = Strung.insert_repetitive_offset_on_the_left '0' ldc.Local_dircopy_config_t.allowed_number_of_digits str in
+    let src = rem_loc^fn 
+    and dest = rem_loc^"v"^str2^(Cull_string.cobeginning 4 fn) in 
+    Filename.quote_command "mv" [src;dest]
+) u3 ;;
+
+let act1 () = Image.image Sys.command u4 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 152 : Code to prepare a phpBB upgrade
+************************************************************************************************************************)
 module Snip152=struct
 
 let dir1 = Directory_name.of_string 
