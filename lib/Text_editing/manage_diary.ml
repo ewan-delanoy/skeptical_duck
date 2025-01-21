@@ -219,6 +219,104 @@ module Private = struct
         Dfn_common.recompose_potential_absolute_path 
           Coma_big_constant.This_World.root   Coma_constant.rootless_path_for_diary_file);;
 
+  let moodle_keyword = "m"^"odule" ;;
+let capitalized_snip = "Snip" ;; 
+
+(* Returns a replacement text if one is needed *)
+let numbered_module_analysis_at_index_opt correct_module_number text=
+  let i1_opt = Strung.char_finder_from_inclusive_opt 
+    (fun c->not(List.mem c blanks)) text 1 in 
+  if i1_opt = None then None else 
+  let i1 = Option.get i1_opt in 
+  if not(Substring.is_a_substring_located_at moodle_keyword text i1)
+  then None 
+  else 
+  let i2 = i1 + (String.length moodle_keyword) in 
+  let i3_opt = Strung.char_finder_from_inclusive_opt 
+    (fun c->not(List.mem c blanks)) text i2 in 
+  if i3_opt = None then None else 
+  let i3 = Option.get i3_opt in  
+  if not(Substring.is_a_substring_located_at capitalized_snip text i3)
+  then None 
+  else 
+  let i4 = i3 + (String.length capitalized_snip) in 
+  if i4>(String.length text) then None else 
+  let c=Strung.get text i4 in  
+  if (not(List.mem c digits))||(c='0') then None else 
+  let i5_opt = Strung.char_finder_from_inclusive_opt 
+    (fun c->not(List.mem c digits)) text (i4+1) in 
+  if i5_opt = None then None else 
+  let i5 = Option.get i5_opt in    
+  let s_module_number=Cull_string.interval text i4 (i5-1) in 
+  let module_number = int_of_string s_module_number in 
+  if module_number = correct_module_number 
+  then None 
+  else   
+  let new_text = 
+     (Cull_string.beginning (i4-1) text) ^ 
+     (string_of_int correct_module_number)^
+     (Cull_string.cobeginning (i5-1) text) in 
+    Some(module_number,new_text) ;;
+
+  (*
+  
+  numbered_module_analysis_at_index_opt 53 "module Snip37=blablabla" ;;
+  numbered_module_analysis_at_index_opt 53 "module Snip53=blablabla" ;;
+
+  *)
+
+  let needed_fixes_for_module_numbers (D pairs) =
+    let temp1 = Int_range.index_everything pairs in 
+    List.filter_map (
+       fun (mod_number,(_snippet_description,snippet_content)) ->
+        match 
+        numbered_module_analysis_at_index_opt 
+          mod_number snippet_content with 
+       None -> None 
+       |Some (old_mod_number,new_content) -> 
+        Some((mod_number,old_mod_number),new_content)   
+    ) temp1 ;; 
+
+  let message_to_describe_module_number_fixes = function 
+    [] -> "No module number fixes to be made."
+    | l -> 
+        let temp1 = Image.image (
+          fun ((old_number,correct_number),_) -> 
+            (string_of_int old_number) ^" -> "^(string_of_int correct_number)
+        ) l in 
+        "The following module number fixes have been made : \n"^
+        (String.concat " , " temp1);;
+  
+  let announce_module_number_fixes fixes =
+      let msg = "\n\n"^(message_to_describe_module_number_fixes fixes)^"\n\n" in 
+      (print_string msg; flush stdout) ;;
+
+  let fix_module_numbers (D snippets) =
+    let fixes = needed_fixes_for_module_numbers (D snippets) in 
+    let _ = announce_module_number_fixes fixes in  
+    if fixes = []
+    then D snippets 
+    else 
+    let fixer = Image.image (
+      fun ((mod_number,_old_mod_number),new_content)->
+        (mod_number,new_content)
+    ) fixes 
+    and indexed_snippets = Int_range.index_everything snippets in   
+    D(Image.image (fun 
+      (mod_number,old_snippet) -> 
+        match List.assoc_opt mod_number fixer with 
+        None -> old_snippet 
+        |Some new_content -> 
+          let (snippet_description,_old_content) = old_snippet in 
+          (snippet_description,new_content) 
+    ) indexed_snippets);;    
+
+  let fix_module_numbers_in_file fn= 
+      let (_,old_pairs) = read_and_parse fn in 
+      let new_pairs = fix_module_numbers old_pairs in 
+      unparse_and_write_to new_pairs fn ;;  
+
+
   end ;; 
   
   let append_fresh_snippet () = Private.append_fresh_snippet_in_file Private.usual_path;;
@@ -228,6 +326,9 @@ module Private = struct
 
   let findreplace_at_index replacements idx = Private.findreplace_at_index_in_file replacements idx Private.usual_path;;   
   let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
+  
+  let fix_module_numbers_in_file () = Private.fix_module_numbers_in_file Private.usual_path ;;
+  
   let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
   
 
