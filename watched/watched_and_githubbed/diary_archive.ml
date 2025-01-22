@@ -258,8 +258,7 @@ Snippet 149 : Using the Coherent_pdf module
 module Snip149=struct
 
 let ap1 = Absolute_path.of_string (
-   "~/Teuliou/OCaml/skeptical_duck/nonml_files/"^
-   "nongithubbed_nonml_files/pdf_workspace/numbers.pdf") ;;
+   "~/Teuliou/Printable/numbers.pdf") ;;
 
 let act1 () = Coherent_pdf.corep_transform 
     ap1 ~outputfile_name:"example";;

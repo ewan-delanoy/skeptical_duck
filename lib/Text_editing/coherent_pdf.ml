@@ -72,14 +72,14 @@ module OnSiteCommand = struct
     let corep_transform onsite_input outputfile_name padded_nbr= 
     let q = (padded_nbr/8) in
     let corep_order = List.flatten (Int_range.scale (fun j->
-        [2*j-1;2*q+2*j-1;2*j;2*q+2*j]
-      ) 1 q) in 
+        Image.image (fun r->8*j+r) [2;3;6;7;4;1;8;5]
+      ) 0 (q-1)) in 
     (pad_up_to_multiple onsite_input  8 "padded")::
     (explode  "padded" "page")::
     (
      [
        (implode "page" "reaggregated" corep_order);
-       ("cpdf -impose-pdf \"2 2\" reaggregated.pdf -o "^outputfile_name^".pdf");
+       ("cpdf -impose-xy \"2 2\" reaggregated.pdf -o "^outputfile_name^".pdf");
        "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
     );; 
