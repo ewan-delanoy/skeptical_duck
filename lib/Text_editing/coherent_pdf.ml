@@ -69,38 +69,17 @@ module OnSiteCommand = struct
     "cpdf "^onsite_input^".pdf -pad-multiple "^(string_of_int m)^
     " -o "^output_name^".pdf";; 
 
-  let reverse_one onsite_input = 
-    ["cpdf -rotate-contents 180 "^onsite_input^".pdf -o temp.pdf";
-     "cp temp.pdf "^onsite_input^".pdf" ;
-     "rm temp.pdf"
-    ] ;;  
-
-  let reverse_several prefix indices = 
-    List.flatten ( Image.image
-      (fun idx ->
-        let name = Private.partial prefix idx in 
-        reverse_one name) 
-      indices );;   
-
-  let reverse_pages_in_corep_subset page_prefix ~number_of_pages= 
-    let q = (number_of_pages/4) in
-    let corep_subset = List.flatten (Int_range.scale (fun j->
-        [2*j;2*q+2*j]
-      ) 1 q) in 
-    reverse_several page_prefix corep_subset ;;
-
-  let corep_transform onsite_input outputfile_name padded_nbr= 
-    let q = (padded_nbr/4) in
+    let corep_transform onsite_input outputfile_name padded_nbr= 
+    let q = (padded_nbr/8) in
     let corep_order = List.flatten (Int_range.scale (fun j->
         [2*j-1;2*q+2*j-1;2*j;2*q+2*j]
       ) 1 q) in 
-    (pad_up_to_multiple onsite_input  4 "padded")::
+    (pad_up_to_multiple onsite_input  8 "padded")::
     (explode  "padded" "page")::
-    (reverse_pages_in_corep_subset  "page" ~number_of_pages:padded_nbr)@
     (
      [
        (implode "page" "reaggregated" corep_order);
-       ("cpdf -twoup reaggregated.pdf -o "^outputfile_name^".pdf");
+       ("cpdf -impose-pdf \"2 2\" reaggregated.pdf -o "^outputfile_name^".pdf");
        "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
     );; 
