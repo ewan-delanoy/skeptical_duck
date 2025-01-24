@@ -132,6 +132,19 @@ module OnSiteCommand = struct
      ]
     );; 
 
+   let force_same_size_for_all_pages 
+     onsite_input outputfile_name ~forced_width ~forced_height=  
+    let sizes = "\" "^(string_of_int forced_width)^"pt " 
+                     ^(string_of_int forced_height)^"pt \"" in 
+
+     [
+       
+       ("cpdf -scale_to_fit "^sizes^" "^onsite_input^".pdf -o "
+            ^outputfile_name^".pdf");
+       "rm initial_copy.pdf page*.pdf padded.pdf";
+     ]
+    ;; 
+
 end ;;  
 
 
@@ -145,6 +158,15 @@ module Command = struct
    (OnSiteCommand.corep_transform "initial_copy" outputfile_name padded_nbr) @
     ["cd "^current_dir];;
 
+  let force_same_size_for_all_pages ap outputfile_name 
+         ~forced_width ~forced_height=  
+    
+    let current_dir = Sys.getcwd () in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.force_same_size_for_all_pages "initial_copy" outputfile_name ~forced_width ~forced_height) @
+    ["cd "^current_dir];; 
+
 end ;;  
 
 let average_page_width_and_height = 
@@ -153,6 +175,12 @@ let average_page_width_and_height =
 let corep_transform ap ~outputfile_name= 
    Unix_command.conditional_multiple_uc 
     (Command.corep_transform ap outputfile_name) ;;
+
+let force_same_size_for_all_pages ap ~outputfile_name
+    ~forced_width ~forced_height= 
+   Unix_command.conditional_multiple_uc 
+    (Command.force_same_size_for_all_pages ap outputfile_name
+        ~forced_width ~forced_height) ;;
 
 let number_of_pages_in_pdf = 
     Private.number_of_pages_in_pdf ;;
