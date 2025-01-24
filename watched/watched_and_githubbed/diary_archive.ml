@@ -260,8 +260,12 @@ module Snip149=struct
 let ap1 = Absolute_path.of_string (
    "~/Teuliou/Printable/numbers.pdf") ;;
 
+let ap2 = Absolute_path.of_string (
+   "~/Teuliou/Printable/sample.pdf") ;;
+
+
 let act1 () = Coherent_pdf.corep_transform 
-    ap1 ~outputfile_name:"example";;
+    ap2 ~outputfile_name:"output";;
 
 let act2 () = Int_range.scale(fun k->
     let sk = string_of_int k in 
