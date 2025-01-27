@@ -1,8 +1,68 @@
 (************************************************************************************************************************
-Snippet 154 : 
+Snippet 155 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 154 : Preliminary actions before using the Coherent pdf module
+************************************************************************************************************************)
+
+module Snip154=struct
+let s_dir1 = home ^ "/Downloads/Pages" ;;
+
+let dir1= Directory_name.of_string s_dir1 ;;
+
+let u1 = Unix_again.beheaded_simple_ls dir1;;
+
+let u2 = List.filter (fun s -> 
+   String.starts_with s ~prefix:"q" ) u1 ;;
+
+Sys.chdir s_dir1 ;;
+
+let u3 = Image.image (fun s->
+  "mv "^s^" p1"^(Cull_string.cobeginning 1 s)   
+) u2 ;;
+
+let act1 () = Image.image Sys.command u3 ;;
+
+let u3 = Unix_again.beheaded_simple_ls dir1;;
+
+let u4 = List.filter (fun s -> 
+   String.starts_with s ~prefix:"p" ) u3 ;;
+
+let indices = Ordered.sort Total_ordering.for_integers (Image.image (
+   fun s -> int_of_string(Cull_string.two_sided_cutting ("p",".png") s)
+) u4);;
+
+let indexed_indices = Int_range.index_everything indices ;;
+
+let u5 = Image.image (fun (i,j)->
+  let si=string_of_int i and sj=string_of_int j in
+  "mv p"^sj^".png r"^si^".png"   
+) indexed_indices ;;
+
+let act2 () = Image.image Sys.command u5 ;;
+
+let n1 = List.length indexed_indices ;;
+
+let u6 = Int_range.scale (fun i->
+  let si=string_of_int i in
+  "convert r"^si^".png p"^si^".pdf"   
+) 1 n1 ;;
+
+let act3 () = Image.image Sys.command u6 ;;
+
+let u7 = "cpdf "^(String.concat " " (Int_range.scale (fun i->
+  "p"^(string_of_int i)^".pdf"   
+) 1 n1 ))^" -o baskerville_gentleman.pdf";;
+
+let act4 () = Sys.command u7 ;;
+
+
+
+end ;;
 
 
 (************************************************************************************************************************
@@ -260,12 +320,12 @@ module Snip149=struct
 let ap1 = Absolute_path.of_string (
    "~/Teuliou/Printable/numbers.pdf") ;;
 
-let ap2 = Absolute_path.of_string (
-   "~/Teuliou/Printable/sample.pdf") ;;
+let ap1 = Absolute_path.of_string (
+   "~/Teuliou/Heavy/baskerville_gentleman.pdf") ;;
 
 
 let act1 () = Coherent_pdf.corep_transform 
-    ap2 ~outputfile_name:"output";;
+    ap1 ~outputfile_name:"output";;
 
 let act2 () = Int_range.scale(fun k->
     let sk = string_of_int k in 
@@ -275,7 +335,17 @@ let act2 () = Int_range.scale(fun k->
     ~outputfile_name:("printable_hib_"^sk)
   ) 1 3 ;;    
 
+let g3 () = Coherent_pdf.force_same_size_for_all_pages 
+  ( Absolute_path.of_string (
+   "~/Teuliou/Heavy/planiol_hib_2.pdf"))  
+ ~outputfile_name:"planiol_hub_2"
+    ~forced_width:1120 ~forced_height:740;;
 
+let g4 () = Coherent_pdf.force_same_size_for_all_pages 
+  ( Absolute_path.of_string (
+   "~/Teuliou/Heavy/planiol_hib_3.pdf"))  
+ ~outputfile_name:"planiol_hub_3"
+    ~forced_width:1120 ~forced_height:740;;  
 
 end ;;
 

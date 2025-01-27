@@ -128,20 +128,20 @@ module OnSiteCommand = struct
      [
        (implode "page" "reaggregated" corep_order);
        ("cpdf -impose-xy \"2 2\" -impose-margin 15 reaggregated.pdf -o "^outputfile_name^".pdf");
-       "rm initial_copy.pdf page*.pdf padded.pdf";
+       "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
     );; 
 
    let force_same_size_for_all_pages 
      onsite_input outputfile_name ~forced_width ~forced_height=  
-    let sizes = "\" "^(string_of_int forced_width)^"pt " 
-                     ^(string_of_int forced_height)^"pt \"" in 
+    let sizes = "\""^(string_of_int forced_width)^"pt " 
+                     ^(string_of_int forced_height)^"pt\"" in 
 
      [
        
-       ("cpdf -scale_to_fit "^sizes^" "^onsite_input^".pdf -o "
+       ("cpdf -scale-to-fit "^sizes^" "^onsite_input^".pdf -o "
             ^outputfile_name^".pdf");
-       "rm initial_copy.pdf page*.pdf padded.pdf";
+       "rm initial_copy.pdf";
      ]
     ;; 
 
