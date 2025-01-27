@@ -1122,7 +1122,7 @@ module Private = struct
     List.filter_map
       (fun fn ->
         let old_text = Capsule.read_file cpsl fn in
-        match Cee_text.standardize_guard_in_text old_text with
+        match Cee_text.standardize_guard_in_text_opt old_text with
         | None -> None
         | Some new_text ->
           let _ = if not dry_run then Capsule.modify_file cpsl fn new_text in

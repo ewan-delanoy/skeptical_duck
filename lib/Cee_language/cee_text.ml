@@ -434,9 +434,12 @@ let emphatize_first_ivy_and_last_endif text =
   let text2 = put_first_ivy_on_first_line text in 
   put_last_endif_on_last_line text2 ;;
 
-let standardize_guard_in_text text = 
+let standardize_guard_in_text_opt text = 
   if test_text_for_guard_pattern text 
-  then Some(emphatize_first_ivy_and_last_endif text)
+  then let new_text = emphatize_first_ivy_and_last_endif text in 
+       if new_text = text 
+       then None 
+       else Some(emphatize_first_ivy_and_last_endif text)
   else None ;;   
 
  let marker_for_cd_defined_region = "cgmvgtkcxvvxckt" ;;  
@@ -716,7 +719,7 @@ let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let rewrite_using_shadow = Private.rewrite_using_shadow ;;
-let standardize_guard_in_text = Private.standardize_guard_in_text ;;
+let standardize_guard_in_text_opt = Private.standardize_guard_in_text_opt ;;
 let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 
 
