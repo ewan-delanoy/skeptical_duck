@@ -261,6 +261,7 @@ module Private2 = struct
         cpsl
         short_name_for_preprocessable_file
         ?new_content_description:(Some msg)
+        ~is_temporary:true
         text_to_be_preprocessed
     in
     let cmd2 =
@@ -333,7 +334,7 @@ module Private2 = struct
         in
         let msg = "(tattoo_regions  " ^ fn ^ ")" in
         let _ =
-          cpsl_create_file cpsl new_fn ?new_content_description:(Some msg) new_content
+          cpsl_create_file cpsl new_fn ?new_content_description:(Some msg) ~is_temporary:true new_content
         in
         fn, old_content, new_fn,inclusion_idx)
       indexed_inclusions
@@ -521,7 +522,7 @@ module Private2 = struct
     ;;
 
     let create_file_in_a_list cpsl_ref fn 
-      ?new_content_description new_content index_msg=
+      ?new_content_description ~is_temporary new_content index_msg=
       let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
       let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
       let _ = Io.overwrite_with ap new_content in
@@ -530,12 +531,14 @@ module Private2 = struct
         | None -> ""
         | Some descr -> ", with content " ^ descr
       in
-      announce ("Created file  " ^ fn ^ end_of_msg ^ index_msg)
+      let durability =(
+         if is_temporary then "temporary" else "persistent") in 
+      announce ("Created "^durability^" file  " ^ fn ^ end_of_msg ^ index_msg)
     ;;
 
-    let create_file cpsl_ref fn ?new_content_description new_content =
+    let create_file cpsl_ref fn ?new_content_description ~is_temporary new_content =
      create_file_in_a_list cpsl_ref fn 
-      ?new_content_description new_content ""
+      ?new_content_description ~is_temporary new_content ""
     ;;
 
     let marker_for_shadowed_copies = "_QhzFTSnAQA_" ;; 
@@ -550,7 +553,7 @@ module Private2 = struct
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
          Cee_text.rewrite_using_shadow old_content shadow in   
-      create_file_in_a_list cpsl_ref copy_name  new_content index_msg;;
+      create_file_in_a_list cpsl_ref copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
       let temp1 = Int_range.index_everything cpsl.commands in
@@ -861,7 +864,7 @@ module type CAPSULE_INTERFACE = sig
   val shadow_algebras_for_di_files : t -> (string * (int * int list list)) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
-  val create_file : t -> string -> ?new_content_description:string -> string -> unit
+  val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
   val create_shadowed_copy :
       t ->
       string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
