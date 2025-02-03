@@ -834,9 +834,8 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       let new_cpsl = {
         old_cpsl with 
         wardrobes_for_dc_files_opt = Some precomputed_wardrobes_for_dc_files
-      } in 
-      let _ = (cpsl_ref:=new_cpsl) in 
-      cpsl_ref ;;
+      } in  
+      ref new_cpsl;;
 
   end ;;
 end ;;

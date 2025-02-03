@@ -1,14 +1,71 @@
 (************************************************************************************************************************
-Snippet 155 : 
+Snippet 156 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 154 : Preliminary actions before using the Coherent pdf module
+Snippet 155 : Finite sets stable by (x,y)->|x-y|
 ************************************************************************************************************************)
 
+module Snip155=struct
+
+let i_order = Total_ordering.for_integers ;; 
+
+let i_merge = Ordered.merge i_order ;; 
+
+let i_setminus = Ordered.setminus i_order ;; 
+
+let i_sort = Ordered.sort i_order ;; 
+
+type crab = Cr of int * ((int list) list) * (int list) ;;
+
+let newly_produced (Cr(n,parts,whole))=
+  let temp1 = Uple.list_of_pairs whole in 
+  let temp2 = Image.image (fun (i,j)->j-i) temp1 in 
+  let temp3 = i_sort temp2 in 
+  i_setminus (i_setminus temp3 whole) [n-1] ;;
+
+let rec iterate crrab =
+  let (Cr(n,parts,whole)) = crrab in 
+  let new_ones = newly_produced crrab in 
+  if new_ones = []
+  then crrab 
+  else 
+  let new_crrab = Cr(n,parts@[new_ones],i_merge whole new_ones) in 
+  iterate new_crrab ;;
+
+let ff = Memoized.make(fun (v,u)->
+   let crrab = Cr(v,[[u;v]],[u;v]) in 
+   let (Cr(_n,parts,whole)) = iterate crrab in 
+   (parts,i_setminus (Int_range.range 1 (v-2)) whole) 
+)  ;;
+
+let gg = Memoized.make(fun t->
+   let v=3*t+1 in 
+   let temp1 = Int_range.scale (fun j->3*j-2) 1 (t+1) in 
+   let crrab = Cr(v,[temp1],temp1) in 
+   let (Cr(_n,parts,_whole)) = iterate crrab in 
+   parts 
+)  ;;
+
+let hh t = 
+   let temp1 = Int_range.scale (fun j->("A",3*j-2)) 1 (t+1) in 
+   let temp2 = Int_range.scale (fun j->("B",3*j)) 1 (t-1) in
+   let temp3 = temp1 @ temp2 in 
+   let temp4 = Uple.list_of_pairs temp3 in 
+       List.filter (
+         fun ((lx,x),(ly,y)) -> abs(y-x) = 2
+       ) temp4 ;; 
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 154 : Preliminary actions before using the Coherent pdf module
+************************************************************************************************************************)
 module Snip154=struct
 let s_dir1 = home ^ "/Downloads/Pages" ;;
 
