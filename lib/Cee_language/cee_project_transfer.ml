@@ -405,7 +405,7 @@ module Private2 = struct
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
       ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; shadow_algebras_for_di_files_opt : ( (string * (int * int list list)) list) option
+      ; shadow_algebras_for_di_files_opt : ( (string * (int * Cee_prawn_t.t list)) list) option
       } ;;
 
     type t = immutable_t ref
@@ -544,12 +544,12 @@ module Private2 = struct
     let marker_for_shadowed_copies = "_QhzFTSnAQA_" ;; 
 
     let create_shadowed_copy 
-      cpsl_ref fn shadow ~copy_level ~shadow_index index_msg = 
+      cpsl_ref fn shadow ~copy_level ~prawn_index index_msg = 
       let (basename,extension) =
           Cull_string.split_wrt_rightmost fn '.' in 
       let copy_name = basename ^ marker_for_shadowed_copies ^
       "level_"^(string_of_int copy_level)^
-      "_shadow_"^(string_of_int shadow_index)^"."^extension in
+      "_prawn_"^(string_of_int prawn_index)^"."^extension in
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
          Cee_text.rewrite_using_shadow old_content shadow in   
@@ -757,7 +757,8 @@ let compute_wardrobes_for_dc_files cpsl_ref =
    let shadows2 = il_sort shadows in    
    let shadows3 = Ordered_misc.generated_algebra Total_ordering.for_integers shadows2 in 
    let shadows4 = List.flatten (Image.image connected_components shadows3) in 
-   (included_one,(n,il_sort shadows4)) ;;
+   let shadows5 = il_sort shadows4 in 
+   (included_one,(n,Image.image (fun l->Cee_prawn_t.P l) shadows5)) ;;
 
     let compute_shadow_algebras_for_di_files cpsl_ref =
       let wardrobes = wardrobes_for_di_files cpsl_ref in
@@ -861,13 +862,13 @@ module type CAPSULE_INTERFACE = sig
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
   val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
-  val shadow_algebras_for_di_files : t -> (string * (int * int list list)) list
+  val shadow_algebras_for_di_files : t -> (string * (int * (Cee_prawn_t.t) list)) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
   val create_shadowed_copy :
       t ->
-      string -> Cee_shadow_t.t -> copy_level:int -> shadow_index:int -> string -> unit
+      string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> string -> unit
 
    val make :
       ?refill_files:bool ->
@@ -1137,19 +1138,20 @@ module Private = struct
   let create_level_1_copies cpsl = 
     let temp1 = Capsule.shadow_algebras_for_di_files cpsl in 
     let temp2 = List.flatten(Image.image (
-      fun (fn,(nbr_of_parts,parts)) ->
-        let ttemp3 = Int_range.index_everything parts in 
-        Image.image (fun (part_idx,part)->
-          (fn,Cee_shadow_t.Sh(nbr_of_parts,part),part_idx)
+     fun (fn,(nbr_of_parts,prawns)) ->
+        let ttemp3 = Int_range.index_everything prawns in 
+        Image.image (fun (prawn_idx,Cee_prawn_t.P prawn)->
+          (fn,Cee_shadow_t.Sh(nbr_of_parts,prawn),
+           prawn_idx)
         ) ttemp3
     ) temp1) in 
     let temp4 = Int_range.index_everything temp2  in 
     let s_total = string_of_int(List.length temp2) in 
     List.iter 
-    (fun (global_idx,(fn,shadow,shadow_index))->
+    (fun (global_idx,(fn,shadow,prawn_index))->
        let idx_msg = " ("^(string_of_int global_idx)^" of "^s_total^")" in 
       Capsule.create_shadowed_copy 
-       cpsl fn shadow ~copy_level:1 ~shadow_index idx_msg
+       cpsl fn shadow ~copy_level:1 ~prawn_index idx_msg
       ) temp4;; 
 
 end ;; 

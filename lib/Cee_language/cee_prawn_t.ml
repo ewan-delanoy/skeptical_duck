@@ -12,5 +12,3 @@ this file.
 
 
 type  t = P of int list ;; 
-
-type index_t = I of int ;;
