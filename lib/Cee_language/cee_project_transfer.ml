@@ -209,16 +209,13 @@ module Private2 = struct
     cpsl
     includers
     =
-    List.flatten
-      (Image.image
+    Image.image
          (fun includer_fn ->
-           Image.image
-             (fun (idx, included_fn) -> includer_fn, idx, included_fn)
-             (included_files_in_single_file
+             (includer_fn,included_files_in_single_file
                 (cpsl_separate_commands, cpsl_all_h_or_c_files, cpsl_read_file)
                 cpsl
                 includer_fn))
-         includers)
+         includers
   ;;
 
   let announce cmd =
@@ -318,15 +315,10 @@ module Private2 = struct
     =
     (* returns the list of the filenames created*)
     let temp1 = cpsl_inclusions_in_dc_files cpsl in
-    let temp2 =
-      List.filter_map
-        (fun (includer, _line_nbr, included_one) ->
-          if includer = short_filename 
-          then Some (included_one) else None)
-        temp1 in
+    let temp2 = List.assoc short_filename temp1 in
     let indexed_inclusions = Int_range.index_everything temp2 in 
     Image.image
-      (fun (inclusion_idx,fn) ->
+      (fun (inclusion_idx,(_,fn)) ->
         let new_fn = Cee_common.add_extra_ending_in_filename ~extra:"includable" fn in
         let old_content = cpsl_read_file cpsl fn in
         let new_content =
@@ -399,7 +391,7 @@ module Private2 = struct
       ; separate_commands_opt : Cee_compilation_command_t.separate_t list option
       ; filecontents : (string, string) Hashtbl.t
       ; directly_compiled_files_opt : string list option
-      ; inclusions_in_dc_files_opt : (string * int * string) list option
+      ; inclusions_in_dc_files_opt : (string * ((int * string) list)) list option
       ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
       ; wardrobes_for_dc_files_opt : (string * Cee_wardrobe_t.t) list option
       ; directly_included_files_opt : string list option
@@ -679,13 +671,9 @@ let compute_wardrobes_for_dc_files cpsl_ref =
 
     let compute_directly_included_files cpsl_ref =
       let temp1 = inclusions_in_dc_files cpsl_ref in
-      let temp2 =
-        str_sort
-          (Image.image
-             (fun (_includer, _line_number, included_one) -> included_one)
-             temp1)
-      in
-      str_setminus temp2 (directly_compiled_files cpsl_ref)
+      let temp2 = Image.image(fun (_,l)->Image.image snd l) temp1 in 
+      let temp3 = str_sort (List.flatten temp2) in
+      str_setminus temp3 (directly_compiled_files cpsl_ref)
     ;;
 
     let directly_included_files cpsl_ref =
@@ -704,12 +692,16 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       | Some old_answer -> old_answer
       | None ->
         let temp1 = inclusions_in_dc_files cpsl_ref in
-        let answer =
-          List.filter_map
-            (fun (includer, line_number, included_one) ->
-              if included_one = fn then Some (includer, line_number) else None)
-            temp1
-        in
+        
+        
+        let temp2 = List.filter_map(fun (includer,l)->
+         List.find_map (fun (line_nbr,other_fn)->
+             if other_fn = fn then Some(includer,line_nbr) else None  
+          ) l ) temp1 in 
+      let temp3 = str_sort (Image.image fst temp2) in
+      let answer = Image.image (fun
+        includer ->(includer,List.assoc includer temp2)
+      ) temp3 in 
         let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in
         answer
     ;;
@@ -863,7 +855,7 @@ module type CAPSULE_INTERFACE = sig
   val all_h_or_c_files : t -> string list
   val separate_commands : t -> Cee_compilation_command_t.separate_t list
   val directly_compiled_files : t -> string list
-  val inclusions_in_dc_files : t -> (string * int * string) list
+  val inclusions_in_dc_files : t -> (string * ((int * string) list)) list
   val shadows_for_dc_files : t -> (string * Cee_shadow_t.t) list
   val wardrobes_for_dc_files : t -> (string * Cee_wardrobe_t.t) list
   val directly_included_files : t -> string list
