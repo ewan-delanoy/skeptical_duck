@@ -787,7 +787,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
     ;;
   
   let first_constructor ~source_envname:src_envname ~destination_envname:dest_envname 
-    ~refill_files
+    ~reinitialize_destination
     processed_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in
       let new_cpsl = ref
@@ -809,7 +809,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         ; shadow_algebras_for_di_files_opt = None
         } in 
       let _ = (
-         if refill_files 
+         if reinitialize_destination 
          then  
           (write_makefile new_cpsl;
      write_to_upper_makefile new_cpsl;
@@ -818,17 +818,17 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       new_cpsl
     ;;
 
-    let make ?(refill_files=false) ~source_envname:src_envname ~destination_envname:dest_envname 
+    let make ?(reinitialize_destination=false) ~source_envname:src_envname ~destination_envname:dest_envname 
         raw_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
       let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
-      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname ~refill_files processed_commands ;;
+      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination processed_commands ;;
 
-  let replicate ?(refill_files=false) ~next_envname cpsl  =      
+  let replicate ?(reinitialize_destination=false) ~next_envname cpsl  =      
        first_constructor
    ~source_envname:(((!cpsl).destination_envname))
    ~destination_envname:next_envname
-   ~refill_files 
+   ~reinitialize_destination 
     ((!cpsl).commands) 
    ;;
 
@@ -871,12 +871,12 @@ module type CAPSULE_INTERFACE = sig
       string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> string -> unit
 
    val make :
-      ?refill_files:bool ->
+      ?reinitialize_destination:bool ->
       source_envname:string ->
       destination_envname:string ->
        string list -> t
     val replicate :
-      ?refill_files:bool ->
+      ?reinitialize_destination:bool ->
       next_envname:string -> t -> t
 
 
