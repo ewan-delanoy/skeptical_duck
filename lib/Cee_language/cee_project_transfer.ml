@@ -885,8 +885,6 @@ module type CAPSULE_INTERFACE = sig
       t -> (string * Cee_wardrobe_t.t) list -> t
 
   val  reinitialize_destination_directory : t -> unit  
-
-  val  write_to_upper_makefile : t -> unit 
   
 end ;;
 
