@@ -645,7 +645,7 @@ module Private2 = struct
         answer
     ;;
 
-let compute_wardrobes_for_dc_files cpsl_ref =
+let compute_wardrobes_for_dc_files_in_execution_order cpsl_ref =
       let cmds = separate_commands cpsl_ref in
       let indexed_cmds = Int_range.index_everything cmds
       and s_num_of_cmds = string_of_int (List.length cmds) in
@@ -660,7 +660,14 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         indexed_cmds
     ;;
 
-    let wardrobes_for_dc_files cpsl_ref =
+let compute_wardrobes_for_dc_files cpsl_ref = 
+  let dc_files = directly_compiled_files cpsl_ref 
+  and execution_order = compute_wardrobes_for_dc_files_in_execution_order cpsl_ref in 
+  Image.image (
+    fun dc_file ->(dc_file,List.assoc dc_file execution_order)
+  ) dc_files ;;
+
+   let wardrobes_for_dc_files cpsl_ref =
       match !cpsl_ref.wardrobes_for_dc_files_opt with
       | Some old_answer -> old_answer
       | None ->
