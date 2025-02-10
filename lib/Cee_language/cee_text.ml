@@ -492,7 +492,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
- let rewrite_using_shadow old_text shadow =
+ let crop_using_shadow old_text shadow =
    match shadow with 
    (Cee_shadow_t.Sh(_,accepted_indices)) ->  
    let lines = Lines_in_string.indexed_lines old_text 
@@ -715,10 +715,10 @@ end ;;
 
 let compute_shadow = Private.compute_shadow ;;
 let compute_wardrobe = Private.compute_wardrobe ;;
+let crop_using_shadow = Private.crop_using_shadow ;;
 let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
-let rewrite_using_shadow = Private.rewrite_using_shadow ;;
 let standardize_guard_in_text_opt = Private.standardize_guard_in_text_opt ;;
 let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 

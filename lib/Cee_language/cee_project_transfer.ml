@@ -383,12 +383,13 @@ module Private2 = struct
   let marker_for_shadowed_partial_copies = "_QhzFTSnAQA_" ;; 
 
     let shadowed_partial_copy_name 
-      ~filepath ~copy_level ~prawn_index  = 
+      ~filepath ~copy_level ~prawn_index ~number_of_prawns = 
       let (basename,extension) =
           Cull_string.split_wrt_rightmost filepath '.' in 
       basename ^ marker_for_shadowed_partial_copies ^
       "level_"^(string_of_int copy_level)^
-      "_prawn_"^(string_of_int prawn_index)^"."^extension ;;
+      "_prawn_"^(string_of_int prawn_index)^
+      "_of_"^(string_of_int number_of_prawns)^"."^extension ;;
 
   module PreCapsule = struct
     type immutable_t =
@@ -544,12 +545,13 @@ module Private2 = struct
     ;;
 
     let create_shadowed_partial_copy 
-      cpsl_ref fn shadow ~copy_level ~prawn_index index_msg = 
+      cpsl_ref fn shadow ~copy_level ~prawn_index ~number_of_prawns index_msg = 
+      
       let copy_name = shadowed_partial_copy_name 
-      ~filepath:fn ~copy_level ~prawn_index in 
+      ~filepath:fn ~copy_level ~prawn_index ~number_of_prawns in 
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
-         Cee_text.rewrite_using_shadow old_content shadow in   
+         Cee_text.crop_using_shadow old_content shadow in   
       create_file_in_a_list cpsl_ref copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
@@ -872,7 +874,7 @@ module type CAPSULE_INTERFACE = sig
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
   val create_shadowed_partial_copy :
       t ->
-      string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> string -> unit
+      string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> number_of_prawns:int -> string -> unit
 
    val make :
       ?reinitialize_destination:bool ->
@@ -911,7 +913,7 @@ module Private = struct
          ^ separate_cmd.Cee_compilation_command_t.ending)
     in
     let shadow = List.assoc name_for_container_file (Capsule.shadows_for_dc_files cpsl) in
-    let new_text = Cee_text.rewrite_using_shadow old_text shadow in
+    let new_text = Cee_text.crop_using_shadow old_text shadow in
     let target_filename = dest_dir ^ name_for_container_file in
     let target_file = Absolute_path.create_file_if_absent target_filename in
     let _ =
@@ -1144,16 +1146,16 @@ module Private = struct
         let ttemp3 = Int_range.index_everything prawns in 
         Image.image (fun (prawn_idx,Cee_prawn_t.P prawn)->
           (fn,Cee_shadow_t.Sh(nbr_of_parts,prawn),
-           prawn_idx)
+           prawn_idx,List.length prawns)
         ) ttemp3
     ) temp1) in 
     let temp4 = Int_range.index_everything temp2  in 
     let s_total = string_of_int(List.length temp2) in 
     List.iter 
-    (fun (global_idx,(fn,shadow,prawn_index))->
+    (fun (global_idx,(fn,shadow,prawn_index,number_of_prawns))->
        let idx_msg = " ("^(string_of_int global_idx)^" of "^s_total^")" in 
       Capsule.create_shadowed_partial_copy 
-       cpsl fn shadow ~copy_level:1 ~prawn_index idx_msg
+       cpsl fn shadow ~copy_level:1 ~prawn_index ~number_of_prawns idx_msg
       ) temp4;; 
 
 end ;; 
