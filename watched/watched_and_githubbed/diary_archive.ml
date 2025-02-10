@@ -378,7 +378,7 @@ let ap1 = Absolute_path.of_string (
    "~/Teuliou/Printable/numbers.pdf") ;;
 
 let ap1 = Absolute_path.of_string (
-   "~/Teuliou/Heavy/baskerville_gentleman.pdf") ;;
+   "~/Teuliou/Heavy/Workshop/richelieu.pdf") ;;
 
 
 let act1 () = Coherent_pdf.corep_transform 
@@ -403,6 +403,21 @@ let g4 () = Coherent_pdf.force_same_size_for_all_pages
    "~/Teuliou/Heavy/planiol_hib_3.pdf"))  
  ~outputfile_name:"planiol_hub_3"
     ~forced_width:1120 ~forced_height:740;;  
+
+let ap1 = Absolute_path.of_string (
+   "~/Teuliou/Heavy/Workshop/numbers.pdf") ;;
+
+let ap2 = Absolute_path.of_string (
+   "~/Teuliou/Heavy/Workshop/page.pdf") ;;   
+
+let act1 () = Coherent_pdf.replace_inside 
+  ~patient:ap1 ~replacer:ap2
+    ~left_of_cut:7 ~right_of_cut:8 
+     ~outputfile_name:"output" ;; 
+
+
+
+;;
 
 end ;;
 

@@ -380,6 +380,16 @@ module Private2 = struct
     answer
   ;;
 
+  let marker_for_shadowed_partial_copies = "_QhzFTSnAQA_" ;; 
+
+    let shadowed_partial_copy_name 
+      ~filepath ~copy_level ~prawn_index  = 
+      let (basename,extension) =
+          Cull_string.split_wrt_rightmost filepath '.' in 
+      basename ^ marker_for_shadowed_partial_copies ^
+      "level_"^(string_of_int copy_level)^
+      "_prawn_"^(string_of_int prawn_index)^"."^extension ;;
+
   module PreCapsule = struct
     type immutable_t =
       { source_envname : string
@@ -533,15 +543,10 @@ module Private2 = struct
       ?new_content_description ~is_temporary new_content ""
     ;;
 
-    let marker_for_shadowed_copies = "_QhzFTSnAQA_" ;; 
-
-    let create_shadowed_copy 
+    let create_shadowed_partial_copy 
       cpsl_ref fn shadow ~copy_level ~prawn_index index_msg = 
-      let (basename,extension) =
-          Cull_string.split_wrt_rightmost fn '.' in 
-      let copy_name = basename ^ marker_for_shadowed_copies ^
-      "level_"^(string_of_int copy_level)^
-      "_prawn_"^(string_of_int prawn_index)^"."^extension in
+      let copy_name = shadowed_partial_copy_name 
+      ~filepath:fn ~copy_level ~prawn_index in 
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
          Cee_text.rewrite_using_shadow old_content shadow in   
@@ -865,7 +870,7 @@ module type CAPSULE_INTERFACE = sig
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
-  val create_shadowed_copy :
+  val create_shadowed_partial_copy :
       t ->
       string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> string -> unit
 
@@ -1147,7 +1152,7 @@ module Private = struct
     List.iter 
     (fun (global_idx,(fn,shadow,prawn_index))->
        let idx_msg = " ("^(string_of_int global_idx)^" of "^s_total^")" in 
-      Capsule.create_shadowed_copy 
+      Capsule.create_shadowed_partial_copy 
        cpsl fn shadow ~copy_level:1 ~prawn_index idx_msg
       ) temp4;; 
 

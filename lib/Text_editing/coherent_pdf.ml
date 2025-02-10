@@ -145,6 +145,29 @@ module OnSiteCommand = struct
      ]
     ;; 
 
+   let replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name= 
+      let left_part = (
+         if (left_of_cut<0) then ("",[]) else 
+          ("left.pdf",
+          ["cpdf initial_copy.pdf 1-"^(string_of_int left_of_cut)^
+          " -o left.pdf"]
+          )
+      ) 
+      and right_part = (
+         if (right_of_cut>total_nbr_of_pages) then ("",[]) else 
+          ("right.pdf",["cpdf initial_copy.pdf "^
+          (string_of_int right_of_cut)^"-"^
+          (string_of_int total_nbr_of_pages)^
+          " -o right.pdf"])
+      ) in
+      
+      (snd left_part)@
+      (snd right_part)@
+   [
+    "cpdf "^(fst left_part)^" replacer_copy.pdf "^(fst right_part)^" -o "^outputfile_name^".pdf";
+    "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf replacer_copy.pdf"
+    ] ;;
+
 end ;;  
 
 
@@ -167,6 +190,17 @@ module Command = struct
    (OnSiteCommand.force_same_size_for_all_pages "initial_copy" outputfile_name ~forced_width ~forced_height) @
     ["cd "^current_dir];; 
 
+  let replace_inside 
+    ~patient:patient_ap ~replacer:replacer_ap
+   ~left_of_cut ~right_of_cut outputfile_name = 
+   let current_dir = Sys.getcwd () in 
+   let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
+   ("cp "^(Absolute_path.to_string replacer_ap)^" replacer_copy.pdf") ::
+   (OnSiteCommand.replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
+    ["cd "^current_dir];; 
+
 end ;;  
 
 let average_page_width_and_height = 
@@ -185,3 +219,11 @@ let force_same_size_for_all_pages ap ~outputfile_name
 let number_of_pages_in_pdf = 
     Private.number_of_pages_in_pdf ;;
       
+let replace_inside 
+    ~patient:patient_ap ~replacer:replacer_ap
+   ~left_of_cut ~right_of_cut ~outputfile_name = 
+    Unix_command.conditional_multiple_uc  (
+     Command.replace_inside 
+    ~patient:patient_ap ~replacer:replacer_ap
+   ~left_of_cut ~right_of_cut outputfile_name
+    ) ;;
