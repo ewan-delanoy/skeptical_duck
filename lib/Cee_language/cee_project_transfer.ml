@@ -391,7 +391,7 @@ module Private2 = struct
       "_prawn_"^(string_of_int prawn_index)^
       "_of_"^(string_of_int number_of_prawns)^"."^extension ;;
 
-  module PreCapsule = struct
+   module PreCapsule = struct
     type immutable_t =
       { source_envname : string
       ; destination_envname : string
@@ -408,7 +408,7 @@ module Private2 = struct
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
       ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; shadow_algebras_for_di_files_opt : ( (string * (int * Cee_prawn_t.t list)) list) option
+      ; prawn_algebras_for_di_files_opt : ( (string * (int * Cee_prawn_t.t list)) list) option
       } ;;
 
     type t = immutable_t ref
@@ -766,16 +766,16 @@ let compute_wardrobes_for_dc_files cpsl_ref =
    let shadows5 = il_sort shadows4 in 
    (included_one,(n,Image.image (fun l->Cee_prawn_t.P l) shadows5)) ;;
 
-    let compute_shadow_algebras_for_di_files cpsl_ref =
+    let compute_prawn_algebras_for_di_files cpsl_ref =
       let wardrobes = wardrobes_for_di_files cpsl_ref in
       Image.image extract_data_from_wardrobe wardrobes;;
 
-    let shadow_algebras_for_di_files cpsl_ref =
-      match !cpsl_ref.shadow_algebras_for_di_files_opt with
+    let prawn_algebras_for_di_files cpsl_ref =
+      match !cpsl_ref.prawn_algebras_for_di_files_opt with
       | Some old_answer -> old_answer
       | None ->
-        let answer = compute_shadow_algebras_for_di_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with shadow_algebras_for_di_files_opt = Some answer } in
+        let answer = compute_prawn_algebras_for_di_files cpsl_ref in
+        let new_cpsl = { !cpsl_ref with prawn_algebras_for_di_files_opt = Some answer } in
         let _ = cpsl_ref := new_cpsl in
         answer
     ;;
@@ -812,7 +812,7 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         ; directly_included_files_opt = None
         ; inclusions_for_di_files = Hashtbl.create 600
         ; wardrobes_for_di_files_opt = None
-        ; shadow_algebras_for_di_files_opt = None
+        ; prawn_algebras_for_di_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
@@ -868,7 +868,7 @@ module type CAPSULE_INTERFACE = sig
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
   val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
-  val shadow_algebras_for_di_files : t -> (string * (int * (Cee_prawn_t.t) list)) list
+  val prawn_algebras_for_di_files : t -> (string * (int * (Cee_prawn_t.t) list)) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
@@ -1140,7 +1140,7 @@ module Private = struct
   
 
   let create_level_1_copies cpsl = 
-    let temp1 = Capsule.shadow_algebras_for_di_files cpsl in 
+    let temp1 = Capsule.prawn_algebras_for_di_files cpsl in 
     let temp2 = List.flatten(Image.image (
      fun (fn,(nbr_of_parts,prawns)) ->
         let ttemp3 = Int_range.index_everything prawns in 
