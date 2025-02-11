@@ -545,13 +545,13 @@ module Private2 = struct
     ;;
 
     let create_shadowed_partial_copy 
-      cpsl_ref fn (Cee_prawn_t.P l) ~copy_level ~prawn_index ~number_of_prawns index_msg = 
+      cpsl_ref fn prawn ~copy_level ~prawn_index ~number_of_prawns index_msg = 
       
       let copy_name = shadowed_partial_copy_name 
       ~filepath:fn ~copy_level ~prawn_index ~number_of_prawns in 
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
-         Cee_text.crop_using_shadow old_content (Cee_shadow_t.Sh(List.length l,l)) in   
+         Cee_text.crop_using_prawn old_content prawn in   
       create_file_in_a_list cpsl_ref copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
@@ -904,7 +904,8 @@ module Private = struct
          ^ separate_cmd.Cee_compilation_command_t.ending)
     in
     let shadow = List.assoc name_for_container_file (Capsule.shadows_for_dc_files cpsl) in
-    let new_text = Cee_text.crop_using_shadow old_text shadow in
+    let (Cee_shadow_t.Sh(_,l)) = shadow in 
+    let new_text = Cee_text.crop_using_prawn old_text (Cee_prawn_t.P l) in
     let target_filename = dest_dir ^ name_for_container_file in
     let target_file = Absolute_path.create_file_if_absent target_filename in
     let _ =

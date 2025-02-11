@@ -492,9 +492,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
    ) indexed_ssps in 
    Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
 
- let crop_using_shadow old_text shadow =
-   match shadow with 
-   (Cee_shadow_t.Sh(_,accepted_indices)) ->  
+ let crop_using_prawn old_text (Cee_prawn_t.P(accepted_indices)) =
    let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let accepted_ssps = Image.image(
@@ -715,7 +713,7 @@ end ;;
 
 let compute_shadow = Private.compute_shadow ;;
 let compute_wardrobe = Private.compute_wardrobe ;;
-let crop_using_shadow = Private.crop_using_shadow ;;
+let crop_using_prawn = Private.crop_using_prawn ;;
 let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
