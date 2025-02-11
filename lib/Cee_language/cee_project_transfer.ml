@@ -408,7 +408,7 @@ module Private2 = struct
       ; directly_included_files_opt : string list option
       ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
       ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; prawn_algebras_for_di_files_opt : ( (string * (int * Cee_prawn_t.t list)) list) option
+      ; prawn_algebras_for_di_files_opt : ( (string * Cee_prawn_algebra_t.t) list) option
       } ;;
 
     type t = immutable_t ref
@@ -545,13 +545,13 @@ module Private2 = struct
     ;;
 
     let create_shadowed_partial_copy 
-      cpsl_ref fn shadow ~copy_level ~prawn_index ~number_of_prawns index_msg = 
+      cpsl_ref fn (Cee_prawn_t.P l) ~copy_level ~prawn_index ~number_of_prawns index_msg = 
       
       let copy_name = shadowed_partial_copy_name 
       ~filepath:fn ~copy_level ~prawn_index ~number_of_prawns in 
       let old_content = read_file cpsl_ref fn in 
       let new_content = 
-         Cee_text.crop_using_shadow old_content shadow in   
+         Cee_text.crop_using_shadow old_content (Cee_shadow_t.Sh(List.length l,l)) in   
       create_file_in_a_list cpsl_ref copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
@@ -754,21 +754,12 @@ let compute_wardrobes_for_dc_files cpsl_ref =
      let temp1 = Arithmetic_list.decompose_into_connected_components l in 
      Image.image (fun (i,j)->Int_range.range i j) temp1 ;; 
 
-    let extract_data_from_wardrobe (included_one,
-   (Cee_wardrobe_t.Wr l)) =
-      let (_,Cee_shadow_t.Sh (n,_)) = List.hd l 
-   and shadows = Image.image
-     (fun (_,Cee_shadow_t.Sh (_,z)) -> z ) l
-    in
-   let shadows2 = il_sort shadows in    
-   let shadows3 = Ordered_misc.generated_algebra Total_ordering.for_integers shadows2 in 
-   let shadows4 = List.flatten (Image.image connected_components shadows3) in 
-   let shadows5 = il_sort shadows4 in 
-   (included_one,(n,Image.image (fun l->Cee_prawn_t.P l) shadows5)) ;;
-
     let compute_prawn_algebras_for_di_files cpsl_ref =
       let wardrobes = wardrobes_for_di_files cpsl_ref in
-      Image.image extract_data_from_wardrobe wardrobes;;
+      Image.image 
+      (fun (included_one,wardrobe)->
+        (included_one,Cee_prawn_algebra.of_wardrobe wardrobe)  
+      ) wardrobes;;
 
     let prawn_algebras_for_di_files cpsl_ref =
       match !cpsl_ref.prawn_algebras_for_di_files_opt with
@@ -868,13 +859,13 @@ module type CAPSULE_INTERFACE = sig
   val directly_included_files : t -> string list
   val inclusions_for_di_file : t -> string -> (string * int) list
   val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
-  val prawn_algebras_for_di_files : t -> (string * (int * (Cee_prawn_t.t) list)) list
+  val prawn_algebras_for_di_files : t -> (string * Cee_prawn_algebra_t.t) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
   val create_shadowed_partial_copy :
       t ->
-      string -> Cee_shadow_t.t -> copy_level:int -> prawn_index:int -> number_of_prawns:int -> string -> unit
+      string -> Cee_prawn_t.t -> copy_level:int -> prawn_index:int -> number_of_prawns:int -> string -> unit
 
    val make :
       ?reinitialize_destination:bool ->
@@ -1142,12 +1133,11 @@ module Private = struct
   let create_level_1_copies cpsl = 
     let temp1 = Capsule.prawn_algebras_for_di_files cpsl in 
     let temp2 = List.flatten(Image.image (
-     fun (fn,(nbr_of_parts,prawns)) ->
-        let ttemp3 = Int_range.index_everything prawns in 
-        Image.image (fun (prawn_idx,Cee_prawn_t.P prawn)->
-          (fn,Cee_shadow_t.Sh(nbr_of_parts,prawn),
+     fun (fn,Cee_prawn_algebra_t.A(prawns)) ->
+        Image.image (fun (prawn_idx,Cee_prawn_t.P l)->
+          (fn,Cee_prawn_t.P l,
            prawn_idx,List.length prawns)
-        ) ttemp3
+        ) prawns
     ) temp1) in 
     let temp4 = Int_range.index_everything temp2  in 
     let s_total = string_of_int(List.length temp2) in 
