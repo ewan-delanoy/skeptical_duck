@@ -490,7 +490,8 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
           Substring.is_a_substring_of 
           (parametrized_marker_for_cd_defined_region name_for_included_file ssp_idx) subtext 
    ) indexed_ssps in 
-   Cee_shadow_t.Sh(List.length indexed_ssps,Image.image fst accepted_ssps) ;;
+   Cee_shadow_t.Sh(List.length indexed_ssps,
+   Cee_prawn_t.P(Image.image fst accepted_ssps)) ;;
 
  let crop_using_prawn old_text (Cee_prawn_t.P(accepted_indices)) =
    let lines = Lines_in_string.indexed_lines old_text 

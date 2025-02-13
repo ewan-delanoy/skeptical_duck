@@ -54,10 +54,10 @@ Replace_inside.overwrite_between_markers_inside_file
 ;;  
 
 let shadow_to_pair = function 
- (Cee_shadow_t.Sh(n,l2)) -> (n,l2) ;; 
+ (Cee_shadow_t.Sh(n,Cee_prawn_t.P l2)) -> (n,l2) ;; 
 
 let shadow_of_pair (n,l2) = 
-  Cee_shadow_t.Sh(n,l2) ;; 
+  Cee_shadow_t.Sh(n,Cee_prawn_t.P l2) ;; 
 
 let dummy_location = (0,"") ;;  
 
@@ -65,7 +65,7 @@ let transform1  l =
   Image.image (
      fun (includer_fn,Cee_wardrobe_t.Wr(inclusions)) -> 
        if inclusions = []
-       then (includer_fn,[dummy_location,Cee_shadow_t.Sh(0,[])]) 
+       then (includer_fn,[dummy_location,Cee_shadow_t.Sh(0,Cee_prawn_t.P [])]) 
        else (includer_fn,inclusions)
   ) l ;; 
 

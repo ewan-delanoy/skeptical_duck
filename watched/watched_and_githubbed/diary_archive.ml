@@ -392,6 +392,11 @@ let act2 () = Int_range.scale(fun k->
     ~outputfile_name:("printable_hib_"^sk)
   ) 1 3 ;;    
 
+let act3 () = Coherent_pdf.corep_transform 
+    ( Absolute_path.of_string (
+   "~/Teuliou/Heavy/baskerville_gentleman.pdf")) 
+   ~outputfile_name:"output";;
+
 let g3 () = Coherent_pdf.force_same_size_for_all_pages 
   ( Absolute_path.of_string (
    "~/Teuliou/Heavy/planiol_hib_2.pdf"))  
@@ -403,6 +408,13 @@ let g4 () = Coherent_pdf.force_same_size_for_all_pages
    "~/Teuliou/Heavy/planiol_hib_3.pdf"))  
  ~outputfile_name:"planiol_hub_3"
     ~forced_width:1120 ~forced_height:740;;  
+
+let g5 () = Coherent_pdf.force_same_size_for_all_pages 
+  ( Absolute_path.of_string (
+   "~/Teuliou/Heavy/baskerville_gentleman.pdf"))  
+ ~outputfile_name:"beskarville_gentleman"
+    ~forced_width:1095 ~forced_height:1430;; 
+
 
 let ap1 = Absolute_path.of_string (
    "~/Teuliou/Heavy/Workshop/numbers.pdf") ;;

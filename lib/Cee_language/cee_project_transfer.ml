@@ -904,8 +904,8 @@ module Private = struct
          ^ separate_cmd.Cee_compilation_command_t.ending)
     in
     let shadow = List.assoc name_for_container_file (Capsule.shadows_for_dc_files cpsl) in
-    let (Cee_shadow_t.Sh(_,l)) = shadow in 
-    let new_text = Cee_text.crop_using_prawn old_text (Cee_prawn_t.P l) in
+    let (Cee_shadow_t.Sh(_,prawn)) = shadow in 
+    let new_text = Cee_text.crop_using_prawn old_text prawn in
     let target_filename = dest_dir ^ name_for_container_file in
     let target_file = Absolute_path.create_file_if_absent target_filename in
     let _ =
@@ -1149,11 +1149,87 @@ module Private = struct
        cpsl fn shadow ~copy_level:1 ~prawn_index ~number_of_prawns idx_msg
       ) temp4;; 
 
+   let inclusion_instructions_for_prawn 
+   included_file copy_level number_of_prawns prawn_index =
+   let name = Private2.shadowed_partial_copy_name
+     ~filepath:included_file ~copy_level ~prawn_index ~number_of_prawns in 
+   "#include\""^name^"\"" ;;  
+
+  let inclusion_instructions_for_list_of_prawns 
+    included_file ~copy_level prawn_indices total_nbr_of_prawns =
+   let temp1 = Image.image (
+      inclusion_instructions_for_prawn 
+      included_file copy_level total_nbr_of_prawns
+   ) prawn_indices 
+  in 
+  String.concat "\n" temp1 ;;   
+
+  exception Distinct_filenames of int * string * string ;;  
+
+   let data_for_inclusion_prawning cpsl = 
+    let inclusions_for_dcs = Capsule.inclusions_in_dc_files cpsl in 
+    let wardrobes_for_dcs = Capsule.wardrobes_for_dc_files cpsl in 
+    let algebras_for_dis = Capsule.prawn_algebras_for_di_files cpsl in 
+    let pairs1_for_dcs  = 
+      List.combine inclusions_for_dcs wardrobes_for_dcs in 
+    let pairs2_for_dcs  = 
+      Image.image (
+        fun ((includer_file1,li1),(includer_file2,Cee_wardrobe_t.Wr li2)) ->
+         if includer_file1<>includer_file2
+         then raise (Distinct_filenames(1,includer_file1,includer_file2))   
+         else 
+         let comb1 = List.combine li1 li2 in 
+         let comb2 = Image.image (
+         fun ((line_nbr,included_file1),
+         ((_inc_idx,included_file2),sha)) ->
+            if included_file1 <> included_file2 
+            then raise (Distinct_filenames(2,included_file1,included_file2))
+            else (line_nbr,included_file1,sha)  
+          ) comb1 in   
+          (includer_file1,comb2)
+      ) pairs1_for_dcs in
+      Image.image (
+      fun (includer_file,li1) ->
+      (includer_file,Image.image (
+         fun (line_nbr,included_file,sha) ->
+            let alg = List.assoc included_file algebras_for_dis in 
+            let (prawn_indices,total_nbr_of_prawns) =
+             Cee_prawn_algebra.decompose_shadow alg sha in 
+           (line_nbr,(included_file,prawn_indices,total_nbr_of_prawns))  
+      ) li1) 
+      ) pairs2_for_dcs ;; 
+
+     let prawn_inclusions_in_several_dc_files cpsl dc_files= 
+        let sn = string_of_int(List.length dc_files) 
+        and indexed_dc_files = Int_range.index_everything dc_files in  
+        List.iter (
+          fun (idx,(includer_file,data_for_includer_file)) ->
+            let filecontent = Capsule.read_file cpsl includer_file in 
+            let indexed_lines = Lines_in_string.indexed_lines filecontent in 
+            let modified_lines = Image.image (
+              fun (line_idx,old_line) ->
+             match List.assoc_opt line_idx data_for_includer_file with 
+             None -> old_line 
+             |Some(included_file,prawn_indices,total_nbr_of_prawns)->
+             inclusion_instructions_for_list_of_prawns 
+                included_file ~copy_level:1 prawn_indices total_nbr_of_prawns
+            ) indexed_lines in 
+            let new_filecontent = String.concat "\n" modified_lines in 
+            let _ = Capsule.modify_file cpsl includer_file new_filecontent in 
+            let msg= "Inclusions have been prawned in "^includer_file^
+            " ("^(string_of_int idx)^" of "^sn^")" in 
+            Private2.announce msg
+          ) indexed_dc_files ;;
+
+     let prawn_inclusions_in_directly_compiled_files cpsl =
+        prawn_inclusions_in_several_dc_files cpsl 
+         (data_for_inclusion_prawning cpsl) ;;
+
 end ;; 
 
 let create_level_1_copies = Private.create_level_1_copies ;;
 
-
+let prawn_inclusions_in_directly_compiled_files = Private.prawn_inclusions_in_directly_compiled_files ;;
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
 ;;
