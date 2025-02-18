@@ -102,6 +102,7 @@ let u5 = Image.image (fun (i,j)->
 
 let act2 () = Image.image Sys.command u5 ;;
 
+let n1 = 103 ;; (* For the Baskerville book*)
 let n1 = List.length indexed_indices ;;
 
 let u6 = Int_range.scale (fun i->
@@ -399,21 +400,15 @@ let act3 () = Coherent_pdf.corep_transform
 
 let g3 () = Coherent_pdf.force_same_size_for_all_pages 
   ( Absolute_path.of_string (
-   "~/Teuliou/Heavy/planiol_hib_2.pdf"))  
- ~outputfile_name:"planiol_hub_2"
-    ~forced_width:1120 ~forced_height:740;;
+   "~/Teuliou/Heavy/baskerville_gentleman.pdf"))  
+ ~outputfile_name:"beskarville"
+    ~forced_width:1095 ~forced_height:1430;;
 
 let g4 () = Coherent_pdf.force_same_size_for_all_pages 
   ( Absolute_path.of_string (
    "~/Teuliou/Heavy/planiol_hib_3.pdf"))  
  ~outputfile_name:"planiol_hub_3"
-    ~forced_width:1120 ~forced_height:740;;  
-
-let g5 () = Coherent_pdf.force_same_size_for_all_pages 
-  ( Absolute_path.of_string (
-   "~/Teuliou/Heavy/baskerville_gentleman.pdf"))  
- ~outputfile_name:"beskarville_gentleman"
-    ~forced_width:1095 ~forced_height:1430;; 
+    ~forced_width:1120 ~forced_height:740;;   
 
 
 let ap1 = Absolute_path.of_string (

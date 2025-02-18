@@ -838,6 +838,8 @@ let compute_wardrobes_for_dc_files cpsl_ref =
       } in  
       ref new_cpsl;;
 
+     let unsafe_unveil cpsl_ref = ref(!cpsl_ref) ;;   
+
   end ;;
 end ;;
 
@@ -881,6 +883,7 @@ module type CAPSULE_INTERFACE = sig
   val unsafe_set_wardrobe_for_dc_files :
       t -> (string * Cee_wardrobe_t.t) list -> t
 
+  val unsafe_unveil : t -> Private2.PreCapsule.immutable_t ref    
   val  reinitialize_destination_directory : t -> unit  
   
 end ;;
