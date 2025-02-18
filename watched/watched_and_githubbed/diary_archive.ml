@@ -1,14 +1,35 @@
 (************************************************************************************************************************
-Snippet 156 : 
+Snippet 157 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 155 : Finite sets stable by (x,y)->|x-y|
+Snippet 156 : Testing Cee_text.Private.emphatize_first_ivy_and_last_endif
 ************************************************************************************************************************)
 
+module Snip156=struct
+
+module Pri = Cee_text.Private ;;
+
+let ap1 = Absolute_path.of_string 
+  "~/Teuliou/Experimenting_with_php/step-01-php-src/Zend/zend_extensions.h"
+;;
+
+let text1 = Io.read_whole_file ap1 ;; 
+
+let text2 = Pri.emphatize_first_ivy_and_last_endif text1 ;; 
+
+let act () = print_string text2 ;; 
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 155 : Finite sets stable by (x,y)->|x-y|
+************************************************************************************************************************)
 module Snip155=struct
 
 let i_order = Total_ordering.for_integers ;; 

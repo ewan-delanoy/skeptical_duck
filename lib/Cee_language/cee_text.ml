@@ -428,7 +428,20 @@ let put_first_ivy_on_first_line text =
 
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
-  Lines_in_string.put_line_last_in_string line_idx text ;;  
+  let temp_text = Lines_in_string.put_line_last_in_string line_idx text in 
+  let temp_lines = List.rev(Lines_in_string.lines temp_text) in 
+  let (temp_last_line,temp_tl) = List_again.head_with_tail temp_lines in 
+  (* Any comments after the #endif must be moved before it *)
+  let after= Cull_string.two_sided_cutting  ("#endif","") temp_last_line in 
+  let almost_all_lines=(
+     match Strung.char_finder_from_inclusive_opt (fun c->
+              not(List.mem c [' ';'\t';'\r'])
+            ) after 1 with 
+      None -> temp_tl
+      |Some idx -> (Cull_string.cobeginning (idx-1) after) :: temp_tl
+  )in
+  let lines = List.rev("#endif" :: almost_all_lines) in 
+  String.concat "\n" lines;;  
 
 let emphatize_first_ivy_and_last_endif text = 
   let text2 = put_first_ivy_on_first_line text in 
@@ -439,7 +452,7 @@ let standardize_guard_in_text_opt text =
   then let new_text = emphatize_first_ivy_and_last_endif text in 
        if new_text = text 
        then None 
-       else Some(emphatize_first_ivy_and_last_endif text)
+       else Some(new_text)
   else None ;;   
 
  let marker_for_cd_defined_region = "cgmvgtkcxvvxckt" ;;  
