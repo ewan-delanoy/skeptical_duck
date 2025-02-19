@@ -98,17 +98,7 @@ type guard_pattern_indicators_t = {
     ivy_index_after_first_ivy_opt : int option;
 } ;; 
 
-type walker_t = {
-    lines : (int *string) list ;
-    current_namespace : int ;
-    preceding_namespaces : int list ;
-    smallest_unused_namespace_index : int ;
-    small_space_start_index_opt : int option ;
-    unfinished_condition : bool;
-    last_directive_was_an_else : bool;
-    treated : small_space_t list;
-    gpi : guard_pattern_indicators_t ;
-} ;; 
+
 
 
 module Guard_Pattern = struct
@@ -128,6 +118,19 @@ end ;;
 
 module Walker = struct 
 
+   module Walker_Object = struct 
+
+    type t = {
+      lines : (int *string) list ;
+      current_namespace : int ;
+      preceding_namespaces : int list ;
+      smallest_unused_namespace_index : int ;
+      small_space_start_index_opt : int option ;
+      unfinished_condition : bool;
+      last_directive_was_an_else : bool;
+      treated : small_space_t list;
+      gpi : guard_pattern_indicators_t ;
+    } ;;  
   let make text = {
     lines = Lines_in_string.indexed_lines text ;
     current_namespace = 0 ;
@@ -140,119 +143,183 @@ module Walker = struct
     gpi = Guard_Pattern.origin ;
   } ;; 
 
-  let register_new_small_space_if_needed old_w w line_idx= 
-    match old_w.small_space_start_index_opt with 
-    None -> w
-    |Some start_index ->
-      let small_space = {
-       namespace = old_w.current_namespace ;
-       start_idx = start_index ;
-       end_idx  = line_idx -1 ;
-      } in 
-     {
+  let add_to_treated small_space w = {
        w with 
        treated = small_space :: (w.treated)   
     } ;; 
 
+  let condition_is_unfinished w = w.unfinished_condition ;; 
+  let get_current_namespace w = w.current_namespace ;; 
+  let get_endif_index_for_first_ivy_opt w = w.gpi.endif_index_for_first_ivy_opt ;;
+  let get_elsie_or_elif_for_first_index_opt w = w.gpi.elsie_or_elif_for_first_index_opt ;;
+  let get_first_ivy_index_opt w = w.gpi.first_ivy_index_opt ;;
+  let get_guard_pattern_indicators w = w.gpi ;;
+  let get_ivy_index_after_first_ivy_opt w = w.gpi.ivy_index_after_first_ivy_opt ;;
+  let get_lines w = w.lines ;;
+  let get_preceding_namespaces w = w.preceding_namespaces ;;
+  let get_small_space_start_index_opt w = w.small_space_start_index_opt ;;
+  let get_smallest_unused_namespace_index w = w.smallest_unused_namespace_index ;;
+  let get_treated w = w.treated ;;
+
+  let last_directive_was_an_else w = w.last_directive_was_an_else ;;
+
+  let register_elsie_or_elif_for_first_index w line_idx =
+      let new_gpi = {w.gpi with elsie_or_elif_for_first_index_opt = Some line_idx} in 
+      {w with gpi = new_gpi} ;;
+
+  let register_first_ivy_index w line_idx =
+    let new_gpi = {w.gpi with first_ivy_index_opt = Some line_idx} in 
+    {w with gpi = new_gpi} ;;
+  
+  let register_ivy_index_after_first_ivy w line_idx =  
+    let new_gpi = {w.gpi with ivy_index_after_first_ivy_opt = Some line_idx} in 
+    {w with gpi = new_gpi} ;;
+
+  let register_small_space_start_index w line_idx =    
+      {
+        w with 
+        small_space_start_index_opt = Some line_idx 
+      } ;; 
+
+  let set_condition_to_finished w =    
+      {
+        w with 
+        unfinished_condition = false
+      }   ;;
+ 
+  let set_lines w new_set_of_lines=    
+      {
+        w with 
+        lines = new_set_of_lines
+      }   ;;    
+
+  let set_namespace_data w 
+     ~v_current_namespace
+     ~v_smallest_unused_namespace_index
+     ~v_preceding_namespaces
+      =  {
+        w with 
+        current_namespace = v_current_namespace ;
+        smallest_unused_namespace_index = v_smallest_unused_namespace_index;
+        preceding_namespaces = v_preceding_namespaces
+      } ;;
+
+  let set_unfinished_condition_data w 
+      ~current_cond_is_unfinished
+      ~current_line_is_an_elsie
+    ={
+      w with
+        small_space_start_index_opt = None ;
+        unfinished_condition = current_cond_is_unfinished;
+        last_directive_was_an_else = current_line_is_an_elsie ;
+     } ;;
+
+
+
+   end ;;
+
+  let register_new_small_space_if_needed old_w w line_idx= 
+    match Walker_Object.get_small_space_start_index_opt old_w with 
+    None -> w
+    |Some start_index ->
+      let small_space = {
+       namespace = Walker_Object.get_current_namespace w ;
+       start_idx = start_index ;
+       end_idx  = line_idx -1 ;
+      } in 
+      Walker_Object.add_to_treated small_space w ;; 
+
   let deal_with_namespace_data old_w w line_beginning= 
      match line_beginning with 
      Lb_If ->
-      {
-        w with 
-        current_namespace = old_w.smallest_unused_namespace_index ;
-        smallest_unused_namespace_index = old_w.smallest_unused_namespace_index + 1;
-        preceding_namespaces = old_w.current_namespace :: old_w.preceding_namespaces
-      }
+      let old_idx = Walker_Object.get_smallest_unused_namespace_index old_w in 
+      let v_current_namespace=old_idx
+      and v_smallest_unused_namespace_index=old_idx + 1
+      and v_preceding_namespaces=(Walker_Object.get_current_namespace old_w) :: (Walker_Object.get_preceding_namespaces old_w) in 
+      Walker_Object.set_namespace_data w 
+        ~v_current_namespace
+        ~v_smallest_unused_namespace_index
+        ~v_preceding_namespaces
+     
     | Lb_Endif ->
-      {
-        w with 
-        current_namespace = List.hd(old_w.preceding_namespaces) ;
-        smallest_unused_namespace_index = old_w.smallest_unused_namespace_index;
-        preceding_namespaces = List.tl(old_w.preceding_namespaces)
-      }
+      let preceding = Walker_Object.get_preceding_namespaces old_w in 
+      let v_current_namespace=List.hd preceding
+      and v_smallest_unused_namespace_index=Walker_Object.get_smallest_unused_namespace_index old_w
+      and v_preceding_namespaces= List.tl preceding in 
+      Walker_Object.set_namespace_data w 
+        ~v_current_namespace
+        ~v_smallest_unused_namespace_index
+        ~v_preceding_namespaces
    | Lb_Elif | Lb_Else | Lb_Usual -> w ;;
 
    let deal_with_guard_pattern_detection old_w w line_beginning line_idx = 
     match line_beginning with 
     Lb_If ->
-      (if (old_w.gpi.first_ivy_index_opt = None)
-       then let new_gpi = {w.gpi with first_ivy_index_opt = Some line_idx} in 
-            {w with gpi = new_gpi}
+      (if ((Walker_Object.get_first_ivy_index_opt old_w) = None)
+       then Walker_Object.register_first_ivy_index w line_idx
        else 
-       if (old_w.gpi.endif_index_for_first_ivy_opt <> None) &&
-          (old_w.gpi.ivy_index_after_first_ivy_opt = None)
-       then let new_gpi = {w.gpi with ivy_index_after_first_ivy_opt = Some line_idx} in 
-            {w with gpi = new_gpi}
+       if ((Walker_Object.get_endif_index_for_first_ivy_opt old_w) <> None) &&
+          ((Walker_Object.get_ivy_index_after_first_ivy_opt old_w) = None)
+       then Walker_Object.register_ivy_index_after_first_ivy w line_idx  
        else  w
        )
    | Lb_Elif | Lb_Else ->
-    (if (old_w.gpi.first_ivy_index_opt <> None) &&
-         (old_w.current_namespace=1) &&
-         (old_w.gpi.elsie_or_elif_for_first_index_opt = None)
-      then let new_gpi = {w.gpi with elsie_or_elif_for_first_index_opt = Some line_idx} in 
-           {w with gpi = new_gpi}
+    (if ((Walker_Object.get_first_ivy_index_opt old_w) <> None) &&
+         ((Walker_Object.get_current_namespace old_w)=1) &&
+         ((Walker_Object.get_elsie_or_elif_for_first_index_opt old_w) = None)
+      then Walker_Object.register_elsie_or_elif_for_first_index w line_idx 
       else w  
       )
      
    | Lb_Endif ->
-    (if (old_w.gpi.first_ivy_index_opt <> None) &&
-        (old_w.current_namespace=1) 
-     then let new_gpi = {w.gpi with endif_index_for_first_ivy_opt = Some line_idx} in 
-         {w with gpi = new_gpi}
+    (if ((Walker_Object.get_first_ivy_index_opt old_w) <> None) &&
+        ((Walker_Object.get_current_namespace old_w)=1) 
+     then Walker_Object.register_elsie_or_elif_for_first_index w line_idx
      else w  
    )
    | Lb_Usual -> w ;;
 
 
   let directive_step old_w line_idx line line_beginning= 
-    if (old_w.current_namespace = 0) && (line_beginning = Lb_Elif) then raise (Lonely_Elif_exn(line_idx)) else 
-    if (old_w.current_namespace = 0) && (line_beginning = Lb_Else) then raise (Lonely_Else_exn(line_idx)) else
-    if (old_w.current_namespace = 0) && (line_beginning = Lb_Endif) then raise (Lonely_Endif_exn(line_idx)) else
-    if (old_w.last_directive_was_an_else) && (line_beginning = Lb_Else) then raise (Double_Else_exn(line_idx)) else
-    let new_cond_is_unfinished = (
+    if ((Walker_Object.get_current_namespace old_w) = 0) && (line_beginning = Lb_Elif) then raise (Lonely_Elif_exn(line_idx)) else 
+    if ((Walker_Object.get_current_namespace old_w) = 0) && (line_beginning = Lb_Else) then raise (Lonely_Else_exn(line_idx)) else
+    if ((Walker_Object.get_current_namespace old_w) = 0) && (line_beginning = Lb_Endif) then raise (Lonely_Endif_exn(line_idx)) else
+    if (Walker_Object.last_directive_was_an_else old_w) && (line_beginning = Lb_Else) then raise (Double_Else_exn(line_idx)) else
+    let current_cond_is_unfinished = (
       if List.mem line_beginning [Lb_If;Lb_Elif]
       then String.ends_with line ~suffix:"\\"
       else false 
     ) in 
-    let w1 ={
-    old_w with
-    small_space_start_index_opt = None ;
-    unfinished_condition = new_cond_is_unfinished;
-    last_directive_was_an_else = (line_beginning = Lb_Else) ;
-   } in 
+    let w1 =
+      Walker_Object.set_unfinished_condition_data old_w 
+       ~current_cond_is_unfinished
+       ~current_line_is_an_elsie:(line_beginning = Lb_Else) in 
    let w2 = register_new_small_space_if_needed old_w w1 line_idx in 
    let w3 = deal_with_namespace_data old_w w2 line_beginning in 
    let w4 = deal_with_guard_pattern_detection old_w w3 line_beginning line_idx in
    w4 ;;
   let inner_usual_step w line_idx line = 
-    match w.small_space_start_index_opt with 
+    match Walker_Object.get_small_space_start_index_opt w  with 
     (Some _) -> w 
     |None -> 
-    if not(w.unfinished_condition)
-    then 
-          {
-            w with 
-            small_space_start_index_opt = Some line_idx 
-          } 
+    if not(Walker_Object.condition_is_unfinished w)
+    then Walker_Object.register_small_space_start_index w line_idx 
     else
     if String.ends_with line ~suffix:"\\"
     then w
-    else 
-      {
-        w with 
-        unfinished_condition = false
-      }     ;; 
+    else Walker_Object.set_condition_to_finished w ;; 
 
   let usual_step w line_idx line =
     let w2 = inner_usual_step w line_idx line in 
-    if w2.lines = []
+    if (Walker_Object.get_lines w2) = []
     then register_new_small_space_if_needed w2 w2 (line_idx+1)
     else w2 ;;    
     
 
   let step old_w = 
-    let (line_idx,line) = List.hd old_w.lines 
-    and w = {old_w with lines = List.tl(old_w.lines)} in 
+    let (line_idx,line) = List.hd (Walker_Object.get_lines old_w) 
+    and w = Walker_Object.set_lines old_w  
+          (List.tl(Walker_Object.get_lines old_w)) in 
     let line_beginning = Line_beginning.compute line in 
     match line_beginning with 
     Lb_Usual -> usual_step w line_idx line 
@@ -260,16 +327,17 @@ module Walker = struct
   
 
   let rec iterate w =
-    if w.lines = [] 
-    then List.rev w.treated 
+    if (Walker_Object.get_lines w) = [] 
+    then List.rev (Walker_Object.get_treated w) 
     else iterate (step w) ;;   
 
   
   let rec iterate_for_guard_pattern_detection w =
-    if w.lines = [] 
-    then w.gpi 
+    if (Walker_Object.get_lines w) = [] 
+    then Walker_Object.get_guard_pattern_indicators w 
     else iterate_for_guard_pattern_detection (step w) ;;   
     
+let make = Walker_Object.make ;;
 
 end ;;  
 
