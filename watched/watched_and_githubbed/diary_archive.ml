@@ -8524,7 +8524,7 @@ Snippet 94 : Extract token types from a .mli file
 let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Originals/parser_php.mly" ;; 
 let u1 = Io.read_whole_file ap1 ;;
 let u2 = Lines_in_string.interval u1 110 236 ;;
-let u3 = Outside_comments_and_strings.good_substrings u2 ;; 
+let u3 = Outside_ocaml_comments_and_strings.good_substrings u2 ;; 
 let u4 = String.concat " " (Image.image (fun (_,_,s,_)->s) u3) ;;
 let u5 = Substring.occurrences_of_in "%token" u4 ;; 
 let last_elt_in_u5 = List.hd(List.rev u5) ;; 

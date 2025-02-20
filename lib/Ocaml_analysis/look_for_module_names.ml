@@ -14,7 +14,7 @@ module Private = struct
 
 
 let indices_in_ml_ocamlcode code=
-  let temp1=Outside_comments_and_strings.good_substrings code in
+  let temp1=Outside_ocaml_comments_and_strings.good_substrings code in
   let temp2=Image.image (fun (a,_b,t,line_nbr)->
      let ttemp3=Alternative_str.find_all_decorated_occurrences 
        Alternative_str_example.decorated_moodle_cases t 1 in

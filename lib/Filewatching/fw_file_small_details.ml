@@ -38,7 +38,7 @@ end ;;
 let compute ap =
     let full_text = Io.read_whole_file ap in 
     let used_mods = Look_for_module_names.names_in_mlx_file ap in 
-    let snippets = Outside_comments_and_strings.good_substrings full_text in 
+    let snippets = Outside_ocaml_comments_and_strings.good_substrings full_text in 
     let printer_exists = List.exists (fun (_i,_j,subtext,_linenbr)->
            (Detect_printer_declaration_in_text.detect subtext)<>None 
          ) snippets  in 

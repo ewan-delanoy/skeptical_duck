@@ -1,6 +1,6 @@
 (*
 
-#use"lib/outside_comments_and_strings.ml";;
+#use"lib/outside_ocaml_comments_and_strings.ml";;
 
 Detect in a text the parts which can possibly contain module
 names, i.e. those parts which are outside comments and outside
