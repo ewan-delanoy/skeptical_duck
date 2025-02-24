@@ -245,10 +245,95 @@ module Private = struct
     let new_text = put_line_last_in_string line_idx  old_text in 
     Io.overwrite_with src_file new_text ;; 
 
+  type situation = 
+    Inside_a_single_quoted_string 
+   |Inside_a_double_quoted_string 
+   |Inside_a_comment 
+   |Outside_comments_or_strings ;;   
+
+let rec next_newline_after_strings_and_comments_opt text text_length idx sit =
+   if idx > text_length then None else 
+   let c = Strung.get text idx in 
+   match sit with 
+    Inside_a_single_quoted_string -> 
+       if c = '\'' 
+       then next_newline_after_strings_and_comments_opt 
+             text text_length (idx+1)  Outside_comments_or_strings
+       else 
+       let next_idx = (
+          if Substring.is_a_substring_located_at "\\\'" text idx 
+          then idx+2
+          else idx+1  ) in  
+        next_newline_after_strings_and_comments_opt 
+             text text_length next_idx  Inside_a_single_quoted_string       
+   |Inside_a_double_quoted_string -> 
+       if c = '"' 
+       then next_newline_after_strings_and_comments_opt 
+             text text_length (idx+1)  Outside_comments_or_strings
+       else 
+       let next_idx = (
+          if Substring.is_a_substring_located_at "\\\"" text idx 
+          then idx+2
+          else idx+1  ) in  
+        next_newline_after_strings_and_comments_opt 
+             text text_length next_idx  Inside_a_double_quoted_string
+   |Inside_a_comment -> 
+      (* here we use the fact that /* */-comments cannot be nested in C *)
+      let (next_situation,next_idx)=
+       (if Substring.is_a_substring_located_at "*/" text idx 
+      then (Outside_comments_or_strings,idx+2) 
+      else (Inside_a_comment,idx+1)) in   
+      next_newline_after_strings_and_comments_opt 
+             text text_length next_idx next_situation
+   |Outside_comments_or_strings ->
+       if c = '\n' then Some idx else 
+       if c = '\'' 
+       then next_newline_after_strings_and_comments_opt 
+             text text_length (idx+1) Inside_a_single_quoted_string 
+       else      
+       if c = '"' 
+       then next_newline_after_strings_and_comments_opt 
+             text text_length (idx+1) Inside_a_double_quoted_string 
+       else    
+       if Substring.is_a_substring_located_at "/*" text idx
+       then next_newline_after_strings_and_comments_opt 
+             text text_length (idx+2) Inside_a_comment
+       else next_newline_after_strings_and_comments_opt 
+             text text_length (idx+1)  Outside_comments_or_strings        
+      ;;   
+
+let rec helper_for_lines_outside_cee_comments 
+  (whole_text,total_length,treated_lines,next_idx_to_be_treated)= 
+  if next_idx_to_be_treated > total_length 
+  then List.rev treated_lines 
+  else 
+  match next_newline_after_strings_and_comments_opt 
+        whole_text total_length next_idx_to_be_treated Outside_comments_or_strings with
+  None -> 
+      let rest_of_text = 
+        Cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
+      List.rev (rest_of_text :: treated_lines) 
+  |Some(newline_idx) ->
+     let line= Cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in 
+     helper_for_lines_outside_cee_comments 
+  (whole_text,total_length,line::treated_lines,newline_idx+1);; 
+
+let lines_outside_cee_comments text = 
+  helper_for_lines_outside_cee_comments 
+  (text,String.length text,[],1) ;;
+
+(*  
+   let txt1 = String.concat "\n" [
+   "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
+   ]  ;; 
+
+   lines_outside_cee_comments txt1 ;; 
+
+*)
+  
 
   end ;;   
 
-let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
 
   let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
@@ -267,7 +352,9 @@ let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentat
   
   *)
 
- 
+  let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
+
+
   let indexed_lines = Private.indexed_lines ;;
   
   (*
@@ -286,6 +373,8 @@ let interval = Private.interval ;;
       1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
 
   let lines s= Image.image snd (indexed_lines s);;
+
+  let lines_outside_cee_comments = Private.lines_outside_cee_comments ;; 
 
   let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
 

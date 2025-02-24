@@ -1602,7 +1602,7 @@ module Snip136=struct
 
   let n1 = List.length main_list ;;
 
-  let g1 = Int_range.scale (fun x->List.nth main_list (Random.int n1)) 1 10 ;;
+  let g1 = Int_range.scale (fun x->List.nth main_list (Random.int n1)) 1 20 ;;
   let g2 = String.concat "" (Image.image (String.make 1) g1) ;;
   let n = List.length main_list ;;
   
