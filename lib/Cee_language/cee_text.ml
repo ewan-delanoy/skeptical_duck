@@ -23,6 +23,12 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
+  let lines_outside_cee_comments = Lines_in_string.lines_outside_cee_comments ;;
+
+  let indexed_lines_outside_cee_comments text = 
+     Int_range.index_everything (lines_outside_cee_comments text) ;; 
+
+
    let sil_merge ox oy=
    let rec tempf=(function (u,v,accu)->
    if u=[] then (List.rev_append(accu)(v)) else
@@ -132,7 +138,7 @@ module Walker = struct
       gpi : guard_pattern_indicators_t ;
     } ;;  
   let make text = {
-    lines = Lines_in_string.indexed_lines text ;
+    lines = indexed_lines_outside_cee_comments text ;
     current_namespace = 0 ;
     preceding_namespaces = [] ;
     smallest_unused_namespace_index = 1;
@@ -467,14 +473,14 @@ let find_directive_from_list_opt line directives=
           ) directives ;;
 
 let text_has_ivy text =
-   let lines = Lines_in_string.lines text in 
+   let lines = lines_outside_cee_comments text in 
    List.exists (
     fun line -> (find_directive_from_list_opt line ["if"])<>None
    ) lines ;;          
 
 exception First_ivy_in_text_exn ;;   
 let first_ivy_in_text text =
-   let lines = Lines_in_string.indexed_lines text in 
+   let lines = indexed_lines_outside_cee_comments text in 
    match List.find_opt (fun (_line_idx,line)->
       (find_directive_from_list_opt line ["if"])<>None
    ) lines with 
@@ -483,7 +489,7 @@ let first_ivy_in_text text =
    
 exception Last_endif_in_text_exn ;;   
 let last_endif_in_text text =
-      let lines = List.rev(Lines_in_string.indexed_lines text) in 
+      let lines = List.rev(indexed_lines_outside_cee_comments text) in 
       match List.find_opt (fun (_line_idx,line)->
          (find_directive_from_list_opt line ["endif"])<>None
       ) lines with 
@@ -497,7 +503,7 @@ let put_first_ivy_on_first_line text =
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
   let temp_text = Lines_in_string.put_line_last_in_string line_idx text in 
-  let temp_lines = List.rev(Lines_in_string.lines temp_text) in 
+  let temp_lines = List.rev(lines_outside_cee_comments temp_text) in 
   let (temp_last_line,temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
   let after= Cull_string.two_sided_cutting  ("#endif","") temp_last_line in 
@@ -575,7 +581,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
    Cee_prawn_t.P(Image.image fst accepted_ssps)) ;;
 
  let crop_using_prawn old_text (Cee_prawn_t.P(accepted_indices)) =
-   let lines = Lines_in_string.indexed_lines old_text 
+   let lines = indexed_lines_outside_cee_comments old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let accepted_ssps = Image.image(
       fun ssp_idx ->
@@ -601,7 +607,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
     ) indexed_ssps ;;
   
   let tattoo_regions_between_conditional_directives ~name_for_included_file text = 
-     let lines = Lines_in_string.indexed_lines text 
+     let lines = indexed_lines_outside_cee_comments text 
      and ssps = compute_small_spaces_in_text text in 
      let indexed_ssps = Int_range.index_everything ssps in
      let pairs = pairs_of_indices_for_watermarking indexed_ssps in 
@@ -680,7 +686,7 @@ let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
 
 
 let included_local_files_in_text text = 
-  let temp1 = Lines_in_string.indexed_lines text in 
+  let temp1 = indexed_lines_outside_cee_comments text in 
   let temp2 = List.filter_map (
     fun (line_idx,line) ->
       Option.map (fun included_fn ->
@@ -690,7 +696,7 @@ let included_local_files_in_text text =
   intstr_sort temp2 ;;
 
 let included_nonlocal_files_in_text text = 
-  let temp1 = Lines_in_string.indexed_lines text in 
+  let temp1 = indexed_lines_outside_cee_comments text in 
   let temp2 = List.filter_map (
       fun (line_idx,line) ->
         Option.map (fun included_fn ->
@@ -718,7 +724,7 @@ let add_extra_ending_in_inclusion_line ~extra line =
 *)
 
 let add_extra_ending_in_inclusions_inside_text ~extra text =
-  let lines_before = Lines_in_string.lines text 
+  let lines_before = lines_outside_cee_comments text 
   and counter=ref 0 in 
   let lines_after = Image.image(
     fun line -> 
@@ -743,7 +749,7 @@ let compute_wardrobe
   ) copied_includable_files);;
 
 let highlight_inclusions_in_text text = 
-  let temp1 = Lines_in_string.indexed_lines text in 
+  let temp1 = indexed_lines_outside_cee_comments text in 
   let all_lines = Image.image (
     fun (line_idx,line) ->
       ((line_idx,line),(included_local_file_opt line)<>None)
