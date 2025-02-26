@@ -251,56 +251,103 @@ module Private = struct
    |Inside_a_comment 
    |Outside_comments_or_strings ;;   
 
-let rec next_newline_after_strings_and_comments_opt text text_length idx sit =
-   if idx > text_length then None else 
-   let c = Strung.get text idx in 
-   match sit with 
+  type walker = {
+      answer_opt : int option ;
+      next_idx : int ;
+      current_state : situation ;
+      text : string ;
+      text_length : int;
+  } ;;
+
+  let result_from_walker_opt w = 
+     match w.answer_opt with 
+     (Some answer) -> Some(Some answer) 
+     | None -> 
+     if w.next_idx > w.text_length
+     then Some None 
+     else None ;;
+
+  let step w =
+   let old_idx = w.next_idx in  
+   let c = Strung.get w.text old_idx in 
+   match w.current_state with 
     Inside_a_single_quoted_string -> 
        if c = '\'' 
-       then next_newline_after_strings_and_comments_opt 
-             text text_length (idx+1)  Outside_comments_or_strings
+       then { w with 
+              next_idx = old_idx +1;
+              current_state = Outside_comments_or_strings;
+            }
        else 
-       let next_idx = (
-          if Substring.is_a_substring_located_at "\\\'" text idx 
-          then idx+2
-          else idx+1  ) in  
-        next_newline_after_strings_and_comments_opt 
-             text text_length next_idx  Inside_a_single_quoted_string       
+           { w with 
+              next_idx = old_idx + 1
+            }       
    |Inside_a_double_quoted_string -> 
        if c = '"' 
-       then next_newline_after_strings_and_comments_opt 
-             text text_length (idx+1)  Outside_comments_or_strings
+       then { w with 
+              next_idx = old_idx +1 ;
+              current_state = Outside_comments_or_strings;
+            }
        else 
-       let next_idx = (
-          if Substring.is_a_substring_located_at "\\\"" text idx 
-          then idx+2
-          else idx+1  ) in  
-        next_newline_after_strings_and_comments_opt 
-             text text_length next_idx  Inside_a_double_quoted_string
+       let coming_idx = (
+          if (Substring.is_a_substring_located_at "\\\\" w.text old_idx)
+            || (Substring.is_a_substring_located_at "\\\"" w.text old_idx) 
+          then old_idx+2
+          else old_idx+1  ) in  
+          { w with 
+              next_idx = coming_idx
+            }  
    |Inside_a_comment -> 
       (* here we use the fact that /* */-comments cannot be nested in C *)
-      let (next_situation,next_idx)=
-       (if Substring.is_a_substring_located_at "*/" text idx 
-      then (Outside_comments_or_strings,idx+2) 
-      else (Inside_a_comment,idx+1)) in   
-      next_newline_after_strings_and_comments_opt 
-             text text_length next_idx next_situation
+      let (next_situation,coming_idx)=
+       (if Substring.is_a_substring_located_at "*/" w.text old_idx 
+      then (Outside_comments_or_strings,old_idx+2) 
+      else (Inside_a_comment,old_idx+1)) in   
+          { w with 
+              next_idx = coming_idx;
+              current_state = next_situation;
+            }  
    |Outside_comments_or_strings ->
-       if c = '\n' then Some idx else 
+       if c = '\n' then {w with answer_opt = Some old_idx} else 
        if c = '\'' 
-       then next_newline_after_strings_and_comments_opt 
-             text text_length (idx+1) Inside_a_single_quoted_string 
+       then { w with 
+              next_idx = old_idx+1;
+              current_state = Inside_a_single_quoted_string;
+            }  
        else      
        if c = '"' 
-       then next_newline_after_strings_and_comments_opt 
-             text text_length (idx+1) Inside_a_double_quoted_string 
+       then { w with 
+              next_idx = old_idx+1;
+              current_state = Inside_a_double_quoted_string;
+            }  
        else    
-       if Substring.is_a_substring_located_at "/*" text idx
-       then next_newline_after_strings_and_comments_opt 
-             text text_length (idx+2) Inside_a_comment
-       else next_newline_after_strings_and_comments_opt 
-             text text_length (idx+1)  Outside_comments_or_strings        
-      ;;   
+       if Substring.is_a_substring_located_at "/*" w.text old_idx
+       then { w with 
+              next_idx = old_idx+2;
+              current_state = Inside_a_comment;
+            } 
+        
+       else { w with 
+              next_idx = old_idx+1
+            }        
+      ;;      
+
+let rec iterate w = 
+   match result_from_walker_opt w with 
+    Some res -> res 
+    | None -> iterate (step w) ;;
+
+let next_newline_after_strings_and_comments_opt 
+  txt idx =
+  let w = {
+      answer_opt = None ;
+      next_idx = idx ;
+      current_state = Outside_comments_or_strings;
+      text = txt ;
+      text_length = String.length txt;
+  } in 
+  iterate w;;
+
+
 
 let rec helper_for_lines_outside_cee_comments 
   (whole_text,total_length,treated_lines,next_idx_to_be_treated)= 
@@ -308,7 +355,7 @@ let rec helper_for_lines_outside_cee_comments
   then List.rev treated_lines 
   else 
   match next_newline_after_strings_and_comments_opt 
-        whole_text total_length next_idx_to_be_treated Outside_comments_or_strings with
+        whole_text next_idx_to_be_treated with
   None -> 
       let rest_of_text = 
         Cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
@@ -329,6 +376,11 @@ let lines_outside_cee_comments text =
 
    lines_outside_cee_comments txt1 ;; 
 
+   let txt2 = String.concat "\n" [
+   "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
+   ]  ;; 
+
+   lines_outside_cee_comments txt2 ;;
 *)
   
 

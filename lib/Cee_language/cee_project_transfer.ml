@@ -929,9 +929,12 @@ module Private = struct
     remove_cds_in_file cpsl ~name_for_container_file separate_cmd
   ;;
 
+  let ref_for_debugging_multiple_cd_removal = ref 0;;
+
   let remove_cds_in_directly_compiled_files cpsl separate_cmds =
     let temp1 = Int_range.index_everything separate_cmds
-    and sn = string_of_int (List.length separate_cmds) in
+    and sn = string_of_int (List.length separate_cmds) in 
+    let _ = (ref_for_debugging_multiple_cd_removal:=0) in 
     List.iter
       (fun (idx, separate_cmd) ->
         let msg1 =
@@ -948,6 +951,7 @@ module Private = struct
         print_string msg1;
         flush stdout;
         remove_cds_in_directly_compiled_file cpsl separate_cmd;
+        ref_for_debugging_multiple_cd_removal:=idx;
         print_string msg2;
         flush stdout)
       temp1
