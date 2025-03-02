@@ -1,14 +1,57 @@
 (************************************************************************************************************************
-Snippet 160 : 
+Snippet 161 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 159 : Debugging Cee_text.Private.compute_small_spaces_in_text
+Snippet 160 : Test Cee_text.Private.compute_small_spaces_in_text
 ************************************************************************************************************************)
 
+module Snip160=struct
+
+module Cap = Cee_project_transfer.Capsule ;;
+
+let list28 = (!(Cee_data_archiver.Cache_Content.list28_ref)) ;;
+let wardrobe1 = (!(Cee_data_archiver.Cache_Content.wardrobe1_ref)) ;; 
+
+
+let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
+let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
+
+let cpsl0 =
+  Cap.make ~source_envname:"SHPSRC" 
+  ~destination_envname:"HAHPSRC" list28 
+  (* ~reinitialize_destination:true *) ;;
+
+let cmds = Cap.separate_commands cpsl0 ;; 
+
+let u1 = Image.image (
+  fun cmd ->
+  (Cee_compilation_command.short_name_from_separate cmd)
+) cmds ;;
+
+let could_fail fn = 
+   let full_fn = 
+    "~/Teuliou/Experimenting_with_php/simplified-php-src/" ^ fn in 
+    let text = rf full_fn  in 
+    Cee_text.Private.compute_small_spaces_in_text text ;; 
+
+let check_failure fn =
+   try (fun _->false)(could_fail fn) with _ -> true ;;
+
+
+let u2 = Explicit.filter check_failure u1 ;;  
+
+let u3 = Explicit.image could_fail u1 ;;  
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 159 : Debugging Cee_text.Private.compute_small_spaces_in_text
+************************************************************************************************************************)
 module Snip159=struct
 
 

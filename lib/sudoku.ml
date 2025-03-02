@@ -112,6 +112,13 @@ let uncurried_assign (G l) (cell,v) =
    ) l in 
    G new_l ;;  
 
+let cells_with_fewest_possibilities (G l) = 
+  let temp1 = List.filter_map (
+    fun (cell,(poss,is_old)) ->
+       if is_old then None else Some(cell,poss)
+  ) l in 
+  Min.minimize_it_with_care (fun (_cell,poss)->List.length poss) temp1 ;;
+
 end ;;
 
 let assign gr cell v = Private.uncurried_assign gr (cell,v) ;; 
@@ -121,6 +128,7 @@ let assign_several gr assignments =
 
 let assoc (G l) cell = List.assoc cell l ;;  
 
+let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 let initialize_with l =
     let temp1 = List.combine Cell.all l in 
     let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
@@ -241,19 +249,21 @@ open Sudoku ;;
 
 let g0 = Grid.initialize_with 
 [
-   0;0;0;  0;5;0;  0;0;0;
-   8;4;0;  6;0;0;  3;0;0; 
-   0;5;0;  0;3;0;  0;7;4; 
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0; 
+   0;0;0;  0;0;0;  0;0;0; 
 
-   0;0;1;  0;0;9;  7;0;0;
-   0;0;2;  0;1;0;  9;0;0;
-   0;0;4;  5;0;0;  8;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
 
-   4;2;0;  0;6;0;  0;9;0;
-   0;0;9;  0;0;5;  0;2;8;
-   0;0;0;  0;2;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
 
 ];; 
+
+
 
 let (g1,contr_opt,deds) = Deduce.deduce_easily_as_much_as_possible g0 ;; 
 
