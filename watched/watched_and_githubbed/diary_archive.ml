@@ -1,14 +1,79 @@
 (************************************************************************************************************************
-Snippet 161 : 
+Snippet 162 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 160 : Test Cee_text.Private.compute_small_spaces_in_text
+Snippet 161 : Using the Sudoku module
 ************************************************************************************************************************)
 
+module Snip161=struct
+
+open Sudoku ;; 
+
+(*
+#install_printer Display.print_out_grid ;;
+*)
+
+let g0 = Grid.initialize_with 
+[
+   0;0;0;  0;0;0;  6;8;0;
+   2;0;7;  0;0;0;  0;0;0; 
+   8;6;0;  1;0;0;  0;0;4; 
+
+   0;0;0;  0;0;8;  0;7;9;
+   9;0;0;  7;0;0;  1;0;2;
+   6;0;0;  0;0;1;  5;0;0;
+
+   0;8;0;  9;6;2;  3;0;5;
+   0;3;0;  0;1;0;  0;0;0;
+   5;0;0;  0;3;0;  0;0;0;
+
+];; 
+
+
+
+let (g1,contr_opt,deds) = Deduce.deduce_easily_as_much_as_possible g0 ;; 
+
+let fp1 = Grid.cells_with_fewest_possibilities g1 ;;
+
+let case1 = Grid.assign g1 (C(1,3)) 4 ;;
+
+let case2 = Grid.assign g1 (C(1,3)) 5 ;;
+
+let (after_case1,contr_opt_case1,deds_for_case1) = 
+     Deduce.deduce_easily_as_much_as_possible case1 ;;
+
+let (after_case2,contr_opt_case2,deds_for_case2) = 
+     Deduce.deduce_easily_as_much_as_possible case2 ;;
+
+
+let g0 = Grid.initialize_with 
+[
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0; 
+   0;0;0;  0;0;0;  0;0;0; 
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+
+];; 
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 160 : Test Cee_text.Private.compute_small_spaces_in_text
+************************************************************************************************************************)
 module Snip160=struct
 
 module Cap = Cee_project_transfer.Capsule ;;
@@ -995,7 +1060,9 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
-  let lines_outside_cee_comments = Lines_in_string.lines_outside_cee_comments ;;
+  let lines_outside_cee_comments = 
+    
+    Lines_in_string.lines (* _outside_cee_comments *) ;;
 
   let indexed_lines_outside_cee_comments text = 
      Int_range.index_everything (lines_outside_cee_comments text) ;; 
@@ -2008,20 +2075,23 @@ module Snip158=struct
 
 open Lines_in_string.Private ;;
 
- let txt1 = String.concat "\n" [
+let txt1 = String.concat "\n" [
    "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
    ]  ;; 
 
-lines_outside_cee_comments txt1 ;; 
+lines_inside_or_outside_cee_comments txt1 ;; 
 
 let txt2 = String.concat "\n" [
    "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
    ]  ;; 
 
-lines_outside_cee_comments txt2 ;;
+lines_inside_or_outside_cee_comments txt2 ;;
 
-let bad1  = next_newline_after_strings_and_comments_opt txt2 15 ;;
+let txt3 = String.concat "\n" [
+   "1 When";"2 The "; "3 \"/*\" Saints"; "4 Go" ; "5 Marching \"*/\" In"; "6 Oh"
+   ]  ;; 
 
+lines_inside_or_outside_cee_comments txt3 ;; 
 
 let w0 = {
       answer_opt = None ;

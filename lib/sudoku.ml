@@ -263,44 +263,6 @@ let g0 = Grid.initialize_with
 
 ];; 
 
-
-
 let (g1,contr_opt,deds) = Deduce.deduce_easily_as_much_as_possible g0 ;; 
 
-let w0 = Deduce.Private.W(g0,[],None,false) ;;
-
-let ff = Memoized.small Deduce.Private.pusher w0;;
-
-let w1 = Deduce.Private.pusher w0 ;; 
-let w2 = Deduce.Private.pusher w1 ;; 
-
-let w37= ff 37;;
-
-let (Deduce.Private.W((G l37),_,_,_)) = w37 ;; 
-
-let bad1 = Deduce.Private.pusher w7 ;; 
-
-let (Deduce.Private.W(gr,older_deds,impossible_cell_opt,end_reached)) = w7 ;;  
-
-
-let pusher walker =
-  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
-  if end_reached then walker else
-  if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
-  let (G l)=gr in 
-  match List.find_opt (fun (_cell,(poss,is_old))->
-         (List.length(poss)<=1)&&(not is_old)) l with 
-  Some(cell0,(poss0,_))-> treat_simple_deduction walker cell0 poss0 
-  |None ->
-     let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
-     (match List.find_map (test_for_indirect_deduction gr) proposals with 
-       (Some(box1,v1,cell1)) ->
-        W(Grid.assign gr cell1 v1,(Indirect(box1,v1))::older_deds,None,false) 
-       | None ->  
-           W(gr,older_deds,None,Grid.is_finished gr) 
-     );;
-
-List.filter (fun k->ff(k)=ff(k+1)) (Int_range.range 1 50);;
-
 *)
-

@@ -9,6 +9,9 @@ exception Shift_indentation_in_line_exn of int * string ;;
 exception Put_line_first_bad_line_index_exn  of int * int ;;
 exception Put_line_last_bad_line_index_exn  of int * int ;;
 
+exception Unfinished_single_quoted_string ;;
+exception Unfinished_double_quoted_string ;;
+
 module Private = struct 
 
   let lines old_s=
@@ -251,8 +254,15 @@ module Private = struct
    |Inside_a_comment 
    |Outside_comments_or_strings ;;   
 
+  (* Data type to compute whether 
+  the next  linebreak is in a comment or not. 
+  The computation returns a pair made of
+  the next linebreak's index, with a boolean
+      indicating if the linebreak is in a comment.
+  *)
+
   type walker = {
-      answer_opt : int option ;
+      answer_opt : (int * bool) option ;
       next_idx : int ;
       current_state : situation ;
       text : string ;
@@ -272,6 +282,7 @@ module Private = struct
    let c = Strung.get w.text old_idx in 
    match w.current_state with 
     Inside_a_single_quoted_string -> 
+       if c='\n' then raise(Unfinished_single_quoted_string) else
        if c = '\'' 
        then { w with 
               next_idx = old_idx +1;
@@ -282,6 +293,7 @@ module Private = struct
               next_idx = old_idx + 1
             }       
    |Inside_a_double_quoted_string -> 
+       if c='\n' then raise(Unfinished_single_quoted_string) else
        if c = '"' 
        then { w with 
               next_idx = old_idx +1 ;
@@ -297,6 +309,7 @@ module Private = struct
               next_idx = coming_idx
             }  
    |Inside_a_comment -> 
+      if c = '\n' then {w with answer_opt = Some (old_idx,true)} else 
       (* here we use the fact that /* */-comments cannot be nested in C *)
       let (next_situation,coming_idx)=
        (if Substring.is_a_substring_located_at "*/" w.text old_idx 
@@ -307,7 +320,7 @@ module Private = struct
               current_state = next_situation;
             }  
    |Outside_comments_or_strings ->
-       if c = '\n' then {w with answer_opt = Some old_idx} else 
+       if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
        if c = '\'' 
        then { w with 
               next_idx = old_idx+1;
@@ -336,12 +349,15 @@ let rec iterate w =
     Some res -> res 
     | None -> iterate (step w) ;;
 
-let next_newline_after_strings_and_comments_opt 
-  txt idx =
+let next_newline_inside_or_outside_cee_comments_opt 
+  txt idx unfinished_comment=
   let w = {
       answer_opt = None ;
       next_idx = idx ;
-      current_state = Outside_comments_or_strings;
+      current_state = (
+        if unfinished_comment 
+        then Inside_a_comment 
+        else Outside_comments_or_strings);
       text = txt ;
       text_length = String.length txt;
   } in 
@@ -349,38 +365,47 @@ let next_newline_after_strings_and_comments_opt
 
 
 
-let rec helper_for_lines_outside_cee_comments 
-  (whole_text,total_length,treated_lines,next_idx_to_be_treated)= 
+let rec helper_for_lines_inside_or_outside_cee_comments 
+  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
   if next_idx_to_be_treated > total_length 
   then List.rev treated_lines 
   else 
-  match next_newline_after_strings_and_comments_opt 
-        whole_text next_idx_to_be_treated with
+  match next_newline_inside_or_outside_cee_comments_opt  
+        whole_text next_idx_to_be_treated unfinished_comment with
   None -> 
       let rest_of_text = 
         Cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
-      List.rev (rest_of_text :: treated_lines) 
-  |Some(newline_idx) ->
+      List.rev ((rest_of_text,unfinished_comment) :: treated_lines) 
+  |Some(newline_idx,unfinished_comment2) ->
      let line= Cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in 
-     helper_for_lines_outside_cee_comments 
-  (whole_text,total_length,line::treated_lines,newline_idx+1);; 
+     helper_for_lines_inside_or_outside_cee_comments 
+  (whole_text,total_length,(line,unfinished_comment)::treated_lines,newline_idx+1,unfinished_comment2);; 
 
-let lines_outside_cee_comments text = 
-  helper_for_lines_outside_cee_comments 
-  (text,String.length text,[],1) ;;
+let lines_inside_or_outside_cee_comments text = 
+  helper_for_lines_inside_or_outside_cee_comments 
+  (text,String.length text,[],1,false) ;;
 
 (*  
-   let txt1 = String.concat "\n" [
+
+
+ let txt1 = String.concat "\n" [
    "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
    ]  ;; 
 
-   lines_outside_cee_comments txt1 ;; 
+lines_inside_or_outside_cee_comments txt1 ;; 
 
-   let txt2 = String.concat "\n" [
+let txt2 = String.concat "\n" [
    "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
    ]  ;; 
 
-   lines_outside_cee_comments txt2 ;;
+lines_inside_or_outside_cee_comments txt2 ;;
+
+let txt3 = String.concat "\n" [
+   "1 When";"2 The "; "3 \"/*\" Saints"; "4 Go" ; "5 Marching \"*/\" In"; "6 Oh"
+   ]  ;; 
+
+lines_inside_or_outside_cee_comments txt3 ;; 
+
 *)
   
 
@@ -426,7 +451,7 @@ let interval = Private.interval ;;
 
   let lines s= Image.image snd (indexed_lines s);;
 
-  let lines_outside_cee_comments = Private.lines_outside_cee_comments ;; 
+  let lines_inside_or_outside_cee_comments = Private.lines_inside_or_outside_cee_comments ;; 
 
   let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
 

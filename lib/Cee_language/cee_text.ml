@@ -23,7 +23,7 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
-  let lines_outside_cee_comments = Lines_in_string.lines_outside_cee_comments ;;
+  let lines_outside_cee_comments = Lines_in_string.lines ;;
 
   let indexed_lines_outside_cee_comments text = 
      Int_range.index_everything (lines_outside_cee_comments text) ;; 
