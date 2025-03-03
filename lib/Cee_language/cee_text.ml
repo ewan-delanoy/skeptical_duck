@@ -23,10 +23,11 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
-  let lines_outside_cee_comments = Lines_in_string.lines ;;
+  let lines_inside_or_outside_cee_comments = 
+    Lines_in_string.lines_inside_or_outside_cee_comments ;;
 
-  let indexed_lines_outside_cee_comments text = 
-     Int_range.index_everything (lines_outside_cee_comments text) ;; 
+  let indexed_lines_inside_or_outside_cee_comments text = 
+     Int_range.index_everything (lines_inside_or_outside_cee_comments text) ;; 
 
 
    let sil_merge ox oy=
@@ -127,7 +128,7 @@ module Walker = struct
    module Walker_Object = struct 
 
     type t = {
-      lines : (int *string) list ;
+      lines : (int *(string * bool)) list ;
       current_namespace : int ;
       preceding_namespaces : int list ;
       smallest_unused_namespace_index : int ;
@@ -138,7 +139,7 @@ module Walker = struct
       gpi : guard_pattern_indicators_t ;
     } ;;  
   let make text = {
-    lines = indexed_lines_outside_cee_comments text ;
+    lines = indexed_lines_inside_or_outside_cee_comments text ;
     current_namespace = 0 ;
     preceding_namespaces = [] ;
     smallest_unused_namespace_index = 1;
@@ -323,13 +324,17 @@ module Walker = struct
     
 
   let step old_w = 
-    let (line_idx,line) = List.hd (Walker_Object.get_lines old_w) 
+    let (line_idx,(line,unfinished_comment)) = List.hd (Walker_Object.get_lines old_w) 
     and w = Walker_Object.set_lines old_w  
           (List.tl(Walker_Object.get_lines old_w)) in 
     let line_beginning = Line_beginning.compute line in 
+    if unfinished_comment 
+    then usual_step w line_idx line
+    else     
     match line_beginning with 
     Lb_Usual -> usual_step w line_idx line 
-   |Lb_If |Lb_Elif |Lb_Else |Lb_Endif -> directive_step w line_idx line line_beginning ;;
+   |Lb_If |Lb_Elif |Lb_Else |Lb_Endif -> 
+     directive_step w line_idx line line_beginning ;;
   
 
   let rec iterate w =
@@ -473,15 +478,18 @@ let find_directive_from_list_opt line directives=
           ) directives ;;
 
 let text_has_ivy text =
-   let lines = lines_outside_cee_comments text in 
+   let lines = lines_inside_or_outside_cee_comments text in 
    List.exists (
-    fun line -> (find_directive_from_list_opt line ["if"])<>None
+    fun (line,unfinished_comment) -> 
+      (not unfinished_comment) &&
+      (find_directive_from_list_opt line ["if"])<>None
    ) lines ;;          
 
 exception First_ivy_in_text_exn ;;   
 let first_ivy_in_text text =
-   let lines = indexed_lines_outside_cee_comments text in 
-   match List.find_opt (fun (_line_idx,line)->
+   let lines = indexed_lines_inside_or_outside_cee_comments text in 
+   match List.find_opt (fun (_line_idx,(line,unfinished_comment))->
+      (not unfinished_comment) && 
       (find_directive_from_list_opt line ["if"])<>None
    ) lines with 
    None -> raise First_ivy_in_text_exn 
@@ -489,8 +497,9 @@ let first_ivy_in_text text =
    
 exception Last_endif_in_text_exn ;;   
 let last_endif_in_text text =
-      let lines = List.rev(indexed_lines_outside_cee_comments text) in 
-      match List.find_opt (fun (_line_idx,line)->
+      let lines = List.rev(indexed_lines_inside_or_outside_cee_comments text) in 
+      match List.find_opt (fun (_line_idx,(line,unfinished_comment))->
+          (not unfinished_comment) && 
          (find_directive_from_list_opt line ["endif"])<>None
       ) lines with 
       None -> raise Last_endif_in_text_exn 
@@ -503,16 +512,17 @@ let put_first_ivy_on_first_line text =
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
   let temp_text = Lines_in_string.put_line_last_in_string line_idx text in 
-  let temp_lines = List.rev(lines_outside_cee_comments temp_text) in 
-  let (temp_last_line,temp_tl) = List_again.head_with_tail temp_lines in 
+  let temp_lines = List.rev(lines_inside_or_outside_cee_comments temp_text) in 
+  let ((temp_last_line,_),temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
   let after= Cull_string.two_sided_cutting  ("#endif","") temp_last_line in 
+  let all_lines_except_last = Image.image fst temp_tl in 
   let almost_all_lines=(
      match Strung.char_finder_from_inclusive_opt (fun c->
               not(List.mem c [' ';'\t';'\r'])
             ) after 1 with 
-      None -> temp_tl
-      |Some idx -> (Cull_string.cobeginning (idx-1) after) :: temp_tl
+      None -> all_lines_except_last
+      |Some idx -> (Cull_string.cobeginning (idx-1) after) :: all_lines_except_last
   )in
   let lines = List.rev("#endif" :: almost_all_lines) in 
   String.concat "\n" lines;;  
@@ -581,7 +591,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
    Cee_prawn_t.P(Image.image fst accepted_ssps)) ;;
 
  let crop_using_prawn old_text (Cee_prawn_t.P(accepted_indices)) =
-   let lines = indexed_lines_outside_cee_comments old_text 
+   let lines = Lines_in_string.indexed_lines old_text 
    and ssps = compute_small_spaces_in_text old_text  in 
    let accepted_ssps = Image.image(
       fun ssp_idx ->
@@ -607,7 +617,7 @@ let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file
     ) indexed_ssps ;;
   
   let tattoo_regions_between_conditional_directives ~name_for_included_file text = 
-     let lines = indexed_lines_outside_cee_comments text 
+     let lines = Lines_in_string.indexed_lines text 
      and ssps = compute_small_spaces_in_text text in 
      let indexed_ssps = Int_range.index_everything ssps in
      let pairs = pairs_of_indices_for_watermarking indexed_ssps in 
@@ -686,9 +696,10 @@ let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
 
 
 let included_local_files_in_text text = 
-  let temp1 = indexed_lines_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
   let temp2 = List.filter_map (
-    fun (line_idx,line) ->
+    fun (line_idx,(line,unfinished_comment)) ->
+      if unfinished_comment then None else
       Option.map (fun included_fn ->
           (line_idx,included_fn)
       ) (included_local_file_opt line)
@@ -696,9 +707,10 @@ let included_local_files_in_text text =
   intstr_sort temp2 ;;
 
 let included_nonlocal_files_in_text text = 
-  let temp1 = indexed_lines_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
   let temp2 = List.filter_map (
-      fun (line_idx,line) ->
+      fun (line_idx,(line,unfinished_comment)) ->
+        if unfinished_comment then None else
         Option.map (fun included_fn ->
             (line_idx,included_fn)
         ) (included_nonlocal_file_opt line)
@@ -724,11 +736,13 @@ let add_extra_ending_in_inclusion_line ~extra line =
 *)
 
 let add_extra_ending_in_inclusions_inside_text ~extra text =
-  let lines_before = lines_outside_cee_comments text 
+  let lines_before = lines_inside_or_outside_cee_comments text 
   and counter=ref 0 in 
   let lines_after = Image.image(
-    fun line -> 
-      if (included_local_file_opt line)<>None
+    fun (line,unfinished_comment) -> 
+      if (not unfinished_comment)
+        &&
+         ((included_local_file_opt line)<>None)
       then let _ =(counter:=(!counter)+1) in 
       add_extra_ending_in_inclusion_line ~extra line 
       else line    
@@ -749,10 +763,13 @@ let compute_wardrobe
   ) copied_includable_files);;
 
 let highlight_inclusions_in_text text = 
-  let temp1 = indexed_lines_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
   let all_lines = Image.image (
-    fun (line_idx,line) ->
-      ((line_idx,line),(included_local_file_opt line)<>None)
+    fun (line_idx,(line,unfinished_comment)) ->
+      ((line_idx,line),
+      (not unfinished_comment)
+      &&
+      ((included_local_file_opt line)<>None))
   ) temp1 in 
   let inclusion_lines = List.filter snd all_lines in 
   let indexed_inclusion_lines = Int_range.index_everything inclusion_lines in 
