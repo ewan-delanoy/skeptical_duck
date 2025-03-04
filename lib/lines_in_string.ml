@@ -251,7 +251,8 @@ module Private = struct
   type situation = 
     Inside_a_single_quoted_string 
    |Inside_a_double_quoted_string 
-   |Inside_a_comment 
+   |Inside_a_starry_comment
+   |Inside_a_double_slash_comment 
    |Outside_comments_or_strings ;;   
 
   (* Data type to compute whether 
@@ -289,11 +290,16 @@ module Private = struct
               current_state = Outside_comments_or_strings;
             }
        else 
+        let coming_idx = (
+          if (Substring.is_a_substring_located_at "\\\\" w.text old_idx)
+             || (Substring.is_a_substring_located_at "\\'" w.text old_idx) 
+          then old_idx+2
+          else old_idx+1  ) in  
            { w with 
-              next_idx = old_idx + 1
+              next_idx = coming_idx
             }       
    |Inside_a_double_quoted_string -> 
-       if c='\n' then raise(Unfinished_single_quoted_string) else
+       if c='\n' then raise(Unfinished_double_quoted_string) else
        if c = '"' 
        then { w with 
               next_idx = old_idx +1 ;
@@ -308,17 +314,20 @@ module Private = struct
           { w with 
               next_idx = coming_idx
             }  
-   |Inside_a_comment -> 
+   |Inside_a_starry_comment -> 
       if c = '\n' then {w with answer_opt = Some (old_idx,true)} else 
       (* here we use the fact that /* */-comments cannot be nested in C *)
       let (next_situation,coming_idx)=
        (if Substring.is_a_substring_located_at "*/" w.text old_idx 
       then (Outside_comments_or_strings,old_idx+2) 
-      else (Inside_a_comment,old_idx+1)) in   
+      else (Inside_a_starry_comment,old_idx+1)) in   
           { w with 
               next_idx = coming_idx;
               current_state = next_situation;
             }  
+   |Inside_a_double_slash_comment -> 
+      if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
+      { w with next_idx = old_idx+1;}           
    |Outside_comments_or_strings ->
        if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
        if c = '\'' 
@@ -336,9 +345,14 @@ module Private = struct
        if Substring.is_a_substring_located_at "/*" w.text old_idx
        then { w with 
               next_idx = old_idx+2;
-              current_state = Inside_a_comment;
+              current_state = Inside_a_starry_comment;
             } 
-        
+       else     
+       if Substring.is_a_substring_located_at "//" w.text old_idx
+       then { w with 
+              next_idx = old_idx+2;
+              current_state = Inside_a_double_slash_comment;
+            }  
        else { w with 
               next_idx = old_idx+1
             }        
@@ -349,18 +363,21 @@ let rec iterate w =
     Some res -> res 
     | None -> iterate (step w) ;;
 
-let next_newline_inside_or_outside_cee_comments_opt 
-  txt idx unfinished_comment=
-  let w = {
+let initial_walker txt idx unfinished_comment=
+   {
       answer_opt = None ;
       next_idx = idx ;
       current_state = (
         if unfinished_comment 
-        then Inside_a_comment 
+        then Inside_a_starry_comment 
         else Outside_comments_or_strings);
       text = txt ;
       text_length = String.length txt;
-  } in 
+  } ;;
+
+let next_newline_inside_or_outside_cee_comments_opt 
+  txt idx unfinished_comment=
+  let w = initial_walker txt idx unfinished_comment in 
   iterate w;;
 
 

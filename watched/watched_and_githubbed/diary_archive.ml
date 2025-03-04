@@ -8,7 +8,6 @@ open Needed_values ;;
 (************************************************************************************************************************
 Snippet 161 : Using the Sudoku module
 ************************************************************************************************************************)
-
 module Snip161=struct
 
 open Sudoku ;; 
@@ -76,6 +75,12 @@ Snippet 160 : Test Cee_text.Private.compute_small_spaces_in_text
 ************************************************************************************************************************)
 module Snip160=struct
 
+(*
+
+#use"watched/watched_not_githubbed/fill_cee_cache.ml";;
+
+*)
+
 module Cap = Cee_project_transfer.Capsule ;;
 
 let list28 = (!(Cee_data_archiver.Cache_Content.list28_ref)) ;;
@@ -109,7 +114,67 @@ let check_failure fn =
 
 let u2 = Explicit.filter check_failure u1 ;;  
 
-let u3 = Explicit.image could_fail u1 ;;  
+let u3 = Explicit.image could_fail u1 ;;      
+
+
+
+let ap1 = 
+  Absolute_path.of_string
+  ("~/Teuliou/Experimenting_with_php/simplified-php-src/"
+   ^"ext/opcache/jit/ir/ir.c"
+  );;
+
+let text1 = Io.read_whole_file ap1 ;;  
+
+module Pri = Lines_in_string.Private ;;
+
+open Pri;;
+
+(* let text1 = "			case '\'': fputs(\"'\", f); break;" ;; *)
+
+let bad1 () = Pri.lines_inside_or_outside_cee_comments text1;;
+
+let steppe 
+  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
+  if next_idx_to_be_treated > total_length 
+  then failwith("aaa")
+  else 
+  match next_newline_inside_or_outside_cee_comments_opt  
+        whole_text next_idx_to_be_treated unfinished_comment with
+  None -> 
+      failwith("bbb")
+  |Some(newline_idx,unfinished_comment2) ->
+     let line= Cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in 
+     
+  (whole_text,total_length,(line,unfinished_comment)::treated_lines,newline_idx+1,unfinished_comment2)
+;; 
+
+let w0 = (text1,String.length text1,[],1,false) ;;
+
+let ff = Memoized.small steppe w0 ;;
+
+
+
+
+let  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment) =
+  ff 84 ;;
+
+let whole_text = "\t\t\tcase '\\'': fputs(\"'\", f); break;\n\t" ;;
+
+let next_idx_to_be_treated = 1 ;;
+
+let unfinished_comment = false ;;
+
+let bad2 () = next_newline_inside_or_outside_cee_comments_opt  
+        whole_text next_idx_to_be_treated unfinished_comment ;;   
+
+let w1 = initial_walker 
+whole_text next_idx_to_be_treated unfinished_comment ;;
+
+let gg = Memoized.small step w1 ;;       
+
+let see1 = Int_range.index_everything 
+   (Strung.explode whole_text) ;;
 
 end ;;
 
