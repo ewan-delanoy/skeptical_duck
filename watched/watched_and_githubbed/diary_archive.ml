@@ -2224,7 +2224,7 @@ let bad4 =
       Cee_text.tattoo_regions_between_conditional_directives 
       ~name_for_included_file old_text ;;
 
-let lines = Cee_text.Private.indexed_lines_outside_cee_comments old_text ;;
+let lines = Cee_text.Private.indexed_lines_inside_or_outside_cee_comments old_text ;;
 
 let bad5 = Cee_text.Private.compute_small_spaces_in_text old_text ;; 
 

@@ -65,6 +65,8 @@ type line_beginning =
 
   let data = [
     "if", Lb_If;
+    "ifdef", Lb_If; 
+    "ifndef", Lb_If;    
     "elif", Lb_Elif;  
     "else", Lb_Else;
     "endif", Lb_Endif
@@ -170,6 +172,9 @@ module Walker = struct
 
   let last_directive_was_an_else w = w.last_directive_was_an_else ;;
 
+  let register_endif_index_for_first_ivy w line_idx =
+      let new_gpi = {w.gpi with endif_index_for_first_ivy_opt = Some line_idx} in 
+      {w with gpi = new_gpi} ;;
   let register_elsie_or_elif_for_first_index w line_idx =
       let new_gpi = {w.gpi with elsie_or_elif_for_first_index_opt = Some line_idx} in 
       {w with gpi = new_gpi} ;;
@@ -281,7 +286,7 @@ module Walker = struct
    | Lb_Endif ->
     (if ((Walker_Object.get_first_ivy_index_opt old_w) <> None) &&
         ((Walker_Object.get_current_namespace old_w)=1) 
-     then Walker_Object.register_elsie_or_elif_for_first_index w line_idx
+     then Walker_Object.register_endif_index_for_first_ivy w line_idx
      else w  
    )
    | Lb_Usual -> w ;;

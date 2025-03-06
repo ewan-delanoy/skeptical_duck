@@ -253,7 +253,8 @@ module Private = struct
    |Inside_a_double_quoted_string 
    |Inside_a_starry_comment
    |Inside_a_double_slash_comment 
-   |Outside_comments_or_strings ;;   
+   |Outside_comments_or_strings ;;  
+  
 
   (* Data type to compute whether 
   the next  linebreak is in a comment or not. 
@@ -308,14 +309,16 @@ module Private = struct
        else 
        let coming_idx = (
           if (Substring.is_a_substring_located_at "\\\\" w.text old_idx)
+            || (Substring.is_a_substring_located_at "\\\n" w.text old_idx)
             || (Substring.is_a_substring_located_at "\\\"" w.text old_idx) 
           then old_idx+2
           else old_idx+1  ) in  
           { w with 
               next_idx = coming_idx
-            }  
+            } 
+          
    |Inside_a_starry_comment -> 
-      if c = '\n' then {w with answer_opt = Some (old_idx,true)} else 
+      if c = '\n' then {w with answer_opt = Some (old_idx,true)} else    
       (* here we use the fact that /* */-comments cannot be nested in C *)
       let (next_situation,coming_idx)=
        (if Substring.is_a_substring_located_at "*/" w.text old_idx 
