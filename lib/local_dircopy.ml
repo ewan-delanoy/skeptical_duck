@@ -103,6 +103,12 @@ let ordered_filenames ldc =
    let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
    Image.image (fun s->List.assoc s temp0 ) temp2;; 
 
+let ordered_filenames_without_their_prefixed_indices ldc = 
+   let temp1 = Image.image (fun s ->
+     Cull_string.cobeginning 
+     (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s ) (remote_files ldc) in 
+   Ordered.sort Total_ordering.lex_for_strings temp1 ;; 
+
 let formal_frontier_dir ldc = Directory_name.of_string ldc.Local_dircopy_config_t.frontier_dir ;; 
 
 
@@ -130,8 +136,24 @@ let transfer_message data =
    ("The remote will be updated with the following files :\n"::
    data))^"\n\n\n" ;; 
 
+let detect_redundant_dated_files ldc all_dated_files = 
+   let older_files = ordered_filenames_without_their_prefixed_indices ldc in 
+   let (temp1,new_dated_files) = List.partition (
+      fun (_mtime,fn)->
+          Ordered.mem Total_ordering.lex_for_strings fn older_files
+   ) all_dated_files in 
+   (Image.image snd temp1,new_dated_files) ;;
+
+let message_on_redundant_files redundant_dated_files = 
+   "\n\nThe following files are already in the database and "^
+   "will not be transferred again : "^
+   (String.concat ", " redundant_dated_files)^"\n\n\n" ;;
+
 let transfer_commands ldc = 
-   let temp1 = Ordered.sort order_for_dated_files (dated_files ldc) in 
+   let all_dated_files = dated_files ldc in 
+   let (redundant_dated_files,new_dated_files) = 
+      detect_redundant_dated_files ldc all_dated_files in 
+   let temp1 = Ordered.sort order_for_dated_files new_dated_files in 
    let temp2 = Image.image snd temp1 in 
    let n = List.length (remote_files ldc) in 
    let temp3 = Int_range.index_everything temp2 in 
@@ -144,29 +166,32 @@ let transfer_commands ldc =
    let temp5 = Image.image (fun (idx,fn) ->
       fn ^" -> v"^(string_of_int (n+idx)) 
     ) temp3 in 
+   let _ = (
+      if redundant_dated_files <> []
+      then print_string(message_on_redundant_files redundant_dated_files); flush stdout) in 
    let _ = (print_string(transfer_message temp5); flush stdout) in 
    temp4 ;; 
 
 let transfer_to_remote ldc = Image.image Sys.command (transfer_commands ldc);; 
         
-let file_for_persistence ldc = 
+let persisted_file_listing_dir_content ldc = 
    let s_ap_for_persistence =  
       (Dfa_root.connectable_to_subpath Coma_big_constant.This_World.root)^
-      ldc.Local_dircopy_config_t.file_for_persistence in 
+      ldc.Local_dircopy_config_t.persisted_file_listing_dir_content in 
     Absolute_path.create_file_if_absent s_ap_for_persistence ;;
     
-let persist_files ldc =     
+let persist_dir_content_listing ldc =     
    let filelist = String.concat "\n" (ordered_filenames ldc) in 
-    let ap_for_persistence = file_for_persistence ldc in 
+    let ap_for_persistence = persisted_file_listing_dir_content ldc in 
     Io.overwrite_with ap_for_persistence filelist ;;  
 
 let update_from_config ldc = 
     let _ = transfer_to_remote ldc in 
-    persist_files ldc ;;   
+    persist_dir_content_listing ldc ;;   
 
         
 let initialize_when_there_are_no_fixes ldc = 
-   let _ = persist_files ldc in 
+   let _ = persist_dir_content_listing ldc in 
    let filenames = ordered_filenames ldc in 
 {
    Local_dircopy_t.config = ldc;
@@ -196,7 +221,7 @@ let initialize ldc =
         raise  Waiting_for_fixes_confirmation ;;        
         
 let reload ldc = 
-   let ap_for_persistence = file_for_persistence ldc in 
+   let ap_for_persistence = persisted_file_listing_dir_content ldc in 
    let text = Io.read_whole_file ap_for_persistence in 
    let filenames = Lines_in_string.lines text in 
    {

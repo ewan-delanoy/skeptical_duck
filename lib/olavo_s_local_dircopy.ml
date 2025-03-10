@@ -17,7 +17,7 @@ let config = {
    Local_dircopy_config_t.allowed_number_of_digits = 3;
    remote_dir = "/media/" ^ (Sys.getenv "USER") ^ "/HEAVY/Other/OC/" ;
    frontier_dir = (Sys.getenv "HOME") ^ "/Downloads/OC/Lennet/"; 
-   file_for_persistence = "nonml_files/nongithubbed_nonml_files/videos_with_olavo.txt";
+   persisted_file_listing_dir_content = "nonml_files/nongithubbed_nonml_files/videos_with_olavo.txt";
 } ;; 
 
 let main_ref = ref (Local_dircopy.reload config) ;;
