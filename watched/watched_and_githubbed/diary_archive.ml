@@ -2379,6 +2379,12 @@ module Snip153=struct
 
 module Pri = Olavo_s_local_dircopy.Private ;;
 
+let ldc1 = Local_dircopy.initialize Pri.config ;;
+
+let reds1 = Local_dircopy.redundancies Pri.config ;;
+
+let fns1 = Local_dircopy.Private.ordered_filenames Pri.config ;;
+
 Pri.main_ref := Local_dircopy.initialize Pri.config ;;
 
 let u1 = (!(Pri.main_ref)).Local_dircopy_t.remote_files ;;

@@ -83,6 +83,19 @@ let compute_fixes ldc =
          Some( Filename.quote_command "mv" [old_ap;new_ap])
   ) temp1 ;; 
 
+let redundancies ldc = 
+   let p = ldc.Local_dircopy_config_t.allowed_number_of_digits in 
+   let temp0 = Image.image (fun s ->
+     (int_of_string(Cull_string.interval s 2 (p+1)),
+     Cull_string.cobeginning (p+2) s) ) (remote_files ldc) in 
+   let temp1 = Image.image snd temp0 in 
+   let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
+   let temp3 =
+   Image.image (fun s->(s,List.filter_map(fun (idx,t)->
+      if t=s then Some idx else None   
+   ) temp0) ) temp2 in 
+   List.filter (fun (_s,indices)->(List.length indices)>1) temp3;; 
+
 let ordered_filenames ldc = 
    let temp0 = Image.image (fun s ->
      (Cull_string.cobeginning (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s,s) ) (remote_files ldc) in 
@@ -207,6 +220,8 @@ let show_files locdir =
 end ;;
 
 let initialize = Private.initialize ;; 
+
+let redundancies = Private.redundancies ;;
 
 let reload = Private.reload ;;
 
