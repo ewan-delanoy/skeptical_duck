@@ -85,16 +85,31 @@ let compute_fixes ldc =
 
 let redundancies ldc = 
    let p = ldc.Local_dircopy_config_t.allowed_number_of_digits in 
-   let temp0 = Image.image (fun s ->
+   let common_base = Image.image (fun s ->
      (int_of_string(Cull_string.interval s 2 (p+1)),
      Cull_string.cobeginning (p+2) s) ) (remote_files ldc) in 
-   let temp1 = Image.image snd temp0 in 
-   let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
-   let temp3 =
+   let nonredundant_filenames = 
+      Ordered.sort Total_ordering.lex_for_strings 
+       (Image.image snd common_base) in 
+   let temp2 =
    Image.image (fun s->(s,List.filter_map(fun (idx,t)->
       if t=s then Some idx else None   
-   ) temp0) ) temp2 in 
-   List.filter (fun (_s,indices)->(List.length indices)>1) temp3;; 
+   ) common_base) ) nonredundant_filenames in 
+   let redundant_filenames =List.filter (fun (_s,indices)->(List.length indices)>1) temp2 in 
+   let nonredundant_indices = 
+      Ordered.sort Total_ordering.for_integers 
+       (Image.image fst common_base) in 
+   let temp2 =
+   Image.image (fun idx->(idx,List.filter_map(fun (idx2,t)->
+      if idx2=idx then Some t else None   
+   ) common_base) ) nonredundant_indices in 
+   let redundant_indices =List.filter (fun (_idx,names)->
+   (List.length names)>1) temp2 in  
+   let n = List.hd(List.rev nonredundant_indices) in 
+   let missing_indices = Ordered.setminus
+     Total_ordering.for_integers (Int_range.range 1 n) 
+       nonredundant_indices in
+   (n,missing_indices,redundant_indices,redundant_filenames);; 
 
 let ordered_filenames ldc = 
    let temp0 = Image.image (fun s ->

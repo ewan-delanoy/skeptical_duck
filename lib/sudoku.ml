@@ -13,6 +13,11 @@ type box =
    |Column of int 
    |Square of int ;; 
 
+
+type forbidden_configuration = Fc of (cell * int) list ;;
+
+type watcher_for_forbidden_configurations = Wfc of forbidden_configuration list ;;
+
 type grid = G of (cell * ((int list) * bool)) list;;
 
 type deduction =
@@ -81,6 +86,22 @@ module Box = struct
 
 end ;;   
 
+module Forbidden_configuration = struct 
+
+let assign fc   cell v = 
+   let (Fc l)=fc in 
+   match List.assoc_opt cell l with 
+   None -> Some fc 
+   |Some original_v ->
+    if original_v=v 
+    then Some(Fc(List.filter (fun (cell2,_)->cell2<>cell) l))
+    else None ;;     
+
+let is_realized (Fc l) = (l=[]) ;;
+
+end ;;  
+
+
 module Grid = struct 
 
 exception Assign_exn of cell ;;  
@@ -100,7 +121,7 @@ let uncurried_assign (G l) (cell,v) =
    if (not(List.mem v possibilities))
    then raise(Assign_exn(cell))
    else 
-   if (not(List.mem v possibilities))||is_old
+   if is_old
    then raise(Repeated_assignment_exn(cell))
    else  
    let new_l = Image.image (

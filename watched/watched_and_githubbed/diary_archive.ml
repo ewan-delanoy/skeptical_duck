@@ -1,8 +1,34 @@
 (************************************************************************************************************************
-Snippet 162 : 
+Snippet 163 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 162 : Create assistance file on the fly on another computer
+************************************************************************************************************************)
+
+module Snip162=struct
+
+let g1=(Needed_values.abo "unix_again")@
+["unix_again"];;
+let g2=Image.image (
+  fun old_s->
+   let s= Cull_string.after_rightmost old_s '/' in 
+   let full_elt = Dfn_join.to_ending (hmx s) Dfa_ending.ml in 
+   Dfn_full.to_absolute_path full_elt 
+) g1;;
+
+let g3=Modularize.modularize_several "" g2;;
+
+let ap1 = Absolute_path.create_file_if_absent 
+"watched/watched_and_githubbed/painstaking.ml" ;;
+
+Io.overwrite_with ap1 g3 ;;
+
+
+end ;;
 
 
 (************************************************************************************************************************
