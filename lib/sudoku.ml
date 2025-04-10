@@ -16,7 +16,8 @@ type box =
 
 type forbidden_configuration = Fc of (cell * int) list ;;
 
-type watcher_for_forbidden_configurations = Wfc of forbidden_configuration list ;;
+type watcher_for_forbidden_configurations = 
+  Wfc of (forbidden_configuration * forbidden_configuration) list ;;
 
 type grid = G of (cell * ((int list) * bool)) list;;
 
@@ -29,6 +30,7 @@ let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_outsert = Ordered.outsert i_order ;;
+let i_sort = Ordered.sort i_order ;;
 
 module Cell = struct 
 
@@ -101,6 +103,30 @@ let is_realized (Fc l) = (l=[]) ;;
 
 end ;;  
 
+module Watcher_for_forbidden_configurations = struct 
+
+let assign (Wfc old_whole) cell v = 
+    let new_whole = List.filter_map (
+        fun (original,old_state) ->
+          Option.map (fun state->(original,state))
+         (Forbidden_configuration.assign old_state cell v)
+    ) old_whole in 
+    Wfc new_whole ;;
+
+let forbidden_values (Wfc l) cell = 
+   i_sort( List.filter_map (
+        fun (_original,Fc current_state) ->
+         if List.length current_state <>1 
+         then None 
+         else 
+         let (cell2,v)=List.hd current_state in 
+         if cell2<>cell 
+         then None 
+         else Some v   
+    ) l) ;;  
+
+
+end ;;  
 
 module Grid = struct 
 
