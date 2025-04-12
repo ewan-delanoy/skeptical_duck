@@ -23,9 +23,12 @@ type grid = G of
   watcher_for_forbidden_configurations * 
   ((cell * ((int list) * bool)) list);;
 
-type deduction =
+type deduction_tip =
     Simple of cell
    |Indirect of box * int ;; 
+
+type deduction = Ded of deduction_tip * (cell * int) ;;
+
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -275,7 +278,7 @@ let treat_simple_deduction  (W(gr,older_deds,_impossible_cell_opt,_end_reached))
   if m0=0 then (W(gr,older_deds,Some cell0,false)) else
   if m0=1 
   then let v0 = List.hd poss0 in 
-     (W(Grid.assign gr cell0 v0,(Simple cell0)::older_deds,None,false)) 
+     (W(Grid.assign gr cell0 v0,Ded(Simple cell0,(cell0,v0))::older_deds,None,false)) 
   else raise(Treat_simple_deduction_exn) ;; 
 
 
@@ -289,10 +292,15 @@ let pusher walker =
      let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
      (match List.find_map (test_for_indirect_deduction gr) proposals with 
        (Some(box1,v1,cell1)) ->
-        W(Grid.assign gr cell1 v1,(Indirect(box1,v1))::older_deds,None,false) 
+        W(Grid.assign gr cell1 v1,(Ded(Indirect(box1,v1),(cell1,v1)))::older_deds,None,false) 
        | None -> W(gr,older_deds,None,true) 
      );;
        
+(* let immediate_simple_deductions gr = 
+  let temp1 = Grid.low_hanging_fruit gr in 
+  ()
+;;  *)
+
 let rec iterator walker =
   let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
   if end_reached then (gr,impossible_cell_opt,List.rev older_deds) else
