@@ -19,7 +19,9 @@ type forbidden_configuration = Fc of (cell * int) list ;;
 type watcher_for_forbidden_configurations = 
   Wfc of (forbidden_configuration * forbidden_configuration) list ;;
 
-type grid = G of (cell * ((int list) * bool)) list;;
+type grid = G of 
+  watcher_for_forbidden_configurations * 
+  ((cell * ((int list) * bool)) list);;
 
 type deduction =
     Simple of cell
@@ -105,6 +107,8 @@ end ;;
 
 module Watcher_for_forbidden_configurations = struct 
 
+let empty_one = Wfc [] ;;
+
 let assign (Wfc old_whole) cell v = 
     let new_whole = List.filter_map (
         fun (original,old_state) ->
@@ -138,12 +142,17 @@ module Private = struct
 
 let origin = 
   let small_base = Int_range.range 1 9 in 
-  G(Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
+  G(Watcher_for_forbidden_configurations.empty_one,
+  Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
 
-let possibilities_at_cell (G l) cell = fst(List.assoc cell l) ;;  
+let possibilities_at_cell (G (_wfc,l)) cell = fst(List.assoc cell l) ;;  
 
-let uncurried_assign (G l) (cell,v) = 
-   let (possibilities,is_old) = List.assoc cell l  in 
+let cell_is_already_assigned (G (_wfc,l)) cell = snd(List.assoc cell l);;
+
+let uncurried_assign gr (cell,v) = 
+   let (G (wfc,l)) = gr in 
+   let possibilities = possibilities_at_cell gr cell  in 
+   let is_old = cell_is_already_assigned gr cell   in 
    if (not(List.mem v possibilities))
    then raise(Assign_exn(cell))
    else 
@@ -157,12 +166,14 @@ let uncurried_assign (G l) (cell,v) =
         then (cell2,(i_outsert v poss,is_old))
         else (cell2,(poss,is_old))       
    ) l in 
-   G new_l ;;  
+   G (Watcher_for_forbidden_configurations.assign wfc cell v,new_l) ;;  
 
-let cells_with_fewest_possibilities (G l) = 
+let cells_with_fewest_possibilities gr = 
+  let (G (_wfc,l)) = gr in 
   let temp1 = List.filter_map (
-    fun (cell,(poss,is_old)) ->
-       if is_old then None else Some(cell,poss)
+    fun (cell,(_poss,is_old)) ->
+       if is_old then None else 
+        Some(cell,possibilities_at_cell gr cell)
   ) l in 
   Min.minimize_it_with_care (fun (_cell,poss)->List.length poss) temp1 ;;
 
@@ -173,13 +184,21 @@ let assign gr cell v = Private.uncurried_assign gr (cell,v) ;;
 let assign_several gr assignments = 
      List.fold_left  Private.uncurried_assign gr assignments ;; 
 
-let assoc (G l) cell = List.assoc cell l ;;  
+let assoc (G (_wfc,l)) cell = List.assoc cell l ;;  
 
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 let initialize_with l =
     let temp1 = List.combine Cell.all l in 
     let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
     assign_several Private.origin temp2 ;; 
+
+let low_hanging_fruit gr=    
+  let (G (_wfc,l))=gr in 
+  List.find_map (fun (cell,(_poss,is_old))->
+     let poss = Private.possibilities_at_cell gr cell in 
+    if (List.length(poss)<=1)&&(not is_old)
+    then Some(cell,poss)
+    else  None) l ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
@@ -264,10 +283,8 @@ let pusher walker =
   let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
   if end_reached then walker else
   if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
-  let (G l)=gr in 
-  match List.find_opt (fun (_cell,(poss,is_old))->
-         (List.length(poss)<=1)&&(not is_old)) l with 
-  Some(cell0,(poss0,_))-> treat_simple_deduction walker cell0 poss0 
+  match Grid.low_hanging_fruit gr  with 
+  Some(cell0,poss0)-> treat_simple_deduction walker cell0 poss0 
   |None ->
      let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
      (match List.find_map (test_for_indirect_deduction gr) proposals with 
