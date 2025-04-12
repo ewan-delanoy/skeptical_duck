@@ -197,7 +197,7 @@ let initialize_with l =
 
 let low_hanging_fruit gr=    
   let (G (_wfc,l))=gr in 
-  List.find_map (fun (cell,(_poss,is_old))->
+  List.filter_map (fun (cell,(_poss,is_old))->
      let poss = Private.possibilities_at_cell gr cell in 
     if (List.length(poss)<=1)&&(not is_old)
     then Some(cell,poss)
@@ -286,9 +286,9 @@ let pusher walker =
   let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
   if end_reached then walker else
   if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
-  match Grid.low_hanging_fruit gr  with 
-  Some(cell0,poss0)-> treat_simple_deduction walker cell0 poss0 
-  |None ->
+    match Grid.low_hanging_fruit gr  with 
+   (cell0,poss0)::_-> treat_simple_deduction walker cell0 poss0 
+  |[] ->
      let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
      (match List.find_map (test_for_indirect_deduction gr) proposals with 
        (Some(box1,v1,cell1)) ->
