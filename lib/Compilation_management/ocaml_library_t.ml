@@ -5,6 +5,6 @@
 *)
 
 
-type t=NumLib |StrLib |UnixLib;;
+type t=ZarithLib |StrLib |UnixLib;;
 
  

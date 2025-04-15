@@ -1,14 +1,767 @@
 (************************************************************************************************************************
-Snippet 163 : 
+Snippet 164 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 162 : Create assistance file on the fly on another computer
+Snippet 163 : Construct a 3-cover of A7
 ************************************************************************************************************************)
 
+module Snip163=struct
+
+
+let a_perm = [2;1;4;3;5;6] ;;
+let b_perm = [3;4;1;2;5;6] ;;
+let c_perm = [1;2;4;3;6;5] ;;
+let d_perm = [3;4;5;6;1;2] ;;
+
+let list_for_sg1 = Permutation.generated_subgroup 
+ [a_perm;b_perm;c_perm;d_perm]
+;;
+
+type sa1_actor = SA1 of int list ;;
+
+module Sa1_actor = struct 
+
+module Private = struct 
+
+let towards_order (SA1 s1) (SA1 s2) = 
+   Total_ordering.lex_compare
+     Total_ordering.for_integers s1 s2 ;;
+
+end ;;  
+
+let apply_on_list (SA1 s) l= 
+  let n = List.length s 
+  and inv_s = Permutation.inverse s in 
+  Int_range.scale (fun j->List.nth l ((List.nth inv_s j)-1)) 0 (n-1)
+;;
+
+
+let identity = SA1 [1;2;3;4;5;6] ;;
+
+let order = (Private.towards_order: sa1_actor Total_ordering_t.t) ;;
+
+let prod (SA1 s1) (SA1 s2) = SA1(Permutation.product s1 s2) ;;
+
+(*
+
+To check the action is correctly defined :
+
+let l1 = [1;2;3;4;5] ;;
+let actor1 = SA1 [2;3;4;1;5] ;;
+let actor2 = SA1 [1;3;4;5;2] ;; 
+let actor12 = Sa1_actor.prod actor1 actor2 ;; 
+
+let version1 = Sa1_actor.apply_on_list actor12 l1 ;;
+let version2 = Sa1_actor.apply_on_list actor1 
+   (Sa1_actor.apply_on_list actor2 l1) ;;
+*)
+
+let sg1_subgroup = Image.image (fun perm->SA1(perm)) list_for_sg1 ;;
+
+end ;;  
+
+type restricted_w_number = R_U |R_W |R_W2 ;;
+
+module Restricted_w_number = struct 
+
+module Private = struct 
+  
+let mul_w = function R_U ->R_W | R_W->R_W2 |R_W2 -> R_U ;;
+let mul_w2 = function R_U ->R_W2 | R_W->R_U |R_W2 -> R_W ;;
+
+end ;;  
+
+let mul x y = match x with 
+  R_U ->y | R_W->Private.mul_w y |R_W2 -> Private.mul_w2 y ;;
+ 
+let order = Total_ordering.from_list [R_U;R_W;R_W2] ;;  
+
+end ;;  
+
+
+type w_number = WN of int * int ;;
+
+exception Unrecognized of w_number ;; 
+
+module W_number = struct
+
+module Private = struct 
+
+let mul_w (WN(x,y))= WN(-y,x-y);;
+
+let mul_w2 (WN(x,y))= WN(y-x,-x);;
+
+let integer_level x =
+  if x=0 then 0 else
+  if x<0 then 2 else 1 ;;
+    
+
+let adhoc_on_integers = ((fun x y->
+   let trial1 = Total_ordering.for_integers (abs x) (abs y) in 
+   if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+   Total_ordering.for_integers (integer_level x) (integer_level y)
+))
+
+let towards_order (WN(x1,y1)) (WN(x2,y2)) = 
+  let trial1 = adhoc_on_integers y1 y2 in 
+  if trial1 <> Total_ordering_result_t.Equal then trial1 else 
+  adhoc_on_integers x1 x2 ;;
+
+let add (WN(x1,y1)) (WN(x2,y2)) = WN(x1+x2,y1+y2) ;; 
+
+let fold_sum l = List.fold_left add (WN(0,0)) l ;;
+
+end ;;  
+
+
+let fold_sum = Private.fold_sum ;;
+
+let mul (WN(x1,y1)) (WN(x2,y2)) = WN(x1*x2-y1*y2,x1*y2+x2*y1-y1*y2) ;;
+
+let omega = WN(0,1) ;;
+
+let omega_squared = WN(-1,-1) ;;
+
+let one = WN(1,0) ;;
+
+let order = (Private.towards_order : w_number Total_ordering_t.t) ;;
+
+let recognize_restricted x = try List.assoc x 
+ [
+   WN (1, 0),R_U;
+   WN (0, 1),R_W;
+   WN (-1, -1),R_W2;
+   WN (2, 0),R_U;
+   WN (0, 2),R_W;
+   WN (-2, -2),R_W2;
+ ] with 
+ Not_found -> raise(Unrecognized(x));;  
+
+let rotate x y = match x with 
+  R_U ->y | R_W->Private.mul_w y |R_W2 -> Private.mul_w2 y ;;
+
+let sesquilinear (WN(x1,x2)) (WN(y1,y2)) = 
+    WN(x1*y1+x2*y2-x1*y2,x2*y1-x1*y2) ;;
+  
+
+let two = WN(2,0) ;;
+
+let zero = WN(0,0) ;;
+
+
+
+end ;;
+
+
+type w_uple = Wu of w_number * w_number * w_number * w_number * w_number * w_number ;;
+
+
+module W_uple = struct
+  
+module Private = struct 
+  
+let of_list li =
+    let th = (fun k->List.nth li (k-1)) in 
+    Wu(th 1,th 2,th 3,th 4,th 5,th 6) ;; 
+let to_list (Wu(x1,x2,x3,x4,x5,x6))= [x1;x2;x3;x4;x5;x6] ;;
+
+let towards_order x y  =
+    Total_ordering.lex_compare
+       W_number.order (to_list x) (to_list y) ;;
+
+let nonzero_indices x=
+    let li = to_list x
+    and zero=WN(0,0) in 
+    List.filter (fun k->List.nth li (k-1)<>zero) [1;2;3;4;5;6] ;;
+
+
+end ;;  
+
+let act sg x=
+    let old_li = Private.to_list x in 
+    let new_li = Sa1_actor.apply_on_list sg old_li in 
+    Private.of_list new_li;;
+
+
+
+let dot_product w x=
+  Private.of_list(
+    Image.image (W_number.rotate w)(Private.to_list x)
+  ) ;;
+  
+
+
+
+let image w =
+  let li = Private.to_list w in 
+  let idx_set = Private.nonzero_indices w in 
+  Image.image (fun k->List.nth li (k-1)) idx_set;;
+    
+let image_size w =
+   List.length(Ordered.sort W_number.order (image w)) ;;  
+
+let nonzero_indices = Private.nonzero_indices ;;
+
+let occurrences w v = 
+  let temp1 = Int_range.index_everything (Private.to_list w) in 
+  List.filter_map (fun (idx,other_v)->
+    if other_v = v then Some idx else None
+  ) temp1 ;;
+
+let of_list = Private.of_list ;;
+
+let order = (Private.towards_order: w_uple Total_ordering_t.t) ;;
+
+let repeated_elements w = 
+  let im = image w in 
+  let sorted_im = Ordered.sort W_number.order im in 
+  List.filter (fun v->
+    List.length(List.filter(fun z->z=v) im)>1  
+  ) sorted_im ;;
+
+let test_orthogonality x y = 
+   let temp1 = List.combine(Private.to_list x)(Private.to_list y) in 
+   let temp2 = Image.image (fun (u,v)->W_number.sesquilinear u v) temp1 in  
+  (W_number.fold_sum temp2)=WN(0,0) ;;
+
+let to_list = Private.to_list ;;
+ 
+
+
+end ;;
+
+
+type direction =
+   E of int 
+  |F of int * int 
+  |G of int * int * int * int ;;
+
+module Direction = struct
+  
+module Private = struct  
+
+  
+let to_w_mapper = function 
+E(i) -> (fun t->if t=i then W_number.two else W_number.zero )
+|F(j,k)-> (fun t->if (t=j)||(t=k) then W_number.zero else W_number.one )
+|G(i,j,k,l) -> (
+   fun t -> match List.assoc_opt t 
+    [i,W_number.omega;j,W_number.omega_squared;
+     k,W_number.one;l,W_number.one
+    ] with 
+   Some answer -> answer 
+   | None -> W_number.zero 
+) ;;
+
+let to_w_uple dcn =
+  W_uple.of_list(Int_range.scale (to_w_mapper dcn) 1 6) ;;
+
+let level = function 
+ E(i) -> 1
+|F(j,k)-> 2
+|G(i,j,k,l) -> 3 ;;
+
+let unordered_support = function 
+ E(i) -> [i]
+|F(j,k)-> [j;k]
+|G(i,j,k,l) -> [i;j;k;l] ;;
+
+let i_order = Total_ordering.for_integers ;;
+
+let support dcn = Ordered.sort i_order (unordered_support dcn) ;; 
+
+let towards_order x y = 
+  let trial1 = Total_ordering.for_integers (level x) (level y) in 
+  if trial1<>Total_ordering_result_t.Equal then trial1 else 
+  Total_ordering.lex_compare i_order (support x) (support y) ;;  
+
+end ;;
+
+let order = (Private.towards_order: direction Total_ordering_t.t) ;;
+
+
+let test_orthogonality x y = 
+   W_uple.test_orthogonality(Private.to_w_uple x)(Private.to_w_uple y)  ;;
+
+let to_w_uple = Private.to_w_uple ;;
+
+end ;;
+
+
+type summary=Sy of restricted_w_number *  direction ;;
+
+
+
+module Summary = struct 
+
+exception Bad_index_size of w_uple * (int list);;  
+
+module Private = struct
+  
+let towards_order (Sy(r1,dcn1)) (Sy(r2,dcn2)) = 
+  let trial1 = Direction.order dcn1 dcn2 in 
+  if trial1<>Total_ordering_result_t.Equal then trial1 else 
+  Restricted_w_number.order r1 r2 ;;  
+
+end ;;
+
+let of_w_uple u =
+  let li1 = W_uple.to_list u in 
+  let idx_set = W_uple.nonzero_indices u in 
+  if List.length(idx_set)=1
+  then let i = List.hd(idx_set) in 
+       let v = List.nth li1 (i-1) in 
+       let r = W_number.recognize_restricted v in 
+       Sy(r,E(i))
+  else 
+  if List.length(idx_set)=4
+  then if W_uple.image_size(u)=1 
+       then let v = List.hd(W_uple.image u) in 
+            let zeroes = Ordered.setminus Total_ordering.for_integers
+             [1; 2; 3; 4; 5; 6] idx_set in 
+            let j1 = List.nth zeroes 0 
+            and j2 = List.nth zeroes 1 in  
+            let r = W_number.recognize_restricted v in 
+            Sy(r,F(j1,j2))
+            
+       else 
+            let r = List.hd(W_uple.repeated_elements u) in 
+            let rw = W_number.rotate R_W r  
+            and rw2 = W_number.rotate R_W2 r in 
+            let doubled = W_uple.occurrences u r in 
+            let i = List.hd(W_uple.occurrences u rw)
+            and j = List.hd(W_uple.occurrences u rw2)
+            and k = List.nth doubled 0 
+            and l = List.nth doubled 1 in 
+            Sy(W_number.recognize_restricted r,G(i,j,k,l))
+  else  raise(Bad_index_size(u,idx_set)) ;; 
+
+let order = (Private.towards_order: summary Total_ordering_t.t) ;;
+
+
+let test_orthogonality (Sy(_,dcn1)) (Sy(_,dcn2)) = 
+   Direction.test_orthogonality dcn1 dcn2 ;;
+
+let to_w_uple (Sy(r,dcn)) =
+   W_uple.dot_product r (Direction.to_w_uple dcn) ;;
+
+
+end ;;  
+
+
+type restricted_sixtuple = 
+  Rs of 
+  restricted_w_number * restricted_w_number * restricted_w_number * 
+  restricted_w_number * restricted_w_number * restricted_w_number ;; 
+
+module Restricted_sixtuple = struct 
+  
+module Private = struct 
+  
+let of_list li =
+    let th = (fun k->List.nth li (k-1)) in 
+    Rs(th 1,th 2,th 3,th 4,th 5,th 6) ;; 
+let to_list (Rs(x1,x2,x3,x4,x5,x6))= [x1;x2;x3;x4;x5;x6] ;;
+
+let towards_order x y =
+    Total_ordering.lex_compare
+       Restricted_w_number.order 
+       (to_list x) (to_list y) ;;
+
+
+end ;;  
+
+let act sg x=
+    let old_li = Private.to_list x in 
+    let new_li = Sa1_actor.apply_on_list sg old_li in 
+    Private.of_list new_li ;;
+
+let all_ones = Rs(R_U,R_U,R_U,R_U,R_U,R_U);;
+
+let mul x y =
+   let temp1 = List.combine(Private.to_list x)(Private.to_list y) in 
+   let temp2 = Image.image (fun (u,v)->Restricted_w_number.mul u v) temp1 in  
+   Private.of_list temp2 ;;
+
+
+
+let of_list = Private.of_list ;;
+
+let order = (Private.towards_order: restricted_sixtuple Total_ordering_t.t) ;;
+
+let to_list = Private.to_list ;;
+
+end ;;  
+
+
+(* 
+Beware the two operations do not commute !
+The permutation is applied first, then the multiplication
+by a diagonal matrix.
+*)
+type director = Dr of restricted_sixtuple * sa1_actor;;
+
+module Director = struct 
+
+module Private = struct 
+
+let towards_order (Dr(rs1,sa1)) (Dr(rs2,sa2))=
+ (Total_ordering.product 
+   Restricted_sixtuple.order Sa1_actor.order) (rs1,sa1) (rs2,sa2) ;;
+
+end ;;  
+
+let act (Dr(restricted_uple,sa)) old_uple = 
+  let new_uple = W_uple.act sa old_uple in 
+  let temp1 = List.combine(Restricted_sixtuple.to_list restricted_uple)(W_uple.to_list new_uple) in 
+  let temp2 = Image.image (fun (r,v)->W_number.rotate r v) temp1 in 
+  W_uple.of_list temp2 ;; 
+  
+let identity = Dr(
+  Restricted_sixtuple.all_ones,Sa1_actor.identity);;
+
+let order = (Private.towards_order: director Total_ordering_t.t) ;;
+
+let prod (Dr(rs1,sa1)) (Dr(rs2,sa2))=
+  let twisted_rs2 = Restricted_sixtuple.act sa1 rs2 in 
+  Dr(Restricted_sixtuple.mul rs1 twisted_rs2,Sa1_actor.prod sa1 sa2) ;;    
+
+(*
+
+To check the action is correctly defined :
+
+let one=WN(1,0);;
+let src = Wu(one,one,one,one,one,one) ;;
+let actor1 = Dr(Rs(R_U,R_W,R_U,R_W,R_U,R_W),SA1 [2;3;4;1;5;6]) ;;
+let actor2 = Dr(Rs(R_W2,R_U,R_W2,R_U,R_W2,R_U),SA1 [1;3;4;5;2;6]) ;; 
+let actor12 = Director.prod actor1 actor2 ;; 
+
+let version1 = Director.act actor12 src ;;
+let version2 = Director.act actor1 
+   (Director.act actor2 src) ;;
+*)
+
+end ;;   
+
+module Sg2_subgroup = struct 
+
+module Private = struct 
+
+   let o_order = Director.order ;;
+
+   let o_merge = Ordered.merge o_order ;;
+   let o_setminus = Ordered.setminus o_order ;;
+   let o_sort = Ordered.sort o_order ;;
+
+  let pusher_for_generated_subgroup l (whole,to_be_treated) =
+      let temp1 = Cartesian.product to_be_treated l in
+      let unordered_temp2 = Image.image (fun (x,y)->Director.prod x y) temp1 in 
+      let temp2 = o_sort unordered_temp2 in 
+      let new_elements = o_setminus temp2 whole in 
+      let new_whole = o_merge new_elements whole in 
+      (new_whole,new_elements) ;;
+
+   let rec iterator_for_generated_subgroup l walker =
+       if snd walker = []
+       then fst walker
+       else iterator_for_generated_subgroup l 
+        (pusher_for_generated_subgroup l walker);;  
+
+   let generated_subgroup l = 
+      let id = Director.identity in 
+       iterator_for_generated_subgroup l ([id],[id]) ;; 
+
+   let starter = 
+      (Image.image (fun sg->
+        Dr(Restricted_sixtuple.all_ones,sg)) Sa1_actor.sg1_subgroup)
+      @[
+        Dr(Rs(R_U,R_U,R_U,R_U,R_W2,R_W),
+          SA1([2;3;1;4;5;6])
+        )
+       ];;  
+
+end ;;  
+
+let sg2 = Private.generated_subgroup Private.starter ;;
+
+end ;;  
+
+module Vector_system = struct 
+
+
+
+  let wu_order = W_uple.order ;;
+
+  let wu_sort = Ordered.sort wu_order ;;
+
+let z = WN(0,0) ;;
+
+let o = WN(1,0) ;;
+
+let w = WN(0,1) ;;
+
+let w2 = WN(-1,-1) ;;
+
+let u1 = [
+   Wu(z,z,o,o,o,o);
+   Wu(o,z,o,z,w,w2);
+]  ;;  
+
+let u2 = 
+  let temp1 = Cartesian.product [R_U;R_W;R_W2] u1 in 
+  let temp2 = Image.image (fun (w,u)->
+    W_uple.dot_product w u) temp1 in  
+  wu_sort temp2 ;;  
+
+let the_45 = 
+  let temp1 = Cartesian.product Sa1_actor.sg1_subgroup u2 in 
+  let temp2 = Image.image (fun (sa,u)->
+    W_uple.act sa u) temp1 in  
+  wu_sort temp2 ;; 
+
+let other_seed = Wu(WN(2,0),z,z,z,z,z) ;;
+
+let the_additional_18 = 
+  let temp1 = Image.image (fun dr->
+    Director.act dr other_seed) Sg2_subgroup.sg2 in  
+  wu_sort temp1 ;; 
+
+let the_original_63 = wu_sort (the_45@the_additional_18) ;;
+
+let check1 = (hi the_45,hi the_additional_18,hi the_original_63) ;;
+
+let g1 = Image.image (fun u->(u,Summary.of_w_uple u)) the_original_63 ;;
+let check_summaries = List.filter (
+  fun (u,s)->(Summary.to_w_uple s)<>u
+) g1 ;;
+
+let the_unordered_63 = Image.image snd g1 ;;
+
+let the_63 = Ordered.sort Summary.order the_unordered_63;;
+
+end ;;
+
+(*
+module Frames_of_w_uples = struct
+
+let towards_level2 = Uple.list_of_pairs Vector_system.the_original_63 ;;
+
+let level2 = List.filter (
+  fun (w1,w2) -> W_uple.test_orthogonality w1 w2 
+) towards_level2 ;;
+
+let towards_level3 = Uple.list_of_pairs level2 ;;
+
+let level3 =
+   List.filter_map (
+    fun ((x1,x2),(y2,y3)) ->
+      if (y2=x2) && (W_uple.test_orthogonality x1 y3)
+      then Some(x1,x2,y3)
+      else None
+   ) towards_level3;;
+
+let towards_level4 = Uple.list_of_pairs level3 ;;
+
+let level4 =
+   List.filter_map (
+    fun ((x1,x2,x3),(y2,y3,y4)) ->
+      if (y2=x2) && (y3=x3) && (W_uple.test_orthogonality x1 y4)
+      then Some(x1,x2,x3,y4)
+      else None
+   ) towards_level4;;
+
+let towards_level5 = Uple.list_of_pairs level4 ;;
+
+let level5 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4),(y2,y3,y4,y5)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) 
+        && (W_uple.test_orthogonality x1 y5)
+      then Some(x1,x2,x3,x4,y5)
+      else None
+   ) towards_level5;;   
+
+let towards_level6 = Uple.list_of_pairs level5 ;;
+
+let level6 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4,x5),(y2,y3,y4,y5,y6)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) && (y5=x5) 
+        && (W_uple.test_orthogonality x1 y6)
+      then Some(x1,x2,x3,x4,x5,y6)
+      else None
+   ) towards_level6;;   
+(*
+let listified_redundant_level6 = Image.image (
+  fun (u1,u2,u3,u4,u5,u6) ->
+    [u1;u2;u3;u4;u5;u6]
+) redundant_level6 ;;  
+
+let listified_level6 = 
+  Ordered.sort 
+  (Total_ordering.lex_compare W_uple.order) listified_redundant_level6 ;; 
+*) 
+
+
+end ;;  
+
+module Frames_of_summaries = struct
+
+let towards_level2 = Uple.list_of_pairs Vector_system.the_63 ;;
+
+let level2 = List.filter (
+  fun (w1,w2) -> Summary.test_orthogonality w1 w2 
+) towards_level2 ;;
+
+let towards_level3 = Uple.list_of_pairs level2 ;;
+
+let level3 =
+   List.filter_map (
+    fun ((x1,x2),(y2,y3)) ->
+      if (y2=x2) && (Summary.test_orthogonality x1 y3)
+      then Some(x1,x2,y3)
+      else None
+   ) towards_level3;;
+
+let towards_level4 = Uple.list_of_pairs level3 ;;
+
+let level4 =
+   List.filter_map (
+    fun ((x1,x2,x3),(y2,y3,y4)) ->
+      if (y2=x2) && (y3=x3) && (Summary.test_orthogonality x1 y4)
+      then Some(x1,x2,x3,y4)
+      else None
+   ) towards_level4;;
+
+let towards_level5 = Uple.list_of_pairs level4 ;;
+
+let level5 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4),(y2,y3,y4,y5)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) 
+        && (Summary.test_orthogonality x1 y5)
+      then Some(x1,x2,x3,x4,y5)
+      else None
+   ) towards_level5;;   
+
+let towards_level6 = Uple.list_of_pairs level5 ;;
+
+let level6 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4,x5),(y2,y3,y4,y5,y6)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) && (y5=x5) 
+        && (Summary.test_orthogonality x1 y6)
+      then Some(x1,x2,x3,x4,x5,y6)
+      else None
+   ) towards_level6;;   
+
+end ;;  
+*)
+
+module Frames_of_directions = struct
+
+let the_21 =
+  Ordered.sort Direction.order
+  (Image.image (fun (Sy(_,dcn))->dcn) Vector_system.the_63);;
+
+let towards_level2 = Uple.list_of_pairs the_21 ;;
+
+let level2 = List.filter (
+  fun (w1,w2) -> Direction.test_orthogonality w1 w2 
+) towards_level2 ;;
+
+let towards_level3 = Uple.list_of_pairs level2 ;;
+
+let level3 =
+   List.filter_map (
+    fun ((x1,x2),(y2,y3)) ->
+      if (y2=x2) && (Direction.test_orthogonality x1 y3)
+      then Some(x1,x2,y3)
+      else None
+   ) towards_level3;;
+
+let towards_level4 = Uple.list_of_pairs level3 ;;
+
+let level4 =
+   List.filter_map (
+    fun ((x1,x2,x3),(y2,y3,y4)) ->
+      if (y2=x2) && (y3=x3) && (Direction.test_orthogonality x1 y4)
+      then Some(x1,x2,x3,y4)
+      else None
+   ) towards_level4;;
+
+let towards_level5 = Uple.list_of_pairs level4 ;;
+
+let level5 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4),(y2,y3,y4,y5)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) 
+        && (Direction.test_orthogonality x1 y5)
+      then Some(x1,x2,x3,x4,y5)
+      else None
+   ) towards_level5;;   
+
+let towards_level6 = Uple.list_of_pairs level5 ;;
+
+let level6 =
+   List.filter_map (
+    fun ((x1,x2,x3,x4,x5),(y2,y3,y4,y5,y6)) ->
+      if (y2=x2) && (y3=x3) && (y4=x4) && (y5=x5) 
+        && (Direction.test_orthogonality x1 y6)
+      then Some(x1,x2,x3,x4,x5,y6)
+      else None
+   ) towards_level6;;   
+
+
+end ;;  
+
+let see1 = (
+   (* hi Frames_of_w_uples.level6,
+   hi Frames_of_summaries.level6, *)
+   hi Frames_of_directions.level6
+) ;;
+
+
+let ze=W_number.zero ;;
+
+let on=W_number.one ;;
+let tw =W_number.two ;;
+
+let ww = W_number.omega ;;
+let w2 = W_number.omega_squared ;;
+
+let s1 =Summary.of_w_uple (W_uple.of_list [tw;ze;ze;ze;ze;ze]) ;;
+let s2 = Summary.of_w_uple (W_uple.of_list [ze;ze;on;on;on;on]) ;;
+let s3 =Summary.of_w_uple (W_uple.of_list [ze;on;ze;on;ww;w2]) ;;
+let s4 =Summary.of_w_uple (W_uple.of_list [ze;on;on;ze;w2;ww]) ;;
+let s5 =Summary.of_w_uple (W_uple.of_list [ze;on;w2;ww;on;ze]) ;;
+let s6 =Summary.of_w_uple (W_uple.of_list [ze;on;ww;w2;ze;on]) ;;
+
+let chosen_summaries=[s1;s2;s3;s4;s5;s6] ;;
+
+let chosen_directions = Image.image (
+  fun (Sy(r,dcn)) ->dcn
+) chosen_summaries ;; 
+
+let pairs_of_directions = Uple.list_of_pairs chosen_directions ;;
+
+let bad_pairs = List.filter ( 
+  fun (dcn1,dcn2) ->
+    not(Direction.test_orthogonality dcn1 dcn2)
+) pairs_of_directions ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 162 : Create assistance file on the fly on another computer
+************************************************************************************************************************)
 module Snip162=struct
 
 let g1=(Needed_values.abo "unix_again")@
@@ -2493,74 +3246,8 @@ Snippet 151 : Using the Zarith module
 ************************************************************************************************************************)
 module Snip151=struct
 
-open Zirath ;;
-
-
-module ZZ = struct
-  
-type t = R of string * Z.t ;;  
-
-let of_zarith q = R(Z.to_string q,q) ;;
-let of_string s = of_zarith(Z.of_string s);;
-  
-let to_string (R (s,_)) = s ;;
-let add (R(_,x)) (R(_,y)) = of_zarith(Z.add x y);;
-
-let mul (R(_,x)) (R(_,y)) = of_zarith(Z.mul x y);;
-
-let gcd (R(_,x)) (R(_,y)) = of_zarith(Z.gcd x y);;
-
-let zero = R("0",Z.zero) ;;
-
-let one = R("0",Z.one) ;;
-
-let print_out (fmt:Format.formatter) (R(s,_))=
-   Format.fprintf fmt "@[%s@]" s;;   
-
-end ;; 
-
-module QQ = struct
-  
-type t = R of string * string * Q.t ;;  
-
-let of_zarith q = R(Z.to_string (q.Q.den),Z.to_string (q.Q.num),q) ;;
-let of_string s = of_zarith(Q.of_string s);;
-  
-let to_string (R (d,n,_)) = 
-  if n="1" then d else d^"/"^n;;
-let add (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.add x y);;
-
-let sub (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.sub x y);;
-let mul (R(_,_,x)) (R(_,_,y)) = of_zarith(Q.mul x y);;
-
-
-
-let zero = R("0","1",Q.zero) ;;
-
-let one = R("0","1",Q.one) ;;
-
-let equals (R(_,_,x)) (R(_,_,y)) = Q.equals x y ;; 
-let leq (R(_,_,x)) (R(_,_,y)) = Q.leq x y ;;
-
-let geq (R(_,_,x)) (R(_,_,y)) = Q.geq x y ;;
-
-let opposite q = sub zero q ;;
-
-let floor (R(_,_,q)) = 
-  if Z.equals q.den Z.one
-  then ZZ.of_zarith(q.num)  
-  else 
-  if Z.leq q.num Z.zero 
-  then let onum = Z.opposite q.num in 
-       let ofloor = Z.div onum q.den in 
-       ZZ.of_zarith(Z.opposite(Z.add ofloor Z.one))
-  else ZZ.of_zarith(Z.div q.num q.den) ;;
-
-let print_out (fmt:Format.formatter) r=
-   Format.fprintf fmt "@[%s@]" (to_string r);;   
-
-end ;;  
-
+module Z= Zirath.Zay ;;
+module Q = Zirath.Quay ;;
 
 
 

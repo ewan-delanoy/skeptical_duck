@@ -209,6 +209,34 @@ module Private = struct
    
    *)
 
+   let i_order = Total_ordering.for_integers ;;
+
+   let i_fold_merge = Ordered.fold_merge i_order ;;
+   let i_sort = Ordered.sort i_order ;;
+
+   let il_order = Total_ordering.lex_compare i_order ;;
+
+   let il_merge = Ordered.merge il_order ;;
+   let il_setminus = Ordered.setminus il_order ;;
+   let il_sort = Ordered.sort il_order ;;
+
+   let pusher_for_generated_subgroup l (whole,to_be_treated) =
+      let temp1 = Cartesian.product to_be_treated l in
+      let unordered_temp2 = Image.image (fun (x,y)->product x y) temp1 in 
+      let temp2 = il_sort unordered_temp2 in 
+      let new_elements = il_setminus temp2 whole in 
+      let new_whole = il_merge new_elements whole in 
+      (new_whole,new_elements) ;;
+
+   let rec iterator_for_generated_subgroup l walker =
+       if snd walker = []
+       then fst walker
+       else iterator_for_generated_subgroup l 
+        (pusher_for_generated_subgroup l walker);;  
+
+   let generated_subgroup l = 
+      let id = i_fold_merge(Image.image i_sort l) in 
+       iterator_for_generated_subgroup l ([id],[id]) ;; 
 
    end ;; 
    
@@ -220,6 +248,8 @@ let cyclic_subgroup = Private.cyclic_subgroup ;;
 
 let decompose_into_disjoint_cycles =  Private.decompose_into_disjoint_cycles ;;    
    
+let generated_subgroup = Private.generated_subgroup ;;
+
 let iii (* meaning, integer initial interval *) 
    = Memoized.make(fun n->
       Private.integer_initial_interval n);;

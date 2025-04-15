@@ -6,7 +6,7 @@
 
 
 let correspondances=[
-   Ocaml_library_t.NumLib,"num";
+   Ocaml_library_t.ZarithLib,"zarith";
    Ocaml_library_t.StrLib,"str";
    Ocaml_library_t.UnixLib,"unix"];;
 let capitalized_correspondances =Image.image (
@@ -22,27 +22,26 @@ let of_string s=
 let to_string lib=snd(List.find (fun (x,_y)->x=lib) correspondances);;  
 
 
-let short_name=function
-   Ocaml_library_t.NumLib->"NumLib" 
-  |Ocaml_library_t.StrLib->"StrLib" 
-  |Ocaml_library_t.UnixLib->"UnixLib";;
+let short_name lib =
+  (String.capitalize_ascii (to_string lib))^"Lib" ;;
+  
 
 let ocaml_name lib=
   (*cutting the name as always, to avoid a circular definition *)
   "Ocaml"^"_library."^(short_name lib);;
 
-let file_for_library=function 
-  Ocaml_library_t.NumLib->"nums" 
-  |Ocaml_library_t.StrLib->"str" 
-  |Ocaml_library_t.UnixLib->"unix";;  
+let file_for_library lib =to_string lib;;  
 
-let modules_telling_a_library_away=function
-Ocaml_library_t.NumLib->["num";"big_int";"arith_status"] 
+let modules_telling_a_library_away =function
+Ocaml_library_t.ZarithLib->["z";"q"] 
 |Ocaml_library_t.StrLib->["str"] 
 |Ocaml_library_t.UnixLib->["unix"];;    
 
 
-let all_libraries=[Ocaml_library_t.NumLib;Ocaml_library_t.StrLib;Ocaml_library_t.UnixLib];;  
+let all_libraries=[
+  Ocaml_library_t.ZarithLib;
+  Ocaml_library_t.StrLib;
+  Ocaml_library_t.UnixLib];;  
 
 let compute_needed_libraries_from_uncapitalized_modules_list l=
    List.filter (

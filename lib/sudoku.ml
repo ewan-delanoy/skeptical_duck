@@ -255,18 +255,18 @@ module Private = struct
 
 let test_for_indirect_deduction gr (box,v)=
   let cells = Box.content box in 
-  let temp1 = List.filter_map 
+  let compatible_cells = List.filter_map 
     (fun cell->
         let poss = Grid.possibilities_at_cell gr cell in 
         if i_mem v poss
         then Some cell  
         else None) cells in
-  if List.length(temp1)=1
-  then ( let cell = List.hd temp1 in 
-       let (_,is_old) = Grid.assoc gr cell in 
+  if List.length(compatible_cells)=1
+  then ( let only_compatible_cell = List.hd compatible_cells in 
+       let (_,is_old) = Grid.assoc gr only_compatible_cell in 
        if is_old
        then None  
-       else Some(box,v,List.hd temp1) )
+       else Some(box,v,List.hd compatible_cells) )
   else None ;;         
      
 type walker = W of  grid * deduction list * cell option * bool ;;
@@ -296,10 +296,24 @@ let pusher walker =
        | None -> W(gr,older_deds,None,true) 
      );;
        
-(* let immediate_simple_deductions gr = 
+let immediate_simple_deductions gr = 
   let temp1 = Grid.low_hanging_fruit gr in 
-  ()
-;;  *)
+  List.filter_map (
+    fun (cell,vals) ->
+      if List.length vals = 1
+      then Some(cell,List.hd vals)
+      else None  
+  ) temp1 ;;  
+
+let immediate_indirect_deductions gr = 
+  let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
+     List.filter_map (
+      fun (box,v)->
+        Option.map
+        (fun (_,_,cell)->
+          Ded(Indirect(box,v),(cell,v))
+          )
+        (test_for_indirect_deduction gr (box,v))) proposals ;;  
 
 let rec iterator walker =
   let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
