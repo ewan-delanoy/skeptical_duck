@@ -5,6 +5,7 @@
 *)
 
 exception The_empty_set_has_no_min ;; 
+exception The_empty_set_has_no_max ;; 
 
 module Private = struct 
 
@@ -89,6 +90,21 @@ module Private = struct
               and y2=length_preserving_sort(cmpr)(snd temp1) in
               length_preserving_merge cmpr y1 y2;;       
   
+  let rec helper_for_max (cmpr:'a Total_ordering_t.t) (current_max,to_be_treated) =
+    match to_be_treated with 
+     [] -> current_max
+    | elt :: others ->
+    match cmpr current_max elt with
+    Total_ordering_result_t.Greater
+   |Total_ordering_result_t.Equal->helper_for_max cmpr (current_max,others)
+   |Total_ordering_result_t.Lower->helper_for_max cmpr (elt,others) ;; 
+
+
+  let max (cmpr:'a Total_ordering_t.t) = function 
+       [] -> raise(The_empty_set_has_no_max)
+      |elt :: others -> helper_for_max cmpr (elt,others) ;; 
+
+
   let rec helper_for_min (cmpr:'a Total_ordering_t.t) (current_min,to_be_treated) =
     match to_be_treated with 
      [] -> current_min
@@ -211,6 +227,7 @@ module Private = struct
   
   let length_preserving_sort = Private.length_preserving_sort ;;
 
+  let max = Private.max ;; 
   let mem (cmpr:'a Total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false

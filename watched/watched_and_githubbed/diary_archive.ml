@@ -1,14 +1,98 @@
 (************************************************************************************************************************
-Snippet 164 : 
+Snippet 165 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 163 : Construct a 3-cover of A7
+Snippet 164 : Unfinished work on functional equation f(xyf(x+y))=f(x)+f(y)
 ************************************************************************************************************************)
 
+module Snip164=struct
+
+
+module ZZ = Zirath.Z ;;
+module ZQ = Zirath.Q ;;
+
+(*
+#install_printer ZZ.trinp_out ;;
+#install_printer ZQ.trinp_out ;;
+*)
+(*
+
+(4,4) -> 1
+(3,6) -> 1 
+(8,8) -> 2
+(12,12) -> 3
+(10,15) -> 3
+(16,16) -> 4  
+(20,20) -> 5
+
+*)
+
+let starter_ref = ref [1;2;3] ;;
+
+starter_ref := [1;2;3;5;7;9;10;11;13;14;17;18;19] ;;
+
+let test_pairs_from l = 
+    let temp1 = Image.image ZZ.of_int l in 
+    let temp2 = Uple.inclusive_list_of_pairs temp1 in 
+    let temp3 = Image.image (
+      fun (x,y) -> 
+         let qx = ZQ.of_zirath x 
+         and qy = ZQ.of_zirath y in 
+         let nuum = ZQ.mul qx qy 
+         and dane = ZQ.mul (ZQ.of_int 2) (ZQ.add qx qy) in 
+         (x,y,ZQ.div nuum dane)
+    ) temp2 in 
+    List.filter (fun (x,y,q) ->
+        ZZ.equals (ZQ.den q) (ZZ.one)
+      ) temp3 ;; 
+
+let generic_tt2 starter n = 
+    let m = List.hd(List.rev starter)+2 in 
+    test_pairs_from (
+   starter @ (Int_range.range m n)) ;; 
+
+let next_compatible_value starter =
+    let m = List.hd(List.rev starter)+2 in 
+    let tempf = Memoized.make(fun n->
+      generic_tt2 starter n
+    ) in 
+    if tempf(m)=[] then m else 
+    let tempfg=(fun j->List.length(tempf j)=List.length(tempf (j-1))) 
+    and walker = ref(m+1) in
+    let _ = (while not(tempfg(!walker)) 
+    do walker:=(!walker)+1 done) in 
+    !walker ;;
+
+let next_threshhold_values starter =
+    let m = List.hd(List.rev starter)+2 in 
+    let tempf = Memoized.make(fun n->
+      generic_tt2 starter n
+    ) in 
+    if tempf(m)=[] then m else 
+    let tempfg=(fun j->List.length(tempf j)=List.length(tempf (j-1))) 
+    and walker = ref(m+1) in
+    let _ = (while not(tempfg(!walker)) 
+    do walker:=(!walker)+1 done) in 
+    !walker ;;
+
+
+
+starter_ref := [1;2;3;5;7;9;10;11;13;14;17;18;19] ;;
+next_compatible_value(!starter_ref) ;; 
+generic_tt2 (!starter_ref) 21 ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 163 : Construct a 3-cover of A7
+************************************************************************************************************************)
 module Snip163=struct
 
 
