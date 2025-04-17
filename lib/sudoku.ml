@@ -39,6 +39,15 @@ let i_sort = Ordered.sort i_order ;;
 
 module Cell = struct 
 
+module Private = struct 
+
+let single_index (C(i,j)) = j+9*(i-1) ;;
+let at_single_index idx = let q = (idx-1)/9 in C(q+1,idx-9*q);;
+
+end ;;  
+
+let at_single_index = Private.at_single_index ;;
+
 let from_matrix_coordinates i j = C(i,j) ;; 
 
 let horizontal_coordinate (C (_i,j)) = j;; 
@@ -58,10 +67,19 @@ let test_for_neighborhood c1 c2 =
       ((square_coordinate c1)=(square_coordinate c2))
     ;;
 
+let translate_along_single_index d c = 
+   let old_idx = Private.single_index c  in
+   let attempted_new_idx = old_idx + d in 
+   let new_idx =(
+      if attempted_new_idx <= 81
+      then attempted_new_idx
+      else attempted_new_idx - 81
+   ) in 
+   Private.at_single_index new_idx ;;    
 
 let first_in_given_square square_idx = List.find (fun c->square_coordinate(c)=square_idx) all;;     
-let single_index (C(i,j)) = j+9*(i-1) ;;
-let at_single_index idx = let q = (idx-1)/9 in C(q+1,idx-9*q);;
+let single_index = Private.single_index ;;
+
 let to_short_string (C(i,j)) = "("^(string_of_int i)^","^(string_of_int j)^")" ;;
  
 
