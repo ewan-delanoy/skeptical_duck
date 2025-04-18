@@ -29,6 +29,9 @@ type deduction_tip =
 
 type deduction = Ded of deduction_tip * (cell * int) ;;
 
+type raking_result =
+    Smooth of  (cell * int * deduction_tip list) list
+   |Obstruction_found of (cell * (int * deduction_tip list) list) list ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -287,33 +290,6 @@ let test_for_indirect_deduction gr (box,v)=
        else Some(box,v,List.hd compatible_cells) )
   else None ;;         
      
-type walker = W of  grid * deduction list * cell option * bool ;;
-
-exception Treat_simple_deduction_exn ;;   
-
-let treat_simple_deduction  (W(gr,older_deds,_impossible_cell_opt,_end_reached)) cell0 poss0 = 
-  let m0 = List.length(poss0) in 
-  if m0=0 then (W(gr,older_deds,Some cell0,false)) else
-  if m0=1 
-  then let v0 = List.hd poss0 in 
-     (W(Grid.assign gr cell0 v0,Ded(Simple cell0,(cell0,v0))::older_deds,None,false)) 
-  else raise(Treat_simple_deduction_exn) ;; 
-
-
-let pusher walker =
-  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
-  if end_reached then walker else
-  if impossible_cell_opt <> None then W(gr,older_deds,impossible_cell_opt,true) else
-    match Grid.low_hanging_fruit gr  with 
-   (cell0,poss0)::_-> treat_simple_deduction walker cell0 poss0 
-  |[] ->
-     let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
-     (match List.find_map (test_for_indirect_deduction gr) proposals with 
-       (Some(box1,v1,cell1)) ->
-        W(Grid.assign gr cell1 v1,(Ded(Indirect(box1,v1),(cell1,v1)))::older_deds,None,false) 
-       | None -> W(gr,older_deds,None,true) 
-     );;
-       
 let immediate_simple_deductions gr = 
   let temp1 = Grid.low_hanging_fruit gr in 
   List.filter_map (
@@ -333,16 +309,80 @@ let immediate_indirect_deductions gr =
           )
         (test_for_indirect_deduction gr (box,v))) proposals ;;  
 
-let rec iterator walker =
-  let (W(gr,older_deds,impossible_cell_opt,end_reached)) = walker in 
-  if end_reached then (gr,impossible_cell_opt,List.rev older_deds) else
-  iterator(pusher(walker)) ;;  
+(*
+Rake means collect all immediate deductions
+*)
+
+let rake gr = 
+   let temp1 = Image.image (fun (cell,v)->
+       Ded(Simple(cell),(cell,v))
+    ) (immediate_simple_deductions gr)
+   and temp2 =  immediate_indirect_deductions gr in 
+   let temp3 = temp1 @ temp2 in 
+   let ref_for_adequate_results=ref[]
+   and ref_for_overflow_results=ref[] in 
+   let _ = List.iter (
+     fun cell -> 
+      let local_results=List.filter_map (
+        fun v->
+          let pair=(cell,v) in 
+          let fits = List.filter_map(fun
+            (Ded(tip,pair2)) -> 
+              if pair2=pair then Some tip else None
+          ) temp3 in 
+          if fits = []
+          then None 
+          else Some(v,fits)   
+      ) (Int_range.range 1 9) in 
+      if local_results=[] then () else 
+      if List.length(local_results)=1
+      then let (v,deds) = List.hd local_results in 
+           ref_for_adequate_results:=(cell,v,deds)::(!ref_for_adequate_results) 
+      else ref_for_overflow_results:=(cell,local_results)::(!ref_for_overflow_results)     
+   ) Cell.all in 
+   let overflow_results = (!ref_for_overflow_results) in 
+   if overflow_results = []
+   then Obstruction_found(overflow_results)
+   else Smooth(!ref_for_adequate_results) ;;
+
+
+
+type l_walker = LW of  
+grid * 
+((cell * int * deduction_tip list) list) list * 
+((cell * (int * deduction_tip list) list) list) option * bool ;;
+
+let push_more_easy_deductions walker =
+  let (LW(gr,older_deds,obstruction_opt,end_reached)) = walker in 
+  if end_reached then walker else
+  if obstruction_opt <> None 
+  then LW(gr,older_deds,obstruction_opt,true) 
+  else
+    match rake gr  with 
+   (Smooth new_decorated_deds)-> 
+    let new_deds = Image.image (
+       fun (cell,v,_expl) ->(cell,v)
+     ) new_decorated_deds in 
+     LW(Grid.assign_several gr new_deds,
+        older_deds@[new_decorated_deds],None,
+        new_deds=[])
+  |Obstruction_found(obstr) ->
+     LW(gr,older_deds,Some obstr,true)
+     ;;
+
+
+let rec iterate_easy_deductions walker =
+  let (LW(gr,older_deds,obstruction_opt,end_reached)) = walker in 
+  if end_reached then (gr,obstruction_opt,List.rev older_deds) else
+  iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
 end ;;
 
 let deduce_easily_as_much_as_possible gr = 
-    Private.iterator(Private.W(gr,[],None,false))
+    Private.iterate_easy_deductions(Private.LW(gr,[],None,false))
 ;;  
+
+let rake = Private.rake ;;
 
 end ;;   
 
