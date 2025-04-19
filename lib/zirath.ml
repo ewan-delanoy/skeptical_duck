@@ -11,7 +11,7 @@ module Quay = Q ;;
 
 module type Z_TYPE =
   sig
-    type t = Wrap of Z.t
+    type t 
     val abs : t -> t
     val add : t -> t -> t
     val ediv : t -> t -> t
@@ -27,6 +27,7 @@ module type Z_TYPE =
     val of_string : string -> t
     val of_zarith : Zay.t -> t
     val one : t
+    val order : t Total_ordering_t.t
     val sub : t -> t -> t
     val to_string : t -> string
     val to_zarith : t -> Zay.t 
@@ -64,6 +65,13 @@ module Z = (struct
 
   let of_zarith z = Wrap z ;;
   let one = Wrap Zay.one ;;
+
+  let order = ((fun x y ->
+  if lt x y then Total_ordering_result_t.Lower else 
+  if equals x y then Total_ordering_result_t.Equal else 
+  Total_ordering_result_t.Greater     
+  ): t Total_ordering_t.t) ;;
+
   let sub (Wrap x) (Wrap y) = (Wrap(Zay.sub x y)) ;;
 
   let to_string (Wrap x) = Zay.to_string x ;;
@@ -78,7 +86,7 @@ end : Z_TYPE) ;;
 
 module type Q_TYPE =
   sig
-    type t = Wrap of Q.t
+    type t 
     val abs : t -> t
     val add : t -> t -> t
     val ceil : t -> Z.t
@@ -97,6 +105,7 @@ module type Q_TYPE =
     val of_string : string -> t
     val of_zirath : Z.t -> t
     val one : t
+    val order : t Total_ordering_t.t
     val sub : t -> t -> t
     val to_float : t -> float
     val to_string : t -> string
@@ -157,6 +166,12 @@ module Q = (struct
 
   let of_zirath z = Wrap ({Quay.num=(Z.to_zarith z);Quay.den=Zay.one}) ;;
   let one = Wrap Quay.one ;;
+
+  let order = ((fun x y ->
+  if lt x y then Total_ordering_result_t.Lower else 
+  if equals x y then Total_ordering_result_t.Equal else 
+  Total_ordering_result_t.Greater     
+  ): t Total_ordering_t.t) ;;
   let sub (Wrap x) (Wrap y) = (Wrap(Quay.sub x y)) ;;
   let to_float (Wrap x) = Quay.to_float x ;;
   let to_string (Wrap x) = Quay.to_string x ;;
