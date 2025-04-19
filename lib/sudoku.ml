@@ -201,16 +201,24 @@ let cells_with_fewest_possibilities gr =
   ) l in 
   Min.minimize_it_with_care (fun (_cell,poss)->List.length poss) temp1 ;;
 
+let assign_several gr assignments = 
+     List.fold_left  uncurried_assign gr assignments ;; 
+
+
+
+
 end ;;
 
 let assign gr cell v = Private.uncurried_assign gr (cell,v) ;; 
 
 let assign_several gr assignments = 
-     List.fold_left  Private.uncurried_assign gr assignments ;; 
+     Private.assign_several gr assignments ;; 
 
 let assoc (G (_wfc,l)) cell = List.assoc cell l ;;  
 
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
+
+let empty_grid = Private.origin ;;
 let initialize_with l =
     let temp1 = List.combine Cell.all l in 
     let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
@@ -341,45 +349,45 @@ let rake gr =
       else ref_for_overflow_results:=(cell,local_results)::(!ref_for_overflow_results)     
    ) Cell.all in 
    let overflow_results = (!ref_for_overflow_results) in 
-   if overflow_results = []
+   if overflow_results <> []
    then Obstruction_found(overflow_results)
    else Smooth(!ref_for_adequate_results) ;;
 
 
 
-type l_walker = LW of  
+type walker = W of  
 grid * 
 ((cell * int * deduction_tip list) list) list * 
 ((cell * (int * deduction_tip list) list) list) option * bool ;;
 
 let push_more_easy_deductions walker =
-  let (LW(gr,older_deds,obstruction_opt,end_reached)) = walker in 
+  let (W(gr,older_deds,obstruction_opt,end_reached)) = walker in 
   if end_reached then walker else
   if obstruction_opt <> None 
-  then LW(gr,older_deds,obstruction_opt,true) 
+  then W(gr,older_deds,obstruction_opt,true) 
   else
     match rake gr  with 
    (Smooth new_decorated_deds)-> 
     let new_deds = Image.image (
        fun (cell,v,_expl) ->(cell,v)
      ) new_decorated_deds in 
-     LW(Grid.assign_several gr new_deds,
+     W(Grid.assign_several gr new_deds,
         older_deds@[new_decorated_deds],None,
         new_deds=[])
   |Obstruction_found(obstr) ->
-     LW(gr,older_deds,Some obstr,true)
+     W(gr,older_deds,Some obstr,true)
      ;;
 
 
 let rec iterate_easy_deductions walker =
-  let (LW(gr,older_deds,obstruction_opt,end_reached)) = walker in 
+  let (W(gr,older_deds,obstruction_opt,end_reached)) = walker in 
   if end_reached then (gr,obstruction_opt,List.rev older_deds) else
   iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
 end ;;
 
 let deduce_easily_as_much_as_possible gr = 
-    Private.iterate_easy_deductions(Private.LW(gr,[],None,false))
+    Private.iterate_easy_deductions(Private.W(gr,[],None,false))
 ;;  
 
 let rake = Private.rake ;;
