@@ -31,8 +31,9 @@ type deduction = Ded of deduction_tip * (cell * int) ;;
 
 type raking_result =
     Smooth of  (cell * int * deduction_tip list) list
-   |Obstruction_found of (cell * (int * deduction_tip list) list) list ;;
-
+   |Obstruction1_found of (cell * (int * deduction_tip list) list) list 
+   |Obstruction2_found of ( (cell * int * (deduction_tip list)) * 
+                            (cell * int * (deduction_tip list)) ) list;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -350,21 +351,34 @@ let rake gr =
    ) Cell.all in 
    let overflow_results = (!ref_for_overflow_results) in 
    if overflow_results <> []
-   then Obstruction_found(overflow_results)
-   else Smooth(!ref_for_adequate_results) ;;
+   then Obstruction1_found(overflow_results)
+   else 
+   let adequate_results = !ref_for_adequate_results in 
+   let pairs = Uple.list_of_pairs adequate_results in 
+   let bad_pairs = List.filter (fun 
+     ((cell1,v1,_),(cell2,v2,_)) ->
+       (v2=v1) && (Cell.test_for_neighborhood cell1 cell2)
+   ) pairs in 
+   if bad_pairs <> []
+   then Obstruction2_found(bad_pairs)
+   else 
+   Smooth(!ref_for_adequate_results) ;;
 
 
 
 type walker = W of  
 grid * 
 ((cell * int * deduction_tip list) list) list * 
-((cell * (int * deduction_tip list) list) list) option * bool ;;
+((cell * (int * deduction_tip list) list) list) * 
+(((cell * int * (deduction_tip list)) * 
+  (cell * int * (deduction_tip list)))  list) * 
+bool ;;
 
 let push_more_easy_deductions walker =
-  let (W(gr,older_deds,obstruction_opt,end_reached)) = walker in 
+  let (W(gr,older_deds,obstruction1,obstruction2,end_reached)) = walker in 
   if end_reached then walker else
-  if obstruction_opt <> None 
-  then W(gr,older_deds,obstruction_opt,true) 
+  if (obstruction1 <> []) || (obstruction2 <> []) 
+  then W(gr,older_deds,obstruction1,obstruction2,true) 
   else
     match rake gr  with 
    (Smooth new_decorated_deds)-> 
@@ -372,22 +386,24 @@ let push_more_easy_deductions walker =
        fun (cell,v,_expl) ->(cell,v)
      ) new_decorated_deds in 
      W(Grid.assign_several gr new_deds,
-        older_deds@[new_decorated_deds],None,
+        older_deds@[new_decorated_deds],[],[],
         new_deds=[])
-  |Obstruction_found(obstr) ->
-     W(gr,older_deds,Some obstr,true)
+  |Obstruction1_found(obstr1) ->
+     W(gr,older_deds,obstr1,[],true)
+  |Obstruction2_found(obstr2) ->
+     W(gr,older_deds,[],obstr2,true)   
      ;;
 
 
 let rec iterate_easy_deductions walker =
-  let (W(gr,older_deds,obstruction_opt,end_reached)) = walker in 
-  if end_reached then (gr,obstruction_opt,List.rev older_deds) else
+  let (W(gr,older_deds,obstruction1,obstruction2,end_reached)) = walker in 
+  if end_reached then (gr,obstruction1,obstruction2,List.rev older_deds) else
   iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
 end ;;
 
 let deduce_easily_as_much_as_possible gr = 
-    Private.iterate_easy_deductions(Private.W(gr,[],None,false))
+    Private.iterate_easy_deductions(Private.W(gr,[],[],[],false))
 ;;  
 
 let rake = Private.rake ;;
