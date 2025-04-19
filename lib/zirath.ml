@@ -98,6 +98,7 @@ module type Q_TYPE =
     val gt : t -> t -> bool
     val leq : t -> t -> bool
     val lt : t -> t -> bool
+    val make : Z.t -> Z.t -> t
     val mul : t -> t -> t
     val num : t -> Z.t
     val of_int : int -> t
@@ -156,6 +157,8 @@ module Q = (struct
   let leq (Wrap x) (Wrap y) = Quay.leq x y ;;
 
   let lt (Wrap x) (Wrap y) = Quay.lt x y ;;
+
+  let make x y = Wrap(Quay.make (Z.to_zarith x) (Z.to_zarith y));;
   let mul (Wrap x) (Wrap y) = (Wrap(Quay.mul x y)) ;;
 
   let num = Private.num ;;

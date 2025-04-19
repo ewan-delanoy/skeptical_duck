@@ -1,14 +1,233 @@
 (************************************************************************************************************************
-Snippet 165 : 
+Snippet 166 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 164 : Unfinished work on functional equation f(xyf(x+y))=f(x)+f(y)
+Snippet 165 : Function commuting with dynamical system
 ************************************************************************************************************************)
 
+module Snip165=struct
+
+module ZZ = Zirath.Z ;;
+module ZQ = Zirath.Q ;;
+
+(*
+#install_printer ZZ.trinp_out ;;
+#install_printer ZQ.trinp_out ;;
+*)
+
+let z_num_alf=ZZ.of_string "366025403784438646763723170752936183471402626905190314027903489725966508454400018540573093378624287837813070707703351514984972547499476239405827756047" ;;
+let z_den_alf=ZZ.of_string "500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";;  
+
+let z_square x = ZZ.mul x x ;;
+
+let z_quadratic_form_1 d n = 
+   (* is nonnegative when n/d<=sqrt(3), when n,d>0 *)
+      ZZ.sub (ZZ.mul (ZZ.of_int 3) (z_square d)) (z_square n) ;; 
+
+let z_quadratic_form_2 d n = 
+   (* is nonnegative when n/d<=sqrt(3)-1, when n,d>0 *)
+      z_quadratic_form_1 d (ZZ.add d n) ;; 
+
+let should_be_positive = 
+   z_quadratic_form_2 z_den_alf (ZZ.add (ZZ.of_int 0) z_num_alf)  ;; 
+
+let should_be_negative = 
+   z_quadratic_form_2 z_den_alf (ZZ.add (ZZ.of_int 1) z_num_alf)  ;;    
+
+(*
+
+we deduce that alf is between 
+(z_num_alf)/z_den_alf and (z_num_alf+1)/z_den_alf
+
+*)
+
+type alf_form = AF of ZZ.t * ZZ.t ;;
+
+(*
+let is_below_one_half frm =
+    let (AF(a,b)) = *)
+
+
+let num_alf = ZQ.of_zirath z_num_alf ;;
+
+let den_alf = ZQ.of_zirath z_den_alf ;;
+
+
+let alf = ZQ.div num_alf den_alf ;;
+
+let beth = ZQ.mul (ZQ.of_int 3) (ZQ.sub ZQ.one alf) ;;
+
+let a_half = ZQ.of_ints 1 2 ;;
+
+let ff r =
+    if ZQ.lt r a_half 
+    then ZQ.mul (ZQ.of_int 2) r 
+    else ZQ.mul (ZQ.of_int 2) (ZQ.sub ZQ.one r) ;;
+
+let alf_seq = Memoized.small ff alf ;; 
+let beth_seq = Memoized.small ff beth ;;
+
+let alfbeth = Memoized.make(fun k->(alf_seq k,beth_seq k)) ;;
+
+let t_order = 
+    Total_ordering.triple_product 
+         ZQ.order ZQ.order Total_ordering.for_integers ;; 
+
+let u1 = Int_range.scale (fun k->(alf_seq k,beth_seq k,k)) 0 100 ;;
+     
+let u2 = Ordered.sort t_order u1 ;; 
+
+
+
+let u3 = 
+   let n = List.length u2 
+   and get = (fun k->List.nth u2 (k-1)) in 
+   Int_range.scale (fun j->(get j,get (j+1),get (j+2))) 1 (n-2) ;;
+
+let saddle_points = 
+    List.filter (fun 
+      ((a1,b1,k1),(a2,b2,k2),(a3,b3,k3)) ->
+         (ZQ.order b1 b2)<>(ZQ.order b2 b3)
+    ) u3;;
+
+let tf1 (a,b,k) = (ZQ.to_float a,ZQ.to_float b,k) ;;     
+
+let tf2 (t1,t2) = (tf1 t1,tf1 t2) ;;
+let tf3 (t1,t2,t3) = (tf1 t1,tf1 t2,tf1 t3) ;;
+
+let float_saddle_points = Image.image tf3 saddle_points;;
+
+let saddle_indices = 
+   Image.image (fun ((a1,b1,k1),(a2,b2,k2),(a3,b3,k3)) ->k2) 
+   saddle_points;;
+
+let u4 = 
+   let n = List.length u2 
+   and get = (fun k->List.nth u2 (k-1)) in 
+   Int_range.scale (fun j->(get j,get (j+1))) 1 (n-1) ;;
+
+let preimages_of_one_half = 
+   List.filter (fun
+     ((a1,b1,k1),(a2,b2,k2)) ->
+        (ZQ.leq b1 a_half) && (ZQ.leq a_half b2)
+   )  u4;; 
+
+let float_preimages_of_one_half = Image.image tf2 preimages_of_one_half;;
+
+(*
+
+
+let ab k = (ZQ.to_float(alf_seq k),ZQ.to_float(beth_seq k)) ;; 
+
+let ratio i j =
+    let nuum=ZQ.sub(beth_seq i)(beth_seq j)
+    and deen=ZQ.sub(alf_seq i)(alf_seq j) in 
+    ZQ.abs(ZQ.div nuum deen) ;; 
+
+let dbeth i j =ZQ.abs(ZQ.sub(beth_seq i)(beth_seq j)) ;;     
+
+let minimize_zrational_with_care f=function
+[]->failwith("careful min on empty set undefined")
+|x::y->
+ let rec tempf=(function
+  (current_candidates,current_value,to_be_treated)->match to_be_treated with
+  []->(current_value,List.rev(current_candidates))
+  |a::peurrest->let va=f(a) in
+                if (ZQ.lt va current_value)
+				then tempf([a],va,peurrest)
+				else if (ZQ.equals va current_value)
+				     then tempf(a::current_candidates,current_value,peurrest)
+					 else tempf(current_candidates,current_value,peurrest)
+ ) 
+in
+tempf([x],f(x),y);;
+
+let maximize_zrational_with_care f=function
+[]->failwith("careful min on empty set undefined")
+|x::y->
+ let rec tempf=(function
+  (current_candidates,current_value,to_be_treated)->match to_be_treated with
+  []->(current_value,List.rev(current_candidates))
+  |a::peurrest->let va=f(a) in
+                if (ZQ.gt va current_value)
+				then tempf([a],va,peurrest)
+				else if (ZQ.equals va current_value)
+				     then tempf(a::current_candidates,current_value,peurrest)
+					 else tempf(current_candidates,current_value,peurrest)
+ ) 
+in
+tempf([x],f(x),y);;
+
+
+let zrational_order = ((fun x y ->
+  if ZQ.lt x y then Total_ordering_result_t.Lower else 
+  if ZQ.equals x y then Total_ordering_result_t.Equal else 
+  Total_ordering_result_t.Greater     
+): ZQ.t Total_ordering_t.t) ;;
+
+let haddock_order = Total_ordering.product 
+    zrational_order Total_ordering.for_integers ;; 
+
+let ordering_for_iterates_of_alf n =
+    let temp1 = Int_range.scale (fun j->(alf_seq j,j)) 1 n in 
+    let temp2 = Ordered.sort haddock_order temp1 in 
+    Image.image snd temp2 ;;
+
+let gg n = 
+    let temp1 = ordering_for_iterates_of_alf n in
+    let temp2 = List_again.universal_delta_list temp1 in 
+    let (r,sols)=maximize_zrational_with_care (fun (i,j)->dbeth i j) temp2 in 
+    (r,sols) ;;
+
+let see_gg n = 
+   let (a,b) = gg n in 
+   (ZQ.to_float a,b) ;;
+
+let bound = 100 ;;
+
+let hh n = fst(gg n) ;;
+
+let hh2 n = Ordered.max zrational_order [hh(n);hh(n+1)] ;;
+
+let hh3 n = Ordered.max zrational_order 
+  [hh(n);hh(n+1);hh(n+2)] ;;
+
+
+let u1 = minimize_zrational_with_care hh
+  (Int_range.range 2 bound) ;;
+
+let u2 = minimize_zrational_with_care hh2
+  (Int_range.range 2 bound) ;;
+
+let u3 = minimize_zrational_with_care hh3
+  (Int_range.range 2 bound) ;;  
+
+
+let generalized_ratio d k =
+    snd(Max.maximize_it (fun j->ratio(k+j)) 
+     (Int_range.range 0 (d-1)));;    
+
+
+let bound = 100 ;; 
+
+let measure =Memoized.make(fun d -> minimize_zrational_with_care
+  (generalized_ratio d) (Int_range.range 2 (bound-d+1)));;
+
+  let ra k = ZQ.to_float(ratio k);;
+
+*)  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 164 : Unfinished work on functional equation f(xyf(x+y))=f(x)+f(y)
+************************************************************************************************************************)
 module Snip164=struct
 
 
@@ -897,19 +1116,16 @@ let g0 = Grid.initialize_with
 
 
 
-let (g1,contr_opt,deds) = Deduce.deduce_easily_as_much_as_possible g0 ;; 
+let whole = Deduce.deduce_easily_as_much_as_possible g0 ;; 
+
+let (g1,contr_opt,deds,_) = whole ;; 
+
 
 let fp1 = Grid.cells_with_fewest_possibilities g1 ;;
 
 let case1 = Grid.assign g1 (C(1,3)) 4 ;;
 
 let case2 = Grid.assign g1 (C(1,3)) 5 ;;
-
-let (after_case1,contr_opt_case1,deds_for_case1) = 
-     Deduce.deduce_easily_as_much_as_possible case1 ;;
-
-let (after_case2,contr_opt_case2,deds_for_case2) = 
-     Deduce.deduce_easily_as_much_as_possible case2 ;;
 
 
 let g0 = Grid.initialize_with 
