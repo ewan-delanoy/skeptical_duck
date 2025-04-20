@@ -22,6 +22,8 @@ module type Z_TYPE =
     val gt : t -> t -> bool
     val leq : t -> t -> bool
     val lt : t -> t -> bool
+    val max : t -> t -> t
+    val min : t -> t -> t
     val mul : t -> t -> t
     val of_int : int -> t
     val of_string : string -> t
@@ -58,6 +60,9 @@ module Z = (struct
   let leq (Wrap x) (Wrap y) = Zay.leq x y ;;
 
   let lt (Wrap x) (Wrap y) = Zay.lt x y ;;
+  
+  let max (Wrap x) (Wrap y) = (Wrap(Zay.max x y)) ;;
+  let min (Wrap x) (Wrap y) = (Wrap(Zay.min x y)) ;;
   let mul (Wrap x) (Wrap y) = (Wrap(Zay.mul x y)) ;;
 
   let of_int i = Wrap (Zay.of_int i) ;;
@@ -99,6 +104,8 @@ module type Q_TYPE =
     val leq : t -> t -> bool
     val lt : t -> t -> bool
     val make : Z.t -> Z.t -> t
+    val max : t -> t -> t
+    val min : t -> t -> t
     val mul : t -> t -> t
     val num : t -> Z.t
     val of_int : int -> t
@@ -159,6 +166,9 @@ module Q = (struct
   let lt (Wrap x) (Wrap y) = Quay.lt x y ;;
 
   let make x y = Wrap(Quay.make (Z.to_zarith x) (Z.to_zarith y));;
+
+  let max (Wrap x) (Wrap y) = (Wrap(Quay.max x y)) ;;
+  let min (Wrap x) (Wrap y) = (Wrap(Quay.min x y)) ;;
   let mul (Wrap x) (Wrap y) = (Wrap(Quay.mul x y)) ;;
 
   let num = Private.num ;;
