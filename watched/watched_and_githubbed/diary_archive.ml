@@ -1,14 +1,163 @@
 (************************************************************************************************************************
-Snippet 166 : 
+Snippet 167 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 165 : Function commuting with dynamical system
+Snippet 166 : Function commuting with dynamical system, version 2
 ************************************************************************************************************************)
 
+module Snip166=struct
+
+module ZZ = Zirath.Z ;;
+module ZQ = Zirath.Q ;;
+
+(*
+#install_printer ZZ.trinp_out ;;
+#install_printer ZQ.trinp_out ;;
+*)
+
+let ref_for_unlocalized = ref ZQ.zero ;;   
+exception Unlocalized of ZQ.t ;;
+let raise_unlocalized q = 
+   let _ = (ref_for_unlocalized:=q) in raise(Unlocalized(q)) ;; 
+
+let z_double = ZZ.mul (ZZ.of_int 2) ;;
+let z_odouble = ZZ.mul (ZZ.of_int (-2)) ;;
+
+let z_num_alf=ZZ.of_string "366025403784438646763723170752936183471402626905190314027903489725966508454400018540573093378624287837813070707703351514984972547499476239405827756047" ;;
+let z_den_alf=ZZ.of_string "500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";;  
+
+let z_square x = ZZ.mul x x ;;
+
+let z_quadratic_form_1 d n = 
+   (* is nonnegative when n/d<=sqrt(3), when n,d>0 *)
+      ZZ.sub (ZZ.mul (ZZ.of_int 3) (z_square d)) (z_square n) ;; 
+
+let z_quadratic_form_2 d n = 
+   (* is nonnegative when n/d<=sqrt(3)-1, when n,d>0 *)
+      z_quadratic_form_1 d (ZZ.add d n) ;; 
+
+let should_be_positive = 
+   z_quadratic_form_2 z_den_alf (ZZ.add (ZZ.of_int 0) z_num_alf)  ;; 
+
+let should_be_negative = 
+   z_quadratic_form_2 z_den_alf (ZZ.add (ZZ.of_int 1) z_num_alf)  ;;    
+
+(*
+
+we deduce that alf is between 
+(z_num_alf)/z_den_alf and (z_num_alf+1)/z_den_alf
+
+*)
+
+let lower_bound_for_alf = ZQ.make z_num_alf z_den_alf ;;
+
+let upper_bound_for_alf = ZQ.make (ZZ.add (ZZ.of_int 1) z_num_alf) z_den_alf ;;
+
+
+type comparator = Greater | Lower ;;
+
+let compare_alf_to q =
+   if ZQ.leq q lower_bound_for_alf then Greater else 
+   if ZQ.leq upper_bound_for_alf q then Lower else  
+   raise_unlocalized q ;;   
+
+type statement_on_alf = 
+   Alf_is_below of ZQ.t * float
+   |Alf_is_above of ZQ.t * float ;;
+
+type alf_form = AF of ZZ.t * ZZ.t ;;
+
+let decider (AF(a,b)) = 
+   let nuum = ZZ.sub ZZ.one (ZZ.mul (ZZ.of_int 2) b)
+   and deen = ZZ.mul (ZZ.of_int 2) a in 
+   ZQ.make nuum deen ;;
+   
+
+let compare_to_one_half frm =
+   let (AF(a,b)) = frm in  
+   let d = decider frm in 
+   let t = compare_alf_to d in 
+   if ZZ.leq ZZ.zero a 
+   then t 
+   else
+   match t with     
+     Greater -> Lower
+    | Lower -> Greater ;;
+
+
+let left_f (AF(a,b)) = AF(z_double a,z_double b) ;;
+
+let right_f (AF(a,b)) = AF(z_odouble a,ZZ.add (ZZ.of_int 2) (z_odouble b)) ;;
+
+let ff frm = 
+   match compare_to_one_half frm with 
+    Lower -> left_f frm 
+    |Greater -> right_f frm ;;
+
+let affine_interpolation (AF(a1,b1)) (AF(a2,b2)) =
+   let multiplier = ZQ.make a2 a1 in 
+   let det = ZZ.sub (ZZ.mul a1 b2) (ZZ.mul a2 b1) in 
+   (multiplier,ZQ.make det a1) ;;
+
+let to_float (AF(a,b)) =
+    let qa = ZQ.of_zirath a and qb = ZQ.of_zirath b in 
+    ZQ.to_float (ZQ.add (ZQ.mul qa lower_bound_for_alf) qb) ;; 
+
+let needed_statement_to_compute_ff frm =
+   let (AF(a,b)) = frm in  
+   let d = decider frm in 
+   match compare_alf_to d with  
+     Greater -> Alf_is_above(d,ZQ.to_float d)
+    | Lower -> Alf_is_below(d,ZQ.to_float d) ;;
+
+let x0 = AF(ZZ.of_int 1,ZZ.of_int 0) ;;
+let y0 = AF(ZZ.of_int (-3),ZZ.of_int 3) ;;
+
+let xx = Memoized.small ff x0 ;;
+
+let yy = Memoized.small ff y0 ;;
+
+let gg k=
+  let xk= xx k 
+  and yk= yy k in 
+  (xk,to_float xk,yk,to_float yk,
+   affine_interpolation xk yk,
+   needed_statement_to_compute_ff (xx(k-1)),
+   needed_statement_to_compute_ff (yy(k-1))
+  ) ;; 
+
+let v1 = Int_range.scale (fun k->
+  affine_interpolation (xx k) (yy k)   
+)  1 100 ;;
+
+let v2 = Image.image (fun (x,y) ->
+  (int_of_string(ZQ.to_string x),int_of_string(ZQ.to_string y))   
+) v1 ;;
+
+let donald_index (c1,c0) =
+ let pair = (int_of_string(ZQ.to_string c1),int_of_string(ZQ.to_string c0)) in 
+ Option.get(List.find_index (fun t->t=pair) [(-3, 2); (3, -2); (3, 0)])+1 ;;
+
+let v3 = Ordered.sort Total_ordering.standard2 v2 ;; 
+
+let v4 = Int_range.scale (fun k->
+  donald_index(affine_interpolation (xx k) (yy k))   
+)  1 100 ;;
+
+affine_interpolation (xx 0) (yy 0) ;;     
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 165 : Function commuting with dynamical system
+************************************************************************************************************************)
 module Snip165=struct
 
 module ZZ = Zirath.Z ;;
