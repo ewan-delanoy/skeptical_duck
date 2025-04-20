@@ -45,3 +45,15 @@ let is_included_in
    (Zirath.Q.leq a2 a1) && (Zirath.Q.leq b1 b2) ;; 
 
 let mem = Private.mem ;;
+
+let order = 
+  let q_order = Zirath.Q.order in 
+  let q2_order = Total_ordering.product q_order q_order in 
+  ((
+  fun 
+  (Rational_interval_t.I(a1,b1))
+    (Rational_interval_t.I(a2,b2)) ->
+   q2_order (a1,b1) (a2,b2)
+):
+  Rational_interval_t.t Total_ordering_t.t
+) ;;
