@@ -40,6 +40,7 @@ let i_fold_merge = Ordered.fold_merge i_order ;;
 let i_mem = Ordered.mem i_order ;;
 let i_outsert = Ordered.outsert i_order ;;
 let i_sort = Ordered.sort i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
 
 module Cell = struct 
 
@@ -170,7 +171,11 @@ let origin =
   G(Watcher_for_forbidden_configurations.empty_one,
   Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
 
-let possibilities_at_cell (G (_wfc,l)) cell = fst(List.assoc cell l) ;;  
+let possibilities_at_cell (G (wfc,l)) cell = 
+   let temp1 = fst(List.assoc cell l) in 
+    i_setminus temp1 
+    (Watcher_for_forbidden_configurations.forbidden_values
+     wfc cell);;  
 
 let cell_is_already_assigned (G (_wfc,l)) cell = snd(List.assoc cell l);;
 
@@ -220,18 +225,16 @@ let assoc (G (_wfc,l)) cell = List.assoc cell l ;;
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 
 let empty_grid = Private.origin ;;
+
+let horizontal_summary (G(_wfc,l)) = List.filter_map 
+  (fun (cell,(poss,is_old)) ->
+      if is_old then Some(cell,List.hd poss) else None 
+   ) l;;
+
 let initialize_with l =
     let temp1 = List.combine Cell.all l in 
     let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
     assign_several Private.origin temp2 ;; 
-
-let low_hanging_fruit gr=    
-  let (G (_wfc,l))=gr in 
-  List.filter_map (fun (cell,(_poss,is_old))->
-     let poss = Private.possibilities_at_cell gr cell in 
-    if (List.length(poss)<=1)&&(not is_old)
-    then Some(cell,poss)
-    else  None) l ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
@@ -299,14 +302,13 @@ let test_for_indirect_deduction gr (box,v)=
        else Some(box,v,List.hd compatible_cells) )
   else None ;;         
      
-let immediate_simple_deductions gr = 
-  let temp1 = Grid.low_hanging_fruit gr in 
-  List.filter_map (
-    fun (cell,vals) ->
-      if List.length vals = 1
-      then Some(cell,List.hd vals)
-      else None  
-  ) temp1 ;;  
+let immediate_simple_deductions gr =   
+  let (G (_wfc,l))=gr in 
+   List.filter_map (fun (cell,(_poss,is_old))->
+     let poss = Grid.possibilities_at_cell gr cell in 
+    if (List.length(poss)=1)&&(not is_old)
+    then Some(cell,List.hd poss)
+    else  None) l ;;  
 
 let immediate_indirect_deductions gr = 
   let proposals = Cartesian.product Box.all (Int_range.range 1 9) in 
@@ -400,12 +402,63 @@ let rec iterate_easy_deductions walker =
   if end_reached then (gr,obstruction1,obstruction2,List.rev older_deds) else
   iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
+let deduce_easily_as_much_as_possible gr = 
+    iterate_easy_deductions(W(gr,[],[],[],false)) ;;
+
+let fails_after_some_easy_deductions gr = 
+   let (_,obstr1,obstr2,_) = 
+     deduce_easily_as_much_as_possible gr in 
+    (obstr1<>[])||(obstr2<>[]) ;;
+
+let expand_grid_at_cell cell gr =
+   let poss = Grid.possibilities_at_cell gr cell in 
+   List.filter_map (
+     fun v ->
+       let temp_gr = Grid.assign gr cell v in 
+       let (final_gr,obstr1,obstr2,_) =
+           deduce_easily_as_much_as_possible temp_gr in 
+     if (obstr1<>[])||(obstr2<>[])     
+     then None
+     else Some(final_gr)  
+   ) poss ;;
+
+let expand_grids_at_cell l_gr cell =
+   List.flatten (Image.image (expand_grid_at_cell cell) l_gr) ;;   
+
+let expand_grids_at_cells l_gr l_cell = 
+  List.fold_left expand_grids_at_cell l_gr l_cell  ;;   
+
+let ref_for_expansion_result = 
+  ref (([]: int list list),([]: grid list)) ;;  
+let expand original_grid cells = 
+   let final_grids = expand_grids_at_cells [original_grid] cells in 
+   let temp1 = Image.image (
+     fun gr -> 
+       Image.image (fun 
+        cell -> (cell,List.hd(fst(Grid.assoc gr cell)))
+       ) cells
+   ) final_grids in
+   let fixed_cells = List.filter_map (
+     fun cell ->
+       let vals = i_sort(Image.image (List.assoc cell) temp1) in 
+       if List.length(vals)=1 
+       then Some(cell,List.hd vals)
+       else None
+   ) cells in 
+   let _ = (ref_for_expansion_result:=
+    (Image.image (Image.image snd) temp1,final_grids)) in 
+   (List.length final_grids,fixed_cells) ;; 
+
 end ;;
 
-let deduce_easily_as_much_as_possible gr = 
-    Private.iterate_easy_deductions(Private.W(gr,[],[],[],false))
-;;  
+let deduce_easily_as_much_as_possible = 
+    Private.deduce_easily_as_much_as_possible;;  
 
+let expand = Private.expand ;;
+
+let fails_after_some_easy_deductions =
+  Private.fails_after_some_easy_deductions ;;
+    
 let rake = Private.rake ;;
 
 end ;;   

@@ -1,14 +1,379 @@
 (************************************************************************************************************************
-Snippet 167 : 
+Snippet 168 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 166 : Function commuting with dynamical system, version 2
+Snippet 167 : Function commuting with dynamical system, version 3
 ************************************************************************************************************************)
 
+module Snip167=struct
+
+module ZZ = Zirath.Z ;;
+module ZQ = Zirath.Q ;;
+
+let s_epsilon="1/1"^(String.make 32 '0') ;;
+
+let epsilon = ZQ.of_string s_epsilon ;;
+
+let almost_one = ZQ.sub ZQ.one epsilon;;
+
+let adhoc_printer (fmt:Format.formatter) x=
+   let s = (
+      if ZQ.equals x almost_one 
+      then "1-e"
+      else ZQ.to_string x) in 
+   Format.fprintf fmt "@[%s@]" s;;
+
+(*
+#install_printer adhoc_printer ;;
+*)
+
+let a_half = ZQ.of_ints 1 2 ;;
+let q29 = ZQ.of_ints 2 9 ;;
+
+let q49 = ZQ.of_ints 4 9 ;;
+
+let unit_interval = Rational_interval_t.I(
+   ZQ.zero,ZQ.one
+) ;;
+
+let good_interval_for_x = Rational_interval_t.I(
+   ZQ.zero,almost_one
+) ;;
+
+let good_interval_for_y = Rational_interval_t.I(
+   q29,q49
+) ;;
+
+let is_x_good itv = Rational_interval.is_included_in itv good_interval_for_x ;;
+
+let is_y_good itv = Rational_interval.is_included_in itv good_interval_for_y ;;
+
+
+
+type left_or_right = Left | Right ;; 
+
+module Left_or_right = struct
+  
+let from_interval (Rational_interval_t.I(a,b)) =
+   if ZQ.leq b a_half then Left else 
+   if ZQ.leq a_half a then Right else  
+   failwith("Error in Left_or_right.from_interval") ;;  
+
+end ;;
+
+type affine_form = Aff of ZQ.t * ZQ.t ;;
+
+module Affine_form = struct
+   
+module Private = struct 
+
+   let compose (Aff(a1,b1)) (Aff(a2,b2)) = 
+   Aff(ZQ.mul a1 a2,ZQ.add (ZQ.mul a1 b2) b1) ;; 
+
+   let of_side = function
+     Left -> Aff(ZQ.of_int 2,ZQ.zero)
+     |Right -> Aff(ZQ.of_int (-2),ZQ.of_int 2) ;;
+     
+end ;;   
+
+let apply (Aff(a,b)) x = ZQ.add (ZQ.mul a x) b ;;   
+   
+let apply_inverse (Aff(a,b)) x = ZQ.div (ZQ.sub x b) a ;;
+
+let apply_on_interval aff (Rational_interval_t.I(u,v)) =
+   let (Aff(a,_b)) = aff 
+   and u2 = apply aff u 
+   and v2 = apply aff v in 
+   if ZQ.lt a ZQ.zero 
+   then Rational_interval_t.I(v2,u2) 
+   else Rational_interval_t.I(u2,v2) ;;  
+
+let compose = Private.compose ;;
+
+let dot dir aff = Private.compose (Private.of_side dir) aff ;;
+
+let inverse_on_interval aff (Rational_interval_t.I(u,v)) =
+   let (Aff(a,_b)) = aff 
+   and u2 = apply_inverse aff u 
+   and v2 = apply_inverse aff v in 
+   if ZQ.lt a ZQ.zero 
+   then Rational_interval_t.I(v2,u2) 
+   else Rational_interval_t.I(u2,v2) ;;  
+
+let inverse_on_intervals aff l =
+    let (Aff(a,b)) = aff 
+    and temp = Image.image (inverse_on_interval aff) l in 
+    if ZQ.lt a ZQ.zero 
+    then List.rev temp 
+    else temp ;;  
+
+let of_side = Private.of_side ;;
+
+end ;;   
+
+type arrow = {
+   interval_for_v: Rational_interval_t.t ;
+   path_for_v: left_or_right list ;
+   form_for_last_v: affine_form;
+   interval_for_penultimate_v: Rational_interval_t.t ;
+   interval_for_last_v: Rational_interval_t.t ;
+   current_limit: int;
+} ;;
+
+module Arrow = struct 
+
+let compute_cases arw l =
+    let cases_for_last_v = 
+      Rational_interval.divide (arw.interval_for_last_v) l in 
+    Affine_form.inverse_on_intervals 
+      arw.form_for_last_v cases_for_last_v ;;   
+let origin = {
+   interval_for_v= unit_interval  ;
+   path_for_v= [] ;
+   form_for_last_v = Aff(ZQ.one,ZQ.zero);
+   interval_for_penultimate_v = unit_interval ;
+   interval_for_last_v = unit_interval ;
+   current_limit = 0;
+} ;;   
+
+let restrict arw smaller_interval = 
+   let penultimate_interval =
+       Affine_form.apply_on_interval
+         arw.form_for_last_v smaller_interval in 
+   let new_direction = Left_or_right.from_interval penultimate_interval in 
+   let new_form = Affine_form.dot  new_direction arw.form_for_last_v in 
+
+    {
+   interval_for_v= smaller_interval  ;
+   path_for_v= (arw.path_for_v)@[new_direction] ;
+   form_for_last_v = new_form ;
+   interval_for_penultimate_v = penultimate_interval; 
+   interval_for_last_v = Affine_form.apply_on_interval new_form smaller_interval;
+   current_limit = (arw.current_limit)+1;
+} ;;   
+
+
+
+end ;;
+
+module Y_Arrow = struct 
+
+let current_good_interval_for_y = Rational_interval_t.I(
+   ZQ.zero,q49
+) ;;
+
+let itv_is_good itv = 
+   Rational_interval.is_included_in 
+      itv current_good_interval_for_y ;;
+
+let is_good arw = itv_is_good arw.interval_for_penultimate_v ;;
+let decompose arw =
+    let parts = Arrow.compute_cases arw [q29;q49;a_half] in 
+    Image.image (Arrow.restrict arw) parts ;;
+
+let adhoc_order = Total_ordering.product 
+   Rational_interval.order Total_ordering.standard ;;
+
+let decompose_several l_arw =
+    let new_elts = List.flatten (Image.image decompose l_arw) in      
+    let (dead,alive) =List.partition  is_good new_elts in 
+    (Image.image (
+      fun arw -> 
+         let l = arw.path_for_v in 
+         (arw.interval_for_v,List.rev(List.tl(List.rev l)))
+    ) dead,alive);; 
+
+
+
+let main_pusher (all_dead,some_dead,alive)=
+  let (newly_dead,still_alive) = decompose_several alive in 
+  (Ordered.merge adhoc_order newly_dead all_dead,newly_dead,still_alive) ;;  
+
+let main =
+     Memoized.small main_pusher ([],[],[Arrow.origin]) ;; 
+
+end ;;   
+
+
+type walker_element = {
+   arrow_for_x: arrow ;
+   arrow_for_y: arrow ;
+} ;;
+
+module We = struct 
+
+let current_limit we = we.arrow_for_x.current_limit ;;   
+
+let form_for_last_x we = we.arrow_for_x.form_for_last_v ;;
+let form_for_last_y we = we.arrow_for_y.form_for_last_v ;;
+
+let interval_for_last_x we = we.arrow_for_x.interval_for_last_v ;;
+let interval_for_last_y we = we.arrow_for_y.interval_for_last_v ;;
+let interval_for_x we = we.arrow_for_x.interval_for_v ;;
+let interval_for_y we = we.arrow_for_y.interval_for_v ;;
+
+let is_good we =
+   (is_x_good we.arrow_for_x.interval_for_penultimate_v)
+   &&
+   (is_y_good we.arrow_for_y.interval_for_penultimate_v) ;;
+
+
+let origin = {
+   arrow_for_x = Arrow.origin ;
+   arrow_for_y = Arrow.origin ;
+} ;;
+
+let path_for_x we = we.arrow_for_x.path_for_v ;;
+let path_for_y we = we.arrow_for_y.path_for_v ;;
+end ;;   
+
+
+
+
+module Walker_element = struct
+
+let restrict we (itv_for_x,itv_for_y) = 
+   {
+      arrow_for_x = Arrow.restrict we.arrow_for_x itv_for_x ;
+      arrow_for_y = Arrow.restrict we.arrow_for_y itv_for_y ;
+   }  ;;
+
+let parts_from_explosion we =
+    let cases_for_x = Arrow.compute_cases we.arrow_for_x 
+             [a_half;almost_one] in 
+    let temp = Image.image (
+      fun case_for_x ->
+         let points_for_y = (
+            if Rational_interval.is_included_in case_for_x 
+               good_interval_for_x 
+            then [q29;q49;a_half] else [a_half]
+         ) in 
+         let cases_for_y = Arrow.compute_cases 
+             we.arrow_for_y points_for_y in 
+     Image.image (fun case_for_y ->(case_for_x,case_for_y)) cases_for_y 
+    ) cases_for_x in 
+    List.flatten temp ;;
+
+let decompose we =
+    let parts = parts_from_explosion we in 
+    let new_elts = Image.image (restrict we) parts in 
+    List.partition  We.is_good new_elts;; 
+
+
+end ;;    
+
+module Dimension1 = struct 
+
+let main (v,history,frm)=
+    let side = (
+        if ZQ.leq v a_half 
+        then Left  
+        else Right 
+    ) in 
+    let aff = Affine_form.of_side side in 
+    let new_v = Affine_form.apply aff v in 
+    (new_v,side::history,Affine_form.compose aff frm)
+
+let starter v = (v,[],Aff(ZQ.one,ZQ.zero)) ;;
+let iterate v = Memoized.small main (starter v) ;;
+
+let rec iterator_for_measure (j,walker) =
+    if j>1000 then failwith("Measure not found") else 
+    let (v,_,_) = walker in 
+    if Rational_interval.mem v good_interval_for_y 
+    then (j,walker)
+    else iterator_for_measure (j+1,main walker) ;; 
+
+let measure v = iterator_for_measure (1,main (starter v)) ;; 
+
+end ;;   
+
+module Dimension2 = struct 
+
+let main (vx,vy)=
+    (Dimension1.main vx,Dimension1.main vy) ;;
+
+let starter (vx,vy) = 
+    (Dimension1.starter vx,Dimension1.starter vy) ;;
+let iterate (vx,vy) k 
+= (Dimension1.iterate vx k,Dimension1.iterate vy k) ;;
+
+let rec iterator_for_measure (j,walker) =
+    if j>1000 then failwith("Measure not found") else 
+    let ((vx,_,_),(vy,_,_)) = walker in 
+    if (Rational_interval.mem vx good_interval_for_x)
+       && 
+       (Rational_interval.mem vy good_interval_for_y) 
+    then (j,walker)
+    else iterator_for_measure (j+1,main walker) ;; 
+
+let measure v = iterator_for_measure (1,main (starter v)) ;; 
+
+end ;;   
+
+Dimension2.measure (ZQ.add a_half epsilon,q29) ;;
+
+Dimension2.measure (ZQ.sub a_half (ZQ.div epsilon (ZQ.of_int 2)) ,q29) ;;
+
+Dimension2.measure 
+(ZQ.add a_half (ZQ.mul (ZQ.of_ints 3 8) epsilon ) ,q29) ;;
+
+(*
+
+let ff k =
+    let (all_dead,newly_dead,alive) = Y_Arrow.main k in 
+    Image.image (fun (
+      Rational_interval_t.I(a,b)  
+    ,l)->(a,b,l)) newly_dead ;;
+
+let starter = [Arrow.origin] ;;
+ 
+let (dead1,alive1) = Y_Arrow.decompose_several starter ;;
+
+
+
+let pivot1 = We.origin ;;
+
+let (dead1,alive1) = Walker_element.decompose pivot1 ;;
+
+let pivot2 = List.nth alive1 1 ;;
+
+let (dead2,alive2) = Walker_element.decompose pivot2 ;;
+
+let pivot3 = List.hd alive2 ;;
+
+let (dead3,alive3) = Walker_element.decompose pivot3 ;;
+
+let pivot4 = List.hd alive3 ;;
+
+let (dead4,alive4) = Walker_element.decompose pivot4 ;;
+
+let pivot5 = List.hd alive4 ;;
+
+let (dead5,alive5) = Walker_element.decompose pivot5 ;;
+
+let pivot6 = List.hd alive5 ;;
+
+let (dead6,alive6) = Walker_element.decompose pivot6 ;;
+
+
+let z1 = (List.nth dead5 1).arrow_for_x.interval_for_v ;;
+let (Rational_interval_t.I(_,z2)) = z1 ;;
+let z3 = ZQ.div almost_one z2 ;;
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 166 : Function commuting with dynamical system, version 2
+************************************************************************************************************************)
 module Snip166=struct
 
 module ZZ = Zirath.Z ;;
