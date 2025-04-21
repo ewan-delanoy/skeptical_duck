@@ -217,6 +217,10 @@ end ;;
 
 let assign gr cell v = Private.uncurried_assign gr (cell,v) ;; 
 
+let assign_if_unoccupied gr cell v = 
+   try Private.uncurried_assign gr (cell,v) with 
+    Repeated_assignment_exn(_) -> gr;; 
+
 let assign_several gr assignments = 
      Private.assign_several gr assignments ;; 
 
@@ -414,7 +418,7 @@ let expand_grid_at_cell cell gr =
    let poss = Grid.possibilities_at_cell gr cell in 
    List.filter_map (
      fun v ->
-       let temp_gr = Grid.assign gr cell v in 
+       let temp_gr = Grid.assign_if_unoccupied gr cell v in 
        let (final_gr,obstr1,obstr2,_) =
            deduce_easily_as_much_as_possible temp_gr in 
      if (obstr1<>[])||(obstr2<>[])     
@@ -429,7 +433,7 @@ let expand_grids_at_cells l_gr l_cell =
   List.fold_left expand_grids_at_cell l_gr l_cell  ;;   
 
 let ref_for_expansion_result = 
-  ref (([]: int list list),([]: grid list)) ;;  
+  ref (([]: grid list)) ;;  
 let expand original_grid cells = 
    let final_grids = expand_grids_at_cells [original_grid] cells in 
    let temp1 = Image.image (
@@ -445,9 +449,9 @@ let expand original_grid cells =
        then Some(cell,List.hd vals)
        else None
    ) cells in 
-   let _ = (ref_for_expansion_result:=
-    (Image.image (Image.image snd) temp1,final_grids)) in 
-   (List.length final_grids,fixed_cells) ;; 
+   let summaries = Image.image (Image.image snd) temp1 in 
+   let _ = (ref_for_expansion_result:=final_grids) in 
+   (List.length final_grids,fixed_cells,summaries) ;; 
 
 end ;;
 
@@ -462,6 +466,37 @@ let fails_after_some_easy_deductions =
 let rake = Private.rake ;;
 
 end ;;   
+
+
+module UseWatcher = struct 
+
+exception Unforbiddable_config of (cell * int) list ;;  
+
+module Private = struct
+  let check_forbidden_configuration config =
+     let gr =  Grid.assign_several Grid.empty_grid config in 
+     if Deduce.fails_after_some_easy_deductions gr 
+     then ()
+     else raise (Unforbiddable_config(config)) ;; 
+
+  let check_forbidden_configurations configs = 
+     List.iter check_forbidden_configuration configs ;;
+
+  let initialize_with configs initial_data = 
+    let _ = check_forbidden_configurations configs in 
+    let wfc = Wfc (
+      Image.image (fun config->(Fc config,Fc config)) configs
+    ) 
+    and (G(_,l_empty_grid)) = Grid.empty_grid in 
+    let initial_grid = G(wfc,l_empty_grid) in 
+    Grid.assign_several initial_grid initial_data ;;
+
+
+end ;;   
+
+let initialize_with = Private.initialize_with ;;
+
+end ;;
 
 (* 
 
