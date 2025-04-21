@@ -1,14 +1,130 @@
 (************************************************************************************************************************
-Snippet 168 : 
+Snippet 169 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 167 : Function commuting with dynamical system, version 3
+Snippet 168 : Sudoku episode
 ************************************************************************************************************************)
 
+module Snip168=struct
+
+open Sudoku ;;
+
+type walker = W of grid * cell * 
+( (cell * int * deduction_tip list) list );;
+
+let obstr1 = 
+ [(C(1,5),2);
+  (C(2,5),6);
+  (C(3,2),4);(C(3,3),2);(C(3,4),5);(C(3,6),3);(C(3,7),1);(C(3,8),6);
+  (C(4,5),5);
+  (C(5,5),1);(C(5,8),7);
+  (C(6,2),6);(C(6,3),5);(C(6,4),3);(C(6,6),4);(C(6,7),8);(C(6,8),1);(C(6,9),2);
+  (C(7,5),3);(C(7,7),2);
+  (C(8,5),7);
+  (C(9,5),4);(C(9,7),6);(C(9,9),1)] ;;
+
+let initial_walker_state =
+  W(UseWatcher.initialize_with [obstr1] [],Cell.from_matrix_coordinates 1 1,[]) ;;
+
+let ref_for_stuck_walker = 
+  ref (Grid.empty_grid,
+       Cell.from_matrix_coordinates 1 1,1,[],[]) ;;
+
+let next_walker (W(gr,old_foot,old_deds)) = 
+  let new_foot = Cell.translate_along_single_index 4 old_foot in 
+  let (poss0,is_old) = Grid.assoc gr old_foot in 
+  if is_old 
+  then (W(gr,new_foot,old_deds))
+  else
+  let poss = Grid.possibilities_at_cell gr old_foot in 
+  let v = List.hd poss in 
+  let temp_gr = Grid.assign gr old_foot v in 
+  let (new_gr,obstr1,obstr2,new_decorated_deds) =
+    Deduce.deduce_easily_as_much_as_possible temp_gr in 
+  if (obstr1<>[]) || (obstr2<>[])  
+  then
+   let _ =(ref_for_stuck_walker:=(gr,old_foot,v,obstr1,obstr2)) in 
+     failwith("Obstruction encountered. Look at !ref_for_stuck_walker") 
+  else W(new_gr,new_foot,List.flatten(old_deds::new_decorated_deds)) ;;
+  
+let ff = Memoized.small next_walker initial_walker_state ;; 
+
+let (W(old_gr,old_foot,old_deds)) = ff 37 ;; 
+
+let see1 = Grid.assoc old_gr (C (8, 5)) ;; 
+let see2 = Grid.possibilities_at_cell old_gr (C (8, 5)) ;; 
+let medium_gr = Grid.assign old_gr (C (8, 5)) 7 ;;
+
+
+(*
+let subpattern = Grid.initialize_with 
+[
+   0;0;0;  0;2;0;  0;0;0;
+   0;0;0;  0;6;0;  0;0;0; 
+   0;4;2;  5;0;3;  1;6;0; 
+
+   0;0;0;  0;5;0;  0;0;0;
+   0;0;0;  0;1;0;  0;7;0;
+   0;6;5;  3;0;4;  8;1;2;
+
+   0;0;0;  0;3;0;  2;0;0;
+   0;0;0;  0;7;0;  0;0;0;
+   0;0;0;  0;4;0;  6;0;1;
+];; 
+
+let horizontal = Grid.horizontal_summary subpattern ;;
+
+let check1 = Deduce.fails_after_some_easy_deductions subpattern ;;
+
+let beheaded_subpattern = Grid.initialize_with 
+[
+   0;0;0;  0;2;0;  0;0;0;
+   0;0;0;  0;6;0;  0;0;0; 
+   0;4;2;  5;0;3;  1;6;0; 
+
+   0;0;0;  0;5;0;  0;0;0;
+   0;0;0;  0;1;0;  0;7;0;
+   0;6;5;  3;0;4;  8;1;2;
+
+   0;0;0;  0;3;0;  2;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;4;0;  6;0;1;
+];; 
+
+let res1 = Deduce.expand beheaded_subpattern 
+[C(3,1);C(3,5);C(3,9);C(6,1);C(6,5);C(7,9)];;
+
+
+
+let g0 = Grid.initialize_with 
+[
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0; 
+   0;0;0;  0;0;0;  0;0;0; 
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+   0;0;0;  0;0;0;  0;0;0;
+];; 
+
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 167 : Function commuting with dynamical system, version 3
+************************************************************************************************************************)
 module Snip167=struct
 
 module ZZ = Zirath.Z ;;

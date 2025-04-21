@@ -210,7 +210,8 @@ let cells_with_fewest_possibilities gr =
 let assign_several gr assignments = 
      List.fold_left  uncurried_assign gr assignments ;; 
 
-
+let freedom_left (G(_wfc,l)) =
+  List.length(List.filter (fun (_cell,(vals,_))->List.length(vals)>1) l) ;;
 
 
 end ;;
@@ -229,6 +230,8 @@ let assoc (G (_wfc,l)) cell = List.assoc cell l ;;
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 
 let empty_grid = Private.origin ;;
+
+let freedom_left = Private.freedom_left ;;
 
 let horizontal_summary (G(_wfc,l)) = List.filter_map 
   (fun (cell,(poss,is_old)) ->
