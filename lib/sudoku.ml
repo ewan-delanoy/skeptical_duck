@@ -31,6 +31,7 @@ type deduction = Ded of deduction_tip * (cell * int) ;;
 
 type raking_result =
     Smooth of  (cell * int * deduction_tip list) list
+   |Obstruction0_found of cell  list
    |Obstruction1_found of (cell * (int * deduction_tip list) list) list 
    |Obstruction2_found of ( (cell * int * (deduction_tip list)) * 
                             (cell * int * (deduction_tip list)) ) list;;
@@ -393,13 +394,14 @@ grid *
 ((cell * (int * deduction_tip list) list) list) * 
 (((cell * int * (deduction_tip list)) * 
   (cell * int * (deduction_tip list)))  list) * 
+  (cell list) *
 bool ;;
 
 let push_more_easy_deductions walker =
-  let (W(gr,older_deds,obstruction1,obstruction2,end_reached)) = walker in 
+  let (W(gr,older_deds,obstruction1,obstruction2,imps,end_reached)) = walker in 
   if end_reached then walker else
-  if (obstruction1 <> []) || (obstruction2 <> []) 
-  then W(gr,older_deds,obstruction1,obstruction2,true) 
+  if (obstruction1 <> []) || (obstruction2 <> []) || (imps <> []) 
+  then W(gr,older_deds,obstruction1,obstruction2,imps,true) 
   else
     match rake gr  with 
    (Smooth new_decorated_deds)-> 
@@ -407,36 +409,38 @@ let push_more_easy_deductions walker =
        fun (cell,v,_expl) ->(cell,v)
      ) new_decorated_deds in 
      W(Grid.assign_several gr new_deds,
-        older_deds@[new_decorated_deds],[],[],
+        older_deds@[new_decorated_deds],[],[],[],
         new_deds=[])
+  |Obstruction0_found(unassignable) ->
+     W(gr,older_deds,[],[],unassignable,true)
   |Obstruction1_found(obstr1) ->
-     W(gr,older_deds,obstr1,[],true)
+     W(gr,older_deds,obstr1,[],[],true)
   |Obstruction2_found(obstr2) ->
-     W(gr,older_deds,[],obstr2,true)   
+     W(gr,older_deds,[],obstr2,[],true)   
      ;;
 
 
 let rec iterate_easy_deductions walker =
-  let (W(gr,older_deds,obstruction1,obstruction2,end_reached)) = walker in 
-  if end_reached then (gr,obstruction1,obstruction2,List.rev older_deds) else
+  let (W(gr,older_deds,obstruction1,obstruction2,imps,end_reached)) = walker in 
+  if end_reached then (gr,obstruction1,obstruction2,imps,List.rev older_deds) else
   iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
 let deduce_easily_as_much_as_possible gr = 
-    iterate_easy_deductions(W(gr,[],[],[],false)) ;;
+    iterate_easy_deductions(W(gr,[],[],[],[],false)) ;;
 
 let fails_after_some_easy_deductions gr = 
-   let (_,obstr1,obstr2,_) = 
+   let (_,obstr1,obstr2,imps,_) = 
      deduce_easily_as_much_as_possible gr in 
-    (obstr1<>[])||(obstr2<>[]) ;;
+    (obstr1<>[])||(obstr2<>[])||(imps<>[]) ;;
 
 let expand_grid_at_cell cell gr =
    let poss = Grid.possibilities_at_cell gr cell in 
    List.filter_map (
      fun v ->
        let temp_gr = Grid.assign_if_unoccupied gr cell v in 
-       let (final_gr,obstr1,obstr2,_) =
+       let (final_gr,obstr1,obstr2,imps,_) =
            deduce_easily_as_much_as_possible temp_gr in 
-     if (obstr1<>[])||(obstr2<>[])     
+     if (obstr1<>[])||(obstr2<>[])||(imps<>[])     
      then None
      else Some(final_gr)  
    ) poss ;;
@@ -470,7 +474,8 @@ let expand original_grid cells =
 
 let apply_rake gr = 
   match rake gr with 
-   Obstruction1_found(_) -> None 
+   Obstruction0_found(_)
+  |Obstruction1_found(_)  
   |Obstruction2_found(_) -> None
   |(Smooth new_decorated_deds)-> 
     let new_deds = Image.image (
