@@ -213,6 +213,16 @@ let assign_several gr assignments =
 let freedom_left (G(_wfc,l)) =
   List.length(List.filter (fun (_cell,(vals,_))->List.length(vals)>1) l) ;;
 
+let living_cells gr =
+  let (G(_wfc,l)) = gr in 
+  List.filter_map (fun (cell,(_vals,is_old))->
+    if is_old then None else 
+    let poss = possibilities_at_cell gr cell in    
+    if List.length(poss)>1
+    then Some cell  
+    else None  ) l ;;
+
+
 
 end ;;
 
@@ -242,6 +252,8 @@ let initialize_with l =
     let temp1 = List.combine Cell.all l in 
     let temp2 = List.filter (fun (_cell,v)->v<>0) temp1 in 
     assign_several Private.origin temp2 ;; 
+
+let living_cells = Private.living_cells ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
@@ -456,6 +468,37 @@ let expand original_grid cells =
    let _ = (ref_for_expansion_result:=final_grids) in 
    (List.length final_grids,fixed_cells,summaries) ;; 
 
+let apply_rake gr = 
+  match rake gr with 
+   Obstruction1_found(_) -> None 
+  |Obstruction2_found(_) -> None
+  |(Smooth new_decorated_deds)-> 
+    let new_deds = Image.image (
+       fun (cell,v,_expl) ->(cell,v)
+     ) new_decorated_deds in 
+     Some(Grid.assign_several gr new_deds) ;;
+
+let rec helper_for_raking_depth (count,to_be_treated) =
+   if to_be_treated = []
+   then count 
+   else helper_for_raking_depth (count+1,
+     List.filter_map apply_rake to_be_treated) ;;  
+
+let raking_depth grids = 
+    helper_for_raking_depth (0,grids) ;;
+
+let expand_grid_at_cell_naively cell gr =
+   let (_,is_old) = Grid.assoc gr cell in 
+   if is_old then [gr] else
+   let poss = Grid.possibilities_at_cell gr cell in 
+   Image.image (Grid.assign gr cell) poss;;
+
+let expand_grids_at_cell_naively l_gr cell =
+   List.flatten (Image.image (expand_grid_at_cell_naively cell) l_gr) ;;   
+
+let expand_grids_at_cells_naively l_gr l_cell = 
+  List.fold_left expand_grids_at_cell_naively l_gr l_cell  ;;       
+
 end ;;
 
 let deduce_easily_as_much_as_possible = 
@@ -463,10 +506,14 @@ let deduce_easily_as_much_as_possible =
 
 let expand = Private.expand ;;
 
+let expand_naively = Private.expand_grids_at_cells_naively ;; 
+
 let fails_after_some_easy_deductions =
   Private.fails_after_some_easy_deductions ;;
     
 let rake = Private.rake ;;
+
+let raking_depth = Private.raking_depth ;; 
 
 end ;;   
 
