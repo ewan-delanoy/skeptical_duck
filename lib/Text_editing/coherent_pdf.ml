@@ -69,6 +69,21 @@ module Private = struct
     let temp3 = Cull_string.two_sided_cutting (prefix,"") temp2 in
     Str.split (Str.regexp "[ \t\r]+") temp3  ;;
 
+  let sizes_for_each_page ap = 
+    let n = number_of_pages_in_pdf ap in 
+     let data =  Int_range.scale (mediabox_in_pdf ap) 1 n in 
+     let zero = "0.000000" in
+     match List.find_opt (
+      fun l->(List.nth l 0,List.nth l 1)<>(zero,zero)
+     ) data with 
+     (Some l)->
+       let nt = List.nth l in  
+       raise(Shifted_mediabox(nt 0,nt 1,nt 2,nt 3))
+     |None ->
+      Image.image 
+        (fun l->float_of_string(List.nth l 2),float_of_string(List.nth l 3)) data  
+       ;; 
+
   let average_page_width_and_height ap =
      let n = number_of_pages_in_pdf ap in 
      let data =  Int_range.scale (mediabox_in_pdf ap) 1 n in 
@@ -227,3 +242,5 @@ let replace_inside
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut outputfile_name
     ) ;;
+
+let sizes_for_each_page = Private.sizes_for_each_page ;;    

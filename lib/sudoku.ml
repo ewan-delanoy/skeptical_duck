@@ -50,28 +50,38 @@ module Private = struct
 let single_index (C(i,j)) = j+9*(i-1) ;;
 let at_single_index idx = let q = (idx-1)/9 in C(q+1,idx-9*q);;
 
+let square_coordinate (C (i,j)) =
+   (Basic.frac_ceiling j 3) + 3* ((Basic.frac_ceiling i 3)-1) ;;
+let vertical_coordinate  (C (i,_j)) = i;; 
+
 end ;;  
 
+let all = Image.image (fun (i,j)->C(i,j)) (Cartesian.square(Int_range.range 1 9)) ;;
+
 let at_single_index = Private.at_single_index ;;
+
+let first_in_given_square square_idx = List.find (fun c->Private.square_coordinate(c)=square_idx) all;;     
 
 let from_matrix_coordinates i j = C(i,j) ;; 
 
 let horizontal_coordinate (C (_i,j)) = j;; 
  
-let vertical_coordinate  (C (i,_j)) = i;; 
- 
-let square_coordinate (C (i,j)) =
-   (Basic.frac_ceiling j 3) + 3* ((Basic.frac_ceiling i 3)-1) ;;
+let order = ((fun (C(i1,j1)) (C(i2,j2)) ->
+    (Total_ordering.product i_order i_order) (i1,j1) (i2,j2) 
+  ) : cell Total_ordering_t.t) ;;
 
-let all = Image.image (fun (i,j)->C(i,j)) (Cartesian.square(Int_range.range 1 9)) ;;
+let single_index = Private.single_index ;;
+let square_coordinate = Private.square_coordinate ;;
 
 let test_for_neighborhood c1 c2 = 
       ((horizontal_coordinate c1)=(horizontal_coordinate c2))
       ||
-      ((vertical_coordinate c1)=(vertical_coordinate c2))
+      ((Private.vertical_coordinate c1)=(Private.vertical_coordinate c2))
       ||
       ((square_coordinate c1)=(square_coordinate c2))
     ;;
+
+let to_short_string (C(i,j)) = "("^(string_of_int i)^","^(string_of_int j)^")" ;;    
 
 let translate_along_single_index d c = 
    let old_idx = Private.single_index c  in
@@ -83,11 +93,10 @@ let translate_along_single_index d c =
    ) in 
    Private.at_single_index new_idx ;;    
 
-let first_in_given_square square_idx = List.find (fun c->square_coordinate(c)=square_idx) all;;     
-let single_index = Private.single_index ;;
-
-let to_short_string (C(i,j)) = "("^(string_of_int i)^","^(string_of_int j)^")" ;;
+let vertical_coordinate  = Private.vertical_coordinate ;; 
  
+
+
 
 end ;;
 
@@ -345,7 +354,14 @@ Rake means collect all immediate deductions
 *)
 
 let rake gr = 
-   let temp1 = Image.image (fun (cell,v)->
+  let (G(_wfc,l)) = gr in 
+   let impossibilities = List.filter_map (fun (cell,(vals,_is_old))->
+       if vals=[] then Some cell else None
+    ) l in 
+   if impossibilities<>[]
+   then Obstruction0_found(impossibilities)
+  else
+  let temp1 = Image.image (fun (cell,v)->
        Ded(Simple(cell),(cell,v))
     ) (immediate_simple_deductions gr)
    and temp2 =  immediate_indirect_deductions gr in 
@@ -504,10 +520,34 @@ let expand_grids_at_cell_naively l_gr cell =
 let expand_grids_at_cells_naively l_gr l_cell = 
   List.fold_left expand_grids_at_cell_naively l_gr l_cell  ;;       
 
+let fixed_cells grids domain = 
+  let finished_grids = List.filter_map apply_rake grids in 
+  List.filter_map (fun cell ->
+     let temp2 = Image.image (
+       fun gr -> i_sort (Grid.possibilities_at_cell gr cell)
+     ) finished_grids in 
+     let whole = i_fold_merge temp2 in 
+     if List.length(whole)=1
+     then Some cell 
+     else None 
+  ) domain ;;
+
+let common_good grid k =
+   let domain = Grid.living_cells grid in 
+   let uples = Uple.l_naive_combinations k domain in 
+   let temp = Explicit.image (
+      fun u ->
+        let close_descendants = expand_grids_at_cells_naively [grid] u in 
+        (u,fixed_cells close_descendants domain)
+   ) uples in 
+   List.filter (fun (_,advances)->advances<>[]) temp ;;
+
 end ;;
 
 let deduce_easily_as_much_as_possible = 
     Private.deduce_easily_as_much_as_possible;;  
+
+let common_good = Private.common_good ;; 
 
 let expand = Private.expand ;;
 
