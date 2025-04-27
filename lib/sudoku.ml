@@ -255,6 +255,18 @@ let living_cells gr =
     then Some cell  
     else None  ) l ;;
 
+let expand_grid_at_cell cell gr = 
+   let (G(_wfc,l)) = gr in 
+   let (_,is_old) = List.assoc cell l in 
+   if is_old then [gr] else
+   let poss = possibilities_at_cell gr cell in 
+   Image.image (fun v->uncurried_assign gr (cell,v)) poss;;
+
+let expand_grids_at_cell l_gr cell =
+   List.flatten (Image.image (expand_grid_at_cell cell) l_gr) ;;   
+
+let expand_grids_at_cells l_gr l_cell = 
+  List.fold_left expand_grids_at_cell l_gr l_cell  ;;     
 
 
 end ;;
@@ -274,6 +286,8 @@ let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 
 let empty_grid = Private.origin ;;
     
+let expand = Private.expand_grids_at_cells ;;
+
 let freedom_left = Private.freedom_left ;;
 
 let horizontal_summary (G(_wfc,l)) = List.filter_map 
@@ -537,18 +551,7 @@ let rec helper_for_raking_depth (count,to_be_treated) =
 
 let raking_depth grids = 
     helper_for_raking_depth (0,grids) ;;
-
-let expand_grid_at_cell_naively cell gr =
-   let (_,is_old) = Grid.assoc gr cell in 
-   if is_old then [gr] else
-   let poss = Grid.possibilities_at_cell gr cell in 
-   Image.image (Grid.assign gr cell) poss;;
-
-let expand_grids_at_cell_naively l_gr cell =
-   List.flatten (Image.image (expand_grid_at_cell_naively cell) l_gr) ;;   
-
-let expand_grids_at_cells_naively l_gr l_cell = 
-  List.fold_left expand_grids_at_cell_naively l_gr l_cell  ;;       
+     
 
 let fixed_cells grids domain = 
   let finished_grids = List.filter_map apply_rake grids in 
@@ -567,7 +570,7 @@ let common_good grid k =
    let uples = Uple.l_naive_combinations k domain in 
    let temp = Explicit.image (
       fun u ->
-        let close_descendants = expand_grids_at_cells_naively [grid] u in 
+        let close_descendants = Grid.expand [grid] u in 
         (u,fixed_cells close_descendants domain)
    ) uples in 
    List.filter (fun (_,advances)->advances<>[]) temp ;;
@@ -582,8 +585,6 @@ let deduce_easily_as_much_as_possible =
 let common_good = Private.common_good ;; 
 
 let expand = Private.expand ;;
-
-let expand_naively = Private.expand_grids_at_cells_naively ;; 
 
 let fails_after_some_easy_deductions =
   Private.fails_after_some_easy_deductions ;;
@@ -631,6 +632,32 @@ let two_to_twos gr =
    Explicit.image (two_to_twos_in_individual_box gr) Box.all 
   ) ;;  
 
+let use_two_to_twos gr = 
+   let ttts = two_to_twos gr in 
+   let explore_ttts_opt = (
+      fun cell -> 
+        List.find_map (
+         fun (_bx,v1,v2,cell1,cell2) -> 
+          if (cell=cell1)||(cell=cell2)
+          then Some [v1;v2]
+          else None
+        ) ttts 
+   ) in   
+   let (G(wfc,l)) = gr in 
+   let new_l = Image.image (
+      fun (cell,(_,is_old)) -> 
+        let vals = 
+         (
+           match explore_ttts_opt cell with 
+           Some better_answer -> better_answer 
+           | None -> Grid.possibilities_at_cell gr cell
+         ) in 
+         (cell,(vals,is_old))
+   ) l in 
+   G(wfc,new_l) ;;
+   
+
+
 end ;;  
 
 let two_to_twos = Private.two_to_twos ;;
@@ -642,33 +669,21 @@ module Pool = struct
 module Private = struct 
 
 let compute gr = 
-   let ttts = AdvancedDeduce.two_to_twos gr in 
-   let explore_ttts_opt = (
-      fun cell -> 
-        List.find_map (
-         fun (_bx,v1,v2,cell1,cell2) -> 
-          if (cell=cell1)||(cell=cell2)
-          then Some [v1;v2]
-          else None
-        ) ttts 
-   ) in   
    Pool( List.filter_map (
      fun val_holder ->
-      let possibilities =(
-       match val_holder with 
-       Simple(cell) ->
-          let vals = 
-         (
-           match explore_ttts_opt cell with 
-           Some better_answer -> better_answer 
-           | None -> Grid.possibilities_at_cell gr cell
-         ) in 
-         Image.image (fun v->(cell,v)) vals
-      |Indirect(_,_) -> Grid.possibilities_for_value_holder gr val_holder ) in
+      let possibilities = 
+        Grid.possibilities_for_value_holder gr val_holder  in
       if List.length(possibilities)>1   
       then Some (val_holder,possibilities) 
       else None  
    ) Value_holder.all );; 
+
+let support (Pool l) = 
+ List.filter_map (fun cell->
+  (List.assoc_opt (Simple cell) l)
+  ) Cell.all
+;;
+
 
 end ;;  
 
