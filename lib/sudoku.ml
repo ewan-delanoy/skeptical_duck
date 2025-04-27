@@ -187,6 +187,13 @@ let possibilities_at_cell (G (wfc,l)) cell =
     (Watcher_for_forbidden_configurations.forbidden_values
      wfc cell);;  
 
+let possibilities_at_indirect_cell gr (bx,v) =
+   let candidates = Box.content bx in 
+   List.filter (
+     fun cell -> List.mem v (possibilities_at_cell gr cell)
+   ) candidates ;;
+
+
 let cell_is_already_assigned (G (_wfc,l)) cell = snd(List.assoc cell l);;
 
 let uncurried_assign gr (cell,v) = 
@@ -266,6 +273,8 @@ let initialize_with l =
 let living_cells = Private.living_cells ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
+
+let possibilities_at_indirect_cell = Private.possibilities_at_indirect_cell ;; 
 
 end ;;
 
@@ -542,6 +551,31 @@ let common_good grid k =
    ) uples in 
    List.filter (fun (_,advances)->advances<>[]) temp ;;
 
+let two_to_twos_in_individual_box gr bx =
+   let box_content = Box.content bx in 
+   let poss_for_cells = Image.image (
+     fun cell -> (cell,Grid.possibilities_at_cell gr cell)
+   ) box_content in 
+   let poss_at_cell = (fun cell -> List.assoc cell poss_for_cells) in 
+   let poss_for_vals = Int_range.scale (
+     fun v -> (v,List.filter (fun cell->List.mem v (poss_at_cell cell)) box_content)
+   ) 1 9 in 
+   let interesting_vals = List.filter (
+    fun (_v,poss) -> List.length(poss) = 2
+   ) poss_for_vals in 
+   let interesting_pairs = Uple.list_of_pairs interesting_vals in 
+   List.filter_map (
+     fun ((v1,poss1),(v2,poss2)) -> 
+        if poss1 = poss2 
+        then Some((bx,v1,v2,List.nth poss1 0,List.nth poss1 2)) 
+        else None 
+   ) interesting_pairs ;;
+
+let two_to_twos gr =
+  List.flatten(
+   Explicit.image (two_to_twos_in_individual_box gr) Box.all 
+  ) ;;
+
 end ;;
 
 let deduce_easily_as_much_as_possible = 
@@ -559,6 +593,8 @@ let fails_after_some_easy_deductions =
 let rake = Private.rake ;;
 
 let raking_depth = Private.raking_depth ;; 
+
+let two_to_twos = Private.two_to_twos ;;
 
 end ;;   
 

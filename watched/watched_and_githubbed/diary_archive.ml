@@ -1,14 +1,73 @@
 (************************************************************************************************************************
-Snippet 169 : 
+Snippet 170 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 168 : Sudoku episode
+Snippet 169 : Using the Coherent_pdf module
 ************************************************************************************************************************)
 
+module Snip169=struct
+
+let special_soi j = 
+   let s = string_of_int j in 
+   if j<10 then "0"^s else s ;;
+
+let u1 = Int_range.scale (
+   fun k ->
+   let sk=string_of_int k in 
+   "convert p"^sk^".png p"^sk^".pdf"
+) 1 99 ;;
+
+let u2 = Int_range.scale (
+   fun k ->
+   let sk=special_soi k in 
+   "convert q"^sk^".png p"^(string_of_int(100+k))^".pdf"
+) 0 99 ;;
+
+let u3 = Int_range.scale (
+   fun k ->
+   let sk=special_soi k in 
+   "convert r"^sk^".png p"^(string_of_int(200+k))^".pdf"
+) 0 48 ;;
+
+let pngs_to_pdfs = u1 @ u2 @ u3 ;;
+
+let act1 () = Sys.chdir (home^"/Pictures/Screenshots") ;;
+
+let act2 () = Image.image Sys.command pngs_to_pdfs ;; 
+
+let cmd ="cpdf intro.pdf "^(
+  (String.concat " " (Int_range.scale 
+  (fun k->"p"^(string_of_int k)^".pdf") 1 248) )
+)^" -o avel3.pdf";;
+
+let act3 () = Sys.command cmd ;;
+
+let ap1 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/contraventions.pdf";;
+
+let see1 = Coherent_pdf.sizes_for_each_page ap1 ;;
+
+
+let act4 () = Coherent_pdf.force_same_size_for_all_pages
+ap1 ~outputfile_name:"contraventions"
+    ~forced_width:2132 ~forced_height:1241
+;;
+
+let act5 () = Coherent_pdf.corep_transform
+ap1 ~outputfile_name:"corepped_contraventions"
+;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 168 : Sudoku episode
+************************************************************************************************************************)
 module Snip168=struct
 
 open Sudoku ;;
