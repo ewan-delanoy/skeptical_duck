@@ -23,18 +23,18 @@ type grid = G of
   watcher_for_forbidden_configurations * 
   ((cell * ((int list) * bool)) list);;
 
-type deduction_tip =
+type value_holder =
     Simple of cell
    |Indirect of box * int ;; 
 
-type deduction = Ded of deduction_tip * (cell * int) ;;
+type deduction = Ded of value_holder * (cell * int) ;;
 
 type raking_result =
-    Smooth of  (cell * int * deduction_tip list) list
+    Smooth of  (cell * int * value_holder list) list
    |Obstruction0_found of cell  list
-   |Obstruction1_found of (cell * (int * deduction_tip list) list) list 
-   |Obstruction2_found of ( (cell * int * (deduction_tip list)) * 
-                            (cell * int * (deduction_tip list)) ) list;;
+   |Obstruction1_found of (cell * (int * value_holder list) list) list 
+   |Obstruction2_found of ( (cell * int * (value_holder list)) * 
+                            (cell * int * (value_holder list)) ) list;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -415,10 +415,10 @@ let rake gr =
 
 type walker = W of  
 grid * 
-((cell * int * deduction_tip list) list) list * 
-((cell * (int * deduction_tip list) list) list) * 
-(((cell * int * (deduction_tip list)) * 
-  (cell * int * (deduction_tip list)))  list) * 
+((cell * int * value_holder list) list) list * 
+((cell * (int * value_holder list) list) list) * 
+(((cell * int * (value_holder list)) * 
+  (cell * int * (value_holder list)))  list) * 
   (cell list) *
 bool ;;
 
@@ -551,30 +551,7 @@ let common_good grid k =
    ) uples in 
    List.filter (fun (_,advances)->advances<>[]) temp ;;
 
-let two_to_twos_in_individual_box gr bx =
-   let box_content = Box.content bx in 
-   let poss_for_cells = Image.image (
-     fun cell -> (cell,Grid.possibilities_at_cell gr cell)
-   ) box_content in 
-   let poss_at_cell = (fun cell -> List.assoc cell poss_for_cells) in 
-   let poss_for_vals = Int_range.scale (
-     fun v -> (v,List.filter (fun cell->List.mem v (poss_at_cell cell)) box_content)
-   ) 1 9 in 
-   let interesting_vals = List.filter (
-    fun (_v,poss) -> List.length(poss) = 2
-   ) poss_for_vals in 
-   let interesting_pairs = Uple.list_of_pairs interesting_vals in 
-   List.filter_map (
-     fun ((v1,poss1),(v2,poss2)) -> 
-        if poss1 = poss2 
-        then Some((bx,v1,v2,List.nth poss1 0,List.nth poss1 2)) 
-        else None 
-   ) interesting_pairs ;;
 
-let two_to_twos gr =
-  List.flatten(
-   Explicit.image (two_to_twos_in_individual_box gr) Box.all 
-  ) ;;
 
 end ;;
 
@@ -594,10 +571,50 @@ let rake = Private.rake ;;
 
 let raking_depth = Private.raking_depth ;; 
 
-let two_to_twos = Private.two_to_twos ;;
 
 end ;;   
 
+module AdvancedDeduce = struct 
+
+module Private = struct 
+  
+let two_to_twos_in_individual_box gr bx =
+   let box_content = Box.content bx in 
+   let poss_for_cells = Image.image (
+     fun cell -> (cell,Grid.possibilities_at_cell gr cell)
+   ) box_content in 
+   let poss_at_cell = (fun cell -> List.assoc cell poss_for_cells) in 
+   let poss_for_vals = Int_range.scale (
+     fun v -> (v,List.filter (fun cell->List.mem v (poss_at_cell cell)) box_content)
+   ) 1 9 in 
+   let interesting_vals = List.filter (
+    fun (_v,poss) -> List.length(poss) = 2
+   ) poss_for_vals in 
+   let interesting_pairs = Uple.list_of_pairs interesting_vals in 
+   List.filter_map (
+     fun ((v1,poss1),(v2,poss2)) -> 
+        
+        if poss1 <> poss2 
+        then None
+        else 
+        let cell1 = List.nth poss1 0
+        and cell2 = List.nth poss1 1 in 
+        if (poss_at_cell cell1=[v1;v2]) && 
+           (poss_at_cell cell2=[v1;v2]) 
+        then None 
+        else Some((bx,v1,v2,cell1,cell2))
+   ) interesting_pairs ;;
+
+let two_to_twos gr =
+  List.flatten(
+   Explicit.image (two_to_twos_in_individual_box gr) Box.all 
+  ) ;;  
+
+end ;;  
+
+let two_to_twos = Private.two_to_twos ;;
+
+end ;;  
 
 module UseWatcher = struct 
 
