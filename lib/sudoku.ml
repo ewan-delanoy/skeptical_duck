@@ -36,6 +36,8 @@ type raking_result =
    |Obstruction2_found of ( (cell * int * (value_holder list)) * 
                             (cell * int * (value_holder list)) ) list;;
 
+type pool = Pool of (value_holder * ((cell * int) list)) list ;;
+
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
 let i_mem = Ordered.mem i_order ;;
@@ -168,6 +170,20 @@ let forbidden_values (Wfc l) cell =
 
 end ;;  
 
+module Value_holder = struct 
+
+let all = 
+   let from_cells = Image.image ( 
+      fun cell -> Simple(cell)
+   ) Cell.all 
+   and from_pairs = Image.image ( 
+      fun (bx,v) -> Indirect(bx,v)
+   ) (Cartesian.product Box.all (Int_range.range 1 9)) in 
+   from_cells @ from_pairs ;;
+
+
+end ;;  
+
 module Grid = struct 
 
 exception Assign_exn of cell ;;  
@@ -257,7 +273,7 @@ let assoc (G (_wfc,l)) cell = List.assoc cell l ;;
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 
 let empty_grid = Private.origin ;;
-
+    
 let freedom_left = Private.freedom_left ;;
 
 let horizontal_summary (G(_wfc,l)) = List.filter_map 
@@ -274,7 +290,12 @@ let living_cells = Private.living_cells ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
-let possibilities_at_indirect_cell = Private.possibilities_at_indirect_cell ;; 
+let possibilities_for_value_holder gr = function 
+  (Simple(cell)) -> Image.image (fun v->(cell,v))
+     (Private.possibilities_at_cell gr cell) 
+  |Indirect(bx,v) -> 
+     Image.image (fun cell->(cell,v))
+    (Private.possibilities_at_indirect_cell gr (bx,v)) ;; 
 
 end ;;
 
@@ -613,6 +634,46 @@ let two_to_twos gr =
 end ;;  
 
 let two_to_twos = Private.two_to_twos ;;
+
+end ;;  
+
+module Pool = struct 
+
+module Private = struct 
+
+let compute gr = 
+   let ttts = AdvancedDeduce.two_to_twos gr in 
+   let explore_ttts_opt = (
+      fun cell -> 
+        List.find_map (
+         fun (_bx,v1,v2,cell1,cell2) -> 
+          if (cell=cell1)||(cell=cell2)
+          then Some [v1;v2]
+          else None
+        ) ttts 
+   ) in   
+   Pool( List.filter_map (
+     fun val_holder ->
+      let possibilities =(
+       match val_holder with 
+       Simple(cell) ->
+          let vals = 
+         (
+           match explore_ttts_opt cell with 
+           Some better_answer -> better_answer 
+           | None -> Grid.possibilities_at_cell gr cell
+         ) in 
+         Image.image (fun v->(cell,v)) vals
+      |Indirect(_,_) -> Grid.possibilities_for_value_holder gr val_holder ) in
+      if List.length(possibilities)>1   
+      then Some (val_holder,possibilities) 
+      else None  
+   ) Value_holder.all );; 
+
+end ;;  
+
+let compute = Private.compute ;;
+
 
 end ;;  
 
