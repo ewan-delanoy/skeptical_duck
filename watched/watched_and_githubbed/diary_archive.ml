@@ -1,8 +1,133 @@
 (************************************************************************************************************************
-Snippet 168 : 
+Snippet 169 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 168 : Last use of Cee modules
+************************************************************************************************************************)
+
+module Snip168=struct
+
+(*
+
+module Cap = Cee_project_transfer.Capsule ;;
+
+let list28 = (!(Cee_data_archiver.Cache_Content.list28_ref)) ;;
+let wardrobe1 = (!(Cee_data_archiver.Cache_Content.wardrobe1_ref)) ;; 
+
+
+let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
+let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
+
+let cpsl0 =
+  Cap.make ~source_envname:"SHPSRC" 
+  ~destination_envname:"HAHPSRC" list28 
+  ~reinitialize_destination:true ;;
+
+let computation1 () = Chronometer.it 
+    Cap.shadows_for_dc_files cpsl0 ;; (* 10 minutes,21 seconds *)
+
+let change1 () =
+  Chronometer.it
+    Cee_project_transfer
+    .remove_conditional_directives_in_directly_compiled_files 
+     cpsl0 ;; (* 9 seconds *)
+
+let cpsl1 =
+   Cap.replicate ~next_envname:"ST01PHPSRC" cpsl0 
+   ~reinitialize_destination:true  ;;      
+
+let change2 =
+  Cee_project_transfer.standardize_inclusions_in_files cpsl1
+    (Cap.directly_compiled_files cpsl1) ;;
+
+let cpsl2 =
+  Cap.replicate ~next_envname:"ST02PHPSRC" cpsl1 
+   ~reinitialize_destination:true ;; 
+
+let check_change2 () =
+  Cee_project_transfer.standardize_inclusions_in_files cpsl2
+    (Cap.directly_compiled_files cpsl2) ~dry_run:true ;;  
+
+let change3 =
+  Cee_project_transfer.standardize_guards_in_files cpsl2
+    (Cap.directly_included_files cpsl2) ;;    
+
+
+let files = Cap.directly_included_files cpsl2 ;;
+
+let could_fail fn = 
+    let old_text = Cap.read_file cpsl2 fn in
+    Cee_text.standardize_guard_in_text_opt old_text ;;
+
+let check_failure fn =
+   try (fun _->false)(could_fail fn) with _ -> true ;;
+
+
+let u2 = Explicit.filter check_failure files ;;  
+
+let fn = "ext/fileinfo/libmagic/magic.h" ;;
+
+let old_text = Cap.read_file cpsl2 fn ;;
+
+module Prj = Cee_text.Private ;;
+
+open Prj ;;                                                             
+let old_text = rf "~/Teuliou/Experimenting_with_php/step-01-php-src/ext/fileinfo/libmagic/magic.h";;
+
+let old_text = rf "nonml_files/example.h" ;;
+
+let bad1 = Cee_text.standardize_guard_in_text_opt old_text ;;
+
+let bad_text1 = Option.get bad1 ;; 
+
+let bad2 = Prj.test_text_for_guard_pattern old_text ;;
+let w0 ()= Walker.make old_text ;;
+let w1 = Walker.iterate_for_guard_pattern_detection (w0 ()) ;;
+
+let test_text_for_guard_pattern text =
+   Guard_Pattern.test 
+   (Walker.iterate_for_guard_pattern_detection (Walker.make text)) ;;
+
+let bad4 = Lines_in_string.lines_inside_or_outside_cee_comments 
+     old_text ;;
+
+
+
+
+module Pri = Lines_in_string.Private ;;
+
+open Pri ;;
+let bad3 = Walker.make old_text ;;
+let w1 = (old_text,String.length old_text,[],1,false) ;;
+
+
+
+let rec step 
+  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
+  if next_idx_to_be_treated > total_length 
+  then failwith("aaa")
+  else 
+  match next_newline_inside_or_outside_cee_comments_opt  
+        whole_text next_idx_to_be_treated unfinished_comment with
+  None -> failwith("bbb")
+  |Some(newline_idx,unfinished_comment2) ->
+     let line= Cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in  
+  (whole_text,total_length,(line,unfinished_comment)::treated_lines,newline_idx+1,unfinished_comment2);; 
+
+let ff = Memoized.small step w1 ;;
+
+let (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)=
+   ff 81 ;;
+
+
+*)
+
+
+end ;;
 
 
 (************************************************************************************************************************
@@ -48,6 +173,9 @@ let act3 () = Sys.command cmd ;;
 let ap1 = Absolute_path.of_string 
 "~/Teuliou/Heavy/Workshop/contraventions.pdf";;
 
+let ap1 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/first_page.pdf";;
+
 let see1 = Coherent_pdf.sizes_for_each_page ap1 ;;
 
 
@@ -57,7 +185,7 @@ ap1 ~outputfile_name:"contraventions"
 ;;
 
 let act5 () = Coherent_pdf.corep_transform
-ap1 ~outputfile_name:"corepped_contraventions"
+ap1 ~outputfile_name:"first_page_contraventions"
 ;;
 
 

@@ -243,6 +243,11 @@ let cells_with_fewest_possibilities gr =
 let assign_several gr assignments = 
      List.fold_left  uncurried_assign gr assignments ;; 
 
+let assign_several_opt gr assignments = 
+   try Some(assign_several gr assignments) with 
+     Assign_exn _
+   | Repeated_assignment_exn _ -> None ;; 
+
 let freedom_left (G(_wfc,l)) =
   List.length(List.filter (fun (_cell,(vals,_))->List.length(vals)>1) l) ;;
 
@@ -279,6 +284,9 @@ let assign_if_unoccupied gr cell v =
 
 let assign_several gr assignments = 
      Private.assign_several gr assignments ;; 
+
+let assign_several_opt gr assignments = 
+     Private.assign_several_opt gr assignments ;;      
 
 let assoc (G (_wfc,l)) cell = List.assoc cell l ;;  
 
@@ -596,6 +604,38 @@ let raking_depth = Private.raking_depth ;;
 
 end ;;   
 
+
+module Pool = struct 
+
+module Private = struct 
+
+let compute gr = 
+   Pool( List.filter_map (
+     fun val_holder ->
+      let possibilities = 
+        Grid.possibilities_for_value_holder gr val_holder  in
+      if List.length(possibilities)>1   
+      then Some (val_holder,possibilities) 
+      else None  
+   ) Value_holder.all );; 
+
+let support (Pool l) = 
+ List.flatten(List.filter_map (fun cell->
+  (List.assoc_opt (Simple cell) l)
+  ) Cell.all)
+;;
+
+
+
+end ;;  
+
+let compute = Private.compute ;;
+
+let support = Private.support ;;
+
+end ;;  
+
+
 module AdvancedDeduce = struct 
 
 module Private = struct 
@@ -656,41 +696,48 @@ let use_two_to_twos gr =
    ) l in 
    G(wfc,new_l) ;;
    
+let common_advances_in_individual_case gr domain labeled_rays =
+   let unlabeled_rays = Image.image snd labeled_rays in  
+   let expansion = Cartesian.general_product unlabeled_rays in 
+   let final_grids = List.filter_map (
+     Grid.assign_several_opt gr
+   ) expansion in 
+   List.filter (
+     fun (cell,v) ->
+      List.for_all (
+        fun final_grid ->
+          let poss = Grid.possibilities_at_cell final_grid cell in 
+          not(List.mem v poss)
+      ) final_grids 
+   ) domain ;;
 
+let common_advances k gr =
+   let pool=Pool.compute gr in 
+   let (Pool l)=pool in 
+   let domain = Pool.support pool in 
+   let uples = Uple.l_naive_combinations k l in 
+   let temp = Explicit.image (
+     fun uple ->
+      let advances = common_advances_in_individual_case gr domain uple in 
+      (uple,advances)   
+   ) uples in 
+   List.filter_map (
+     fun (uple,advances)  ->
+      if advances = []
+      then None 
+      else Some(Image.image fst uple,advances)   
+   ) temp ;;
 
 end ;;  
+
+let common_advances = Private.common_advances ;;
 
 let two_to_twos = Private.two_to_twos ;;
 
-end ;;  
-
-module Pool = struct 
-
-module Private = struct 
-
-let compute gr = 
-   Pool( List.filter_map (
-     fun val_holder ->
-      let possibilities = 
-        Grid.possibilities_for_value_holder gr val_holder  in
-      if List.length(possibilities)>1   
-      then Some (val_holder,possibilities) 
-      else None  
-   ) Value_holder.all );; 
-
-let support (Pool l) = 
- List.filter_map (fun cell->
-  (List.assoc_opt (Simple cell) l)
-  ) Cell.all
-;;
-
+let use_two_to_twos = Private.use_two_to_twos ;;
 
 end ;;  
 
-let compute = Private.compute ;;
-
-
-end ;;  
 
 module UseWatcher = struct 
 

@@ -189,7 +189,7 @@ end ;;
 module Command = struct 
   let corep_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
-    let padded_nbr = (Basic.frac_ceiling original_nbr 4)*4 in 
+    let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
     let current_dir = Sys.getcwd () in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
