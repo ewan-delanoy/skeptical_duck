@@ -89,15 +89,15 @@ end ;;
 module Phpbb = struct
 
 let seek_phpbb_footnote_number_at_index text idx =
-    match PrivateBefore.seek_substring_at_index "[b][color=blue](" text idx with 
+    match Common.seek_substring_at_index "[b][color=blue](" text idx with 
     None -> None 
     | Some idx2 ->
         (
-          match PrivateBefore.seek_positive_integer_at_index text idx2 with 
+          match Common.seek_positive_integer_at_index text idx2 with 
            None -> None 
            | Some(written_integer,idx3) -> 
               (
-                match PrivateBefore.seek_substring_at_index ")[/color][/b]" text idx3 with 
+                match Common.seek_substring_at_index ")[/color][/b]" text idx3 with 
                  None -> None  
                  | Some idx4 ->
                   Some(written_integer,idx4)
@@ -114,7 +114,7 @@ let size_opening_tag = "[size=90]" ;;
 let size_closing_tag = "[/size]" ;; 
 
 let seek_small_sized_paragraph_at_index text idx =
-  match PrivateBefore.seek_substring_at_index size_opening_tag text idx with 
+  match Common.seek_substring_at_index size_opening_tag text idx with 
   None -> None 
   | Some idx2 -> 
      let idx3 = Option.get(Substring.leftmost_index_of_in_from_opt size_closing_tag text idx2) in 
@@ -128,7 +128,7 @@ seek_small_sized_paragraph_at_index "123[size=90]The Bounty[/size]0123" 4;;
 *)
 
 let seek_phpbb_footnote_at_index text idx =     
-  match PrivateBefore.seek_substring_at_index size_opening_tag text idx with 
+  match Common.seek_substring_at_index size_opening_tag text idx with 
   None -> None 
   | Some idx2 -> 
      (
@@ -183,7 +183,7 @@ collect_phpbb_footnotes
 let footnote_inconsistencies numbered_pages = 
   List.filter_map (
     fun (page_number,page_content) ->
-       let (unordered_refs,unordered_notes) = collect_footnotes page_content in 
+       let (unordered_refs,unordered_notes) = collect_phpbb_footnotes page_content in 
        let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
        and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
        let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
@@ -195,13 +195,13 @@ let footnote_inconsistencies numbered_pages =
 
 let check_all_pages text =
     let numbered_pages = Percent_pagination.extract_all_pages text in 
-    let _ = check_range_completeness (Image.image fst numbered_pages) in 
+    let _ = Common.check_range_completeness (Image.image fst numbered_pages) in 
     let inconsistencies = footnote_inconsistencies numbered_pages in 
-    List.iter print_inconsistency inconsistencies ;; 
+    List.iter Common.print_inconsistency inconsistencies ;; 
     
 let check_footnotes_on_page text = 
   let inconsistencies = footnote_inconsistencies [(Percent_pagination.read_number_of_first_page text),text] in 
-  let _ = List.iter print_inconsistency inconsistencies in 
+  let _ = List.iter Common.print_inconsistency inconsistencies in 
   if inconsistencies <> [] 
   then raise Footnote_inconsistency;;  
 
@@ -304,9 +304,9 @@ end ;;
 end ;;
 
 let check_basic_footnotes_on_page = Private.Basic.check_footnotes_on_page ;;
-let check_basic_footnotes_on_pages = Private.Basic.check_all_pages ;;
+let check_basic_footnotes_on_all_pages = Private.Basic.check_all_pages ;;
 
 let check_phpbb_footnotes_on_page = Private.Phpbb.check_footnotes_on_page ;;
-let check_phpbb_footnotes_on_pages = Private.Phpbb.check_all_pages ;;
+let check_phpbb_footnotes_on_all_pages = Private.Phpbb.check_all_pages ;;
 
 let separator_announcing_basic_footnotes_zone = Private.Basic.separator_announcing_footnotes ;;
