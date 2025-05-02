@@ -9,6 +9,7 @@ The middle line also contains the mention "Page i" after its percent.
 
 exception No_pages_to_extract ;; 
 exception No_percent_block_present ;;   
+exception Page_number_not_followed_by_a_space ;;
 
 module Private = struct
 
@@ -59,7 +60,10 @@ extract_first_page_and_remerge "A\n%\n%1\n%\nB\n%\n%2\n%\nC\n%\n%3\n%\nD";;
 *)
 
 let extract_page_number_from_percent_block three_lines =
-  let (_,line_containing_pagenumber) = List.nth three_lines 1 in        
+  let (_,line_containing_pagenumber) = List.nth three_lines 1 in  
+  if String.get(line_containing_pagenumber)(String.length(line_containing_pagenumber)-1)<>' '
+  then raise(Page_number_not_followed_by_a_space)
+  else          
   int_of_string(Cull_string.two_sided_cutting ("% Page "," ") line_containing_pagenumber);;  
 
 
