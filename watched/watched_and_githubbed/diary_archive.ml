@@ -13960,7 +13960,7 @@ let officialize () =
   then failwith("You just officialized a page. No need to officialize it a second time") 
   else   
   let walker_text = Io.read_whole_file walker_ap in 
-  let _ = Check_polished_ocr.check_footnotes_on_page walker_text in 
+  let _ = Check_phpbb_ocr.check_footnotes_on_page walker_text in 
   let new_polished_text = (Io.read_whole_file polished_ap) ^ "\n\n" ^ walker_text  in 
   (
     Io.overwrite_with polished_ap new_polished_text;
@@ -13980,7 +13980,7 @@ let end_marker = "(" ^ "* Replacements end here *)" ;;
 Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker ;;
 Incremental_replace_on_a_set_of_files.set_receiving_files [emptiable_ap;walker_ap] ;;
 
-let check_pages_and_footnotes () = Check_polished_ocr.check_pages_and_footnotes (Io.read_whole_file polished_ap) ;;
+let check_pages_and_footnotes () = Check_phpbb_ocr.check_pages_and_footnotes (Io.read_whole_file polished_ap) ;;
 
 (* Replacements begin here *)
 
