@@ -1,14 +1,48 @@
 (************************************************************************************************************************
-Snippet 169 : 
+Snippet 170 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 168 : Last use of Cee modules
+Snippet 169 : Use the tesseract command on many files
 ************************************************************************************************************************)
 
+module Snip169=struct
+
+let dir1 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Action" ;;
+
+let active_mode = ref false ;;
+
+let u1 = 
+  if !active_mode 
+  then Unix_again.quick_beheaded_complete_ls dir1 
+   else [];; 
+
+
+let u2 = List.filter (fun fn->String.ends_with ~suffix:".png" fn ) u1 ;; 
+
+let commands = Image.image (
+  fun fn ->
+    let base = Cull_string.coending 4 fn in 
+    "tesseract "^fn^" "^base^" "^
+    "-l fra --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
+) u2 ;; 
+
+let go_to_dir1 () = Sys.chdir dir1 ;;
+
+let execute_commands () = 
+   Explicit.image Sys.command commands ;; 
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 168 : Last use of Cee modules
+************************************************************************************************************************)
 module Snip168=struct
 
 (*
@@ -13960,7 +13994,7 @@ let officialize () =
   then failwith("You just officialized a page. No need to officialize it a second time") 
   else   
   let walker_text = Io.read_whole_file walker_ap in 
-  let _ = Check_phpbb_ocr.check_footnotes_on_page walker_text in 
+  let _ = Check_ocr.check_phpbb_footnotes_on_page walker_text in 
   let new_polished_text = (Io.read_whole_file polished_ap) ^ "\n\n" ^ walker_text  in 
   (
     Io.overwrite_with polished_ap new_polished_text;
@@ -13980,7 +14014,8 @@ let end_marker = "(" ^ "* Replacements end here *)" ;;
 Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker ;;
 Incremental_replace_on_a_set_of_files.set_receiving_files [emptiable_ap;walker_ap] ;;
 
-let check_pages_and_footnotes () = Check_phpbb_ocr.check_pages_and_footnotes (Io.read_whole_file polished_ap) ;;
+let check_pages_and_footnotes () = 
+  Check_ocr.check_phpbb_footnotes_on_all_pages (Io.read_whole_file polished_ap) ;;
 
 (* Replacements begin here *)
 

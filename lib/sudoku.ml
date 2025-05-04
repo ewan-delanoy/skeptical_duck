@@ -13,15 +13,8 @@ type box =
    |Column of int 
    |Square of int ;; 
 
-
-type forbidden_configuration = Fc of (cell * int) list ;;
-
-type watcher_for_forbidden_configurations = 
-  Wfc of (forbidden_configuration * forbidden_configuration) list ;;
-
 type grid = G of 
-  watcher_for_forbidden_configurations * 
-  ((cell * ((int list) * bool)) list);;
+  (cell * ((int list) * bool)) list;;
 
 type value_holder =
     Simple of cell
@@ -128,47 +121,7 @@ module Box = struct
 
 end ;;   
 
-module Forbidden_configuration = struct 
 
-let assign fc   cell v = 
-   let (Fc l)=fc in 
-   match List.assoc_opt cell l with 
-   None -> Some fc 
-   |Some original_v ->
-    if original_v=v 
-    then Some(Fc(List.filter (fun (cell2,_)->cell2<>cell) l))
-    else None ;;     
-
-let is_realized (Fc l) = (l=[]) ;;
-
-end ;;  
-
-module Watcher_for_forbidden_configurations = struct 
-
-let empty_one = Wfc [] ;;
-
-let assign (Wfc old_whole) cell v = 
-    let new_whole = List.filter_map (
-        fun (original,old_state) ->
-          Option.map (fun state->(original,state))
-         (Forbidden_configuration.assign old_state cell v)
-    ) old_whole in 
-    Wfc new_whole ;;
-
-let forbidden_values (Wfc l) cell = 
-   i_sort( List.filter_map (
-        fun (_original,Fc current_state) ->
-         if List.length current_state <>1 
-         then None 
-         else 
-         let (cell2,v)=List.hd current_state in 
-         if cell2<>cell 
-         then None 
-         else Some v   
-    ) l) ;;  
-
-
-end ;;  
 
 module Value_holder = struct 
 
@@ -194,14 +147,12 @@ module Private = struct
 
 let origin = 
   let small_base = Int_range.range 1 9 in 
-  G(Watcher_for_forbidden_configurations.empty_one,
+  G(
   Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
 
-let possibilities_at_cell (G (wfc,l)) cell = 
+let possibilities_at_cell (G (l)) cell = 
    let temp1 = fst(List.assoc cell l) in 
-    i_setminus temp1 
-    (Watcher_for_forbidden_configurations.forbidden_values
-     wfc cell);;  
+  temp1 ;;  
 
 let possibilities_at_indirect_cell gr (bx,v) =
    let candidates = Box.content bx in 
@@ -210,10 +161,10 @@ let possibilities_at_indirect_cell gr (bx,v) =
    ) candidates ;;
 
 
-let cell_is_already_assigned (G (_wfc,l)) cell = snd(List.assoc cell l);;
+let cell_is_already_assigned (G (l)) cell = snd(List.assoc cell l);;
 
 let uncurried_assign gr (cell,v) = 
-   let (G (wfc,l)) = gr in 
+   let (G (l)) = gr in 
    let possibilities = possibilities_at_cell gr cell  in 
    let is_old = cell_is_already_assigned gr cell   in 
    if (not(List.mem v possibilities))
@@ -229,10 +180,10 @@ let uncurried_assign gr (cell,v) =
         then (cell2,(i_outsert v poss,is_old))
         else (cell2,(poss,is_old))       
    ) l in 
-   G (Watcher_for_forbidden_configurations.assign wfc cell v,new_l) ;;  
+   G (new_l) ;;  
 
 let cells_with_fewest_possibilities gr = 
-  let (G (_wfc,l)) = gr in 
+  let (G (l)) = gr in 
   let temp1 = List.filter_map (
     fun (cell,(_poss,is_old)) ->
        if is_old then None else 
@@ -248,11 +199,11 @@ let assign_several_opt gr assignments =
      Assign_exn _
    | Repeated_assignment_exn _ -> None ;; 
 
-let freedom_left (G(_wfc,l)) =
+let freedom_left (G(l)) =
   List.length(List.filter (fun (_cell,(vals,_))->List.length(vals)>1) l) ;;
 
 let living_cells gr =
-  let (G(_wfc,l)) = gr in 
+  let (G(l)) = gr in 
   List.filter_map (fun (cell,(_vals,is_old))->
     if is_old then None else 
     let poss = possibilities_at_cell gr cell in    
@@ -261,7 +212,7 @@ let living_cells gr =
     else None  ) l ;;
 
 let expand_grid_at_cell cell gr = 
-   let (G(_wfc,l)) = gr in 
+   let (G(l)) = gr in 
    let (_,is_old) = List.assoc cell l in 
    if is_old then [gr] else
    let poss = possibilities_at_cell gr cell in 
@@ -288,7 +239,7 @@ let assign_several gr assignments =
 let assign_several_opt gr assignments = 
      Private.assign_several_opt gr assignments ;;      
 
-let assoc (G (_wfc,l)) cell = List.assoc cell l ;;  
+let assoc (G (l)) cell = List.assoc cell l ;;  
 
 let cells_with_fewest_possibilities = Private.cells_with_fewest_possibilities ;;
 
@@ -298,7 +249,7 @@ let expand = Private.expand_grids_at_cells ;;
 
 let freedom_left = Private.freedom_left ;;
 
-let horizontal_summary (G(_wfc,l)) = List.filter_map 
+let horizontal_summary (G(l)) = List.filter_map 
   (fun (cell,(poss,is_old)) ->
       if is_old then Some(cell,List.hd poss) else None 
    ) l;;
@@ -384,7 +335,7 @@ let test_for_indirect_deduction gr (box,v)=
   else None ;;         
      
 let immediate_simple_deductions gr =   
-  let (G (_wfc,l))=gr in 
+  let (G (l))=gr in 
    List.filter_map (fun (cell,(_poss,is_old))->
      let poss = Grid.possibilities_at_cell gr cell in 
     if (List.length(poss)=1)&&(not is_old)
@@ -406,7 +357,7 @@ Rake means collect all immediate deductions
 *)
 
 let rake gr = 
-  let (G(_wfc,l)) = gr in 
+  let (G(l)) = gr in 
    let impossibilities = List.filter_map (fun (cell,(vals,_is_old))->
        if vals=[] then Some cell else None
     ) l in 
@@ -683,7 +634,7 @@ let use_two_to_twos gr =
           else None
         ) ttts 
    ) in   
-   let (G(wfc,l)) = gr in 
+   let (G(l)) = gr in 
    let new_l = Image.image (
       fun (cell,(_,is_old)) -> 
         let vals = 
@@ -694,7 +645,7 @@ let use_two_to_twos gr =
          ) in 
          (cell,(vals,is_old))
    ) l in 
-   G(wfc,new_l) ;;
+   G(new_l) ;;
    
 let common_advances_in_individual_case gr domain labeled_rays =
    let unlabeled_rays = Image.image snd labeled_rays in  
@@ -739,35 +690,6 @@ let use_two_to_twos = Private.use_two_to_twos ;;
 end ;;  
 
 
-module UseWatcher = struct 
-
-exception Unforbiddable_config of (cell * int) list ;;  
-
-module Private = struct
-  let check_forbidden_configuration config =
-     let gr =  Grid.assign_several Grid.empty_grid config in 
-     if Deduce.fails_after_some_easy_deductions gr 
-     then ()
-     else raise (Unforbiddable_config(config)) ;; 
-
-  let check_forbidden_configurations configs = 
-     List.iter check_forbidden_configuration configs ;;
-
-  let initialize_with configs initial_data = 
-    let _ = check_forbidden_configurations configs in 
-    let wfc = Wfc (
-      Image.image (fun config->(Fc config,Fc config)) configs
-    ) 
-    and (G(_,l_empty_grid)) = Grid.empty_grid in 
-    let initial_grid = G(wfc,l_empty_grid) in 
-    Grid.assign_several initial_grid initial_data ;;
-
-
-end ;;   
-
-let initialize_with = Private.initialize_with ;;
-
-end ;;
 
 (* 
 
