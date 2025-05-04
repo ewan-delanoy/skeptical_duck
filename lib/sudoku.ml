@@ -689,6 +689,62 @@ let use_two_to_twos = Private.use_two_to_twos ;;
 
 end ;;  
 
+module Walker = struct 
+
+exception Compute_hard_exn of (int * int) list;;
+
+module Private = struct 
+  
+let main_ref = ref Grid.empty_grid ;;
+  
+let assign_some changes = 
+   let new_gr = Grid.assign_several (!main_ref) changes in 
+   (main_ref:=new_gr) ;;
+
+let hints ()= 
+  let old_gr = (!main_ref) in 
+  match Deduce.rake old_gr with 
+  Obstruction0_found(_)
+  |Obstruction1_found(_)
+  |Obstruction2_found(_) -> failwith("Obstruction found")
+  |Smooth(l) ->
+     let changes = Image.image (
+       fun (x,y,_) -> (x,y)
+     ) l in 
+     let _ = assign_some changes in 
+     Image.image (fun (_,_,z) -> List.hd z) l;; 
+
+let freedom gr =
+  let (final_gr,obstruction1,obstruction2,imps,_older_deds) 
+    = Deduce.deduce_easily_as_much_as_possible gr in 
+  if (obstruction1 <> []) || (obstruction2 <> []) || (imps <> [])
+  then  (-1)
+  else Grid.freedom_left final_gr ;;
+
+let compute_hard gr cell =
+   let poss = Grid.possibilities_at_cell gr cell in
+   let temp = Image.image (
+     fun v ->(v,freedom(Grid.assign gr cell v))
+   ) poss in 
+   let good_cases = List.filter (
+      fun (_v,r) -> r<>(-1)
+   ) temp in 
+   if List.length(good_cases)<>1
+   then raise(Compute_hard_exn(good_cases)) 
+   else fst(List.hd good_cases);;
+
+
+end ;;
+
+let assign_some = Private.assign_some ;;
+
+let compute_hard = Private.compute_hard (!(Private.main_ref)) ;;
+let freedom () = Private.freedom (!(Private.main_ref)) ;;
+let hints = Private.hints ;;
+let initialize_with l =
+   (Private.main_ref:=Grid.initialize_with l) ;;
+
+end ;;  
 
 
 (* 
