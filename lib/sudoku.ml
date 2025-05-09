@@ -23,9 +23,9 @@ type value_holder =
 type deduction = Ded of value_holder * (cell * int) ;;
 
 type obstruction =
-    Obstruction0 of cell  list
-   |Obstruction1 of (cell * (int * value_holder list) list) list 
-   |Obstruction2 of ( (cell * int * (value_holder list)) * 
+    Unassignable_cells of cell  list
+   |Mutually_inconsistent_deductions of (cell * (int * value_holder list) list) list 
+   |Mutually_inconsistent_extensions of ( (cell * int * (value_holder list)) * 
                             (cell * int * (value_holder list)) ) list;;
 
 type raking_result =
@@ -364,7 +364,7 @@ let rake gr =
        if vals=[] then Some cell else None
     ) l in 
    if impossibilities<>[]
-   then Obstruction(Obstruction0(impossibilities))
+   then Obstruction(Unassignable_cells(impossibilities))
   else
   let temp1 = Image.image (fun (cell,v)->
        Ded(Simple(cell),(cell,v))
@@ -394,7 +394,7 @@ let rake gr =
    ) Cell.all in 
    let overflow_results = (!ref_for_overflow_results) in 
    if overflow_results <> []
-   then Obstruction(Obstruction1(overflow_results))
+   then Obstruction(Mutually_inconsistent_deductions(overflow_results))
    else 
    let adequate_results = !ref_for_adequate_results in 
    let pairs = Uple.list_of_pairs adequate_results in 
@@ -403,7 +403,7 @@ let rake gr =
        (v2=v1) && (Cell.test_for_neighborhood cell1 cell2)
    ) pairs in 
    if bad_pairs <> []
-   then Obstruction(Obstruction2(bad_pairs))
+   then Obstruction(Mutually_inconsistent_extensions(bad_pairs))
    else 
    Smooth(!ref_for_adequate_results) ;;
 
@@ -412,17 +412,14 @@ let rake gr =
 type walker = W of  
 grid * 
 ((cell * int * value_holder list) list) list * 
-((cell * (int * value_holder list) list) list) * 
-(((cell * int * (value_holder list)) * 
-  (cell * int * (value_holder list)))  list) * 
-  (cell list) *
+(obstruction option) *
 bool ;;
 
 let push_more_easy_deductions walker =
-  let (W(gr,older_deds,obstruction1,obstruction2,imps,end_reached)) = walker in 
+  let (W(gr,older_deds,obstr_opt,end_reached)) = walker in 
   if end_reached then walker else
-  if (obstruction1 <> []) || (obstruction2 <> []) || (imps <> []) 
-  then W(gr,older_deds,obstruction1,obstruction2,imps,true) 
+  if (obstr_opt <> None) 
+  then W(gr,older_deds,obstr_opt,true) 
   else
     match rake gr  with 
    (Smooth new_decorated_deds)-> 
@@ -430,39 +427,33 @@ let push_more_easy_deductions walker =
        fun (cell,v,_expl) ->(cell,v)
      ) new_decorated_deds in 
      W(Grid.assign_several gr new_deds,
-        older_deds@[new_decorated_deds],[],[],[],
+        older_deds@[new_decorated_deds],None,
         new_deds=[])
-  |Obstruction(obstr) -> match obstr with
-        |Obstruction0(unassignable) ->
-     W(gr,older_deds,[],[],unassignable,true)
-  |Obstruction1(obstr1) ->
-     W(gr,older_deds,obstr1,[],[],true)
-  |Obstruction2(obstr2) ->
-     W(gr,older_deds,[],obstr2,[],true)   
-     ;;
+  |Obstruction(obstr) -> 
+      W(gr,older_deds,Some obstr,true);;
 
 
 let rec iterate_easy_deductions walker =
-  let (W(gr,older_deds,obstruction1,obstruction2,imps,end_reached)) = walker in 
-  if end_reached then (gr,obstruction1,obstruction2,imps,List.rev older_deds) else
+  let (W(gr,older_deds,obstr_opt,end_reached)) = walker in 
+  if end_reached then (gr,obstr_opt,List.rev older_deds) else
   iterate_easy_deductions(push_more_easy_deductions(walker)) ;;  
 
 let deduce_easily_as_much_as_possible gr = 
-    iterate_easy_deductions(W(gr,[],[],[],[],false)) ;;
+    iterate_easy_deductions(W(gr,[],None,false)) ;;
 
 let fails_after_some_easy_deductions gr = 
-   let (_,obstr1,obstr2,imps,_) = 
+   let (_,obstr_opt,_) = 
      deduce_easily_as_much_as_possible gr in 
-    (obstr1<>[])||(obstr2<>[])||(imps<>[]) ;;
+    (obstr_opt<>None) ;;
 
 let expand_grid_at_cell cell gr =
    let poss = Grid.possibilities_at_cell gr cell in 
    List.filter_map (
      fun v ->
        let temp_gr = Grid.assign_if_unoccupied gr cell v in 
-       let (final_gr,obstr1,obstr2,imps,_) =
+       let (final_gr,obstr_opt,_) =
            deduce_easily_as_much_as_possible temp_gr in 
-     if (obstr1<>[])||(obstr2<>[])||(imps<>[])     
+     if (obstr_opt<>None)     
      then None
      else Some(final_gr)  
    ) poss ;;
