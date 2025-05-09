@@ -22,14 +22,16 @@ type value_holder =
 
 type deduction = Ded of value_holder * (cell * int) ;;
 
-type raking_result =
-    Smooth of  (cell * int * value_holder list) list
-   |Obstruction0_found of cell  list
-   |Obstruction1_found of (cell * (int * value_holder list) list) list 
-   |Obstruction2_found of ( (cell * int * (value_holder list)) * 
+type obstruction =
+    Obstruction0 of cell  list
+   |Obstruction1 of (cell * (int * value_holder list) list) list 
+   |Obstruction2 of ( (cell * int * (value_holder list)) * 
                             (cell * int * (value_holder list)) ) list;;
 
-type pool = Pool of (value_holder * ((cell * int) list)) list ;;
+type raking_result =
+    Smooth of  (cell * int * value_holder list) list
+   |Obstruction of obstruction ;; 
+   
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -362,7 +364,7 @@ let rake gr =
        if vals=[] then Some cell else None
     ) l in 
    if impossibilities<>[]
-   then Obstruction0_found(impossibilities)
+   then Obstruction(Obstruction0(impossibilities))
   else
   let temp1 = Image.image (fun (cell,v)->
        Ded(Simple(cell),(cell,v))
@@ -392,7 +394,7 @@ let rake gr =
    ) Cell.all in 
    let overflow_results = (!ref_for_overflow_results) in 
    if overflow_results <> []
-   then Obstruction1_found(overflow_results)
+   then Obstruction(Obstruction1(overflow_results))
    else 
    let adequate_results = !ref_for_adequate_results in 
    let pairs = Uple.list_of_pairs adequate_results in 
@@ -401,7 +403,7 @@ let rake gr =
        (v2=v1) && (Cell.test_for_neighborhood cell1 cell2)
    ) pairs in 
    if bad_pairs <> []
-   then Obstruction2_found(bad_pairs)
+   then Obstruction(Obstruction2(bad_pairs))
    else 
    Smooth(!ref_for_adequate_results) ;;
 
@@ -430,11 +432,12 @@ let push_more_easy_deductions walker =
      W(Grid.assign_several gr new_deds,
         older_deds@[new_decorated_deds],[],[],[],
         new_deds=[])
-  |Obstruction0_found(unassignable) ->
+  |Obstruction(obstr) -> match obstr with
+        |Obstruction0(unassignable) ->
      W(gr,older_deds,[],[],unassignable,true)
-  |Obstruction1_found(obstr1) ->
+  |Obstruction1(obstr1) ->
      W(gr,older_deds,obstr1,[],[],true)
-  |Obstruction2_found(obstr2) ->
+  |Obstruction2(obstr2) ->
      W(gr,older_deds,[],obstr2,[],true)   
      ;;
 
@@ -493,9 +496,7 @@ let expand original_grid cells =
 
 let apply_rake gr = 
   match rake gr with 
-   Obstruction0_found(_)
-  |Obstruction1_found(_)  
-  |Obstruction2_found(_) -> None
+   Obstruction(_) -> None
   |(Smooth new_decorated_deds)-> 
     let new_deds = Image.image (
        fun (cell,v,_expl) ->(cell,v)
@@ -556,195 +557,6 @@ let raking_depth = Private.raking_depth ;;
 end ;;   
 
 
-module Pool = struct 
-
-module Private = struct 
-
-let compute gr = 
-   Pool( List.filter_map (
-     fun val_holder ->
-      let possibilities = 
-        Grid.possibilities_for_value_holder gr val_holder  in
-      if List.length(possibilities)>1   
-      then Some (val_holder,possibilities) 
-      else None  
-   ) Value_holder.all );; 
-
-let support (Pool l) = 
- List.flatten(List.filter_map (fun cell->
-  (List.assoc_opt (Simple cell) l)
-  ) Cell.all)
-;;
-
-
-
-end ;;  
-
-let compute = Private.compute ;;
-
-let support = Private.support ;;
-
-end ;;  
-
-
-module AdvancedDeduce = struct 
-
-module Private = struct 
-  
-let two_to_twos_in_individual_box gr bx =
-   let box_content = Box.content bx in 
-   let poss_for_cells = Image.image (
-     fun cell -> (cell,Grid.possibilities_at_cell gr cell)
-   ) box_content in 
-   let poss_at_cell = (fun cell -> List.assoc cell poss_for_cells) in 
-   let poss_for_vals = Int_range.scale (
-     fun v -> (v,List.filter (fun cell->List.mem v (poss_at_cell cell)) box_content)
-   ) 1 9 in 
-   let interesting_vals = List.filter (
-    fun (_v,poss) -> List.length(poss) = 2
-   ) poss_for_vals in 
-   let interesting_pairs = Uple.list_of_pairs interesting_vals in 
-   List.filter_map (
-     fun ((v1,poss1),(v2,poss2)) -> 
-        
-        if poss1 <> poss2 
-        then None
-        else 
-        let cell1 = List.nth poss1 0
-        and cell2 = List.nth poss1 1 in 
-        if (poss_at_cell cell1=[v1;v2]) && 
-           (poss_at_cell cell2=[v1;v2]) 
-        then None 
-        else Some((bx,v1,v2,cell1,cell2))
-   ) interesting_pairs ;;
-
-let two_to_twos gr =
-  List.flatten(
-   Explicit.image (two_to_twos_in_individual_box gr) Box.all 
-  ) ;;  
-
-let use_two_to_twos gr = 
-   let ttts = two_to_twos gr in 
-   let explore_ttts_opt = (
-      fun cell -> 
-        List.find_map (
-         fun (_bx,v1,v2,cell1,cell2) -> 
-          if (cell=cell1)||(cell=cell2)
-          then Some [v1;v2]
-          else None
-        ) ttts 
-   ) in   
-   let (G(l)) = gr in 
-   let new_l = Image.image (
-      fun (cell,(_,is_old)) -> 
-        let vals = 
-         (
-           match explore_ttts_opt cell with 
-           Some better_answer -> better_answer 
-           | None -> Grid.possibilities_at_cell gr cell
-         ) in 
-         (cell,(vals,is_old))
-   ) l in 
-   G(new_l) ;;
-   
-let common_advances_in_individual_case gr domain labeled_rays =
-   let unlabeled_rays = Image.image snd labeled_rays in  
-   let expansion = Cartesian.general_product unlabeled_rays in 
-   let final_grids = List.filter_map (
-     Grid.assign_several_opt gr
-   ) expansion in 
-   List.filter (
-     fun (cell,v) ->
-      List.for_all (
-        fun final_grid ->
-          let poss = Grid.possibilities_at_cell final_grid cell in 
-          not(List.mem v poss)
-      ) final_grids 
-   ) domain ;;
-
-let common_advances k gr =
-   let pool=Pool.compute gr in 
-   let (Pool l)=pool in 
-   let domain = Pool.support pool in 
-   let uples = Uple.l_naive_combinations k l in 
-   let temp = Explicit.image (
-     fun uple ->
-      let advances = common_advances_in_individual_case gr domain uple in 
-      (uple,advances)   
-   ) uples in 
-   List.filter_map (
-     fun (uple,advances)  ->
-      if advances = []
-      then None 
-      else Some(Image.image fst uple,advances)   
-   ) temp ;;
-
-end ;;  
-
-let common_advances = Private.common_advances ;;
-
-let two_to_twos = Private.two_to_twos ;;
-
-let use_two_to_twos = Private.use_two_to_twos ;;
-
-end ;;  
-
-module Walker = struct 
-
-exception Compute_hard_exn of (int * int) list;;
-
-module Private = struct 
-  
-let main_ref = ref Grid.empty_grid ;;
-  
-let assign_some changes = 
-   let new_gr = Grid.assign_several (!main_ref) changes in 
-   (main_ref:=new_gr) ;;
-
-let hints ()= 
-  let old_gr = (!main_ref) in 
-  match Deduce.rake old_gr with 
-  Obstruction0_found(_)
-  |Obstruction1_found(_)
-  |Obstruction2_found(_) -> failwith("Obstruction found")
-  |Smooth(l) ->
-     let changes = Image.image (
-       fun (x,y,_) -> (x,y)
-     ) l in 
-     let _ = assign_some changes in 
-     Image.image (fun (_,_,z) -> List.hd z) l;; 
-
-let freedom gr =
-  let (final_gr,obstruction1,obstruction2,imps,_older_deds) 
-    = Deduce.deduce_easily_as_much_as_possible gr in 
-  if (obstruction1 <> []) || (obstruction2 <> []) || (imps <> [])
-  then  (-1)
-  else Grid.freedom_left final_gr ;;
-
-let compute_hard gr cell =
-   let poss = Grid.possibilities_at_cell gr cell in
-   let temp = Image.image (
-     fun v ->(v,freedom(Grid.assign gr cell v))
-   ) poss in 
-   let good_cases = List.filter (
-      fun (_v,r) -> r<>(-1)
-   ) temp in 
-   if List.length(good_cases)<>1
-   then raise(Compute_hard_exn(good_cases)) 
-   else fst(List.hd good_cases);;
-
-
-end ;;
-
-let assign_some = Private.assign_some ;;
-
-let compute_hard = Private.compute_hard (!(Private.main_ref)) ;;
-let freedom () = Private.freedom (!(Private.main_ref)) ;;
-let hints = Private.hints ;;
-let initialize_with l =
-   (Private.main_ref:=Grid.initialize_with l) ;;
-
-end ;;  
 
 
 (* 

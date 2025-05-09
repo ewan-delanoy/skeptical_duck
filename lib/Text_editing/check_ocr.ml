@@ -309,4 +309,4 @@ let check_basic_footnotes_on_all_pages = Private.Basic.check_all_pages ;;
 let check_phpbb_footnotes_on_page = Private.Phpbb.check_footnotes_on_page ;;
 let check_phpbb_footnotes_on_all_pages = Private.Phpbb.check_all_pages ;;
 
-let separator_announcing_basic_footnotes_zone = Private.Basic.separator_announcing_footnotes ;;
+let separator_announcing_basic_footer = Private.Basic.separator_announcing_footnotes ;;
