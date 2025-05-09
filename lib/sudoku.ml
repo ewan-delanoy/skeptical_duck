@@ -598,6 +598,13 @@ let deduce = Private.deduce ;;
 let head (Dr l) = List.hd l ;;
 let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
 
+let possibilities_at_cell dr cell = 
+   Image.image snd
+   (Private.possibilities_for_value_holder dr (Simple(cell))) ;;
+    
+let possibilities_for_value_holder = Private.possibilities_for_value_holder ;;
+
+let size (Dr l) = List.length l ;;
 let step_back = Private.step_back ;;
 
 end ;;  
@@ -607,11 +614,12 @@ module Display = struct
 
 module Private = struct 
 
+      let display_for_unassignable_cell = ref 'B';;
       let eval_small_grid_using_matrix_coordinates gr (i,j) = 
          let cell = Cell.from_matrix_coordinates i j in 
          let (poss,is_old) = Grid.assoc gr cell in 
          let m = List.length poss in 
-         if m = 0 then "B" else 
+         if m = 0 then String.make 1 (!display_for_unassignable_cell) else 
          if (m = 1)&&is_old then  string_of_int(List.hd poss) else
          " " ;; 
 
@@ -637,6 +645,8 @@ module Private = struct
 
 end ;; 
 
+let display_for_unassignable_cell = Private.display_for_unassignable_cell ;;
+let grid_to_string = Private.to_string ;; 
 let print_out_grid (fmt:Format.formatter) gr=
   Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string gr);;
 
@@ -644,7 +654,7 @@ let print_out_drill (fmt:Format.formatter) (Dr l)=
   let current_grid = (List.hd l).current_state in
   Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string current_grid);;
 
-let grid_to_string = Private.to_string ;; 
+
 
 
 end ;; 
