@@ -32,6 +32,16 @@ type raking_result =
     Smooth of  (cell * int * value_holder list) list
    |Obstruction of obstruction ;; 
    
+type tree_element = {
+    self_idx : int ;
+    ancestor_idx : int option ;
+    cause_of_birth : (cell * int) option ;
+    improvements : deduction list ;
+    birth_state : grid ;
+    current_state : grid
+} ;;
+
+type tree = Tr of tree_element list ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -547,7 +557,14 @@ let raking_depth = Private.raking_depth ;;
 
 end ;;   
 
+module Tree = struct 
 
+module Private = struct 
+  
+  
+end ;;  
+
+end ;;  
 
 
 (* 
