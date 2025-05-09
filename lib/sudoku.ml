@@ -32,7 +32,7 @@ type raking_result =
     Smooth of  (cell * int * value_holder list) list
    |Obstruction of obstruction ;; 
    
-type tree_element = {
+type drill_element = {
     self_idx : int ;
     ancestor_idx : int option ;
     biography : (cell * int) list ;
@@ -42,7 +42,7 @@ type tree_element = {
     forbidden_extensions : (cell * int) list;
 } ;;
 
-type tree = Tr of tree_element list ;;
+type drill = Dr of drill_element list ;;
 
 let i_order = Total_ordering.for_integers ;;
 let i_fold_merge = Ordered.fold_merge i_order ;;
@@ -167,11 +167,6 @@ let possibilities_at_cell (G (l)) cell =
    let temp1 = fst(List.assoc cell l) in 
   temp1 ;;  
 
-let possibilities_at_indirect_cell gr (bx,v) =
-   let candidates = Box.content bx in 
-   List.filter (
-     fun cell -> List.mem v (possibilities_at_cell gr cell)
-   ) candidates ;;
 
 
 let cell_is_already_assigned (G (l)) cell = snd(List.assoc cell l);;
@@ -276,21 +271,13 @@ let living_cells = Private.living_cells ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
-let possibilities_for_value_holder gr = function 
-  (Simple(cell)) -> Image.image (fun v->(cell,v))
-     (Private.possibilities_at_cell gr cell) 
-  |Indirect(bx,v) -> 
-     Image.image (fun cell->(cell,v))
-    (Private.possibilities_at_indirect_cell gr (bx,v)) ;; 
 
 end ;;
 
- 
+module Deduction = struct 
 
-module Deduce = struct 
-
-module Private = struct  
-
+module Private = struct 
+  
 let test_for_indirect_deduction gr (box,v)=
   let cells = Box.content box in 
   let compatible_cells = List.filter_map 
@@ -323,7 +310,38 @@ let immediate_indirect_deductions gr =
         (fun (_,_,cell)->
           Ded(Indirect(box,v),(cell,v))
           )
-        (test_for_indirect_deduction gr (box,v))) proposals ;;  
+        (test_for_indirect_deduction gr (box,v))) proposals ;;   
+let immediate_deductions gr =  
+ let temp1 = Image.image (fun (cell,v)->
+       Ded(Simple(cell),(cell,v))
+    ) (immediate_simple_deductions gr)
+   and temp2 =  immediate_indirect_deductions gr in 
+   temp1 @ temp2  ;;
+  
+let possibilities_at_indirect_cell gr (bx,v) =
+   let candidates = Box.content bx in 
+   List.filter (
+     fun cell -> List.mem v (Grid.possibilities_at_cell gr cell)
+   ) candidates ;;
+
+
+end ;;  
+  
+let immediate_deductions = Private.immediate_deductions ;;
+let possibilities_for_value_holder gr = function 
+  (Simple(cell)) -> Image.image (fun v->(cell,v))
+     (Grid.possibilities_at_cell gr cell) 
+  |Indirect(bx,v) -> 
+     Image.image (fun cell->(cell,v))
+    (Private.possibilities_at_indirect_cell gr (bx,v)) ;; 
+
+end ;;  
+
+module Deduce = struct 
+
+module Private = struct  
+
+ 
 
 (*
 Rake means collect all immediate deductions
@@ -337,11 +355,7 @@ let rake gr =
    if impossibilities<>[]
    then Obstruction(Unassignable_cells(impossibilities))
   else
-  let temp1 = Image.image (fun (cell,v)->
-       Ded(Simple(cell),(cell,v))
-    ) (immediate_simple_deductions gr)
-   and temp2 =  immediate_indirect_deductions gr in 
-   let temp3 = temp1 @ temp2 in 
+  let temp3 = Deduction.immediate_deductions gr in 
    let ref_for_adequate_results=ref[]
    and ref_for_overflow_results=ref[] in 
    let _ = List.iter (
@@ -417,44 +431,6 @@ let fails_after_some_easy_deductions gr =
      deduce_easily_as_much_as_possible gr in 
     (obstr_opt<>None) ;;
 
-let expand_grid_at_cell cell gr =
-   let poss = Grid.possibilities_at_cell gr cell in 
-   List.filter_map (
-     fun v ->
-       let temp_gr = Grid.assign_if_unoccupied gr cell v in 
-       let (final_gr,obstr_opt,_) =
-           deduce_easily_as_much_as_possible temp_gr in 
-     if (obstr_opt<>None)     
-     then None
-     else Some(final_gr)  
-   ) poss ;;
-
-let expand_grids_at_cell l_gr cell =
-   List.flatten (Image.image (expand_grid_at_cell cell) l_gr) ;;   
-
-let expand_grids_at_cells l_gr l_cell = 
-  List.fold_left expand_grids_at_cell l_gr l_cell  ;;   
-
-let ref_for_expansion_result = 
-  ref (([]: grid list)) ;;  
-let expand original_grid cells = 
-   let final_grids = expand_grids_at_cells [original_grid] cells in 
-   let temp1 = Image.image (
-     fun gr -> 
-       Image.image (fun 
-        cell -> (cell,List.hd(fst(Grid.assoc gr cell)))
-       ) cells
-   ) final_grids in
-   let fixed_cells = List.filter_map (
-     fun cell ->
-       let vals = i_sort(Image.image (List.assoc cell) temp1) in 
-       if List.length(vals)=1 
-       then Some(cell,List.hd vals)
-       else None
-   ) cells in 
-   let summaries = Image.image (Image.image snd) temp1 in 
-   let _ = (ref_for_expansion_result:=final_grids) in 
-   (List.length final_grids,fixed_cells,summaries) ;; 
 
 let apply_rake gr = 
   match rake gr with 
@@ -506,8 +482,6 @@ let deduce_easily_as_much_as_possible =
 
 let common_good = Private.common_good ;; 
 
-let expand = Private.expand ;;
-
 let fails_after_some_easy_deductions =
   Private.fails_after_some_easy_deductions ;;
     
@@ -518,14 +492,14 @@ let raking_depth = Private.raking_depth ;;
 
 end ;;   
 
-module Tree = struct 
+module Drill = struct 
 
 exception Forbidden_extension of cell * int ;;
 exception Impossible_extension of cell * int ;;
 
 module Private = struct 
   
-let initialize gr = Tr [ {
+let initialize gr = Dr [ {
     self_idx = 1 ;
     ancestor_idx = None ;
     biography = [] ;
@@ -537,7 +511,7 @@ let initialize gr = Tr [ {
   
   
 
-let assign (Tr(l)) cell v = 
+let assign (Dr(l)) cell v = 
   let old_elt = List.hd l in 
   if List.mem (cell,v) old_elt.forbidden_extensions 
   then raise(Forbidden_extension(cell,v))
@@ -557,7 +531,7 @@ let assign (Tr(l)) cell v =
     current_state = new_grid ;
     forbidden_extensions = old_elt.forbidden_extensions
   }  in 
-  Tr(new_elt::l) ;;
+  Dr(new_elt::l) ;;
 
 
 end ;;  
@@ -605,7 +579,7 @@ end ;;
 let print_out_grid (fmt:Format.formatter) gr=
   Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string gr);;
 
-let print_out_tree (fmt:Format.formatter) (Tr l)=
+let print_out_drill (fmt:Format.formatter) (Dr l)=
   let current_grid = (List.hd l).current_state in
   Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string current_grid);;
 
