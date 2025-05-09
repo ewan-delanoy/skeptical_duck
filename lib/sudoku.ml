@@ -496,6 +496,9 @@ module Drill = struct
 
 exception Forbidden_extension of cell * int ;;
 exception Impossible_extension of cell * int ;;
+exception Wrong_deduction of value_holder ;;
+exception No_breaking_point_found of value_holder ;;
+exception No_break_present of value_holder ;;
 
 module Private = struct 
   
@@ -533,11 +536,69 @@ let assign (Dr(l)) cell v =
   }  in 
   Dr(new_elt::l) ;;
 
+let possibilities_for_value_holder (Dr(l)) vh =
+   let current_elt = List.hd l in 
+  let current_grid = current_elt.current_state in 
+   let candidates = Deduction.possibilities_for_value_holder current_grid vh in 
+   let forbidden = current_elt.forbidden_extensions in 
+   List.filter (fun p->not(List.mem p forbidden)) candidates ;;
+
+let single_deduce dr vh =
+    let poss = possibilities_for_value_holder dr vh in 
+    if List.length(poss)<>1
+    then raise(Wrong_deduction(vh))  
+    else
+    let (cell,v) = List.hd poss  
+    and (Dr(l)) = dr in 
+    let old_elt = List.hd l in 
+    let old_grid = old_elt.current_state in 
+    let new_grid = Grid.assign old_grid cell v in 
+    let new_elt = {
+        old_elt with 
+        improvements = (Ded(vh,(cell,v))) ::old_elt.improvements;
+        current_state = new_grid;
+    } in
+    Dr(new_elt::(List.tl l)) ;;
+
+let deduce dr vhs = List.fold_left single_deduce dr vhs ;;    
+
+let rec iterator_for_bp_finding vh (treated,to_be_treated)= 
+   if possibilities_for_value_holder (Dr(to_be_treated)) vh <>[]
+   then (treated,to_be_treated)
+   else 
+   match to_be_treated with 
+   [] -> raise (No_breaking_point_found(vh))
+  |head::others -> iterator_for_bp_finding vh (head,others) ;;
+      
+let find_breaking_point vh dr = 
+   if possibilities_for_value_holder dr vh <>[]
+   then raise (No_break_present(vh))
+   else
+   let (Dr l) = dr in 
+   iterator_for_bp_finding vh (List.hd l,List.tl l) ;;
+   
+let step_back dr vh =
+   let (head,others) = find_breaking_point vh dr in 
+   let culprit = List.hd(head.biography) 
+   and innocent = List.hd others in 
+   let new_innocent = {
+     innocent with 
+     forbidden_extensions = culprit :: innocent.forbidden_extensions;
+   } in 
+   Dr(new_innocent ::(List.tl others)) ;;
+
+
 
 end ;;  
 
 let assign = Private.assign ;;
+
+let deduce = Private.deduce ;;
+
+let head (Dr l) = List.hd l ;;
 let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
+
+let step_back = Private.step_back ;;
 
 end ;;  
 
@@ -591,7 +652,10 @@ end ;;
 (* 
 
 open Sudoku ;; 
+
 #install_printer Display.print_out_grid ;;
+#install_printer Display.print_out_drill ;;
+
 
 let g0 = Grid.initialize_with 
 [
