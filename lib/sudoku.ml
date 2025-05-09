@@ -520,6 +520,9 @@ end ;;
 
 module Tree = struct 
 
+exception Forbidden_extension of cell * int ;;
+exception Impossible_extension of cell * int ;;
+
 module Private = struct 
   
 let initialize gr = Tr [ {
@@ -532,8 +535,34 @@ let initialize gr = Tr [ {
     forbidden_extensions = []
 } ];;  
   
+  
+
+let assign (Tr(l)) cell v = 
+  let old_elt = List.hd l in 
+  if List.mem (cell,v) old_elt.forbidden_extensions 
+  then raise(Forbidden_extension(cell,v))
+  else  
+  let old_grid = old_elt.current_state in 
+  let poss = Grid.possibilities_at_cell old_grid cell in 
+  if not(List.mem v poss)
+  then raise(Impossible_extension(cell,v))  
+  else
+  let new_grid = Grid.assign old_grid cell v in 
+  let new_elt = {
+    self_idx = (old_elt.self_idx)+1 ;
+    ancestor_idx = Some(old_elt.self_idx) ;
+    biography = (cell,v) :: (old_elt.biography) ;
+    improvements = [] ;
+    birth_state = new_grid ;
+    current_state = new_grid ;
+    forbidden_extensions = old_elt.forbidden_extensions
+  }  in 
+  Tr(new_elt::l) ;;
+
+
 end ;;  
 
+let assign = Private.assign ;;
 let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
 
 end ;;  
