@@ -35,10 +35,11 @@ type raking_result =
 type tree_element = {
     self_idx : int ;
     ancestor_idx : int option ;
-    cause_of_birth : (cell * int) option ;
+    biography : (cell * int) list ;
     improvements : deduction list ;
     birth_state : grid ;
-    current_state : grid
+    current_state : grid ;
+    forbidden_extensions : (cell * int) list;
 } ;;
 
 type tree = Tr of tree_element list ;;
@@ -284,47 +285,7 @@ let possibilities_for_value_holder gr = function
 
 end ;;
 
-module Display = struct 
-
-module Private = struct 
-
-      let eval_small_grid_using_matrix_coordinates gr (i,j) = 
-         let cell = Cell.from_matrix_coordinates i j in 
-         let (poss,is_old) = Grid.assoc gr cell in 
-         let m = List.length poss in 
-         if m = 0 then "B" else 
-         if (m = 1)&&is_old then  string_of_int(List.hd poss) else
-         " " ;; 
-
-      let eval_large_grid_using_matrix gr large_i large_j =
-          let small_i =  List_again.find_index_of_in large_i [2;3;4;6;7;8;10;11;12]
-          and small_j =  List_again.find_index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
-      if (small_i<0)||(small_j<0)
-      then "*"
-      else eval_small_grid_using_matrix_coordinates gr (small_i,small_j);;
-      
-      let large_line bg large_i = String.concat "" 
-        (Int_range.scale(eval_large_grid_using_matrix bg large_i) 1 13) ;;
-        
-      let large_lines bg = Int_range.scale (large_line bg ) 1 13 ;;
-  
-      let large_grid bg  = (String.concat "\n" (large_lines bg));;   
-
-  let to_string bg = (large_grid bg);;    
-
-  let to_surrounded_string gr = "\n\n\n"^(to_string gr)^"\n\n\n" ;;  
-  
-  
-
-end ;; 
-
-let print_out_grid (fmt:Format.formatter) gr=
-  Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string gr);;
-
-let grid_to_string = Private.to_string ;; 
-
-
-end ;;  
+ 
 
 module Deduce = struct 
 
@@ -564,10 +525,11 @@ module Private = struct
 let initialize gr = Tr [ {
     self_idx = 1 ;
     ancestor_idx = None ;
-    cause_of_birth = None ;
+    biography = [] ;
     improvements = [] ;
     birth_state = gr ;
-    current_state = gr
+    current_state = gr ;
+    forbidden_extensions = []
 } ];;  
   
 end ;;  
@@ -576,6 +538,52 @@ let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
 
 end ;;  
 
+
+module Display = struct 
+
+module Private = struct 
+
+      let eval_small_grid_using_matrix_coordinates gr (i,j) = 
+         let cell = Cell.from_matrix_coordinates i j in 
+         let (poss,is_old) = Grid.assoc gr cell in 
+         let m = List.length poss in 
+         if m = 0 then "B" else 
+         if (m = 1)&&is_old then  string_of_int(List.hd poss) else
+         " " ;; 
+
+      let eval_large_grid_using_matrix gr large_i large_j =
+          let small_i =  List_again.find_index_of_in large_i [2;3;4;6;7;8;10;11;12]
+          and small_j =  List_again.find_index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
+      if (small_i<0)||(small_j<0)
+      then "*"
+      else eval_small_grid_using_matrix_coordinates gr (small_i,small_j);;
+      
+      let large_line bg large_i = String.concat "" 
+        (Int_range.scale(eval_large_grid_using_matrix bg large_i) 1 13) ;;
+        
+      let large_lines bg = Int_range.scale (large_line bg ) 1 13 ;;
+  
+      let large_grid bg  = (String.concat "\n" (large_lines bg));;   
+
+  let to_string bg = (large_grid bg);;    
+
+  let to_surrounded_string gr = "\n\n\n"^(to_string gr)^"\n\n\n" ;;  
+  
+  
+
+end ;; 
+
+let print_out_grid (fmt:Format.formatter) gr=
+  Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string gr);;
+
+let print_out_tree (fmt:Format.formatter) (Tr l)=
+  let current_grid = (List.hd l).current_state in
+  Format.fprintf fmt "@[%s@]" (Private.to_surrounded_string current_grid);;
+
+let grid_to_string = Private.to_string ;; 
+
+
+end ;; 
 
 (* 
 
