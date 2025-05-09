@@ -561,8 +561,18 @@ module Tree = struct
 
 module Private = struct 
   
+let initialize gr = Tr [ {
+    self_idx = 1 ;
+    ancestor_idx = None ;
+    cause_of_birth = None ;
+    improvements = [] ;
+    birth_state = gr ;
+    current_state = gr
+} ];;  
   
 end ;;  
+
+let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
 
 end ;;  
 
