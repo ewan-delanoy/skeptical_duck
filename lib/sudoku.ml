@@ -587,7 +587,21 @@ let step_back dr vh =
    } in 
    Dr(new_innocent ::(List.tl others)) ;;
 
+let possibilities_at_cell dr cell = 
+   Image.image snd
+   (possibilities_for_value_holder dr (Simple(cell))) ;;
 
+let horizontal_view dr x0= 
+    let (Dr l) = dr in  
+    let elt = List.hd l in 
+    let grid = elt.current_state in 
+    List.filter_map (
+      fun y ->
+        let c = C(x0,y) in 
+        if snd(Grid.assoc grid c)
+        then None 
+        else Some(c,possibilities_at_cell dr c)  
+    ) (Int_range.range 1 9);;
 
 end ;;  
 
@@ -596,11 +610,11 @@ let assign = Private.assign ;;
 let deduce = Private.deduce ;;
 
 let head (Dr l) = List.hd l ;;
+
+let horizontal_view = Private.horizontal_view ;;
 let initialize_with l = Private.initialize (Grid.initialize_with l) ;;
 
-let possibilities_at_cell dr cell = 
-   Image.image snd
-   (Private.possibilities_for_value_holder dr (Simple(cell))) ;;
+let possibilities_at_cell = Private.possibilities_at_cell ;;
     
 let possibilities_for_value_holder = Private.possibilities_for_value_holder ;;
 
