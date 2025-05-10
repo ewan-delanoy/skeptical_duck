@@ -10,3 +10,4 @@ Sz5 is short for "fifth stab at Szemeredi problem".
 
 type width = W of int ;; 
 
+type constraint_t = C of int list list ;;
