@@ -131,3 +131,17 @@ let son = Private.son ;;
 
 
 end ;;  
+
+module Compute = struct 
+
+module Private = struct 
+(*
+let ref_for_unregistered_constraints = ref [] ;;
+
+let ref_for_precomputed = ref [] ;;
+*)
+
+end ;;  
+
+
+end ;;  
