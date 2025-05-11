@@ -11,6 +11,12 @@ type width = Sz5_types.width = W of int ;;
 
 type constraint_t = Sz5_types.constraint_t = C of int list list ;;
 
+type point = Sz5_types.point ={
+   p_width : width ;
+   size : int ;
+   extra_constraint : constraint_t;
+} ;;
+
 let i_order = Total_ordering.for_integers ;;
 
 let i_is_included_in = Ordered.is_included_in i_order ;;
@@ -135,13 +141,63 @@ end ;;
 module Compute = struct 
 
 module Private = struct 
-(*
-let ref_for_unregistered_constraints = ref [] ;;
 
-let ref_for_precomputed = ref [] ;;
-*)
+let order_on_widths = (
+  (fun (W w1) (W w2) -> i_order w1 w2) : width Total_ordering_t.t
+) ;;
+
+let order_on_cases = Total_ordering.product 
+     order_on_widths Constraint.order ;;
+
+let ref_for_unregistered_cases = ref ([]: (width * constraint_t) list)  ;;
+
+let ref_for_precomputed = ref ([]:(( width * constraint_t ) * (int -> int)) list) ;;
+
+let log_case w cstr =
+   (ref_for_unregistered_cases:=
+     Ordered.insert order_on_cases (w,cstr)
+      (!ref_for_unregistered_cases)
+   ) ;;
+
+let main = Memoized.recursive(
+   fun old_f pt ->
+    let w = pt.p_width and cstr = pt.extra_constraint in 
+    if pt.size < 1 then 0 else 
+    match List.assoc_opt (w,cstr) (!ref_for_precomputed) with 
+    Some(precomputed_f) -> precomputed_f pt.size
+    |None ->
+      let _ = log_case w cstr in 
+      let candidates = List.filter_map (
+        fun (offset,optional_case) ->
+          Option.map (fun case -> (offset,case)) optional_case 
+      )[
+        0, Some(Constraint.son cstr) ;
+        1, Constraint.daughter_opt w cstr
+      ] in 
+      snd(Max.maximize_it (fun (offset,case)->
+         let new_pt = {
+             p_width = w ;
+   size = pt.size -1 ;
+   extra_constraint = case;
+         } in 
+        offset + (old_f new_pt)
+      ) candidates)  
+      
+
+) ;;
+
 
 end ;;  
 
+
+let main = Private.main ;;
+
+let scale w cstr max_size= Int_range.scale (
+   fun n -> main {
+             p_width = w ;
+   size = n ;
+   extra_constraint = cstr;
+         }
+) 1 max_size;;
 
 end ;;  
