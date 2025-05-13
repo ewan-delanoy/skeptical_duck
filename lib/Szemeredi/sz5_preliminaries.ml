@@ -96,6 +96,8 @@ let shift (C ll) =
 let son cstr = shift(remove [1] cstr);;
 
 let daughter_opt w cstr = 
+  let (C ll) = cstr in 
+  if (List.mem [] ll)||(List.mem [1] ll) then None else
   try Some(shift(force w [1] cstr)) with Shift_exn _ -> None ;;
 
 
@@ -138,6 +140,24 @@ let son = Private.son ;;
 
 end ;;  
 
+module Point = struct 
+
+let daughter_opt pt = Option.map (fun daughter ->
+  {
+     pt with          
+   size = pt.size -1 ;
+   extra_constraint = daughter;
+  } ) (Constraint.daughter_opt pt.p_width pt.extra_constraint);; 
+let son pt = 
+  {
+     pt with          
+   size = pt.size -1 ;
+   extra_constraint = Constraint.son (pt.extra_constraint);
+  } ;; 
+
+
+end ;;  
+
 module Compute = struct 
 
 module Private = struct 
@@ -171,16 +191,11 @@ let main = Memoized.recursive(
         fun (offset,optional_case) ->
           Option.map (fun case -> (offset,case)) optional_case 
       )[
-        0, Some(Constraint.son cstr) ;
-        1, Constraint.daughter_opt w cstr
+        0, Some(Point.son pt) ;
+        1, Point.daughter_opt pt
       ] in 
       snd(Max.maximize_it (fun (offset,case)->
-         let new_pt = {
-             p_width = w ;
-   size = pt.size -1 ;
-   extra_constraint = case;
-         } in 
-        offset + (old_f new_pt)
+        offset + (old_f case)
       ) candidates)  
       
 
@@ -193,11 +208,11 @@ end ;;
 let main = Private.main ;;
 
 let scale w cstr max_size= Int_range.scale (
-   fun n -> main {
+   fun n -> (n,main {
              p_width = w ;
    size = n ;
    extra_constraint = cstr;
-         }
+         })
 ) 1 max_size;;
 
 end ;;  

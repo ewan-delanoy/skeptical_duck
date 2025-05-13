@@ -428,6 +428,15 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
 *)
   
+  let modify_interval_inside_string f text i j =
+     let (before,itv,after) = tripartition_associated_to_interval text i j in 
+     let new_itv = f itv in 
+     before ^ new_itv ^ after ;;
+
+  let modify_interval_inside_file f src_file i j =
+    let old_text = Io.read_whole_file src_file  in 
+    let new_text = modify_interval_inside_string f old_text i j in 
+    Io.overwrite_with src_file new_text ;;    
 
   end ;;   
 
@@ -473,6 +482,9 @@ let interval = Private.interval ;;
 
   let lines_inside_or_outside_cee_comments = Private.lines_inside_or_outside_cee_comments ;; 
 
+  let modify_interval_inside_file = Private.modify_interval_inside_file ;;
+
+  let modify_interval_inside_string = Private.modify_interval_inside_string ;;
   let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
 
   let put_line_first_in_file = Private.put_line_first_in_file ;; 
