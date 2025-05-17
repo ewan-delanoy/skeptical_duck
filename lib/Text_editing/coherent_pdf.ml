@@ -132,7 +132,25 @@ module OnSiteCommand = struct
     "cpdf "^onsite_input^".pdf -pad-multiple "^(string_of_int m)^
     " -o "^output_name^".pdf";; 
 
-    let corep_transform onsite_input outputfile_name padded_nbr= 
+    let corep_cuttable_transform onsite_input outputfile_name padded_nbr= 
+    let q = (padded_nbr/8) in
+    let corep_cuttable_order = List.flatten (Int_range.scale (fun j->
+        Image.image (fun r->2*j+r) 
+        [2*q-1;-1;6*q-1;4*q-1;
+         0;2*q;4*q;6*q]
+      ) 1 q) in 
+    (pad_up_to_multiple onsite_input  8 "padded")::
+    (explode  "padded" "page")::
+    (
+     [
+       (implode "page" "reaggregated" corep_cuttable_order);
+       ("cpdf -impose-xy \"2 2\" -impose-margin 15 reaggregated.pdf -o "^outputfile_name^".pdf");
+       "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
+     ]
+    );; 
+
+
+    let corep_foldable_transform onsite_input outputfile_name padded_nbr= 
     let q = (padded_nbr/8) in
     let corep_order = List.flatten (Int_range.scale (fun j->
         Image.image (fun r->8*j+r) [2;3;6;7;4;1;8;5]
@@ -187,13 +205,22 @@ end ;;
 
 
 module Command = struct 
-  let corep_transform ap outputfile_name = 
+  
+  let corep_cuttable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
     let current_dir = Sys.getcwd () in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
-   (OnSiteCommand.corep_transform "initial_copy" outputfile_name padded_nbr) @
+   (OnSiteCommand.corep_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
+    ["cd "^current_dir];;
+  let corep_foldable_transform ap outputfile_name = 
+    let original_nbr = Private.number_of_pages_in_pdf ap in 
+    let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
+    let current_dir = Sys.getcwd () in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.corep_foldable_transform "initial_copy" outputfile_name padded_nbr) @
     ["cd "^current_dir];;
 
   let force_same_size_for_all_pages ap outputfile_name 
@@ -221,9 +248,12 @@ end ;;
 let average_page_width_and_height = 
     Private.average_page_width_and_height ;;
 
-let corep_transform ap ~outputfile_name= 
+let corep_cuttable_transform ap ~outputfile_name= 
+    Unix_command.conditional_multiple_uc 
+     (Command.corep_cuttable_transform ap outputfile_name) ;;    
+let corep_foldable_transform ap ~outputfile_name= 
    Unix_command.conditional_multiple_uc 
-    (Command.corep_transform ap outputfile_name) ;;
+    (Command.corep_foldable_transform ap outputfile_name) ;;
 
 let force_same_size_for_all_pages ap ~outputfile_name
     ~forced_width ~forced_height= 

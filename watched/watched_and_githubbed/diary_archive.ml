@@ -218,7 +218,7 @@ ap1 ~outputfile_name:"contraventions"
     ~forced_width:2132 ~forced_height:1241
 ;;
 
-let act5 () = Coherent_pdf.corep_transform
+let act5 () = Coherent_pdf.corep_foldable_transform
 ap1 ~outputfile_name:"first_page_contraventions"
 ;;
 
@@ -4322,18 +4322,18 @@ let ap1 = Absolute_path.of_string (
    "~/Teuliou/Heavy/Workshop/richelieu.pdf") ;;
 
 
-let act1 () = Coherent_pdf.corep_transform 
+let act1 () = Coherent_pdf.corep_foldable_transform 
     ap1 ~outputfile_name:"output";;
 
 let act2 () = Int_range.scale(fun k->
     let sk = string_of_int k in 
     let ap = Absolute_path.of_string 
   ("~/Teuliou/Heavy/planiol_hib_"^sk^".pdf") in 
-    Coherent_pdf.corep_transform ap
+    Coherent_pdf.corep_foldable_transform ap
     ~outputfile_name:("printable_hib_"^sk)
   ) 1 3 ;;    
 
-let act3 () = Coherent_pdf.corep_transform 
+let act3 () = Coherent_pdf.corep_foldable_transform 
     ( Absolute_path.of_string (
    "~/Teuliou/Heavy/baskerville_gentleman.pdf")) 
    ~outputfile_name:"output";;
