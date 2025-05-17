@@ -1,6 +1,6 @@
 (* 
 
-#use"lib/Mad_world/Githubbing/transmit_change_to_github.ml";;
+#use"lib/Mad_world/Githubbing/mw_transmit_change_to_github.ml";;
 
 *)
 
