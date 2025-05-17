@@ -1,6 +1,6 @@
 (* 
 
-#use"lib/Mad_world/Compilation_management/commands_for_batch_compilation.ml";;
+#use"lib/Mad_world/Compilation_management/mw_commands_for_batch_compilation.ml";;
 
 *)
 
