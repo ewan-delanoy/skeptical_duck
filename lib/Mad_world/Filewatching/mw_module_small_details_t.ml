@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Mad_world/Filewatching/fw_module_small_details_t.ml";;
+#use"lib/Mad_world/Filewatching/mw_module_small_details_t.ml";;
 
 
 *)
