@@ -1,5 +1,5 @@
 (* 
-#use"lib/Mad_world/Compilation_management/other_coma_state.ml";;
+#use"lib/Mad_world/Compilation_management/mw_other_coma_state.ml";;
 *)
 
 
