@@ -3,7 +3,7 @@
 *)
 
 
-exception No_module_with_name of string;;
+(* exception No_module_with_name of string;;
 
 module Private = struct 
 
@@ -135,6 +135,6 @@ let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;
 
 let show_value_occurrences_in_modulesystem module_name=
    Mw_with_batch_compilation.show_value_occurrences
-   (!(Private.main_ref)) module_name;;
+   (!(Private.main_ref)) module_name;; *)
 
 

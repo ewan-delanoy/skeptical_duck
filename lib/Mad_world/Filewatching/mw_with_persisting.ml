@@ -93,16 +93,18 @@ module Private=struct
        );;
 
        
-      
+end;;  
 
-    let save_all cs=
+module Common = struct 
+
+  let save_all cs=
       let root_dir = Mw_poly.root cs 
       and elesses = Mw_with_batch_compilation.up_to_date_elesses cs
       and crobj_form = Mw_poly.to_concrete_object cs 
       and directories = Mw_with_dependencies.all_subdirectories cs 
       and printer_equipped_types = Mw_with_batch_compilation.preq_types_with_extra_info cs 
         in
-       write_all 
+       Private.write_all 
       (
         Coma_constant.rootless_path_for_targetfile,
         Coma_constant.rootless_path_for_loadingsfile,
@@ -119,8 +121,157 @@ module Private=struct
       let archived_object = Crobj_parsing.parse the_archive in 
       Mw_poly.of_concrete_object archived_object;;   
 
-end;;  
 
-let persist = Private.save_all;;
-let read_persistent_version = Private.read_persistent_version ;;
+end ;;  
+
+
+module Convert = struct 
+
+let to_fw_configuration (Mw_with_persisting_t.Subclass fw)= 
+   Mw_poly.to_fw_configuration fw ;;
+
+let to_github_configuration (Mw_with_persisting_t.Subclass fw)= 
+   Mw_poly.to_github_configuration fw ;;
+
+
+end ;;
+
+module Constructor = struct 
+
+let of_fw_config_and_github_config fw_config github_config = 
+  Mw_with_persisting_t.Subclass(
+    Mw_with_githubbing.of_fw_config_and_github_config fw_config github_config
+  ) ;;
+
+let of_fw_with_batch_compilation fw =
+  Mw_with_persisting_t.Subclass fw ;;
+
+let plunge_fw_config_with_github_config fw_config github_config = 
+    Mw_with_persisting_t.Subclass(
+      Mw_with_githubbing.plunge_fw_config_with_github_config fw_config github_config
+    ) ;;  
+
+end ;;  
+
+module Inherited = struct 
+
+let all_endinglesses (Mw_with_persisting_t.Subclass fw) =
+  Mw_with_dependencies.all_endinglesses fw ;;
+
+let ancestors_for_module (Mw_with_persisting_t.Subclass fw) mn=
+  Mw_with_dependencies.ancestors_for_module fw mn;;
+
+let below (Mw_with_persisting_t.Subclass fw) mn =
+    Mw_with_dependencies.below fw mn ;;
+
+let check_that_no_change_has_occurred (Mw_with_persisting_t.Subclass fw)= 
+    Mw_file_watcher.check_that_no_change_has_occurred fw ;;
+
+let clean_debug_dir (Mw_with_persisting_t.Subclass fw) = Mw_with_batch_compilation.clean_debug_dir fw ;;
+
+
+let clean_exec_dir (Mw_with_persisting_t.Subclass fw) = Mw_with_batch_compilation.clean_exec_dir fw ;;
+
+let decipher_module (Mw_with_persisting_t.Subclass fw) mn=
+    Mw_with_dependencies.decipher_module fw mn;;
+
+let decipher_path (Mw_with_persisting_t.Subclass fw) path=
+    Mw_with_dependencies.decipher_path fw path;;    
+
+let direct_fathers_for_module (Mw_with_persisting_t.Subclass fw) mn =
+    Mw_with_dependencies.direct_fathers_for_module fw mn ;;
+
+let directly_below (Mw_with_persisting_t.Subclass fw) mn =
+    Mw_with_dependencies.directly_below fw mn ;;
+
+let duplicate_module (Mw_with_persisting_t.Subclass fw) old_t1 old_t2=
+  Mw_with_dependencies.duplicate_module fw old_t1 old_t2 ;;
+
+let endingless_at_module (Mw_with_persisting_t.Subclass fw) mn=
+  Mw_with_dependencies.endingless_at_module fw mn;;
+
+let find_subdir_from_suffix (Mw_with_persisting_t.Subclass fw) possibly_slashed_suffix =
+    Mw_with_dependencies.find_subdir_from_suffix fw possibly_slashed_suffix ;; 
+
+let forget_modules (Mw_with_persisting_t.Subclass fw) mods= 
+Mw_with_persisting_t.Subclass(Mw_with_githubbing.forget_modules fw mods);;
+
+let forget_nonmodular_rootlesses (Mw_with_persisting_t.Subclass fw) rls= 
+Mw_with_persisting_t.Subclass(
+  Mw_with_githubbing.forget_nonmodular_rootlesses fw rls);;
+
+let gitpush_after_backup (Mw_with_persisting_t.Subclass fw) = 
+   Mw_poly.gitpush_after_backup fw ;;
+
+let latest_changes (Mw_with_persisting_t.Subclass fw) =
+    Mw_with_archives.latest_changes fw ;;
+
+let list_values_from_module (Mw_with_persisting_t.Subclass fw) mn =
+    Mw_with_dependencies.list_values_from_module fw mn ;;
+
+let modules_using_value (Mw_with_persisting_t.Subclass fw) value_name =
+    Mw_with_dependencies.modules_using_value fw value_name ;;
+
+let noncompilable_files (Mw_with_persisting_t.Subclass fw) = 
+   Mw_with_archives.noncompilable_files fw ;;
+
+let number_of_modules (Mw_with_persisting_t.Subclass fw) = 
+   Mw_with_dependencies.number_of_modules fw ;;
+
+let register_rootless_paths (Mw_with_persisting_t.Subclass fw) rootless_paths = 
+  Mw_with_persisting_t.Subclass(
+    Mw_with_githubbing.register_rootless_paths fw rootless_paths);;
+
+let relocate_module_to (Mw_with_persisting_t.Subclass fw) mod_name new_subdir = 
+  Mw_with_persisting_t.Subclass(
+      Mw_with_githubbing.relocate_module_to fw mod_name new_subdir);;
+
+let rename_module (Mw_with_persisting_t.Subclass fw) old_middle_name new_nonslashed_name = 
+    Mw_with_persisting_t.Subclass(
+      Mw_with_githubbing.rename_module fw old_middle_name new_nonslashed_name);;
+
+let rename_subdirectory_as (Mw_with_persisting_t.Subclass fw) subdir_pair = 
+    Mw_with_persisting_t.Subclass(
+      Mw_with_githubbing.rename_subdirectory_as fw subdir_pair);;
+
+let replace_string (Mw_with_persisting_t.Subclass fw) old_s new_s = 
+        Mw_with_persisting_t.Subclass(
+          Mw_with_githubbing.replace_string fw old_s new_s);;
+
+let replace_value (Mw_with_persisting_t.Subclass fw) data = 
+  Mw_with_persisting_t.Subclass(
+    Mw_with_githubbing.replace_value fw data);;
+
+let root (Mw_with_persisting_t.Subclass fw) = Mw_poly.root fw ;;
+
+let set_gitpush_after_backup (Mw_with_persisting_t.Subclass fw) gab= 
+Mw_with_persisting_t.Subclass(
+  Mw_poly.set_gitpush_after_backup fw gab);;
+
+let show_value_occurrences (Mw_with_persisting_t.Subclass fw) mn = 
+  Mw_with_dependencies.show_value_occurrences fw mn ;;  
+
+let start_debugging (Mw_with_persisting_t.Subclass fw) =
+  Mw_with_batch_compilation.start_debugging fw ;;
+
+let start_executing (Mw_with_persisting_t.Subclass fw) short_path=
+ Mw_with_batch_compilation.start_executing fw short_path ;;
+
+let overwrite_file_if_it_exists (Mw_with_persisting_t.Subclass fw) pair =  
+   Mw_with_dependencies.overwrite_file_if_it_exists fw pair ;;
+
+let usual_compilable_files (Mw_with_persisting_t.Subclass fw) = 
+    Mw_with_archives.usual_compilable_files fw ;;
+ 
+
+let usual_recompile (Mw_with_persisting_t.Subclass fw) opt_comment=
+Mw_with_persisting_t.Subclass(
+  Mw_with_githubbing.usual_recompile fw opt_comment);;
+
+
+end ;;  
+
+let persist (Mw_with_persisting_t.Subclass fw)= Common.save_all fw;;
+let read_persistent_version (Mw_with_persisting_t.Subclass fw) = 
+  Mw_with_persisting_t.Subclass(Common.read_persistent_version fw);;
 

@@ -3,7 +3,7 @@
 *)
 
 
-let unsharped_content hm=
+(* let unsharped_content hm=
     let mlx=Dfn_join.to_ending hm Dfa_ending.ml in
     let ap_ml=Dfn_full.to_absolute_path mlx in
     let naive_content=Io.read_whole_file ap_ml in
@@ -48,7 +48,7 @@ let self_contained_module_copy prefix hm=
       let name=String.capitalize_ascii(Dfa_module.to_line new_mname) in
       "module "^name^"=struct "^txt^" end"^Particular_string.double_semicolon
    ) temp2 in    
-   String.concat "\n\n\n" temp3;;
+   String.concat "\n\n\n" temp3;; *)
 
 
 
