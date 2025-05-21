@@ -1,14 +1,572 @@
 (************************************************************************************************************************
-Snippet 170 : 
+Snippet 171 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 169 : Use the tesseract command on many files
+Snippet 170 : Finish an OCR job, and use Coherent_pdf.corep_cuttable_transform
 ************************************************************************************************************************)
 
+module Snip170=struct
+
+  let dir2 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Text" ;;
+
+  let v1 = Unix_again.quick_beheaded_complete_ls dir2 ;; 
+  
+  let v2 = List.filter (fun fn->
+    (String.ends_with ~suffix:".txt" fn)&&
+    (List.for_all (fun patt->
+      not(String.ends_with ~suffix:("_"^patt^".txt") fn)  
+    ) ["a"]) ) v1 ;; 
+  
+  let bad_in_v2 = List.filter (fun fn->String.contains fn '-' ) v2 ;; 
+  
+  type barley = B of int * bool * int * string ;;
+  
+  let barley_of_filename fn = 
+     let base = Cull_string.coending 4 fn in 
+     let (naive_page_number,idx_in_page) = (
+     match String.index_opt base '_' with 
+     None -> (int_of_string(Cull_string.cobeginning 1 base),1)
+     |Some sep ->
+       (int_of_string(Cull_string.interval base 2 sep),
+        int_of_string(Cull_string.cobeginning (sep+1) base))
+     ) in 
+     let c = String.get base 0 in 
+     let page_number_offset = List.assoc c [
+        'u',0;'v',100;'w',200;
+        'n',0;'m',100;'l',200;
+     ] 
+     and is_in_a_footnote = (List.mem c ['n';'m';'l']) in 
+     B(naive_page_number+page_number_offset,is_in_a_footnote,idx_in_page,fn) ;;    
+  
+  let barley_of_filename2 fn =
+    try barley_of_filename fn with _ ->failwith fn ;;
+  
+  let unordered_barleys = Image.image barley_of_filename2 v2 ;; 
+  
+  let barley_order = ((
+    fun (B(p1,is_in_a_footnote1,idx1,_fn1))
+     (B(p2,is_in_a_footnote2,idx2,_fn2)) ->
+    let trial1 = Total_ordering.for_integers p1 p2 in 
+    if trial1<> Total_ordering_result_t.Equal then trial1 else 
+    let trial2 = Total_ordering.standard is_in_a_footnote1 is_in_a_footnote2 in 
+    if trial2<> Total_ordering_result_t.Equal then trial2 else 
+    Total_ordering.for_integers idx1 idx2  
+  ) : barley Total_ordering_t.t);;
+  
+  let barleys = Ordered.sort barley_order unordered_barleys ;;
+  
+  let page_set = 
+    Ordered.sort Total_ordering.for_integers
+    (Image.image (fun (B(p,_,_,_))->p) barleys) ;;
+  
+  let related_barleys page_number = 
+     let temp1 = List.filter (
+       fun (B(p,_,_,_))->p=page_number
+     ) barleys in 
+     List.partition (fun (B(_,is_in_footnote,_,_))->is_in_footnote)temp1 ;;
+  
+  let largest_page_number = List.hd (List.rev page_set) ;;
+  
+  let related_barleys_for_all_pages = 
+     Int_range.scale (fun p->
+       (p,related_barleys p)
+    ) 1 largest_page_number ;; 
+  
+  let very_long_footnotes = Max.maximize_it_with_care (fun (b,(l1,l2))->
+     List.length l1  
+  ) related_barleys_for_all_pages ;; 
+  
+  let long_footnotes = List.filter (fun (b,(l1,l2))->
+     (List.length l1)>1  
+  ) related_barleys_for_all_pages ;; 
+  
+  
+  let check1 = Ordered.sort Total_ordering.silex_for_intlists (Image.image (fun (p,(l1,l2))->
+      Image.image (fun 
+      (B(_,_,idx,_))-> idx 
+      ) l1
+      ) related_barleys_for_all_pages) ;;
+  
+  let check2 = Ordered.sort Total_ordering.silex_for_intlists (Image.image (fun (p,(l1,l2))->
+      Image.image (fun 
+      (B(_,_,idx,_))-> idx 
+      ) l2
+      ) related_barleys_for_all_pages) ;;
+  
+  let insert_at_all_lines (left,right) text =
+     let old_lines = Lines_in_string.lines text in 
+     let young_lines = Image.image (
+      fun line -> 
+        if List.mem (Cull_string.trim_spaces line) 
+          ["";"«";"<";"L";"€"]
+        then ""  
+        else left ^ line ^ right
+     ) old_lines in 
+     String.concat "\n" young_lines ;;
+  
+  let remove_unusable_lines text =
+     let old_lines = Lines_in_string.lines text in 
+     let young_lines = List.filter (
+      fun line -> 
+        not(List.mem (Cull_string.trim_spaces line) 
+          ["";"«";"<";"L";"€"])
+     ) old_lines in 
+     String.concat "\n" young_lines ;;   
+  
+  let geometry_from_page_number page_number =
+    if page_number mod 2 = 0 
+    then "\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=24cm}\n"
+    else "\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=24cm}\n";;    
+  
+  let pages_without_numbering = [
+     1;14;15;53;98;180;210;234;244;245;247
+  ] ;;
+  
+  let lines_for_page_numbering page_number = 
+    if List.mem page_number pages_without_numbering
+    then ""
+    else 
+    "\\centerline{-"^(string_of_int page_number) ^"-}\n" ^
+    "\\bigskip\n" ^ 
+    "\\noindent ";;  
+  
+  let extract_contents l = String.concat "\n\n\n" (Image.image (fun 
+      (B(_,_,_,fn))-> Io.read_whole_file 
+      (Absolute_path.of_string(dir2^"/"^fn)) 
+      ) l );;
+     
+  
+  let contents_for_all_pages = Image.image (fun (p,(l1,l2))->
+     (p,
+     let footnote_content = 
+      remove_unusable_lines(insert_at_all_lines ("\\indent","\\newline\n") (extract_contents l1))
+     and nonfootnote_content = insert_at_all_lines ("","\\linebreak") (extract_contents l2) in 
+     (footnote_content,nonfootnote_content)) 
+      ) related_barleys_for_all_pages ;;    
+  
+  let precomputed_pages = [
+     49;87;150;240
+  ];;
+  
+  let building_site = home ^ "/Teuliou/html_files/Translations/Building_site2/" ;;
+  
+  let content_for_precomputed_page page_number = 
+    let ap = Absolute_path.of_string (
+      building_site ^ 
+      "p" ^ (string_of_int page_number) ^ ".txt"
+    ) in 
+    Io.read_whole_file ap ;;
+  
+  
+  let total_page_content 
+    (page_number,(footnote_content,nonfootnote_content)) = 
+    if List.mem page_number precomputed_pages
+    then content_for_precomputed_page page_number
+    else     
+    let footnote_part = (
+      if footnote_content = ""
+      then ""
+      else "\n"^
+           Check_ocr.separator_announcing_basic_footer^ 
+          "\n\\normalsize\n"^ 
+          "\\rule{3cm}{0.4pt}\\linebreak\n"^
+          "\\bigskip\n\n"^
+          footnote_content^
+          "\n"
+    ) in    
+    ("%\n% Page "^(string_of_int page_number)^" \n%\n")^
+    (geometry_from_page_number page_number)^
+    "\\large\n"^
+    "\\newpage\n"^ 
+    (lines_for_page_numbering page_number) ^
+    nonfootnote_content ^ footnote_part ;;  
+  
+  let contents_for_restricted_pages = List.filter (
+     fun (p,_) -> (p > 57) && (p< 245)
+  ) contents_for_all_pages ;;
+  
+  let total_book_content = 
+    String.concat "\n"
+     (Image.image total_page_content contents_for_restricted_pages)  ;;  
+  
+  let emptiable_ap = Absolute_path.of_string (building_site ^ "emptiable_bv.txt") ;;
+  
+  let write_book () = Io.overwrite_with emptiable_ap total_book_content;;
+  
+  let building_site = home ^ "/Teuliou/html_files/Translations/Building_site2/" ;;
+let tex_site = home ^ "/Teuliou/LaTeX/Brouilhedou/" ;;
+
+let emptiable_ap = Absolute_path.of_string (building_site ^ "emptiable_bv.txt")
+let polished_ap = Absolute_path.of_string (tex_site ^ "bonvallet.tex")
+let walker_ap = Absolute_path.of_string (tex_site ^ "walker.tex") ;;
+
+let last_walker_copy_ap = Absolute_path.of_string (building_site ^ "walker.txt")
+let backup_copy = Absolute_path.of_string (building_site ^ "bonvallet.txt")
+
+let do_backup () =
+   Io.overwrite_with backup_copy (Io.read_whole_file polished_ap) ;;
+
+let markers_in_walker_file = 
+    ("%Moving part starts here\n\n","\n\n%Moving part ends here") ;;
+
+let write_to_walker text =
+   Replace_inside.overwrite_between_markers_inside_file
+     ~overwriter:text 
+     markers_in_walker_file walker_ap ;;
+
+let read_from_walker () =
+    Cull_string.between_markers 
+    markers_in_walker_file (Io.read_whole_file walker_ap) ;;
+
+let ref_for_expected_action = ref None ;;
+
+let is_a_digit c = List.mem c 
+    ['0'; '1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'];;
+
+let is_not_a_digit c = not(is_a_digit c) ;;
+
+let seek_positive_integer_at_index text idx =
+    if (idx<0)||(idx > (String.length text)) then None else 
+    let c = String.get text (idx-1) in 
+    if is_not_a_digit c then None else  
+    let j_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit text idx in 
+    let next_idx = (match j_opt with None -> (String.length text)+1 | Some j -> j) in 
+    let written_integer = int_of_string(Cull_string.interval text idx (next_idx-1)) in 
+    Some(written_integer,next_idx) ;;   
+
+let seek_substring_at_index substr text idx = 
+    if Substring.is_a_substring_located_at substr text idx 
+    then Some(idx+(String.length substr))
+    else None ;; 
+    
+let seek_naive_reference_at_index text idx =     
+  match seek_substring_at_index "(" text idx with 
+  None -> None 
+  | Some idx2 -> 
+     (
+      match seek_positive_integer_at_index text idx2 with 
+           None -> None 
+           | Some(written_integer,idx3) -> 
+      (match seek_substring_at_index ")" text idx3 with 
+      None -> None 
+      | Some idx4 -> Some(written_integer,idx4)
+     ));;
+
+let has_naive_reference line =
+   match Substring.leftmost_index_of_in_from_opt "(" line 1 with 
+   None -> false 
+   |Some idx -> (seek_naive_reference_at_index line idx) <> None;;
+
+let idx_of_last_nonempty_line indexed_lines = 
+  let temp = List.rev indexed_lines in    
+  fst(List.find (fun (_,line) ->Cull_string.trim_spaces line <> "") temp);;
+
+let string_ends_with s t =
+    let ls=String.length s 
+    and lt=String.length t in 
+    if lt > ls then false else 
+    (Cull_string.ending lt s) = t;;  
+
+let string_before_line_ender s =
+    match List.find_opt(string_ends_with s)
+      ["\\linebreak";"\\newline"] with 
+    None -> s 
+    |Some ender -> Cull_string.coending (String.length ender) s ;;
+      
+(*
+
+string_before_line_ender "123\\linebreak" ;;
+string_before_line_ender "456\\newline" ;;
+
+*)
+
+      
+let deal_with_line_ending inserted_ender trimmed_line =
+   if List.exists (fun p->String.starts_with trimmed_line ~prefix:p) [
+     "%";"\\newgeometry";"\\large";"\\newpage";"\\centerline";
+     "\\bigskip";"\\varthreestars"
+   ]
+   then trimmed_line
+   else (string_before_line_ender trimmed_line) ^ inserted_ender ;;
+   
+let deal_with_line_endings_in_paragraph special_treatment_for_last_line text = 
+   let nonempty_lines = Lines_in_string.lines text in 
+   if not special_treatment_for_last_line 
+   then String.concat "\n" 
+         (Image.image (deal_with_line_ending "\\linebreak")  nonempty_lines)
+   else 
+   let indexed_nonempty_lines = Int_range.index_everything nonempty_lines 
+   and m = List.length nonempty_lines in
+   let modifier = (
+      fun (line_idx,line) -> 
+         let ender = if line_idx=m then "\\newline" else "\\linebreak" in 
+         deal_with_line_ending ender line
+   ) in 
+   String.concat "\n" 
+   (Image.image modifier  indexed_nonempty_lines) ;;
+
+
+
+let rewrite_main_text main_text =
+   let indexed_mt_lines = Lines_in_string.indexed_lines main_text in 
+   let line_is_a_paragraph_closer =  (
+     fun (line_idx,line) -> 
+      match List.assoc_opt (line_idx+1) indexed_mt_lines with
+       None -> false 
+       |Some next_line -> Cull_string.trim_spaces next_line = ""
+   )  in  
+   let last_line_idx = idx_of_last_nonempty_line indexed_mt_lines in
+   let new_mt_lines = Image.image (
+     fun pair -> 
+      let (line_idx,line) = pair in 
+      let trimmed_line = Cull_string.trim_spaces line in
+      if trimmed_line = ""
+      then line 
+      else   
+      if line_idx=last_line_idx 
+      then let ender = (
+             if String.ends_with (string_before_line_ender trimmed_line) ~suffix:"."
+             then "\\newline"
+             else "\\linebreak" 
+           ) in 
+           deal_with_line_ending ender line 
+      else          
+      if (line_is_a_paragraph_closer pair)
+      then deal_with_line_ending "\\newline" line 
+      else deal_with_line_ending "\\linebreak" line 
+   ) indexed_mt_lines in 
+   String.concat "\n" new_mt_lines ;;
+
+let rewrite_footer footer =
+   let footer_lines = Lines_in_string.indexed_lines footer in 
+   let lines_for_new_footnotes = List.filter_map (
+     fun (line_idx,line) -> 
+      if has_naive_reference line then Some line_idx else None  
+   ) footer_lines in  
+   let line_is_not_a_paragraph_closer =  (
+     fun (line_idx,line) -> 
+      match List.assoc_opt (line_idx+1) footer_lines with
+       None -> false (* we cannot know a priori if the last line is
+                continued on the next page or not,
+                but the most common case is that it is not continued
+               *)
+       |Some next_line -> (Cull_string.trim_spaces next_line) <> ""
+   )  in  
+   let new_footer_lines = Image.image (
+     fun pair -> 
+      let (line_idx,line) = pair in
+      let possible_actions = [
+        not(List.mem line_idx lines_for_new_footnotes),
+           ("\\indent",""); 
+        (not(List.mem (line_idx+1) lines_for_new_footnotes))
+         &&(line_is_not_a_paragraph_closer pair), 
+            ("\\newline","\\linebreak");  
+      ] in 
+      let effective_actions = List.filter_map (
+         fun (should_do,action) -> if should_do then Some action else None
+      ) possible_actions in  
+      Replace_inside.replace_several_inside_string effective_actions line
+   ) footer_lines in 
+   Replace_inside.replace_several_inside_string 
+     [("\\newline\n\\indent","\\newline\n\n\n\\indent");
+      ",\\newline",".\\newline"]
+   (String.concat "\n" new_footer_lines) ;;
+
+let rewrite_full_text full_text =
+   let sep = Check_ocr.separator_announcing_basic_footer in 
+   match Substring.leftmost_index_of_in_from_opt 
+      sep full_text 1 with 
+   None -> rewrite_main_text full_text 
+   |Some sep_idx -> 
+   let main_text = Cull_string.beginning (sep_idx-1) full_text 
+   and footer = Cull_string.cobeginning (sep_idx+(String.length sep)) full_text in 
+   let new_main_text = rewrite_main_text main_text 
+   and new_footer = rewrite_footer footer in 
+   new_main_text^sep^"\n"^new_footer ;;
+
+let put_first_page_on_walker () =
+  if !ref_for_expected_action = Some "officialize"
+  then
+    failwith
+      "You just pushed a page. You need to officialize it before putting another page"
+  else (
+    let (first_page, new_text1) =
+      Percent_pagination.extract_first_page_in_file emptiable_ap
+    in
+    do_backup();
+    Io.overwrite_with emptiable_ap new_text1;
+    Io.overwrite_with last_walker_copy_ap (Io.read_whole_file walker_ap);
+    write_to_walker (rewrite_full_text first_page);
+    ref_for_expected_action := Some "officialize")
+;;
+
+let markers_in_polished_file = 
+    ("%Core starts here","%Core ends here") ;;
+let officialize () =
+  if !ref_for_expected_action = Some "push page"
+  then failwith "You just officialized a page. No need to officialize it a second time"
+  else (
+    let walker_text = read_from_walker () in
+    let _ = Check_ocr.check_basic_footnotes_on_page walker_text in
+    let old_core = Cull_string.between_markers
+       markers_in_polished_file (Io.read_whole_file polished_ap) in
+    let new_core = old_core ^ "\n\n" ^ walker_text in
+    Replace_inside.overwrite_between_markers_inside_file
+      ~overwriter:new_core markers_in_polished_file polished_ap;
+    do_backup();
+    ref_for_expected_action := Some "push page")
+;;
+
+
+let this_ap =
+  Absolute_path.of_string
+    (home ^ "/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/bonvallet.ml")
+;;
+
+Incremental_replace_on_a_set_of_files.set_replacements_datafile this_ap
+
+let beginning_marker = "(" ^ "* Replacements begin here *)"
+let end_marker = "(" ^ "* Replacements end here *)";;
+
+Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker;;
+Incremental_replace_on_a_set_of_files.set_receiving_files [ emptiable_ap; walker_ap ]
+
+let check_pages_and_footnotes () = 
+   let core = Cull_string.between_markers
+       markers_in_polished_file (Io.read_whole_file polished_ap) in 
+  Check_ocr.check_basic_footnotes_on_all_pages core
+;;
+
+
+
+let adjust_linebreaks () = 
+   let old_text = read_from_walker () in 
+   let new_text = rewrite_full_text old_text in 
+   write_to_walker new_text ;;   
+
+let improve_line_endings ?(special_treatment_for_last_line=true) i j =
+   Lines_in_string.modify_interval_inside_file
+   (deal_with_line_endings_in_paragraph special_treatment_for_last_line) 
+    walker_ap i j ;;
+
+let ile = improve_line_endings ;;
+
+let jle = improve_line_endings ~special_treatment_for_last_line:false;;
+
+let kle = List.iter (fun j->ile j j) ;;
+
+(* Replacements begin here *)
+
+
+let replacements = [
+   (", A",". A");
+   (", C",". C");
+   (", D",". D");
+   (", E",". E");
+   (", I",". I");
+   (", L",". L");
+   (", M",". M");
+   (", N",". N");
+   (", O",". O");
+   (", P",". P");
+   (", S",". S");
+   (", T",". T");
+   (", U",". U");
+   ("\195\128.","A.");
+   ("\226\128\153","'");
+   (" ct "," et ");
+   ("Tbid","Ibid");
+   ("co!l.","col.");
+   ("Kbid,","Ibid.,");
+   (" col, "," col. ");
+   ("A L V,","A. L. V.");
+   ("A L V.","A. I. V.");
+   ("Fbid.,","Ibid.,");
+   ("Ihid.,","Ibid.,");
+   (" luite "," lutte ");
+   ("A 1, V.","A. I. V.");
+   ("A 1. V.","A. I. V.");
+   ("A I, V.","A. I. V.");
+   ("A T, V.","A. I. V.");
+   ("A T. V.","A. I. V.");
+   ("A. ! V.","A. I. V.");
+   ("A. L V,","A. I. V.");
+   ("A. L V.","A. I. V.");
+   ("A. T V.","A. I. V.");
+   ("A, 1, V.","A. I. V.");
+   ("A, 1. V.","A. I. V.");
+   ("A. 1. V.","A. I. V.");
+   ("A. I, V.","A. I. V.");
+   ("A. L, V.","A. I. V.");
+   ("A. L. V.","A. I. V.");
+   ("A. T, V.","A. I. V.");
+   ("A. T. V.","A. I. V.");
+   ("Depping. ","Depping, ");
+   ("Manuserit","Manuscrit");
+   ("Morice. P","Morice, P");
+   ("Preuves. ","Preuves, ");
+   ("De Bouetiez","Du Bouetiez");
+   ("R\195\169billon. ","R\195\169billon, ");
+   ("Martini\195\168re. L","Martini\195\168re, L");
+   ("\\varthreestars\\newline","\\varthreestars");
+];;
+
+
+(* Replacements end here *)
+
+Incremental_replace_on_a_set_of_files.initialize_replacements replacements
+
+(*
+   On startup, you can make a few clean-up initializations as follows :
+*)
+
+
+let p = put_first_page_on_walker
+let o = officialize
+
+let op () =
+  o ();
+  p ()
+;;
+
+let r (a, b) = Incremental_replace_on_a_set_of_files.add_new_replacement (a, b)
+let f = check_pages_and_footnotes ;;
+
+let enforce_replacements () = Chronometer.it Incremental_replace_on_a_set_of_files.apply_all ()
+
+let after1_ap = Absolute_path.of_string 
+(building_site ^ "bonvallet_after_part1.txt") ;;
+let act () =
+Lines_in_string.remove_interval_in_file after1_ap 5 4933;;
+
+
+let part1_ap = Absolute_path.of_string 
+(building_site ^ "bonvallet_part1.txt") ;;
+let act () =
+Lines_in_string.remove_interval_in_file part1_ap 2247 2308;;
+
+let part2_ap = Absolute_path.of_string 
+(building_site ^ "bonvallet_part2.txt") ;;
+
+let act () =
+Lines_in_string.remove_interval_in_file part2_ap 5656 10818;;
+
+let part3_ap = Absolute_path.of_string 
+(building_site ^ "bonvallet_part3.txt") ;;
+let act () =
+Lines_in_string.remove_interval_in_file part3_ap 15 10583;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 169 : Use the tesseract command on many files
+************************************************************************************************************************)
 module Snip169=struct
 
 let dir1 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Action" ;;
@@ -221,6 +779,9 @@ ap1 ~outputfile_name:"contraventions"
 let act5 () = Coherent_pdf.corep_foldable_transform
 ap1 ~outputfile_name:"first_page_contraventions"
 ;;
+
+let ap2 = Absolute_path.of_string 
+"~/Teuliou/Heavy/bonvallet_remasterised.pdf";;
 
 
 end ;;
