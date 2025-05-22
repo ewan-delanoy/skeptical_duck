@@ -117,9 +117,8 @@ at_char_intervals_inside_text "12345678901234567890" [(3,5),"right";(12,17),"aga
 
 *)         
 
-let comment_out_between_markers_inside_text (bm,em)
-   s1=
-     let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+let comment_out_between_markers_inside_text (bm,em) text=
+     let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) text in
      let (opener,closer) = Private.pair_for_commenting_or_uncommenting in 
      before^bm^opener^between^closer^em^after ;; 
 
@@ -128,28 +127,27 @@ let comment_out_between_markers_inside_file (bm,em) fn =
   let new_text=comment_out_between_markers_inside_text (bm,em) old_text in
   Io.overwrite_with fn new_text;; 
 
-let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
-   s1=
+let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) text=
      if (bm,em)=("","") then b else
-      let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+      let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) text in
       before^bm^b^em^after ;; 
      
 let overwrite_and_dump_markers_inside_file 
 ~overwriter:b (bm,em)
    fn =
-    let s1=Io.read_whole_file fn in
-    let s2=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) s1 in
-    Io.overwrite_with fn s2;;      
+    let old_text=Io.read_whole_file fn in
+    let new_text=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) old_text in
+    Io.overwrite_with fn new_text;;      
  
 (* 
 
 
- overwrite_between_markers_inside_string
+ overwrite_between_markers_inside_text
   (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;    
    
-overwrite_and_dump_markers_inside_string
+overwrite_and_dump_markers_inside_text
   (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;       
@@ -157,43 +155,41 @@ overwrite_and_dump_markers_inside_string
      
 *)
 
-let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
-   s1=
+let overwrite_between_markers_inside_string ~overwriter:b (bm,em) text=
      if (bm,em)=("","") then b else
-     let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+     let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) text in
      before^bm^b^em^after ;; 
      
 let overwrite_between_markers_inside_file 
    ~overwriter:b (bm,em)
    fn =
-    let s1=Io.read_whole_file fn in
-    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
-    Io.overwrite_with fn s2;;      
+    let old_text=Io.read_whole_file fn in
+    let new_text=overwrite_between_markers_inside_string ~overwriter:b (bm,em) old_text in
+    Io.overwrite_with fn new_text;;      
 
 
-let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) s=
-  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ;;
+let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
+  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) text ;;
  
 let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
 (fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
  
 let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
-    let s1=Io.read_whole_file fn in
+    let old_text=Io.read_whole_file fn in
     let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) s1 in
-         Io.overwrite_with fn s2
+    if List.exists (fun j->(String.sub old_text j la)=a) (Int_range.range 0 ((String.length old_text)-la))
+    then let new_text=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) old_text in
+         Io.overwrite_with fn new_text
     else ();; 
 
 
 let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
-    let s1=Io.read_whole_file fn in
-    let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
-    Io.overwrite_with fn s2;; 
+    let old_text=Io.read_whole_file fn in
+    let new_text=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l old_text  in
+    Io.overwrite_with fn new_text;; 
 
-let uncomment_between_markers_inside_string (bm,em)
-    s1=
-      let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+let uncomment_between_markers_inside_string (bm,em) text=
+      let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) text in
       before^bm^(
        Cull_string.two_sided_cutting Private.pair_for_commenting_or_uncommenting  
       between)^em^after ;; 
