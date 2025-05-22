@@ -91,41 +91,40 @@ my_global_replace ("uv","w") "1uvuv2";;
 
 end ;;
 
+let at_char_intervals_inside_string s l=
+  if l=[] then s else
+  let n=String.length s in
+  let temp1=List_again.universal_delta_list l 
+  and ((i_first,_),_)=List.hd(l)
+  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
+  let temp2=Image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
+      rep1^(String.sub s j1 (i2-j1-1))
+  ) temp1 in
+  let first_part=(String.sub s 0 (i_first-1))
+  and last_part=rep_last^(String.sub s j_last (n-j_last)) in
+  first_part^(String.concat "" temp2)^last_part;;
 
+let at_char_intervals_inside_file 
+  fn l=
+   let s1=Io.read_whole_file fn in
+   let s2=at_char_intervals_inside_string s1 l in
+   Io.overwrite_with fn s2;;     
 
-let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) s=
-  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ;;
- 
-let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
- 
-let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
-    let s1=Io.read_whole_file fn in
-    let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) s1 in
-         Io.overwrite_with fn s2
-    else ();; 
+(*    
 
+at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
-let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
-    let s1=Io.read_whole_file fn in
-    let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
-    Io.overwrite_with fn s2;; 
+*)         
 
-let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
+let comment_out_between_markers_inside_string (bm,em)
    s1=
-     if (bm,em)=("","") then b else
-     let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
-     before^bm^b^em^after ;; 
-     
-let overwrite_between_markers_inside_file 
-   ~overwriter:b (bm,em)
-   fn =
-    let s1=Io.read_whole_file fn in
-    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
-    Io.overwrite_with fn s2;;      
+     let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+     before^bm^"\n(*\n"^between^"\n*)\n"^em^after ;; 
 
+let comment_out_between_markers_inside_file (bm,em) fn =
+  let old_text=Io.read_whole_file fn in
+  let new_text=comment_out_between_markers_inside_string (bm,em) old_text in
+  Io.overwrite_with fn new_text;; 
 
 let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
    s1=
@@ -156,30 +155,40 @@ overwrite_and_dump_markers_inside_string
      
 *)
 
-let at_char_intervals_inside_string s l=
-  if l=[] then s else
-  let n=String.length s in
-  let temp1=List_again.universal_delta_list l 
-  and ((i_first,_),_)=List.hd(l)
-  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
-  let temp2=Image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
-      rep1^(String.sub s j1 (i2-j1-1))
-  ) temp1 in
-  let first_part=(String.sub s 0 (i_first-1))
-  and last_part=rep_last^(String.sub s j_last (n-j_last)) in
-  first_part^(String.concat "" temp2)^last_part;;
+let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
+   s1=
+     if (bm,em)=("","") then b else
+     let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+     before^bm^b^em^after ;; 
+     
+let overwrite_between_markers_inside_file 
+   ~overwriter:b (bm,em)
+   fn =
+    let s1=Io.read_whole_file fn in
+    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
+    Io.overwrite_with fn s2;;      
 
-let at_char_intervals_inside_file 
-  fn l=
-   let s1=Io.read_whole_file fn in
-   let s2=at_char_intervals_inside_string s1 l in
-   Io.overwrite_with fn s2;;     
 
-(*    
+let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) s=
+  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ;;
+ 
+let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
+(fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
+ 
+let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
+    let s1=Io.read_whole_file fn in
+    let la=String.length(a) in
+    if List.exists (fun j->(String.sub s1 j la)=a) (Int_range.range 0 ((String.length s1)-la))
+    then let s2=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) s1 in
+         Io.overwrite_with fn s2
+    else ();; 
 
-at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
-*)         
+let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
+    let s1=Io.read_whole_file fn in
+    let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
+    Io.overwrite_with fn s2;; 
+
 
 
 
