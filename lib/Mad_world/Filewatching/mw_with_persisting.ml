@@ -153,7 +153,7 @@ let plunge_fw_config_with_github_config fw_config github_config =
 
 end ;;  
 
-module Inherited = struct 
+ 
 
 let all_endinglesses (Mw_with_persisting_t.Subclass fw) =
   Mw_with_dependencies.all_endinglesses fw ;;
@@ -260,6 +260,12 @@ let start_executing (Mw_with_persisting_t.Subclass fw) short_path=
 let overwrite_file_if_it_exists (Mw_with_persisting_t.Subclass fw) pair =  
    Mw_with_dependencies.overwrite_file_if_it_exists fw pair ;;
 
+let persist (Mw_with_persisting_t.Subclass fw)= Common.save_all fw;;
+
+let read_persistent_version (Mw_with_persisting_t.Subclass fw) = 
+     Mw_with_persisting_t.Subclass(Common.read_persistent_version fw);;
+   
+  
 let usual_compilable_files (Mw_with_persisting_t.Subclass fw) = 
     Mw_with_archives.usual_compilable_files fw ;;
  
@@ -269,9 +275,5 @@ Mw_with_persisting_t.Subclass(
   Mw_with_githubbing.usual_recompile fw opt_comment);;
 
 
-end ;;  
 
-let persist (Mw_with_persisting_t.Subclass fw)= Common.save_all fw;;
-let read_persistent_version (Mw_with_persisting_t.Subclass fw) = 
-  Mw_with_persisting_t.Subclass(Common.read_persistent_version fw);;
 
