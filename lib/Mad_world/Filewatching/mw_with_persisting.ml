@@ -5,7 +5,9 @@
 *)
 
 (* Beginning of loose version of the genesis of Mw_with_persisting.t *)
+(*
 let a = 1 ;;
+*)
 (* End of loose version of the genesis of Mw_with_persisting.t *)
 
 (* Beginning of tight version of the genesis of Mw_with_persisting.t *)
