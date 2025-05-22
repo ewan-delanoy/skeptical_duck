@@ -4,10 +4,20 @@
 
 *)
 
+module Private = struct 
+
+   let interval s a b=String.sub s (a-1) (b-a+1);;
+   let leftmost_index_of_in_from_opt x y i=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   match Int_range.find_opt tester (i-1) (String.length(y)-lx) with
+      None->None
+     |Some(k)->Some(k+1);;
+
+end ;;   
 
 
-
-let interval s a b=String.sub s (a-1) (b-a+1);;
+let interval =Private.interval;;
 
 let neighborhood_with_center_and_size s i d=
    let a=max(1)(i-d)
@@ -112,6 +122,29 @@ let shortened_version max_length s =
    let j1=(n+1)-k1 in
    interval s i1 j1;;
 
+exception Absent_beginning_marker of string;;
+exception Absent_ending_marker of string;; 
+
+let tripartition_using_markers (bm,em) text =
+      let n = String.length text in 
+      match Private.leftmost_index_of_in_from_opt bm text 1 with 
+      None -> raise(Absent_beginning_marker(bm)) 
+      |Some i1 ->
+      let j1=i1+(String.length bm)-1 in
+      match Private.leftmost_index_of_in_from_opt em text (j1+1) with 
+      None -> raise(Absent_ending_marker(em)) 
+      |Some i2 ->
+      let j2=i2+(String.length em)-1 in
+      (interval text 1 (i1-1),
+       interval text (j1+1) (i2-1),
+       interval text (j2+1) n) ;; 
+
+(*
+
+tripartition_using_markers ("backdoor","man") "123backdoor45man678" ;;
+
+*)
+
 exception Two_sided_cutting_exn of int*int*int;;
 
 let two_sided_cutting (left_part,right_part) s=
@@ -130,8 +163,7 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 *)      
 
 
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
+
  
 let between_markers (bm,em) s=
      if (bm,em)=("","") then s else

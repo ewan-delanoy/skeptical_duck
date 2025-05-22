@@ -5,9 +5,19 @@
 *)
 
 exception Ambiguity of string*int*int;;
+exception Absent_beginning_marker of string;;
+exception Absent_ending_marker of string;; 
+
 
 module Private = struct 
-
+ 
+  let substring_leftmost_index_from=(fun x y i0->
+    let lx=String.length(x) and ly=String.length(y) in
+    let rec tempf=(fun j->
+      if j>ly-lx then (-1) else 
+      if (String.sub y j lx)=x then j else (tempf(j+1))
+    ) in
+    tempf i0) ;;
 (*
 
 The my_global_replace function below is a replacement for Ocaml's Str.global_replace which has
@@ -15,7 +25,7 @@ the disadvantage of applying certain transforms to the replacement string.
 
 *)
 
-  let single_char_special_case (single_c,b) s=
+let single_char_special_case (single_c,b) s=
   let n=String.length(s) and counter=ref(0) in
   let temp1=Int_range.scale (
      fun j->let c=String.get s j in
@@ -79,6 +89,8 @@ my_global_replace ("uv","w") "1uvuv2";;
 
 *)  
 
+
+
 end ;;
 
 
@@ -103,23 +115,13 @@ let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_a
     let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
     Io.overwrite_with fn s2;; 
 
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
- 
 let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
    s1=
      if (bm,em)=("","") then b else
-     let substring_leftmost_index_from=(fun x y i0->
-      let lx=String.length(x) and ly=String.length(y) in
-      let rec tempf=(fun j->
-        if j>ly-lx then (-1) else 
-        if (String.sub y j lx)=x then j else (tempf(j+1))
-      ) in
-      tempf i0) in
-     let i1=substring_leftmost_index_from bm s1 0 in
+     let i1=Private.substring_leftmost_index_from bm s1 0 in
      if i1=(-1) then raise(Absent_beginning_marker(bm)) else
      let j1=i1+(String.length bm)-1 in
-     let i2=substring_leftmost_index_from em s1 (j1+1) in
+     let i2=Private.substring_leftmost_index_from em s1 (j1+1) in
      if i2=(-1) then raise(Absent_ending_marker(em)) else
      let before=String.sub s1 0 (j1+1)
      and after=String.sub s1 i2 (String.length(s1)-i2) 
@@ -137,17 +139,10 @@ let overwrite_between_markers_inside_file
 let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
    s1=
      if (bm,em)=("","") then b else
-     let substring_leftmost_index_from=(fun x y i0->
-      let lx=String.length(x) and ly=String.length(y) in
-      let rec tempf=(fun j->
-        if j>ly-lx then (-1) else 
-        if (String.sub y j lx)=x then j else (tempf(j+1))
-      ) in
-      tempf i0) in
-     let i1=substring_leftmost_index_from bm s1 0 in
+     let i1=Private.substring_leftmost_index_from bm s1 0 in
      if i1=(-1) then raise(Absent_beginning_marker(bm)) else
      let j1=i1+(String.length bm)-1 in
-     let i2=substring_leftmost_index_from em s1 (j1+1) in
+     let i2=Private.substring_leftmost_index_from em s1 (j1+1) in
      if i2=(-1) then raise(Absent_ending_marker(bm)) else
      let corrected_i2=i2+(String.length bm)-1 in
      let before=String.sub s1 0 i1
