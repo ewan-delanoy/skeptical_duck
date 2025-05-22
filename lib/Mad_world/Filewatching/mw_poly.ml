@@ -183,13 +183,13 @@ let origin = {
 module Type_information = struct 
 let fields_for_instances = [
 "Mw_configuration" , ["root";"ignored_subdirectories";"ignored_files"];
-"File_watcher" , ["root";"ignored_subdirectories";"ignored_files";"watched_files"];
+"Mw_file_watcher" , ["root";"ignored_subdirectories";"ignored_files";"watched_files"];
 "Mw_with_archives" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files"];
 "Mw_with_small_details" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files"];
 "Mw_with_dependencies" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching"];
 "Mw_with_batch_compilation" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching";"last_compilation_result_for_module"];
 "Mw_with_githubbing" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching";"last_compilation_result_for_module";"dir_for_backup";"gitpush_after_backup";"github_url";"encoding_protected_files"];
-"Github_configuration" , ["root";"dir_for_backup";"gitpush_after_backup";"github_url";"encoding_protected_files"]
+"Mw_github_configuration" , ["root";"dir_for_backup";"gitpush_after_backup";"github_url";"encoding_protected_files"]
 ] ;;
 
 exception Get_fields_exn of string ;;
@@ -317,7 +317,7 @@ let subdirs_for_archived_mlx_files x = x.Mw_poly_t.subdirs_for_archived_mlx_file
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let to_fw_configuration fw  = 
   let tname = fw.Mw_poly_t.type_name in 
-  let _ = Private.Type_information.check_inclusion "fw_configuration" tname in 
+  let _ = Private.Type_information.check_inclusion "mw_configuration" tname in 
    {
    fw with 
    Mw_poly_t.type_name = "Mw_configuration" ;
@@ -327,6 +327,6 @@ let to_github_configuration fw  =
   let _ = Private.Type_information.check_inclusion "github_configuration" tname in 
    {
    fw with 
-   Mw_poly_t.type_name = "Github_configuration" ;
+   Mw_poly_t.type_name = "Mw_ithub_configuration" ;
 } ;;
 let watched_files x = x.Mw_poly_t.watched_files ;; 

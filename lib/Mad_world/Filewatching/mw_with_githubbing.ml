@@ -4,12 +4,63 @@
 
 *)
 
+module Inherited = struct 
+
+  let dep_ordered_modules (Mw_with_githubbing_t.Subclass fw) = 
+    Mw_with_dependencies.dep_ordered_modules fw ;;  
+
+  let modern_recompile (Mw_with_githubbing_t.Subclass fw) changed_modules_in_any_order =  
+     Mw_with_batch_compilation.modern_recompile fw changed_modules_in_any_order ;;
+
+end ;;  
+
+module Constructor = struct 
+
+  let of_fw_with_batch_compilation fw backup_dir gab git_url enc_files = 
+  Mw_with_githubbing_t.Subclass({
+    fw with 
+    Mw_poly_t.type_name = "Mw_with_githubbing" ;
+    dir_for_backup = backup_dir ;
+    gitpush_after_backup = gab ;
+    github_url = git_url ;
+    encoding_protected_files = enc_files ;
+ } );;  
+
+  let of_fw_config_and_github_config fw_config github_config = of_fw_with_batch_compilation 
+    (Mw_with_batch_compilation.of_configuration fw_config)
+    (github_config.Mw_poly_t.dir_for_backup) 
+    (github_config.Mw_poly_t.gitpush_after_backup) 
+    (github_config.Mw_poly_t.github_url)
+    (github_config.Mw_poly_t.encoding_protected_files);;
+
+
+  let plunge_fw_config_with_github_config fw_config github_config= of_fw_with_batch_compilation 
+      (Mw_with_batch_compilation.plunge_fw_configuration fw_config)
+      (github_config.Mw_poly_t.dir_for_backup) 
+      (github_config.Mw_poly_t.gitpush_after_backup) 
+      (github_config.Mw_poly_t.github_url)
+      (github_config.Mw_poly_t.encoding_protected_files);;
+
+
+end ;;  
+
 
 module Private = struct
 
-  let parent = Mw_poly.parent ;; 
   
-  let set_parent = Mw_poly.set_parent ;;
+  let parent child = 
+    { child with Mw_poly_t.type_name = "Mw_with_batch_compilation" } ;;
+   
+  
+  let set_parent ~child ~new_parent = 
+    let (Mw_with_githubbing_t.Subclass fw_with_githubbing) =
+      Constructor.of_fw_with_batch_compilation new_parent 
+      (child.Mw_poly_t.dir_for_backup)
+      (child.Mw_poly_t.gitpush_after_backup)
+      (child.Mw_poly_t.github_url)
+      (child.Mw_poly_t.encoding_protected_files)
+   in 
+   fw_with_githubbing;;
   
 
   let usual_batch fw modnames = 
@@ -17,29 +68,6 @@ module Private = struct
       Mw_with_batch_compilation.usual_batch (parent fw) modnames in 
     (set_parent ~child:fw ~new_parent,rejected_ones,accepted_ones) ;; 
   
-  let usual_extension fw_batch backup_dir gab git_url enc_files = 
-      Mw_poly.extend_fw_with_batch_compilation_to_fw_with_githubbing 
-      fw_batch
-      ~dir_for_backup:backup_dir 
-      ~gitpush_after_backup:gab
-      ~github_url:git_url
-      ~encoding_protected_files:enc_files ;;
-
-  
-  let of_fw_config_and_github_config fw_config github_config = usual_extension 
-    (Mw_with_batch_compilation.of_configuration fw_config)
-    (Mw_poly.dir_for_backup github_config) 
-    (Mw_poly.gitpush_after_backup github_config) 
-    (Mw_poly.github_url github_config)
-    (Mw_poly.encoding_protected_files github_config);;
-
-
-  let plunge_fw_config_with_github_config fw_config github_config= usual_extension 
-      (Mw_with_batch_compilation.plunge_fw_configuration fw_config)
-      (Mw_poly.dir_for_backup github_config) 
-      (Mw_poly.gitpush_after_backup github_config) 
-      (Mw_poly.github_url github_config)
-      (Mw_poly.encoding_protected_files github_config);;
     
   exception Forget_modules_exn of Dfa_module_t.t  list ;;     
 
@@ -55,13 +83,7 @@ module Private = struct
     let _ = Mw_transmit_change_to_github.backup (Mw_poly.to_github_configuration fw) diff (Some msg) in     
     set_parent ~child:fw ~new_parent ;;     
 
-  let forget_nonmodular_rootlesses fw rootless_paths=
-      let new_parent = Mw_with_batch_compilation.remove_files (parent fw) rootless_paths in 
-      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
-      let msg="delete "^descr in 
-      let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
-      let _ = Mw_transmit_change_to_github.backup (Mw_poly.to_github_configuration fw) diff (Some msg) in     
-      set_parent ~child:fw ~new_parent ;;     
+    
     
   
   let register_rootless_paths fw rootless_paths = 
@@ -119,25 +141,41 @@ module Private = struct
         set_parent ~child:fw ~new_parent ;; 
  
    
-  let usual_recompile fw opt_comment = 
-    let (new_parent,(_changed_uc,changed_files)) = Mw_with_batch_compilation.usual_recompile (parent fw)  in 
-    let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
-    let _ = Mw_transmit_change_to_github.backup (Mw_poly.to_github_configuration fw) diff opt_comment in 
-    set_parent ~child:fw ~new_parent ;;
+  
     
 end;;  
       
+module Common = struct 
+
+  let forget_nonmodular_rootlesses fw rootless_paths=
+  let new_parent = Mw_with_batch_compilation.remove_files (Private.parent fw) rootless_paths in 
+  let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+  let msg="delete "^descr in 
+  let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
+  let _ = Mw_transmit_change_to_github.backup (Mw_poly.to_github_configuration fw) diff (Some msg) in     
+  Private.set_parent ~child:fw ~new_parent ;;  
+
+  let usual_recompile fw opt_comment = 
+    let (new_parent,(_changed_uc,changed_files)) = Mw_with_batch_compilation.usual_recompile (Private.parent fw)  in 
+    let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
+    let _ = Mw_transmit_change_to_github.backup (Mw_poly.to_github_configuration fw) diff opt_comment in 
+    Private.set_parent ~child:fw ~new_parent ;;
+
+end ;;  
+
+
 
 let forget_modules = Private.forget_modules ;; 
-let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-let of_fw_with_batch_compilation =Private.usual_extension ;;
-let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
-let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
+let forget_nonmodular_rootlesses (Mw_with_githubbing_t.Subclass fw) rls= 
+   Mw_with_githubbing_t.Subclass(Common.forget_nonmodular_rootlesses fw rls);;  
 let register_rootless_paths = Private.register_rootless_paths ;;      
 let relocate_module_to  = Private.relocate_module_to ;;         
 let rename_module = Private.rename_module ;;   
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
-let usual_recompile = Private.usual_recompile ;;
+
+let usual_recompile (Mw_with_githubbing_t.Subclass fw) rls= 
+   Mw_with_githubbing_t.Subclass(Common.usual_recompile fw rls);;
+
 

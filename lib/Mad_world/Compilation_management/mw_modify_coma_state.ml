@@ -34,8 +34,8 @@
 
          let refresh fw =
             let fw2= Mw_with_persisting.Constructor.of_fw_config_and_github_config 
-            (Mw_with_persisting.Convert.to_fw_configuration fw) 
-            (Mw_with_persisting.Convert.to_github_configuration fw)  in 
+            (Mw_with_persisting.Regress.to_fw_configuration fw) 
+            (Mw_with_persisting.Regress.to_github_configuration fw)  in 
             let _=Mw_with_persisting.persist fw2 in 
             fw2;;       
 
