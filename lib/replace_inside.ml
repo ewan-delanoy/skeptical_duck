@@ -87,7 +87,8 @@ my_global_replace ("uv","w") "1uvuv2";;
 
 *)  
 
-
+let pair_for_commenting_or_uncommenting = 
+  ("\n(*\n","\n*)\n") ;;
 
 end ;;
 
@@ -119,7 +120,8 @@ at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"a
 let comment_out_between_markers_inside_string (bm,em)
    s1=
      let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
-     before^bm^"\n(*\n"^between^"\n*)\n"^em^after ;; 
+     let (opener,closer) = Private.pair_for_commenting_or_uncommenting in 
+     before^bm^opener^between^closer^em^after ;; 
 
 let comment_out_between_markers_inside_file (bm,em) fn =
   let old_text=Io.read_whole_file fn in
@@ -189,7 +191,18 @@ let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_a
     let s2=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l s1  in
     Io.overwrite_with fn s2;; 
 
+let uncomment_between_markers_inside_string (bm,em)
+    s1=
+      let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+      before^bm^(
+       Cull_string.two_sided_cutting Private.pair_for_commenting_or_uncommenting  
+      between)^em^after ;; 
+ 
 
+ let uncomment_between_markers_inside_file (bm,em) fn =
+   let old_text=Io.read_whole_file fn in
+   let new_text=uncomment_between_markers_inside_string (bm,em) old_text in
+   Io.overwrite_with fn new_text;; 
 
 
 
