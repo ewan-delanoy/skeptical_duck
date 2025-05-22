@@ -120,7 +120,7 @@ let copy_between_strings src old_dest =
    let ranges = ranges_for_marked_comments src in 
    let copier = (
      fun dest1 pair ->
-      Lines_in_text.copy_interval_from_string_to_string 
+      Lines_in_text.copy_interval_from_text_to_text 
         pair src dest1
    ) in 
    let temp_dest = 

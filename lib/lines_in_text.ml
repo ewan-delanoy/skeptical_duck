@@ -443,7 +443,7 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
   let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
-  let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
+  let copy_interval_from_text_to_text = Private.copy_interval_from_string_to_string ;; 
 
   let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
   let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
