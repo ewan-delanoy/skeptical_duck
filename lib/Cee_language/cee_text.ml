@@ -512,11 +512,11 @@ let last_endif_in_text text =
  
 let put_first_ivy_on_first_line text = 
   let line_idx = first_ivy_in_text text in 
-  Lines_in_text.put_line_first_in_string line_idx text ;;
+  Lines_in_text.put_line_first_in_text line_idx text ;;
 
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
-  let temp_text = Lines_in_text.put_line_last_in_string line_idx text in 
+  let temp_text = Lines_in_text.put_line_last_in_text line_idx text in 
   let temp_lines = List.rev(lines_inside_or_outside_cee_comments temp_text) in 
   let ((temp_last_line,_),temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
