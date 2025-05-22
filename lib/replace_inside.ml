@@ -92,17 +92,17 @@ let pair_for_commenting_or_uncommenting =
 
 end ;;
 
-let at_char_intervals_inside_text s l=
-  if l=[] then s else
-  let n=String.length s in
+let at_char_intervals_inside_text text l=
+  if l=[] then text else
+  let n=String.length text in
   let temp1=List_again.universal_delta_list l 
   and ((i_first,_),_)=List.hd(l)
   and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
   let temp2=Image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
-      rep1^(String.sub s j1 (i2-j1-1))
+      rep1^(String.sub text j1 (i2-j1-1))
   ) temp1 in
-  let first_part=(String.sub s 0 (i_first-1))
-  and last_part=rep_last^(String.sub s j_last (n-j_last)) in
+  let first_part=(String.sub text 0 (i_first-1))
+  and last_part=rep_last^(String.sub text j_last (n-j_last)) in
   first_part^(String.concat "" temp2)^last_part;;
 
 let at_char_intervals_inside_file 
@@ -113,7 +113,7 @@ let at_char_intervals_inside_file
 
 (*    
 
-at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
+at_char_intervals_inside_text "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
 *)         
 
