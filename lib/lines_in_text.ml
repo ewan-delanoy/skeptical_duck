@@ -64,19 +64,19 @@ module Private = struct
       
   (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
     
-  let copy_interval_from_string_to_string (i,j)  src dest =
+  let copy_interval_from_text_to_text (i,j)  src dest =
      let src_linelength = List.length (lines src) in 
      let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
      let (before,_in_between,after) = tripartition_associated_to_interval temp1 i j in 
      before^(interval src i j)^after;;
 
       
-  (* copy_interval_from_string_to_string (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
+  (* copy_interval_from_text_to_text (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
 
   let copy_interval_from_file_to_file (i,j) src_file  dest_file =
      let src = Io.read_whole_file src_file 
      and old_text = Io.read_whole_file dest_file  in 
-     let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
+     let new_text = copy_interval_from_text_to_text (i,j) src old_text in 
      Io.overwrite_with dest_file new_text ;; 
      
    exception Lines_in_char_range_exn of int*int;;
@@ -207,7 +207,7 @@ module Private = struct
 
   *)  
 
-  let put_line_first_in_string line_idx text = 
+  let put_line_first_in_text line_idx text = 
     if line_idx=1 then text else
     let lines = indexed_lines text in 
     match List.assoc_opt line_idx lines with 
@@ -220,9 +220,9 @@ module Private = struct
         else Some old_line) lines in 
     String.concat "\n" (the_line::lines2) ;;
 
-  (* put_line_first_in_string 4 "1\n2\n3\n4\n5" ;; *)
+  (* put_line_first_in_text 4 "1\n2\n3\n4\n5" ;; *)
 
-  let put_line_last_in_string line_idx text = 
+  let put_line_last_in_text line_idx text = 
     let lines = indexed_lines text in 
     let n = List.length lines in 
     if line_idx=n then text else
@@ -236,16 +236,16 @@ module Private = struct
        else Some old_line) lines in 
     String.concat "\n" (lines2@[the_line]) ;;
   
-  (*  put_line_last_in_string 4 "1\n2\n3\n4\n5" ;; *)
+  (*  put_line_last_in_text 4 "1\n2\n3\n4\n5" ;; *)
     
   let put_line_first_in_file line_idx src_file  =
     let old_text = Io.read_whole_file src_file  in 
-    let new_text = put_line_first_in_string line_idx  old_text in 
+    let new_text = put_line_first_in_text line_idx  old_text in 
     Io.overwrite_with src_file new_text ;; 
 
   let put_line_last_in_file line_idx src_file  =
     let old_text = Io.read_whole_file src_file  in 
-    let new_text = put_line_last_in_string line_idx  old_text in 
+    let new_text = put_line_last_in_text line_idx  old_text in 
     Io.overwrite_with src_file new_text ;; 
 
   type situation = 
@@ -443,7 +443,7 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
   let closeup_around_index = Private.closeup_around_index ;;
   let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
-  let copy_interval_from_text_to_text = Private.copy_interval_from_string_to_string ;; 
+  let copy_interval_from_text_to_text = Private.copy_interval_from_text_to_text ;; 
 
   let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
   let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
@@ -475,10 +475,10 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
 let interval = Private.interval ;;
 
-   let line_index_from_char_index s char_idx=
-      1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
+   let line_index_from_char_index text char_idx=
+      1+(Private.number_of_lines_in_char_interval text 1 char_idx);;
 
-  let lines s= Image.image snd (indexed_lines s);;
+  let lines text= Image.image snd (indexed_lines text);;
 
   let lines_inside_or_outside_cee_comments = Private.lines_inside_or_outside_cee_comments ;; 
 
@@ -489,28 +489,28 @@ let interval = Private.interval ;;
 
   let put_line_first_in_file = Private.put_line_first_in_file ;; 
 
-  let put_line_first_in_string = Private.put_line_first_in_string ;; 
+  let put_line_first_in_text = Private.put_line_first_in_text ;; 
 
   let put_line_last_in_file = Private.put_line_last_in_file ;; 
   
-  let put_line_last_in_string = Private.put_line_last_in_string ;; 
+  let put_line_last_in_text = Private.put_line_last_in_text ;; 
 
-  let remove_interval s i j=
-    let temp1=indexed_lines s in
-    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
-    let temp3=Image.image snd temp2 in
-    String.concat "\n" temp3;; 
+  let remove_interval text i j=
+    let old_indexed_lines=indexed_lines text in
+    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) old_indexed_lines  in
+    let new_indexed_lines=Image.image snd temp2 in
+    String.concat "\n" new_indexed_lines;; 
   
   let remove_interval_in_file fn i j=
-      let s1=Io.read_whole_file fn in
-      let s2=remove_interval s1 i j  in
-     Io.overwrite_with fn s2;;   
+      let old_text=Io.read_whole_file fn in
+      let new_text=remove_interval old_text i j  in
+     Io.overwrite_with fn new_text;;   
   
   let remove_lines_containing_substring_in_string pattern text =
-     let temp1=indexed_lines text in
-     let temp2=List.filter (fun (_,line)->not(Substring.is_a_substring_of pattern line)) temp1  in
-     let temp3=Image.image snd temp2 in
-     String.concat "\n" temp3;; 
+     let old_indexed_lines=indexed_lines text in
+     let temp2=List.filter (fun (_,line)->not(Substring.is_a_substring_of pattern line)) old_indexed_lines  in
+     let new_indexed_lines=Image.image snd temp2 in
+     String.concat "\n" new_indexed_lines;; 
    
    let remove_lines_containing_substring_in_file pattern fn=
        let old_text=Io.read_whole_file fn in
@@ -523,9 +523,9 @@ let findreplace_in_interval (x,y) s i j=
       part1^new_part2^part3 ;; 
 
 let findreplace_in_interval_in_file (x,y) fn i j=
-      let s1=Io.read_whole_file fn in
-      let s2=findreplace_in_interval (x,y) s1 i j  in
-      Io.overwrite_with fn s2;;     
+      let old_text=Io.read_whole_file fn in
+      let new_text=findreplace_in_interval (x,y) old_text i j  in
+      Io.overwrite_with fn new_text;;     
   
 
 (* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
@@ -533,17 +533,17 @@ let findreplace_in_interval_in_file (x,y) fn i j=
 let shift_indentation_in_interval_in_file_with = Private.shift_indentation_in_interval_in_file_with ;;
 let shift_indentation_in_interval_in_string_with = Private.shift_indentation_in_interval_in_string_with ;;
 
-let suppress_linebreaks_in_interval s i j=
-    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+let suppress_linebreaks_in_interval text i j=
+    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval text i j in 
     let new_part2 = String.concat "" (lines old_part2) in 
     part1^new_part2^part3 ;; 
   
   (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
   
 let suppress_linebreaks_in_interval_in_file fn i j=
-    let s1=Io.read_whole_file fn in
-    let s2=suppress_linebreaks_in_interval s1 i j  in
-    Io.overwrite_with fn s2;;     
+    let old_text=Io.read_whole_file fn in
+    let new_text=suppress_linebreaks_in_interval old_text i j  in
+    Io.overwrite_with fn new_text;;     
 
 let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
 
