@@ -176,7 +176,7 @@ module Private = struct
       ) old_lines in 
       String.concat "\n" new_lines ;;
   
-  (* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
+  (* ident_interval_in_text_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
   
   let shift_indentation_in_interval_in_file_with (i,j) fn ~shift_amplitude ~forced=
      let old_text=Io.read_whole_file fn in
@@ -428,14 +428,14 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
 *)
   
-  let modify_interval_inside_string f text i j =
+  let modify_interval_inside_text f text i j =
      let (before,itv,after) = tripartition_associated_to_interval text i j in 
      let new_itv = f itv in 
      before ^ new_itv ^ after ;;
 
   let modify_interval_inside_file f src_file i j =
     let old_text = Io.read_whole_file src_file  in 
-    let new_text = modify_interval_inside_string f old_text i j in 
+    let new_text = modify_interval_inside_text f old_text i j in 
     Io.overwrite_with src_file new_text ;;    
 
   end ;;   
@@ -484,7 +484,7 @@ let interval = Private.interval ;;
 
   let modify_interval_inside_file = Private.modify_interval_inside_file ;;
 
-  let modify_interval_inside_string = Private.modify_interval_inside_string ;;
+  let modify_interval_inside_text = Private.modify_interval_inside_text ;;
   let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
 
   let put_line_first_in_file = Private.put_line_first_in_file ;; 
