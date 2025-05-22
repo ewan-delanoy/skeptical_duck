@@ -117,7 +117,7 @@ at_char_intervals_inside_text "12345678901234567890" [(3,5),"right";(12,17),"aga
 
 *)         
 
-let comment_out_between_markers_inside_string (bm,em)
+let comment_out_between_markers_inside_text (bm,em)
    s1=
      let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
      let (opener,closer) = Private.pair_for_commenting_or_uncommenting in 
@@ -125,7 +125,7 @@ let comment_out_between_markers_inside_string (bm,em)
 
 let comment_out_between_markers_inside_file (bm,em) fn =
   let old_text=Io.read_whole_file fn in
-  let new_text=comment_out_between_markers_inside_string (bm,em) old_text in
+  let new_text=comment_out_between_markers_inside_text (bm,em) old_text in
   Io.overwrite_with fn new_text;; 
 
 let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
