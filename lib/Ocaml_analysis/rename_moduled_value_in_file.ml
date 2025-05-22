@@ -48,4 +48,4 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
              Some(itm.Ocaml_gsyntax_item.interval_for_content,new_txt)
         else None   
    ) temp5 in
-   Overwrite_at_intervals.inside_file temp6 path;;
+   Replace_inside.overwrite_at_intervals_inside_file temp6 path;;
