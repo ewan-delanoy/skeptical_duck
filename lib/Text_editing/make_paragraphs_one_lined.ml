@@ -44,7 +44,7 @@ let in_string text =
    let parts = compute_paragraphs text  in 
    let compressed_parts = Image.image (
     function 
-     |Str.Text(t) -> Replace_inside.replace_inside_string ~display_number_of_matches:false ("\n"," ") t
+     |Str.Text(t) -> Replace_inside.replace_inside_text ~display_number_of_matches:false ("\n"," ") t
      |Str.Delim(d) -> d
   ) parts in  
   String.concat "" compressed_parts ;; 

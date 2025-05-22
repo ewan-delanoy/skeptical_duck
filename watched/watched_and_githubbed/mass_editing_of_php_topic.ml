@@ -275,7 +275,7 @@ CHAPTER 8 : Aggregate mysql commands
 
 *)
 
-let escape_single_quote = Replace_inside.replace_inside_string ("'","\\'");;
+let escape_single_quote = Replace_inside.replace_inside_text ("'","\\'");;
 
 let command_for_new_post topic_idx (post_idx,new_post) =
   let indices =  post_indices_in_topic topic_idx in 
@@ -290,7 +290,7 @@ let mysql_commands topic_idx idx fst_idx last_idx = Image.image
 
 let aggregate topic_idx idx fst_idx last_idx= 
    let temp1 = String.concat "\n" (""::(mysql_commands topic_idx idx fst_idx last_idx)@[""]) in 
-    Replace_inside.replace_inside_string ("\\n","\n") temp1 ;;
+    Replace_inside.replace_inside_text ("\\n","\n") temp1 ;;
 
 let current_fixer = "fixer.sql";;
 

@@ -2508,59 +2508,59 @@ let text1 = Io.read_whole_file ap1 ;;
 (*
 let tax1 = rf "nonml_files/original.txt";;
 let part1 = Cull_string.interval tax1 1 1511 ;;
-let tax2 = Replace_inside.replace_inside_string (part1,"/* COMMENT 1 */") tax1 ;;
+let tax2 = Replace_inside.replace_inside_text (part1,"/* COMMENT 1 */") tax1 ;;
 
-let tax3 = Replace_inside.replace_inside_string 
+let tax3 = Replace_inside.replace_inside_text 
   ("/*\n * apprentice - make one pass through /etc/magic, learning its secrets.\n */","/* COMMENT 2 */") tax2 ;;
 
 let cmt3 = "/*\n * Work around a bug in headers on Digital Unix.\n * At least confirmed for: OSF1 V4.0 878\n */" ;; 
   
-let tax4 = Replace_inside.replace_inside_string 
+let tax4 = Replace_inside.replace_inside_text 
    (cmt3,"/* COMMENT 3 */") tax3 ;;
 
 let cmt4 = Cull_string.interval tax4 5018 5362 ;;
 
-let tax5 = Replace_inside.replace_inside_string 
+let tax5 = Replace_inside.replace_inside_text 
    (cmt4,"/* COMMENT 4 */") tax4 ;;
 
 let cmt5 = Cull_string.interval tax5 8130 8215 ;;
 
-let tax6 = Replace_inside.replace_inside_string 
+let tax6 = Replace_inside.replace_inside_text 
    (cmt5,"/* COMMENT 5 */") tax5 ;;
 
 let cmt6 = Cull_string.interval tax6 9232 9663 ;;
 
-let tax7 = Replace_inside.replace_inside_string 
+let tax7 = Replace_inside.replace_inside_text 
    (cmt6,"/* COMMENT 6 */") tax6 ;;   
 
 let cmt7 = Cull_string.interval tax7 9494 9910 ;;
 
-let tax8 = Replace_inside.replace_inside_string 
+let tax8 = Replace_inside.replace_inside_text 
    (cmt7,"/* COMMENT 7 */") tax7 ;;    
  
 let cmt8 = "/*\n\t\t * \"d\" or \"u\" by itself.\n\t\t */" ;;
 
-let tax9 = Replace_inside.replace_inside_string 
+let tax9 = Replace_inside.replace_inside_text 
    (cmt8,"/* COMMENT 8 */") tax8 ;;
 
 let cmt9 = "/*\n * Handle one file or directory.\n */" ;;
 
-let tax10 = Replace_inside.replace_inside_string 
+let tax10 = Replace_inside.replace_inside_text 
    (cmt9,"/* COMMENT 9 */") tax9 ;;
 
 let cmt10 = "/*\n\t * Always leave the database loaded\n\t */" ;;
 
-let tax11 = Replace_inside.replace_inside_string 
+let tax11 = Replace_inside.replace_inside_text 
    (cmt10,"/* COMMENT 10 */") tax10 ;;   
 
 let cmt11 = Cull_string.interval tax11 16336 16711 ;;
 
-let tax12 = Replace_inside.replace_inside_string 
+let tax12 = Replace_inside.replace_inside_text 
    (cmt11,"/* COMMENT 11 */") tax11 ;;
 
 let cmt12 = "/*\n * Get weight of this magic entry, for sorting purposes.\n */" ;;
 
-let tax13 = Replace_inside.replace_inside_string 
+let tax13 = Replace_inside.replace_inside_text 
    (cmt12,"/* COMMENT 12 */") tax12 ;;  
 
 let final_tax = tax13 ;; 
@@ -6605,7 +6605,7 @@ let pairs_for_enhanced_ones =
 let check_pairs = List.filter (fun (tgt,l)->List.length(l)<>1) pairs_for_enhanced_ones ;;
 
 let list2 = List.flatten(Image.image (fun (tgt,l_cmd)->
-   Image.image (Replace_inside.replace_inside_string ("$@"," "^tgt)) l_cmd    
+   Image.image (Replace_inside.replace_inside_text ("$@"," "^tgt)) l_cmd    
 ) pairs_for_enhanced_ones) ;;
 
 let indexed_list2 = Int_range.index_everything list2 ;;
@@ -6845,11 +6845,11 @@ let list19 = List.filter (fun cmd -> String.starts_with ~prefix:"$(LIBTOOL)" cmd
 
 let old_val_for_libtool = Makefile.single_value (!makefile_ref) ~variable_name:"LIBTOOL" ;;
 
-let new_val_for_libtool = Replace_inside.replace_inside_string ("--silent","--dry-run") old_val_for_libtool ;;
+let new_val_for_libtool = Replace_inside.replace_inside_text ("--silent","--dry-run") old_val_for_libtool ;;
 
 let list20 = Image.image (
    fun (idx,cmd) ->
-      let cmd1 = Replace_inside.replace_inside_string ("$(LIBTOOL)",new_val_for_libtool) cmd 
+      let cmd1 = Replace_inside.replace_inside_text ("$(LIBTOOL)",new_val_for_libtool) cmd 
       and s_idx = string_of_int idx in  
       String.concat "\n\t"
       [
@@ -6920,13 +6920,13 @@ let list22 = Image.image (String.concat "\n\t") pre_list22 ;;
 
 let root_dir = home ^ "/Teuliou/Experimenting_with_php/php-src/";;
 
-let pre_list23 = Image.image (Image.image (Replace_inside.replace_inside_string
+let pre_list23 = Image.image (Image.image (Replace_inside.replace_inside_text
 ~display_number_of_matches:false (root_dir,"") )) pre_list22 ;;
 let list23 = Image.image (String.concat "\n\t") pre_list23 ;;
 
 let root_mention = "-I" ^ home ^ "/Teuliou/Experimenting_with_php/php-src";;
 
-let pre_list24 = Image.image (Image.image (Replace_inside.replace_inside_string 
+let pre_list24 = Image.image (Image.image (Replace_inside.replace_inside_text 
 ~display_number_of_matches:false (root_mention,"-I.") )) pre_list23 ;;
 let list24 = Image.image (String.concat "\n\t") pre_list24 ;;
 
@@ -6935,7 +6935,7 @@ commands_ref := ( Image.image (fun cmd->(cmd,"")) list24)  ;;
 
 let old_shared_production = List.hd(List.nth pre_list24 28);;
 
-let new_shared_production = Replace_inside.replace_inside_string 
+let new_shared_production = Replace_inside.replace_inside_text 
 ~display_number_of_matches:false ("/.libs/","/")  old_shared_production ;;
 
 let pre_list25 = Image.image (fun l->if List.hd(l)=old_shared_production then [new_shared_production] else l ) pre_list24 ;;
@@ -6948,7 +6948,7 @@ let pre_list26 = Image.image (fun l->
    else [List.nth l 1]) pre_list25 ;;
 let list26 = Image.image (String.concat "\n\t") pre_list26 ;;
 
-let pre_list27 = Image.image (Image.image (Replace_inside.replace_inside_string (" >/dev/null 2>&1","") )) pre_list26 ;;
+let pre_list27 = Image.image (Image.image (Replace_inside.replace_inside_text (" >/dev/null 2>&1","") )) pre_list26 ;;
 let list27 = Image.image (String.concat "\n\t") pre_list27 ;;
 
 
@@ -7999,7 +7999,7 @@ let natural_subdir_to_package subdir =
    let last_oc = List.hd(List.rev ocs) in 
    let offset = String.length(sep)-1 in 
    let after_sep = Cull_string.cobeginning (last_oc+offset) subdir  in 
-   Replace_inside.replace_inside_string 
+   Replace_inside.replace_inside_text 
     ~display_number_of_matches:false
      ("/",".") after_sep ;;
 
@@ -10354,7 +10354,7 @@ let reordered_u2 =
     (List.filter (fun x->not(List.mem x extracted_files)) u2) @ (extracted_files) ;; 
 let u3 = Image.image rf reordered_u2 ;;
 let u4 = String.concat "\n\n\n(* aaa *)" u3;;
-let u5 = Replace_inside.replace_inside_string
+let u5 = Replace_inside.replace_inside_text
    ("\n\n(* aaa *)package com.example.example\n\nimport com.google.gson.annotations.SerializedName",
    "") u4;;
 let whole_ap = Absolute_path.of_string "~/Downloads/Some_kotlin_files/whole.txt" ;;
@@ -11502,7 +11502,7 @@ let z3 = Lines_in_string.lines z2 ;;
 let z4 = Image.image (
   fun line -> 
     let line2 = Cull_string.trim_spaces line in 
-    let line3 = Replace_inside.replace_inside_string ("|","") line2 in 
+    let line3 = Replace_inside.replace_inside_text ("|","") line2 in 
     line3 
 ) z3 ;;
 let z4 = ["Whole"; "Superficial_result"; "Solution_list"; "Qualified_point_list";
@@ -14881,7 +14881,7 @@ let r1 = [("T.","Parser_js.");("TH.","Token_helpers_js.");("Ast.","Ast_js.")]
 
 
 let (a,b,c) = Lines_in_string.tripartition_associated_to_interval "" 79 123 ;;
-let new_b = Replace_inside.replace_inside_string ("-> T","-> Parser_js.T") b ;;
+let new_b = Replace_inside.replace_inside_text ("-> T","-> Parser_js.T") b ;;
 let text2 = String.concat "\n" [a;new_b;c] ;;
 
 
@@ -16510,7 +16510,7 @@ Snippet 61 : Transform a text in an Ocaml string
 ************************************************************************************************************************)
 let z1 = Needed_values.rf "Fads/nap.ml"  ;;
 let z2 = Lines_in_string.interval z1 12 25 ;;
-let z3 = Replace_inside.replace_inside_string ("\"","\\\"") z2;;
+let z3 = Replace_inside.replace_inside_text ("\"","\\\"") z2;;
 let z4 = Lines_in_string.lines z3 ;;
 let z5 = Image.image (fun line -> "\"" ^ (Cull_string.trim_spaces line) ^ "\"") z4 ;; 
 let z6 = "\n\n\n" ^ (String.concat ";\n" z5) ^ "\n\n\n" ;;
@@ -18317,7 +18317,7 @@ let computed_u3 = ["concrete_object_automatic"; "fw_wrapper_automatic"; "coma_st
 let g1 = vfm "hex_flattened_end_strategy_automatic" ;;
 let g2 = Image.image fst g1 ;;
 
-let g3 = Image.image (fun x-> Replace_inside.replace_inside_string ("x",x) "let x = Automatic.x ;;") g2;;
+let g3 = Image.image (fun x-> Replace_inside.replace_inside_text ("x",x) "let x = Automatic.x ;;") g2;;
 let g4 = String.concat "\n" g3 ;;
 let g5 = "\n\n\n" ^ g4 ^ "\n\n\n" ;; 
 

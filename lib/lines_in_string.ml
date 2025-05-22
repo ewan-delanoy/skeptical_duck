@@ -519,7 +519,7 @@ let interval = Private.interval ;;
   
 let findreplace_in_interval (x,y) s i j=
       let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
-      let new_part2 = Replace_inside.replace_inside_string (x,y) old_part2 in 
+      let new_part2 = Replace_inside.replace_inside_text (x,y) old_part2 in 
       part1^new_part2^part3 ;; 
 
 let findreplace_in_interval_in_file (x,y) fn i j=

@@ -61,7 +61,7 @@ let set_app_name ks new_app_name =
    let _ = Sys.command(dir_renaming_command_in_set_app_name ks new_app_name) in 
    let new_ks = {ks with app_name = new_app_name} in 
    let compacter = (fun s->
-     String.lowercase_ascii(Replace_inside.replace_inside_string ("_","") s)
+     String.lowercase_ascii(Replace_inside.replace_inside_text ("_","") s)
       )   in 
    let old_compact = compacter old_name
    and new_compact = compacter new_app_name in 

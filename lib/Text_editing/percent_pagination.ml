@@ -148,7 +148,7 @@ let modify_string_pagewise f old_text =
 
 (*    
  
-modify_string_pagewise (Replace_inside.replace_inside_string ("\n","_"))
+modify_string_pagewise (Replace_inside.replace_inside_text ("\n","_"))
 "A\n%\n% Page 5 \n%\nB\nC\nD\n%\n% Page 6 \n%\nE\nF\nG\n%\n% Page 7 \n%\nH\nI\nJ";;
 
 *)

@@ -21,7 +21,7 @@ let old_g2 = g2 ;;
 let g2 = Image.image (
    fun ap -> 
     let old_s_ap = Absolute_path.to_string ap in 
-    let new_s_ap = Replace_inside.replace_inside_string 
+    let new_s_ap = Replace_inside.replace_inside_text 
                ("Idaho","Ordinary") old_s_ap in 
     Absolute_path.of_string  new_s_ap              
 )  old_g2 ;;

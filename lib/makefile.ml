@@ -403,7 +403,7 @@ let decision_for_todv mixed = function
       (Some cst) ->  
          let final_cst = (match replacement_opt with 
             None -> cst 
-            |Some(ab,ba) -> Replace_inside.replace_inside_string (ab,ba) cst
+            |Some(ab,ba) -> Replace_inside.replace_inside_text (ab,ba) cst
          ) in 
          (Some final_cst,None)
       |None -> (None,Some vname) ;; 

@@ -168,7 +168,7 @@ let overwrite_between_markers_inside_file
     Io.overwrite_with fn new_text;;      
 
 
-let replace_inside_string ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
+let replace_inside_text ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
   Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) text ;;
  
 let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
@@ -178,7 +178,7 @@ let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=
     let old_text=Io.read_whole_file fn in
     let la=String.length(a) in
     if List.exists (fun j->(String.sub old_text j la)=a) (Int_range.range 0 ((String.length old_text)-la))
-    then let new_text=replace_inside_string ~display_number_of_matches ~silent_on_ambiguity (a,b) old_text in
+    then let new_text=replace_inside_text ~display_number_of_matches ~silent_on_ambiguity (a,b) old_text in
          Io.overwrite_with fn new_text
     else ();; 
 
