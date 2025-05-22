@@ -93,9 +93,7 @@ module Private=struct
        );;
 
        
-end;;  
 
-module Common = struct 
 
   let save_all cs=
       let root_dir = Mw_poly.root cs 
@@ -104,7 +102,7 @@ module Common = struct
       and directories = Mw_with_dependencies.all_subdirectories cs 
       and printer_equipped_types = Mw_with_batch_compilation.preq_types_with_extra_info cs 
         in
-       Private.write_all 
+       write_all 
       (
         Coma_constant.rootless_path_for_targetfile,
         Coma_constant.rootless_path_for_loadingsfile,
@@ -260,10 +258,10 @@ let start_executing (Mw_with_persisting_t.Subclass fw) short_path=
 let overwrite_file_if_it_exists (Mw_with_persisting_t.Subclass fw) pair =  
    Mw_with_dependencies.overwrite_file_if_it_exists fw pair ;;
 
-let persist (Mw_with_persisting_t.Subclass fw)= Common.save_all fw;;
+let persist (Mw_with_persisting_t.Subclass fw)= Private.save_all fw;;
 
 let read_persistent_version (Mw_with_persisting_t.Subclass fw) = 
-     Mw_with_persisting_t.Subclass(Common.read_persistent_version fw);;
+     Mw_with_persisting_t.Subclass(Private.read_persistent_version fw);;
    
   
 let usual_compilable_files (Mw_with_persisting_t.Subclass fw) = 
