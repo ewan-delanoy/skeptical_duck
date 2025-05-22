@@ -33,7 +33,7 @@ module Private = struct
         
   let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
   
-  let adjust_num_of_lines_upwards_in_string ~required_size text =
+  let adjust_num_of_lines_upwards_in_text ~required_size text =
       let temp1 = lines text in  
       let d = required_size - (List.length temp1) in 
       if d<=0 
@@ -42,7 +42,7 @@ module Private = struct
 
   let adjust_num_of_lines_upwards_in_file ~required_size file =
       let old_text = Io.read_whole_file file in
-      let new_text = adjust_num_of_lines_upwards_in_string ~required_size old_text  in
+      let new_text = adjust_num_of_lines_upwards_in_text ~required_size old_text  in
       Io.overwrite_with file new_text ;;   
 
   let tripartition_associated_to_interval s i j=
@@ -66,7 +66,7 @@ module Private = struct
     
   let copy_interval_from_text_to_text (i,j)  src dest =
      let src_linelength = List.length (lines src) in 
-     let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
+     let temp1 = adjust_num_of_lines_upwards_in_text ~required_size:src_linelength dest in
      let (before,_in_between,after) = tripartition_associated_to_interval temp1 i j in 
      before^(interval src i j)^after;;
 
@@ -87,15 +87,15 @@ module Private = struct
      ) (Int_range.range i j))) with
      _->raise(Lines_in_char_range_exn(i,j));;    
 
-   let duplicate_interval_in_string (i,j) text = 
+   let duplicate_interval_in_text (i,j) text = 
      let (before,itv,after) = tripartition_associated_to_interval text i j in 
      before^itv^"\n"^itv^after ;;
 
-  (* duplicate_interval_in_string (2,4) "1\n2\n3\n4\n5\n";; *)
+  (* duplicate_interval_in_text (2,4) "1\n2\n3\n4\n5\n";; *)
 
    let duplicate_interval_in_file (i,j) src_file  =
      let old_text = Io.read_whole_file src_file  in 
-     let new_text = duplicate_interval_in_string (i,j) old_text in 
+     let new_text = duplicate_interval_in_text (i,j) old_text in 
      Io.overwrite_with src_file new_text ;; 
 
    let naive_closeup_around_index text j=
@@ -118,7 +118,7 @@ module Private = struct
      ) lines in
      String.concat "\n" (""::decorated_lines) ;; 
 
-     let change_indentation_in_interval_in_string ~indent (i,j) ~text  =
+     let change_indentation_in_interval_in_text ~indent (i,j) ~text  =
      let old_lines = indexed_lines text  in 
      let new_lines = Image.image (
          fun (k,line) -> 
@@ -130,7 +130,7 @@ module Private = struct
    
    let impose_fixed_indentation_in_interval_in_file ~indent (i,j) fn =
      let old_text=Io.read_whole_file fn in
-     let new_text=change_indentation_in_interval_in_string ~indent (i,j) ~text:old_text   in
+     let new_text=change_indentation_in_interval_in_text ~indent (i,j) ~text:old_text   in
      Io.overwrite_with fn new_text;;     
  
     let indentation_decomposition line =
@@ -166,7 +166,7 @@ module Private = struct
 
 
 
-    let shift_indentation_in_interval_in_string_with (i,j) ~text ~shift_amplitude ~forced =
+    let shift_indentation_in_interval_in_text_with (i,j) ~text ~shift_amplitude ~forced =
       let old_lines = indexed_lines text  in 
       let new_lines = Image.image (
           fun (k,line) -> 
@@ -180,7 +180,7 @@ module Private = struct
   
   let shift_indentation_in_interval_in_file_with (i,j) fn ~shift_amplitude ~forced=
      let old_text=Io.read_whole_file fn in
-     let new_text=shift_indentation_in_interval_in_string_with (i,j) ~text:old_text ~shift_amplitude ~forced  in
+     let new_text=shift_indentation_in_interval_in_text_with (i,j) ~text:old_text ~shift_amplitude ~forced  in
      Io.overwrite_with fn new_text;;     
 
   let occurrences_of_in_at_beginnings_of_lines patt text = 
@@ -446,7 +446,7 @@ lines_inside_or_outside_cee_comments txt3 ;;
   let copy_interval_from_text_to_text = Private.copy_interval_from_text_to_text ;; 
 
   let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
-  let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
+  let duplicate_interval_in_text = Private.duplicate_interval_in_text ;;
 
   let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
   
@@ -531,7 +531,7 @@ let findreplace_in_interval_in_file (x,y) fn i j=
 (* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
 
 let shift_indentation_in_interval_in_file_with = Private.shift_indentation_in_interval_in_file_with ;;
-let shift_indentation_in_interval_in_string_with = Private.shift_indentation_in_interval_in_string_with ;;
+let shift_indentation_in_interval_in_text_with = Private.shift_indentation_in_interval_in_text_with ;;
 
 let suppress_linebreaks_in_interval text i j=
     let (part1,old_part2,part3) = Private.tripartition_associated_to_interval text i j in 
