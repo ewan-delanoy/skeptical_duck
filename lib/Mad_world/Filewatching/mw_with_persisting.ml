@@ -4,6 +4,14 @@
 
 *)
 
+(* Beginning of loose version of the genesis of Mw_with_persisting.t *)
+let a = 1 ;;
+(* End of loose version of the genesis of Mw_with_persisting.t *)
+
+(* Beginning of tight version of the genesis of Mw_with_persisting.t *)
+let b = 2 ;;
+(* End of tight version of the genesis of Mw_with_persisting.t *)
+
 module Private=struct
 
   let building_site =  Coma_constant.usual_build_subdir ;;

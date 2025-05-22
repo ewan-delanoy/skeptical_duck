@@ -156,7 +156,7 @@ modify_string_pagewise (Replace_inside.replace_inside_text ("\n","_"))
 end ;; 
 
 let extract_all_pages ?(verbose=true) text = Private.extract_all_pages verbose text ;;
-let extract_first_page_in_string = Private.extract_first_page_and_remerge ;; 
+let extract_first_page_in_text = Private.extract_first_page_and_remerge ;; 
 let extract_first_page_in_file file = Private.extract_first_page_and_remerge (Io.read_whole_file file) ;; 
 
 let modify_file_pagewise f file = 

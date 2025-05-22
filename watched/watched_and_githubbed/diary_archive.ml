@@ -684,13 +684,13 @@ let test_text_for_guard_pattern text =
    Guard_Pattern.test 
    (Walker.iterate_for_guard_pattern_detection (Walker.make text)) ;;
 
-let bad4 = Lines_in_string.lines_inside_or_outside_cee_comments 
+let bad4 = Lines_in_text.lines_inside_or_outside_cee_comments 
      old_text ;;
 
 
 
 
-module Pri = Lines_in_string.Private ;;
+module Pri = Lines_in_text.Private ;;
 
 open Pri ;;
 let bad3 = Walker.make old_text ;;
@@ -4373,7 +4373,7 @@ let old_h1 = old_ff 943 ;;
 
 
 (*
-let itv1 = Lines_in_string.interval text1 i1 j1 ;;
+let itv1 = Lines_in_text.interval text1 i1 j1 ;;
 
 let start1 = Option.get(Substring.leftmost_index_of_in_from_opt 
    "/*" itv1 4263) ;;
@@ -4446,7 +4446,7 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 158 : Debug Lines_in_string.Private.lines_outside_cee_comments
+Snippet 158 : Debug Lines_in_text.Private.lines_outside_cee_comments
 ************************************************************************************************************************)
 module Snip158=struct
 
@@ -4988,7 +4988,7 @@ let text = Cap.read_file cpsl1 includer_fn ;;
 let old_temp1 = Cee_text.included_local_files_in_text text ;;
 
 let temp1 = [List.nth old_temp1 16] ;;
-let lines = Lines_in_string.indexed_lines text ;; 
+let lines = Lines_in_text.indexed_lines text ;; 
 
 let bad3 =
       Image.image
@@ -5096,7 +5096,7 @@ let inc_source_dirs =
 
 let text = Cap.read_file cpsl1 includer_fn ;;
 
-let lines = Lines_in_string.indexed_lines text ;; 
+let lines = Lines_in_text.indexed_lines text ;; 
 
 let temp5 = Cee_text.included_nonlocal_files_in_text text ;;
 
@@ -7054,13 +7054,13 @@ let act1 () = Chronometer.it Cee_project_transfer.remove_conditional_directives_
  let ap1 = Absolute_path.of_string (simplified_dir ^ "ext/opcache/zend_file_cache.c") ;;
 let text0 = Io.read_whole_file ap1 ;;
 
-let text1 = Lines_in_string.interval text0 71 106 ;;
+let text1 = Lines_in_text.interval text0 71 106 ;;
 
 let text2 = Cee_conditional_directives.watermark_text text1 ;;
 
 print_string(text2);;
 
-let text3 = List.assoc 28 (Lines_in_string.indexed_lines text2) ;;
+let text3 = List.assoc 28 (Lines_in_text.indexed_lines text2) ;;
 
 
 
@@ -10176,7 +10176,7 @@ module Snip123=struct
   let ap2 = Absolute_path.of_string 
   (home^"/Teuliou/LaTeX/Brouilhedou/anse.tex");; 
   let text2=Io.read_whole_file ap2 ;; 
-  let lines2 = Lines_in_string.indexed_lines text2 ;; 
+  let lines2 = Lines_in_text.indexed_lines text2 ;; 
   let the_line2 = List.assoc 18 lines2 ;; 
   
   let peggy1 i = let si = string_of_int i in "("^si^",\"\\195\\"^si^"\")" ;; 
@@ -14725,7 +14725,7 @@ On startup, you can make a few clean-up initializations as follows :
 
 let act1 () = Chronometer.it (Percent_pagination.modify_file_pagewise
   (fun text->
-    Remove_hyphens.in_string(Make_paragraphs_one_lined.in_string text)
+    Remove_hyphens.in_text(Make_paragraphs_one_lined.in_text text)
     )) emptiable_ap ;;
 
 let act2 () = Chronometer.it Incremental_replace_on_a_set_of_files.apply_all () ;;
@@ -14778,8 +14778,8 @@ let partial_texts_for_html = Int_range.scale (fun k->
    let sk = string_of_int k in 
    let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
   let uncompressed_pagetext = rf fn in 
-  let pagetext = Make_paragraphs_one_lined.in_string 
-  (Remove_hyphens.in_string uncompressed_pagetext) in  
+  let pagetext = Make_paragraphs_one_lined.in_text 
+  (Remove_hyphens.in_text uncompressed_pagetext) in  
   pagetext)  first_treated_page last_treated_page ;;
  
  
@@ -14920,8 +14920,8 @@ let partial_texts_for_txt = Int_range.scale (fun k->
   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
   let announcer = "%\n% Page "^sk^" \n%\n" in 
  let uncompressed_pagetext = rf fn in 
- let pagetext = Make_paragraphs_one_lined.in_string 
- (Remove_hyphens.in_string uncompressed_pagetext) in  
+ let pagetext = Make_paragraphs_one_lined.in_text 
+ (Remove_hyphens.in_text uncompressed_pagetext) in  
  announcer^pagetext)  first_treated_page last_treated_page ;;
 
  
@@ -17736,12 +17736,12 @@ Io.Private.append_string_to_file u3 ap;;
 let z1 = home^
 "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn1.gp" ;;
 
-let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
+let z2 = Lines_in_text.interval (rf z1) 60 67 ;;
 
 *)
 
 (************************************************************************************************************************
-Snippet 46 : A useful shortcut using Lines_in_string.remove_interval_in_file 
+Snippet 46 : A useful shortcut using Lines_in_text.remove_interval_in_file 
 ************************************************************************************************************************)
 let ri fn x y =
      Lines_in_text.remove_interval_in_file 
@@ -19465,8 +19465,8 @@ let partial_texts = Int_range.scale (fun k->
   let fn = home^"/Downloads/"^dirname^"/p"^sk^".txt" in 
   let announcer = "%\n% Page "^sk^" \n%\n" in 
   let uncompressed_pagetext = rf fn in 
-  let pagetext = Make_paragraphs_one_lined.in_string 
-  (Remove_hyphens.in_string uncompressed_pagetext) in  
+  let pagetext = Make_paragraphs_one_lined.in_text 
+  (Remove_hyphens.in_text uncompressed_pagetext) in  
   announcer^pagetext)  1 num_of_pages ;;
 
 let full_ap = Absolute_path.create_file_if_absent (home^"/Downloads/"^dirname^"/full.txt");;  

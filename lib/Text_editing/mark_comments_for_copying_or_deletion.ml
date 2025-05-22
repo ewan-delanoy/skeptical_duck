@@ -138,7 +138,7 @@ copy_between_strings
 
 *)   
 
-let delete_in_string src =
+let delete_in_text src =
   let ranges = ranges_for_marked_comments src in 
   let indexed_lines = Lines_in_text.indexed_lines src in 
   let is_to_be_kept = (fun idx ->
@@ -171,7 +171,7 @@ let copy src_file dest_file =
 
 let delete file = 
     let old_text = Io.read_whole_file file in
-    let new_text = Private.delete_in_string old_text  in
+    let new_text = Private.delete_in_text old_text  in
     Io.overwrite_with file new_text ;;    
 
 

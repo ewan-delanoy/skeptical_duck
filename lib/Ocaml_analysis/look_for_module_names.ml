@@ -120,9 +120,9 @@ let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
 
 (*   
    
-indices_in_string "123 Haag.012 open Garfield;8";;
+indices_in_text "123 Haag.012 open Garfield;8";;
 
-indices_in_string "(* Haag. *)234 Dog.\"open Garfield;\"67 Corn.4";;
+indices_in_text "(* Haag. *)234 Dog.\"open Garfield;\"67 Corn.4";;
 
 let example = String.concat "\n" [
 ""; "open Aantron_markup_common"; ""; "module Aantron_peggy = Aantron_kstream";""; "include Aantron_kstream.Foo";"";"val parse :";

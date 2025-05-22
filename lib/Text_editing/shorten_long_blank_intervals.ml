@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-let in_string text =
+let in_text text =
   let temp1 = Str.full_split (Str.regexp "[ \t\n\r]+") text in 
   let temp2 = Image.image (
      function 
@@ -29,10 +29,10 @@ end ;;
 
 let in_file file = 
   let old_text = Io.read_whole_file file in
-  let new_text = Private.in_string old_text  in
+  let new_text = Private.in_text old_text  in
   Io.overwrite_with file new_text ;;  
 
-let in_string = Private.in_string ;;  
+let in_text = Private.in_text ;;  
 
-(* in_string "1\n2\n3\n\t\n\r\n\r\n4\n5\n6\n7" ;; *)  
+(* in_text "1\n2\n3\n\t\n\r\n\r\n4\n5\n6\n7" ;; *)  
 

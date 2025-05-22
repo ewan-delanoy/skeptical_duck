@@ -15,56 +15,6 @@ Assistance_usual_coma_state.refresh() )
 
 
 
-module Assistance_hurried=struct
-
-(*
-
-#use"lib/hurried.ml";;
-
-*)
-
-module Private = struct
-
-let partition_in_two_parts f l=
-  let rec tempf=(fun
-   (graet,da_ober)->match da_ober with
-     []->(List.rev graet,[])
-     |a::peurrest->
-        if f(a)
-        then tempf(a::graet,peurrest)
-        else (List.rev graet,da_ober)
-  ) in
-  tempf([],l);; 
-
-(* partition_in_two_parts (fun x->(x mod 3)<>0) (Ennig.ennig 1 21) *)
-
-end ;; 
-
-
-
-
-let connected_components f l = 
-  let rec tempf = (fun 
-    (treated,to_be_treated) -> match to_be_treated with 
-       [] -> List.rev treated 
-     | a :: others ->
-        let fa = f a in 
-        let (left,right) = Private.partition_in_two_parts (fun x-> f x=fa) others in 
-        tempf((a::left)::treated,right)
-  ) in 
-  tempf([],l) ;;
-
-(* connected_components (fun x->(x mod 3)<>0) (Ennig.ennig 1 21) *)  
-
-let partition_in_two_parts = Private.partition_in_two_parts ;;    
-
-end;;
-
-
-
-
-
-
 module Assistance_image=struct
 
 (*
@@ -83,6 +33,189 @@ let image f l=
    |a::peurrest->tempf(f(a)::graet,peurrest)
   ) in
   tempf([],l);;
+ 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_arithmetic_list=struct
+
+(*
+
+#use"lib/Listy/arithmetic_list.ml";;
+
+*)
+
+  
+exception Compute_largest_connected_interval_on_the_left_exn ;;
+exception Pusher_for_far_apart_components_exn ;;
+
+module Private = struct 
+
+let compute_largest_connected_interval_on_the_left initial_l =
+  let rec tempf = (fun  (a,b,l)->
+   match l with 
+   [] -> ((a,b),[])
+   |head :: tail -> if head = b+1 
+                    then tempf(a,b+1,tail)
+                    else ((a,b),l)  
+  ) in  
+  match initial_l with 
+  [] -> raise Compute_largest_connected_interval_on_the_left_exn
+  | head2 :: tail2 -> tempf (head2,head2,tail2) ;;
+
+
+
+let pusher_for_far_apart_components 
+   (d,treated,last_elt,in_progress,to_be_treated) = 
+    match to_be_treated with 
+    [] -> raise Pusher_for_far_apart_components_exn 
+    | new_elt :: other_elts ->
+        if (new_elt-last_elt > d) 
+        then (d,(List.rev(last_elt::in_progress))::treated,new_elt,[],other_elts)
+        else (d,treated,new_elt,last_elt::in_progress,other_elts)  ;;   
+
+let rec iterator_for_far_apart_components uple =
+    let (_d,treated,last_elt,in_progress,to_be_treated) = uple in        
+    match to_be_treated with 
+    [] ->  List.rev(List.rev(last_elt::in_progress)::treated)
+    | _ -> iterator_for_far_apart_components(pusher_for_far_apart_components uple);;
+
+let compress_small_block l = 
+    List.flatten (
+      Assistance_image.image (fun (i,j)->if i=j then [i] else [i;j]) l
+    ) ;;
+
+(* compress_small_block [(1,1);(3,4);(6,6);(8,9)] ;; *)
+
+let rec find_large_block_opt (treated,to_be_treated) =
+  match to_be_treated with 
+    [] -> None
+   |(i,j) :: others -> 
+      if j-i>1
+      then Some(List.rev(treated),(i,j),others) 
+      else find_large_block_opt ((i,j)::treated,others) ;;
+
+let rec helper_for_cc_writing (treated,to_be_treated) = 
+   if to_be_treated = [] then List.rev(treated) else 
+   match find_large_block_opt ([],to_be_treated) with
+   None -> 
+     let last_part = (false,0,0,compress_small_block to_be_treated) in 
+     List.rev (last_part :: treated)
+  |Some (before,(i,j),after) ->
+     let increment1 = (
+       if before = [] then treated else 
+       (false,0,0,compress_small_block before) :: treated
+     ) in 
+     helper_for_cc_writing 
+      ( (true,i,j,[]) :: increment1,after) ;;
+
+(*
+helper_for_cc_writing
+([],[(1,1);(3,4);(6,6);(8,9);(11,15);(17,19);
+  (22,22);(24,25);(27,27);(29,32);(36,37)
+]) ;;
+*)
+
+let rec helper_for_connectedness_test i = function 
+ [] -> true 
+ |j :: others -> 
+    if j = i+1 
+    then helper_for_connectedness_test j others 
+    else false ;;
+
+let is_connected = function 
+  [] -> true 
+  |i :: others -> helper_for_connectedness_test i others ;;
+
+end ;;
+
+
+let complement_union_of_ranges ranges n=
+   let rec tempf=(fun 
+     (already_treated,a,b,to_be_treated)->
+       match to_be_treated with 
+       []->List.rev((a,b)::already_treated)
+       |(x1,y1)::other_ranges->
+         tempf((a,x1-1)::already_treated,y1+1,b,other_ranges)
+   ) in 
+   let temp1=tempf([],1,n,ranges) in 
+   List.filter (fun (x,y)->x<=y) temp1;;
+
+(*
+
+complement_union_of_ranges [3,7;8,20] 30;;
+complement_union_of_ranges [3,7;9,20] 30;;
+complement_union_of_ranges [1,7;9,20] 30;;
+complement_union_of_ranges [1,7;9,30] 30;;
+complement_union_of_ranges [1,7;8,30] 30;;
+
+*)
+
+
+let decompose_into_connected_components l=
+  let rec tempf = (fun 
+     (treated,to_be_treated)->
+     if to_be_treated = [] then List.rev treated else 
+     let (interval,others) =  Private.compute_largest_connected_interval_on_the_left to_be_treated in 
+     tempf (interval::treated,others)
+  ) in 
+  tempf ([],l);;
+
+(*
+
+decompose_into_connected_components [3; 4; 5; 6; 7; 10; 11; 12; 13; 14; 15; 31; 32; 33; 34; 35; 36; 37; 38; 39; 40;
+ 41; 42; 43; 44; 45; 46; 47; 48];;
+
+*)  
+
+let decompose_into_far_apart_components ~max_inner_distance = function 
+  [] -> []
+  |a :: b -> Private.iterator_for_far_apart_components
+      (max_inner_distance,[],a,[],b) ;;
+
+(*
+
+decompose_into_far_apart_components ~max_inner_distance:5 [1;2;3;8;9;10;16;17;18] ;;
+decompose_into_far_apart_components ~max_inner_distance:4 [1;2;3;8;9;10;16;17;18] ;;
+
+*)
+
+
+
+let delta l=
+  let rec sub_f=
+  (function (accu,a,rl)->match rl with
+  []->List.rev(accu)
+  |b::x->sub_f((b-a)::accu,b,x)
+  ) in
+  match l with
+  []->[]
+  |u::v->sub_f([],u,v);;
+           
+let is_connected = Private.is_connected ;;
+
+let write_using_connected_components l = 
+    let temp1 = decompose_into_connected_components l in 
+    let temp2 = Private.helper_for_cc_writing ([],temp1) in 
+    String.concat "" ( Assistance_image.image (
+      fun (is_a_long_block,i,j,l) ->
+        if is_a_long_block 
+        then "["^(string_of_int i)^".."^(string_of_int j)^"]"
+        else "{"^(String.concat "," (Assistance_image.image string_of_int l))^"}"
+    ) temp2) ;;
+(*
+
+write_using_connected_components
+[1; 3; 4; 6; 8; 9; 11; 12; 13; 14; 15; 17; 18; 19; 22; 24; 25; 27; 29; 30;
+   31; 32; 36; 37] ;;
+
+*)
 
 
 
@@ -161,14 +294,14 @@ else if f(a)
   then true
   else exists f (a+1) b;;	 
 
-let rec find_it f a b=
+let rec find_opt f a b=
 if (a>b) 
 then None
 else if f(a)
   then Some(a)
-  else find_it f (a+1) b;;	  
+  else find_opt f (a+1) b;;	  
 
-let rec find_and_stop f a b=
+let find_and_stop f a b=
 let rec find_and_stop0=(function
  j->if (j>b)
     then None
@@ -226,887 +359,6 @@ end;;
 
 
 
-module Assistance_memoized=struct
-
-(*
-
-#use"lib/memoized.ml";;
-
-*) 
-type ('a,'b) map=('a->'b);;
-
-let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let y=f(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  (memoized_f:>('a,'b) map);;
-
-let make (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  make_from f a_hashtbl_for_f;;
-  
-let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
-  let rec memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let mf=(memoized_f:>('a->'b)) in
-          let y=big_f(mf)(x) in
-          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
-          y
-  ) in
-  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
-
-let recursive (big_f:('a->'b)->'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) in
-  recursive_from big_f a_hashtbl_for_f;;
-
-let small f initial_value=
-  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
-  
-let reversible (f:'a->'b)=
-  let a_hashtbl_for_f=Hashtbl.create(100) 
-  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
-  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
-  and irreducibles=ref([]) 
-  and minimal_reductions=ref([]) in
-  let compute_f=(fun x accu->
-     let y=f(x) in
-     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
-      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
-     else     
-     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
-     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
-          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
-          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
-          minimal_reductions:=(x,old_x)::(!minimal_reductions))
-     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
-            irreducibles:=x::(!irreducibles))
-     
-  ) in
-  let memoized_f=(fun x->
-     if Hashtbl.mem(a_hashtbl_for_f)(x)
-     then Hashtbl.find(a_hashtbl_for_f)(x)
-     else let accu=ref([]) in
-          let _=compute_f(x)(accu) in
-          List.hd(!accu)
-  ) 
-  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
-  let memoized_projector=(fun x->
-    let ()=compute_f(x)(ref[]) in
-    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
-    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
-    else x
-    ) in
-  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_int_uple=struct
-
-(*
-
-#use"lib/int_uple.ml";;
-
-*) 
-let translate_pair a (x1,x2)=(a+x1,a+x2);;
-let translate_triple a (x1,x2,x3)=(a+x1,a+x2,a+x3);;
-let translate_fourtuple a (x1,x2,x3,x4)=(a+x1,a+x2,a+x3,a+x4);;
-let translate_fiftuple a (x1,x2,x3,x4,x5)=(a+x1,a+x2,a+x3,a+x4,a+x5);;
-let translate_sixtuple a (x1,x2,x3,x4,x5,x6)=(a+x1,a+x2,a+x3,a+x4,a+x5,a+x6);;
-
-let next_pair (i,j)=
-if i+1<j then (i+1,j) else
-(1,i+2);;
-
-let next_inclusive_pair (i,j)=
-if i+1<=j then (i+1,j) else
-(1,j+1);;
-
-
-let next_triple (i,j,k)=
-if i+1<j then (i+1,j,k) else
-if i+2<k then (1,i+2,k) else
-(1,2,i+3);;
-
-let next_fourtuple (x1,x2,x3,x4)=
-if x1+1<x2 then (x1+1,x2,x3,x4) else
-if x2+1<x3 then (1, x2+1,x3,x4) else
-if x3+1<x4 then (1,2,  x3+1,x4) else
-(1,2,3,x4+1);;
-
-let next_fiftuple (x1,x2,x3,x4,x5)=
-if x1+1<x2 then (x1+1,x2,x3,x4,x5) else
-if x2+1<x3 then (1, x2+1,x3,x4,x5) else
-if x3+1<x4 then (1,2,  x3+1,x4,x5) else
-if x4+1<x5 then (1,2,3,   x4+1,x5) else
-(1,2,3,4,x5+1);;
-
-let next_sixtuple (x1,x2,x3,x4,x5,x6)=
-if x1+1<x2 then (x1+1,x2,x3,x4,x5,x6) else
-if x2+1<x3 then (1, x2+1,x3,x4,x5,x6) else
-if x3+1<x4 then (1,2,  x3+1,x4,x5,x6) else
-if x4+1<x5 then (1,2,3,   x4+1,x5,x6) else
-if x5+1<x6 then (1,2,3,4,    x5+1,x6) else
-(1,2,3,4,5,x6+1);;
-
-
-let inclusive_list_of_pairs=Assistance_memoized.make(function n->
-        if n<1 then [] else
-        if n=1 then [1,1] else        
-        let accu=ref([],(1,1))
-        and number_of_iterations=(n*(n+1))/2 
-        and iterator=(function (l,c)->(c::l,next_inclusive_pair(c)) ) in
-        let _=(for k=1 to number_of_iterations do
-        accu:=iterator(!accu)
-        done) in
-        List.rev(fst (!accu)));;
-
-let list_of_pairs=Assistance_memoized.make(function n->
-if n<2 then [] else
-let accu=ref([],(1,2))
-and number_of_iterations=(n*(n-1))/2 
-and iterator=(function (l,c)->(c::l,next_pair(c)) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-List.rev(fst (!accu)));;
-
-let list_of_triples=Assistance_memoized.make(function n->
-if n<3 then [] else
-let accu=ref([],(1,2,3))
-and number_of_iterations=(n*(n-1)*(n-2))/6 
-and iterator=(function (l,c)->(c::l,next_triple(c)) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-List.rev(fst (!accu)));;
-
-let list_of_fourtuples=Assistance_memoized.make(function n->
-if n<4 then [] else
-let accu=ref([],(1,2,3,4))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3))/24 
-and iterator=(function (l,c)->(c::l,next_fourtuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-List.rev(fst (!accu)));;
-
-
-let list_of_fiftuples=Assistance_memoized.make(function n->
-if n<5 then [] else
-let accu=ref([],(1,2,3,4,5))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4))/120 
-and iterator=(function (l,c)->(c::l,next_fiftuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-List.rev(fst (!accu)));;
-
-
-let list_of_sixtuples=Assistance_memoized.make(function n->
-if n<6 then [] else
-let accu=ref([],(1,2,3,4,5,6))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4)*(n-5))/720 
-and iterator=(function (l,c)->(c::l,next_sixtuple(c)) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-List.rev(fst (!accu)));;
-
-let maximize_on_pairs f a b=
-let n=(b-a)+1 and aa=(a-1) in
-let accu=ref(f(a,a+1),[],(1,2))
-and number_of_iterations=(n*(n-1))/2 
-and iterator=(function (y0,lx,c)->
-   let tc=translate_pair(aa)(c) and nc=next_pair(c) in
-   let y=f(tc) in
-   if y<y0 
-   then (y0,lx,nc)
-   else if y=y0
-        then (y0,tc::lx,nc)
-        else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
-(final_y,final_list);;
-  
-let maximize_on_triples f a b=
-let n=(b-a)+1 and aa=(a-1) in
-let accu=ref(f(a,a+1,a+2),[],(1,2,3))
-and number_of_iterations=(n*(n-1)*(n-2))/6 
-and iterator=(function (y0,lx,c)->
-   let tc=translate_triple(aa)(c) and nc=next_triple(c) in
-   let y=f(tc) in
-   if y<y0 
-   then (y0,lx,nc)
-   else if y=y0
-        then (y0,tc::lx,nc)
-        else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
-(final_y,final_list);;  
-  
-let maximize_on_fourtuples f a b=
-let n=(b-a)+1 and aa=(a-1) in
-let accu=ref(f(a,a+1,a+2,a+3),[],(1,2,3,4))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3))/24 
-and iterator=(function (y0,lx,c)->
-   let tc=translate_fourtuple(aa)(c) and nc=next_fourtuple(c) in
-   let y=f(tc) in
-   if y<y0 
-   then (y0,lx,nc)
-   else if y=y0
-        then (y0,tc::lx,nc)
-        else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
-(final_y,final_list);;
-
-let maximize_on_fiftuples f a b=
-let n=(b-a)+1 and aa=(a-1) in
-let accu=ref(f(a,a+1,a+2,a+3,a+4),[],(1,2,3,4,5))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4))/120
-and iterator=(function (y0,lx,c)->
-   let tc=translate_fiftuple(aa)(c) and nc=next_fiftuple(c) in
-   let y=f(tc) in
-   if y<y0 
-   then (y0,lx,nc)
-   else if y=y0
-        then (y0,tc::lx,nc)
-        else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
-(final_y,final_list);;
-  
-let maximize_on_sixtuples f a b=
-let n=(b-a)+1 and aa=(a-1) in
-let accu=ref(f(a,a+1,a+2,a+3,a+4,a+5),[],(1,2,3,4,5,6))
-and number_of_iterations=(n*(n-1)*(n-2)*(n-3)*(n-4)*(n-5))/720
-and iterator=(function (y0,lx,c)->
-   let tc=translate_sixtuple(aa)(c) and nc=next_sixtuple(c) in
-   let y=f(tc) in
-   if y<y0 
-   then (y0,lx,nc)
-   else if y=y0
-        then (y0,tc::lx,nc)
-        else (y,[],nc) ) in
-let _=(for k=1 to number_of_iterations do
-accu:=iterator(!accu)
-done) in
-let last_term=(!accu) in
-let final_y=(function (y,lx,c)->y)(last_term)
-and final_list=(function (y,lx,c)->List.rev lx)(last_term) in
-(final_y,final_list);;
-    
-  
-  
-
-
-end;;
-
-
-
-
-
-
-module Assistance_option=struct
-
-(*
-
-#use"lib/option.ml";;
-
-*) 
-
-exception Unpackable of string;;
-
-module Private = struct 
-
-let unpack_with_error_message s=function
-None->raise(Unpackable(s))
-|Some(x)->x;;
-
-end ;;
-
-
-let add_element_on_the_right l x=match x with
-  None->l
-  |Some(a)->l@[a];;
- 
-let rec filter_and_unpack f l=
- let rec filter0=(function
-  (graet,da_ober)->match da_ober with
-   []->List.rev(graet)
-   |x::peurrest->match f(x) with
-		None->filter0(graet,peurrest)
-		|Some(y)->filter0(y::graet,peurrest)
- ) in
- filter0([],l);;
-
-let  find_and_stop f l=
- let rec find_and_stop0=(function
-  da_ober->match da_ober with
-   []->None
-   |a::peurrest->match f(a) with
-		None->find_and_stop0(peurrest)
-		|Some(x)->Some(x)
- ) in
- find_and_stop0(l);;
-
-let propagate f=function
-None->None
-|Some(x)->Some(f(x));;
-
-let rec seek f =function
-[]->None
-|a::b->if f(a) then Some(a) else seek(f)(b);;
-
-let unpack x =Private.unpack_with_error_message "void is not unpackable" x;;
-
-
-
-
-
- 
-
-
-end;;
-
-
-
-
-
-
-module Assistance_listennou=struct
-
-(*
-
-#use"lib/Listy/listennou.ml";;
-
-*)
-
-
-
-exception Ht_exn;;
-exception Reposition_first_key_not_found;;
-exception Reposition_second_key_not_found;;
-exception Push_immediately_after_exn;;
-
-
-let ht x=match x with
-    []->raise(Ht_exn)
-    |a::b->(a,b);;
-
-let rec uncurrified_rev_append (x,y)=match x with
-[]->y
-|a::peurrest->uncurrified_rev_append (peurrest,a::y);;
-
-let rec uncurrified_append (x,y)=uncurrified_rev_append (List.rev x,y);;
-
-let factor (x,y)=
-    let rec factor0=(fun
-       (graet,da_ober1,da_ober2)->
-       if (da_ober1=[])||(da_ober2=[])
-       then (List.rev graet,da_ober1,da_ober2)
-       else let (a1,peurrest1)=ht da_ober1
-            and (a2,peurrest2)=ht da_ober2 in
-            if a1=a2
-            then factor0(a1::graet,peurrest1,peurrest2)
-            else (List.rev graet,da_ober1,da_ober2)
-    ) in
-    factor0([],x,y);;
-
-let comparable_for_prefix_order  a b=
-    let (_,a1,b1)=factor(a,b) in (a1=[])||(b1=[]);;
-
-let extends l1 l2=
-   let (_,_,r2)=factor (l1,l2) in r2=[];;
-
-
-let didrochan x=
-let rec didrochan0=
-(function (u,accu1,accu2,bowl)->match u with
- []->(accu1,accu2)
- |a::b->if bowl
-        then didrochan0(b,a::accu1,accu2,false)
-        else didrochan0(b,accu1,a::accu2,true))  
-in
-didrochan0(x,[],[],true);;
-
-let find_index x ll=
-let rec sub_f=
-(function (j,l)->match l with
-[]->(-1)      
-|u::v->if u=x then j else sub_f(j+1,v)) in
-sub_f(1,ll);;
-
-exception Force_find_exn ;;
-
-let rec force_find f x=
-   match x with 
-   [] -> raise(Force_find_exn)
-   |a::others -> if f a 
-                 then a 
-                 else force_find f others ;; 
-
-let morzholan f x=
-let rec sub_f=(function (u,v)->if u=v then u else sub_f(v,f(v)))
-in sub_f(x,f(x));;
-
-let rec morzhol_bihan f k x=
-if k=0 then x else morzhol_bihan f (k-1) (f(x));;
-
-exception Big_rht_exn of int*int;;
-
-let big_rht r l=let rec tempf=
-(function (j,kleiz,dehou)->
-if j=0 then (kleiz,dehou) else 
-match dehou with
-[]->raise(Big_rht_exn(r,List.length l))
-|a::peurrest->tempf(j-1,a::kleiz,peurrest)
-) in
-tempf(r,[],l);;
-
-let big_head r l=if (r>(List.length l)) then l else List.rev(fst(big_rht(r)(l)));;
-
-let big_tail r l=if (r>(List.length l)) then [] else snd(big_rht(r)(l));;
-
-let remove_element_at_idx l k=
-   let (kleiz,dehou)=big_rht k l in 
-   List.rev_append (List.tl kleiz) dehou;;
-
-(* remove_element_at_idx [1; 2; 3; 4; 5; 6; 7] 3;; *)   
-
-let decompose_wrt_two_indices l i j=
-   let (r_part1,temp1)=big_rht (i-1) l in 
-   let (ei,temp2)=ht temp1 in 
-   let (r_part2,temp3)=big_rht (j-i-1) temp2 in 
-   let (ej,part3)=ht temp3 in 
-   (List.rev r_part1,ei,List.rev r_part2,ej,part3);;
-
-(* decompose_wrt_two_indices [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
-
-let extract_interval l i j=
-  let (r_part1,temp1)=big_rht (i-1) l in 
-  let (r_part2,part3)=big_rht (j-i+1) temp1 in 
-  (List.rev r_part1,List.rev r_part2,part3);;
-
-(* extract_interval [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)
-
-let decompose_wrt_element l elt1=
-  let rec tempf=(
-     fun (treated,to_be_treated)->match to_be_treated with 
-     []->(List.rev treated,false,[])
-    |elt::other_elts ->
-       if elt=elt1
-      then (List.rev(treated),true,other_elts)
-      else tempf(elt::treated,other_elts)
-  ) in 
-  tempf([],l);; 
-
-(* decompose_wrt_element [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3;; *)
-
-
-
-let reposition_by_putting_snd_immediately_after_fst l elt_i elt_j=
-    let (left1,found1,right1)=decompose_wrt_element l elt_i in 
-    if not found1 then raise(Reposition_first_key_not_found) else 
-    let (left2,found2,right2)=decompose_wrt_element right1 elt_j in 
-    if not found2 then raise(Reposition_second_key_not_found) else
-    left1@(elt_i::elt_j::(left2@right2));; 
-  
-(* reposition_by_putting_snd_immediately_after_fst [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 3 7;; *)  
-
-
-let power_set l=
-let rec tempf=
-(function (da_ober,graet)->match da_ober with
-[]->graet
-|a::peurrest->tempf(peurrest,graet@(Assistance_image.image(function y->a::y)(graet)))
-) in
-tempf(List.rev(l),[[]]);;
-
-
-let fold_right f x0 l=List.fold_left(function x->(function a->f a x)) x0 l;;
-
-
-
-let universal_delta_list l=
-let rec sub_f=
-(function (accu,a,rl)->match rl with
-[]->List.rev(accu)
-|b::x->sub_f((a,b)::accu,b,x)
-) in
-match l with
-[]->[]
-|u::v->sub_f([],u,v);;
-
- 
-let delete_redundancies r l=
- let rec tempf=(function
-   (graet,da_ober)->match da_ober with
-   []->List.rev(graet)
-   |x::peurrest->
-     if List.exists(function y->r y x)(peurrest)
-     then tempf(graet,peurrest)
-     else let temp1=List.filter(function y->not(r x y))(peurrest) in
-          tempf(x::graet,temp1)
- ) in
- tempf([],l);;
-
-let nonredundant_version l=
-  let rec tempf=(
-    fun (graet,da_ober)->
-      match da_ober with
-      []->List.rev graet
-      |a::peurrest->if List.mem a graet
-                    then tempf(graet,peurrest)
-                    else tempf(a::graet,peurrest)
-  ) in
-  tempf([],l);;
-
-let rev_map f l=
-   let rec tempf=(
-     fun (graet,da_ober)->match da_ober with
-     []->graet
-     |a::peurrest->tempf((f a)::graet,peurrest)
-   ) in
-   tempf([],l);;
-   
-let redundant_indices l=
-  let rec tempf=(
-    fun (counter,already_known,bad_indices,to_be_treated)->
-      match to_be_treated with
-      []->List.rev bad_indices
-      |a::others->
-        let idx=counter+1 in  
-        if List.mem a already_known
-        then tempf(idx,already_known,idx::bad_indices,others)
-        else tempf(idx,a::already_known,bad_indices,others)
-  ) in
-  tempf(0,[],[],l);;
-
-(*
-redundant_indices [1; 2; 1; 4; 5; 6; 3; 8; 9; 10; 11; 12; 13; 6; 15];;
-*)
-
-let divide_by_two l=
-   let rec tempf=(
-     fun (treated,to_be_treated)->match to_be_treated with 
-     []->(List.rev treated,None)
-     |a1::others1->(
-         match others1 with 
-         []->(List.rev treated,Some(a1))
-         |a2::others->tempf((a1,a2)::treated,others)
-      )
-   ) in 
-   tempf ([],l);;
-
-let push_immediately_after l elt2 elt1 =
-  let rec tempf=(
-    fun (treated,to_be_treated)->match to_be_treated with 
-     []->raise(Push_immediately_after_exn)
-    |elt::others ->
-      if elt=elt1
-      then List.rev_append treated (elt::elt2::others)
-      else tempf(elt::treated,others)
-  ) in 
-  tempf([],l);; 
-
-let hi=List.length;;
-let rev=List.rev;;
-
-(*
-
-push_immediately_after [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12] 145 3;;
-
-*)
-
-let partition_from_set_of_ranges l n=
-    if l=[] then [1,n,false] else 
-    let (last_i,last_j)=List.hd(List.rev l) 
-    and (first_i,_)=List.hd l in
-    let temp2=universal_delta_list l in  
-    let temp3=Assistance_image.image (fun ((i1,j1),(i2,j2))->
-      [(i1,j1,true);(j1+1,i2-1,false)]
-    ) temp2 in 
-    let middle_part=List.flatten temp3 in
-    let first_part=(if first_i>1 then [(1,first_i-1,false)] else []) 
-    and last_part=(if last_j<n then [(last_j+1,n,false)] else []) in 
-    first_part@middle_part@[(last_i,last_j,true)]@last_part;;
-
-(*
-
-partition_from_set_of_ranges [(3,7);(41,52)] 100;;
-partition_from_set_of_ranges [(1,7);(41,52)] 100;;
-
-*)
-
-let extract_intervals_in_complement l n =
-   let enhanced_l = 0::(l@[n+1]) in 
-   let temp1=universal_delta_list enhanced_l in
-   let temp2= Assistance_image.image (fun (x,y)->(x+1,y-1)) temp1 in 
-   List.filter (fun (a,b)->a<=b) temp2;;
-
-(*
-
-extract_intervals_in_complement [3;7;8;20] 30;;
-extract_intervals_in_complement [1;7;8;20] 30;;
-extract_intervals_in_complement [1;7;8;30] 30;;
-
-*)   
-
-let complement_union_of_ranges ranges n=
-   let rec tempf=(fun 
-     (already_treated,a,b,to_be_treated)->
-       match to_be_treated with 
-       []->List.rev((a,b)::already_treated)
-       |(x1,y1)::other_ranges->
-         tempf((a,x1-1)::already_treated,y1+1,b,other_ranges)
-   ) in 
-   let temp1=tempf([],1,n,ranges) in 
-   List.filter (fun (x,y)->x<=y) temp1;;
-
-(*
-
-complement_union_of_ranges [3,7;8,20] 30;;
-complement_union_of_ranges [3,7;9,20] 30;;
-complement_union_of_ranges [1,7;9,20] 30;;
-complement_union_of_ranges [1,7;9,30] 30;;
-complement_union_of_ranges [1,7;8,30] 30;;
-
-*)
-
-
-let split_list_in_half l=
-   let temp1=Assistance_int_range.index_everything(l) in 
-   let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
-   (Assistance_image.image snd temp2,Assistance_image.image snd temp3);;
-
-(*
-
-split_list_in_half [1; 2; 3; 4; 5; 6; 7];;
-split_list_in_half [1; 2; 3; 4; 5; 6; 7; 8];;
-
-*)   
-
-
-
-let unequal_combine l1 l2 =
-   let rec tempf=(fun
-     (treated,to_be_treated1,to_be_treated2)->
-       match to_be_treated1 with 
-       []->List.rev(treated)
-       |a1::others1->(
-                       match to_be_treated2 with 
-                        []->List.rev(treated)
-                        |a2::others2 -> tempf((a1,a2)::treated,others1,others2)
-                     )
-   ) in 
-   tempf([],l1,l2);;
-
-exception Fst_is_largest of int * int;;
-  
-
-let unequal_combine_where_fst_is_smallest l1 l2 =
-   let n1=List.length(l1) and n2=List.length(l2) in 
-   if n1>n2 then raise(Fst_is_largest(n1,n2)) else   
-   unequal_combine l1 l2;;
-
-
-exception  Extract_successive_pairs_exn of int;;
-
-let extract_successive_pairs_from_even_list l=
-   let m1 =(List.length l) in 
-   if (m1 mod 2)<>0 then raise(Extract_successive_pairs_exn(m1)) else 
-   let m2=m1/2 in 
-   Assistance_int_range.scale (fun j->
-      (List.nth l (2*j-2),List.nth l (2*j-1)) 
-   ) 1 m2;;
-
-let remove_initial_contaminated_elements contamination_test all_elts =
-      let rec tempf =(
-         fun (beginning,l)-> match l with 
-         [] -> (beginning,[])
-         |a :: b -> if  contamination_test a 
-                    then tempf (a::beginning,b) 
-                    else (beginning,l)
-      ) in 
-      tempf ([],all_elts) ;;
-
-(*
-
-remove_initial_contaminated_elements (fun x->x<=100) [2;3;507;1;4;30];;
-
-*)
-
-let start_separating is_sep is_not_sep elts =
-     let (_,temp1) = remove_initial_contaminated_elements is_sep elts in 
-     remove_initial_contaminated_elements is_not_sep temp1;; 
-      
-let separate_according_to elts separators =      
-   let is_sep  = (fun x->List.mem x separators) 
-   and is_not_sep = (fun x->not(List.mem x separators))  in 
-   let rec tempf = (fun (treated,to_be_treated)-> 
-       if to_be_treated=[]
-       then List.rev treated 
-      else let (half1,half2)= start_separating is_sep is_not_sep to_be_treated in 
-           let treated2 =(
-                if half1=[] 
-                then treated 
-                else (List.rev half1)::treated 
-           ) in 
-           tempf(treated2,half2)          
-   ) in 
-   tempf([],elts);;
-
-(*
-
-separate_according_to  [1;2;3;0;4;0;0;5;6;0;0;0;7;0;8;0] [0];;
-separate_according_to  [0;0;1;2;3;0;4;0;0;5;6;0;0;0;7;0;8;0] [0];;
-*)
-
-
-let partition_according_to_fst pairs=
-  let rec tempf = (fun (already_treated,to_be_treated)->
-       match to_be_treated with 
-        [] -> List.rev already_treated 
-       |(a0,_) :: _ ->
-         let (part1,part2) = List.partition (fun (a,b)->a=a0) to_be_treated in 
-         tempf ((a0,Assistance_image.image snd part1)::already_treated,part2)     
-   ) in 
-   tempf ([],pairs) ;;
-
-
-let replace_if_possible l x=
-  match List.assoc_opt x l with 
-  None -> x 
-  |Some y -> y ;;
-
-let complement_of_singleton l k = 
-     let temp1 = Assistance_int_range.index_everything l in 
-     Assistance_option.filter_and_unpack (fun (j,x)->if j=k then None else Some x) temp1 ;;
-
-(* complement_of_singleton (Ennig.ennig 1 7) 3 ;; *)
-
-let minimal_element_in_unpwards_filter f l =
-     let rec tempf = (
-        fun (treated,to_be_treated) -> match to_be_treated with 
-          [] -> List.rev treated 
-          | x :: others ->
-          if f(List.rev_append treated others)
-          then tempf(treated,others)
-          else tempf(x::treated,others)
-     ) in 
-     tempf([],l) ;;
-
-(*  (minimal_element_in_unpwards_filter (fun x->Basic.fold_sum(x)>=10) [6;2;5;1;1]) = [6;5] ;; *)
-
-let cut_into_small_parts  l ~max_part_size =
-  let rec tempf = (
-      fun (treated,to_be_treated,remaining_size) -> 
-           if remaining_size <= max_part_size 
-           then List.rev(to_be_treated::treated) 
-           else let (reversed_left,right) = big_rht max_part_size to_be_treated in 
-                let left = List.rev reversed_left in 
-                tempf(left::treated,right,remaining_size-max_part_size)
-  ) in 
-  tempf ([],l,List.length l) ;;
-
-(* cut_into_small_parts (Ennig.ennig 1 7) ~max_part_size:3 ;; *)
-
-let project l indices = Assistance_image.image (fun k->List.nth l (k-1)) indices ;;
-
-(* project  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
-
-let insert_two_elements_at_indices l (elt1,elt2) (idx1,idx2) = 
-  let (part1,temp1) = big_rht (idx1-1) l in 
-  let (part2,part3) = big_rht (idx2-idx1) temp1 in 
-  List.rev_append part1  (elt1 :: (List.rev_append part2  (elt2 :: part3))) ;;  
-  
-(* insert_two_elements_at_indices [1; 2; 3; 4; 5; 6] (25,35) (3,4) ;;  *)
-
-
-let extend_total_ordering_by_adding_two_elements old_total_order elt1 elt2 = 
-  let n = (List.length old_total_order)+1 in 
-  Assistance_image.image (
-   insert_two_elements_at_indices old_total_order (elt1,elt2)
-  ) (Assistance_int_uple.inclusive_list_of_pairs n) ;; 
-
-
-(* extend_total_ordering_by_adding_two_elements  [1; 2; 3; 4; 5; 6] 25 35 ;; *)
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_supstring=struct
-
-(*
-
-#use"lib/supstring.ml";;
-
-*)
-
-
-
-let begins_with y x=
-      let lx=String.length(x) in
-      if String.length(y)<lx
-      then false
-      else (String.sub y 0 lx)=x;;  
-   
- let ends_with y x=
-      let lx=String.length(x) in
-      if String.length(y)<lx
-      then false
-      else (String.sub y ((String.length y)-lx) lx)=x;;  
-   
- 
-let contains y x=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      Assistance_int_range.exists tester 0 (String.length(y)-lx);;               
-
-end;;
-
-
-
-
-
-
 module Assistance_substring=struct
 
 (*
@@ -1115,74 +367,79 @@ module Assistance_substring=struct
 
 *)
 
- let is_the_beginning_of y x=Assistance_supstring.begins_with x y;;     
 
-   
- let is_the_ending_of y x=Assistance_supstring.ends_with x y;;  
 
+module Private = struct 
+
+   let leftmost_index_of_in_from_opt x y i=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   match Assistance_int_range.find_opt tester (i-1) (String.length(y)-lx) with
+      None->None
+     |Some(k)->Some(k+1);;
+
+let occurrences_of_in x y=
+   let n=String.length y in
+   let rec tempf=(fun (j,accu)->
+      if j>n then List.rev(accu) else
+      match leftmost_index_of_in_from_opt x y j with
+      None -> List.rev(accu)
+      | Some k -> tempf(k+1,k::accu)
+   )  in
+   tempf (1,[]);;
+
+let ranges_for_occurrences_of_in x y=
+   let m=String.length x in
+   let temp1 = occurrences_of_in x y in 
+   Assistance_image.image (fun i->(i,i+m-1)) temp1;;  
+
+
+end ;;    
+
+let leftmost_index_of_in_from_opt = Private.leftmost_index_of_in_from_opt ;; 
+
+let decorated_occurrences_of_in x y =
+   let ny = String.length y 
+   and ranges = Private.ranges_for_occurrences_of_in x y in  
+   let arranged_ranges = Assistance_image.image (
+     fun (old_i,old_j)->
+        (max(1)(old_i-5),min(ny)(old_j+150))
+   ) ranges in 
+   Assistance_image.image (fun (a,b)->String.sub y (a-1) (b-a+1)) arranged_ranges ;;
+
+ 
  let is_a_substring_located_at y x old_j =
     let j=old_j-1 in
     let ly=String.length(y) in
       if (String.length(x)<j+ly)||(j<0)
       then false
       else (String.sub x j ly)=y;;
- 
-  let is_a_substring_of x y=Assistance_supstring.contains y x;; 
       
-  let leftmost_index_of_in x y=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      try (Assistance_option.unpack(Assistance_int_range.find_it tester 0 (String.length(y)-lx))+1) with
-      _->(-1);;
-  
-  let rightmost_index_of_in x y=
+  let is_a_substring_of x y=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   Assistance_int_range.exists tester 0 (String.length(y)-lx);;               
+
+  let rightmost_index_of_in_opt x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 
       and temp1=List.rev(Assistance_int_range.range(0)(String.length(y)-lx)) in
-      try ((Assistance_listennou.force_find tester temp1)+1) with
-      _->(-1);;
-  
-   let leftmost_index_of_in_from x y i=
-      let lx=String.length(x) in
-      let tester=(function j->(String.sub y j lx)=x) in
-      match Assistance_int_range.find_it tester (i-1) (String.length(y)-lx) with
-         None->(-1)
-        |Some(k)->k+1;;
-  
-module Friend = struct
-
-let number_of_lines_before s i=
-   if i<1 then 0 else
-   let m=min i (String.length s) in
-   List.length(List.filter(fun j->(String.get s (j-1))='\n')(Assistance_int_range.range 1 m));;
-
-
-end;;
-
-let leftmost_linedex_of_in x y=
-    let j=leftmost_index_of_in x y in
-    if j<0 then (-1) else
-    Friend.number_of_lines_before y j;;
+      try Some((List.find tester temp1)+1) with
+      _->None;;
 
 
 
-let leftmost_linedex_of_in_from x y i=
-        let j=leftmost_index_of_in_from x y i in
-        if j<0 then (-1) else
-        Friend.number_of_lines_before y j;;    
 
-
-
-let leftmost_index_of_pattern_among_in_from patterns whole_string start_idx=  
+let leftmost_index_of_pattern_among_in_from_opt patterns whole_string start_idx=  
     let n=String.length(whole_string) in
     let temp1=Assistance_int_range.index_everything patterns in 
-    let tester =(fun idx->Assistance_option.find_and_stop (
+    let tester =(fun idx->List.find_map (
          fun (patt_nbr,patt)->
            if is_a_substring_located_at patt whole_string idx 
            then Some(patt_nbr,idx)
            else None
        ) temp1) in
-    Assistance_option.find_and_stop tester (Assistance_int_range.range start_idx n);;          
+    List.find_map tester (Assistance_int_range.range start_idx n);;          
       
 (*
 
@@ -1190,20 +447,9 @@ leftmost_index_of_pattern_among_in_from ["uv";"abc";"abcde"] "123abcde90" 1;;
 
 *)
 
-let occurrences_of_in x y=
-   let n=String.length y in
-   let rec tempf=(fun (j,accu)->
-      if j>n then List.rev(accu) else
-      let k=leftmost_index_of_in_from x y j in
-      if k<0 then List.rev(accu) else
-      tempf(k+1,k::accu)
-   )  in
-   tempf (1,[]);;
+let occurrences_of_in = Private.occurrences_of_in ;;
 
-let ranges_for_occurrences_of_in x y=
-   let m=String.length x in
-   let temp1 = occurrences_of_in x y in 
-   Assistance_image.image (fun i->(i,i+m-1)) temp1;;   
+let ranges_for_occurrences_of_in = Private.ranges_for_occurrences_of_in ;;   
 
 end;;
 
@@ -1220,10 +466,20 @@ module Assistance_cull_string=struct
 
 *)
 
+module Private = struct 
+
+   let interval s a b=String.sub s (a-1) (b-a+1);;
+   let leftmost_index_of_in_from_opt x y i=
+   let lx=String.length(x) in
+   let tester=(function j->(String.sub y j lx)=x) in
+   match Assistance_int_range.find_opt tester (i-1) (String.length(y)-lx) with
+      None->None
+     |Some(k)->Some(k+1);;
+
+end ;;   
 
 
-
-let interval s a b=String.sub s (a-1) (b-a+1);;
+let interval =Private.interval;;
 
 let neighborhood_with_center_and_size s i d=
    let a=max(1)(i-d)
@@ -1266,14 +522,15 @@ exception Ending_failure;;
      
 
 let before_and_after w x=
-  let j=Assistance_substring.leftmost_index_of_in(w)(x) in
-  if j=(-1) then None else 
+  let j_opt=Assistance_substring.leftmost_index_of_in_from_opt(w)(x) 1 in
+  if j_opt=None then None else 
+   let j = Option.get j_opt in 
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
 let complement_union_of_ranges ranges s=
    let n=String.length s in 
-   let temp1=Assistance_listennou.complement_union_of_ranges ranges n in 
+   let temp1=Assistance_arithmetic_list.complement_union_of_ranges ranges n in 
    Assistance_image.image (fun (u,v)->interval s u v) temp1;;
 
 let extract_intervals_in_wrt_separator s sep =
@@ -1291,7 +548,7 @@ extract_intervals_in_wrt_separator "123a4ab56ab789ab" "ab" ;;
 
 let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
-      match Assistance_option.seek(fun j->
+      match List.find_opt(fun j->
           not(List.mem (String.get s (j-1)) l)
       )(Assistance_int_range.range 1 n) with
       None->""
@@ -1299,7 +556,7 @@ let remove_chars_in_set_on_the_left l s=
 
 let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
-      match Assistance_option.seek(fun j->
+      match List.find_opt(fun j->
           not(List.mem (String.get s (n-j)) l)
       )(Assistance_int_range.range 1 n) with
       None->""
@@ -1311,16 +568,44 @@ let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'
 
 let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
    
-              
+let shortened_version max_length s = 
+   let n = String.length s in 
+   if n<=max_length 
+   then s 
+   else (beginning max_length s)^"(...)" ;;                  
+
 
  let trim_spaces s=
    let n=String.length s in
-   let opt1=Assistance_option.seek(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in
+   let opt1=List.find_opt(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in
    if opt1=None then "" else
-   let i1=Assistance_option.unpack opt1 in
-   let k1=Assistance_listennou.force_find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in 
+   let i1=Option.get opt1 in
+   let k1=List.find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Assistance_int_range.range 1 n) in 
    let j1=(n+1)-k1 in
    interval s i1 j1;;
+
+exception Absent_beginning_marker of string;;
+exception Absent_ending_marker of string;; 
+
+let tripartition_using_markers (bm,em) text =
+      let n = String.length text in 
+      match Private.leftmost_index_of_in_from_opt bm text 1 with 
+      None -> raise(Absent_beginning_marker(bm)) 
+      |Some i1 ->
+      let j1=i1+(String.length bm)-1 in
+      match Private.leftmost_index_of_in_from_opt em text (j1+1) with 
+      None -> raise(Absent_ending_marker(em)) 
+      |Some i2 ->
+      let j2=i2+(String.length em)-1 in
+      (interval text 1 (i1-1),
+       interval text (j1+1) (i2-1),
+       interval text (j2+1) n) ;; 
+
+(*
+
+tripartition_using_markers ("backdoor","man") "123backdoor45man678" ;;
+
+*)
 
 exception Two_sided_cutting_exn of int*int*int;;
 
@@ -1339,25 +624,17 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 
 *)      
 
- let closeup_around_index s j=
-   let n=String.length s in
-   let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Assistance_int_range.range 1 n) in
-   let (temp2,temp3)=Assistance_hurried.partition_in_two_parts(fun k->k<j) temp1 in
-   let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
-   and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
-   String.sub s (a-1) (b-a);;
-   
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
+
+
  
 let between_markers (bm,em) s=
      if (bm,em)=("","") then s else
-     let i1=Assistance_substring.leftmost_index_of_in_from bm s 1  in
-     if i1<1 then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm) in
-     let i2=Assistance_substring.leftmost_index_of_in_from em s (j1+1) in
-     if i2<1 then raise(Absent_ending_marker(bm)) else
-     interval s j1 (i2-1);; 
+     let i1_opt=Assistance_substring.leftmost_index_of_in_from_opt bm s 1  in
+     if i1_opt=None then raise(Absent_beginning_marker(bm)) else
+     let j1=(Option.get i1_opt)+(String.length bm) in
+     let i2_opt=Assistance_substring.leftmost_index_of_in_from_opt em s (j1+1) in
+     if i2_opt<None then raise(Absent_ending_marker(bm)) else
+     interval s j1 ((Option.get i2_opt)-1);; 
  
 let optional_between_markers p s=
    try Some(between_markers p s) with _->None;; 
@@ -1498,19 +775,37 @@ module Exn = struct
    let unwrap_list ccrt_obj=
       match ccrt_obj with 
       Assistance_concrete_object_t.List(l)->l 
-      |_->raise(Exn.Unwrap_list_exn(ccrt_obj));;
+      |Assistance_concrete_object_t.Int(_)
+         |Assistance_concrete_object_t.String (_)
+         |Assistance_concrete_object_t.Uple (_)
+         |Assistance_concrete_object_t.Array (_)
+         |Assistance_concrete_object_t.Record (_)   
+         |Assistance_concrete_object_t.Variant (_,_)  
+      ->raise(Exn.Unwrap_list_exn(ccrt_obj));;
    
    let unwrap_array ccrt_obj=
       match ccrt_obj with 
       Assistance_concrete_object_t.Array(l)->Array.of_list l 
-      |_->raise(Exn.Unwrap_array_exn(ccrt_obj));;
+      |Assistance_concrete_object_t.Int(_)
+         |Assistance_concrete_object_t.String (_)
+         |Assistance_concrete_object_t.Uple (_)
+         |Assistance_concrete_object_t.List (_)
+         |Assistance_concrete_object_t.Record (_)  
+         |Assistance_concrete_object_t.Variant (_,_)   
+      ->raise(Exn.Unwrap_array_exn(ccrt_obj));;
    
    let get_record ccrt_obj field =
       match ccrt_obj with 
       Assistance_concrete_object_t.Record(l)->
            (try List.assoc field l with 
            _ ->raise(Exn.Get_record_absent_key_exn(field)))
-      |_->raise(Exn.Get_record_bad_type_exn(ccrt_obj));;
+           |Assistance_concrete_object_t.Int(_)
+           |Assistance_concrete_object_t.String (_)
+           |Assistance_concrete_object_t.Uple (_)
+           |Assistance_concrete_object_t.List (_)
+           |Assistance_concrete_object_t.Array (_) 
+           |Assistance_concrete_object_t.Variant (_,_)    
+      ->raise(Exn.Get_record_bad_type_exn(ccrt_obj));;
    
    let unwrap_bounded_uple ccrt_obj=
      match ccrt_obj with 
@@ -1525,7 +820,13 @@ module Exn = struct
          and i7=(if n<7 then 1 else 7) in
          let get=(fun k->List.nth l (k-1)) in 
          (get 1,get 2,get i3,get i4,get i5,get i6,get i7)
-      | _-> raise(Exn.Unwrap_bounded_uple_exn(ccrt_obj));;
+      |Assistance_concrete_object_t.Int(_)
+      |Assistance_concrete_object_t.String (_)
+      |Assistance_concrete_object_t.List (_)
+      |Assistance_concrete_object_t.Array (_)
+      |Assistance_concrete_object_t.Record (_)
+      |Assistance_concrete_object_t.Variant (_,_)
+      -> raise(Exn.Unwrap_bounded_uple_exn(ccrt_obj));;
    
    
    
@@ -1543,11 +844,17 @@ module Exn = struct
          and i7=(if n<7 then 1 else 7) in
          let get=(fun k->List.nth l (k-1)) in 
          (constructor,(get 1,get i2,get i3,get i4,get i5,get i6,get i7))
-      | _-> raise(Exn.Unwrap_bounded_variant_exn(ccrt_obj));;
+         |Assistance_concrete_object_t.Int(_)
+         |Assistance_concrete_object_t.String (_)
+         |Assistance_concrete_object_t.Uple (_)
+         |Assistance_concrete_object_t.List (_)
+         |Assistance_concrete_object_t.Array (_)
+         |Assistance_concrete_object_t.Record (_)   
+            -> raise(Exn.Unwrap_bounded_variant_exn(ccrt_obj));;
    
    
    let wrap_lonely_variant l_pairs unwrapped=
-      match Assistance_option.seek(fun (key,vaal)->key=unwrapped) l_pairs with
+      match List.find_opt(fun (key,_vaal)->key=unwrapped) l_pairs with
          None->raise(Exn.Wrap_lonely_variant_exn)
         |Some(_,constructor)->Assistance_concrete_object_t.Variant(constructor,[]) ;;
    
@@ -1556,10 +863,16 @@ module Exn = struct
       match ccrt_obj with 
       Assistance_concrete_object_t.Variant(constructor,l)->
          if  l<>[] then raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj)) else 
-         (match Assistance_option.seek(fun (_,key)->key=constructor) l_pairs with
+         (match List.find_opt(fun (_,key)->key=constructor) l_pairs with
          None->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj))
         |Some(vaal,_)->vaal) 
-      |_->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
+      |Assistance_concrete_object_t.Int(_)
+      |Assistance_concrete_object_t.String (_)
+      |Assistance_concrete_object_t.Uple (_)
+      |Assistance_concrete_object_t.List (_)
+      |Assistance_concrete_object_t.Array (_)
+      |Assistance_concrete_object_t.Record (_)
+      ->raise(Exn.Unwrap_lonely_variant_exn(ccrt_obj));;
    
 
 end;;
@@ -1617,7 +930,7 @@ let helper_for_iterated_container j0 s=
 exception Too_many_double_points;;  
  
  let iterated_container j0 s=try helper_for_iterated_container j0 s with
-   any_exn->raise(Too_many_double_points);;
+   _any_exn->raise(Too_many_double_points);;
 
 exception Blank_filename;;
 
@@ -1648,7 +961,7 @@ let parse_unix_filename_shortcuts_from_dir dir s0=
   |'.'->if s1="." 
         then dir_without_the_slash
         else dir^(String.sub s1 2 (String.length(s1)-2))
-  |arall->dir^s1;;
+  |_other->dir^s1;;
 
 let parse_unix_filename_shortcuts =
   parse_unix_filename_shortcuts_from_dir ((Sys.getcwd())^"/");;
@@ -1834,6 +1147,126 @@ end;;
 
 
 
+module Assistance_list_again=struct
+
+(*
+
+#use"lib/Listy/list_again.ml";;
+
+*)
+
+module Private = struct
+
+let rec helper_for_common_initial_sublist (treated,to_be_treated1,to_be_treated2) =
+  match to_be_treated1 with 
+  [] -> (List.rev treated,to_be_treated1,to_be_treated2)
+  | a1 :: others1 ->
+    (
+      match to_be_treated2 with 
+      [] -> (List.rev treated,to_be_treated1,to_be_treated2)
+      | a2 :: others2 ->
+          if a1<>a2
+          then (List.rev treated,to_be_treated1,to_be_treated2)
+          else helper_for_common_initial_sublist (a1::treated,others1,others2)   
+    ) ;;
+
+end ;;    
+
+let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([],l1,l2) ;;
+
+(*
+common_initial_sublist [1;2;3;7;8] [1;2;3;9] ;; 
+*)
+
+
+
+let find_index_of_in x ll=
+    let rec sub_f=(function (j,l)->match l with
+    []->(-1)      
+    |u::v->if u=x then j else sub_f(j+1,v)) in
+    sub_f(1,ll);;
+
+let find_index_of_in_opt x ll=
+    let rec sub_f=(function (j,l)->match l with
+    []->None      
+    |u::v->if u=x then Some j else sub_f(j+1,v)) in
+    sub_f(1,ll);;
+
+
+exception Head_with_tail_exn ;; 
+
+let head_with_tail x=match x with
+    []->raise(Head_with_tail_exn)
+    |a::b->(a,b);;
+
+exception Long_head_with_tail_exn of int*int;;
+
+let long_head_with_tail r l=
+       let rec tempf=(function (j,kleiz,dehou)->
+        if j=0 
+        then (kleiz,dehou) 
+        else match dehou with
+            []->raise(Long_head_with_tail_exn(r,List.length l))
+            |a::others->tempf(j-1,a::kleiz,others)
+        ) in
+        tempf(r,[],l);;
+    
+let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
+    
+let long_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;    
+
+let nonredundant_version l=
+  let rec tempf=(
+    fun (treated,to_be_treated)->
+      match to_be_treated with
+      []->List.rev treated
+      |a::others->if List.mem a treated
+                    then tempf(treated,others)
+                    else tempf(a::treated,others)
+  ) in
+  tempf([],l);;
+
+
+let power_set l=
+  let rec tempf=(function 
+     (treated,to_be_treated)->match to_be_treated with
+     []->treated
+    |a::others->tempf(treated@(Assistance_image.image(function y->a::y)(treated)),others)
+  ) in
+  tempf([[]],List.rev l );;
+
+
+let rev_map f l=
+  let rec tempf=(
+    fun (treated,to_be_treated)->match to_be_treated with
+    []->treated
+    |a::others->tempf((f a)::treated,others)
+  ) in
+  tempf([],l);;
+
+let sublist_with_indices l indices = Assistance_image.image (fun k->List.nth l (k-1)) indices ;;
+
+(* sublist_with_indices  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
+  
+let universal_delta_list l=
+  let rec sub_f=(function (accu,a,rl)->match rl with
+      []->List.rev(accu)
+    |b::x->sub_f((a,b)::accu,b,x)
+  ) in
+  match l with
+  []->[]
+  |u::v->sub_f([],u,v);;
+
+
+
+
+end;;
+
+
+
+
+
+
 module Assistance_replace_inside=struct
 
 (*
@@ -1844,8 +1277,16 @@ module Assistance_replace_inside=struct
 
 exception Ambiguity of string*int*int;;
 
-module Private = struct 
 
+module Private = struct 
+ 
+  let substring_leftmost_index_from=(fun x y i0->
+    let lx=String.length(x) and ly=String.length(y) in
+    let rec tempf=(fun j->
+      if j>ly-lx then (-1) else 
+      if (String.sub y j lx)=x then j else (tempf(j+1))
+    ) in
+    tempf i0) ;;
 (*
 
 The my_global_replace function below is a replacement for Ocaml's Str.global_replace which has
@@ -1853,7 +1294,7 @@ the disadvantage of applying certain transforms to the replacement string.
 
 *)
 
-  let single_char_special_case (single_c,b) s=
+let single_char_special_case (single_c,b) s=
   let n=String.length(s) and counter=ref(0) in
   let temp1=Assistance_int_range.scale (
      fun j->let c=String.get s j in
@@ -1868,10 +1309,10 @@ let n=String.length(s) and na=String.length(a) in
 if na=1 then single_char_special_case (String.get a 0,b) s else
 let indices=Assistance_substring.occurrences_of_in a s in
 if indices=[] then (s,0) else
-let delta_indices = Assistance_listennou.universal_delta_list indices in 
-let opt_ambiguity=Assistance_option.seek (fun (start1,start2)->start2<start1+na) delta_indices in 
+let delta_indices = Assistance_list_again.universal_delta_list indices in 
+let opt_ambiguity=List.find_opt (fun (start1,start2)->start2<start1+na) delta_indices in 
 if  opt_ambiguity<>None
-then let (start1,start2)=Assistance_option.unpack opt_ambiguity in 
+then let (start1,start2)=Option.get opt_ambiguity in 
      raise(Ambiguity(a,start1,start2))
 else  
 let m=List.length indices in 
@@ -1887,7 +1328,7 @@ let text_for_number_of_replacements k=
   if k = 1 then "1 replacement made" else 
   (string_of_int k)^" replacements made" ;;   
 
-let my_global_replace display_number_of_matches (a,b) old_s  =
+let my_global_replace_with_raising display_number_of_matches (a,b) old_s  =
    let (new_s,count) = global_replace_with_number_of_matches (a,b) old_s in 
    let _ =(
       if display_number_of_matches 
@@ -1895,6 +1336,16 @@ let my_global_replace display_number_of_matches (a,b) old_s  =
            flush stdout 
    ) in 
    new_s ;; 
+
+let my_global_replace_without_raising display_number_of_matches (a,b) old_s  =
+   try my_global_replace_with_raising display_number_of_matches (a,b) old_s with 
+   Ambiguity(_,_,_) -> old_s ;; 
+
+let my_global_replace display_number_of_matches silent_on_ambiguity (a,b) old_s  = 
+  if silent_on_ambiguity 
+  then my_global_replace_without_raising display_number_of_matches (a,b) old_s 
+  else my_global_replace_with_raising display_number_of_matches (a,b) old_s ;;   
+  
 
 (*  
 my_global_replace ("ab","cd") "12345ab6ab78cd91234ab679";; 
@@ -1907,98 +1358,67 @@ my_global_replace ("uv","w") "1uvuv2";;
 
 *)  
 
+let pair_for_commenting_or_uncommenting = 
+  ("\n(*\n","\n*)\n") ;;
+
 end ;;
 
+let at_char_intervals_inside_text text l=
+  if l=[] then text else
+  let n=String.length text in
+  let temp1=Assistance_list_again.universal_delta_list l 
+  and ((i_first,_),_)=List.hd(l)
+  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
+  let temp2=Assistance_image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
+      rep1^(String.sub text j1 (i2-j1-1))
+  ) temp1 in
+  let first_part=(String.sub text 0 (i_first-1))
+  and last_part=rep_last^(String.sub text j_last (n-j_last)) in
+  first_part^(String.concat "" temp2)^last_part;;
 
+let at_char_intervals_inside_file 
+  fn l=
+   let s1=Assistance_io.read_whole_file fn in
+   let s2=at_char_intervals_inside_text s1 l in
+   Assistance_io.overwrite_with fn s2;;     
 
-let replace_inside_string ?(display_number_of_matches=true) (a,b) s=
-  Private.my_global_replace display_number_of_matches (a,b) s ;;
- 
-let replace_several_inside_string ?(display_number_of_matches=false) l t=List.fold_left 
-(fun s (a,b)->Private.my_global_replace display_number_of_matches (a,b) s ) t l;;  
- 
-let replace_inside_file ?(display_number_of_matches=true) (a,b) fn=
-    let s1=Assistance_io.read_whole_file fn in
-    let la=String.length(a) in
-    if List.exists (fun j->(String.sub s1 j la)=a) (Assistance_int_range.range 0 ((String.length s1)-la))
-    then let s2=replace_inside_string ~display_number_of_matches (a,b) s1 in
-         Assistance_io.overwrite_with fn s2
-    else ();; 
+(*    
 
+at_char_intervals_inside_text "12345678901234567890" [(3,5),"right";(12,17),"again"];;
 
-let replace_several_inside_file ?(display_number_of_matches=false) l fn=
-    let s1=Assistance_io.read_whole_file fn in
-    let s2=replace_several_inside_string ~display_number_of_matches l s1  in
-    Assistance_io.overwrite_with fn s2;; 
+*)         
 
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
- 
-let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
-   s1=
+let comment_out_between_markers_inside_text (bm,em) text=
+     let (before,between,after) = Assistance_cull_string.tripartition_using_markers (bm,em) text in
+     let (opener,closer) = Private.pair_for_commenting_or_uncommenting in 
+     before^bm^opener^between^closer^em^after ;; 
+
+let comment_out_between_markers_inside_file (bm,em) fn =
+  let old_text=Assistance_io.read_whole_file fn in
+  let new_text=comment_out_between_markers_inside_text (bm,em) old_text in
+  Assistance_io.overwrite_with fn new_text;; 
+
+let overwrite_and_dump_markers_inside_text ~overwriter:b (bm,em) text=
      if (bm,em)=("","") then b else
-     let substring_leftmost_index_from=(fun x y i0->
-      let lx=String.length(x) and ly=String.length(y) in
-      let rec tempf=(fun j->
-        if j>ly-lx then (-1) else 
-        if (String.sub y j lx)=x then j else (tempf(j+1))
-      ) in
-      tempf i0) in
-     let i1=substring_leftmost_index_from bm s1 0 in
-     if i1=(-1) then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm)-1 in
-     let i2=substring_leftmost_index_from em s1 (j1+1) in
-     if i2=(-1) then raise(Absent_ending_marker(em)) else
-     let before=String.sub s1 0 (j1+1)
-     and after=String.sub s1 i2 (String.length(s1)-i2) 
-     in
-     before^b^after ;; 
-     
-let overwrite_between_markers_inside_file 
-   ~overwriter:b (bm,em)
-   fn =
-    let s1=Assistance_io.read_whole_file fn in
-    let s2=overwrite_between_markers_inside_string ~overwriter:b (bm,em) s1 in
-    Assistance_io.overwrite_with fn s2;;      
-
-
-let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
-   s1=
-     if (bm,em)=("","") then b else
-     let substring_leftmost_index_from=(fun x y i0->
-      let lx=String.length(x) and ly=String.length(y) in
-      let rec tempf=(fun j->
-        if j>ly-lx then (-1) else 
-        if (String.sub y j lx)=x then j else (tempf(j+1))
-      ) in
-      tempf i0) in
-     let i1=substring_leftmost_index_from bm s1 0 in
-     if i1=(-1) then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm)-1 in
-     let i2=substring_leftmost_index_from em s1 (j1+1) in
-     if i2=(-1) then raise(Absent_ending_marker(bm)) else
-     let corrected_i2=i2+(String.length bm)-1 in
-     let before=String.sub s1 0 i1
-     and after=String.sub s1 corrected_i2 (String.length(s1)-corrected_i2) 
-     in
-     before^b^after ;; 
+      let (before,_between,after) = Assistance_cull_string.tripartition_using_markers (bm,em) text in
+      before^bm^b^em^after ;; 
      
 let overwrite_and_dump_markers_inside_file 
 ~overwriter:b (bm,em)
    fn =
-    let s1=Assistance_io.read_whole_file fn in
-    let s2=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) s1 in
-    Assistance_io.overwrite_with fn s2;;      
+    let old_text=Assistance_io.read_whole_file fn in
+    let new_text=overwrite_and_dump_markers_inside_text ~overwriter:b (bm,em) old_text in
+    Assistance_io.overwrite_with fn new_text;;      
  
 (* 
 
 
- overwrite_between_markers_inside_string
+ overwrite_between_markers_inside_text
   (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;    
    
-overwrite_and_dump_markers_inside_string
+overwrite_and_dump_markers_inside_text
   (~overwriter:"456")
   ("aaa","bb")
    "123aaa5678bb78910" ;;       
@@ -2006,31 +1426,89 @@ overwrite_and_dump_markers_inside_string
      
 *)
 
-let at_char_intervals_inside_string s l=
-  if l=[] then s else
-  let n=String.length s in
-  let temp1=Assistance_listennou.universal_delta_list l 
-  and ((i_first,_),_)=List.hd(l)
-  and ((_i_last,j_last),rep_last)=List.hd(List.rev l) in
-  let temp2=Assistance_image.image (fun (((_i1,j1),rep1),((i2,_j2),_rep2))->
-      rep1^(String.sub s j1 (i2-j1-1))
-  ) temp1 in
-  let first_part=(String.sub s 0 (i_first-1))
-  and last_part=rep_last^(String.sub s j_last (n-j_last)) in
-  first_part^(String.concat "" temp2)^last_part;;
+let overwrite_at_intervals_inside_text replacings text=
+  let n=String.length text
+  and r=List.length replacings in
+  let x_coord=(fun j->
+    if j=1 then 1 else
+    snd(fst(List.nth replacings ((j-3)/2)))+1
+  ) and y_coord=(fun j->
+   if j=2*r+1 then n else
+    fst(fst(List.nth replacings ((j-1)/2)))-1
+  ) in
+  let xy_substring=(fun j->
+    Assistance_cull_string.interval text (x_coord j) (y_coord j)
+  ) in
+  let all_parts=Assistance_int_range.scale (
+    fun j->
+      if (j mod 2)=1
+      then xy_substring j
+      else snd(List.nth replacings ((j-2)/2))
+  ) 1 (2*r+1) in
+  String.concat "" all_parts;;
 
-let at_char_intervals_inside_file 
-  fn l=
-   let s1=Assistance_io.read_whole_file fn in
-   let s2=at_char_intervals_inside_string s1 l in
-   Assistance_io.overwrite_with fn s2;;     
+(*
 
-(*    
+overwrite_at_intervals_inside_text
+ [(7,12),"garfield";(23,24),"jack";(30,30),"gas"]
+ "12345678901234567890123456789012345678901234567890";;
+ 
 
-at_char_intervals_inside_string "12345678901234567890" [(3,5),"right";(12,17),"again"];;
+*)
 
-*)         
+let overwrite_at_intervals_inside_file replacings fn=
+  let old_text=Assistance_io.read_whole_file fn in
+  let new_text=overwrite_at_intervals_inside_text replacings old_text in
+  Assistance_io.overwrite_with fn new_text;;  
+  
 
+
+
+
+let overwrite_between_markers_inside_text ~overwriter:b (bm,em) text=
+     if (bm,em)=("","") then b else
+     let (before,_between,after) = Assistance_cull_string.tripartition_using_markers (bm,em) text in
+     before^bm^b^em^after ;; 
+     
+let overwrite_between_markers_inside_file 
+   ~overwriter:b (bm,em)
+   fn =
+    let old_text=Assistance_io.read_whole_file fn in
+    let new_text=overwrite_between_markers_inside_text ~overwriter:b (bm,em) old_text in
+    Assistance_io.overwrite_with fn new_text;;      
+
+
+let replace_inside_text ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
+  Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) text ;;
+ 
+let replace_several_inside_text ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
+(fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
+ 
+let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
+    let old_text=Assistance_io.read_whole_file fn in
+    let la=String.length(a) in
+    if List.exists (fun j->(String.sub old_text j la)=a) (Assistance_int_range.range 0 ((String.length old_text)-la))
+    then let new_text=replace_inside_text ~display_number_of_matches ~silent_on_ambiguity (a,b) old_text in
+         Assistance_io.overwrite_with fn new_text
+    else ();; 
+
+
+let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
+    let old_text=Assistance_io.read_whole_file fn in
+    let new_text=replace_several_inside_text ~display_number_of_matches ~silent_on_ambiguity l old_text  in
+    Assistance_io.overwrite_with fn new_text;; 
+
+let uncomment_between_markers_inside_text (bm,em) text=
+      let (before,between,after) = Assistance_cull_string.tripartition_using_markers (bm,em) text in
+      before^bm^(
+       Assistance_cull_string.two_sided_cutting Private.pair_for_commenting_or_uncommenting  
+      between)^em^after ;; 
+ 
+
+ let uncomment_between_markers_inside_file (bm,em) fn =
+   let old_text=Assistance_io.read_whole_file fn in
+   let new_text=uncomment_between_markers_inside_text (bm,em) old_text in
+   Assistance_io.overwrite_with fn new_text;; 
 
 
 
@@ -2063,12 +1541,12 @@ let replacement_salt =
   String.concat "" ["b"; "Z"; "3"; "v"; "l"; "m"; "x"; "E"; "A"; "z"; "L"; "e"];;
 
 let decode (Assistance_encoded_string_t.E(encoded_s))=
-   Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (replacement_salt,salt) encoded_s;;
+   Assistance_replace_inside.replace_inside_text ~display_number_of_matches:false (replacement_salt,salt) encoded_s;;
 
 let encode s=
    if Assistance_substring.is_a_substring_of replacement_salt s 
    then raise(Forbidden_substring)
-   else let encoded_s=Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (salt,replacement_salt) s in 
+   else let encoded_s=Assistance_replace_inside.replace_inside_text ~display_number_of_matches:false (salt,replacement_salt) s in 
         if  Assistance_substring.is_a_substring_of salt encoded_s 
         then raise(Forbidden_substring)
         else Assistance_encoded_string_t.E(encoded_s);;
@@ -2107,105 +1585,26 @@ let bool_to_concrete_object bowl =
 let int_of_concrete_object ccrt_obj =
     match ccrt_obj with 
      Assistance_concrete_object_t.Int(i)->i 
-    |_->raise(Unwrap_int_exn(ccrt_obj)) ;;
+    |Assistance_concrete_object_t.String(_)
+    |Assistance_concrete_object_t.Uple(_)
+    |Assistance_concrete_object_t.List(_)
+    |Assistance_concrete_object_t.Array(_)
+    |Assistance_concrete_object_t.Record(_)
+    |Assistance_concrete_object_t.Variant(_)
+      ->raise(Unwrap_int_exn(ccrt_obj)) ;;
 let int_to_concrete_object i = Assistance_concrete_object_t.Int i ;;       
 
 let string_of_concrete_object ccrt_obj =
        match ccrt_obj with 
        Assistance_concrete_object_t.String(encoded_s)->Assistance_encoded_string.decode encoded_s 
-       |_->raise(Unwrap_string_exn(ccrt_obj)) ;;
+       |Assistance_concrete_object_t.Int(_)
+       |Assistance_concrete_object_t.Uple(_)
+       |Assistance_concrete_object_t.List(_)
+       |Assistance_concrete_object_t.Array(_)
+       |Assistance_concrete_object_t.Record(_)
+       |Assistance_concrete_object_t.Variant(_)
+         ->raise(Unwrap_string_exn(ccrt_obj)) ;;
 let string_to_concrete_object s = Assistance_concrete_object_t.String(Assistance_encoded_string.encode s) ;;       
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_root_t=struct
-
-(*
-
-Does not end with a slash.
-
-#use"lib/Decomposed_filename/dfa_root_t.ml";;
-
-*)
-
-type t=R of string;;           
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_root=struct
-
-(*
-
-The rightmost trailing slash is removed.
-
-#use"lib/Decomposed_filename/dfa_root.ml";;
-
-*)
-
-let without_trailing_slash (Assistance_dfa_root_t.R s)=s;;
-let connectable_to_subpath (Assistance_dfa_root_t.R s)=s^"/";;  
-let dummy = Assistance_dfa_root_t.R "" ;;
-
-let of_line line = Assistance_dfa_root_t.R(Assistance_tools_for_absolute_path.remove_trailing_slash line);;
-
-
-let to_concrete_object (Assistance_dfa_root_t.R(line))=
-    Assistance_concrete_object_t.Variant("Dfa_"^"root.R",[Assistance_crobj_converter.string_to_concrete_object(line)]);;
-
-let of_concrete_object ccrt_obj =
-   let (_,(arg1,_,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant ccrt_obj in 
-   Assistance_dfa_root_t.R(Assistance_crobj_converter.string_of_concrete_object arg1);;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_converter_combinator=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
-
-*)
-
-let of_array of_a arr= Assistance_concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
-let to_array to_a crobj= Array.map to_a (Assistance_concrete_object.unwrap_array crobj);;
-
-let of_list of_a l= Assistance_concrete_object_t.List(Assistance_image.image of_a l);;
-let to_list to_a crobj= Assistance_image.image to_a (Assistance_concrete_object.unwrap_list crobj);;
-   
-   
-let of_pair of_a of_b (a,b)=Assistance_concrete_object_t.Uple[of_a a;of_b b];;
-let to_pair to_a to_b crobj=
-       let (arg1,arg2,_,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
-       (to_a arg1,to_b arg2);;
-   
-let of_triple of_a of_b of_c (a,b,c)=Assistance_concrete_object_t.Uple[of_a a;of_b b;of_c c];;
-let to_triple to_a to_b to_c crobj=
-           let (arg1,arg2,arg3,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
-           (to_a arg1,to_b arg2,to_c arg3);;
-   
-
-let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
-let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
-   
-   
-
 
 end;;
 
@@ -2414,7 +1813,7 @@ in
  maximize_it0(x,f(x),y);;
  
 let maximize_it_if_possible f l=
-   let temp1=Assistance_option.filter_and_unpack (function 
+   let temp1=List.filter_map (function 
      None->None
     |Some(x)->Some(x,f x) ) l in
    if temp1=[]
@@ -2474,7 +1873,7 @@ in
  minimize_it0(x,f(x),y);;
 
 let minimize_it_if_possible f l=
-   let temp1=Assistance_option.filter_and_unpack (function 
+   let temp1=List.filter_map (function 
      None->None
     |Some(x)->Some(x,f x) ) l in
    if temp1=[]
@@ -2497,6 +1896,111 @@ let minimize_it_with_care f=function
 in
  minimize_it_with_care0([x],f(x),y);;
            
+
+end;;
+
+
+
+
+
+
+module Assistance_partition_list=struct
+
+(*
+
+#use"lib/Listy/partition_list.ml";;
+
+*)
+
+module Private = struct 
+
+let rec select_first_colleagues f (treated,img,to_be_treated) =   
+    match to_be_treated with 
+    [] -> (List.rev treated,to_be_treated)
+    | item :: others -> 
+        if f item = img 
+        then select_first_colleagues f (item::treated,img,others) 
+        else (List.rev treated,to_be_treated) ;; 
+
+let according_to_map_assuming_connectedness pairs f=
+    let rec tempf = (fun (already_treated,to_be_treated)->
+      match to_be_treated with 
+      [] -> List.rev already_treated 
+    | pair :: others ->
+      let img1 = f pair in  
+      let (part1,part2) = select_first_colleagues f ([pair],img1,others) in 
+               tempf ((img1,part1)::already_treated,part2)     
+    ) in 
+    tempf ([],pairs) ;;
+
+(*
+
+according_to_map_assuming_connectedness [1,7;1,8;2,9;3,10;3,11;1,12] fst ;; 
+
+*)
+
+let according_to_map_without_assuming_connectedness pairs f=
+  let rec tempf = (fun (already_treated,to_be_treated)->
+       match to_be_treated with 
+        [] -> List.rev already_treated 
+       | pair :: _ ->
+         let img1 = f pair in  
+         let (part1,part2) = List.partition (fun pair2->f pair2=img1) to_be_treated in 
+         tempf ((img1,part1)::already_treated,part2)     
+   ) in 
+   tempf ([],pairs) ;;
+
+(*
+
+according_to_map_without_assuming_connectedness [1,7;1,8;2,9;3,10;3,11;1,12] fst ;; 
+
+*)   
+
+let according_to_map pairs ?(assume_connectedness=false) f  =
+   if assume_connectedness 
+   then according_to_map_assuming_connectedness pairs f
+   else according_to_map_without_assuming_connectedness pairs f ;;  
+
+end ;;  
+
+let according_to_fst ?(assume_connectedness=false) l = 
+    let temp = Private.according_to_map l ~assume_connectedness fst in 
+    Assistance_image.image (fun (img,antecs)->(img,Assistance_image.image snd antecs)) temp;; 
+
+let according_to_map = Private.according_to_map ;;
+
+
+let from_set_of_ranges l n=
+    if l=[] then [1,n,false] else 
+    let (last_i,last_j)=List.hd(List.rev l) 
+    and (first_i,_)=List.hd l in
+    let temp2=Assistance_list_again.universal_delta_list l in  
+    let temp3=Assistance_image.image (fun ((i1,j1),(i2,_j2))->
+      [(i1,j1,true);(j1+1,i2-1,false)]
+    ) temp2 in 
+    let middle_part=List.flatten temp3 in
+    let first_part=(if first_i>1 then [(1,first_i-1,false)] else []) 
+    and last_part=(if last_j<n then [(last_j+1,n,false)] else []) in 
+    first_part@middle_part@[(last_i,last_j,true)]@last_part;;
+
+(*
+
+from_set_of_ranges [(3,7);(41,52)] 100;;
+from_set_of_ranges [(1,7);(41,52)] 100;;
+
+*)
+
+let split_in_half l=
+   let temp1=Assistance_int_range.index_everything(l) in 
+   let (temp2,temp3)=List.partition (fun (j,_)->(j mod 2)=1) temp1 in 
+   (Assistance_image.image snd temp2,Assistance_image.image snd temp3);;
+
+(*
+
+split_list_in_half [1; 2; 3; 4; 5; 6; 7];;
+split_list_in_half [1; 2; 3; 4; 5; 6; 7; 8];;
+
+*)   
 
 end;;
 
@@ -2558,6 +2062,9 @@ module Assistance_ordered=struct
 
 *)
 
+exception The_empty_set_has_no_min ;; 
+exception The_empty_set_has_no_max ;; 
+
 module Private = struct 
 
   let intersect (cmpr:'a Assistance_total_ordering_t.t) ox oy=
@@ -2598,6 +2105,18 @@ module Private = struct
       ) in
       tempf(ox,oy,[]);;
   
+  let length_preserving_merge (cmpr:'a Assistance_total_ordering_t.t) ox oy=
+      let rec tempf=(function (u,v,accu)->
+        if u=[] then (List.rev_append(accu)(v)) else
+        if v=[] then (List.rev_append(accu)(u)) else
+        let xu=List.hd(u) and yu=List.tl(u) 
+        and xv=List.hd(v) and yv=List.tl(v) in
+      match cmpr(xu)(xv) with
+        Assistance_total_ordering_result_t.Lower->tempf(yu,v,xu::accu)
+      |Assistance_total_ordering_result_t.Equal->tempf(yu,yv,xu::xv::accu)
+      |Assistance_total_ordering_result_t.Greater->tempf(u,yv,xv::accu)
+      ) in
+      tempf(ox,oy,[]);;    
   
   let setminus (cmpr:'a Assistance_total_ordering_t.t) ox oy=
       let rec tempf=
@@ -2616,11 +2135,48 @@ module Private = struct
   let rec sort (cmpr:'a Assistance_total_ordering_t.t) x=
     if List.length(x)<2
     then x
-    else let temp1=Assistance_listennou.split_list_in_half(x) in
+    else let temp1=Assistance_partition_list.split_in_half(x) in
          let y1=sort(cmpr)(fst temp1)
          and y2=sort(cmpr)(snd temp1) in
-         merge cmpr y1 y2;;
+         merge cmpr y1 y2;;      
+
+  let rec length_preserving_sort (cmpr:'a Assistance_total_ordering_t.t) x=
+         if List.length(x)<2
+         then x
+         else let temp1=Assistance_partition_list.split_in_half(x) in
+              let y1=length_preserving_sort(cmpr)(fst temp1)
+              and y2=length_preserving_sort(cmpr)(snd temp1) in
+              length_preserving_merge cmpr y1 y2;;       
   
+  let rec helper_for_max (cmpr:'a Assistance_total_ordering_t.t) (current_max,to_be_treated) =
+    match to_be_treated with 
+     [] -> current_max
+    | elt :: others ->
+    match cmpr current_max elt with
+    Assistance_total_ordering_result_t.Greater
+   |Assistance_total_ordering_result_t.Equal->helper_for_max cmpr (current_max,others)
+   |Assistance_total_ordering_result_t.Lower->helper_for_max cmpr (elt,others) ;; 
+
+
+  let max (cmpr:'a Assistance_total_ordering_t.t) = function 
+       [] -> raise(The_empty_set_has_no_max)
+      |elt :: others -> helper_for_max cmpr (elt,others) ;; 
+
+
+  let rec helper_for_min (cmpr:'a Assistance_total_ordering_t.t) (current_min,to_be_treated) =
+    match to_be_treated with 
+     [] -> current_min
+    | elt :: others ->
+    match cmpr current_min elt with
+    Assistance_total_ordering_result_t.Lower
+   |Assistance_total_ordering_result_t.Equal->helper_for_min cmpr (current_min,others)
+   |Assistance_total_ordering_result_t.Greater->helper_for_min cmpr (elt,others) ;; 
+
+
+  let min (cmpr:'a Assistance_total_ordering_t.t) = function 
+       [] -> raise(The_empty_set_has_no_min)
+      |elt :: others -> helper_for_min cmpr (elt,others) ;; 
+
   let is_included_in (cmpr:'a Assistance_total_ordering_t.t) ox oy=
          let rec tempf=(function (u,v)->
            if u=[] then true else
@@ -2651,7 +2207,7 @@ module Private = struct
            else tempf (new_item::treated,others)  
          ) in tempf ;;    
        
-  let rec helper2_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  =
+  let helper2_for_minimal_elements_selection (cmpr:'a Assistance_total_ordering_t.t)  =
           let rec tempf = (fun 
          (treated,to_be_treated) -> match to_be_treated with 
           [] -> List.rev treated 
@@ -2727,7 +2283,10 @@ module Private = struct
   
   let is_included_in = Private.is_included_in ;;
   
-  let rec mem (cmpr:'a Assistance_total_ordering_t.t) x ol=
+  let length_preserving_sort = Private.length_preserving_sort ;;
+
+  let max = Private.max ;; 
+  let mem (cmpr:'a Assistance_total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false
       |a::others->match cmpr(x)(a) with
@@ -2735,10 +2294,12 @@ module Private = struct
          |Assistance_total_ordering_result_t.Equal->true
          |Assistance_total_ordering_result_t.Greater->tempf others
      )  in
-     tempf ol;;    
-  
+     tempf ol;;   
+
   let merge = Private.merge;;
   
+  let min = Private.min ;; 
+
   let outsert cmpr x oy=Private.setminus cmpr oy [x];;
   
   let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
@@ -2863,8 +2424,22 @@ let combine=((fun ~tried_first ~tried_second->
           then ty
           else h z1 z2
  ): ('a*'b*'c) Assistance_total_ordering_t.t);;
+
+ let quadruple_product (f:'a Assistance_total_ordering_t.t) (g:'b Assistance_total_ordering_t.t) (h:'c Assistance_total_ordering_t.t) (i:'d Assistance_total_ordering_t.t)=
+  ((fun (x1,y1,z1,t1) (x2,y2,z2,t2)->
+     let tx=f(x1)(x2) in
+     if tx<>Assistance_total_ordering_result_t.Equal 
+     then tx
+     else let ty=g(y1)(y2) in
+          if ty<>Assistance_total_ordering_result_t.Equal 
+          then ty
+          else let tz=h(z1)(z2) in
+               if tz<>Assistance_total_ordering_result_t.Equal 
+               then tz
+               else i t1 t2
+ ): ('a*'b*'c*'d) Assistance_total_ordering_t.t);;
  
- let rec lex_compare (f:'a Assistance_total_ordering_t.t)=
+ let lex_compare (f:'a Assistance_total_ordering_t.t)=
   let rec tempf=(
     fun l1 l2->
      match l1 with 
@@ -2989,7 +2564,7 @@ let list_for_dictionary_order=
 let reindexer_for_dictionary_order i=
     if (i<65)||(i>122) 
     then i 
-    else 64+(Assistance_listennou.find_index i list_for_dictionary_order);;
+    else 64+(Assistance_list_again.find_index_of_in i list_for_dictionary_order);;
 
 
 let for_characters=let tempf=(fun x y->
@@ -3007,7 +2582,7 @@ let lex_for_strings=
       and m2=String.length s2
       in
       let m=Stdlib.min(m1)(m2) in
-      match Assistance_option.seek (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_int_range.range 0 (m-1)) with
+      match List.find_opt (fun j->(String.get s1 j)<>(String.get s2 j)) (Assistance_int_range.range 0 (m-1)) with
       None->standard m1 m2
       |Some(j)->for_characters (String.get s1 j) (String.get s2 j) 
     ) : string Assistance_total_ordering_t.t);;
@@ -3023,10 +2598,22 @@ let silex_for_strings=
         else lex_for_strings s1 s2
       ) : string Assistance_total_ordering_t.t);;    
 
+      let factor (x,y)=
+      let rec factor0=(fun
+         (graet,da_ober1,da_ober2)->
+         if (da_ober1=[])||(da_ober2=[])
+         then (List.rev graet,da_ober1,da_ober2)
+         else let (a1,peurrest1)=Assistance_list_again.head_with_tail da_ober1
+              and (a2,peurrest2)=Assistance_list_again.head_with_tail da_ober2 in
+              if a1=a2
+              then factor0(a1::graet,peurrest1,peurrest2)
+              else (List.rev graet,da_ober1,da_ober2)
+      ) in
+      factor0([],x,y);;      
 
 let lex_for_string_lists=
   ((fun l1 l2->
-      let (_,left_part,right_part)=Assistance_listennou.factor (l1,l2) in
+      let (_,left_part,right_part)= factor (l1,l2) in
       if left_part=[] 
       then (if right_part=[] 
            then Assistance_total_ordering_result_t.Equal 
@@ -3080,13 +2667,28 @@ let cardinality_then_diameter =((fun l1 l2->
   else lex_compare for_integers l1 l2
 ): (int list) Assistance_total_ordering_t.t );;
 
+let index_in_list x ll=
+  let rec sub_f=
+  (function (j,l)->match l with
+  []->(-1)      
+  |u::v->if u=x then j else sub_f(j+1,v)) in
+  sub_f(1,ll);;
+
+
+let from_list (l:'a list)=((fun x1 x2->
+   for_integers (index_in_list x1 l) (index_in_list x2 l)   
+) : 'a Assistance_total_ordering_t.t) ;; 
+
 end ;;
 
 let cardinality_then_diameter = Private.cardinality_then_diameter ;;
+let for_characters = Private.for_characters ;;
 let for_integers = Private.for_integers ;;
+let from_list = Private.from_list ;; 
 let lex_compare = Private.lex_compare ;;
 let lex_for_strings = Private.lex_for_strings ;;
 let product = Private.product ;;
+let quadruple_product = Private.quadruple_product ;;
 let silex_compare = Private.silex_compare ;;
 let silex_for_strings = Private.silex_for_strings ;;
 let silex_for_intlists = Private.silex_compare for_integers ;;
@@ -3133,14 +2735,14 @@ let explode s=
     Assistance_int_range.scale (String.get s) 0 (n-1);;
     
  
-let char_finder_from f s w0=
+let char_finder_from_inclusive_opt f s w0=
    let n=(String.length s) in
    let rec tempf=(fun j->
-     if j>=n then 0 else
-     if f(String.get s  j) then j+1 else
+     if j>n then None else
+     if f(String.get s  (j-1)) then Some j else
      tempf(j+1)
    ) in
-   tempf(w0-1);;
+   tempf(w0);;
 
 let backwards_char_finder f s =
     let rec tempf=(fun j->
@@ -3154,7 +2756,11 @@ let show_indices s=
   let n=String.length s in
   Assistance_int_range.scale (fun i->(i,String.get s (i-1)) ) 1 n;;   
    
-let number_of_lines_before = Assistance_substring.Friend.number_of_lines_before;;
+let number_of_lines_before s i=
+  if i<1 then 0 else
+  let m=min i (String.length s) in
+  List.length(List.filter(fun j->(String.get s (j-1))='\n')(Assistance_int_range.range 1 m));;
+
 
 let number_of_linebreaks s =
     let n = String.length s 
@@ -3190,7 +2796,7 @@ let find_one_of_several_in_at_idx candidates s idx =
            then Some(idx,candidate)
            else None
    ) in 
-   Assistance_option.find_and_stop tester candidates;;
+   List.find_map tester candidates;;
   
 (*
 
@@ -3200,7 +2806,7 @@ find_one_of_several_in_at_idx ["ba";"ab"] "123ab67" 4;;
 
 let find_one_of_several_in_from_idx candidates s idx =
   let n=String.length s in 
-  Assistance_option.find_and_stop (
+  List.find_map (
     find_one_of_several_in_at_idx candidates s
   ) (Assistance_int_range.range idx n);;
 
@@ -3209,6 +2815,41 @@ let find_one_of_several_in_from_idx candidates s idx =
 find_one_of_several_in_from_idx ["ba";"ab"] "123ab67" 1;;
 
 *)
+
+let rec 
+helper_for_dec_according_to_occ 
+(whole,candidates,last_idx) (treated,idx) =
+if idx > last_idx 
+then List.rev treated 
+else
+match find_one_of_several_in_from_idx candidates whole idx with 
+  None -> List.rev (((idx,last_idx),false,Assistance_cull_string.interval whole idx last_idx) 
+                       :: treated)
+ |Some(idx2,found_word) ->
+    let treated2 = (
+       if idx2=idx 
+       then treated
+       else ((idx,idx2-1),false,Assistance_cull_string.interval whole idx (idx2-1)) ::treated
+    ) in 
+    let new_idx = idx +(String.length found_word)  in 
+    let pair2 = ((idx,new_idx-1),true,found_word)  in 
+    helper_for_dec_according_to_occ    
+     (whole,candidates,last_idx) (pair2::treated2,new_idx);;
+  
+
+let decomposition_according_to_occurrences_from_several whole candidates = 
+  helper_for_dec_according_to_occ 
+  (whole,candidates,String.length whole) ([],1);;
+
+
+(*
+
+decomposition_according_to_occurrences_from_several 
+  "12abc3def4ababab5c" ["ab";"c";"def"] ;;
+
+
+*)
+
 
 let remove_newlines s=
    let temp1=List.filter (fun c->c<>'\n') (explode s) in 
@@ -3250,7 +2891,7 @@ let replace_ranges_in l s=
     if l=[] then s else
     let n=String.length s in
     let ranges=Assistance_image.image fst l in
-    let partition=Assistance_listennou.partition_from_set_of_ranges ranges n in 
+    let partition= Assistance_partition_list.from_set_of_ranges ranges n in 
     let temp1=Assistance_image.image (
       fun (i,j,will_be_replaced)->
         if will_be_replaced 
@@ -3274,7 +2915,7 @@ let insert_prefixes_at_indices l s=
     let temp1=Assistance_image.image (fun (pref,idx)->(idx,pref)) l in
     let temp2=Assistance_image.image fst temp1 in
     let temp3=Assistance_ordered.sort Assistance_total_ordering.standard ((n+1)::temp2) in
-    let temp4=Assistance_listennou.universal_delta_list temp3 in
+    let temp4=Assistance_list_again.universal_delta_list temp3 in
     let temp5=Assistance_image.image(fun (i,j)->
        (List.assoc i temp1)^(String.sub s (i-1) (j-i)) ) temp4 in
     let i1=List.hd temp3 in
@@ -3320,7 +2961,7 @@ let leftmost_difference s1 s2=
    let n1=String.length s1 
    and n2=String.length s2 in
    let n=min(n1)(n2) in 
-   match Assistance_option.seek(fun j->
+   match List.find_opt(fun j->
       (get s1 j)<>(get s2 j)
    )(Assistance_int_range.range 1 n) with 
    None->None 
@@ -3351,7 +2992,7 @@ let pusher_inside_nested_parentheses_parsing
      if opt = None 
      then raise(Unfinished_expression(idx,s))
      else 
-     let (case,new_idx)=Assistance_option.unpack opt in
+     let (case,new_idx)=Option.get opt in
      let joiner=List.nth joiners (case-1) in 
      let idx2=new_idx+String.length(joiner) in 
      if case=1
@@ -3380,7 +3021,7 @@ let pusher_inside_nested_parentheses_parsing
 let iterator_inside_nested_parentheses_parsing 
     (s,joiners,seeker) =
      let rec tempf=(fun state ->
-     let (opt_result,nbr_of_openers_so_far,items_so_far,current_item_start,world_start,idx)=state in 
+     let (opt_result,_nbr_of_openers_so_far,_items_so_far,_current_item_start,_world_start,_idx)=state in 
      match opt_result with 
      Some(result)->result 
      |None -> tempf(pusher_inside_nested_parentheses_parsing (s,joiners,seeker) state )) in 
@@ -3396,14 +3037,14 @@ exception Started_by_nonopener of int*string;;
 let parse_nested_parentheses 
   (openr,separatr,closr) s=
     let joiners = [openr;separatr;closr]  in  
-    let seeker = Assistance_substring.leftmost_index_of_pattern_among_in_from 
+    let seeker = Assistance_substring.leftmost_index_of_pattern_among_in_from_opt 
        [openr;separatr;closr] s in 
     
     let opt1=seeker 1 in 
     if opt1=None 
     then raise(Missing_opener(openr,s))
     else  
-    let (case1,idx1)=Assistance_option.unpack opt1 in
+    let (case1,idx1)=Option.get opt1 in
     if case1<>1
     then raise(Started_by_nonopener(case1,s))
     else 
@@ -3442,7 +3083,7 @@ let check =(to_intlist(z2)=z1);;
 *)  
 
 let soak (replacee,replacer) s=
-   if Assistance_substring.is_the_beginning_of replacee s 
+   if String.starts_with ~prefix:replacee s 
    then Some(replacer^(Assistance_cull_string.two_sided_cutting (replacee,"") s))
    else None ;;
 
@@ -3474,7 +3115,7 @@ print_string(escaped_and_quoted z1);;
 *)
 
 let reposition_whole_according_to_separator separator lines =
-      let temp1 = Assistance_image.image (fun line->(line,Assistance_substring.leftmost_index_of_in separator line)) lines in 
+      let temp1 = Assistance_image.image (fun line->(line,Option.get(Assistance_substring.leftmost_index_of_in_from_opt separator line 1))) lines in 
       let max_idx = snd(Assistance_max.maximize_it snd temp1) in 
       Assistance_image.image (fun (line,idx)->
           let offset = max_idx-idx in 
@@ -3483,7 +3124,7 @@ let reposition_whole_according_to_separator separator lines =
 
 let reposition_left_hand_side_according_to_separator separator lines =
          let temp1 = Assistance_image.image (fun line->
-              let j = Assistance_substring.leftmost_index_of_in separator line in 
+              let j = Option.get(Assistance_substring.leftmost_index_of_in_from_opt separator line 1) in 
               ((Assistance_cull_string.beginning (j-1) line,Assistance_cull_string.cobeginning (j-1) line),j)) lines in 
          let max_idx = snd(Assistance_max.maximize_it snd temp1) in 
          Assistance_image.image (fun ((left,right),idx)->
@@ -3523,7 +3164,7 @@ module Private = struct
    let of_line s=
       let n = String.length s in 
       let indices = List.rev(Assistance_int_range.range 1 n) in 
-      let limit_idx=(match Assistance_option.seek(fun j->(Assistance_strung.get s j)<>'/')(indices) with 
+      let limit_idx=(match List.find_opt(fun j->(Assistance_strung.get s j)<>'/')(indices) with 
          None -> 0 |Some(j)->j
       ) in 
       Assistance_dfa_subdirectory_t.SD (Assistance_cull_string.beginning limit_idx s);;   
@@ -3552,7 +3193,7 @@ module Private = struct
      else s^"/";;
    
    let begins_with (Assistance_dfa_subdirectory_t.SD s1) (Assistance_dfa_subdirectory_t.SD s2)=
-      Assistance_supstring.begins_with s1 s2;;
+      String.starts_with ~prefix:s2 s1 ;;
        
    let extend (Assistance_dfa_subdirectory_t.SD s) subsub = Assistance_dfa_subdirectory_t.SD (s^"/"^subsub);;
    
@@ -3566,7 +3207,7 @@ module Private = struct
    
    let rename_endsubdirectory (Assistance_dfa_subdirectory_t.SD(old_subdir),new_esdname) 
       (Assistance_dfa_subdirectory_t.SD s)=
-      if Assistance_supstring.begins_with s old_subdir
+      if String.starts_with ~prefix:old_subdir s 
       then let sub_s=Assistance_cull_string.cobeginning (String.length old_subdir) s in
            let t=Assistance_cull_string.before_rightmost old_subdir '/' in
            let new_t=(if t="" then "" else t^"/") in
@@ -3604,6 +3245,180 @@ end;;
 
 
 
+module Assistance_dfa_root_t=struct
+
+(*
+
+Does not end with a slash.
+
+#use"lib/Decomposed_filename/dfa_root_t.ml";;
+
+*)
+
+type t=R of string;;           
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_root=struct
+
+(*
+
+The rightmost trailing slash is removed.
+
+#use"lib/Decomposed_filename/dfa_root.ml";;
+
+*)
+
+let without_trailing_slash (Assistance_dfa_root_t.R s)=s;;
+let connectable_to_subpath (Assistance_dfa_root_t.R s)=s^"/";;  
+let dummy = Assistance_dfa_root_t.R "" ;;
+
+let of_line line = Assistance_dfa_root_t.R(Assistance_tools_for_absolute_path.remove_trailing_slash line);;
+
+
+let to_concrete_object (Assistance_dfa_root_t.R(line))=
+    Assistance_concrete_object_t.Variant("Dfa_"^"root.R",[Assistance_crobj_converter.string_to_concrete_object(line)]);;
+
+let of_concrete_object ccrt_obj =
+   let (_,(arg1,_,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant ccrt_obj in 
+   Assistance_dfa_root_t.R(Assistance_crobj_converter.string_of_concrete_object arg1);;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_endingless_t=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_endingless_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t  ;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_middle_t=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_middle_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t ;;
+          
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_endingless=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_endingless.ml";;
+
+
+*)
+
+let begins_with (Assistance_dfn_endingless_t.J(_r,s,_m)) subdir=
+   Assistance_dfa_subdirectory.begins_with s subdir;;
+
+let to_root (Assistance_dfn_endingless_t.J(r,_s,_m))=r;;
+let to_subdirectory  (Assistance_dfn_endingless_t.J(_r,s,_m))=s;;
+let to_module  (Assistance_dfn_endingless_t.J(_r,_s,m))=m;;
+   
+let to_line (Assistance_dfn_endingless_t.J(r,s,m))=
+   (Assistance_dfa_root.connectable_to_subpath r)^
+   (Assistance_dfa_subdirectory.connectable_to_subpath s)^
+   (Assistance_dfa_module.to_line m);;
+
+let to_middle (Assistance_dfn_endingless_t.J(_r,s,m)) = Assistance_dfn_middle_t.J(s,m) ;;
+
+let rename_endsubdirectory 
+   (old_subdir,new_subdirname) 
+      (Assistance_dfn_endingless_t.J(r,s,m))=
+   Assistance_dfn_endingless_t.J(
+	      r,
+   		(Assistance_dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
+         m
+	    );;  
+
+let rename_module
+   (old_module,new_module) 
+      (Assistance_dfn_endingless_t.J(r,s,m))=
+        if m =old_module 
+        then Assistance_dfn_endingless_t.J(r,s,new_module) 
+        else Assistance_dfn_endingless_t.J(r,s,m) ;;     
+
+let replace_subdirectory (old_subdir,new_subdir) eless = 
+    match eless with  
+      (Assistance_dfn_endingless_t.J(r,s,m)) -> 
+       if s <> old_subdir 
+       then eless 
+       else 
+   Assistance_dfn_endingless_t.J(r,new_subdir,m);;  
+   
+let soak (old_subdir,new_subdir) eless =
+   let (Assistance_dfn_endingless_t.J(r,s,m)) = eless in 
+   match Assistance_dfa_subdirectory.soak (old_subdir,new_subdir) s with 
+   Some(new_s)->Some(Assistance_dfn_endingless_t.J(r,new_s,m))
+   |None -> None ;;
+
+
+let to_concrete_object (Assistance_dfn_endingless_t.J(r,s,m))=
+   Assistance_concrete_object_t.Variant("Dfn_"^"endingless.J",
+     [
+        Assistance_dfa_root.to_concrete_object r;
+        Assistance_dfa_subdirectory.to_concrete_object s;
+        Assistance_dfa_module.to_concrete_object m;
+     ]
+   ) ;;
+
+let of_concrete_object crobj =
+   let (_,(arg1,arg2,arg3,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant crobj in 
+   Assistance_dfn_endingless_t.J(
+      Assistance_dfa_root.of_concrete_object arg1,
+      Assistance_dfa_subdirectory.of_concrete_object arg2,
+      Assistance_dfa_module.of_concrete_object arg3
+   );;
+    
+
+
+
+
+
+end;;
+
+
+
+
+
+
 module Assistance_dfn_rootless_t=struct
 
 (*
@@ -3632,7 +3447,7 @@ module Assistance_dfn_common=struct
 
 *)
 
-exception No_dot_in_string_to_rootless of string;;
+exception No_dot_in_str_to_rootless of string;;
 exception Decompose_absolute_path_using_root_exn of Assistance_absolute_path.t * Assistance_dfa_root_t.t;;
 
 let string_of_sm (s,m)=
@@ -3648,7 +3463,7 @@ let string_to_sm s=
 
 let string_to_rootless line=
   if not(String.contains line '.')
-  then raise(No_dot_in_string_to_rootless(line)) 
+  then raise(No_dot_in_str_to_rootless(line)) 
   else 
   let (rest,ending) = Assistance_cull_string.split_wrt_rightmost line '.' in 
   let (s,m) = string_to_sm rest in 
@@ -3677,17 +3492,148 @@ end;;
 
 
 
-module Assistance_dfn_middle_t=struct
+module Assistance_dfn_full_t=struct
 
 (*
 
-#use"lib/Decomposed_filename/dfn_middle_t.ml";;
+#use"lib/Decomposed_filename/dfn_full_t.ml";;
 
 *)
 
-type t = J of Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t ;;
+
+type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_short_t=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_short_t.ml";;
+
+*)
+
+type t = J of Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
           
 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_join=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_join.ml";;
+
+*)
+
+let middle_to_ending (Assistance_dfn_middle_t.J(s,m)) e= (Assistance_dfn_rootless_t.J(s,m,e));;
+let root_to_middle r (Assistance_dfn_middle_t.J(s,m))=Assistance_dfn_endingless_t.J(r,s,m);; 
+let root_to_rootless r (Assistance_dfn_rootless_t.J(s,m,e))=Assistance_dfn_full_t.J(r,s,m,e);;
+let root_to_subdirectory (Assistance_dfa_root_t.R(r)) (Assistance_dfa_subdirectory_t.SD(s))=Assistance_dfa_root_t.R(r^"/"^s);;
+let subdirectory_to_module s m=(Assistance_dfn_middle_t.J(s,m));;  
+let subdirectory_to_short s (Assistance_dfn_short_t.J(m,e))=(Assistance_dfn_rootless_t.J(s,m,e));;  
+let to_ending (Assistance_dfn_endingless_t.J(r,s,m)) e = Assistance_dfn_full_t.J(r,s,m,e);;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_full=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_full.ml";;
+
+*)
+
+
+let to_subdirectory  (Assistance_dfn_full_t.J(_r,s,_m,_e))=s;;
+let to_module  (Assistance_dfn_full_t.J(_r,_s,m,_e))=m;;
+let to_ending (Assistance_dfn_full_t.J(_r,_s,_m,e))=e;;
+
+let to_rootless (Assistance_dfn_full_t.J(_r,s,m,e))=(Assistance_dfn_rootless_t.J(s,m,e));; 
+let to_endingless (Assistance_dfn_full_t.J(r,s,m,_e))=(Assistance_dfn_endingless_t.J(r,s,m));; 
+
+   
+let to_rootless_line (Assistance_dfn_full_t.J(_r,s,m,e))=
+    (Assistance_dfa_subdirectory.connectable_to_subpath s)^
+   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
+
+let to_line (Assistance_dfn_full_t.J(r,s,m,e))=
+   (Assistance_dfa_root.connectable_to_subpath r)^
+   (Assistance_dfa_subdirectory.connectable_to_subpath s)^
+   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
+
+let to_absolute_path mlx=Assistance_absolute_path.of_string(to_line mlx);;  
+
+let from_absolute_path_with_root ap dir=
+  let rless = Assistance_dfn_common.decompose_absolute_path_using_root ap dir in 
+  Assistance_dfn_join.root_to_rootless dir rless;;
+
+  
+let relocate (Assistance_dfn_full_t.J(r,_old_subdir,m,e)) new_subdir=
+  (Assistance_dfn_full_t.J(r,new_subdir,m,e));;  
+ 
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_converter_combinator=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_converter_combinator.ml";;
+
+*)
+
+let of_array of_a arr= Assistance_concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
+let to_array to_a crobj= Array.map to_a (Assistance_concrete_object.unwrap_array crobj);;
+
+let of_list of_a l= Assistance_concrete_object_t.List(Assistance_image.image of_a l);;
+let to_list to_a crobj= Assistance_image.image to_a (Assistance_concrete_object.unwrap_list crobj);;
+   
+   
+let of_pair of_a of_b (a,b)=Assistance_concrete_object_t.Uple[of_a a;of_b b];;
+let to_pair to_a to_b crobj=
+       let (arg1,arg2,_,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
+       (to_a arg1,to_b arg2);;
+   
+let of_triple of_a of_b of_c (a,b,c)=Assistance_concrete_object_t.Uple[of_a a;of_b b;of_c c];;
+let to_triple to_a to_b to_c crobj=
+           let (arg1,arg2,arg3,_,_,_,_)=Assistance_concrete_object.unwrap_bounded_uple crobj in
+           (to_a arg1,to_b arg2,to_c arg3);;
+   
+
+let of_pair_list of_a of_b l=of_list (of_pair of_a of_b) l;;
+let to_pair_list to_a to_b crobj = to_list (to_pair to_a to_b) crobj;;
+   
+   
 
 
 end;;
@@ -3799,19 +3745,209 @@ end;;
 
 
 
-module Assistance_dircopy_diff_t=struct
+module Assistance_dfn_short=struct
 
 (*
 
-#use"lib/dircopy_diff_t.ml";;
+#use"lib/Decomposed_filename/dfn_short.ml";;
 
 *)
 
-type t={
-   recently_deleted : Assistance_dfn_rootless_t.t list;
-   recently_changed : Assistance_dfn_rootless_t.t list;
-   recently_created : Assistance_dfn_rootless_t.t list;
-};;
+exception Of_line_exn of string;;
+
+let of_line line = 
+   let (mn,e)=Assistance_cull_string.split_wrt_rightmost line '.' in 
+   if mn=""
+   then raise(Of_line_exn(line))
+   else Assistance_dfn_short_t.J(Assistance_dfa_module.of_line mn,Assistance_dfa_ending.of_line(e));;
+
+
+let to_line (Assistance_dfn_short_t.J(m,e))=
+   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
+
+let to_module (Assistance_dfn_short_t.J(m,_e))=m;;
+
+end;;
+
+
+
+
+
+
+module Assistance_particular_string=struct
+
+(*
+
+#use"lib/particular_string.ml";;
+
+
+*)
+
+
+
+let double_semicolon=String.make 2 (char_of_int 59);; (* to make life easier for the OCaml mini-parser *)
+
+let triple_blank = String.make 3 ' ';;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_coma_constant=struct
+
+(* 
+
+#use"lib/Compilation_management/coma_constant.ml";;
+
+*)
+
+module Private = struct
+
+let directives_subdir=
+  Assistance_dfa_subdirectory.of_line "directives";;
+
+let debugging_subdir=
+  Assistance_dfa_subdirectory.of_line "debugging";;
+
+let watched_subdir=
+  Assistance_dfa_subdirectory.of_line "watched";;
+
+let outer_subdir=
+  Assistance_dfa_subdirectory.of_line "qfff";;
+
+let dune_bin_subdir= Assistance_dfa_subdirectory.of_line "bin";;  
+let dune_build_subdir= Assistance_dfa_subdirectory.of_line "_build";;
+let dune_test_subdir= Assistance_dfa_subdirectory.of_line "test";;
+
+let nonml_files_subdir=
+  Assistance_dfa_subdirectory.of_line "nonml_files";;
+
+let watched_and_githubbed_subdir=
+  Assistance_dfa_subdirectory.extend watched_subdir "watched_and_githubbed";;
+
+let watched_not_githubbed_subdir=
+  Assistance_dfa_subdirectory.extend watched_subdir "watched_not_githubbed";;
+
+let githubbed_nonml_files_subdir=
+  Assistance_dfa_subdirectory.extend nonml_files_subdir "githubbed_nonml_files";;
+
+let nongithubbed_nonml_files_subdir=
+  Assistance_dfa_subdirectory.extend nonml_files_subdir "nongithubbed_nonml_files";;  
+
+let build_subdir =   Assistance_dfa_subdirectory.extend nongithubbed_nonml_files_subdir "_build";;
+let usual_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_usual_build";;
+let debug_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_debug_build";;  
+let exec_build_subdir=  Assistance_dfa_subdirectory.extend build_subdir "_exec_build";;  
+let parameters_subdir= Assistance_dfa_subdirectory.of_line "Compilation_management";;
+
+let short_path_for_diary_file= Assistance_dfn_short.of_line"diary_archive.ml";;
+let short_path_for_loadingsfile= Assistance_dfn_short.of_line"my_loadings.ml";;
+let short_path_for_painful_debugging_file=Assistance_dfn_short.of_line"painful_debugging.ml";;
+let short_path_for_parametersfile= Assistance_dfn_short.of_line "coma_big_constant.ml";;
+let short_path_for_printersfile= Assistance_dfn_short.of_line "my_printers.ml";;
+let short_path_for_targetfile= Assistance_dfn_short.of_line "targetfile.ocaml_made";;
+ 
+let rootless_path_for_diary_file=
+  Assistance_dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
+let rootless_path_for_loadingsfile=
+  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
+let rootless_path_for_painful_debugging_file=
+  Assistance_dfn_join.subdirectory_to_short  watched_not_githubbed_subdir short_path_for_painful_debugging_file;;
+let rootless_path_for_parametersfile=
+  Assistance_dfn_join.subdirectory_to_short  parameters_subdir short_path_for_parametersfile;;
+let rootless_path_for_printersfile=
+  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_printersfile;;
+let rootless_path_for_targetfile=
+  Assistance_dfn_join.subdirectory_to_short  nongithubbed_nonml_files_subdir short_path_for_targetfile;;     
+
+let rootless_path_for_ocamlinit = Assistance_dfn_rootless.of_line ".ocamlinit";;
+
+
+let git_ignored_subdirectories =
+  [
+     build_subdir;
+     dune_bin_subdir;
+     dune_build_subdir;
+     dune_test_subdir;
+     watched_not_githubbed_subdir;
+     nongithubbed_nonml_files_subdir;
+     directives_subdir;
+     debugging_subdir;
+     outer_subdir
+  ];;
+
+
+let minimalist_text_for_ocamlinit =
+   "\n#use\""^(Assistance_dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Assistance_particular_string.double_semicolon^
+  "\n#use\""^(Assistance_dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Assistance_particular_string.double_semicolon;;
+
+ let full_text_for_ocamlinit = (
+      minimalist_text_for_ocamlinit^
+      "\nopen Needed_values"^Assistance_particular_string.double_semicolon^
+      "\ninitialize_toplevel()"^Assistance_particular_string.double_semicolon
+       ) ;; 
+
+let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" ;;
+let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Fads/painful_debugging.ml\""^Assistance_particular_string.double_semicolon^"\n\n*)\n\n" ;;
+
+let common_part_in_conventional_files = 
+   [
+     rootless_path_for_printersfile, text_for_printersfile ; 
+     rootless_path_for_loadingsfile, "" ;
+     rootless_path_for_targetfile, "";
+     rootless_path_for_diary_file, "";
+   ] ;;     
+
+
+let conventional_files_with_full_content =  
+   [
+     rootless_path_for_ocamlinit, full_text_for_ocamlinit ;
+     rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
+   ] @ common_part_in_conventional_files ;;      
+
+let conventional_files_with_minimal_content =    
+   [
+     rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit ;
+   ] @ common_part_in_conventional_files ;;      
+
+
+let minimal_set_of_needed_dirs = 
+  [
+    usual_build_subdir ;
+    watched_not_githubbed_subdir;
+    watched_and_githubbed_subdir;
+    githubbed_nonml_files_subdir;
+    nongithubbed_nonml_files_subdir;
+  ] ;;  
+
+let full_set_of_needed_dirs = 
+  minimal_set_of_needed_dirs @
+    [
+    ] ;;  
+
+end ;;
+
+ let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
+ let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
+ let debug_build_subdir = Private.debug_build_subdir ;;
+ let debugging_subdir = Private.debugging_subdir ;;
+ let exec_build_subdir = Private.exec_build_subdir ;;
+ let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
+ let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
+ let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
+ let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
+ let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
+ let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
+ let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
+ let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
+ let rootless_path_for_targetfile = Private.rootless_path_for_targetfile ;;
+ let usual_build_subdir = Private.usual_build_subdir ;;
+
 
 
 
@@ -3822,151 +3958,604 @@ end;;
 
 
 
-module Assistance_dircopy_diff=struct
+module Assistance_crobj_category_t=struct
 
-(*
+(* 
 
-#use"lib/dircopy_diff.ml";;
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
+
 
 *)
 
-module Private=struct
 
-let summarize_rootless_path rl=
-   if List.mem (Assistance_dfn_rootless.to_ending rl) Assistance_dfa_ending.endings_for_compilable_files
-   then String.capitalize_ascii(Assistance_cull_string.after_rightmost 
-   (Assistance_cull_string.before_rightmost_possibly_all (Assistance_dfn_rootless.to_line rl) '.') '/')
-   else Assistance_dfn_rootless.to_line rl;;
- 
-let summarize_rootless_path_list  l=
-    let temp1=Assistance_image.image summarize_rootless_path l in
-    Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp1;;
+type t= 
+    Uple 
+   |List 
+   |Array 
+   |Record
+   |Variant;;
 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_opening_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
+
+
+
+*)
+
+
+type t= 
+    Uple 
+   |List 
+   |Array 
+   |Record 
+   |Variant of string;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_basic_increase_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
+
+
+*)
+
+
+type t= 
+     Push_int of int 
+    |Push_string of Assistance_encoded_string_t.t 
+    |Push_field_name  of string 
+    |Open of Assistance_crobj_opening_t.t 
+    |Separate of Assistance_crobj_category_t.t
+    |Close of Assistance_crobj_category_t.t;;
     
 
-let salt = "Dircopy_"^"diff_t.";;
 
-let recently_deleted_label = salt ^ "recently_deleted";;
-let recently_changed_label = salt ^ "recently_changed";;
-let recently_created_label = salt ^ "recently_created";;
+        
 
-let of_concrete_object ccrt_obj = 
-   let g=Assistance_concrete_object.get_record ccrt_obj in
-   {
-      Assistance_dircopy_diff_t.recently_deleted = Assistance_dfn_rootless.list_of_concrete_object (g recently_deleted_label);
-      recently_changed = Assistance_dfn_rootless.list_of_concrete_object (g recently_changed_label);
-      recently_created = Assistance_dfn_rootless.list_of_concrete_object (g recently_created_label);
-   };; 
 
-let to_concrete_object dirdiff=
-   let items= 
-   [
-    recently_deleted_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_deleted;
-    recently_changed_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_changed;
-    recently_created_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_created;
-   ]  in
-   Assistance_concrete_object_t.Record items;;
 
-let is_empty x=
-  (x.Assistance_dircopy_diff_t.recently_deleted,x.Assistance_dircopy_diff_t.recently_created,x.Assistance_dircopy_diff_t.recently_changed)=
-   ([],[],[]);; 
 
-let to_string x=
-   if is_empty x then "{}" else 
-   let tempf=(fun msg l->
-   "\n"::msg::(Assistance_image.image(fun w->"\t\t"^(Assistance_dfn_rootless.to_line w)) l)
-   ) in
-   let temp1=tempf "Deleted : " (x.Assistance_dircopy_diff_t.recently_deleted)
-   and temp2=tempf "Created : " (x.Assistance_dircopy_diff_t.recently_created)
-   and temp3=tempf "Changed : " (x.Assistance_dircopy_diff_t.recently_changed) in
-   String.concat "\n" (temp1@temp2@temp3) ;;
 
 end;;
 
 
 
-let add_changes diff l= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_changed = (diff.Assistance_dircopy_diff_t.recently_changed)@ l;
-   };; 
-
-let constructor a b c={
-   Assistance_dircopy_diff_t.recently_deleted =a;
-   Assistance_dircopy_diff_t.recently_changed =b;
-   Assistance_dircopy_diff_t.recently_created =c;
-};;
 
 
-let create diff created_ones= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ created_ones;
-   };; 
 
-let destroy diff destroyed_ones= 
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ destroyed_ones;
-   };; 
+module Assistance_partial_crobj_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
+
+For convenience, the list is reversed when the partial object is closed and becomes full
+(new objects are therefore appended directly to the left on a partial object).
 
 
-let empty_one  = 
+*)
+
+
+type t= 
+   |Uple of Assistance_concrete_object_t.t list
+   |List of Assistance_concrete_object_t.t list
+   |Array of Assistance_concrete_object_t.t list
+   |Record of ((string*Assistance_concrete_object_t.t) list)
+   |RecordPlusFieldName of ((string*Assistance_concrete_object_t.t) list)*string
+   |Variant of string*(Assistance_concrete_object_t.t list);;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_double_partial_crobj_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
+
+First argument says if a comma appears last, waiting for another item.
+
+The two last arguments are t * (t list) rather than just t list, to enforce
+a non-empty list. 
+
+*)
+
+
+type t= Double of bool * Assistance_partial_crobj_t.t * (Assistance_partial_crobj_t.t list) ;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_parsing_machine_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
+
+
+*)
+
+type t= 
+    {
+       parsed_one    : string;
+       current_index : int;
+       data : Assistance_double_partial_crobj_t.t;
+    };;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_partial_crobj=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
+
+
+*)
+
+exception Field_With_No_Name of Assistance_concrete_object_t.t;;
+exception Unused_Field_Name of string;;
+exception Misapplied_Field_Name of string;;
+exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
+
+let initialize=function 
+    Assistance_crobj_opening_t.Uple -> Assistance_partial_crobj_t.Uple[]
+   |Assistance_crobj_opening_t.List -> Assistance_partial_crobj_t.List[]
+   |Assistance_crobj_opening_t.Array -> Assistance_partial_crobj_t.Array[]
+   |Assistance_crobj_opening_t.Record->Assistance_partial_crobj_t.Record([])
+   |Assistance_crobj_opening_t.Variant(constructor)->Assistance_partial_crobj_t.Variant(constructor,[]);;
+
+let category = function 
+    Assistance_partial_crobj_t.Uple(_)->Assistance_crobj_category_t.Uple
+   |Assistance_partial_crobj_t.List(_)->Assistance_crobj_category_t.List
+   |Assistance_partial_crobj_t.Array(_)->Assistance_crobj_category_t.Array
+   |Assistance_partial_crobj_t.Record(_)->Assistance_crobj_category_t.Record
+   |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)->Assistance_crobj_category_t.Record
+   |Assistance_partial_crobj_t.Variant(_,_)->Assistance_crobj_category_t.Variant;;
+ 
+
+let push_one_more_item item =function 
+    Assistance_partial_crobj_t.Uple(l)->Assistance_partial_crobj_t.Uple(item::l)
+   |Assistance_partial_crobj_t.List(l)->Assistance_partial_crobj_t.List(item::l)
+   |Assistance_partial_crobj_t.Array(l)->Assistance_partial_crobj_t.Array(item::l)
+   |Assistance_partial_crobj_t.Record(_)->raise(Field_With_No_Name(item))
+   |Assistance_partial_crobj_t.RecordPlusFieldName(l,rcdname)->Assistance_partial_crobj_t.Record((rcdname,item)::l)
+   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_partial_crobj_t.Variant(constructor,item :: l);;
+
+let push_int i = push_one_more_item (Assistance_concrete_object_t.Int(i));;
+let push_string encoded_s = push_one_more_item (Assistance_concrete_object.wrap_encoded_string encoded_s);;
+
+let push_field_name recdname=function 
+    Assistance_partial_crobj_t.Record(l)->Assistance_partial_crobj_t.RecordPlusFieldName(l,recdname)
+    |Assistance_partial_crobj_t.Uple(_)
+    |Assistance_partial_crobj_t.List(_)
+    |Assistance_partial_crobj_t.Array(_)
+    |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)
+    |Assistance_partial_crobj_t.Variant(_,_) 
+        ->raise(Misapplied_Field_Name(recdname));;
+
+
+
+let close =function 
+    Assistance_partial_crobj_t.Uple(l)->Assistance_concrete_object_t.Uple(List.rev l)
+   |Assistance_partial_crobj_t.List(l)->Assistance_concrete_object_t.List(List.rev l)
+   |Assistance_partial_crobj_t.Array(l)->Assistance_concrete_object_t.Array(List.rev l)
+   |Assistance_partial_crobj_t.Record(l)->Assistance_concrete_object_t.Record(List.rev l)
+   |Assistance_partial_crobj_t.RecordPlusFieldName(_,rcdname)->raise(Unused_Field_Name(rcdname))
+   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_concrete_object_t.Variant(constructor,List.rev l);;
+
+
+let check_category_and_close ctgr pcrobj=
+   if category(pcrobj)<>ctgr 
+   then raise(Category_Mismatch(ctgr,pcrobj))
+   else 
+   close pcrobj;;
+
+end;;
+
+
+
+
+
+
+module Assistance_double_partial_crobj=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
+
+*)
+
+exception Close_on_separator;;
+exception Redundant_separator;;
+exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
+exception End_reached of Assistance_concrete_object_t.t ;;
+
+module Private = struct 
+
+let push_int i (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_int i last_opened,opened_before));;
+
+let push_string encoded_s (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_string encoded_s last_opened,opened_before));;    
+
+let push_separator ctgr (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
+  if separator_present
+  then raise(Redundant_separator)
+  else 
+        let ctgr2 = Assistance_partial_crobj.category last_opened in 
+        if ctgr <> ctgr2
+        then raise(Category_Mismatch(ctgr,last_opened))
+        else  (Assistance_double_partial_crobj_t.Double(true,last_opened,opened_before));;
+
+let push_field_name record_name (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_field_name record_name last_opened,opened_before));;    
+
+let open_new opening 
+   (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+    Assistance_double_partial_crobj_t.Double(false,
+      Assistance_partial_crobj.initialize opening,last_opened::opened_before);;
+
+
+
+let close ctgr
+    (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
+    if separator_present 
+    then raise(Close_on_separator)
+    else 
+    let newfound=Assistance_partial_crobj.check_category_and_close ctgr last_opened in 
+    match opened_before with 
+    []->raise(End_reached(newfound))
+    |next_opened_one::others ->
+      let new_frontier = Assistance_partial_crobj.push_one_more_item newfound next_opened_one in 
+      Assistance_double_partial_crobj_t.Double(false,new_frontier,others);;
+
+end ;; 
+
+let initialize opening = 
+    Assistance_double_partial_crobj_t.Double(false,Assistance_partial_crobj.initialize opening,[]);;
+
+let increase = function 
+   Assistance_crobj_basic_increase_t.Push_int(i)->Private.push_int i 
+    |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->Private.push_string encoded_s 
+    |Assistance_crobj_basic_increase_t.Push_field_name(rcdname)->Private.push_field_name rcdname
+    |Assistance_crobj_basic_increase_t.Open(opening) -> Private.open_new opening
+    |Assistance_crobj_basic_increase_t.Separate(cat) -> Private.push_separator cat 
+    |Assistance_crobj_basic_increase_t.Close(cat) -> Private.close cat;;
+        
+
+
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_parsing=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
+
+
+*)
+
+exception Unreadable of int * string ;;
+
+module Private = struct
+
+let salt = Assistance_encoded_string.salt ;; 
+
+let array_opener = salt ^ "ao";;
+let list_opener = salt ^ "lo";;
+let record_opener = salt ^ "ro";;
+let string_opener = salt ^ "so";;
+let uple_opener = salt ^ "uo";; 
+let variant_opener = salt ^ "vo";; 
+
+let array_separator = salt ^ "as";;
+let list_separator = salt ^ "ls";;
+let record_separator = salt ^ "rs";;
+let uple_separator = salt ^ "us";; 
+let variant_separator = salt ^ "vs";; 
+
+let array_closer = salt ^ "ac";;
+let list_closer = salt ^ "lc";;
+let record_closer = salt ^ "rc";;
+let string_closer = salt ^ "sc";;
+let uple_closer = salt ^ "uc";; 
+let variant_closer = salt ^ "vc";; 
+
+let record_arrow = salt ^ "ra";;
+
+
+let array_cat = Assistance_crobj_category_t.Array
+and list_cat  = Assistance_crobj_category_t.List
+and record_cat = Assistance_crobj_category_t.Record 
+and uple_cat = Assistance_crobj_category_t.Uple 
+and variant_cat = Assistance_crobj_category_t.Variant;;
+
+let list_for_category_of_lexeme=[
+    (array_opener,array_cat); 
+    (list_opener,list_cat); 
+    (record_opener,record_cat); 
+    (uple_opener,uple_cat); 
+    (variant_opener,variant_cat); 
+
+    (array_separator,array_cat); 
+    (list_separator,list_cat); 
+    (record_separator,record_cat); 
+    (uple_separator,uple_cat); 
+    (variant_separator,variant_cat); 
+
+    (array_closer,array_cat); 
+    (list_closer,list_cat); 
+    (record_closer,record_cat); 
+    (uple_closer,uple_cat); 
+    (variant_closer,variant_cat); 
+
+    (record_arrow,record_cat); (* a little bit of convenient convention here *)
+];;
+
+let category_of_lexeme lexeme=List.assoc lexeme list_for_category_of_lexeme;;
+
+let list_for_preludeless_increasers=[
+    (array_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Array)); 
+    (list_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.List)); 
+    (record_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Record)); 
+    (uple_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Uple)); 
+
+    (array_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Array)); 
+    (list_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.List)); 
+    (record_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Record)); 
+    (uple_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Uple)); 
+    (variant_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Variant)); 
+
+    (array_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Array)); 
+    (list_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.List)); 
+    (record_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Record)); 
+    (uple_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Uple)); 
+    (variant_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Variant)); 
+
+];;
+
+exception Unreadable_int of string;;
+
+let parse_int s=try int_of_string s with _->raise(Unreadable_int(s));;
+
+let next_basic_increase_in_variant_opening_case s idx idx1=
+   let opening = Assistance_crobj_opening_t.Variant (Assistance_cull_string.interval s idx (idx1-1)) in 
+   (Assistance_crobj_basic_increase_t.Open(opening),idx1+(String.length variant_opener));;
+
+let next_basic_increase_in_field_naming_case s idx idx1=
+   let name = Assistance_cull_string.interval s idx (idx1-1) in 
+   (Assistance_crobj_basic_increase_t.Push_field_name(name),idx1+(String.length record_arrow));;
+
+let next_basic_increase_in_preludy_case s idx idx1=
+   if Assistance_substring.is_a_substring_located_at variant_opener s idx1 
+   then next_basic_increase_in_variant_opening_case s idx idx1
+   else 
+   if Assistance_substring.is_a_substring_located_at record_arrow s idx1 
+   then next_basic_increase_in_field_naming_case s idx idx1
+   else let i=parse_int(Assistance_cull_string.interval s idx (idx1-1)) in 
+       (Assistance_crobj_basic_increase_t.Push_int(i),idx1);;
+
+
+exception Missing_string_closer of int * string;;
+
+let next_basic_increase_in_push_string_case s idx=
+   let idx1=idx+(String.length string_opener) in 
+   let idx2_opt=Assistance_substring.leftmost_index_of_in_from_opt string_closer s idx1 in 
+   if idx2_opt = None
+   then raise(Missing_string_closer(idx1,s))
+   else
+   let idx2 = Option.get idx2_opt in    
+   (* we know that the string is already encoded *)
+   let encoded_s = Assistance_encoded_string.retrieve (Assistance_cull_string.interval s idx1 (idx2-1)) in 
+   (Assistance_crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
+
+
+
+
+exception Unreadable_increase of int * string ;;
+
+let next_basic_increase  s idx=
+   let idx1_opt= Assistance_substring.leftmost_index_of_in_from_opt salt s idx in 
+   if idx1_opt = None 
+   then let i=parse_int (Assistance_cull_string.cobeginning (idx-1) s) in
+        (Assistance_crobj_basic_increase_t.Push_int(i),String.length(s)+1)
+   else      
+   let idx1 = Option.get idx1_opt in    
+   if idx1>idx 
+   then next_basic_increase_in_preludy_case s idx idx1
+   else 
+   if Assistance_substring.is_a_substring_located_at string_opener s idx 
+   then next_basic_increase_in_push_string_case s idx
+   else 
+   match List.find_opt (fun 
+      (text,_action)->Assistance_substring.is_a_substring_located_at text s idx
+   ) list_for_preludeless_increasers with 
+   None -> raise(Unreadable_increase(idx,s))
+   |Some(text,action)->(action,idx+(String.length text));;
+
+let one_step_more machine =
+   let (action,next_idx) =
+      next_basic_increase machine.Assistance_crobj_parsing_machine_t.parsed_one 
+                            machine.Assistance_crobj_parsing_machine_t.current_index in 
    {
-      Assistance_dircopy_diff_t.recently_deleted = [];
-      recently_changed = [];
-      recently_created = [];
-   };; 
+      machine with 
+      Assistance_crobj_parsing_machine_t.current_index = next_idx ;
+      Assistance_crobj_parsing_machine_t.data = Assistance_double_partial_crobj.increase action machine.Assistance_crobj_parsing_machine_t.data;
+   }  ;;
+
+let prudent_push machine = try (None,Some(one_step_more machine)) with 
+   Assistance_double_partial_crobj.End_reached(solution) -> (Some solution,None);;
+
+exception First_step_exn of Assistance_crobj_basic_increase_t.t ;; 
+
+let first_step s =
+   let (action,next_idx) = next_basic_increase s 1 in 
+   match action with 
+    Assistance_crobj_basic_increase_t.Push_int(i)->(Some(Assistance_concrete_object_t.Int(i)),None,next_idx)
+   |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->(Some(Assistance_concrete_object.wrap_encoded_string(encoded_s)),None,next_idx)
+   |Assistance_crobj_basic_increase_t.Open(opening)->(None,Some(Assistance_double_partial_crobj.initialize(opening)),next_idx)
+   |Assistance_crobj_basic_increase_t.Push_field_name(_)
+   |Assistance_crobj_basic_increase_t.Separate(_)
+   |Assistance_crobj_basic_increase_t.Close(_) ->raise(First_step_exn(action));;
+
+exception Ends_too_soon of Assistance_concrete_object_t.t * string ;; 
+
+let parse s =
+    let (opt_quick_result,opt_start,next_idx) = first_step s in 
+    match opt_quick_result with 
+    Some (res)-> if next_idx < (String.length s)
+                 then raise(Ends_too_soon(res,s)) 
+                 else res 
+    |None -> let start_partial_obj = Option.get opt_start in   
+             let machine = {
+                Assistance_crobj_parsing_machine_t.parsed_one = s ;
+                Assistance_crobj_parsing_machine_t.current_index = next_idx ;
+                Assistance_crobj_parsing_machine_t.data = start_partial_obj;
+             } in 
+             let rec iterator = (fun mach ->
+                let (opt_sol,opt_term) = prudent_push mach in 
+                match opt_term with 
+                None -> Option.get opt_sol 
+                |Some(term)->iterator(term) 
+             ) in 
+             iterator machine;;
+
+let rec unparse = function 
+   Assistance_concrete_object_t.Int(i)->string_of_int i 
+   |Assistance_concrete_object_t.String(t)->string_opener^(Assistance_encoded_string.store t)^string_closer
+   |Assistance_concrete_object_t.Uple(l)->let temp1=Assistance_image.image unparse l in 
+             uple_opener^(String.concat uple_separator temp1)^uple_closer
+   |Assistance_concrete_object_t.List(l)->let temp1=Assistance_image.image unparse l in 
+             list_opener^(String.concat list_separator temp1)^list_closer 
+   |Assistance_concrete_object_t.Array(l)->let temp1=Assistance_image.image unparse l in 
+             array_opener^(String.concat array_separator temp1)^array_closer
+   |Assistance_concrete_object_t.Record(l)->let temp1=Assistance_image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
+             record_opener^(String.concat record_separator temp1)^record_closer          
+   |Assistance_concrete_object_t.Variant(constructor,l)->let temp1=Assistance_image.image unparse l in 
+             constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
+
+end;;
+
+let parse = Private.parse;;
+let unparse = Private.unparse;;
+
+end;;
 
 
-let explain  x=
-   let tempf=(fun (msg,l)->
-     if l=[]
-     then None
-     else Some(msg^" "^(String.concat "," l)^".")
-   ) in
-   let temp1=Assistance_option.filter_and_unpack tempf
-   (* we use infinitives for github format *)
-   [
-     "Delete",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_deleted);
-     "Create",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_created);
-     "Modify",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_changed);
-   ] in
-   if temp1=[] then "" else
-   let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
-   String.concat " " temp2;; 
-   
-
-
-let is_empty = Private.is_empty ;;
-
-let of_concrete_object = Private.of_concrete_object ;;
-
-let print_out (fmt:Format.formatter) x=
-   Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
-
-
-let recently_deleted x=x.Assistance_dircopy_diff_t.recently_deleted;;
-let recently_created x=x.Assistance_dircopy_diff_t.recently_created;;
-let recently_changed x=x.Assistance_dircopy_diff_t.recently_changed;;
 
 
 
-let replace diff replacements= 
-   let l_deleted = Assistance_image.image fst replacements 
-   and l_created = Assistance_image.image snd replacements  in
-  {
-      diff with 
-      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ l_created;
-      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ l_deleted;
-   };; 
+
+module Assistance_directory_name_t=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"lib/directory_name_t.ml";;
+
+*)
+
+type t=D of string;;
+
+           
+
+end;;
 
 
-let to_concrete_object = Private.to_concrete_object ;;   
-   
-   
-   
-              
+
+
+
+
+module Assistance_directory_name=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"lib/directory_name.ml";;
+
+*)
+
+
+
+exception Non_directory of string;;
+exception File_not_found of string * (Assistance_directory_name_t.t list);;
+
+let find_file_with_directory_list fname l=
+  match List.find_map (
+     fun (Assistance_directory_name_t.D s_dir) ->
+      let full_path = s_dir^"/"^fname in 
+      if Sys.file_exists full_path 
+      then Some(Assistance_absolute_path.of_string full_path)
+      else None
+  ) l with 
+  None -> raise(File_not_found(fname,l))
+  |Some(ap) -> ap;;
+
+
+let of_string s=
+  let temp1=Assistance_tools_for_absolute_path.of_string s in
+  if Sys.is_directory temp1
+  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
+  else raise(Non_directory(s));;
+
+let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
+
+
 
 end;;
 
@@ -4034,51 +4623,6 @@ let detect text = Private.detect_printer_declaration_from_index text 0;;
 detect "123 l"^"et print_out = 54" ;;
 
 *)
-
-end;;
-
-
-
-
-
-
-module Assistance_ocaml_library_t=struct
-
-(* 
-
-#use"lib/Compilation_management/ocaml_library_t.ml";;
-
-*)
-
-
-type t=NumLib |StrLib |UnixLib;;
-
- 
-
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_file_small_details_t=struct
-
-(*
-
-#use"lib/Filewatching/fw_file_small_details_t.ml";;
-
-
-*)
-
-type t ={
-  used_modules : Assistance_dfa_module_t.t list ;
-  used_libraries : Assistance_ocaml_library_t.t list ;
-  has_printer : bool ;
-  modification_time : string ;
-};;
-
 
 end;;
 
@@ -4225,10 +4769,7 @@ let after_whites s =after_star Assistance_charset.list_of_whites s;;
         then tempf(j+1)
         else 
         if Assistance_substring.is_a_substring_located_at "/*" s j
-        then let k=Assistance_substring.leftmost_index_of_in_from "*/" s (j+2) in
-             if k<0
-             then None
-             else tempf(k+2)
+        then Option.map (fun k-> k+2) (Assistance_substring.leftmost_index_of_in_from_opt "*/" s (j+2)) 
         else Some(j)
     ) in
     tempf;;
@@ -4297,17 +4838,17 @@ let after_closing_character (lchar,rchar) s=
       then raise(Unbalanced_expression(lchar,rchar))
       else 
       if Assistance_substring.is_a_substring_located_at "/*" s k
-      then let j=Assistance_substring.leftmost_index_of_in_from "*/" s (k+2) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "*/" s (k+2)) in
            tempf(j+2,count)
       else 
       if Assistance_substring.is_a_substring_located_at "//" s k
-      then let j=Assistance_substring.leftmost_index_of_in_from "\n" s (k+2) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "\n" s (k+2)) in
            tempf(j+1,count)
       else 
       if (Assistance_substring.is_a_substring_located_at "<<<EOF\n" s k)
          ||
          (Assistance_substring.is_a_substring_located_at "<<<'EOF'\n" s k) 
-      then let j=Assistance_substring.leftmost_index_of_in_from "\nEOF;\n" s (k+7) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "\nEOF;\n" s (k+7)) in
            tempf(j+6,count)
       else 
       let c=String.get s (k-1) in
@@ -4351,17 +4892,17 @@ let next_in_list l s=
       then None
       else 
       if Assistance_substring.is_a_substring_located_at "/*" s k
-      then let j=Assistance_substring.leftmost_index_of_in_from "*/" s (k+2) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "*/" s (k+2)) in
            tempf(j+2)
       else 
       if Assistance_substring.is_a_substring_located_at "//" s k
-      then let j=Assistance_substring.leftmost_index_of_in_from "\n" s (k+2) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "\n" s (k+2))  in
            tempf(j+1)
       else 
       if (Assistance_substring.is_a_substring_located_at "<<<EOF\n" s k)
          ||
          (Assistance_substring.is_a_substring_located_at "<<<'EOF'\n" s k) 
-      then let j=Assistance_substring.leftmost_index_of_in_from "\nEOF;\n" s (k+7) in
+      then let j=Option.get(Assistance_substring.leftmost_index_of_in_from_opt "\nEOF;\n" s (k+7))  in
            tempf(j+6)
       else 
       let c=String.get s (k-1) in
@@ -4381,7 +4922,7 @@ let next_in_list l s=
 
 
 let after_classlike_declaration s i=
-    Assistance_option.seek(
+    List.find_opt(
      fun j->not(List.mem 
          (String.get s (j-1)) Assistance_charset.classlike_declaration_chars
      )
@@ -4394,13 +4935,13 @@ let after_abstract_class s i0=
   else
   let opt1=after_whites s (i0+8) in
   if opt1=None then None else
-  let i1=Assistance_option.unpack opt1 in
+  let i1=Option.get opt1 in
   if not(Assistance_substring.is_a_substring_located_at "class" s i1)
   then None
   else 
   let opt2=after_classlike_declaration s (i1+5) in
   if opt2=None then None else
-  let i2=Assistance_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Assistance_strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;
 
@@ -4416,13 +4957,13 @@ let after_final_class s i0=
   else
   let opt1=after_whites s (i0+5) in
   if opt1=None then None else
-  let i1=Assistance_option.unpack opt1 in
+  let i1=Option.get opt1 in
   if not(Assistance_substring.is_a_substring_located_at "class" s i1)
   then None
   else 
   let opt2=after_classlike_declaration s (i1+5) in
   if opt2=None then None else
-  let i2=Assistance_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Assistance_strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;     
 
@@ -4438,7 +4979,7 @@ let after_usual_class s i0=
   else 
   let opt2=after_classlike_declaration s (i0+5) in
   if opt2=None then None else
-  let i2=Assistance_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Assistance_strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;     
 
@@ -4455,7 +4996,7 @@ let after_interface s i0=
   else 
   let opt2=after_classlike_declaration s (i0+5) in
   if opt2=None then None else
-  let i2=Assistance_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if (Assistance_strung.get s i2)<>'{' then None else 
   Some(after_closing_character ('{','}') s (i2+1,1));;  
 
@@ -4466,7 +5007,7 @@ after_interface "interface {u\nv}678" 1;;
 *)
 
 let after_classlike_block s i=
-   Assistance_option.find_and_stop(
+   List.find_map(
      fun f->f s i
    )[
        after_abstract_class;
@@ -4489,12 +5030,12 @@ let after_classlike_block_with_linebreak s i=
   let n=String.length s in
   let opt1=after_classlike_block s i in
   if opt1=None then None else
-  let i1=Assistance_option.unpack opt1 in
-  let opt2=Assistance_option.seek(fun j->
+  let i1=Option.get opt1 in
+  let opt2=List.find_opt(fun j->
      not(List.mem (Assistance_strung.get s j) [' ';'\r';'\t']) )
   (Assistance_int_range.range i1 n) in
   if opt2=None then None else
-  let i2=Assistance_option.unpack opt2 in
+  let i2=Option.get opt2 in
   if Assistance_strung.get s i2='\n'
   then Some(i2+1)
   else None;;
@@ -4522,7 +5063,7 @@ let rec main_helper_for_div (s,n,div_count,idx)=
     if not(Assistance_substring.is_a_substring_located_at "<div " s idx)
     then main_helper_for_div(s,n,div_count,idx+1)
     else  
-    let jdx=Assistance_substring.leftmost_index_of_in_from ">" s (idx+5) in
+    let jdx=Option.get(Assistance_substring.leftmost_index_of_in_from_opt ">" s (idx+5))  in
     main_helper_for_div(s,n,div_count+1,jdx);;
 
 let after_div s idx=main_helper_for_div(s,String.length s,0,idx);;
@@ -4539,7 +5080,7 @@ let after_one pattern s idx=
   else None;;
 
 let after_one_among_several l_patterns s idx=
-   Assistance_option.find_and_stop (
+   List.find_map (
      fun pattern->after_one pattern s idx
    ) l_patterns;;
 
@@ -4896,11 +5437,11 @@ end;;
 
 
 
-module Assistance_outside_comments_and_strings=struct
+module Assistance_outside_ocaml_comments_and_strings=struct
 
 (*
 
-#use"lib/outside_comments_and_strings.ml";;
+#use"lib/outside_ocaml_comments_and_strings.ml";;
 
 Detect in a text the parts which can possibly contain module
 names, i.e. those parts which are outside comments and outside
@@ -5093,10 +5634,10 @@ instance defines only the value it needs.
 type ('a,'b) parameter = (('a list) -> 'b) * ('b -> ('a list)) * ('a Assistance_total_ordering_t.t);;
 
 
-let does_not_intersect ((co,deco,cmpr):('a,'b) parameter) 
+let does_not_intersect ((_co,deco,cmpr):('a,'b) parameter) 
      ox oy= Assistance_ordered.does_not_intersect cmpr (deco ox) (deco oy);;
     
-let empty_set ((co,deco,cmpr):('a,'b) parameter) = co [];;
+let empty_set ((co,_deco,_cmpr):('a,'b) parameter) = co [];;
 
 let fold_merge ((co,deco,cmpr):('a,'b) parameter) 
      l=co (Assistance_ordered.fold_merge cmpr (Assistance_image.image deco l));;
@@ -5104,11 +5645,11 @@ let fold_merge ((co,deco,cmpr):('a,'b) parameter)
 let fold_intersect ((co,deco,cmpr):('a,'b) parameter) 
      l=co (Assistance_ordered.fold_intersect cmpr (Assistance_image.image deco l));;
     
-let forget_order ((co,deco,cmpr):('a,'b) parameter) =deco;;
+let forget_order ((_co,deco,_cmpr):('a,'b) parameter) =deco;;
 
-let hd ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(deco ox);;
+let hd ((_co,deco,_cmpr):('a,'b) parameter) ox= List.hd(deco ox);;
 
-let image ((co,deco,cmpr):('a,'b) parameter) f ox= Assistance_image.image f (deco ox);;
+let image ((_co,deco,_cmpr):('a,'b) parameter) f ox= Assistance_image.image f (deco ox);;
 
 let insert ((co,deco,cmpr):('a,'b) parameter) 
      x oy= co(Assistance_ordered.insert cmpr x (deco oy));;
@@ -5116,31 +5657,31 @@ let insert ((co,deco,cmpr):('a,'b) parameter)
 let intersect ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Assistance_ordered.intersect cmpr (deco ox) (deco oy));;
 
-let intersects ((co,deco,cmpr):('a,'b) parameter) 
+let intersects ((_co,deco,cmpr):('a,'b) parameter) 
      ox oy= Assistance_ordered.intersects cmpr (deco ox) (deco oy);;
 
-let is_included_in ((co,deco,cmpr):('a,'b) parameter) 
+let is_included_in ((_co,deco,cmpr):('a,'b) parameter) 
      ox oy= Assistance_ordered.is_included_in cmpr (deco ox) (deco oy);;
 
-let length ((co,deco,cmpr):('a,'b) parameter) ox= List.length(deco ox);;
+let length ((_co,deco,_cmpr):('a,'b) parameter) ox= List.length(deco ox);;
 
-let max ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(List.rev (deco ox));;
+let max ((_co,deco,_cmpr):('a,'b) parameter) ox= List.hd(List.rev (deco ox));;
 
-let mem ((co,deco,cmpr):('a,'b) parameter) 
+let mem ((_co,deco,cmpr):('a,'b) parameter) 
      x oy= Assistance_ordered.mem cmpr x (deco oy);;
 
 let merge ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Assistance_ordered.merge cmpr (deco ox) (deco oy));;
 
-let min ((co,deco,cmpr):('a,'b) parameter) ox= List.hd(deco ox);;
+let min ((_co,deco,_cmpr):('a,'b) parameter) ox= List.hd(deco ox);;
 
-let nmem ((co,deco,cmpr):('a,'b) parameter) 
+let nmem ((_co,deco,cmpr):('a,'b) parameter) 
      x oy= not(Assistance_ordered.mem cmpr x (deco oy));;
 
 let outsert ((co,deco,cmpr):('a,'b) parameter) 
      x oy= co(Assistance_ordered.outsert cmpr x (deco oy));;
 
-let safe_set ((co,deco,cmpr):('a,'b) parameter) 
+let safe_set ((co,_deco,cmpr):('a,'b) parameter) 
      l= co(Assistance_ordered.safe_set cmpr l);;
 
 let select_minimal_elements_for_inclusion 
@@ -5153,17 +5694,17 @@ let select_minimal_elements_for_inclusion
 let setminus ((co,deco,cmpr):('a,'b) parameter) 
      ox oy= co(Assistance_ordered.setminus cmpr (deco ox) (deco oy));;
 
-let singleton ((co,deco,cmpr):('a,'b) parameter)  x=co[x];;
+let singleton ((co,_deco,_cmpr):('a,'b) parameter)  x=co[x];;
 
-let size_of_intersection ((co,deco,cmpr):('a,'b) parameter) 
+let size_of_intersection ((_co,deco,cmpr):('a,'b) parameter) 
      ox oy= List.length(Assistance_ordered.intersect cmpr (deco ox) (deco oy));;
 
-let sort ((co,deco,cmpr):('a,'b) parameter) 
+let sort ((co,_deco,cmpr):('a,'b) parameter) 
      l= co(Assistance_ordered.sort cmpr l);;
 
-let tl ((co,deco,cmpr):('a,'b) parameter) ox= co(List.tl(deco ox));;
+let tl ((co,deco,_cmpr):('a,'b) parameter) ox= co(List.tl(deco ox));;
 
-let unsafe_set ((co,deco,cmpr):('a,'b) parameter) 
+let unsafe_set ((co,_deco,_cmpr):('a,'b) parameter) 
      l= co l;;
 
 
@@ -5248,7 +5789,7 @@ let complemented_points l=List.rev_map(function (kleiz,x,dehou)->
 (x,List.rev_append(kleiz)(dehou)))
 (generic l);;
 
-let beheaded_tails l=List.rev_map (function (kleiz,x,dehou)->(x,dehou) )(generic l);;
+let beheaded_tails l=List.rev_map (function (_kleiz,x,dehou)->(x,dehou) )(generic l);;
 
 let select_center_element_and_reverse_left f l=
   let rec tempf=(fun (graet,da_ober)->match da_ober with
@@ -5268,7 +5809,7 @@ let decompose_according_to_end_markers f l =
      fun (treated,to_be_treated)->
        let (before,opt,after)=select_center_element f to_be_treated in 
        if opt=None then (List.rev treated,before) else 
-       tempf((before,Assistance_option.unpack opt)::treated,after)
+       tempf((before,Option.get opt)::treated,after)
   ) in 
   tempf([],l);;
 
@@ -5344,7 +5885,7 @@ module Private = struct
 
 
 let indices_in_ml_ocamlcode code=
-  let temp1=Assistance_outside_comments_and_strings.good_substrings code in
+  let temp1=Assistance_outside_ocaml_comments_and_strings.good_substrings code in
   let temp2=Assistance_image.image (fun (a,_b,t,line_nbr)->
      let ttemp3=Assistance_alternative_str.find_all_decorated_occurrences 
        Assistance_alternative_str_example.decorated_moodle_cases t 1 in
@@ -5450,9 +5991,9 @@ let change_module_name_in_mlx_file = Private.change_module_name_in_mlx_file ;;
 
 (*   
    
-indices_in_string "123 Haag.012 open Garfield;8";;
+indices_in_text "123 Haag.012 open Garfield;8";;
 
-indices_in_string "(* Haag. *)234 Dog.\"open Garfield;\"67 Corn.4";;
+indices_in_text "(* Haag. *)234 Dog.\"open Garfield;\"67 Corn.4";;
 
 let example = String.concat "\n" [
 ""; "open Aantron_markup_common"; ""; "module Aantron_peggy = Aantron_kstream";""; "include Aantron_kstream.Foo";"";"val parse :";
@@ -5475,6 +6016,27 @@ end;;
 
 
 
+module Assistance_ocaml_library_t=struct
+
+(* 
+
+#use"lib/Compilation_management/ocaml_library_t.ml";;
+
+*)
+
+
+type t=ZarithLib |StrLib |UnixLib;;
+
+ 
+
+
+end;;
+
+
+
+
+
+
 module Assistance_ocaml_library=struct
 
 (* 
@@ -5485,7 +6047,7 @@ module Assistance_ocaml_library=struct
 
 
 let correspondances=[
-   Assistance_ocaml_library_t.NumLib,"num";
+   Assistance_ocaml_library_t.ZarithLib,"zarith";
    Assistance_ocaml_library_t.StrLib,"str";
    Assistance_ocaml_library_t.UnixLib,"unix"];;
 let capitalized_correspondances =Assistance_image.image (
@@ -5495,31 +6057,32 @@ let capitalized_correspondances =Assistance_image.image (
 exception Unknown_lib of string;;
 
 let of_string s=
-  try (fst(Assistance_listennou.force_find (fun (x,y)->y=s) correspondances))
+  try (fst(List.find (fun (_x,y)->y=s) correspondances))
   with _->raise(Unknown_lib(s));;
 
-let to_string lib=snd(Assistance_listennou.force_find (fun (x,y)->x=lib) correspondances);;  
+let to_string lib=snd(List.find (fun (x,_y)->x=lib) correspondances);;  
 
 
-let short_name=function
-   Assistance_ocaml_library_t.NumLib->"NumLib" 
-  |StrLib->"StrLib" 
-  |UnixLib->"UnixLib";;
+let short_name lib =
+  (String.capitalize_ascii (to_string lib))^"Lib" ;;
+  
 
 let ocaml_name lib=
   (*cutting the name as always, to avoid a circular definition *)
   "Ocaml"^"_library."^(short_name lib);;
 
-let file_for_library=function 
-  Assistance_ocaml_library_t.NumLib->"nums" |StrLib->"str" |UnixLib->"unix";;  
+let file_for_library lib =to_string lib;;  
 
-let modules_telling_a_library_away=function
-Assistance_ocaml_library_t.NumLib->["num";"big_int";"arith_status"] 
-|StrLib->["str"] 
-|UnixLib->["unix"];;    
+let modules_telling_a_library_away =function
+Assistance_ocaml_library_t.ZarithLib->["z";"q"] 
+|Assistance_ocaml_library_t.StrLib->["str"] 
+|Assistance_ocaml_library_t.UnixLib->["unix"];;    
 
 
-let all_libraries=[Assistance_ocaml_library_t.NumLib;Assistance_ocaml_library_t.StrLib;Assistance_ocaml_library_t.UnixLib];;  
+let all_libraries=[
+  Assistance_ocaml_library_t.ZarithLib;
+  Assistance_ocaml_library_t.StrLib;
+  Assistance_ocaml_library_t.UnixLib];;  
 
 let compute_needed_libraries_from_uncapitalized_modules_list l=
    List.filter (
@@ -5533,6 +6096,4289 @@ let of_concrete_object =Assistance_concrete_object.unwrap_lonely_variant
           
 let to_concrete_object =Assistance_concrete_object.wrap_lonely_variant 
   capitalized_correspondances;;    
+
+
+end;;
+
+
+
+
+
+
+module Assistance_hurried=struct
+
+(*
+
+#use"lib/hurried.ml";;
+
+*)
+
+module Private = struct
+
+let partition_in_two_parts f l=
+  let rec tempf=(fun
+   (graet,da_ober)->match da_ober with
+     []->(List.rev graet,[])
+     |a::peurrest->
+        if f(a)
+        then tempf(a::graet,peurrest)
+        else (List.rev graet,da_ober)
+  ) in
+  tempf([],l);; 
+
+(* partition_in_two_parts (fun x->(x mod 3)<>0) (Ennig.ennig 1 21) *)
+let rec helper_for_reaggregation 
+      decomposer (treated,current_level,incomplete_item,to_be_treated) = 
+    match to_be_treated with 
+    [] -> List.rev((current_level,List.rev incomplete_item)::treated)  
+    |pair :: other_pairs ->
+        let (new_level,other_data) = decomposer pair in 
+        if new_level = current_level 
+        then helper_for_reaggregation 
+        decomposer (treated,current_level,
+                     other_data::incomplete_item,other_pairs)
+        else helper_for_reaggregation 
+        decomposer ((current_level,List.rev incomplete_item)::treated,
+                      new_level,[other_data],other_pairs) ;;            
+
+let reaggregate decomposer l = 
+  match l with 
+  [] -> []
+  |pair :: other_pairs ->
+    let (new_level,other_data) = decomposer pair in 
+    helper_for_reaggregation 
+    decomposer ([],new_level,[other_data],other_pairs) ;;
+
+(*
+
+reaggregate (fun x->(x/10,x mod 10)) (Int_range.range 1 50) ;; 
+
+*)    
+
+
+end ;; 
+
+
+
+
+let connected_components f l = 
+  let rec tempf = (fun 
+    (treated,to_be_treated) -> match to_be_treated with 
+       [] -> List.rev treated 
+     | a :: others ->
+        let fa = f a in 
+        let (left,right) = Private.partition_in_two_parts (fun x-> f x=fa) others in 
+        tempf((a::left)::treated,right)
+  ) in 
+  tempf([],l) ;;
+
+(* connected_components (fun x->(x mod 3)<>0) (Ennig.ennig 1 21) *)  
+
+let partition_in_two_parts = Private.partition_in_two_parts ;;    
+
+let reaggregate = Private.reaggregate ;;
+
+end;;
+
+
+
+
+
+
+module Assistance_lines_in_text=struct
+
+(*
+
+#use"lib/lines_in_text.ml";;
+
+*)
+
+exception Shift_indentation_in_line_exn of int * string ;;
+
+exception Put_line_first_bad_line_index_exn  of int * int ;;
+exception Put_line_last_bad_line_index_exn  of int * int ;;
+
+exception Unfinished_single_quoted_string ;;
+exception Unfinished_double_quoted_string ;;
+
+module Private = struct 
+
+  let lines old_text=
+     let left_offset=(if String.starts_with ~prefix:"\n" old_text  then "\n" else "")
+     and right_offset=(if String.ends_with ~suffix:"\n" old_text  then "\n" else "") in
+     let s=left_offset^old_text^right_offset in
+     Str.split (Str.regexp_string "\n") s ;;
+
+  let indexed_lines text=
+     Assistance_int_range.index_everything (lines text);;
+  
+  let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
+       match lines with 
+       [] -> List.rev treated_lines 
+       |(line_idx,line) :: other_lines ->
+        iterator_for_enchancement 
+        (num_of_treated_chars+(String.length line)+1,
+         (num_of_treated_chars+1,line_idx,line)::treated_lines,other_lines)   ;;
+        
+  let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
+  
+  let adjust_num_of_lines_upwards_in_text ~required_size text =
+      let temp1 = lines text in  
+      let d = required_size - (List.length temp1) in 
+      if d<=0 
+      then text 
+      else text ^ (String.make d '\n') ;;   
+
+  let adjust_num_of_lines_upwards_in_file ~required_size file =
+      let old_text = Assistance_io.read_whole_file file in
+      let new_text = adjust_num_of_lines_upwards_in_text ~required_size old_text  in
+      Assistance_io.overwrite_with file new_text ;;   
+
+  let tripartition_associated_to_interval s i j=
+      let temp2=lines s in 
+      let (temp3,temp4)=Assistance_list_again.long_head_with_tail (i-1) temp2 in 
+      let part1=String.concat "\n" (List.rev temp3) in 
+      let (temp5,temp6)=Assistance_list_again.long_head_with_tail (j-i+1) temp4 in 
+      let part2=String.concat "\n" (List.rev temp5) in 
+      let part3=String.concat "\n" temp6 in 
+      (part1^"\n",part2,"\n"^part3);;
+   
+   (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+       
+  let interval text i j=
+    let temp1=indexed_lines text in
+    let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
+    let temp3=Assistance_image.image snd temp2 in
+    String.concat "\n" temp3;;  
+      
+  (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+    
+  let copy_interval_from_text_to_text (i,j)  src dest =
+     let src_linelength = List.length (lines src) in 
+     let temp1 = adjust_num_of_lines_upwards_in_text ~required_size:src_linelength dest in
+     let (before,_in_between,after) = tripartition_associated_to_interval temp1 i j in 
+     before^(interval src i j)^after;;
+
+      
+  (* copy_interval_from_text_to_text (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
+
+  let copy_interval_from_file_to_file (i,j) src_file  dest_file =
+     let src = Assistance_io.read_whole_file src_file 
+     and old_text = Assistance_io.read_whole_file dest_file  in 
+     let new_text = copy_interval_from_text_to_text (i,j) src old_text in 
+     Assistance_io.overwrite_with dest_file new_text ;; 
+     
+   exception Lines_in_char_range_exn of int*int;;
+
+   let number_of_lines_in_char_interval text  i j=
+     try (List.length(List.filter (fun k->
+         String.get text (k-1)='\n'
+     ) (Assistance_int_range.range i j))) with
+     _->raise(Lines_in_char_range_exn(i,j));;    
+
+   let duplicate_interval_in_text (i,j) text = 
+     let (before,itv,after) = tripartition_associated_to_interval text i j in 
+     before^itv^"\n"^itv^after ;;
+
+  (* duplicate_interval_in_text (2,4) "1\n2\n3\n4\n5\n";; *)
+
+   let duplicate_interval_in_file (i,j) src_file  =
+     let old_text = Assistance_io.read_whole_file src_file  in 
+     let new_text = duplicate_interval_in_text (i,j) old_text in 
+     Assistance_io.overwrite_with src_file new_text ;; 
+
+   let naive_closeup_around_index text j=
+     let n=String.length text in
+     let temp1=List.filter(fun j->(String.get text (j-1))='\n')(Assistance_int_range.range 1 n) in
+     let (temp2,temp3)=Assistance_hurried.partition_in_two_parts(fun k->k<j) temp1 in
+     let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
+     and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
+     (a,String.sub text a (b-a));;
+
+  let closeup_around_index text idx =
+     let (char_idx,subtext) = naive_closeup_around_index text idx in 
+     let startline_idx = (Assistance_strung.number_of_lines_before text char_idx) in 
+     let lines = indexed_lines subtext in 
+     let decorated_lines = Assistance_image.image (
+       fun (idx2,line)->
+          let prefix = 
+            Assistance_strung.insert_repetitive_offset_on_the_left ' ' 6 (string_of_int (idx2+startline_idx)) in 
+          prefix^": "^line  
+     ) lines in
+     String.concat "\n" (""::decorated_lines) ;; 
+
+     let change_indentation_in_interval_in_text ~indent (i,j) ~text  =
+     let old_lines = indexed_lines text  in 
+     let new_lines = Assistance_image.image (
+         fun (k,line) -> 
+           if (k<i)||(k>j)
+           then line
+          else (String.make indent ' ')^(Assistance_cull_string.trim_spaces_on_the_left line)
+     ) old_lines in 
+     String.concat "\n" new_lines ;;
+   
+   let impose_fixed_indentation_in_interval_in_file ~indent (i,j) fn =
+     let old_text=Assistance_io.read_whole_file fn in
+     let new_text=change_indentation_in_interval_in_text ~indent (i,j) ~text:old_text   in
+     Assistance_io.overwrite_with fn new_text;;     
+ 
+    let indentation_decomposition line =
+        let n = String.length line in 
+        match List.find_opt(fun j->
+            not(List.mem (String.get line (j-1)) [' ';'\t']) 
+          )(Assistance_int_range.range 1 n) with 
+        None -> (line,"")
+        |Some (j0) -> (Assistance_cull_string.beginning (j0-1) line,Assistance_cull_string.cobeginning (j0-1) line) ;;
+
+    (*
+    
+    indentation_decomposition "abc";;
+    indentation_decomposition "\t \tabc";;
+
+    *)
+
+
+    let shift_indentation_in_line line ~shift_amplitude ~forced =
+        if shift_amplitude>=0 
+        then (String.make shift_amplitude ' ')^line 
+        else 
+        let positive_amplitude = (-shift_amplitude) 
+        and (indent,bare_text) = indentation_decomposition line in 
+        let m = String.length indent in 
+        if m>=positive_amplitude
+        then (Assistance_cull_string.cobeginning positive_amplitude indent)^bare_text
+        else     
+        if forced 
+        then bare_text 
+        else raise(Shift_indentation_in_line_exn(shift_amplitude,line)) ;;  
+
+
+
+
+    let shift_indentation_in_interval_in_text_with (i,j) ~text ~shift_amplitude ~forced =
+      let old_lines = indexed_lines text  in 
+      let new_lines = Assistance_image.image (
+          fun (k,line) -> 
+            if (k<i)||(k>j)
+            then line
+           else shift_indentation_in_line line ~shift_amplitude ~forced
+      ) old_lines in 
+      String.concat "\n" new_lines ;;
+  
+  (* ident_interval_in_text_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
+  
+  let shift_indentation_in_interval_in_file_with (i,j) fn ~shift_amplitude ~forced=
+     let old_text=Assistance_io.read_whole_file fn in
+     let new_text=shift_indentation_in_interval_in_text_with (i,j) ~text:old_text ~shift_amplitude ~forced  in
+     Assistance_io.overwrite_with fn new_text;;     
+
+  let occurrences_of_in_at_beginnings_of_lines patt text = 
+    let temp1 = enhance (indexed_lines text) in 
+    List.filter_map (
+       fun (c_idx,l_idx,line) ->
+          if String.starts_with ~prefix:patt line  
+          then Some(c_idx,l_idx)
+          else None
+    ) temp1 ;;  
+
+  (*
+
+  let patt1 = "Bart" ;;
+
+  let text1 = "Uv\nBart45\nJBart6\nBartAgain" ;;
+     
+  let z1 = occurrences_of_in_at_beginnings_of_lines patt1 text1 ;;
+
+  let check_z1 = List.for_all (fun (c_idx,l_idx) -> 
+        Substring.is_a_substring_located_at patt1 text1 c_idx
+  ) z1 ;;
+
+
+  *)  
+
+  let put_line_first_in_text line_idx text = 
+    if line_idx=1 then text else
+    let lines = indexed_lines text in 
+    match List.assoc_opt line_idx lines with 
+    None -> raise (Put_line_first_bad_line_index_exn (line_idx,List.length lines))
+    |Some(the_line) ->
+    let lines2 = List.filter_map
+       (fun (idx,old_line)->
+        if idx=line_idx 
+        then None 
+        else Some old_line) lines in 
+    String.concat "\n" (the_line::lines2) ;;
+
+  (* put_line_first_in_text 4 "1\n2\n3\n4\n5" ;; *)
+
+  let put_line_last_in_text line_idx text = 
+    let lines = indexed_lines text in 
+    let n = List.length lines in 
+    if line_idx=n then text else
+    match List.assoc_opt line_idx lines with 
+    None -> raise (Put_line_last_bad_line_index_exn (line_idx,n))
+    |Some(the_line) ->
+    let lines2 = List.filter_map
+      (fun (idx,old_line)->
+       if idx=line_idx 
+       then None 
+       else Some old_line) lines in 
+    String.concat "\n" (lines2@[the_line]) ;;
+  
+  (*  put_line_last_in_text 4 "1\n2\n3\n4\n5" ;; *)
+    
+  let put_line_first_in_file line_idx src_file  =
+    let old_text = Assistance_io.read_whole_file src_file  in 
+    let new_text = put_line_first_in_text line_idx  old_text in 
+    Assistance_io.overwrite_with src_file new_text ;; 
+
+  let put_line_last_in_file line_idx src_file  =
+    let old_text = Assistance_io.read_whole_file src_file  in 
+    let new_text = put_line_last_in_text line_idx  old_text in 
+    Assistance_io.overwrite_with src_file new_text ;; 
+
+  type situation = 
+    Inside_a_single_quoted_string 
+   |Inside_a_double_quoted_string 
+   |Inside_a_starry_comment
+   |Inside_a_double_slash_comment 
+   |Outside_comments_or_strings ;;  
+  
+
+  (* Data type to compute whether 
+  the next  linebreak is in a comment or not. 
+  The computation returns a pair made of
+  the next linebreak's index, with a boolean
+      indicating if the linebreak is in a comment.
+  *)
+
+  type walker = {
+      answer_opt : (int * bool) option ;
+      next_idx : int ;
+      current_state : situation ;
+      text : string ;
+      text_length : int;
+  } ;;
+
+  let result_from_walker_opt w = 
+     match w.answer_opt with 
+     (Some answer) -> Some(Some answer) 
+     | None -> 
+     if w.next_idx > w.text_length
+     then Some None 
+     else None ;;
+
+  let step w =
+   let old_idx = w.next_idx in  
+   let c = Assistance_strung.get w.text old_idx in 
+   match w.current_state with 
+    Inside_a_single_quoted_string -> 
+       if c='\n' then raise(Unfinished_single_quoted_string) else
+       if c = '\'' 
+       then { w with 
+              next_idx = old_idx +1;
+              current_state = Outside_comments_or_strings;
+            }
+       else 
+        let coming_idx = (
+          if (Assistance_substring.is_a_substring_located_at "\\\\" w.text old_idx)
+             || (Assistance_substring.is_a_substring_located_at "\\'" w.text old_idx) 
+          then old_idx+2
+          else old_idx+1  ) in  
+           { w with 
+              next_idx = coming_idx
+            }       
+   |Inside_a_double_quoted_string -> 
+       if c='\n' then raise(Unfinished_double_quoted_string) else
+       if c = '"' 
+       then { w with 
+              next_idx = old_idx +1 ;
+              current_state = Outside_comments_or_strings;
+            }
+       else 
+       let coming_idx = (
+          if (Assistance_substring.is_a_substring_located_at "\\\\" w.text old_idx)
+            || (Assistance_substring.is_a_substring_located_at "\\\n" w.text old_idx)
+            || (Assistance_substring.is_a_substring_located_at "\\\"" w.text old_idx) 
+          then old_idx+2
+          else old_idx+1  ) in  
+          { w with 
+              next_idx = coming_idx
+            } 
+          
+   |Inside_a_starry_comment -> 
+      if c = '\n' then {w with answer_opt = Some (old_idx,true)} else    
+      (* here we use the fact that /* */-comments cannot be nested in C *)
+      let (next_situation,coming_idx)=
+       (if Assistance_substring.is_a_substring_located_at "*/" w.text old_idx 
+      then (Outside_comments_or_strings,old_idx+2) 
+      else (Inside_a_starry_comment,old_idx+1)) in   
+          { w with 
+              next_idx = coming_idx;
+              current_state = next_situation;
+            }  
+   |Inside_a_double_slash_comment -> 
+      if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
+      { w with next_idx = old_idx+1;}           
+   |Outside_comments_or_strings ->
+       if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
+       if c = '\'' 
+       then { w with 
+              next_idx = old_idx+1;
+              current_state = Inside_a_single_quoted_string;
+            }  
+       else      
+       if c = '"' 
+       then { w with 
+              next_idx = old_idx+1;
+              current_state = Inside_a_double_quoted_string;
+            }  
+       else    
+       if Assistance_substring.is_a_substring_located_at "/*" w.text old_idx
+       then { w with 
+              next_idx = old_idx+2;
+              current_state = Inside_a_starry_comment;
+            } 
+       else     
+       if Assistance_substring.is_a_substring_located_at "//" w.text old_idx
+       then { w with 
+              next_idx = old_idx+2;
+              current_state = Inside_a_double_slash_comment;
+            }  
+       else { w with 
+              next_idx = old_idx+1
+            }        
+      ;;      
+
+let rec iterate w = 
+   match result_from_walker_opt w with 
+    Some res -> res 
+    | None -> iterate (step w) ;;
+
+let initial_walker txt idx unfinished_comment=
+   {
+      answer_opt = None ;
+      next_idx = idx ;
+      current_state = (
+        if unfinished_comment 
+        then Inside_a_starry_comment 
+        else Outside_comments_or_strings);
+      text = txt ;
+      text_length = String.length txt;
+  } ;;
+
+let next_newline_inside_or_outside_cee_comments_opt 
+  txt idx unfinished_comment=
+  let w = initial_walker txt idx unfinished_comment in 
+  iterate w;;
+
+
+
+let rec helper_for_lines_inside_or_outside_cee_comments 
+  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
+  if next_idx_to_be_treated > total_length 
+  then List.rev treated_lines 
+  else 
+  match next_newline_inside_or_outside_cee_comments_opt  
+        whole_text next_idx_to_be_treated unfinished_comment with
+  None -> 
+      let rest_of_text = 
+        Assistance_cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
+      List.rev ((rest_of_text,unfinished_comment) :: treated_lines) 
+  |Some(newline_idx,unfinished_comment2) ->
+     let line= Assistance_cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in 
+     helper_for_lines_inside_or_outside_cee_comments 
+  (whole_text,total_length,(line,unfinished_comment)::treated_lines,newline_idx+1,unfinished_comment2);; 
+
+let lines_inside_or_outside_cee_comments text = 
+  helper_for_lines_inside_or_outside_cee_comments 
+  (text,String.length text,[],1,false) ;;
+
+(*  
+
+
+ let txt1 = String.concat "\n" [
+   "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
+   ]  ;; 
+
+lines_inside_or_outside_cee_comments txt1 ;; 
+
+let txt2 = String.concat "\n" [
+   "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
+   ]  ;; 
+
+lines_inside_or_outside_cee_comments txt2 ;;
+
+let txt3 = String.concat "\n" [
+   "1 When";"2 The "; "3 \"/*\" Saints"; "4 Go" ; "5 Marching \"*/\" In"; "6 Oh"
+   ]  ;; 
+
+lines_inside_or_outside_cee_comments txt3 ;; 
+
+*)
+  
+  let modify_interval_inside_text f text i j =
+     let (before,itv,after) = tripartition_associated_to_interval text i j in 
+     let new_itv = f itv in 
+     before ^ new_itv ^ after ;;
+
+  let modify_interval_inside_file f src_file i j =
+    let old_text = Assistance_io.read_whole_file src_file  in 
+    let new_text = modify_interval_inside_text f old_text i j in 
+    Assistance_io.overwrite_with src_file new_text ;;    
+
+  end ;;   
+
+
+  let closeup_around_index = Private.closeup_around_index ;;
+  let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
+  let copy_interval_from_text_to_text = Private.copy_interval_from_text_to_text ;; 
+
+  let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
+  let duplicate_interval_in_text = Private.duplicate_interval_in_text ;;
+
+  let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
+  
+  (*
+  
+  enhanced_indexed_lines "a\nb";;
+  enhanced_indexed_lines "\na\nb";;
+  enhanced_indexed_lines "a\nb\n";;
+  
+  *)
+
+  let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
+
+
+  let indexed_lines = Private.indexed_lines ;;
+  
+  (*
+  
+  indexed_lines "a\nb";;
+  indexed_lines "\na\nb";;
+  indexed_lines "a\nb\n";;
+  
+  *)
+
+  
+
+let interval = Private.interval ;;
+
+   let line_index_from_char_index text char_idx=
+      1+(Private.number_of_lines_in_char_interval text 1 char_idx);;
+
+  let lines text= Assistance_image.image snd (indexed_lines text);;
+
+  let lines_inside_or_outside_cee_comments = Private.lines_inside_or_outside_cee_comments ;; 
+
+  let modify_interval_inside_file = Private.modify_interval_inside_file ;;
+
+  let modify_interval_inside_text = Private.modify_interval_inside_text ;;
+  let occurrences_of_in_at_beginnings_of_lines = Private.occurrences_of_in_at_beginnings_of_lines ;; 
+
+  let put_line_first_in_file = Private.put_line_first_in_file ;; 
+
+  let put_line_first_in_text = Private.put_line_first_in_text ;; 
+
+  let put_line_last_in_file = Private.put_line_last_in_file ;; 
+  
+  let put_line_last_in_text = Private.put_line_last_in_text ;; 
+
+  let remove_interval text i j=
+    let old_indexed_lines=indexed_lines text in
+    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) old_indexed_lines  in
+    let new_indexed_lines=Assistance_image.image snd temp2 in
+    String.concat "\n" new_indexed_lines;; 
+  
+  let remove_interval_in_file fn i j=
+      let old_text=Assistance_io.read_whole_file fn in
+      let new_text=remove_interval old_text i j  in
+     Assistance_io.overwrite_with fn new_text;;   
+  
+  let remove_lines_containing_substring_in_text pattern text =
+     let old_indexed_lines=indexed_lines text in
+     let temp2=List.filter (fun (_,line)->not(Assistance_substring.is_a_substring_of pattern line)) old_indexed_lines  in
+     let new_indexed_lines=Assistance_image.image snd temp2 in
+     String.concat "\n" new_indexed_lines;; 
+   
+   let remove_lines_containing_substring_in_file pattern fn=
+       let old_text=Assistance_io.read_whole_file fn in
+       let new_text=remove_lines_containing_substring_in_text pattern old_text  in
+      Assistance_io.overwrite_with fn new_text;;   
+  
+let findreplace_in_interval (x,y) s i j=
+      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+      let new_part2 = Assistance_replace_inside.replace_inside_text (x,y) old_part2 in 
+      part1^new_part2^part3 ;; 
+
+let findreplace_in_interval_in_file (x,y) fn i j=
+      let old_text=Assistance_io.read_whole_file fn in
+      let new_text=findreplace_in_interval (x,y) old_text i j  in
+      Assistance_io.overwrite_with fn new_text;;     
+  
+
+(* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
+let shift_indentation_in_interval_in_file_with = Private.shift_indentation_in_interval_in_file_with ;;
+let shift_indentation_in_interval_in_text_with = Private.shift_indentation_in_interval_in_text_with ;;
+
+let suppress_linebreaks_in_interval text i j=
+    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval text i j in 
+    let new_part2 = String.concat "" (lines old_part2) in 
+    part1^new_part2^part3 ;; 
+  
+  (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+  
+let suppress_linebreaks_in_interval_in_file fn i j=
+    let old_text=Assistance_io.read_whole_file fn in
+    let new_text=suppress_linebreaks_in_interval old_text i j  in
+    Assistance_io.overwrite_with fn new_text;;     
+
+let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_put_use_directive_in_initial_comment=struct
+
+(*
+
+#use"lib/Text_editing/put_use_directive_in_initial_comment.ml";;
+
+*)
+
+let detect_initial_comment_in_text text = 
+  let lines = Assistance_lines_in_text.indexed_lines text in 
+  let first_line = snd (List.hd lines) in 
+  if (Assistance_cull_string.trim_spaces first_line) <> "(*" then None else 
+  match List.find_opt (fun (line_idx,line)->
+     if (line_idx<=1) then false else
+     let trimmed_line = Assistance_cull_string.trim_spaces line in 
+     String.starts_with ~prefix:"#use" trimmed_line 
+  ) lines with 
+  None -> None 
+  |Some(i1,line1) ->
+ (
+  match List.find_opt (fun (line_idx,line)->
+    if (line_idx<=i1) then false else
+    let trimmed_line = Assistance_cull_string.trim_spaces line in 
+    trimmed_line = "*)"
+ ) lines with 
+  None -> None 
+ |Some(i2,_) -> Some(i1,Assistance_cull_string.trim_spaces line1,i2) );;  
+
+let detect_initial_comment_in_file  fn =  detect_initial_comment_in_text  (Assistance_io.read_whole_file fn) ;;
+
+let in_text ~new_directive text =
+  match detect_initial_comment_in_text text  with 
+  None -> text 
+  |Some(i1,_line1,_i2) ->
+    let old_lines = Assistance_lines_in_text.indexed_lines text in 
+    let new_lines = Assistance_image.image (fun (line_idx,line)->
+        if line_idx = i1 then new_directive else line
+      ) old_lines in 
+   String.concat "\n" new_lines ;;   
+
+let in_file ~new_directive fn =   
+   let text = Assistance_io.read_whole_file fn in 
+   match detect_initial_comment_in_text text  with 
+  None -> () 
+  |Some(i1,_line1,_i2) ->
+    let old_lines = Assistance_lines_in_text.indexed_lines text in 
+    let new_lines = Assistance_image.image (fun (line_idx,line)->
+        if line_idx = i1 then new_directive else line
+      ) old_lines in 
+    let new_text = String.concat "\n" new_lines in 
+    Assistance_io.overwrite_with fn new_text;;
+
+let usual root ap =
+    let s_ap=Assistance_absolute_path.to_string ap in 
+    let s_cdir=Assistance_dfa_root.connectable_to_subpath root in 
+    let shortened_path=Assistance_cull_string.cobeginning (String.length s_cdir) s_ap in 
+    "#use\""^shortened_path^"\";"^";" ;;
+    
+let put_usual root ap =
+    let new_directive = usual root ap in 
+    in_file ~new_directive ap;;    
+
+end;;
+
+
+
+
+
+
+module Assistance_chronometer=struct
+
+(*
+
+#use"lib/chronometer.ml";;
+
+*) 
+
+let rewrite_days=function
+0->""
+|1->"1 day,"
+|x->string_of_int(x)^" days,";;
+
+let rewrite_hours=function
+0->""
+|1->"1 hour,"
+|x->string_of_int(x)^" hours,";;
+
+let rewrite_minutes=function
+0->""
+|1->"1 minute,"
+|x->string_of_int(x)^" minutes,";;
+
+let rewrite_seconds=function
+0->""
+|1->"1 second."
+|x->string_of_int(x)^" seconds.";;
+
+let rewrite_float x=
+   let i=int_of_float(x) in
+   let v_sec=(i mod 60) and q_sec=(i/60) in
+   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
+   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
+   let s_day=rewrite_days(q_hour)
+   and s_hour=rewrite_hours(v_hour)
+   and s_min=rewrite_minutes(v_min)
+   and s_sec=rewrite_seconds(v_sec) in
+   s_day^s_hour^s_min^s_sec;;
+  
+let rewrite_duration x=
+   if x=0. 
+   then "Computation was quick.\n"
+   else "Computation lasted "^(rewrite_float x)^"\n";;
+
+ let timer=ref(0.000);;  
+ 
+ let duration_of_computation f x=
+   let t0=Unix.time() in
+   let _=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   (print_string(rewrite_duration (!timer));flush stdout);;
+ 
+ let duration_of_last_computation ()=
+  (print_string(rewrite_duration (!timer));flush stdout);;
+   
+   
+ let  it f x=
+  let t0=Unix.time() in
+   let y=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   let _=(print_string(rewrite_duration (!timer));flush stdout) in
+   y;;
+ 
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_explicit=struct
+
+(*
+
+#use"lib/explicit.ml";;
+
+*)
+
+module Private = struct 
+
+let iter0 (f:'a->unit) l (pre_left,right)=
+  let left=(if pre_left="" then "" else pre_left^" : ") in 
+  let n=List.length(l)
+  and accu=ref(l) in
+  let s0=" of "^string_of_int(n)^" "^right^"\n" in
+  for j=1 to n
+               do
+               ( f(List.hd(!accu));
+                 accu:=List.tl(!accu);
+                 print_string(left^string_of_int(j)^s0);
+                 flush stdout)
+               done;;
+
+let iter2 (f:'a->'a) initial_value tester (shower:'a->string)  addenda=
+  let accu=ref(initial_value) in
+  let _=(while tester(!accu)
+               do
+               ( 
+                 accu:=f(!accu);
+                 print_string((shower (!accu))^addenda);
+                 flush stdout;
+               )
+               done) in
+  !accu;;
+
+let e_rev job_description l=
+   let accu=ref([]) in 
+   let f=(fun x->accu:=x::(!accu)) in
+   let _=iter0(f)(l)(job_description," (rev part)") in
+   !accu;;    
+
+let unchronometered_explore_tree f l=
+    let g=(fun (graet,p,q,da_ober)->
+       match da_ober with
+       []->(graet,0,0,[])
+       |a::peurrest->
+         let temp1=f a in
+         if temp1=[]
+         then (a::graet,p-1,q+1,peurrest)
+         else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
+    ) and 
+    tester=(fun (_graet,_p,_q,da_ober)->da_ober<>[]) 
+    and
+    shower=(
+     fun (_graet,p,q,_da_ober)->
+       (string_of_int p)^" to be explored ; "^
+       (string_of_int q)^" already explored\n"
+    )
+    in
+    let initial_value=([],List.length l,0,l) in
+    let _=(print_string(shower(initial_value));flush stdout) in
+    let (ans,_,_,_)=iter2 g initial_value tester shower  "" in
+    ans;;
+
+
+
+let unchronometered_filter job_description f l=
+   let accu=ref([]) in 
+   let g=(fun x->if f(x) then accu:=x::(!accu) else ()) in
+   let _=iter0(g)(l)(job_description," (filter part)") in
+   e_rev job_description (!accu);;    
+ 
+ 
+ let unchronometered_image job_description f l=
+   let accu=ref([]) in 
+   let g=(fun x->accu:=f(x)::(!accu)) in
+   let _=iter0(g)(l)(job_description," (rev_image part)") in
+   e_rev job_description (!accu);;  
+   
+
+let unchronometered_image_computed_backwards job_description f l=
+   let temp1=e_rev job_description l in
+    let accu=ref([]) in 
+   let g=(fun x->accu:=f(x)::(!accu)) in
+   let _=iter0(g)(temp1)(job_description," (image part)") in
+   (!accu);;     
+ 
+  
+
+exception Force_find_exn ;;
+
+let rec helper_for_opt_finding (f,sn) (j,x)=
+   match x with 
+   [] -> None
+   |a::others -> if f a 
+                 then Some a
+                 else let _=(
+                        print_string("Item number "^string_of_int(j)^" of "^sn^" found wanting \n");
+                        flush stdout) in 
+                      helper_for_opt_finding (f,sn) (j+1,others) ;; 
+
+end ;; 
+
+let explore_tree f l=Assistance_chronometer.it (Private.unchronometered_explore_tree f) l;; 
+           
+let filter ?(job_description="") f l=Assistance_chronometer.it (Private.unchronometered_filter job_description f) l;; 
+
+
+let image ?(job_description="") f l=Assistance_chronometer.it (Private.unchronometered_image job_description f) l;;  
+
+let image_computed_backwards ?(job_description="") f l=Assistance_chronometer.it 
+   	(Private.unchronometered_image_computed_backwards job_description f) l;;               
+
+let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
+
+(* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
+
+
+end;;
+
+
+
+
+
+
+module Assistance_stabilize=struct
+
+(*
+
+#use"lib/stabilize.ml";;
+
+*) 
+
+
+module Private = struct 
+
+  exception Pusher_for_exploring_enhanced_tree_exn ;;
+
+  let pusher_for_exploring_enhanced_tree f (treated,to_be_treated) =
+     match to_be_treated with 
+     [] -> raise(Pusher_for_exploring_enhanced_tree_exn)
+    |item :: others ->
+       let pair = f item in 
+       let (_extra_info,descendants) = pair in 
+       ((item,pair)::treated,descendants@others) ;;
+       
+  let rec iterator_for_exploring_enhanced_tree f walker =
+     let  (treated,to_be_treated) = walker in 
+     if to_be_treated = []
+     then treated 
+     else let next_walker = pusher_for_exploring_enhanced_tree f walker in 
+          iterator_for_exploring_enhanced_tree f next_walker ;;   
+       
+  let explore_enhanced_tree f l = iterator_for_exploring_enhanced_tree f ([],l);;
+  
+
+end ;;  
+
+let explore_enhanced_tree = Private.explore_enhanced_tree ;; 
+
+let explore_tree f l0=
+ let modified_l0=List.rev_map(function x->(x,0))(l0) in
+ let modified_f=(function (x,j)->
+   List.rev_map(function y->(y,j+1))(f x)
+ ) in
+ let rec tempf=(function (j,graet,da_ober)->
+ match da_ober with
+    []->graet
+    |(xa,ia)::peurrest->let temp1=modified_f(xa,ia) in
+                  let temp2=(j+1,xa::graet,List.rev_append temp1 peurrest) in
+                  tempf(temp2)
+ ) in
+ tempf(0,[],modified_l0);;
+ 
+ 
+
+end;;
+
+
+
+
+
+
+module Assistance_unix_again=struct
+
+(*
+
+#use"lib/unix_again.ml";;
+
+*)
+
+
+exception Timeout ;;
+
+module Private=struct
+ 
+let naive_extension ap=
+   let s=Assistance_absolute_path.to_string ap in
+   let i=String.rindex s '.' in
+   (Assistance_cull_string.cobeginning (i+1) s);; 
+   
+let extension x=try (naive_extension x) with 
+  _any_exception->"";;
+  
+ let is_a_directory ap=
+   let s=Assistance_absolute_path.to_string ap in
+   try (function _x->true)(Sys.readdir s) with _any_exception->false;;
+ 
+ let father ap=
+   let s=Assistance_absolute_path.to_string ap in
+   let i=String.rindex s '/' in
+   if i=0 then Assistance_directory_name.of_string"/" else
+   Assistance_directory_name.of_string (Assistance_cull_string.beginning i s);; 
+   
+ let son dir=
+   let s=Assistance_directory_name.connectable_to_subpath dir in
+   let i=String.rindex s '/' in
+   if i=0 then "" else
+   (Assistance_cull_string.cobeginning (i+1) s);; 
+  
+ let is_a_nondirectory_or_a_nib x=
+  if is_a_directory(x)
+  then extension(x)="nib"
+  else not(Assistance_substring.is_a_substring_of(".nib/")(Assistance_absolute_path.to_string x));;
+  
+ let naive_ls dir=
+   let s=Assistance_directory_name.connectable_to_subpath dir in
+   let s_with_slash=(function ()->
+    if String.get(s)(String.length(s)-1)='/'
+    then s
+    else s^"/"
+   )() in
+   let temp1=Array.to_list(Sys.readdir(s)) in
+   let tempf=(function w->try (Some(Assistance_absolute_path.of_string(s_with_slash^w))) with
+   _any_exception->None) in
+   List.filter_map tempf temp1;;
+   
+ let ls x=try (naive_ls x) with _any_exception->[];;  
+ 
+ let test_for_cleaniness=function ap->
+  let s=Assistance_absolute_path.to_string ap in
+  Assistance_cull_string.after_rightmost(s)('/')<>".DS_Store";;
+ 
+ let cleaned_ls x=
+   List.filter test_for_cleaniness (ls x);;
+   
+let select_by_prefix subdir forbidden_subdirs =
+  List.filter_map (
+     fun forb_subdir -> 
+        if String.starts_with ~prefix:subdir  forb_subdir 
+        then Some(Assistance_cull_string.two_sided_cutting (subdir,"") forb_subdir)
+        else None
+  ) forbidden_subdirs ;; 
+
+let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
+   let temp1 = Array.to_list (Sys.readdir dir) in
+   let temp2 = List.filter_map (
+      fun fname -> if List.for_all (
+          fun forb_subdir -> 
+           not(String.starts_with ~prefix:forb_subdir fname)
+        )  forbidden_subdirs
+           then Some(dir^fname)
+           else None
+   ) temp1 in 
+   let is_a_dir  = (fun s->is_a_directory(Assistance_absolute_path.AP(s))) in 
+   let (found_dirs,found_nondirs) = List.partition is_a_dir temp2 in 
+   let new_constraints = Assistance_image.image (
+     fun full_subdir_path ->
+        let subdir = Assistance_cull_string.two_sided_cutting (dir,"") full_subdir_path in 
+       (full_subdir_path^"/",select_by_prefix subdir forbidden_subdirs)
+   ) found_dirs in 
+   (found_nondirs,found_dirs,new_constraints);;
+
+let rec helper_for_complete_ls_with_ignored_subdirs 
+  (verbose,treated_nondirs,treated_dirs,to_be_treated) = match to_be_treated with 
+  [] -> (Assistance_image.image Assistance_absolute_path.of_string treated_nondirs,treated_dirs)
+  |(dir,forbidden_subdirs) :: others -> 
+    let (found_nondirs,found_dirs,new_constraints) = 
+        ls_with_ignored_subdirs (dir,forbidden_subdirs) in 
+    let new_treated_nondirs = List.rev_append found_nondirs treated_nondirs 
+    and new_treated_dirs =  List.rev_append found_dirs treated_dirs 
+    and new_to_be_treated = List.rev_append new_constraints others in 
+    let n = string_of_int(List.length new_to_be_treated) in 
+    let msg = " "^n^" to go ...\n" in 
+    let _= (if verbose then (print_string msg;flush stdout)) in 
+    helper_for_complete_ls_with_ignored_subdirs 
+    (verbose,new_treated_nondirs,new_treated_dirs,new_to_be_treated) ;;
+
+let complete_ls_with_ignored_subdirs dir forbidden_subdirs verbose= 
+   let s_dir = Assistance_directory_name.connectable_to_subpath dir in 
+   let _= (if not verbose then (print_string "Enumerating files ...";flush stdout)) in 
+   let (treated_nondirs,treated_dirs) = 
+   helper_for_complete_ls_with_ignored_subdirs 
+  (verbose,[],[],[s_dir,
+         Assistance_image.image Assistance_dfa_subdirectory.without_trailing_slash forbidden_subdirs]) in 
+   let m = string_of_int(List.length treated_nondirs) in 
+   let msg = " "^m^" files found.\n" in 
+   let _= (if not verbose then (print_string msg;flush stdout)) in          
+   (treated_nondirs,Assistance_image.image 
+     (fun x->Assistance_dfa_subdirectory.of_line(Assistance_cull_string.two_sided_cutting (s_dir,"") x)) 
+   treated_dirs);;
+
+let ls_with_directories_only dir=
+   let temp1 = cleaned_ls dir in 
+   List.filter_map (
+     fun ap -> 
+       if is_a_directory ap 
+       then let s_ap = Assistance_absolute_path.to_string ap in 
+            Some(Assistance_directory_name.of_string s_ap)
+       else None
+   )  temp1 ;;
+
+ let dirty_ones_in_ls x=
+   List.filter (function u->not(test_for_cleaniness u) )(ls x);; 
+ 
+ let adhoc_ls ap=
+   let s=Assistance_absolute_path.to_string ap in
+   if not(is_a_directory ap) 
+   then []
+   else 
+   let dir=Assistance_directory_name.of_string s in
+   ls dir;;
+ 
+
+ 
+let complete_ls dir=
+   let s_dir=Assistance_directory_name.connectable_to_subpath dir in
+   let x=Assistance_absolute_path.of_string s_dir in
+   Assistance_explicit.explore_tree adhoc_ls [x];;   
+
+let adhoc_ls_with_ignored_subdirs ap=
+   let s=Assistance_absolute_path.to_string ap in
+   if not(is_a_directory ap) 
+   then []
+   else 
+   let dir=Assistance_directory_name.of_string s in
+   ls dir;;
+
+let complete_ls_with_directories_only x=
+  Assistance_explicit.explore_tree ls_with_directories_only [x];;
+  
+
+ let complete_ls_with_nondirectories_only x=
+  List.filter(is_a_nondirectory_or_a_nib)(complete_ls x);;
+  
+  
+ let beheaded_ls_with_nondirectories_only x=
+  let n0=String.length(Assistance_absolute_path.to_string x) in
+  let temp1=List.filter(is_a_nondirectory_or_a_nib)(adhoc_ls x) in
+  let temp2=Assistance_image.image (fun ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap)) temp1 in
+  temp2;; 
+ 
+ let dir_substructure x=
+    let n0=String.length(Assistance_absolute_path.to_string x) in
+    let temp1=(Assistance_stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
+    let temp2=List.filter(function x->extension(x)<>"nib")(temp1) in
+    List.rev_map(function ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap))(temp2);;
+  
+ let endfiles x=
+    let n0=String.length(Assistance_absolute_path.to_string x)+1(*because of the slash!*) in
+    let temp1=(Assistance_stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
+    let temp2=List.filter(is_a_nondirectory_or_a_nib)(temp1) in
+    List.rev_map(function ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap))(temp2);;
+    
+let quick_complete_ls s=
+  let x=Assistance_directory_name.of_string s in
+  let temp1=complete_ls x in
+  Assistance_image.image Assistance_absolute_path.to_string temp1;;  
+  
+ 
+
+let quick_beheaded_complete_ls s=
+  let x=Assistance_directory_name.of_string s in
+  let n=String.length(Assistance_directory_name.connectable_to_subpath x) in
+  let temp1=complete_ls x in
+  Assistance_image.image (fun ap->Assistance_cull_string.cobeginning n (Assistance_absolute_path.to_string ap)) temp1;; 
+  
+let beheaded_simple_ls dir=
+  let n=String.length(Assistance_directory_name.connectable_to_subpath dir) in
+  let temp1=ls dir in
+  Assistance_image.image (fun ap->
+   Assistance_cull_string.cobeginning n (Assistance_absolute_path.to_string ap)) temp1;; 
+
+
+let clear_directory_contents root =
+    let s_root = Assistance_dfa_root.connectable_to_subpath root in 
+    let cmd = "rm -rf "^s_root^"*" in 
+    Sys.command cmd;;
+
+
+let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
+   let s_root = Assistance_dfa_root.connectable_to_subpath root in 
+   let cmds1=Assistance_image.image (
+      fun subdir -> 
+         "mkdir -p "^s_root^(Assistance_dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Assistance_image.image Sys.command cmds1 in 
+   let temp1=List.filter_map (
+     fun (rootless,content)->
+        let full_path = Assistance_dfn_full.to_line(Assistance_dfn_join.root_to_rootless root rootless) in 
+        if Sys.file_exists full_path 
+        then None 
+        else Some(full_path,content)
+   ) files_with_content in 
+   Assistance_image.image (
+      fun (full_path,content) ->
+         let _=Sys.command("touch "^full_path) in 
+         Assistance_io.overwrite_with (Assistance_absolute_path.of_string full_path) content
+   )  temp1;;
+
+
+let create_subdirs_and_fill_files root subdirs files_with_content =
+   let s_root = Assistance_dfa_root.connectable_to_subpath root in 
+   let cmds1=Assistance_image.image (
+      fun subdir -> 
+         "mkdir -p "^s_root^(Assistance_dfa_subdirectory.without_trailing_slash subdir)
+   ) subdirs in 
+   let _=Assistance_image.image Sys.command cmds1 in 
+   Assistance_image.image (
+     fun (rootless,content)->
+        let full_path = Assistance_dfn_full.to_line(Assistance_dfn_join.root_to_rootless root rootless) in 
+         let _=Sys.command("touch "^full_path) in 
+         Assistance_io.overwrite_with (Assistance_absolute_path.of_string full_path) content
+   ) files_with_content;;
+
+let compute_with_time_constraint f x timeout =
+      let _ =
+        Sys.set_signal Sys.sigalrm (Sys.Signal_handle (fun _ -> raise Timeout))
+      in
+      ignore (Unix.alarm timeout);
+      try
+        let r = f x in
+        ignore (Unix.alarm 0); r
+      with
+      | e  -> ignore (Unix.alarm 0); raise e ;; 
+
+end;;    
+
+
+let all_files_with_endings dir l_endings=
+   let temp1=Private.complete_ls dir in
+   let temp2=List.filter(
+   fun ap->
+     let s_ap=Assistance_absolute_path.to_string ap in
+     List.exists( fun ending->
+      String.ends_with ~suffix:ending s_ap)
+     l_endings  
+   ) temp1 in
+   temp2;;  
+let beheaded_simple_ls=Private.beheaded_simple_ls;;
+let complete_ls=Private.complete_ls;;
+let complete_ls_with_directories_only=Private.complete_ls_with_directories_only;;
+let complete_ls_with_ignored_subdirs=Private.complete_ls_with_ignored_subdirs;;
+let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
+let compute_with_time_constraint = Private.compute_with_time_constraint ;; 
+let clear_directory_contents = Private.clear_directory_contents;;
+let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
+let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
+let is_a_directory=Private.is_a_directory;;   
+let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
+let simple_ls=Private.ls;;
+
+end;;
+
+
+
+
+
+
+module Assistance_compact_replacer_t=struct
+
+(*
+
+#use"lib/Text_editing/compact_replacer_t.ml";;
+
+*)
+
+type t= CR of (string*string) list ;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_compact_replacer=struct
+
+(*
+
+#use"lib/Text_editing/compact_replacer.ml";;
+
+*)
+
+module Private = struct
+
+let separator = " \205\140 ";;
+
+let unparse (Assistance_compact_replacer_t.CR(l))=
+   let temp1 = List.flatten (Assistance_image.image (fun (x,y)->[x;y]) l)  in 
+   String.concat separator temp1 ;;
+
+let parse descr =
+   let temp1 = Str.split (Str.regexp_string separator) descr in 
+   let m = (List.length temp1)/2 in
+   let tg =(fun k->List.nth temp1 (k-1)) in  
+   Assistance_compact_replacer_t.CR(Assistance_int_range.scale (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
+
+let replace_inside_text (Assistance_compact_replacer_t.CR(l)) old_text =
+   Assistance_replace_inside.replace_several_inside_text l old_text ;;
+
+let replace_inside_file (Assistance_compact_replacer_t.CR(l)) fn =
+   Assistance_replace_inside.replace_several_inside_file l fn ;;
+
+let reverse_replace_inside_text (Assistance_compact_replacer_t.CR(old_l)) old_text =
+   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
+   Assistance_replace_inside.replace_several_inside_text l old_text ;;
+
+let reverse_replace_inside_file (Assistance_compact_replacer_t.CR(old_l)) fn =
+   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
+   Assistance_replace_inside.replace_several_inside_file l fn ;;
+
+let execute s=
+   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
+   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
+   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
+   and recipient = (List.nth temp2 1) in 
+   replace_inside_file (parse replacements) recipient ;;
+
+let reverse_execute s=
+   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
+   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
+   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
+   and recipient = (List.nth temp2 1) in 
+   reverse_replace_inside_file (parse replacements) recipient ;;   
+
+(*
+
+let z1 =  Compact_replacer_t.CR(["abc","def";"12","34"]) ;;  
+let z2 = unparse z1;;
+let z3 = parse z2;;
+let check = (z3=z1);;
+
+*)
+
+end ;;
+
+let execute = Private.execute ;;
+
+let reverse_execute = Private.reverse_execute ;; 
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_unix_command=struct
+
+(*
+
+Wrapper on the Sys dot command function.
+
+#use"lib/unix_command.ml";;
+
+*)
+
+
+exception Command_failed of string;;
+exception Command_failed_just_now ;;
+
+module Private = struct
+
+let prefix_for_changing_directories         = "cd ";;
+let prefix_for_replacing_patterns           = "rp ";;
+let prefix_for_reverse_replacing_patterns   = "rvp ";;
+
+let accu=ref([]:string list);;
+let remember_commands_mode=ref(false);;
+let hardcore_mode=ref(false);;
+
+let command cmd=
+   let cd_prefix =prefix_for_changing_directories 
+   and rp_prefix =prefix_for_replacing_patterns 
+   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
+   if String.starts_with ~prefix:cd_prefix cmd 
+   then let  _=Sys.chdir(Assistance_cull_string.cobeginning (String.length cd_prefix) cmd) in 0
+   else 
+   if String.starts_with ~prefix:rp_prefix cmd 
+   then let  _= Assistance_compact_replacer.execute(Assistance_cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
+   else 
+   if String.starts_with ~prefix:rvp_prefix cmd 
+   then let  _= Assistance_compact_replacer.reverse_execute(Assistance_cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
+   else 
+   Sys.command cmd;;
+
+
+let mild_uc s=
+   let i=command s in
+   let _=(
+   if i<>0
+   then (print_string ("Failed during "^s^"\n");flush stdout)
+   else (if (!remember_commands_mode) 
+               then accu:=s::(!accu))
+   ) in
+   i;;
+
+let hardcore_uc s=
+   let i=command s in
+   if i<>0
+   then raise(Command_failed(s))
+   else let _=(if (!remember_commands_mode) 
+               then accu:=s::(!accu)) in 
+        i;;
+
+let uc s=
+   if (!hardcore_mode)
+   then hardcore_uc s
+   else mild_uc s;;
+
+let debug_individual_uc (j,s) =
+    let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
+    let _=(print_string msg;flush stdout) in
+    let i = command s in 
+    if i<>0 
+    then raise(Command_failed_just_now)
+    else (print_string "Successful.\n";flush stdout);;
+
+let rec helper_for_debug_multiple_uc (j,l)=
+   match l with 
+   [] -> () 
+   |cmd :: other_cmds ->
+     let _ = debug_individual_uc (j,cmd) in 
+     helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
+
+
+end;;
+
+let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
+
+let rec conditional_multiple_uc commands=match commands with
+  []->true
+  |cmd1::other_commands ->
+    if (Private.uc cmd1)=0
+    then conditional_multiple_uc other_commands 
+    else false;;
+           
+let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           
+
+let hardcore_uc = Private.hardcore_uc ;;
+
+let mv full_path new_location =
+   let destination_equals_source=(
+     if not(String.starts_with ~prefix:new_location full_path) then false else 
+     let naked_name=Assistance_cull_string.two_sided_cutting (new_location,"") full_path in 
+     not(String.contains naked_name '/') 
+   ) in 
+   if destination_equals_source 
+   then None 
+   else Some("mv "^full_path^" "^new_location);;
+
+let prefix_for_replacing_patterns           = Private.prefix_for_replacing_patterns;;
+let prefix_for_reverse_replacing_patterns   = Private.prefix_for_reverse_replacing_patterns;;
+
+
+let uc = Private.uc;;
+
+
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_isolated_occurrences=struct
+
+(*
+
+#use"lib/isolated_occurrences.ml";;
+
+Used to detect mentions of previously defined names in
+the same OCaml module.
+
+An occurrence of a substring is isolated when it 
+cannot be extended to a meaningful Ocaml name. So we look at
+the surrounding characters, on the left and on the right.
+
+
+*)
+
+module Private=struct
+
+exception Unclear_left_char of char;;
+exception Unclear_right_char of char;;
+
+let rejected_left_chars=
+  [
+   	'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
+    'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
+    'u';'v';'w';'x';'y';'z';
+    'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
+    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
+    'U';'V';'W';'X';'Y';'Z';
+    '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
+    '_';
+  ];;
+
+let admitted_left_chars=
+  [
+   	'(' ; ')' ; ';' ; ' ' ;'\n';'\r';'=';'<';'>';'+';'*';'/';'-'; '.'; ',';
+  ];;
+
+let rejected_right_chars=
+  [
+   	'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
+    'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
+    'u';'v';'w';'x';'y';'z';
+    'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
+    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
+    'U';'V';'W';'X';'Y';'Z';
+    '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
+    '_';
+  ];;
+
+let admitted_right_chars=
+  [
+   	'(' ; ')' ; ';' ; ' ' ;'\n';'\r';'=';'<';'>';'+';'*';'/';'-'; '.'; ',';
+  ];;
+
+let test_for_left_admissiblity c=
+   if List.mem c rejected_left_chars then false else
+   if List.mem c admitted_left_chars then true else
+   raise(Unclear_left_char(c));;
+   
+let test_for_right_admissiblity c=
+   if List.mem c rejected_right_chars then false else
+   if List.mem c admitted_right_chars then true else
+   raise(Unclear_right_char(c));;   
+   
+let leftmost_small_test  s j=
+   if j=0 
+   then true 
+   else test_for_left_admissiblity (String.get s (j-1));;
+
+let rightmost_small_test  s j=
+   if j=((String.length s)+1) 
+   then true 
+   else test_for_right_admissiblity (String.get s (j-1));;   
+   
+
+end;;
+
+let of_in substr s=
+  let l_substr=String.length substr 
+  and n=String.length(s) in
+  let main_test= (
+    fun k->
+      if ((String.sub s (k-1) l_substr)<>substr)
+      then false
+      else 
+      ( Private.leftmost_small_test s (k-1) )
+      &&
+      ( Private.rightmost_small_test s (k+l_substr) )
+      
+  ) in
+  List.filter_map(
+     fun k->
+       if main_test k
+       then Some(k,k+l_substr-1)
+       else None
+  ) (Assistance_int_range.range 1 (n+1-l_substr));;
+
+   
+(*   
+   
+of_in "garfield" 
+"let x=garfield in let y=subgarfield and z=garfield2 in";;
+
+of_in "garfield" "garfield is a cat";;
+
+of_in "Boogie.Woogie.c" "48+Boogie.Woogie.c";;
+
+
+*)              
+
+end;;
+
+
+
+
+
+
+module Assistance_ocaml_gsyntax_category=struct
+
+(*
+
+#use"lib/Ocaml_analysis/ocaml_gsyntax_category.ml";;
+
+*)
+
+type t=
+     Value
+    |Type
+    |Exception 
+    |Module_opener
+    |Module_closer 
+    |Module_inclusion;;
+    
+               
+
+end;;
+
+
+
+
+
+
+module Assistance_ocaml_gsyntax_item=struct
+
+(*
+
+#use"lib/Ocaml_analysis/ocaml_gsyntax_item.ml";;
+
+*)
+
+type t={
+  category : Assistance_ocaml_gsyntax_category.t;
+  name : string;
+  interval_for_name : int*int;
+  whole : string;
+  content : string;
+  interval_for_content : int*int;  
+  is_an_included_item : bool;
+};;
+
+let name x=x.name;;
+let content x=x.content;;
+let whole x=x.whole;;
+
+let make cat nm nm_itv intr ctnt ctnt_itv incldd_or_not=
+    {
+  		category =cat;
+        name =nm;
+        interval_for_name =nm_itv;
+        whole =intr;
+        content =ctnt;
+        interval_for_content =ctnt_itv;  
+        is_an_included_item =incldd_or_not;
+    };;
+
+let prepend_prefix prefix x=
+    {
+  		category =x.category;
+        name =prefix^"."^x.name;
+        interval_for_name =x.interval_for_name;
+        whole =x.whole;
+        content =x.content;
+        interval_for_content =x.interval_for_content;  
+        is_an_included_item =x.is_an_included_item;
+    };;
+    
+let include_in_new_scope new_scope x=
+    {
+  		category =x.category;
+        name =new_scope^(Assistance_cull_string.before_rightmost_possibly_all x.name '.');
+        interval_for_name =x.interval_for_name;
+        whole =x.whole;
+        content =x.content;
+        interval_for_content =x.interval_for_content;  
+        is_an_included_item =true;
+    };;    
+    
+let make_name_coincide_with_content x=
+        {
+            category =x.category;
+            name =x.content;
+            interval_for_name =x.interval_for_name;
+            whole =x.whole;
+            content =x.content;
+            interval_for_content =x.interval_for_content;  
+            is_an_included_item =x.is_an_included_item;
+        };;    
+    
+    
+    
+    
+    
+    
+               
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser=struct
+
+(*
+
+#use"lib/GParser/gparser.ml";;
+
+*)
+
+type t=
+     Constant of string
+    |Enclosure of string*string
+    |Footless_constant of string
+    |Sample_char of string
+    |Sample_neg of string
+    |Sample_star of string
+    |Sample_negstar of string
+    |Sample_plus of string
+    |Race of string*string
+    |Comment of string*string*string*string
+    |House_with_doors of string*string*((string*string) list)
+    |Chain of t list
+    |Disjunction of t list
+    |Star of t
+    |Detailed_star of t
+    |One_or_more of t
+    |Optional of t
+    |Recoiling_ending of t*t
+    |Detailed_chain of t list
+;;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_result=struct
+
+(*
+
+#use"lib/GParser/gparser_result.ml";;
+
+*)
+
+
+type t={
+   whole_range : int*int ;
+   important_ranges : (int*int) list;
+   final_cursor_position : int; 
+   disjunction_index : int option;
+};;
+
+let whole_range x=x.whole_range;;
+let important_ranges x=x.important_ranges;;
+let final_cursor_position x=x.final_cursor_position;;
+let disjunction_index x=x.disjunction_index;;
+
+let veil b c d e={
+   whole_range =b;
+   important_ranges =c;
+   final_cursor_position =d; 
+   disjunction_index=e;
+};;
+
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_fun=struct
+
+(*
+
+#use"lib/GParser/gparser_fun.ml";;
+
+*)
+
+type t=(string->int->(Assistance_gparser_result.t option));;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_house_with_doors=struct
+
+(*
+
+#use"lib/GParser/gparser_house_with_doors.ml";;
+
+*)
+
+module Private=struct
+type mistletoe={
+     main_opener:string;
+     main_closer:string;
+     other_enclosers: (string*string) list;
+     processed_argument: string;
+     initial_index: int;
+};;
+
+type walker={
+    current_index : int;
+    current_depth : int;
+    awaited_closer : string option;
+    answer : Assistance_gparser_result.t option;
+};;
+
+
+let new_walker_in_first_case_in_hwd (m,wlkr)=
+   let opt1=List.find_opt(fun (opener,_closer)->
+     Assistance_substring.is_a_substring_located_at opener 
+        m.processed_argument wlkr.current_index
+   ) m.other_enclosers in
+   if opt1<>None
+   then let (op1,cl1)=Option.get opt1 in
+        {
+        	current_index =wlkr.current_index+(String.length op1);
+            current_depth =wlkr.current_depth;
+            awaited_closer=Some(cl1);
+            answer =None;
+        }
+   else
+   if Assistance_substring.is_a_substring_located_at m.main_opener 
+        m.processed_argument wlkr.current_index
+   then {
+        	current_index =wlkr.current_index+(String.length m.main_opener);
+            current_depth =wlkr.current_depth+1;
+            awaited_closer=None;
+            answer =None;
+        }
+   else   
+   if not(Assistance_substring.is_a_substring_located_at m.main_closer 
+      m.processed_argument wlkr.current_index)
+   then {
+        	current_index =wlkr.current_index+1;
+            current_depth =wlkr.current_depth;
+            awaited_closer=None;
+            answer =None;
+        }
+   else    
+   if wlkr.current_depth>1
+   then {
+        	current_index =wlkr.current_index+(String.length m.main_closer);
+            current_depth =wlkr.current_depth-1;
+            awaited_closer=None;
+            answer =None;
+        }
+   else  
+   let j1=wlkr.current_index+(String.length m.main_closer) in
+   let res=Assistance_gparser_result.veil
+               (m.initial_index,j1-1)
+               []
+               j1
+               None        in
+        {
+        	current_index =wlkr.current_index+(String.length m.main_closer);
+            current_depth =wlkr.current_depth-1;
+            awaited_closer=None;
+            answer =Some(res);
+        };;
+   
+
+let first_case_in_hwd 
+   (m,wlkr)=(m,new_walker_in_first_case_in_hwd (m,wlkr));;
+  
+let second_case_in_hwd (m,wlkr)=
+  let rparen=Option.get wlkr.awaited_closer in
+  if Assistance_substring.is_a_substring_located_at rparen 
+      m.processed_argument wlkr.current_index
+  then (m,{
+        	current_index =wlkr.current_index+(String.length rparen);
+            current_depth =wlkr.current_depth;
+            awaited_closer=None;
+            answer =None;
+        })
+  else (m,{
+        	current_index =wlkr.current_index+1;
+            current_depth =wlkr.current_depth;
+            awaited_closer=wlkr.awaited_closer;
+            answer =None;
+        });;
+
+let pusher_for_hwd w=
+  let (_m,wlkr)=w in
+  if wlkr.answer=None
+  then 
+       (
+         if wlkr.awaited_closer=None
+         then first_case_in_hwd w
+         else second_case_in_hwd w       
+        )
+  else w;;  
+   
+let rec iterator_for_hwd w=
+   let (m,wlkr)=w in
+   if wlkr.answer<>None
+   then wlkr.answer
+   else
+   if wlkr.current_index>(String.length m.processed_argument)
+   then None
+   else iterator_for_hwd (pusher_for_hwd w);; 
+  
+let starter_for_hwd (main_opener,main_closer) other_enclosers s i=
+  (
+    {
+     main_opener=main_opener;
+     main_closer=main_closer;
+     other_enclosers=other_enclosers;
+     processed_argument=s;
+     initial_index=i;
+    }
+  ,
+    {
+      current_index =i+(String.length main_opener);
+      current_depth =1;
+      awaited_closer=None;
+      answer =None;
+    }
+  );;
+end;;  
+
+let hwd
+   (main_opener,main_closer)
+     other_enclosers=
+   let tempf=(fun s i->
+        if not(Assistance_substring.is_a_substring_located_at main_opener s i)
+        then None 
+        else 
+          
+          Private.iterator_for_hwd 
+         (Private.starter_for_hwd (main_opener,main_closer) other_enclosers s i)
+   ) in
+   (tempf:Assistance_gparser_fun.t);;      
+      
+(*
+
+hwd ("(*","*)") ["\"","\""] "(* Bye \"*)\" bye bird *)456" 1;;
+
+*)
+
+
+
+         
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_ocaml_comment=struct
+
+(*
+
+#use"lib/GParser/gparser_ocaml_comment.ml";;
+
+*)
+
+module Private=struct
+type mistletoe={
+     comment_opener:string;
+     comment_closer:string;
+     quote_opener:string;
+     quote_closer:string;
+     processed_argument: string;
+     initial_index: int;
+};;
+
+type walker={
+    current_index : int;
+    current_depth : int;
+    quote_mode : bool;
+    answer : Assistance_gparser_result.t option;
+    length_of_preceding_backslash_wall :int;
+};;
+
+let update_backslash_wall_length (m,wlkr)=
+if (Assistance_strung.get m.processed_argument wlkr.current_index)='\\'
+then (wlkr.length_of_preceding_backslash_wall)+1
+else 0;;
+
+
+let new_walker_in_first_case_in_hwd (m,wlkr)=
+   if Assistance_substring.is_a_substring_located_at
+     m.quote_opener m.processed_argument wlkr.current_index
+   then {
+        	current_index =wlkr.current_index+(String.length m.quote_opener);
+            current_depth =wlkr.current_depth;
+            quote_mode=true;
+            answer =None;
+            length_of_preceding_backslash_wall=0;
+        }
+   else
+   if Assistance_substring.is_a_substring_located_at m.comment_opener 
+        m.processed_argument wlkr.current_index
+   then {
+        	current_index =wlkr.current_index+(String.length m.comment_opener);
+            current_depth =wlkr.current_depth+1;
+            quote_mode=false;
+            answer =None;
+            length_of_preceding_backslash_wall=0;
+        }
+   else   
+   if not(Assistance_substring.is_a_substring_located_at m.comment_closer 
+      m.processed_argument wlkr.current_index)
+   then {
+        	current_index =wlkr.current_index+1;
+            current_depth =wlkr.current_depth;
+            quote_mode=false;
+            answer =None;
+            length_of_preceding_backslash_wall=
+               update_backslash_wall_length(m,wlkr);
+        }
+   else    
+   if wlkr.current_depth>1
+   then {
+        	current_index =wlkr.current_index+(String.length m.comment_closer);
+            current_depth =wlkr.current_depth-1;
+            quote_mode=false;
+            answer =None;
+            length_of_preceding_backslash_wall=0;
+        }
+   else  
+   let j1=wlkr.current_index+(String.length m.comment_closer) in
+   let res=Assistance_gparser_result.veil
+               (m.initial_index,j1-1)
+               []
+               j1
+               None        in
+        {
+        	current_index =wlkr.current_index+(String.length m.comment_closer);
+            current_depth =wlkr.current_depth-1;
+            quote_mode=false;
+            answer =Some(res);
+            length_of_preceding_backslash_wall=0;
+        };;
+   
+
+let first_case_in_hwd 
+   (m,wlkr)=(m,new_walker_in_first_case_in_hwd (m,wlkr));;
+  
+let second_case_in_hwd (m,wlkr)=
+  if (Assistance_substring.is_a_substring_located_at m.quote_closer
+      m.processed_argument wlkr.current_index)
+     &&
+     ((wlkr.length_of_preceding_backslash_wall mod 2)=0) 
+  then (m,{
+        	current_index =wlkr.current_index+(String.length m.quote_closer);
+            current_depth =wlkr.current_depth;
+            quote_mode=false;
+            answer =None;
+            length_of_preceding_backslash_wall=0;
+        })
+  else (m,{
+        	current_index =wlkr.current_index+1;
+            current_depth =wlkr.current_depth;
+            quote_mode=true;
+            answer =None;
+            length_of_preceding_backslash_wall=
+               update_backslash_wall_length(m,wlkr);
+        });;
+
+let pusher_for_hwd w=
+  let (_m,wlkr)=w in
+  if wlkr.answer=None
+  then 
+       (
+         if not(wlkr.quote_mode)
+         then first_case_in_hwd w
+         else second_case_in_hwd w       
+        )
+  else w;;  
+   
+let rec iterator_for_main_prsr w=
+   let (m,wlkr)=w in
+   if wlkr.answer<>None
+   then wlkr.answer
+   else
+   if wlkr.current_index>(String.length m.processed_argument)
+   then None
+   else iterator_for_main_prsr (pusher_for_hwd w);; 
+  
+let starter_for_main_prsr 
+(comment_opener,comment_closer) 
+ (quote_opener,quote_closer) s i=
+  (
+    {
+     comment_opener=comment_opener;
+     comment_closer=comment_closer;
+     quote_opener=quote_opener;
+     quote_closer=quote_closer;
+     processed_argument=s;
+     initial_index=i;
+    }
+  ,
+    {
+      current_index =i+(String.length comment_opener);
+      current_depth =1;
+      quote_mode=false;
+      answer =None;
+      length_of_preceding_backslash_wall=0;
+    }
+  );;
+end;;  
+
+let main_prsr
+   (comment_opener,comment_closer)
+     (quote_opener,quote_closer)=
+   let tempf=(fun s i->
+        if not(Assistance_substring.is_a_substring_located_at comment_opener s i)
+        then None 
+        else 
+          
+          Private.iterator_for_main_prsr 
+         (Private.starter_for_main_prsr (comment_opener,comment_closer) 
+            (quote_opener,quote_closer) s i)
+   ) in
+   (tempf:Assistance_gparser_fun.t);;      
+      
+(*
+
+main_prsr ("(*","*)") ("\"","\"") "(* Bye \"*)\" bye bird *)456" 1;;
+main_prsr ("(*","*)") ("\"","\"") "(* Bye \"uu\" bye bird *)456" 1;;
+main_prsr ("(*","*)") ("\"","\"") "(* Bye \"uu\\\" *) \"  *)234" 1;;
+
+
+*)
+
+
+
+         
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_apply=struct
+
+(*
+
+#use"lib/GParser/gparser_apply.ml";;
+
+*)
+
+module Private=struct
+
+let enclosure (left_encloser,right_encloser)=
+   let tempf=(fun s i1->
+   if (not(Assistance_substring.is_a_substring_located_at left_encloser s i1))
+   then None
+   else 
+   let i2=i1+(String.length left_encloser) in
+   let i3_opt=Assistance_substring.leftmost_index_of_in_from_opt right_encloser s i2 in
+   if i3_opt = None
+   then None 
+   else
+   let i3 = Option.get i3_opt in 
+   let i4=i3+(String.length right_encloser)-1 in
+   let res= Assistance_gparser_result.veil
+               (i1,i4)
+               [i2,i3-1]
+               (i4+1)
+               None in
+   Some(res)) in
+   (tempf: Assistance_gparser_fun.t);;
+   
+let constant t=
+   let tempf=(fun s i1->
+   if (not(Assistance_substring.is_a_substring_located_at t s i1))
+   then None
+   else 
+   let i2=i1+(String.length t) in
+   let res= Assistance_gparser_result.veil
+               (i1,i2-1)
+               []
+               i2
+               None in
+   Some(res)) in
+   (tempf: Assistance_gparser_fun.t);;
+
+
+let footless_constant t=
+   let tempf=(fun s i1->
+   if (not(Assistance_substring.is_a_substring_located_at t s i1))
+   then None
+   else 
+   let i2=i1+(String.length t) in
+   let res= Assistance_gparser_result.veil
+               (i1,i2-1)
+               []
+               (i2-1)
+               None in
+   Some(res)) in
+   (tempf:Assistance_gparser_fun.t);;
+
+let sample_char t=
+   let lc=Assistance_strung.explode t in
+   let tempf=(fun s i->
+        let c=Assistance_strung.get s i in
+        if List.mem c lc
+        then Some(Assistance_gparser_result.veil
+               (i,i)
+               []
+               (i+1)
+               None)
+        else None) in
+   (tempf:Assistance_gparser_fun.t);;
+
+let sample_neg t=
+   let lc=Assistance_strung.explode t in
+   let tempf=(fun s i->
+        let c=Assistance_strung.get s i in
+        if not(List.mem c lc)
+        then Some(Assistance_gparser_result.veil
+               (i,i)
+               []
+               (i+1)
+               None)
+        else None) in
+   (tempf:Assistance_gparser_fun.t);;
+
+let sample_star t=
+   let lc=Assistance_strung.explode t in
+   let tempf=(fun s i1->
+        let j_opt=Assistance_strung.char_finder_from_inclusive_opt (fun c->not(List.mem c lc)) s i1 in
+        let better_j=(match j_opt with None -> (String.length s)+1 | Some j -> j) in
+        let res=Assistance_gparser_result.veil
+               (i1,better_j-1)
+               []
+               better_j
+               None in
+   Some(res)) in
+   (tempf:Assistance_gparser_fun.t);;
+
+let sample_negstar t=
+   let lc=Assistance_strung.explode t in
+   let tempf=(fun s i1->
+      let j_opt=Assistance_strung.char_finder_from_inclusive_opt (fun c->not(List.mem c lc)) s i1 in
+      let better_j=(match j_opt with None -> (String.length s)+1 | Some j -> j) in
+        let res=Assistance_gparser_result.veil
+               (i1,better_j-1)
+               []
+               better_j
+               None in
+   Some(res)) in
+   (tempf:Assistance_gparser_fun.t);;
+
+let sample_plus t=
+   let lc=Assistance_strung.explode t in
+   let tempf=(fun s i1->
+        if i1>(String.length s) then None else
+        if (not(List.mem (Assistance_strung.get s i1 ) lc)) then None else
+         let j_opt=Assistance_strung.char_finder_from_inclusive_opt (fun c->not(List.mem c lc)) s i1 in
+        let better_j=(match j_opt with None -> (String.length s)+1 | Some j -> j) in
+        let res=Assistance_gparser_result.veil
+               (i1,better_j-1)
+               []
+               better_j
+               None in
+   Some(res)) in
+   (tempf:Assistance_gparser_fun.t);;
+   
+
+let race (continuer,finalizer)=
+   let rec tempf=(fun (s,i1,k)->
+        if k>(String.length s)
+        then None
+        else
+        if Assistance_substring.is_a_substring_located_at continuer s k
+        then tempf(s,i1,k+(String.length continuer))
+        else
+        if (not(Assistance_substring.is_a_substring_located_at finalizer s k))
+        then tempf(s,i1,k+1)
+        else
+        let j1=k+(String.length finalizer) in
+        let res=Assistance_gparser_result.veil
+               (i1,j1-1)
+               []
+               (j1-1)
+               None in
+        Some(res)) in
+   ((fun s i->tempf(s,i,i)):Assistance_gparser_fun.t);;   
+      
+let house_with_doors=Assistance_gparser_house_with_doors.hwd;;
+
+
+type chain_artefact=
+     Usual of (int * int) list * Assistance_gparser_fun.t list * bytes * int * int 
+    |Result_found of Assistance_gparser_result.t
+    |Failure_found;;
+
+let chain l=
+  let main_f=
+  	(fun s i->
+   		let rec tempf=
+   		(
+         	fun (imp_ranges,da_ober,s,i0,k)->
+      		match da_ober with
+      		[]->Some(
+           		    	Assistance_gparser_result.veil
+               			(i0,k-1)
+               			imp_ranges
+               			k
+               			None
+          			)
+       		|prsr::rest->   
+         		(
+           			match prsr s k with
+            		None->None
+           		  |Some(res)->tempf(
+           		       imp_ranges@(Assistance_gparser_result.important_ranges res),
+                       rest,s,i0,Assistance_gparser_result.final_cursor_position res)
+                )
+         )  
+    in tempf([],l,s,i,i)
+    ) in
+  (main_f:Assistance_gparser_fun.t);;
+
+let detailed_chain l=
+  let main_f=
+  	(fun s i->
+   		let rec tempf=
+   		(
+         	fun (imp_ranges,da_ober,s,i0,k)->
+      		match da_ober with
+      		[]->Some(
+           		    	Assistance_gparser_result.veil
+               			(i0,k-1)
+               			(List.rev imp_ranges)
+               			k
+               			None
+          			)
+       		|prsr::rest->   
+         		(
+           			match prsr s k with
+            		None->None
+           		  |Some(res)->tempf(
+           		       (Assistance_gparser_result.whole_range res)::imp_ranges,
+                       rest,s,i0,Assistance_gparser_result.final_cursor_position res)
+                )
+         )  
+    in tempf([],l,s,i,i)
+    ) in
+  (main_f:Assistance_gparser_fun.t);;
+
+let debugful_detailed_chain l=
+  let main_f=
+  	(fun s i->
+   		let rec tempf=
+   		(
+         	fun (imp_ranges,da_ober,s,i0,k,opt)->
+      		match da_ober with
+      		[]->let sol=Some(
+           		    	Assistance_gparser_result.veil
+               			(i0,k-1)
+               			(List.rev imp_ranges)
+               			k
+               			None
+          			) in
+          	     (imp_ranges,da_ober,s,i0,k,sol) 		
+       		|prsr::rest->   
+         		(
+           			match prsr s k with
+            		None->(imp_ranges,da_ober,s,i0,k,opt)
+           		  |Some(res)->tempf(
+           		       (Assistance_gparser_result.whole_range res)::imp_ranges,
+                       rest,s,i0,Assistance_gparser_result.final_cursor_position res,None)
+                )
+         )  
+    in tempf([],l,s,i,i,None)
+    ) in
+  main_f;;
+
+let disjunction l=
+   let indexed_l=Assistance_int_range.index_everything l in   
+   let rec tempf=(fun
+   (da_ober,s,i0)->
+      match da_ober with
+      []->None 
+      |(j,prsr)::rest->
+         (
+           match prsr s i0 with
+             None->tempf(rest,s,i0)
+           |Some(res)->
+          Some(
+             Assistance_gparser_result.veil
+               (Assistance_gparser_result.whole_range res)
+               (Assistance_gparser_result.important_ranges res)
+               (Assistance_gparser_result.final_cursor_position res)
+               (Some j)
+           )
+         )   
+   ) in
+   ((fun s i->tempf (indexed_l,s,i)):Assistance_gparser_fun.t);;
+
+let star prsr=
+   let rec tempf=(fun
+   (imp_ranges,s,i0,k)->
+      match prsr s k with
+       None->Some(
+             Assistance_gparser_result.veil
+               (i0,k-1)
+               (imp_ranges)
+               k
+               None
+            )
+      |Some(res)->tempf(imp_ranges@(Assistance_gparser_result.important_ranges res),
+                       s,i0,Assistance_gparser_result.final_cursor_position res)
+   
+   ) in
+   ((fun s i->tempf ([],s,i,i)):Assistance_gparser_fun.t);;
+
+let detailed_star prsr=
+   let rec tempf=(fun
+   (imp_ranges,s,i0,k)->
+      match prsr s k with
+       None->Some(
+             Assistance_gparser_result.veil
+               (i0,k-1)
+               (List.rev(imp_ranges))
+               k
+               None
+            )
+      |Some(res)->tempf((Assistance_gparser_result.whole_range res)::imp_ranges,
+                       s,i0,Assistance_gparser_result.final_cursor_position res)
+   
+   ) in
+   ((fun s i->tempf ([],s,i,i)):Assistance_gparser_fun.t);;   
+   
+   
+let one_or_more prsr=chain [prsr;star prsr];;
+
+let optional prsr=
+   let tempf=(fun s i->
+      match prsr s i with
+       Some(res)->Some(
+            Assistance_gparser_result.veil
+               (Assistance_gparser_result.whole_range res)
+               (Assistance_gparser_result.important_ranges res)
+               (Assistance_gparser_result.final_cursor_position res)
+               None
+            )
+      |None->Some(
+            Assistance_gparser_result.veil
+               (i,i-1)
+               []
+               i
+               None
+            )
+   
+   ) in
+   (tempf:Assistance_gparser_fun.t);;
+
+
+let recoiling_ending x y=
+   let tempf=(fun s i->
+      match x s i with
+       None->None
+      |Some(res)->
+                  
+                  let j=Assistance_gparser_result.final_cursor_position res in
+                  if y s j=None then None else
+                  Some(
+                  Assistance_gparser_result.veil
+                  (i,j-1)
+                  (Assistance_gparser_result.important_ranges res)
+                  j
+                  None
+                  )
+   ) in
+   (tempf:Assistance_gparser_fun.t);;
+     
+let rec apply=function        
+     Assistance_gparser.Constant(s)->constant s
+    |Assistance_gparser.Enclosure(s1,s2)->enclosure (s1,s2)
+    |Assistance_gparser.Footless_constant(s)->footless_constant s
+    |Assistance_gparser.Sample_char(s)->sample_char s
+    |Assistance_gparser.Sample_neg(s)->sample_neg s
+    |Assistance_gparser.Sample_star(s)->sample_star s
+    |Assistance_gparser.Sample_negstar(s)->sample_negstar s
+    |Assistance_gparser.Sample_plus(s)->sample_plus s
+    |Assistance_gparser.Race(s1,s2)->race(s1,s2)
+    |Assistance_gparser.Comment(s1,s2,s3,s4)->Assistance_gparser_ocaml_comment.main_prsr(s1,s2)(s3,s4)
+    |Assistance_gparser.House_with_doors(s1,s2,l)->house_with_doors (s1,s2) l
+    |Assistance_gparser.Chain(l)->chain(Assistance_image.image apply l)
+    |Assistance_gparser.Disjunction(l)->disjunction(Assistance_image.image apply l)
+    |Assistance_gparser.Star(x)->star(apply x)
+    |Assistance_gparser.Detailed_star(x)->detailed_star(apply x)
+    |Assistance_gparser.One_or_more(x)->one_or_more(apply x)
+    |Assistance_gparser.Optional(x)->optional(apply x)
+    |Assistance_gparser.Recoiling_ending(x,y)->recoiling_ending (apply x) (apply y)
+    |Assistance_gparser.Detailed_chain(l)->detailed_chain(Assistance_image.image apply l);;
+   
+end;;   
+   
+let apply=Private.apply;;   
+   
+(*
+
+
+*)   
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_list_with_indices=struct
+
+(*
+
+#use"lib/list_with_indices.ml";;
+
+*)
+
+exception Bad_set_of_indices;;
+
+let list_with_indices l=
+  let n=List.length l in
+  let temp1=Assistance_int_range.scale (fun i->List.find_opt(fun p->fst(p)=i) l) 1 n in
+  if List.mem None temp1
+  then raise(Bad_set_of_indices)
+  else
+  Assistance_int_range.scale (fun
+     i->snd(List.find(fun p->fst(p)=i) l)
+  ) 1 n;;
+
+(*
+
+list_with_indices [3,"a";1,"b";2,"c"];;
+
+*)  
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_gparser_for_ocaml_language=struct
+
+(*
+
+#use"lib/GParser/gparser_for_ocaml_language.ml";;
+
+*)
+
+let double_semicolon=Assistance_particular_string.double_semicolon;;
+
+let prsr_for_comment=
+  Assistance_gparser.Comment ("(*","*)","\"","\"");;
+
+
+let prsr_for_sharp_comment=Assistance_gparser.Enclosure ("\n#","\n");;
+
+let prsr_for_space=Assistance_gparser.Constant " ";;
+let prsr_for_tab=Assistance_gparser.Constant "\t";;
+
+
+let prsr_for_space_or_tab=Assistance_gparser.Disjunction [prsr_for_space;prsr_for_tab];;
+let prsr_for_linebreak=Assistance_gparser.Constant "\n";;
+let prsr_for_newline=Assistance_gparser.Constant "\012";;
+let prsr_for_windows_newline=Assistance_gparser.Constant "\r";;
+let prsr_for_individual_white=Assistance_gparser.Disjunction 
+[prsr_for_space;prsr_for_tab;prsr_for_linebreak;prsr_for_newline;prsr_for_windows_newline];;
+
+let prsr_for_inline_white_maybe=Assistance_gparser.Star prsr_for_space_or_tab;;
+let prsr_for_white_maybe=Assistance_gparser.Star prsr_for_individual_white;;
+let prsr_for_white=Assistance_gparser.One_or_more prsr_for_individual_white;;
+
+let prsr_for_special_sharp=Assistance_gparser.Chain
+   [
+     Assistance_gparser.Constant "#";
+     prsr_for_inline_white_maybe;
+     Assistance_gparser.Sample_star "0123456789";
+     prsr_for_inline_white_maybe;
+     Assistance_gparser.Constant "\"";
+     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
+     Assistance_gparser.Constant "\"";
+     prsr_for_inline_white_maybe;
+   ];;
+
+let prsr_for_uncapitalized_word=Assistance_gparser.Chain
+   [
+     Assistance_gparser.Sample_char "abcdefghijklmnopqrstuvwxyz_";
+     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+   ];;
+
+let prsr_for_capitalized_word=Assistance_gparser.Chain
+   [
+     Assistance_gparser.Sample_char "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ012356789";
+   ];;
+
+let prsr_for_pointing_module=Assistance_gparser.Chain
+   [
+     prsr_for_capitalized_word;
+     Assistance_gparser.Constant ".";
+   ];;
+
+let prsr_for_wholly_lowercase_name=
+   Assistance_gparser.Chain
+   [
+     Assistance_gparser.Sample_char "abcdefghijklmnopqrstuvwxyz_";
+     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_";
+   ];;
+
+
+let prsr_for_element_in_uple_in_typedef=
+   Assistance_gparser.Chain
+   [
+     Assistance_gparser.Constant "'";
+      prsr_for_uncapitalized_word; 
+     prsr_for_white_maybe; 
+     Assistance_gparser.Constant ",";
+     prsr_for_white_maybe; 
+   ];;
+
+let prsr_for_parameters1_in_type=
+   Assistance_gparser.Chain
+   [
+     Assistance_gparser.Constant "'";
+      prsr_for_uncapitalized_word; 
+     prsr_for_white_maybe; 
+   ];;
+
+let prsr_for_parameters2_in_type=
+   Assistance_gparser.Chain
+   [
+     Assistance_gparser.Constant "(";
+     prsr_for_white_maybe; 
+     Assistance_gparser.Star(prsr_for_element_in_uple_in_typedef);
+     prsr_for_white_maybe; 
+     Assistance_gparser.Constant "'";
+     prsr_for_uncapitalized_word; 
+     prsr_for_white_maybe; 
+     Assistance_gparser.Constant ")";
+     prsr_for_white_maybe; 
+   ];;
+
+   
+
+let prsr_for_parameters_in_type=
+   Assistance_gparser.Disjunction
+   [
+     prsr_for_parameters1_in_type;
+     prsr_for_parameters2_in_type;
+   ];;
+
+let prsr_for_rec_followed_by_white=Assistance_gparser.Chain
+   [
+     Assistance_gparser.Optional(Assistance_gparser.Constant "rec");
+     prsr_for_white;
+   ];;
+  
+
+module Private=struct
+let list_for_value_making=
+   [
+     Assistance_gparser.Constant "let";
+     prsr_for_white;
+     Assistance_gparser.Optional(prsr_for_rec_followed_by_white);
+     prsr_for_uncapitalized_word;
+     prsr_for_white_maybe;
+     Assistance_gparser.Enclosure ("","=");
+     Assistance_gparser.Enclosure ("",double_semicolon);
+   ];;
+  
+end;;
+
+let index_for_name_in_value_parser=Assistance_list_again.find_index_of_in
+   prsr_for_uncapitalized_word Private.list_for_value_making;;
+
+let index_for_content_in_value_parser=Assistance_list_again.find_index_of_in
+   (Assistance_gparser.Enclosure ("",double_semicolon)) Private.list_for_value_making;; 
+   
+
+let prsr_for_value_making=Assistance_gparser.Detailed_chain
+   Private.list_for_value_making;;
+
+let prsr_for_type_making=Assistance_gparser.Detailed_chain
+   [
+     Assistance_gparser.Constant "type";
+     prsr_for_white;
+     Assistance_gparser.Optional(prsr_for_parameters_in_type);
+     prsr_for_uncapitalized_word;
+     prsr_for_white_maybe;
+     Assistance_gparser.Enclosure ("","=");
+     Assistance_gparser.Enclosure ("",double_semicolon);
+   ];;
+
+
+
+let prsr_for_exception_making=Assistance_gparser.Detailed_chain
+     [
+     Assistance_gparser.Constant "exception";
+     prsr_for_white;
+     prsr_for_capitalized_word;
+     Assistance_gparser.Enclosure ("",double_semicolon);
+   ];;
+
+let prsr_for_module_opener=
+   Assistance_gparser.Detailed_chain
+   [
+     Assistance_gparser.Constant "module";
+     prsr_for_white;
+     prsr_for_capitalized_word;
+     prsr_for_white_maybe;
+     Assistance_gparser.Constant "=";
+     prsr_for_white_maybe;
+     Assistance_gparser.Constant "struct";
+   ];;
+
+let prsr_for_module_closer=
+   Assistance_gparser.Chain
+   [
+     Assistance_gparser.Constant "end";
+     prsr_for_white_maybe;
+     Assistance_gparser.Constant double_semicolon;
+   ];;
+
+let prsr_for_module_inclusion=
+   Assistance_gparser.Detailed_chain
+   [
+     Assistance_gparser.Constant "include ";
+     prsr_for_white_maybe;
+     prsr_for_capitalized_word;
+     prsr_for_white_maybe;
+     Assistance_gparser.Constant double_semicolon;
+   ];;
+
+let prsr_for_special_names=
+   Assistance_gparser.Disjunction
+     [
+       Assistance_gparser.Constant "add_to_vvv ";
+       Assistance_gparser.Constant "add_data ";
+       Assistance_gparser.Constant "add_data\n";
+       Assistance_gparser.Constant "add_label ";
+       Assistance_gparser.Constant "add_recognizer ";
+       Assistance_gparser.Constant "add_shortcut ";
+       Assistance_gparser.Constant "define_precedence_set ";
+       Assistance_gparser.Constant "get_name_for_set ";
+     ];;   
+   
+let prsr_for_specialities=Assistance_gparser.Chain
+   [
+     prsr_for_special_names;
+     Assistance_gparser.Enclosure ("",double_semicolon);
+   ];;   
+
+let index_for_value=1;;
+let index_for_type=2;;
+let index_for_exception=3;;
+let index_for_comment=4;;
+let index_for_sharp_comment=5;;
+let index_for_special_sharp=6;;
+let index_for_module_opener=7;;
+let index_for_module_closer=8;;
+let index_for_module_inclusion=9;;
+let index_for_specialities=10;;
+let index_for_white=11;;
+
+
+let elt_prsr=Assistance_gparser.Disjunction 
+  (
+     Assistance_list_with_indices.list_with_indices
+     [
+       index_for_value           ,prsr_for_value_making;
+       index_for_type            ,prsr_for_type_making;
+       index_for_exception       ,prsr_for_exception_making;
+       index_for_comment         ,prsr_for_comment;
+       index_for_sharp_comment   ,prsr_for_sharp_comment;
+       index_for_special_sharp   ,prsr_for_special_sharp;
+       index_for_module_opener   ,prsr_for_module_opener;
+       index_for_module_closer   ,prsr_for_module_closer;
+       index_for_module_inclusion,prsr_for_module_inclusion;
+       index_for_specialities    ,prsr_for_specialities;
+       index_for_white           ,prsr_for_white;
+     ]
+   )
+;;
+
+
+let main_prsr=
+   Assistance_gparser.Detailed_star elt_prsr;;
+
+
+
+   
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_pre_read_ocaml_files=struct
+
+(*
+
+#use"lib/Ocaml_analysis/pre_read_ocaml_files.ml";;
+
+Originated as the code shared by modules
+read_ocaml_files and read_ocaml_files_without_expanding_inclusions.
+
+*)
+
+exception Pre_read_exn of string;;
+
+module Private=struct
+  exception Unreadable of string;;
+  
+  let accuse_final_excerpt s i=
+    let j=min(String.length s)(i+100) in
+    raise(Unreadable(Assistance_cull_string.interval s i j));;
+  
+  let uncatched_read1 s=
+    let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.main_prsr s 1 in
+    if opt=None then accuse_final_excerpt s 1 else
+    let res=Option.get opt in 
+    let p=Assistance_gparser_result.final_cursor_position res in
+    if p<=(String.length s) 
+    then accuse_final_excerpt s p
+    else 
+    let temp1=Assistance_gparser_result.important_ranges res in
+    Assistance_image.image (fun (i,j)->
+      let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.elt_prsr s i in
+      let res=Option.get opt in
+      ((i,j),Option.get(Assistance_gparser_result.disjunction_index res))
+    ) temp1;;
+  
+  exception Read1_exn of string;;
+  
+  let read1 s= try uncatched_read1 s with Unreadable(t)->raise(Read1_exn(t));;
+    
+  let describe_value_item s (i,_j)=
+       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_value_making s i in
+       let res=Option.get opt in
+       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 
+            (Assistance_gparser_for_ocaml_language.index_for_name_in_value_parser-1)
+       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 
+            (Assistance_gparser_for_ocaml_language.index_for_content_in_value_parser-1) 
+       and (i3,j3)=Assistance_gparser_result.whole_range res in
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Value
+            (Assistance_cull_string.interval s i1 j1)
+            (i1,j1)
+            (Assistance_cull_string.interval s i3 j3)
+            (* the -2 of because of the 2 characters in the double semicolon *)
+            (Assistance_cull_string.interval s i2 (j2-2))
+            (i2,j2-2)
+            false;;
+  
+  let describe_type_item s (i,_j)=
+       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_type_making s i in
+       let res=Option.get opt in
+       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 3
+       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 6 
+       and (i3,j3)=Assistance_gparser_result.whole_range res in
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Type
+            (Assistance_cull_string.interval s i1 j1)
+            (i1,j1)
+            (Assistance_cull_string.interval s i3 j3)
+            (* the -2 of because of the 2 characters in the double semicolon *)
+            (Assistance_cull_string.interval s i2 (j2-2))
+            (i2,j2-2)
+            false;;
+  
+  let describe_exception_item s (i,_j)=
+       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_exception_making s i in
+       let res=Option.get opt in
+       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2
+       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 3 
+       and (i3,j3)=Assistance_gparser_result.whole_range res in
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Exception
+            (Assistance_cull_string.interval s i1 j1)
+            (i1,j1)
+            (Assistance_cull_string.interval s i3 j3)
+            (* the -2 of because of the 2 characters in the double semicolon *)
+            (Assistance_cull_string.interval s i2 (j2-2))
+            (i2,j2-2)
+            false;;
+  
+  let describe_module_opener_item s (i,_j)=
+       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_module_opener s i in
+       let res=Option.get opt in
+       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2
+       and (i3,j3)=Assistance_gparser_result.whole_range res in 
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Module_opener
+            (Assistance_cull_string.interval s i1 j1)
+            (i1,j1)
+            (Assistance_cull_string.interval s i3 j3)
+            ""
+            (0,0)
+            false;;
+  
+  
+  let describe_module_closer_item=
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Module_closer
+            ""
+            (0,0)
+            ""
+            ""
+            (0,0)
+            false;;
+  
+  
+  let describe_module_inclusion_item s (i,_j)=
+       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_module_inclusion s i in
+       let res=Option.get opt in
+       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2 
+       and (i3,j3)=Assistance_gparser_result.whole_range res in 
+         Assistance_ocaml_gsyntax_item.make
+            Assistance_ocaml_gsyntax_category.Module_inclusion
+            (Assistance_cull_string.interval s i1 j1)
+            (i1,j1)
+            (Assistance_cull_string.interval s i3 j3)
+            ""
+            (0,0)
+            false;;
+            
+   let describe_item s ((i,j),idx)=
+     if idx=Assistance_gparser_for_ocaml_language.index_for_value
+     then Some(describe_value_item s (i,j))
+     else
+     if idx=Assistance_gparser_for_ocaml_language.index_for_type
+     then Some(describe_type_item s (i,j))
+     else
+     if idx=Assistance_gparser_for_ocaml_language.index_for_exception
+     then Some(describe_exception_item s (i,j))
+     else
+     if idx=Assistance_gparser_for_ocaml_language.index_for_module_opener
+     then Some(describe_module_opener_item s (i,j))
+     else
+     if idx=Assistance_gparser_for_ocaml_language.index_for_module_closer
+     then Some(describe_module_closer_item)
+     else          
+     if idx=Assistance_gparser_for_ocaml_language.index_for_module_inclusion
+     then Some(describe_module_inclusion_item s (i,j))
+     else None;;
+     
+  let uncatched_read2 s=
+     List.filter_map (describe_item s) (read1 s);;   
+     
+  
+  
+  let pre_read s= try uncatched_read2 s with Read1_exn(t)->raise(Pre_read_exn(t));;
+  end;;
+
+  let pre_read =Private.pre_read;;           
+
+end;;
+
+
+
+
+
+
+module Assistance_read_ocaml_files=struct
+
+(*
+
+#use"lib/Ocaml_analysis/read_ocaml_files.ml";;
+
+*)
+
+module Private=struct
+  
+
+  
+  let module_inclusion_in_pusher    
+     (graet,current_full_scope,current_names) x=
+      let included_module=x.Assistance_ocaml_gsyntax_item.name in
+          let full_scope=current_full_scope^"."^included_module in
+          let maybe_included_items=List.filter(
+             fun y->let nm_y=y.Assistance_ocaml_gsyntax_item.name in
+             (String.starts_with ~prefix:full_scope nm_y )
+             ||
+             (String.starts_with ~prefix:included_module nm_y )  
+          ) graet in 
+          (* local redifinition has priority over an outside definition *)
+          let chosen_scope=(if
+            List.exists(fun y->
+              y.Assistance_ocaml_gsyntax_item.name=included_module
+            ) maybe_included_items
+            then included_module
+            else full_scope
+          ) in
+           let included_items=List.filter(
+             fun y->y.Assistance_ocaml_gsyntax_item.name=chosen_scope
+           ) maybe_included_items in
+           let renamed_included_items=Assistance_image.image 
+           (Assistance_ocaml_gsyntax_item.include_in_new_scope full_scope )
+           included_items in
+           (List.rev_append renamed_included_items graet,current_full_scope,current_names);;
+     
+  let first_pusher_for_modulename_prepension_and_inclusion_expansion  
+     walker_state x=
+     let (graet,current_full_scope,current_names)=walker_state in
+    match x.Assistance_ocaml_gsyntax_item.category with
+      Assistance_ocaml_gsyntax_category.Value                                                                          
+    | Assistance_ocaml_gsyntax_category.Type
+    | Assistance_ocaml_gsyntax_category.Exception->
+            let new_x=Assistance_ocaml_gsyntax_item.prepend_prefix current_full_scope x in
+            (new_x::graet,current_full_scope,current_names)
+    | Assistance_ocaml_gsyntax_category.Module_opener->
+            let new_name=x.Assistance_ocaml_gsyntax_item.name in
+            let new_names=current_names@[new_name] in
+            let new_full_scope=String.concat "." new_names in
+            (graet,new_full_scope,new_names)
+    | Assistance_ocaml_gsyntax_category.Module_closer->
+            let new_names=List.rev(List.tl(List.rev(current_names))) in
+            let new_full_scope=String.concat "." new_names in
+            (graet,new_full_scope,new_names)
+    | Assistance_ocaml_gsyntax_category.Module_inclusion->
+           module_inclusion_in_pusher (graet,current_full_scope,current_names) x;;
+  
+  exception Pusher23_exn;;
+  
+  let pusher_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober)=
+     match da_ober with
+     []->raise(Pusher23_exn)
+     |x::peurrest->(first_pusher_for_modulename_prepension_and_inclusion_expansion 
+     walker_state x,peurrest);;    
+  
+           
+  let rec iterator_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober)=
+     if da_ober=[] 
+     then let  (graet,_,_)=walker_state in List.rev graet
+     else iterator_for_modulename_prepension_and_inclusion_expansion(
+       pusher_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober));; 
+  
+  
+  let prepend_modulenames_and_expand_inclusions data_before (current_module,l)=
+      iterator_for_modulename_prepension_and_inclusion_expansion 
+        ((data_before,current_module,String.split_on_char '.' current_module),l);;
+  
+  end;;
+  
+  exception Reading_error of Assistance_absolute_path.t * string;;
+  
+  let read_ocaml_files l_ap=
+     let temp1=Assistance_image.image( fun ap->
+     let s_ap=Assistance_absolute_path.to_string ap
+     and text=Assistance_io.read_whole_file ap in
+     let unpointed=Assistance_cull_string.before_rightmost s_ap '.' in
+     let module_name=String.capitalize_ascii (Assistance_cull_string.after_rightmost unpointed '/') in
+     try (module_name,Assistance_pre_read_ocaml_files.pre_read text)  with
+     Assistance_pre_read_ocaml_files.Pre_read_exn(t)->raise(Reading_error(ap,t)) 
+     ) l_ap in 
+     List.fold_left Private.prepend_modulenames_and_expand_inclusions [] temp1;;
+     
+     
+  (*
+  
+  let g1=German_wrapper.data();;
+  let g2=List.filter Modulesystem_data.ml_present g1;;
+  let g3=List.flatten (image Modulesystem_data.acolytes g2);;
+  let g4=List.filter (fun mlx->snd(Mlx_filename.decompose mlx)=Ocaml_ending.ml) g3;;
+  let g5=image Mlx_filename.to_absolute_path g4;;
+  
+  let g6=read3 g5;;
+  
+  
+  let g6=image (fun ap->let s=Io.read_whole_file ap in
+    (-(String.length s),(ap,s))
+  ) g5 ;;
+  let g7=image snd (ofo(Tidel2.diforchan g6));;
+  let g8=Explicit.image (fun (ap,s)->(ap,read2 s)) g7;;
+  let g9=Explicit.image (fun (ap,l)->
+    from_level2_to_level3 ([],"Moody") l
+  ) g8;;
+  
+  *)
+  
+    
+  (*  
+  
+  let s1="let jiving=234  ;;";;
+  describe_value_item s1 (1,String.length s1);;
+  
+  let s2="type ('a,'b) sister=('a list)*'b*string;;";;
+  describe_type_item s2 (1,String.length s2);;
+  
+  let s3="type sister=(int list)*float*string;;";;
+  describe_type_item s3 (1,String.length s3);;
+  
+  let s4="exception Foobar of string*int;;";;
+  describe_exception_item s4 (1,String.length s4);;
+  
+  let s5="exception Foobar;;";;
+  describe_exception_item s5 (1,String.length s5);;
+  
+  let s6="module  Foobar=struct";;
+  describe_module_opener_item s6 (1,String.length s6);;
+  
+  let s7="end\n;;";;
+  describe_module_opener_item s7 (1,String.length s7);;
+  
+  let s8="include Leap\n;;";;
+  describe_module_inclusion_item s8 (1,String.length s8);;
+     
+  *)   
+     
+       
+                
+
+end;;
+
+
+
+
+
+
+module Assistance_rename_moduled_value_in_file=struct
+
+(*
+
+#use"lib/Ocaml_analysis/rename_moduled_value_in_file.ml";;
+
+*)
+
+exception No_module_given of string;;
+exception No_value_with_name of string;;
+
+let rename_moduled_value_in_file preceding_files old_name new_name path=
+   let j_opt=Assistance_substring.leftmost_index_of_in_from_opt "." old_name 1 in
+   if j_opt = None
+   then raise(No_module_given(old_name))
+   else 
+   let j = Option.get j_opt in  
+   let module_name=Assistance_cull_string.beginning (j-1) old_name in
+   let temp3=Assistance_read_ocaml_files.read_ocaml_files preceding_files in
+   let opt_temp4=List.find_opt (fun itm->
+     (itm.Assistance_ocaml_gsyntax_item.name)=old_name
+   ) temp3 in
+   if opt_temp4=None
+   then raise(No_value_with_name(old_name))
+   else
+   let temp4=Option.get(opt_temp4) in
+   let (i1,j1)=temp4.Assistance_ocaml_gsyntax_item.interval_for_name in
+   let _=Assistance_replace_inside.overwrite_at_intervals_inside_file [(i1,j1),new_name] path in
+   let temp3_again=Assistance_read_ocaml_files.read_ocaml_files preceding_files in
+   let beheaded_name=Assistance_cull_string.cobeginning j old_name in
+   let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
+   (Assistance_cull_string.before_rightmost beheaded_name '.',new_name) in
+   let new_beheaded_name=s_new_beheaded_name in
+   let s_new_full_name=module_name^"."^s_new_beheaded_name in
+   let temp4_again=List.find (fun itm->
+     (itm.Assistance_ocaml_gsyntax_item.name)=s_new_full_name
+   ) temp3_again in
+   let k1=Assistance_list_again.find_index_of_in temp4_again temp3_again in
+   let temp5=Assistance_list_again.long_tail k1 temp3_again in
+   let temp6=List.filter_map(
+      fun itm->
+        let txt=itm.Assistance_ocaml_gsyntax_item.content in
+        let ttemp7=Assistance_isolated_occurrences.of_in 
+           beheaded_name txt in
+        if ttemp7<>[]
+        then  let isoc=Assistance_isolated_occurrences.of_in beheaded_name txt in
+              let replacings=Assistance_image.image (fun p->(p,new_beheaded_name)) isoc in
+              let new_txt=Assistance_replace_inside.overwrite_at_intervals_inside_text
+                   replacings txt in
+             Some(itm.Assistance_ocaml_gsyntax_item.interval_for_content,new_txt)
+        else None   
+   ) temp5 in
+   Assistance_replace_inside.overwrite_at_intervals_inside_file temp6 path;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_cartesian=struct
+
+(*
+
+#use"lib/cartesian.ml";;
+
+*) 
+
+let product a b=
+if (a=[])||(b=[]) then [] else
+let rec sub_f=(function
+(accu,variable_a,constant_b)->match variable_a with
+[]->List.rev(accu)
+|u::v->sub_f(List.rev_append(List.rev(List.rev_map(function t->(u,t))(constant_b)))
+(accu),v,constant_b)
+) in
+sub_f([],a,b);;
+
+let square x=product x x;;
+
+let tproduct a b c=List.rev_map(function ((x,y),z)->(x,y,z))
+(List.rev(product(product(a)(b))(c)));;
+
+let pproduct a b c d=List.rev_map(function ((x,y,z),t)->(x,y,z,t))
+(List.rev(product(tproduct a b c)(d)));;
+
+let qproduct a b c d e=List.rev_map(function ((x,y,z,t),u)->(x,y,z,t,u))
+(List.rev(product(pproduct a b c d)(e)));;
+
+let cube x=tproduct x x x;;
+
+let fourth_power x=pproduct x x x x;;
+
+let fifth_power x=qproduct x x x x x;;
+
+let general_product x=
+let rec sub_f=(function
+([],accu)->accu
+|(a::b,accu)->sub_f(b,List.rev_map(function (x,l)->x::l)(List.rev(product(a)(accu)))))
+in
+sub_f(List.rev(x),[[]]);;
+
+let power x n=general_product (Assistance_int_range.scale (fun _j->x) 1 n);;
+             
+
+end;;
+
+
+
+
+
+
+module Assistance_compilation_mode_t=struct
+
+(* 
+
+#use"lib/Compilation_management/compilation_mode_t.ml";;
+
+*)
+
+
+type t=
+   Usual
+  |Debug
+  |Executable;;
+
+   
+
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_dfn_middle=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfn_middle.ml";;
+
+*)
+
+module Private = struct 
+
+  let of_concrete_object crobj =
+     let (_,(arg1,arg2,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant crobj in 
+     Assistance_dfn_middle_t.J(
+        Assistance_dfa_subdirectory.of_concrete_object arg1,
+        Assistance_dfa_module.of_concrete_object arg2
+     );;
+  
+  let to_concrete_object (Assistance_dfn_middle_t.J(s,m))=
+     Assistance_concrete_object_t.Variant("Dfn_"^"middle_t.J",
+       [
+         Assistance_dfa_subdirectory.to_concrete_object s;
+         Assistance_dfa_module.to_concrete_object m;
+       ]
+     ) ;;
+end ;; 
+  
+let of_concrete_object = Private.of_concrete_object ;; 
+let rename_endsubdirectory 
+   (old_subdir,new_subdirname) 
+      (Assistance_dfn_middle_t.J(s,m))=
+   Assistance_dfn_middle_t.J(
+   		(Assistance_dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
+         m
+	    );; 
+
+let rename_module (m1,m2) middle =
+  let (Assistance_dfn_middle_t.J(s,m)) = middle in 
+  if m = m1 
+  then Assistance_dfn_middle_t.J(s,m2)
+  else middle;;       
+let to_concrete_object = Private.to_concrete_object ;;   
+let to_line (Assistance_dfn_middle_t.J(s,m)) = (Assistance_dfa_subdirectory.connectable_to_subpath s)^ (Assistance_dfa_module.to_line m);;
+let to_module (Assistance_dfn_middle_t.J(_s,m))=m;;
+
+end;;
+
+
+
+
+
+
+module Assistance_compilation_mode=struct
+
+(* 
+
+#use"lib/Compilation_management/compilation_mode.ml";;
+
+*)
+
+exception Ending_for_last_module_exn ;; 
+exception Ending_for_nonlast_module_exn ;; 
+
+let workspace = function 
+    Assistance_compilation_mode_t.Usual->Assistance_coma_constant.usual_build_subdir
+   |Assistance_compilation_mode_t.Debug->Assistance_coma_constant.debug_build_subdir
+   |Assistance_compilation_mode_t.Executable->Assistance_coma_constant.exec_build_subdir;;
+
+let ending_for_last_module = function 
+    Assistance_compilation_mode_t.Usual-> raise(Ending_for_last_module_exn)
+   |Assistance_compilation_mode_t.Debug->".cmo"
+   |Assistance_compilation_mode_t.Executable->".ml";;
+
+let ending_for_nonlast_module = function 
+   Assistance_compilation_mode_t.Usual-> raise(Ending_for_nonlast_module_exn)
+   |Assistance_compilation_mode_t.Debug->".cmo"
+   |Assistance_compilation_mode_t.Executable->".cmx";;
+                     
+let executioner = function 
+   Assistance_compilation_mode_t.Usual->"ocamlc -bin-annot "
+   |Assistance_compilation_mode_t.Debug->"ocamlc -g "
+   |Assistance_compilation_mode_t.Executable->"ocamlopt ";;
+
+let ending_for_final_product = function 
+   Assistance_compilation_mode_t.Usual->""
+   |Assistance_compilation_mode_t.Debug->".ocaml_debuggable "
+   |Assistance_compilation_mode_t.Executable->".ocaml_executable ";;
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_ocaml_ending_t=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfa_ocaml_ending_t.ml";;
+
+*)
+
+type t=Ml |Mli |Mll |Mly;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dfa_ocaml_ending=struct
+
+(*
+
+#use"lib/Decomposed_filename/dfa_ocaml_ending.ml";;
+
+*)
+
+
+
+
+exception Not_an_ocaml_ending of string;;
+
+module Private = struct
+
+let to_string = function 
+   Assistance_dfa_ocaml_ending_t.Mll ->  "mll"
+  | Assistance_dfa_ocaml_ending_t.Mly -> "mly"
+  | Assistance_dfa_ocaml_ending_t.Ml ->  "ml"
+  | Assistance_dfa_ocaml_ending_t.Mli ->  "mli" ;; 
+
+
+let capitalized_correspondances = Assistance_image.image (fun cml_edg->
+    (cml_edg,to_string cml_edg)
+   ) [
+   Assistance_dfa_ocaml_ending_t.Mll ;  
+   Assistance_dfa_ocaml_ending_t.Mly ; 
+   Assistance_dfa_ocaml_ending_t.Ml  ; 
+   Assistance_dfa_ocaml_ending_t.Mli 
+ ];;
+
+end ;;
+
+let all = Assistance_image.image fst Private.capitalized_correspondances ;;
+
+let of_ending (Assistance_dfa_ending_t.E(e)) = 
+   match List.find_opt (fun (_cml_edg,e2)->e2=e) Private.capitalized_correspondances with 
+   None -> raise(Not_an_ocaml_ending(e)) 
+   |(Some(cml_edg,_)) -> cml_edg ;; 
+   
+   
+let of_concrete_object =Assistance_concrete_object.unwrap_lonely_variant 
+   Private.capitalized_correspondances;;
+           
+let to_concrete_object =Assistance_concrete_object.wrap_lonely_variant 
+   Private.capitalized_correspondances;;    
+ 
+let to_ending cml_edg = Assistance_dfa_ending_t.E(Private.to_string cml_edg) ;;   
+
+end;;
+
+
+
+
+
+
+module Assistance_find_suitable_ending=struct
+
+(*
+
+#use"lib/find_suitable_ending.ml";;
+
+*)
+
+(*
+
+Note that the order in Ocaml_ending.correspondances is important
+
+*)
+
+exception No_suitable_location of Assistance_dfa_root_t.t*(Assistance_dfa_subdirectory_t.t list)*string;;
+
+let find_file_location dir l_subdir old_x=
+  let x=String.uncapitalize_ascii old_x in
+  let s_dir=Assistance_dfa_root.connectable_to_subpath(dir) in
+  let original_endings=Assistance_image.image Assistance_dfa_ending.connectable_to_modulename Assistance_dfa_ending.all_ocaml_endings in
+  let endings=(
+     if List.exists (fun edg->String.ends_with ~suffix:edg x) original_endings
+     then [""]
+     else original_endings
+  ) in
+  let temp1=Assistance_cartesian.product(l_subdir) endings in
+  let tempf=(fun (sd,edg)->
+  	let s1=s_dir^(Assistance_dfa_subdirectory.connectable_to_subpath sd)^x^edg in
+  	if Sys.file_exists s1
+  	then Some(Assistance_absolute_path.of_string s1)
+  	else None
+  ) in
+  let opt=List.find_map tempf temp1 in
+  if opt=None
+  then raise(No_suitable_location(dir ,l_subdir,x))
+  else  Option.get(opt);;           
+
+end;;
+
+
+
+
+
+
+module Assistance_memoized=struct
+
+(*
+
+#use"lib/memoized.ml";;
+
+*) 
+type ('a,'b) map=('a->'b);;
+
+let make_from (f:'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)=
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let y=f(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  (memoized_f:>('a,'b) map);;
+
+let make (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  make_from f a_hashtbl_for_f;;
+  
+let recursive_from=((fun (big_f:('a->'b)->'a->'b) (a_hashtbl_for_f:('a,'b) Hashtbl.t)->
+  let rec memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let mf=(memoized_f:>('a->'b)) in
+          let y=big_f(mf)(x) in
+          let ()=(Hashtbl.add(a_hashtbl_for_f) x y) in
+          y
+  ) in
+  memoized_f):>(('a->'b)-> 'a -> 'b) -> (('a,'b) Hashtbl.t) -> ('a, 'b) map);;
+
+let recursive (big_f:('a->'b)->'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) in
+  recursive_from big_f a_hashtbl_for_f;;
+
+let small f initial_value=
+  recursive(fun old_f k->if k<1 then initial_value else f(old_f(k-1)));;
+  
+let reversible (f:'a->'b)=
+  let a_hashtbl_for_f=Hashtbl.create(100) 
+  and a_hashtbl_for_the_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_second_inverse_of_f=Hashtbl.create(100)
+  and a_hashtbl_for_the_projector=Hashtbl.create(50) 
+  and irreducibles=ref([]) 
+  and minimal_reductions=ref([]) in
+  let compute_f=(fun x accu->
+     let y=f(x) in
+     let ()=(Hashtbl.add(a_hashtbl_for_f) x y;accu:=[y]) in
+      if Hashtbl.mem(a_hashtbl_for_the_second_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x)
+     else     
+     if Hashtbl.mem(a_hashtbl_for_the_inverse_of_f)(y)
+     then let old_x=Hashtbl.find(a_hashtbl_for_the_inverse_of_f)(y) in
+          (Hashtbl.add(a_hashtbl_for_the_projector)(x)(old_x);
+          Hashtbl.add(a_hashtbl_for_the_second_inverse_of_f)(y)(x);
+          minimal_reductions:=(x,old_x)::(!minimal_reductions))
+     else (Hashtbl.add(a_hashtbl_for_the_inverse_of_f)(y)(x);
+            irreducibles:=x::(!irreducibles))
+     
+  ) in
+  let memoized_f=(fun x->
+     if Hashtbl.mem(a_hashtbl_for_f)(x)
+     then Hashtbl.find(a_hashtbl_for_f)(x)
+     else let accu=ref([]) in
+          let _=compute_f(x)(accu) in
+          List.hd(!accu)
+  ) 
+  and memoized_inverse_of_f=Hashtbl.find(a_hashtbl_for_the_inverse_of_f) in
+  let memoized_projector=(fun x->
+    let ()=compute_f(x)(ref[]) in
+    if Hashtbl.mem(a_hashtbl_for_the_projector)(x)
+    then Hashtbl.find(a_hashtbl_for_the_projector)(x)
+    else x
+    ) in
+  (memoized_f,memoized_inverse_of_f,memoized_projector,irreducibles,minimal_reductions);;
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_set_of_polys_t=struct
+
+(* 
+
+#use"lib/Ordered_Lists/set_of_polys_t.ml";;
+
+*)
+
+type 'a t=S of 'a list;;
+
+
+end;;
+
+
+
+
+
+
+module Assistance_set_of_polys=struct
+
+(* 
+
+#use"lib/Ordered_Lists/set_of_polys.ml";;
+
+*)
+
+let tr = ((fun x->Assistance_set_of_polys_t.S(x)),(fun (Assistance_set_of_polys_t.S(x))->x),Assistance_total_ordering.standard);;
+
+let does_not_intersect x y= Assistance_functor_for_sets.does_not_intersect tr x y;;
+let empty_set = Assistance_functor_for_sets.empty_set tr;;
+let fold_merge l= Assistance_functor_for_sets.fold_merge tr l;;
+let forget_order x= Assistance_functor_for_sets.forget_order tr x;;
+let hd x = Assistance_functor_for_sets.hd tr x;;
+let image f x= Assistance_functor_for_sets.image tr f x;;
+let insert a x= Assistance_functor_for_sets.insert tr a x;;
+let is_included_in x y= Assistance_functor_for_sets.is_included_in tr x y;;
+let length x= Assistance_functor_for_sets.length tr x;;
+let mem a x= Assistance_functor_for_sets.mem tr a x;;
+let merge l= Assistance_functor_for_sets.merge tr l;;
+let nmem a x= Assistance_functor_for_sets.nmem tr a x;;
+let outsert a x= Assistance_functor_for_sets.outsert tr a x;;
+let safe_set l= Assistance_functor_for_sets.safe_set tr l;;
+let setminus x y= Assistance_functor_for_sets.setminus tr x y;;
+let singleton a= Assistance_functor_for_sets.singleton tr a;;
+let sort l= Assistance_functor_for_sets.sort tr l;;
+let unsafe_set l= Assistance_functor_for_sets.unsafe_set tr l;;
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_reconstruct_linear_poset=struct
+
+(*
+
+#use"lib/reconstruct_linear_poset.ml";;
+
+Computes the (canonical) maximal acyclic sub-poset of a given poset, returns
+it as a list L where each element of L is a triple (a,anc_a,a_is_clean)
+where anc_a is the list of all ancestors of a, ordered as in L, and a_is_clean
+is a boolean indicating if a is the ancestor or a descendant of an "active"
+element.
+
+Also returns a (non-canonical,non-exhaustive) set of cycles.
+
+
+*)
+
+
+let iterator coat 
+  (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt1)=
+    (* 
+    between is a "chained" list of pairs (x1,x2),(x2,x3), ...
+    (stocked in reverse actually)
+    that will possibly lead to a cycle
+    *)
+    if opt1<>None then ([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],[],opt1) else
+    if (between,not_yet_checked)=([],[]) 
+    then ([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],[],
+          Some(cycles,Assistance_list_again.rev_map (fun (z,p)->(z,fst p)) checked)) 
+    else
+    let a=
+    	  (if between=[] 
+    	   then List.hd(not_yet_checked)
+           else snd(List.hd(between))
+          ) in
+    let not_yet_checked2=List.filter (fun z->z<>a) not_yet_checked in
+    let coat_a=coat(a) in
+    let coatoms_of_a=Assistance_set_of_polys.safe_set(coat_a) in
+    let temp1=Assistance_set_of_polys.setminus coatoms_of_a checked_union in
+    if Assistance_set_of_polys.length(temp1)=0
+    then let temp3=coatoms_of_a::(Assistance_image.image (fun z->snd(List.assoc z checked)) 
+                      (coat_a)) in
+         let ordered_set_version=Assistance_set_of_polys.fold_merge(temp3) in
+         let temp4=List.filter_map (
+           fun (b,_)->if Assistance_set_of_polys.mem b ordered_set_version
+             then Some(b)
+             else None
+         ) checked in
+         let list_version=List.rev(temp4) in
+         let data_for_a=(list_version,ordered_set_version) in
+         ((a,data_for_a)::checked,Assistance_set_of_polys.insert a checked_union,
+         cycles,cycles_union,[],not_yet_checked2,None)
+    else
+    if Assistance_set_of_polys.mem a temp1
+    then ([],Assistance_set_of_polys.empty_set,[a]::cycles,Assistance_set_of_polys.insert a cycles_union,
+         [],not_yet_checked2,None) 
+    else 
+    if (not(Assistance_set_of_polys.does_not_intersect temp1 cycles_union))
+    then (checked,checked_union,cycles,Assistance_set_of_polys.insert a cycles_union,
+         [],not_yet_checked2,None) 
+    else 
+    (*see if we can close the cycle *)
+    match List.find_opt(fun (x,_y)->Assistance_set_of_polys.mem x temp1) between with
+     None->(checked,checked_union,cycles,cycles_union,
+     		(a,Assistance_set_of_polys.hd temp1)::between,not_yet_checked,None)
+    |Some(p)->
+        let (before,_,_after)=Assistance_three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
+        let temp2=Assistance_image.image fst before in
+        let new_cycle=(fst p)::(temp2@[a]) in
+        let ordered_cycle=Assistance_set_of_polys.sort new_cycle in
+        let not_yet_checked3=List.filter (fun z->Assistance_set_of_polys.nmem z ordered_cycle) not_yet_checked in
+        (checked,checked_union,new_cycle::cycles,
+        Assistance_set_of_polys.merge ordered_cycle cycles_union,
+        [],not_yet_checked3,None);;
+
+let reconstruct_linear_poset coat l=
+  let rec tempf=(fun
+  (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt)->
+    if opt<>None
+    then Option.get opt
+    else tempf(iterator coat 
+    (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt))
+    ) in
+    tempf([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],l,None);;
+    
+(*
+
+let sugar i=
+   if (i<4)||(i>20) then [] else
+   if i=11 then [5] else [i+1];;
+    
+reconstruct_linear_poset sugar (Int_range.range 1 30);;  
+
+let some_edges=
+  [
+    (1,4);(1,16);(2,6);(2,7);(3,16);(7,11);(7,19);(8,11);(8,15);(9,19);
+    (10,1);(10,18);(11,2);(12,16);(13,5);(15,13);(16,17);(17,10);(17,14);(19,20);
+    (20,21);(21,9)
+  
+  ];;
+
+let brown j=image fst (List.filter (fun x->snd(x)=j) some_edges);;
+
+reconstruct_linear_poset brown (Int_range.range 1 21);;  
+
+
+*)
+ 
+    
+    
+    
+               
+
+end;;
+
+
+
+
+
+
+module Assistance_ordered_misc=struct
+
+(* 
+
+#use"lib/Ordered_Lists/ordered_misc.ml";;
+
+*)
+
+module Private = struct 
+
+  let oi = Assistance_total_ordering.for_integers ;;
+
+  let rec helper_for_maximal_elts_wrt_inclusion (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+       if List.exists (fun b->
+         (b<>a) && ( Assistance_ordered.is_included_in oi a b) ) others
+       then helper_for_maximal_elts_wrt_inclusion (already_treated,others)
+       else 
+        let temp1 = List.filter (fun b->
+           not(Assistance_ordered.is_included_in oi b a)) others in
+        helper_for_maximal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
+
+  let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+       if List.exists (fun b->
+         (b<>a) && ( Assistance_ordered.is_included_in oi b a) ) others
+       then helper_for_minimal_elts_wrt_inclusion (already_treated,others)
+       else 
+        let temp1 = List.filter (fun b->
+           not(Assistance_ordered.is_included_in oi a b)) others in
+        helper_for_minimal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
+
+  let rec helper_for_minimal_transversals (already_treated,to_be_treated) =
+    match to_be_treated with 
+    [] -> List.rev already_treated 
+    | a :: others ->
+      let temp1 = Assistance_cartesian.product a already_treated in 
+      let temp2 = Assistance_image.image (fun (x,y)->Assistance_ordered.insert oi x y) temp1 in 
+      let temp3 = helper_for_minimal_elts_wrt_inclusion ([],temp2) in 
+      helper_for_minimal_transversals (temp3,others) ;;        
+
+  let power_set_for_intset x =
+     Assistance_ordered.sort (Assistance_total_ordering.silex_compare oi) (Assistance_list_again.power_set x) ;; 
+
+  let rec helper_for_int_upwards_filter (f,treated,to_be_treated) = 
+     match to_be_treated with 
+     [] -> List.rev treated 
+     | a::others ->
+         if f a 
+         then let remaining_ones = List.filter (
+                fun b->not(Assistance_ordered.is_included_in oi a b)
+              ) to_be_treated in 
+              helper_for_int_upwards_filter (f,a::treated,remaining_ones)
+         else helper_for_int_upwards_filter (f,treated,others) ;;    
+
+  let naive_minimal_elts_in_int_upwards_filter f base =
+    let pb = power_set_for_intset base in 
+    helper_for_int_upwards_filter (f,[],pb) ;;     
+
+  let minimal_elts_in_int_upwards_filter f base =
+     let indispensable_ones = List.filter (
+       fun x->(not(f(Assistance_ordered.outsert oi x base)))
+     ) base in 
+     let dispensable_ones = Assistance_ordered.setminus oi base indispensable_ones in 
+     let pullbacked_f = (fun y->f(Assistance_ordered.merge oi indispensable_ones y)) in 
+     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f dispensable_ones in 
+     Assistance_image.image (Assistance_ordered.merge oi indispensable_ones) temp1 ;;
+
+  (*   
+  let base0 = Ennig.ennig 1 5 ;;
+  let f0 y= List.exists (fun x->Ordered.is_included_in oi x y) [[1;2;3];[3;4;5]] ;;
+  let res0 = minimal_elts_in_int_upwards_filter f0 base0 ;;
+  *)
+
+  let minimal_elts_in_upwards_filter f base =
+     let get_one = (fun k->List.nth base (k-1)) in 
+     let get_several = Assistance_image.image get_one in 
+     let n = List.length base 
+     and normalized_f = (fun indices ->f(get_several indices)) in 
+     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_int_range.range 1 n) in 
+     Assistance_image.image get_several temp1 ;;
+
+let commonest_elements ord ll = 
+      let temp1 = Assistance_ordered.fold_merge ord ll in 
+      let (_,temp2) = Assistance_max.maximize_it_with_care (
+        fun y->List.length(List.filter (Assistance_ordered.mem ord y) ll)
+      ) temp1 in 
+      temp2;; 
+
+
+let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
+   if to_be_treated = [] 
+   then (List.rev history,treated)
+   else
+   let temp1 = commonest_elements oi to_be_treated in 
+   let a = List.hd temp1 in 
+   helper_for_greedy_transversal(temp1::history,Assistance_ordered.insert oi a treated,
+     List.filter (fun x->not(Assistance_ordered.mem oi a x)) to_be_treated) ;;  
+
+ let greedy_transversal ll =
+  helper_for_greedy_transversal ([],[],ll) ;;
+   
+let generated_algebra_for_two ord x y = 
+  let setminus = Assistance_ordered.setminus ord 
+  and intersect = Assistance_ordered.intersect ord in 
+  List.filter (fun z->z<>[])
+    [setminus x y;intersect x y;setminus y x] ;;
+
+let rec find_atom intersect candidate testers = 
+  match List.find_map ( 
+    fun x -> 
+      let y = intersect x candidate in 
+      if (y<>[])&&(y<>candidate)
+      then Some y 
+      else None  
+  ) testers with
+  None -> candidate 
+  | Some better_candidate ->
+     find_atom intersect better_candidate testers ;;
+
+
+let rec helper_for_generated_algebra 
+     (intersect,setminus) (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> treated 
+  |elt :: _ ->
+    let new_atom = find_atom intersect elt to_be_treated in 
+    let to_be_treated2 = List.filter_map (
+      fun x -> 
+        let y = setminus x new_atom in 
+        if y<>[]
+        then Some y 
+        else None  
+    ) to_be_treated in 
+    helper_for_generated_algebra 
+    (intersect,setminus) (new_atom::treated,to_be_treated2) ;;
+
+let generated_algebra ord l = 
+  let intersect = Assistance_ordered.intersect ord 
+  and setminus = Assistance_ordered.setminus ord in 
+  Assistance_ordered.sort (Assistance_total_ordering.silex_compare ord)(
+  helper_for_generated_algebra 
+    (intersect,setminus) ([],l)) ;; 
+
+(*
+
+generated_algebra Total_ordering.for_integers 
+ [[1;3;5;72;73];[2;3;6;72;73];[4;5;6;72;73]] ;; 
+
+*)
+
+end ;;        
+
+
+let commonest_elements = Private.commonest_elements ;;
+
+let generated_algebra = Private.generated_algebra ;;
+
+let greedy_transversal = Private.greedy_transversal ;;
+
+let maximal_elts_wrt_inclusion l= 
+  Private.helper_for_maximal_elts_wrt_inclusion ([],l) ;;
+
+let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
+
+let minimal_elts_wrt_inclusion l= 
+  Private.helper_for_minimal_elts_wrt_inclusion ([],l) ;;
+
+  
+let minimal_transversals l= 
+  match l with 
+  [] -> []
+  | a:: others ->
+    let starter = Assistance_image.image (fun x->[x]) a in    
+  Private.helper_for_minimal_transversals (starter,others) ;;  
+  
+
+let reorder_list_of_pairs_using_list_of_singles pairs singles =
+  let idx=Assistance_memoized.make(fun x->
+     Assistance_list_again.find_index_of_in x singles   
+  ) in 
+  let ordr = (fun x1 x2 -> Assistance_total_ordering.for_integers (idx x1) (idx x2)) in 
+  let ordr2 = Assistance_total_ordering.product ordr Assistance_total_ordering.standard in 
+  Assistance_ordered.sort ordr2 pairs ;;
+
+(*
+
+reorder_list_of_pairs_using_list_of_singles (Ennig.doyle( fun t->(t,t+100)) 1 8)
+[2;5;3;6;4;7;1;8] ;;
+*)
+
+
+let translate_at_level_two ll translation=
+  Assistance_image.image (
+    fun l->Assistance_ordered.merge Assistance_total_ordering.for_integers l translation
+  ) ll ;;
+
+
+let underline_new_elements ord old_set possibly_new_elts =
+  let new_elts = Assistance_ordered.setminus ord possibly_new_elts old_set in 
+  let new_whole = Assistance_ordered.merge ord old_set new_elts in 
+  let temp1 = Assistance_image.image (fun x->(x,List.mem x new_elts)) new_whole in 
+  let temp2 = Assistance_hurried.connected_components snd temp1 in 
+  Assistance_image.image (fun part -> (Assistance_image.image fst part,snd(List.hd part)) ) temp2;;
+
+(*
+
+underline_new_elements Total_ordering.standard 
+ [1; 2;  5; 7; 8;  11; 13; 14; 16; 17; 19; 20]
+ [3;4; 6; 9;10; 12; 15; 18; 21] ;;
+
+*)
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_option_again=struct
+
+(*
+
+#use"lib/option_again.ml";;
+
+*) 
+
+ 
+let argument_on_the_right f x opt_y=match opt_y with
+  None->x
+  |Some(y)->f x y;;
+
+
+
+
+
+
+ 
+
+
+end;;
+
+
+
+
+
+
+module Assistance_no_slashes=struct
+
+(*
+
+#use"lib/no_slashes.ml";;
+
+*)
+
+type t=NS of string;;
+
+exception Slash_at of string*int;;
+
+let to_string(NS s)=s;;
+
+let of_string s=
+  let n=String.length s in
+  let rec tempf=(fun i->
+  if i>n
+  then NS s
+  else if (String.get s (i-1))='/'
+       then raise(Slash_at(s,i))
+       else tempf(i+1)
+  ) in
+  tempf 1;;
+  
+           
+
+end;;
+
+
+
+
+
+
+module Assistance_dircopy_diff_t=struct
+
+(*
+
+#use"lib/dircopy_diff_t.ml";;
+
+*)
+
+type t={
+   recently_deleted : Assistance_dfn_rootless_t.t list;
+   recently_changed : Assistance_dfn_rootless_t.t list;
+   recently_created : Assistance_dfn_rootless_t.t list;
+};;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_dircopy_diff=struct
+
+(*
+
+#use"lib/dircopy_diff.ml";;
+
+*)
+
+module Private=struct
+
+let summarize_rootless_path rl=
+   if List.mem (Assistance_dfn_rootless.to_ending rl) Assistance_dfa_ending.endings_for_compilable_files
+   then String.capitalize_ascii(Assistance_cull_string.after_rightmost 
+   (Assistance_cull_string.before_rightmost_possibly_all (Assistance_dfn_rootless.to_line rl) '.') '/')
+   else Assistance_dfn_rootless.to_line rl;;
+ 
+let summarize_rootless_path_list  l=
+    let temp1=Assistance_image.image summarize_rootless_path l in
+    Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp1;;
+
+    
+
+let salt = "Dircopy_"^"diff_t.";;
+
+let recently_deleted_label = salt ^ "recently_deleted";;
+let recently_changed_label = salt ^ "recently_changed";;
+let recently_created_label = salt ^ "recently_created";;
+
+let of_concrete_object ccrt_obj = 
+   let g=Assistance_concrete_object.get_record ccrt_obj in
+   {
+      Assistance_dircopy_diff_t.recently_deleted = Assistance_dfn_rootless.list_of_concrete_object (g recently_deleted_label);
+      recently_changed = Assistance_dfn_rootless.list_of_concrete_object (g recently_changed_label);
+      recently_created = Assistance_dfn_rootless.list_of_concrete_object (g recently_created_label);
+   };; 
+
+let to_concrete_object dirdiff=
+   let items= 
+   [
+    recently_deleted_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_deleted;
+    recently_changed_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_changed;
+    recently_created_label, Assistance_dfn_rootless.list_to_concrete_object dirdiff.Assistance_dircopy_diff_t.recently_created;
+   ]  in
+   Assistance_concrete_object_t.Record items;;
+
+let is_empty x=
+  (x.Assistance_dircopy_diff_t.recently_deleted,x.Assistance_dircopy_diff_t.recently_created,x.Assistance_dircopy_diff_t.recently_changed)=
+   ([],[],[]);; 
+
+let to_string x=
+   if is_empty x then "{}" else 
+   let tempf=(fun msg l->
+   "\n"::msg::(Assistance_image.image(fun w->"\t\t"^(Assistance_dfn_rootless.to_line w)) l)
+   ) in
+   let temp1=tempf "Deleted : " (x.Assistance_dircopy_diff_t.recently_deleted)
+   and temp2=tempf "Created : " (x.Assistance_dircopy_diff_t.recently_created)
+   and temp3=tempf "Changed : " (x.Assistance_dircopy_diff_t.recently_changed) in
+   String.concat "\n" (temp1@temp2@temp3) ;;
+
+end;;
+
+
+
+let add_changes diff l= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_changed = (diff.Assistance_dircopy_diff_t.recently_changed)@ l;
+   };; 
+
+let constructor a b c={
+   Assistance_dircopy_diff_t.recently_deleted =a;
+   Assistance_dircopy_diff_t.recently_changed =b;
+   Assistance_dircopy_diff_t.recently_created =c;
+};;
+
+
+let create diff created_ones= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ created_ones;
+   };; 
+
+let destroy diff destroyed_ones= 
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ destroyed_ones;
+   };; 
+
+
+let empty_one  = 
+   {
+      Assistance_dircopy_diff_t.recently_deleted = [];
+      recently_changed = [];
+      recently_created = [];
+   };; 
+
+
+let explain  x=
+   let tempf=(fun (msg,l)->
+     if l=[]
+     then None
+     else Some(msg^" "^(String.concat "," l)^".")
+   ) in
+   let temp1=List.filter_map tempf
+   (* we use infinitives for github format *)
+   [
+     "Delete",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_deleted);
+     "Create",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_created);
+     "Modify",Private.summarize_rootless_path_list  (x.Assistance_dircopy_diff_t.recently_changed);
+   ] in
+   if temp1=[] then "" else
+   let temp2=(String.uncapitalize_ascii (List.hd temp1))::(List.tl temp1) in
+   String.concat " " temp2;; 
+   
+
+
+let is_empty = Private.is_empty ;;
+
+let of_concrete_object = Private.of_concrete_object ;;
+
+let print_out (fmt:Format.formatter) x=
+   Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
+
+
+let recently_deleted x=x.Assistance_dircopy_diff_t.recently_deleted;;
+let recently_created x=x.Assistance_dircopy_diff_t.recently_created;;
+let recently_changed x=x.Assistance_dircopy_diff_t.recently_changed;;
+
+
+
+let replace diff replacements= 
+   let l_deleted = Assistance_image.image fst replacements 
+   and l_created = Assistance_image.image snd replacements  in
+  {
+      diff with 
+      Assistance_dircopy_diff_t.recently_created = (diff.Assistance_dircopy_diff_t.recently_created)@ l_created;
+      Assistance_dircopy_diff_t.recently_deleted = (diff.Assistance_dircopy_diff_t.recently_deleted)@ l_deleted;
+   };; 
+
+
+let to_concrete_object = Private.to_concrete_object ;;   
+   
+   
+   
+              
+
+end;;
+
+
+
+
+
+
+module Assistance_coma_big_constant=struct
+
+(* 
+#use"lib/Compilation_management/coma_big_constant.ml";;
+*)
+
+let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
+let home = Sys.getenv "HOME" ;;
+
+module This_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/skeptical_duck");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Next_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Third_World=struct
+
+let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
+let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_file_small_details_t=struct
+
+(*
+
+#use"lib/Filewatching/fw_file_small_details_t.ml";;
+
+
+*)
+
+type t ={
+  used_modules : Assistance_dfa_module_t.t list ;
+  used_libraries : Assistance_ocaml_library_t.t list ;
+  has_printer : bool ;
+  modification_time : string ;
+};;
 
 
 end;;
@@ -5584,7 +10430,7 @@ end ;;
 let compute ap =
     let full_text = Assistance_io.read_whole_file ap in 
     let used_mods = Assistance_look_for_module_names.names_in_mlx_file ap in 
-    let snippets = Assistance_outside_comments_and_strings.good_substrings full_text in 
+    let snippets = Assistance_outside_ocaml_comments_and_strings.good_substrings full_text in 
     let printer_exists = List.exists (fun (_i,_j,subtext,_linenbr)->
            (Assistance_detect_printer_declaration_in_text.detect subtext)<>None 
          ) snippets  in 
@@ -6078,4522 +10924,6 @@ end;;
 
 
 
-module Assistance_compact_replacer_t=struct
-
-(*
-
-#use"lib/Text_editing/compact_replacer_t.ml";;
-
-*)
-
-type t= CR of (string*string) list ;;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_compact_replacer=struct
-
-(*
-
-#use"lib/Text_editing/compact_replacer.ml";;
-
-*)
-
-
-let separator = " \205\140 ";;
-
-let unparse (Assistance_compact_replacer_t.CR(l))=
-   let temp1 = List.flatten (Assistance_image.image (fun (x,y)->[x;y]) l)  in 
-   String.concat separator temp1 ;;
-
-let parse descr =
-   let temp1 = Str.split (Str.regexp_string separator) descr in 
-   let m = (List.length temp1)/2 in
-   let tg =(fun k->List.nth temp1 (k-1)) in  
-   Assistance_compact_replacer_t.CR(Assistance_int_range.scale (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
-
-let replace_inside_string (Assistance_compact_replacer_t.CR(l)) old_text =
-   Assistance_replace_inside.replace_several_inside_string l old_text ;;
-
-let replace_inside_file (Assistance_compact_replacer_t.CR(l)) fn =
-   Assistance_replace_inside.replace_several_inside_file l fn ;;
-
-let reverse_replace_inside_string (Assistance_compact_replacer_t.CR(old_l)) old_text =
-   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
-   Assistance_replace_inside.replace_several_inside_string l old_text ;;
-
-let reverse_replace_inside_file (Assistance_compact_replacer_t.CR(old_l)) fn =
-   let l = Assistance_image.image (fun (x,y)->(y,x)) old_l in 
-   Assistance_replace_inside.replace_several_inside_file l fn ;;
-
-let execute s=
-   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
-   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
-   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
-   and recipient = (List.nth temp2 1) in 
-   replace_inside_file (parse replacements) recipient ;;
-
-let reverse_execute s=
-   let temp1 = Str.split (Str.regexp "[ \t]+") s in 
-   let temp2 = Assistance_image.image Assistance_absolute_path.of_string  temp1 in 
-   let replacements = Assistance_io.read_whole_file (List.nth temp2 0) 
-   and recipient = (List.nth temp2 1) in 
-   reverse_replace_inside_file (parse replacements) recipient ;;   
-
-(*
-
-let z1 =  Compact_replacer_t.CR(["abc","def";"12","34"]) ;;  
-let z2 = unparse z1;;
-let z3 = parse z2;;
-let check = (z3=z1);;
-
-*)
-
-end;;
-
-
-
-
-
-
-module Assistance_unix_command=struct
-
-(*
-
-Wrapper on the Sys dot command function.
-
-#use"lib/unix_command.ml";;
-
-*)
-
-
-exception Command_failed of string;;
-exception Command_failed_just_now ;;
-
-module Private = struct
-
-let prefix_for_changing_directories         = "cd ";;
-let prefix_for_replacing_patterns           = "rp ";;
-let prefix_for_reverse_replacing_patterns   = "rvp ";;
-
-let accu=ref([]:string list);;
-let remember_commands_mode=ref(false);;
-let hardcore_mode=ref(false);;
-
-let command cmd=
-   let cd_prefix =prefix_for_changing_directories 
-   and rp_prefix =prefix_for_replacing_patterns 
-   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
-   if Assistance_supstring.begins_with cmd cd_prefix 
-   then let  _=Sys.chdir(Assistance_cull_string.cobeginning (String.length cd_prefix) cmd) in 0
-   else 
-   if Assistance_supstring.begins_with cmd rp_prefix 
-   then let  _= Assistance_compact_replacer.execute(Assistance_cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
-   else 
-   if Assistance_supstring.begins_with cmd rvp_prefix 
-   then let  _= Assistance_compact_replacer.reverse_execute(Assistance_cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
-   else 
-   Sys.command cmd;;
-
-
-let mild_uc s=
-   let i=command s in
-   let _=(
-   if i<>0
-   then (print_string ("Failed during "^s^"\n");flush stdout)
-   else (if (!remember_commands_mode) 
-               then accu:=s::(!accu))
-   ) in
-   i;;
-
-let hardcore_uc s=
-   let i=command s in
-   if i<>0
-   then raise(Command_failed(s))
-   else let _=(if (!remember_commands_mode) 
-               then accu:=s::(!accu)) in 
-        i;;
-
-let uc s=
-   if (!hardcore_mode)
-   then hardcore_uc s
-   else mild_uc s;;
-
-let debug_individual_uc (j,s) =
-    let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
-    let _=(print_string msg;flush stdout) in
-    let i = command s in 
-    if i<>0 
-    then raise(Command_failed_just_now)
-    else (print_string "Successful.\n";flush stdout);;
-
-let rec helper_for_debug_multiple_uc (j,l)=
-   match l with 
-   [] -> () 
-   |cmd :: other_cmds ->
-     let _ = debug_individual_uc (j,cmd) in 
-     helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
-
-
-end;;
-
-let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
-
-let rec conditional_multiple_uc commands=match commands with
-  []->true
-  |cmd1::other_commands ->
-    if (Private.uc cmd1)=0
-    then conditional_multiple_uc other_commands 
-    else false;;
-           
-let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           
-
-let hardcore_uc = Private.hardcore_uc ;;
-
-let mv full_path new_location =
-   let destination_equals_source=(
-     if not(Assistance_supstring.begins_with full_path new_location) then false else 
-     let naked_name=Assistance_cull_string.two_sided_cutting (new_location,"") full_path in 
-     not(String.contains naked_name '/') 
-   ) in 
-   if destination_equals_source 
-   then None 
-   else Some("mv "^full_path^" "^new_location);;
-
-let prefix_for_replacing_patterns           = Private.prefix_for_replacing_patterns;;
-let prefix_for_reverse_replacing_patterns   = Private.prefix_for_reverse_replacing_patterns;;
-
-
-let uc = Private.uc;;
-
-
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_transmit_change_to_github=struct
-
-(* 
-
-#use"lib/Githubbing/transmit_change_to_github.ml";;
-
-*)
-
-module Private = struct
-
-let commands_for_backup config diff=
-   if Assistance_dircopy_diff.is_empty diff
-   then ([],[])
-   else 
-   let source_dir = Assistance_fw_poly.root config 
-   and destination_dir = Assistance_fw_poly.dir_for_backup config in 
-   let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
-   let created_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_created diff) in
-   let temp2=Assistance_option.filter_and_unpack
-   (fun fn->
-     if String.contains fn '/'
-     then let dn=Assistance_cull_string.before_rightmost fn '/' in
-          Some("mkdir -p "^s_destination^dn)
-     else None 
-    ) created_ones in
-   let temp3=Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp2 in
-   let s_source=Assistance_dfa_root.connectable_to_subpath source_dir in
-   let temp4=Assistance_image.image(
-      fun fn->
-      "cp "^s_source^fn^" "^s_destination^(Assistance_cull_string.before_rightmost fn '/')
-   ) created_ones in
-   let changed_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_changed diff) in
-   let temp5=Assistance_image.image(
-      fun fn->
-      "cp "^s_source^fn^" "^s_destination^fn
-   ) changed_ones in
-   let temp6=Assistance_image.image(
-      fun fn->
-      "git -C "^s_destination^" add "^fn
-   ) (created_ones@changed_ones) in
-   let temp7=Assistance_image.image(
-      fun rl->
-      let fn = Assistance_dfn_rootless.to_line rl in 
-      "git -C "^s_destination^" rm "^fn
-   ) (Assistance_dircopy_diff.recently_deleted diff) in
-   let temp8= Assistance_image.image (
-     fun (replacer,replacee) ->
-       let s_replacer = Assistance_dfn_rootless.to_line  replacer 
-       and s_backup_dir = Assistance_dfa_root.connectable_to_subpath destination_dir in 
-       let s_full_path = s_backup_dir^(Assistance_dfn_rootless.to_line replacee) in 
-       Assistance_unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
-   ) (Assistance_fw_poly.encoding_protected_files config) in 
-   (temp3@temp4@temp5@temp8,temp6@temp7);;
-
-let backup_with_message config  diff msg=
-  let destination_dir = Assistance_fw_poly.dir_for_backup config in 
-  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
-  let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
-  let _=Assistance_image.image Assistance_unix_command.uc nongit_cmds in
-  let _=(
-  if Assistance_fw_poly.gitpush_after_backup config
-  then let cwd=Sys.getcwd() in
-       Assistance_image.image Assistance_unix_command.uc
-       (
-       [Assistance_unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git -C "^s_destination^" commit -m \""^msg^"\"";
-         "git -C "^s_destination^" push"
-       ]@
-       [Assistance_unix_command.cd cwd]
-       ) 
-  else let cwd=Sys.getcwd() in
-       Assistance_image.image Assistance_unix_command.uc
-       (
-       [Assistance_unix_command.cd s_destination]@   
-       git_cmds@   
-       [
-         "git -C "^s_destination^" commit -m \""^msg^"\""
-       ]@
-       [Assistance_unix_command.cd cwd]
-       ) 
-  ) in
-  ();;
-
-let backup config diff opt_msg=
-  if Assistance_dircopy_diff.is_empty diff
-  then (print_string "No recent changes to commit ...";flush stdout) 
-  else 
-  let msg=(
-   match opt_msg with
-    None->Assistance_dircopy_diff.explain diff
-   |Some(msg0)->msg0) in
-  backup_with_message config diff msg;;
-  
-end ;; 
-
-let backup config diff opt_msg=
-  Private.backup config diff opt_msg;;
-
-  
-  
-
-end;;
-
-
-
-
-
-
-module Assistance_cartesian=struct
-
-(*
-
-#use"lib/cartesian.ml";;
-
-*) 
-
-let product a b=
-if (a=[])||(b=[]) then [] else
-let rec sub_f=(function
-(accu,variable_a,constant_b)->match variable_a with
-[]->List.rev(accu)
-|u::v->sub_f(List.rev_append(List.rev(List.rev_map(function t->(u,t))(constant_b)))
-(accu),v,constant_b)
-) in
-sub_f([],a,b);;
-
-let square x=product x x;;
-
-let tproduct a b c=List.rev_map(function ((x,y),z)->(x,y,z))
-(List.rev(product(product(a)(b))(c)));;
-
-let pproduct a b c d=List.rev_map(function ((x,y,z),t)->(x,y,z,t))
-(List.rev(product(tproduct a b c)(d)));;
-
-let qproduct a b c d e=List.rev_map(function ((x,y,z,t),u)->(x,y,z,t,u))
-(List.rev(product(pproduct a b c d)(e)));;
-
-let cube x=tproduct x x x;;
-
-let fourth_power x=pproduct x x x x;;
-
-let fifth_power x=qproduct x x x x x;;
-
-let general_product x=
-let rec sub_f=(function
-([],accu)->accu
-|(a::b,accu)->sub_f(b,List.rev_map(function (x,l)->x::l)(List.rev(product(a)(accu)))))
-in
-sub_f(List.rev(x),[[]]);;
-
-let power x n=general_product (Assistance_int_range.scale (fun j->x) 1 n);;
-             
-
-end;;
-
-
-
-
-
-
-module Assistance_ordered_misc=struct
-
-(* 
-
-#use"lib/Ordered_Lists/ordered_misc.ml";;
-
-*)
-
-module Private = struct 
-
-  let oi = Assistance_total_ordering.for_integers ;;
-
-  let rec helper_for_maximal_elts_wrt_inclusion (already_treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> List.rev already_treated 
-    | a :: others ->
-       if List.exists (fun b->
-         (b<>a) && ( Assistance_ordered.is_included_in oi a b) ) others
-       then helper_for_maximal_elts_wrt_inclusion (already_treated,others)
-       else 
-        let temp1 = List.filter (fun b->
-           not(Assistance_ordered.is_included_in oi b a)) others in
-        helper_for_maximal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
-
-  let rec helper_for_minimal_elts_wrt_inclusion (already_treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> List.rev already_treated 
-    | a :: others ->
-       if List.exists (fun b->
-         (b<>a) && ( Assistance_ordered.is_included_in oi b a) ) others
-       then helper_for_minimal_elts_wrt_inclusion (already_treated,others)
-       else 
-        let temp1 = List.filter (fun b->
-           not(Assistance_ordered.is_included_in oi a b)) others in
-        helper_for_minimal_elts_wrt_inclusion (a :: already_treated,temp1) ;;  
-
-  let rec helper_for_minimal_transversals (already_treated,to_be_treated) =
-    match to_be_treated with 
-    [] -> List.rev already_treated 
-    | a :: others ->
-      let temp1 = Assistance_cartesian.product a already_treated in 
-      let temp2 = Assistance_image.image (fun (x,y)->Assistance_ordered.insert oi x y) temp1 in 
-      let temp3 = helper_for_minimal_elts_wrt_inclusion ([],temp2) in 
-      helper_for_minimal_transversals (temp3,others) ;;        
-
-  let power_set_for_intset x =
-     Assistance_ordered.sort (Assistance_total_ordering.silex_compare oi) (Assistance_listennou.power_set x) ;; 
-
-  let rec helper_for_int_upwards_filter (f,treated,to_be_treated) = 
-     match to_be_treated with 
-     [] -> List.rev treated 
-     | a::others ->
-         if f a 
-         then let remaining_ones = List.filter (
-                fun b->not(Assistance_ordered.is_included_in oi a b)
-              ) to_be_treated in 
-              helper_for_int_upwards_filter (f,a::treated,remaining_ones)
-         else helper_for_int_upwards_filter (f,treated,others) ;;    
-
-  let naive_minimal_elts_in_int_upwards_filter f base =
-    let pb = power_set_for_intset base in 
-    helper_for_int_upwards_filter (f,[],pb) ;;     
-
-  let minimal_elts_in_int_upwards_filter f base =
-     let indispensable_ones = List.filter (
-       fun x->(not(f(Assistance_ordered.outsert oi x base)))
-     ) base in 
-     let dispensable_ones = Assistance_ordered.setminus oi base indispensable_ones in 
-     let pullbacked_f = (fun y->f(Assistance_ordered.merge oi indispensable_ones y)) in 
-     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f dispensable_ones in 
-     Assistance_image.image (Assistance_ordered.merge oi indispensable_ones) temp1 ;;
-
-  (*   
-  let base0 = Ennig.ennig 1 5 ;;
-  let f0 y= List.exists (fun x->Ordered.is_included_in oi x y) [[1;2;3];[3;4;5]] ;;
-  let res0 = minimal_elts_in_int_upwards_filter f0 base0 ;;
-  *)
-
-  let minimal_elts_in_upwards_filter f base =
-     let get_one = (fun k->List.nth base (k-1)) in 
-     let get_several = Assistance_image.image get_one in 
-     let n = List.length base 
-     and normalized_f = (fun indices ->f(get_several indices)) in 
-     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Assistance_int_range.range 1 n) in 
-     Assistance_image.image get_several temp1 ;;
-
-let commonest_elements ll = 
-  let temp1 = Assistance_ordered.fold_merge oi ll in 
-  let (_,temp2) = Assistance_max.maximize_it_with_care (
-    fun y->List.length(List.filter (Assistance_ordered.mem oi y) ll)
-  ) temp1 in 
-  temp2;; 
-
-let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
-   if to_be_treated = [] 
-   then (List.rev history,treated)
-   else
-   let temp1 = commonest_elements to_be_treated in 
-   let a = List.hd temp1 in 
-   helper_for_greedy_transversal(temp1::history,Assistance_ordered.insert oi a treated,
-     List.filter (fun x->not(Assistance_ordered.mem oi a x)) to_be_treated) ;;  
-
- let greedy_transversal ll =
-  helper_for_greedy_transversal ([],[],ll) ;;
-   
-end ;;        
-
-
-let commonest_elements = Private.commonest_elements ;;
-
-let greedy_transversal = Private.greedy_transversal ;;
-
-let maximal_elts_wrt_inclusion l= 
-  Private.helper_for_maximal_elts_wrt_inclusion ([],l) ;;
-
-let minimal_elts_in_upwards_filter = Private.minimal_elts_in_upwards_filter ;;
-
-let minimal_elts_wrt_inclusion l= 
-  Private.helper_for_minimal_elts_wrt_inclusion ([],l) ;;
-
-  
-let minimal_transversals l= 
-  match l with 
-  [] -> []
-  | a:: others ->
-    let starter = Assistance_image.image (fun x->[x]) a in    
-  Private.helper_for_minimal_transversals (starter,others) ;;  
-  
-
-let reorder_list_of_pairs_using_list_of_singles pairs singles =
-  let idx=Assistance_memoized.make(fun x->
-     Assistance_listennou.find_index x singles   
-  ) in 
-  let ordr = (fun x1 x2 -> Assistance_total_ordering.for_integers (idx x1) (idx x2)) in 
-  let ordr2 = Assistance_total_ordering.product ordr Assistance_total_ordering.standard in 
-  Assistance_ordered.sort ordr2 pairs ;;
-
-(*
-
-reorder_list_of_pairs_using_list_of_singles (Ennig.doyle( fun t->(t,t+100)) 1 8)
-[2;5;3;6;4;7;1;8] ;;
-*)
-
-
-let translate_at_level_two ll translation=
-  Assistance_image.image (
-    fun l->Assistance_ordered.merge Assistance_total_ordering.for_integers l translation
-  ) ll ;;
-
-
-let underline_new_elements ord old_set possibly_new_elts =
-  let new_elts = Assistance_ordered.setminus ord possibly_new_elts old_set in 
-  let new_whole = Assistance_ordered.merge ord old_set new_elts in 
-  let temp1 = Assistance_image.image (fun x->(x,List.mem x new_elts)) new_whole in 
-  let temp2 = Assistance_hurried.connected_components snd temp1 in 
-  Assistance_image.image (fun part -> (Assistance_image.image fst part,snd(List.hd part)) ) temp2;;
-
-(*
-
-underline_new_elements Total_ordering.standard 
- [1; 2;  5; 7; 8;  11; 13; 14; 16; 17; 19; 20]
- [3;4; 6; 9;10; 12; 15; 18; 21] ;;
-
-*)
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_ocaml_ending_t=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfa_ocaml_ending_t.ml";;
-
-*)
-
-type t=Ml |Mli |Mll |Mly;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_full_t=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_full_t.ml";;
-
-*)
-
-
-type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_endingless_t=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_endingless_t.ml";;
-
-*)
-
-type t = J of Assistance_dfa_root_t.t * Assistance_dfa_subdirectory_t.t * Assistance_dfa_module_t.t  ;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_short_t=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_short_t.ml";;
-
-*)
-
-type t = J of Assistance_dfa_module_t.t * Assistance_dfa_ending_t.t;;
-          
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_join=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_join.ml";;
-
-*)
-
-let middle_to_ending (Assistance_dfn_middle_t.J(s,m)) e= (Assistance_dfn_rootless_t.J(s,m,e));;
-let root_to_middle r (Assistance_dfn_middle_t.J(s,m))=Assistance_dfn_endingless_t.J(r,s,m);; 
-let root_to_rootless r (Assistance_dfn_rootless_t.J(s,m,e))=Assistance_dfn_full_t.J(r,s,m,e);;
-let root_to_subdirectory (Assistance_dfa_root_t.R(r)) (Assistance_dfa_subdirectory_t.SD(s))=Assistance_dfa_root_t.R(r^"/"^s);;
-let subdirectory_to_module s m=(Assistance_dfn_middle_t.J(s,m));;  
-let subdirectory_to_short s (Assistance_dfn_short_t.J(m,e))=(Assistance_dfn_rootless_t.J(s,m,e));;  
-let to_ending (Assistance_dfn_endingless_t.J(r,s,m)) e = Assistance_dfn_full_t.J(r,s,m,e);;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_short=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_short.ml";;
-
-*)
-
-exception Of_line_exn of string;;
-
-let of_line line = 
-   let (mn,e)=Assistance_cull_string.split_wrt_rightmost line '.' in 
-   if mn=""
-   then raise(Of_line_exn(line))
-   else Assistance_dfn_short_t.J(Assistance_dfa_module.of_line mn,Assistance_dfa_ending.of_line(e));;
-
-
-let to_line (Assistance_dfn_short_t.J(m,e))=
-   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
-
-let to_module (Assistance_dfn_short_t.J(m,e))=m;;
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_full=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_full.ml";;
-
-*)
-
-
-let to_subdirectory  (Assistance_dfn_full_t.J(r,s,m,e))=s;;
-let to_module  (Assistance_dfn_full_t.J(r,s,m,e))=m;;
-let to_ending (Assistance_dfn_full_t.J(r,s,m,e))=e;;
-
-let to_rootless (Assistance_dfn_full_t.J(r,s,m,e))=(Assistance_dfn_rootless_t.J(s,m,e));; 
-let to_endingless (Assistance_dfn_full_t.J(r,s,m,e))=(Assistance_dfn_endingless_t.J(r,s,m));; 
-
-   
-let to_rootless_line (Assistance_dfn_full_t.J(r,s,m,e))=
-    (Assistance_dfa_subdirectory.connectable_to_subpath s)^
-   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
-
-let to_line (Assistance_dfn_full_t.J(r,s,m,e))=
-   (Assistance_dfa_root.connectable_to_subpath r)^
-   (Assistance_dfa_subdirectory.connectable_to_subpath s)^
-   (Assistance_dfa_module.to_line m)^(Assistance_dfa_ending.connectable_to_modulename e);;
-
-let to_absolute_path mlx=Assistance_absolute_path.of_string(to_line mlx);;  
-
-let from_absolute_path_with_root ap dir=
-  let rless = Assistance_dfn_common.decompose_absolute_path_using_root ap dir in 
-  Assistance_dfn_join.root_to_rootless dir rless;;
-
-  
-let relocate (Assistance_dfn_full_t.J(r,old_subdir,m,e)) new_subdir=
-  (Assistance_dfn_full_t.J(r,new_subdir,m,e));;  
- 
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_endingless=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_endingless.ml";;
-
-
-*)
-
-let begins_with (Assistance_dfn_endingless_t.J(r,s,m)) subdir=
-   Assistance_dfa_subdirectory.begins_with s subdir;;
-
-let to_root (Assistance_dfn_endingless_t.J(r,s,m))=r;;
-let to_subdirectory  (Assistance_dfn_endingless_t.J(r,s,m))=s;;
-let to_module  (Assistance_dfn_endingless_t.J(r,s,m))=m;;
-   
-let to_line (Assistance_dfn_endingless_t.J(r,s,m))=
-   (Assistance_dfa_root.connectable_to_subpath r)^
-   (Assistance_dfa_subdirectory.connectable_to_subpath s)^
-   (Assistance_dfa_module.to_line m);;
-
-let to_middle (Assistance_dfn_endingless_t.J(r,s,m)) = Assistance_dfn_middle_t.J(s,m) ;;
-
-let rename_endsubdirectory 
-   (old_subdir,new_subdirname) 
-      (Assistance_dfn_endingless_t.J(r,s,m))=
-   Assistance_dfn_endingless_t.J(
-	      r,
-   		(Assistance_dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
-         m
-	    );;  
-
-let rename_module
-   (old_module,new_module) 
-      (Assistance_dfn_endingless_t.J(r,s,m))=
-        if m =old_module 
-        then Assistance_dfn_endingless_t.J(r,s,new_module) 
-        else Assistance_dfn_endingless_t.J(r,s,m) ;;     
-
-let replace_subdirectory (old_subdir,new_subdir) eless = 
-    match eless with  
-      (Assistance_dfn_endingless_t.J(r,s,m)) -> 
-       if s <> old_subdir 
-       then eless 
-       else 
-   Assistance_dfn_endingless_t.J(r,new_subdir,m);;  
-   
-let soak (old_subdir,new_subdir) eless =
-   let (Assistance_dfn_endingless_t.J(r,s,m)) = eless in 
-   match Assistance_dfa_subdirectory.soak (old_subdir,new_subdir) s with 
-   Some(new_s)->Some(Assistance_dfn_endingless_t.J(r,new_s,m))
-   |None -> None ;;
-
-
-let to_concrete_object (Assistance_dfn_endingless_t.J(r,s,m))=
-   Assistance_concrete_object_t.Variant("Dfn_"^"endingless.J",
-     [
-        Assistance_dfa_root.to_concrete_object r;
-        Assistance_dfa_subdirectory.to_concrete_object s;
-        Assistance_dfa_module.to_concrete_object m;
-     ]
-   ) ;;
-
-let of_concrete_object crobj =
-   let (_,(arg1,arg2,arg3,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant crobj in 
-   Assistance_dfn_endingless_t.J(
-      Assistance_dfa_root.of_concrete_object arg1,
-      Assistance_dfa_subdirectory.of_concrete_object arg2,
-      Assistance_dfa_module.of_concrete_object arg3
-   );;
-    
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_dfn_middle=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfn_middle.ml";;
-
-*)
-
-module Private = struct 
-
-  let of_concrete_object crobj =
-     let (_,(arg1,arg2,_,_,_,_,_))=Assistance_concrete_object.unwrap_bounded_variant crobj in 
-     Assistance_dfn_middle_t.J(
-        Assistance_dfa_subdirectory.of_concrete_object arg1,
-        Assistance_dfa_module.of_concrete_object arg2
-     );;
-  
-  let to_concrete_object (Assistance_dfn_middle_t.J(s,m))=
-     Assistance_concrete_object_t.Variant("Dfn_"^"middle_t.J",
-       [
-         Assistance_dfa_subdirectory.to_concrete_object s;
-         Assistance_dfa_module.to_concrete_object m;
-       ]
-     ) ;;
-end ;; 
-  
-let of_concrete_object = Private.of_concrete_object ;; 
-let rename_endsubdirectory 
-   (old_subdir,new_subdirname) 
-      (Assistance_dfn_middle_t.J(s,m))=
-   Assistance_dfn_middle_t.J(
-   		(Assistance_dfa_subdirectory.rename_endsubdirectory (old_subdir,new_subdirname) s),
-         m
-	    );; 
-
-let rename_module (m1,m2) middle =
-  let (Assistance_dfn_middle_t.J(s,m)) = middle in 
-  if m = m1 
-  then Assistance_dfn_middle_t.J(s,m2)
-  else middle;;       
-let to_concrete_object = Private.to_concrete_object ;;   
-let to_line (Assistance_dfn_middle_t.J(s,m)) = (Assistance_dfa_subdirectory.connectable_to_subpath s)^ (Assistance_dfa_module.to_line m);;
-let to_module (Assistance_dfn_middle_t.J(s,m))=m;;
-
-end;;
-
-
-
-
-
-
-module Assistance_dfa_ocaml_ending=struct
-
-(*
-
-#use"lib/Decomposed_filename/dfa_ocaml_ending.ml";;
-
-*)
-
-
-
-
-exception Not_an_ocaml_ending of string;;
-
-module Private = struct
-
-let to_string = function 
-   Assistance_dfa_ocaml_ending_t.Mll ->  "mll"
-  | Assistance_dfa_ocaml_ending_t.Mly -> "mly"
-  | Assistance_dfa_ocaml_ending_t.Ml ->  "ml"
-  | Assistance_dfa_ocaml_ending_t.Mli ->  "mli" ;; 
-
-
-let capitalized_correspondances = Assistance_image.image (fun cml_edg->
-    (cml_edg,to_string cml_edg)
-   ) [
-   Assistance_dfa_ocaml_ending_t.Mll ;  
-   Assistance_dfa_ocaml_ending_t.Mly ; 
-   Assistance_dfa_ocaml_ending_t.Ml  ; 
-   Assistance_dfa_ocaml_ending_t.Mli 
- ];;
-
-end ;;
-
-let all = Assistance_image.image fst Private.capitalized_correspondances ;;
-
-let of_ending (Assistance_dfa_ending_t.E(e)) = 
-   match Assistance_option.seek (fun (cml_edg,e2)->e2=e) Private.capitalized_correspondances with 
-   None -> raise(Not_an_ocaml_ending(e)) 
-   |(Some(cml_edg,_)) -> cml_edg ;; 
-   
-   
-let of_concrete_object =Assistance_concrete_object.unwrap_lonely_variant 
-   Private.capitalized_correspondances;;
-           
-let to_concrete_object =Assistance_concrete_object.wrap_lonely_variant 
-   Private.capitalized_correspondances;;    
- 
-let to_ending cml_edg = Assistance_dfa_ending_t.E(Private.to_string cml_edg) ;;   
-
-end;;
-
-
-
-
-
-
-module Assistance_lines_in_string=struct
-
-(*
-
-#use"lib/lines_in_string.ml";;
-
-*)
-
-
-module Private = struct 
-
-  let lines old_s=
-     let left_offset=(if Assistance_supstring.begins_with old_s "\n" then "\n" else "")
-     and right_offset=(if Assistance_supstring.ends_with old_s "\n" then "\n" else "") in
-     let s=left_offset^old_s^right_offset in
-     Str.split (Str.regexp_string "\n") s ;;
-
-  let indexed_lines text=
-     Assistance_int_range.index_everything (lines text);;
-  
-  let rec iterator_for_enchancement (num_of_treated_chars,treated_lines,lines) =
-       match lines with 
-       [] -> List.rev treated_lines 
-       |(line_idx,line) :: other_lines ->
-        iterator_for_enchancement 
-        (num_of_treated_chars+(String.length line)+1,
-         (num_of_treated_chars,line_idx,line)::treated_lines,other_lines)   ;;
-        
-  let enhance indexed_lines =  iterator_for_enchancement (0,[],indexed_lines );;      
-  
-  let adjust_num_of_lines_upwards_in_string ~required_size text =
-      let temp1 = lines text in  
-      let d = required_size - (List.length temp1) in 
-      if d<=0 
-      then text 
-      else text ^ (String.make d '\n') ;;   
-
-  let adjust_num_of_lines_upwards_in_file ~required_size file =
-      let old_text = Assistance_io.read_whole_file file in
-      let new_text = adjust_num_of_lines_upwards_in_string ~required_size old_text  in
-      Assistance_io.overwrite_with file new_text ;;   
-
-  let tripartition_associated_to_interval s i j=
-      let temp2=lines s in 
-      let (temp3,temp4)=Assistance_listennou.big_rht (i-1) temp2 in 
-      let part1=String.concat "\n" (List.rev temp3) in 
-      let (temp5,temp6)=Assistance_listennou.big_rht (j-i+1) temp4 in 
-      let part2=String.concat "\n" (List.rev temp5) in 
-      let part3=String.concat "\n" temp6 in 
-      (part1^"\n",part2,"\n"^part3);;
-   
-   (* tripartition_associated_to_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-       
-  let interval text i j=
-    let temp1=indexed_lines text in
-    let temp2=List.filter (fun (k,_)->(i<=k)&&(k<=j)) temp1  in
-    let temp3=Assistance_image.image snd temp2 in
-    String.concat "\n" temp3;;  
-      
-  (* interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-    
-  let copy_interval_from_string_to_string (i,j)  src dest =
-     let src_linelength = List.length (lines src) in 
-     let temp1 = adjust_num_of_lines_upwards_in_string ~required_size:src_linelength dest in
-     let (before,in_between,after) = tripartition_associated_to_interval temp1 i j in 
-     before^(interval src i j)^after;;
-
-      
-  (* copy_interval_from_string_to_string (2,5) "1\n2\n3\n4\n5\n6\n7\n" "a\nb\nc";; *)
-
-  let copy_interval_from_file_to_file (i,j) src_file  dest_file =
-     let src = Assistance_io.read_whole_file src_file 
-     and old_text = Assistance_io.read_whole_file dest_file  in 
-     let new_text = copy_interval_from_string_to_string (i,j) src old_text in 
-     Assistance_io.overwrite_with dest_file new_text ;; 
-     
-   exception Lines_in_char_range_exn of int*int;;
-
-   let number_of_lines_in_char_interval s  i j=
-     try (List.length(List.filter (fun k->
-         String.get s (k-1)='\n'
-     ) (Assistance_int_range.range i j))) with
-     _->raise(Lines_in_char_range_exn(i,j));;    
-
-   let duplicate_interval_in_string (i,j) s = 
-     let (before,itv,after) = tripartition_associated_to_interval s i j in 
-     before^itv^"\n"^itv^after ;;
-
-  (* duplicate_interval_in_string (2,4) "1\n2\n3\n4\n5\n";; *)
-
-   let duplicate_interval_in_file (i,j) src_file  =
-     let old_text = Assistance_io.read_whole_file src_file  in 
-     let new_text = duplicate_interval_in_string (i,j) old_text in 
-     Assistance_io.overwrite_with src_file new_text ;; 
-
-  
-  end ;;   
-  
-  let copy_interval_from_file_to_file = Private.copy_interval_from_file_to_file ;;
-  let copy_interval_from_string_to_string = Private.copy_interval_from_string_to_string ;; 
-
-  let duplicate_interval_in_file = Private.duplicate_interval_in_file ;;
-  let duplicate_interval_in_string = Private.duplicate_interval_in_string ;;
-
-  let indexed_lines = Private.indexed_lines ;;
-  
-  (*
-  
-  indexed_lines "a\nb";;
-  indexed_lines "\na\nb";;
-  indexed_lines "a\nb\n";;
-  
-  *)
-
-  let enhanced_indexed_lines s= Private.enhance (Private.indexed_lines s);;
-  
-  (*
-  
-  enhanced_indexed_lines "a\nb";;
-  enhanced_indexed_lines "\na\nb";;
-  enhanced_indexed_lines "a\nb\n";;
-  
-  *)
-
-  let indent_interval_in_string_with (i,j) ~text ~tab_width =
-    let old_lines = indexed_lines text 
-    and tab = String.make tab_width ' ' in 
-    let new_lines = Assistance_image.image (
-        fun (k,line) -> 
-          if (k<i)||(k>j)
-          then line
-         else tab^line
-    ) old_lines in 
-    String.concat "\n" new_lines ;;
-
-(* ident_interval_in_string_with (2,5) ~text:"1\n2\n3\n4\n5\n6\n7\n" ~tab_width:3;; *)
-
-let indent_interval_in_file_with (i,j) fn ~tab_width=
-   let old_text=Assistance_io.read_whole_file fn in
-   let new_text=indent_interval_in_string_with (i,j) ~text:old_text ~tab_width  in
-   Assistance_io.overwrite_with fn new_text;;   
-
-let interval = Private.interval ;;
-
-   let line_index_from_char_index s char_idx=
-      1+(Private.number_of_lines_in_char_interval s 1 char_idx);;
-
-  let lines s= Assistance_image.image snd (indexed_lines s);;
-
-  let remove_interval s i j=
-    let temp1=indexed_lines s in
-    let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) temp1  in
-    let temp3=Assistance_image.image snd temp2 in
-    String.concat "\n" temp3;; 
-  
-  let remove_interval_in_file fn i j=
-      let s1=Assistance_io.read_whole_file fn in
-      let s2=remove_interval s1 i j  in
-     Assistance_io.overwrite_with fn s2;;   
-  
-  let remove_lines_containing_substring_in_string pattern text =
-     let temp1=indexed_lines text in
-     let temp2=List.filter (fun (_,line)->not(Assistance_substring.is_a_substring_of pattern line)) temp1  in
-     let temp3=Assistance_image.image snd temp2 in
-     String.concat "\n" temp3;; 
-   
-   let remove_lines_containing_substring_in_file pattern fn=
-       let old_text=Assistance_io.read_whole_file fn in
-       let new_text=remove_lines_containing_substring_in_string pattern old_text  in
-      Assistance_io.overwrite_with fn new_text;;   
-  
-let findreplace_in_interval (x,y) s i j=
-      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
-      let new_part2 = Assistance_replace_inside.replace_inside_string (x,y) old_part2 in 
-      part1^new_part2^part3 ;; 
-
-let findreplace_in_interval_in_file (x,y) fn i j=
-      let s1=Assistance_io.read_whole_file fn in
-      let s2=findreplace_in_interval (x,y) s1 i j  in
-      Assistance_io.overwrite_with fn s2;;     
-  
-
-(* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-
-let suppress_linebreaks_in_interval s i j=
-    let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
-    let new_part2 = String.concat "" (lines old_part2) in 
-    part1^new_part2^part3 ;; 
-  
-  (* suppress_linebreaks_in_interval "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
-  
-let suppress_linebreaks_in_interval_in_file fn i j=
-    let s1=Assistance_io.read_whole_file fn in
-    let s2=suppress_linebreaks_in_interval s1 i j  in
-    Assistance_io.overwrite_with fn s2;;     
-
-let tripartition_associated_to_interval = Private.tripartition_associated_to_interval ;;    
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_directory_name_t=struct
-
-(*
-
-Directories name, with the trailing slash removed.
-
-#use"lib/directory_name_t.ml";;
-
-*)
-
-type t=D of string;;
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_directory_name=struct
-
-(*
-
-Directories name, with the trailing slash removed.
-
-#use"lib/directory_name.ml";;
-
-*)
-
-
-
-exception Non_directory of string;;
-exception File_not_found of string * (Assistance_directory_name_t.t list);;
-
-let find_file_with_directory_list fname l=
-  match Assistance_option.find_and_stop (
-     fun (Assistance_directory_name_t.D s_dir) ->
-      let full_path = s_dir^"/"^fname in 
-      if Sys.file_exists full_path 
-      then Some(Assistance_absolute_path.of_string full_path)
-      else None
-  ) l with 
-  None -> raise(File_not_found(fname,l))
-  |Some(ap) -> ap;;
-
-
-let of_string s=
-  let temp1=Assistance_tools_for_absolute_path.of_string s in
-  if Sys.is_directory temp1
-  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
-  else raise(Non_directory(s));;
-
-let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_chronometer=struct
-
-(*
-
-#use"lib/chronometer.ml";;
-
-*) 
-
-let rewrite_days=function
-0->""
-|1->"1 day,"
-|x->string_of_int(x)^" days,";;
-
-let rewrite_hours=function
-0->""
-|1->"1 hour,"
-|x->string_of_int(x)^" hours,";;
-
-let rewrite_minutes=function
-0->""
-|1->"1 minute,"
-|x->string_of_int(x)^" minutes,";;
-
-let rewrite_seconds=function
-0->""
-|1->"1 second."
-|x->string_of_int(x)^" seconds.";;
-
-let rewrite_float x=
-   let i=int_of_float(x) in
-   let v_sec=(i mod 60) and q_sec=(i/60) in
-   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
-   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
-   let s_day=rewrite_days(q_hour)
-   and s_hour=rewrite_hours(v_hour)
-   and s_min=rewrite_minutes(v_min)
-   and s_sec=rewrite_seconds(v_sec) in
-   s_day^s_hour^s_min^s_sec;;
-  
-let rewrite_duration x=
-   if x=0. 
-   then "Computation was quick.\n"
-   else "Computation lasted "^(rewrite_float x)^"\n";;
-
- let timer=ref(0.000);;  
- 
- let duration_of_computation f x=
-   let t0=Unix.time() in
-   let _=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   (print_string(rewrite_duration (!timer));flush stdout);;
- 
- let duration_of_last_computation ()=
-  (print_string(rewrite_duration (!timer));flush stdout);;
-   
-   
- let  it f x=
-  let t0=Unix.time() in
-   let y=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   let _=(print_string(rewrite_duration (!timer));flush stdout) in
-   y;;
- 
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_explicit=struct
-
-(*
-
-#use"lib/explicit.ml";;
-
-*)
-
-module Private = struct 
-
-let iter0 (f:'a->unit) l addenda=
-  let n=List.length(l)
-  and accu=ref(l) in
-  let s0=" of "^string_of_int(n)^" "^addenda^"\n" in
-  for j=1 to n
-               do
-               ( f(List.hd(!accu));
-                 accu:=List.tl(!accu);
-                 print_string(string_of_int(j)^s0);
-                 flush stdout)
-               done;;
-
-let iter2 (f:'a->'a) initial_value tester (shower:'a->string)  addenda=
-  let accu=ref(initial_value) in
-  let _=(while tester(!accu)
-               do
-               ( 
-                 accu:=f(!accu);
-                 print_string((shower (!accu))^addenda);
-                 flush stdout;
-               )
-               done) in
-  !accu;;
-
-let e_rev l=
-   let accu=ref([]) in 
-   let f=(fun x->accu:=x::(!accu)) in
-   let _=iter0(f)(l)(" (rev part)") in
-   !accu;;    
-
-let unchronometered_explore_tree f l=
-    let g=(fun (graet,p,q,da_ober)->
-       match da_ober with
-       []->(graet,0,0,[])
-       |a::peurrest->
-         let temp1=f a in
-         if temp1=[]
-         then (a::graet,p-1,q+1,peurrest)
-         else (a::graet,p-1+List.length(temp1),q+1,temp1@peurrest)
-    ) and 
-    tester=(fun (_graet,p,q,da_ober)->da_ober<>[]) 
-    and
-    shower=(
-     fun (graet,p,q,da_ober)->
-       (string_of_int p)^" to be explored ; "^
-       (string_of_int q)^" already explored\n"
-    )
-    in
-    let initial_value=([],List.length l,0,l) in
-    let _=(print_string(shower(initial_value));flush stdout) in
-    let (ans,_,_,_)=iter2 g initial_value tester shower  "" in
-    ans;;
-
-
-
-let unchronometered_filter f l=
-   let accu=ref([]) in 
-   let g=(fun x->if f(x) then accu:=x::(!accu) else ()) in
-   let _=iter0(g)(l)(" (filter part)") in
-   e_rev(!accu);;    
- 
- 
- let unchronometered_image f l=
-   let accu=ref([]) in 
-   let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(l)(" (rev_image part)") in
-   e_rev(!accu);;  
-   
-
-let unchronometered_image_computed_backwards f l=
-   let temp1=e_rev(l) in
-    let accu=ref([]) in 
-   let g=(fun x->accu:=f(x)::(!accu)) in
-   let _=iter0(g)(temp1)(" (image part)") in
-   (!accu);;     
- 
-  
-
-exception Force_find_exn ;;
-
-let rec helper_for_opt_finding (f,sn) (j,x)=
-   match x with 
-   [] -> None
-   |a::others -> if f a 
-                 then Some a
-                 else let _=(
-                        print_string("Item number "^string_of_int(j)^" of "^sn^" found wanting \n");
-                        flush stdout) in 
-                      helper_for_opt_finding (f,sn) (j+1,others) ;; 
-
-end ;; 
-
-let explore_tree f l=Assistance_chronometer.it (Private.unchronometered_explore_tree f) l;; 
-           
-let filter f l=Assistance_chronometer.it (Private.unchronometered_filter f) l;; 
-
-
-let image f l=Assistance_chronometer.it (Private.unchronometered_image f) l;;  
-
-let image_computed_backwards f l=Assistance_chronometer.it 
-   	(Private.unchronometered_image_computed_backwards f) l;;               
-
-let opt_find f x = Private.helper_for_opt_finding (f,string_of_int(List.length x)) (1,x) ;;
-
-(* opt_find (fun t->t>4) (Ennig.ennig 1 7);; *)
-
-
-end;;
-
-
-
-
-
-
-module Assistance_set_of_polys_t=struct
-
-(* 
-
-#use"lib/Ordered_Lists/set_of_polys_t.ml";;
-
-*)
-
-type 'a t=S of 'a list;;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_set_of_polys=struct
-
-(* 
-
-#use"lib/Ordered_Lists/set_of_polys.ml";;
-
-*)
-
-let tr = ((fun x->Assistance_set_of_polys_t.S(x)),(fun (Assistance_set_of_polys_t.S(x))->x),Assistance_total_ordering.standard);;
-
-let does_not_intersect x y= Assistance_functor_for_sets.does_not_intersect tr x y;;
-let empty_set = Assistance_functor_for_sets.empty_set tr;;
-let fold_merge l= Assistance_functor_for_sets.fold_merge tr l;;
-let forget_order x= Assistance_functor_for_sets.forget_order tr x;;
-let hd x = Assistance_functor_for_sets.hd tr x;;
-let image f x= Assistance_functor_for_sets.image tr f x;;
-let insert a x= Assistance_functor_for_sets.insert tr a x;;
-let is_included_in x y= Assistance_functor_for_sets.is_included_in tr x y;;
-let length x= Assistance_functor_for_sets.length tr x;;
-let mem a x= Assistance_functor_for_sets.mem tr a x;;
-let merge l= Assistance_functor_for_sets.merge tr l;;
-let nmem a x= Assistance_functor_for_sets.nmem tr a x;;
-let outsert a x= Assistance_functor_for_sets.outsert tr a x;;
-let safe_set l= Assistance_functor_for_sets.safe_set tr l;;
-let setminus x y= Assistance_functor_for_sets.setminus tr x y;;
-let singleton a= Assistance_functor_for_sets.singleton tr a;;
-let sort l= Assistance_functor_for_sets.sort tr l;;
-let unsafe_set l= Assistance_functor_for_sets.unsafe_set tr l;;
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_stabilize=struct
-
-(*
-
-#use"lib/stabilize.ml";;
-
-*) 
-
-let one_more_time f (an_holl,da_ober)=
- let l_da_ober=Assistance_set_of_polys.forget_order(da_ober) in
- let temp1=List.flatten(List.rev_map(f)(l_da_ober)) in
- let temp2=Assistance_set_of_polys.sort(temp1) in
- let re_nevez=Assistance_set_of_polys.setminus(temp2)(an_holl) in
- let hollad_nevez=Assistance_set_of_polys.merge(an_holl)(re_nevez) in
- (hollad_nevez,re_nevez);; 
-  
-let rec morzholan f (an_holl,da_ober)=
-  if da_ober=Assistance_set_of_polys.empty_set
-  then an_holl
-  else morzholan f (one_more_time f (an_holl,da_ober));;
-  
-let father f l=let tl=Assistance_set_of_polys.sort(l) in morzholan f (tl,tl);;
-
-let one_more_time2 f (an_holl,graet,da_ober)=
- let l_graet=Assistance_set_of_polys.forget_order(graet) 
- and l_da_ober=Assistance_set_of_polys.forget_order(da_ober) in
- let zz1=Assistance_cartesian.product(l_graet)(l_da_ober)
- and zz2=Assistance_cartesian.product(l_da_ober)(l_graet) 
- and zz3=Assistance_cartesian.product(l_da_ober)(l_da_ober) in
- let zz=List.flatten [zz1;zz2;zz3] in
- let temp1=List.flatten(List.rev_map (function (x,y)->[f x y]) zz ) in
- let temp2=Assistance_set_of_polys.sort(temp1) in
- let re_nevez=Assistance_set_of_polys.setminus(temp2)(an_holl) in
- let hollad_nevez=Assistance_set_of_polys.merge(an_holl)(re_nevez) in
- (hollad_nevez,an_holl,re_nevez);; 
-  
-let rec morzholan2 f (an_holl,graet,da_ober)=
-  if da_ober=Assistance_set_of_polys.empty_set
-  then an_holl
-  else morzholan2 f (one_more_time2 f (an_holl,graet,da_ober));; 
-  
-let binary_operation f l=let tl=Assistance_set_of_polys.sort(l) in morzholan2 f (tl,Assistance_set_of_polys.empty_set,tl);;  
-
-let explore_tree f l0=
- let modified_l0=List.rev_map(function x->(x,0))(l0) in
- let modified_f=(function (x,j)->
-   List.rev_map(function y->(y,j+1))(f x)
- ) in
- let rec tempf=(function (j,graet,da_ober)->
- match da_ober with
-    []->graet
-    |(xa,ia)::peurrest->let temp1=modified_f(xa,ia) in
-                  let temp2=(j+1,xa::graet,List.rev_append temp1 peurrest) in
-                  tempf(temp2)
- ) in
- tempf(0,[],modified_l0);;
- 
- let explore_tree_explicitly f l0=
- let modified_l0=List.rev_map(function x->(x,0))(l0) in
- let modified_f=(function (x,j)->
-   List.rev_map(function y->(y,j+1))(f x)
- ) in
- let rec tempf=(function (j,graet,da_ober)->
- match da_ober with
-    []->graet
-    |(xa,ia)::peurrest->let temp1=modified_f(xa,ia) in
-                  let temp2=(j+1,xa::graet,List.rev_append temp1 peurrest) in
-                  let _=(print_string("("^string_of_int(ia)^","^string_of_int(j+1)^")\n");
-                  flush stdout) in
-                  tempf(temp2)
- ) in
- tempf(0,[],modified_l0);;
- 
-type 'a hierarchize_data=
-   Normal of  'a Assistance_set_of_polys_t.t list * 'a Assistance_set_of_polys_t.t * ('a * 'a Assistance_set_of_polys_t.t) list
-  |Failed of  'a Assistance_set_of_polys_t.t list * 'a Assistance_set_of_polys_t.t * ('a * 'a Assistance_set_of_polys_t.t) list
-  |Succeeded of 'a list list;;
-   
-
-let pusher_for_hierarchization (graet,hollad,da_ober)=
-  if da_ober=[]
-  then Succeeded(List.rev_map Assistance_set_of_polys.forget_order graet)
-  else 
-  let temp1=Assistance_image.image (fun (x,y)->(x,Assistance_set_of_polys.setminus y hollad)) da_ober in
-  let (temp2,temp3)=List.partition (fun (x,z)->Assistance_set_of_polys.length z=0) temp1 in
-  if temp2=[]
-  then Failed(graet,hollad,da_ober)
-  else
-  let temp4=Assistance_image.image fst temp2 in
-  let o_temp4=Assistance_set_of_polys.sort(temp4) in
-  let temp5=Assistance_image.image (fun (x,z)->(x,Assistance_set_of_polys.setminus z o_temp4)) temp3 in
-  (Normal(o_temp4::graet,Assistance_set_of_polys.merge hollad o_temp4,temp5));;
-  
-type 'a list_of_ancestors_map=('a -> 'a list);;  
-  
-let try_hierarchizing (f: 'a list_of_ancestors_map) l=
-  let temp1=Assistance_image.image (fun t->(t,Assistance_set_of_polys.sort(f t))) l in
-  let rec tempf=(fun x->
-    let y=pusher_for_hierarchization x in
-    match y  with
-    Normal(a,b,c)->tempf(a,b,c)
-    |_->y) in
-  tempf ([],Assistance_set_of_polys.empty_set,temp1);;
-  
-let hierarchize f l=
-  match try_hierarchizing f l with
-   Succeeded(l)->l
-  |_->failwith("Direct hierarchizing fails, there is a cycle. Try hierarchize instead");;
-  
-  
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_more_unix=struct
-
-(*
-
-#use"lib/more_unix.ml";;
-
-*)
-
-
-module Private=struct
- 
-let naive_extension ap=
-   let s=Assistance_absolute_path.to_string ap in
-   let i=String.rindex s '.' in
-   (Assistance_cull_string.cobeginning (i+1) s);; 
-   
-let extension x=try (naive_extension x) with 
-  _any_exception->"";;
-  
- let is_a_directory ap=
-   let s=Assistance_absolute_path.to_string ap in
-   try (function _x->true)(Sys.readdir s) with _any_exception->false;;
- 
- let father ap=
-   let s=Assistance_absolute_path.to_string ap in
-   let i=String.rindex s '/' in
-   if i=0 then Assistance_directory_name.of_string"/" else
-   Assistance_directory_name.of_string (Assistance_cull_string.beginning i s);; 
-   
- let son dir=
-   let s=Assistance_directory_name.connectable_to_subpath dir in
-   let i=String.rindex s '/' in
-   if i=0 then "" else
-   (Assistance_cull_string.cobeginning (i+1) s);; 
-  
- let is_a_nondirectory_or_a_nib x=
-  if is_a_directory(x)
-  then extension(x)="nib"
-  else not(Assistance_substring.is_a_substring_of(".nib/")(Assistance_absolute_path.to_string x));;
-  
- let naive_ls dir=
-   let s=Assistance_directory_name.connectable_to_subpath dir in
-   let s_with_slash=(function ()->
-    if String.get(s)(String.length(s)-1)='/'
-    then s
-    else s^"/"
-   )() in
-   let temp1=Array.to_list(Sys.readdir(s)) in
-   let tempf=(function w->try (Some(Assistance_absolute_path.of_string(s_with_slash^w))) with
-   _any_exception->None) in
-   Assistance_option.filter_and_unpack tempf temp1;;
-   
- let ls x=try (naive_ls x) with _any_exception->[];;  
- 
- let test_for_cleaniness=function ap->
-  let s=Assistance_absolute_path.to_string ap in
-  Assistance_cull_string.after_rightmost(s)('/')<>".DS_Store";;
- 
- let cleaned_ls x=
-   List.filter test_for_cleaniness (ls x);;
-   
-let select_by_prefix subdir forbidden_subdirs =
-  Assistance_option.filter_and_unpack (
-     fun forb_subdir -> 
-        if Assistance_supstring.begins_with forb_subdir subdir 
-        then Some(Assistance_cull_string.two_sided_cutting (subdir,"") forb_subdir)
-        else None
-  ) forbidden_subdirs ;; 
-
-let ls_with_ignored_subdirs (dir,forbidden_subdirs)=
-   let temp1 = Array.to_list (Sys.readdir dir) in
-   let temp2 = Assistance_option.filter_and_unpack (
-      fun fname -> if List.for_all (
-          fun forb_subdir -> 
-           not(Assistance_supstring.begins_with fname forb_subdir)
-        )  forbidden_subdirs
-           then Some(dir^fname)
-           else None
-   ) temp1 in 
-   let is_a_dir  = (fun s->is_a_directory(Assistance_absolute_path.AP(s))) in 
-   let (found_dirs,found_nondirs) = List.partition is_a_dir temp2 in 
-   let new_constraints = Assistance_image.image (
-     fun full_subdir_path ->
-        let subdir = Assistance_cull_string.two_sided_cutting (dir,"") full_subdir_path in 
-       (full_subdir_path^"/",select_by_prefix subdir forbidden_subdirs)
-   ) found_dirs in 
-   (found_nondirs,found_dirs,new_constraints);;
-
-let rec helper_for_complete_ls_with_ignored_subdirs 
-  (verbose,treated_nondirs,treated_dirs,to_be_treated) = match to_be_treated with 
-  [] -> (Assistance_image.image Assistance_absolute_path.of_string treated_nondirs,treated_dirs)
-  |(dir,forbidden_subdirs) :: others -> 
-    let (found_nondirs,found_dirs,new_constraints) = 
-        ls_with_ignored_subdirs (dir,forbidden_subdirs) in 
-    let new_treated_nondirs = List.rev_append found_nondirs treated_nondirs 
-    and new_treated_dirs =  List.rev_append found_dirs treated_dirs 
-    and new_to_be_treated = List.rev_append new_constraints others in 
-    let n = string_of_int(List.length new_to_be_treated) in 
-    let msg = " "^n^" to go ...\n" in 
-    let _= (if verbose then (print_string msg;flush stdout)) in 
-    helper_for_complete_ls_with_ignored_subdirs 
-    (verbose,new_treated_nondirs,new_treated_dirs,new_to_be_treated) ;;
-
-let complete_ls_with_ignored_subdirs dir forbidden_subdirs verbose= 
-   let s_dir = Assistance_directory_name.connectable_to_subpath dir in 
-   let _= (if not verbose then (print_string "Enumerating files ...";flush stdout)) in 
-   let (treated_nondirs,treated_dirs) = 
-   helper_for_complete_ls_with_ignored_subdirs 
-  (verbose,[],[],[s_dir,
-         Assistance_image.image Assistance_dfa_subdirectory.without_trailing_slash forbidden_subdirs]) in 
-   let m = string_of_int(List.length treated_nondirs) in 
-   let msg = " "^m^" files found.\n" in 
-   let _= (if not verbose then (print_string msg;flush stdout)) in          
-   (treated_nondirs,Assistance_image.image 
-     (fun x->Assistance_dfa_subdirectory.of_line(Assistance_cull_string.two_sided_cutting (s_dir,"") x)) 
-   treated_dirs);;
-
-let ls_with_directories_only dir=
-   let temp1 = cleaned_ls dir in 
-   Assistance_option.filter_and_unpack (
-     fun ap -> 
-       if is_a_directory ap 
-       then let s_ap = Assistance_absolute_path.to_string ap in 
-            Some(Assistance_directory_name.of_string s_ap)
-       else None
-   )  temp1 ;;
-
- let dirty_ones_in_ls x=
-   List.filter (function u->not(test_for_cleaniness u) )(ls x);; 
- 
- let adhoc_ls ap=
-   let s=Assistance_absolute_path.to_string ap in
-   if not(is_a_directory ap) 
-   then []
-   else 
-   let dir=Assistance_directory_name.of_string s in
-   ls dir;;
- 
-
- 
-let complete_ls dir=
-   let s_dir=Assistance_directory_name.connectable_to_subpath dir in
-   let x=Assistance_absolute_path.of_string s_dir in
-   Assistance_explicit.explore_tree adhoc_ls [x];;   
-
-let adhoc_ls_with_ignored_subdirs ap=
-   let s=Assistance_absolute_path.to_string ap in
-   if not(is_a_directory ap) 
-   then []
-   else 
-   let dir=Assistance_directory_name.of_string s in
-   ls dir;;
-
-let complete_ls_with_directories_only x=
-  Assistance_explicit.explore_tree ls_with_directories_only [x];;
-  
-
- let complete_ls_with_nondirectories_only x=
-  List.filter(is_a_nondirectory_or_a_nib)(complete_ls x);;
-  
-  
- let beheaded_ls_with_nondirectories_only x=
-  let n0=String.length(Assistance_absolute_path.to_string x) in
-  let temp1=List.filter(is_a_nondirectory_or_a_nib)(adhoc_ls x) in
-  let temp2=Assistance_image.image (fun ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap)) temp1 in
-  temp2;; 
- 
- let dir_substructure x=
-    let n0=String.length(Assistance_absolute_path.to_string x) in
-    let temp1=(Assistance_stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
-    let temp2=List.filter(function x->extension(x)<>"nib")(temp1) in
-    List.rev_map(function ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap))(temp2);;
-  
- let endfiles x=
-    let n0=String.length(Assistance_absolute_path.to_string x)+1(*because of the slash!*) in
-    let temp1=(Assistance_stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
-    let temp2=List.filter(is_a_nondirectory_or_a_nib)(temp1) in
-    List.rev_map(function ap->Assistance_cull_string.cobeginning n0 (Assistance_absolute_path.to_string ap))(temp2);;
-    
-let quick_complete_ls s=
-  let x=Assistance_directory_name.of_string s in
-  let temp1=complete_ls x in
-  Assistance_image.image Assistance_absolute_path.to_string temp1;;  
-  
- 
-
-let quick_beheaded_complete_ls s=
-  let x=Assistance_directory_name.of_string s in
-  let n=String.length(Assistance_directory_name.connectable_to_subpath x) in
-  let temp1=complete_ls x in
-  Assistance_image.image (fun ap->Assistance_cull_string.cobeginning n (Assistance_absolute_path.to_string ap)) temp1;; 
-  
-let beheaded_simple_ls dir=
-  let n=String.length(Assistance_directory_name.connectable_to_subpath dir) in
-  let temp1=ls dir in
-  Assistance_image.image (fun ap->
-   Assistance_cull_string.cobeginning n (Assistance_absolute_path.to_string ap)) temp1;; 
-
-
-let clear_directory_contents root =
-    let s_root = Assistance_dfa_root.connectable_to_subpath root in 
-    let cmd = "rm -rf "^s_root^"*" in 
-    Sys.command cmd;;
-
-
-let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
-   let s_root = Assistance_dfa_root.connectable_to_subpath root in 
-   let cmds1=Assistance_image.image (
-      fun subdir -> 
-         "mkdir -p "^s_root^(Assistance_dfa_subdirectory.without_trailing_slash subdir)
-   ) subdirs in 
-   let _=Assistance_image.image Sys.command cmds1 in 
-   let temp1=Assistance_option.filter_and_unpack (
-     fun (rootless,content)->
-        let full_path = Assistance_dfn_full.to_line(Assistance_dfn_join.root_to_rootless root rootless) in 
-        if Sys.file_exists full_path 
-        then None 
-        else Some(full_path,content)
-   ) files_with_content in 
-   Assistance_image.image (
-      fun (full_path,content) ->
-         let _=Sys.command("touch "^full_path) in 
-         Assistance_io.overwrite_with (Assistance_absolute_path.of_string full_path) content
-   )  temp1;;
-
-
-let create_subdirs_and_fill_files root subdirs files_with_content =
-   let s_root = Assistance_dfa_root.connectable_to_subpath root in 
-   let cmds1=Assistance_image.image (
-      fun subdir -> 
-         "mkdir -p "^s_root^(Assistance_dfa_subdirectory.without_trailing_slash subdir)
-   ) subdirs in 
-   let _=Assistance_image.image Sys.command cmds1 in 
-   Assistance_image.image (
-     fun (rootless,content)->
-        let full_path = Assistance_dfn_full.to_line(Assistance_dfn_join.root_to_rootless root rootless) in 
-         let _=Sys.command("touch "^full_path) in 
-         Assistance_io.overwrite_with (Assistance_absolute_path.of_string full_path) content
-   ) files_with_content;;
-
-end;;    
-
-
-let all_files_with_endings dir l_endings=
-   let temp1=Private.complete_ls dir in
-   let temp2=List.filter(
-   fun ap->
-     let s_ap=Assistance_absolute_path.to_string ap in
-     List.exists( fun ending->
-       Assistance_supstring.ends_with s_ap ending)
-     l_endings  
-   ) temp1 in
-   temp2;;  
-let beheaded_simple_ls=Private.beheaded_simple_ls;;
-let complete_ls=Private.complete_ls;;
-let complete_ls_with_directories_only=Private.complete_ls_with_directories_only;;
-let complete_ls_with_ignored_subdirs=Private.complete_ls_with_ignored_subdirs;;
-let complete_ls_with_nondirectories_only=Private.complete_ls_with_nondirectories_only;;
-let clear_directory_contents = Private.clear_directory_contents;;
-let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
-let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
-let is_a_directory=Private.is_a_directory;;   
-let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
-let simple_ls=Private.ls;;
-
-end;;
-
-
-
-
-
-
-module Assistance_put_use_directive_in_initial_comment=struct
-
-(*
-
-#use"lib/Text_editing/put_use_directive_in_initial_comment.ml";;
-
-*)
-
-let detect_initial_comment_in_text text = 
-  let lines = Assistance_lines_in_string.indexed_lines text in 
-  let first_line = snd (List.hd lines) in 
-  if (Assistance_cull_string.trim_spaces first_line) <> "(*" then None else 
-  match Assistance_option.seek (fun (line_idx,line)->
-     if (line_idx<=1) then false else
-     let trimmed_line = Assistance_cull_string.trim_spaces line in 
-     Assistance_supstring.begins_with trimmed_line "#use"
-  ) lines with 
-  None -> None 
-  |Some(i1,line1) ->
- (
-  match Assistance_option.seek (fun (line_idx,line)->
-    if (line_idx<=i1) then false else
-    let trimmed_line = Assistance_cull_string.trim_spaces line in 
-    trimmed_line = "*)"
- ) lines with 
-  None -> None 
- |Some(i2,_) -> Some(i1,Assistance_cull_string.trim_spaces line1,i2) );;  
-
-let detect_initial_comment_in_file  fn =  detect_initial_comment_in_text  (Assistance_io.read_whole_file fn) ;;
-
-let in_text ~new_directive text =
-  match detect_initial_comment_in_text text  with 
-  None -> text 
-  |Some(i1,line1,i2) ->
-    let old_lines = Assistance_lines_in_string.indexed_lines text in 
-    let new_lines = Assistance_image.image (fun (line_idx,line)->
-        if line_idx = i1 then new_directive else line
-      ) old_lines in 
-   String.concat "\n" new_lines ;;   
-
-let in_file ~new_directive fn =   
-   let text = Assistance_io.read_whole_file fn in 
-   match detect_initial_comment_in_text text  with 
-  None -> () 
-  |Some(i1,line1,i2) ->
-    let old_lines = Assistance_lines_in_string.indexed_lines text in 
-    let new_lines = Assistance_image.image (fun (line_idx,line)->
-        if line_idx = i1 then new_directive else line
-      ) old_lines in 
-    let new_text = String.concat "\n" new_lines in 
-    Assistance_io.overwrite_with fn new_text;;
-
-let usual root ap =
-    let s_ap=Assistance_absolute_path.to_string ap in 
-    let s_cdir=Assistance_dfa_root.connectable_to_subpath root in 
-    let shortened_path=Assistance_cull_string.cobeginning (String.length s_cdir) s_ap in 
-    "#use\""^shortened_path^"\";"^";" ;;
-    
-let put_usual root ap =
-    let new_directive = usual root ap in 
-    in_file ~new_directive ap;;    
-
-end;;
-
-
-
-
-
-
-module Assistance_coma_big_constant=struct
-
-(* 
-#use"lib/Compilation_management/coma_big_constant.ml";;
-*)
-
-let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
-let home = Sys.getenv "HOME" ;;
-
-module This_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/skeptical_duck");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Githubbed_ocaml");;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Next_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho");;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Idaho_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Third_World=struct
-
-let root=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee") ;;
-let backup_dir=Assistance_dfa_root.of_line (home^"/Teuliou/OCaml/Cherokee_backup") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_particular_string=struct
-
-(*
-
-#use"lib/particular_string.ml";;
-
-
-*)
-
-
-
-let double_semicolon=String.make 2 (char_of_int 59);; (* to make life easier for the OCaml mini-parser *)
-
-let triple_blank = String.make 3 ' ';;
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_coma_constant=struct
-
-(* 
-
-#use"lib/Compilation_management/coma_constant.ml";;
-
-*)
-
-module Private = struct
-
-let directives_subdir=
-  Assistance_dfa_subdirectory.of_line "directives";;
-
-let debugging_subdir=
-  Assistance_dfa_subdirectory.of_line "debugging";;
-
-let watched_subdir=
-  Assistance_dfa_subdirectory.of_line "watched";;
-
-let dune_bin_subdir= Assistance_dfa_subdirectory.of_line "bin";;  
-let dune_build_subdir= Assistance_dfa_subdirectory.of_line "_build";;
-let dune_test_subdir= Assistance_dfa_subdirectory.of_line "test";;
-
-let nonml_files_subdir=
-  Assistance_dfa_subdirectory.of_line "nonml_files";;
-
-let watched_and_githubbed_subdir=
-  Assistance_dfa_subdirectory.extend watched_subdir "watched_and_githubbed";;
-
-let watched_not_githubbed_subdir=
-  Assistance_dfa_subdirectory.extend watched_subdir "watched_not_githubbed";;
-
-let githubbed_nonml_files_subdir=
-  Assistance_dfa_subdirectory.extend nonml_files_subdir "githubbed_nonml_files";;
-
-let nongithubbed_nonml_files_subdir=
-  Assistance_dfa_subdirectory.extend nonml_files_subdir "nongithubbed_nonml_files";;  
-
-let build_subdir =   Assistance_dfa_subdirectory.extend nongithubbed_nonml_files_subdir "_build";;
-let usual_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_usual_build";;
-let debug_build_subdir= Assistance_dfa_subdirectory.extend build_subdir "_debug_build";;  
-let exec_build_subdir=  Assistance_dfa_subdirectory.extend build_subdir "_exec_build";;  
-let parameters_subdir= Assistance_dfa_subdirectory.of_line "Compilation_management";;
-
-let short_path_for_diary_file= Assistance_dfn_short.of_line"diary_archive.ml";;
-let short_path_for_loadingsfile= Assistance_dfn_short.of_line"my_loadings.ml";;
-let short_path_for_painful_debugging_file=Assistance_dfn_short.of_line"painful_debugging.ml";;
-let short_path_for_parametersfile= Assistance_dfn_short.of_line "coma_big_constant.ml";;
-let short_path_for_printersfile= Assistance_dfn_short.of_line "my_printers.ml";;
-let short_path_for_targetfile= Assistance_dfn_short.of_line "targetfile.ocaml_made";;
- 
-let rootless_path_for_diary_file=
-  Assistance_dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
-let rootless_path_for_loadingsfile=
-  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
-let rootless_path_for_painful_debugging_file=
-  Assistance_dfn_join.subdirectory_to_short  watched_not_githubbed_subdir short_path_for_painful_debugging_file;;
-let rootless_path_for_parametersfile=
-  Assistance_dfn_join.subdirectory_to_short  parameters_subdir short_path_for_parametersfile;;
-let rootless_path_for_printersfile=
-  Assistance_dfn_join.subdirectory_to_short  directives_subdir short_path_for_printersfile;;
-let rootless_path_for_targetfile=
-  Assistance_dfn_join.subdirectory_to_short  nongithubbed_nonml_files_subdir short_path_for_targetfile;;     
-
-let rootless_path_for_ocamlinit = Assistance_dfn_rootless.of_line ".ocamlinit";;
-
-
-let git_ignored_subdirectories =
-  [
-     build_subdir;
-     dune_bin_subdir;
-     dune_build_subdir;
-     dune_test_subdir;
-     watched_not_githubbed_subdir;
-     nongithubbed_nonml_files_subdir;
-     directives_subdir;
-     debugging_subdir;
-  ];;
-
-
-let minimalist_text_for_ocamlinit =
-   "\n#use\""^(Assistance_dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Assistance_particular_string.double_semicolon^
-  "\n#use\""^(Assistance_dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Assistance_particular_string.double_semicolon;;
-
- let full_text_for_ocamlinit = (
-      minimalist_text_for_ocamlinit^
-      "\nopen Needed_values"^Assistance_particular_string.double_semicolon^
-      "\ninitialize_toplevel()"^Assistance_particular_string.double_semicolon
-       ) ;; 
-
-let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Registered printers end here *) \n\n" ;;
-let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Fads/painful_debugging.ml\""^Assistance_particular_string.double_semicolon^"\n\n*)\n\n" ;;
-
-let common_part_in_conventional_files = 
-   [
-     rootless_path_for_printersfile, text_for_printersfile ; 
-     rootless_path_for_loadingsfile, "" ;
-     rootless_path_for_targetfile, "";
-     rootless_path_for_diary_file, "";
-   ] ;;     
-
-
-let conventional_files_with_full_content =  
-   [
-     rootless_path_for_ocamlinit, full_text_for_ocamlinit ;
-     rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
-   ] @ common_part_in_conventional_files ;;      
-
-let conventional_files_with_minimal_content =    
-   [
-     rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit ;
-   ] @ common_part_in_conventional_files ;;      
-
-
-let minimal_set_of_needed_dirs = 
-  [
-    usual_build_subdir ;
-    watched_not_githubbed_subdir;
-    watched_and_githubbed_subdir;
-    githubbed_nonml_files_subdir;
-    nongithubbed_nonml_files_subdir;
-  ] ;;  
-
-let full_set_of_needed_dirs = 
-  minimal_set_of_needed_dirs @
-    [
-    ] ;;  
-
-end ;;
-
- let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
- let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
- let debug_build_subdir = Private.debug_build_subdir ;;
- let debugging_subdir = Private.debugging_subdir ;;
- let exec_build_subdir = Private.exec_build_subdir ;;
- let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
- let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
- let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
- let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
- let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
- let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
- let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
- let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
- let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
- let rootless_path_for_targetfile = Private.rootless_path_for_targetfile ;;
- let usual_build_subdir = Private.usual_build_subdir ;;
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_partial_crobj_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
-
-For convenience, the list is reversed when the partial object is closed and becomes full
-(new objects are therefore appended directly to the left on a partial object).
-
-
-*)
-
-
-type t= 
-   |Uple of Assistance_concrete_object_t.t list
-   |List of Assistance_concrete_object_t.t list
-   |Array of Assistance_concrete_object_t.t list
-   |Record of ((string*Assistance_concrete_object_t.t) list)
-   |RecordPlusFieldName of ((string*Assistance_concrete_object_t.t) list)*string
-   |Variant of string*(Assistance_concrete_object_t.t list);;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_double_partial_crobj_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
-
-First argument says if a comma appears last, waiting for another item.
-
-The two last arguments are t * (t list) rather than just t list, to enforce
-a non-empty list. 
-
-*)
-
-
-type t= Double of bool * Assistance_partial_crobj_t.t * (Assistance_partial_crobj_t.t list) ;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_parsing_machine_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
-
-
-*)
-
-type t= 
-    {
-       parsed_one    : string;
-       current_index : int;
-       data : Assistance_double_partial_crobj_t.t;
-    };;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_category_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
-
-
-*)
-
-
-type t= 
-    Uple 
-   |List 
-   |Array 
-   |Record
-   |Variant;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_opening_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
-
-
-
-*)
-
-
-type t= 
-    Uple 
-   |List 
-   |Array 
-   |Record 
-   |Variant of string;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_basic_increase_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
-
-
-*)
-
-
-type t= 
-     Push_int of int 
-    |Push_string of Assistance_encoded_string_t.t 
-    |Push_field_name  of string 
-    |Open of Assistance_crobj_opening_t.t 
-    |Separate of Assistance_crobj_category_t.t
-    |Close of Assistance_crobj_category_t.t;;
-    
-
-
-        
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_partial_crobj=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
-
-
-*)
-
-exception Field_With_No_Name of Assistance_concrete_object_t.t;;
-exception Unused_Field_Name of string;;
-exception Misapplied_Field_Name of string;;
-exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
-
-let initialize=function 
-    Assistance_crobj_opening_t.Uple -> Assistance_partial_crobj_t.Uple[]
-   |List -> Assistance_partial_crobj_t.List[]
-   |Array -> Assistance_partial_crobj_t.Array[]
-   |Record->Assistance_partial_crobj_t.Record([])
-   |Variant(constructor)->Assistance_partial_crobj_t.Variant(constructor,[]);;
-
-let category = function 
-    Assistance_partial_crobj_t.Uple(l)->Assistance_crobj_category_t.Uple
-   |List(_)->Assistance_crobj_category_t.List
-   |Array(_)->Assistance_crobj_category_t.Array
-   |Record(_)->Assistance_crobj_category_t.Record
-   |RecordPlusFieldName(l,rcdname)->Assistance_crobj_category_t.Record
-   |Variant(constructor,l)->Assistance_crobj_category_t.Variant;;
- 
-
-let push_one_more_item item =function 
-    Assistance_partial_crobj_t.Uple(l)->Assistance_partial_crobj_t.Uple(item::l)
-   |List(l)->Assistance_partial_crobj_t.List(item::l)
-   |Array(l)->Assistance_partial_crobj_t.Array(item::l)
-   |Record(_)->raise(Field_With_No_Name(item))
-   |RecordPlusFieldName(l,rcdname)->Assistance_partial_crobj_t.Record((rcdname,item)::l)
-   |Variant(constructor,l)->Assistance_partial_crobj_t.Variant(constructor,item :: l);;
-
-let push_int i = push_one_more_item (Assistance_concrete_object_t.Int(i));;
-let push_string encoded_s = push_one_more_item (Assistance_concrete_object.wrap_encoded_string encoded_s);;
-
-let push_field_name recdname=function 
-    Assistance_partial_crobj_t.Record(l)->Assistance_partial_crobj_t.RecordPlusFieldName(l,recdname)
-   |_->raise(Misapplied_Field_Name(recdname));;
-
-
-
-let close =function 
-    Assistance_partial_crobj_t.Uple(l)->Assistance_concrete_object_t.Uple(List.rev l)
-   |List(l)->Assistance_concrete_object_t.List(List.rev l)
-   |Array(l)->Assistance_concrete_object_t.Array(List.rev l)
-   |Record(l)->Assistance_concrete_object_t.Record(List.rev l)
-   |RecordPlusFieldName(_,rcdname)->raise(Unused_Field_Name(rcdname))
-   |Variant(constructor,l)->Assistance_concrete_object_t.Variant(constructor,List.rev l);;
-
-
-let check_category_and_close ctgr pcrobj=
-   if category(pcrobj)<>ctgr 
-   then raise(Category_Mismatch(ctgr,pcrobj))
-   else 
-   close pcrobj;;
-
-end;;
-
-
-
-
-
-
-module Assistance_double_partial_crobj=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
-
-*)
-
-exception Close_on_separator;;
-exception Redundant_separator;;
-exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
-exception End_reached of Assistance_concrete_object_t.t ;;
-
-module Private = struct 
-
-let push_int i (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_int i last_opened,opened_before));;
-
-let push_string encoded_s (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_string encoded_s last_opened,opened_before));;    
-
-let push_separator ctgr (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
-  if separator_present
-  then raise(Redundant_separator)
-  else 
-        let ctgr2 = Assistance_partial_crobj.category last_opened in 
-        if ctgr <> ctgr2
-        then raise(Category_Mismatch(ctgr,last_opened))
-        else  (Assistance_double_partial_crobj_t.Double(true,last_opened,opened_before));;
-
-let push_field_name record_name (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_field_name record_name last_opened,opened_before));;    
-
-let open_new opening 
-   (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-    Assistance_double_partial_crobj_t.Double(false,
-      Assistance_partial_crobj.initialize opening,last_opened::opened_before);;
-
-
-
-let close ctgr
-    (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
-    if separator_present 
-    then raise(Close_on_separator)
-    else 
-    let newfound=Assistance_partial_crobj.check_category_and_close ctgr last_opened in 
-    match opened_before with 
-    []->raise(End_reached(newfound))
-    |next_opened_one::others ->
-      let new_frontier = Assistance_partial_crobj.push_one_more_item newfound next_opened_one in 
-      Assistance_double_partial_crobj_t.Double(false,new_frontier,others);;
-
-end ;; 
-
-let initialize opening = 
-    Assistance_double_partial_crobj_t.Double(false,Assistance_partial_crobj.initialize opening,[]);;
-
-let increase = function 
-   Assistance_crobj_basic_increase_t.Push_int(i)->Private.push_int i 
-    |Push_string(encoded_s)->Private.push_string encoded_s 
-    |Push_field_name(rcdname)->Private.push_field_name rcdname
-    |Open(opening) -> Private.open_new opening
-    |Separate(cat) -> Private.push_separator cat 
-    |Close(cat) -> Private.close cat;;
-        
-
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_parsing=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
-
-
-*)
-
-exception Unreadable of int * string ;;
-
-module Private = struct
-
-let salt = Assistance_encoded_string.salt ;; 
-
-let array_opener = salt ^ "ao";;
-let list_opener = salt ^ "lo";;
-let record_opener = salt ^ "ro";;
-let string_opener = salt ^ "so";;
-let uple_opener = salt ^ "uo";; 
-let variant_opener = salt ^ "vo";; 
-
-let array_separator = salt ^ "as";;
-let list_separator = salt ^ "ls";;
-let record_separator = salt ^ "rs";;
-let uple_separator = salt ^ "us";; 
-let variant_separator = salt ^ "vs";; 
-
-let array_closer = salt ^ "ac";;
-let list_closer = salt ^ "lc";;
-let record_closer = salt ^ "rc";;
-let string_closer = salt ^ "sc";;
-let uple_closer = salt ^ "uc";; 
-let variant_closer = salt ^ "vc";; 
-
-let record_arrow = salt ^ "ra";;
-
-
-let array_cat = Assistance_crobj_category_t.Array
-and list_cat  = Assistance_crobj_category_t.List
-and record_cat = Assistance_crobj_category_t.Record 
-and uple_cat = Assistance_crobj_category_t.Uple 
-and variant_cat = Assistance_crobj_category_t.Variant;;
-
-let list_for_category_of_lexeme=[
-    (array_opener,array_cat); 
-    (list_opener,list_cat); 
-    (record_opener,record_cat); 
-    (uple_opener,uple_cat); 
-    (variant_opener,variant_cat); 
-
-    (array_separator,array_cat); 
-    (list_separator,list_cat); 
-    (record_separator,record_cat); 
-    (uple_separator,uple_cat); 
-    (variant_separator,variant_cat); 
-
-    (array_closer,array_cat); 
-    (list_closer,list_cat); 
-    (record_closer,record_cat); 
-    (uple_closer,uple_cat); 
-    (variant_closer,variant_cat); 
-
-    (record_arrow,record_cat); (* a little bit of convenient convention here *)
-];;
-
-let category_of_lexeme lexeme=List.assoc lexeme list_for_category_of_lexeme;;
-
-let list_for_preludeless_increasers=[
-    (array_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Array)); 
-    (list_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.List)); 
-    (record_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Record)); 
-    (uple_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Uple)); 
-
-    (array_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Array)); 
-    (list_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.List)); 
-    (record_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Record)); 
-    (uple_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Uple)); 
-    (variant_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Variant)); 
-
-    (array_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Array)); 
-    (list_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.List)); 
-    (record_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Record)); 
-    (uple_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Uple)); 
-    (variant_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Variant)); 
-
-];;
-
-exception Unreadable_int of string;;
-
-let parse_int s=try int_of_string s with _->raise(Unreadable_int(s));;
-
-let next_basic_increase_in_variant_opening_case s idx idx1=
-   let opening = Assistance_crobj_opening_t.Variant (Assistance_cull_string.interval s idx (idx1-1)) in 
-   (Assistance_crobj_basic_increase_t.Open(opening),idx1+(String.length variant_opener));;
-
-let next_basic_increase_in_field_naming_case s idx idx1=
-   let name = Assistance_cull_string.interval s idx (idx1-1) in 
-   (Assistance_crobj_basic_increase_t.Push_field_name(name),idx1+(String.length record_arrow));;
-
-let next_basic_increase_in_preludy_case s idx idx1=
-   if Assistance_substring.is_a_substring_located_at variant_opener s idx1 
-   then next_basic_increase_in_variant_opening_case s idx idx1
-   else 
-   if Assistance_substring.is_a_substring_located_at record_arrow s idx1 
-   then next_basic_increase_in_field_naming_case s idx idx1
-   else let i=parse_int(Assistance_cull_string.interval s idx (idx1-1)) in 
-       (Assistance_crobj_basic_increase_t.Push_int(i),idx1);;
-
-
-exception Missing_string_closer of int * string;;
-
-let next_basic_increase_in_push_string_case s idx=
-   let idx1=idx+(String.length string_opener) in 
-   let idx2=Assistance_substring.leftmost_index_of_in_from string_closer s idx1 in 
-   if idx2<0
-   then raise(Missing_string_closer(idx1,s))
-   else
-   (* we know that the string is already encoded *)
-   let encoded_s = Assistance_encoded_string.retrieve (Assistance_cull_string.interval s idx1 (idx2-1)) in 
-   (Assistance_crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
-
-
-
-
-exception Unreadable_increase of int * string ;;
-
-let next_basic_increase  s idx=
-   let idx1= Assistance_substring.leftmost_index_of_in_from salt s idx in 
-   if idx1<0 
-   then let i=parse_int (Assistance_cull_string.cobeginning (idx-1) s) in
-        (Assistance_crobj_basic_increase_t.Push_int(i),String.length(s)+1)
-   else      
-   if idx1>idx 
-   then next_basic_increase_in_preludy_case s idx idx1
-   else 
-   if Assistance_substring.is_a_substring_located_at string_opener s idx 
-   then next_basic_increase_in_push_string_case s idx
-   else 
-   match Assistance_option.seek (fun 
-      (text,action)->Assistance_substring.is_a_substring_located_at text s idx
-   ) list_for_preludeless_increasers with 
-   None -> raise(Unreadable_increase(idx,s))
-   |Some(text,action)->(action,idx+(String.length text));;
-
-let one_step_more machine =
-   let (action,next_idx) =
-      next_basic_increase machine.Assistance_crobj_parsing_machine_t.parsed_one 
-                            machine.Assistance_crobj_parsing_machine_t.current_index in 
-   {
-      machine with 
-      Assistance_crobj_parsing_machine_t.current_index = next_idx ;
-      Assistance_crobj_parsing_machine_t.data = Assistance_double_partial_crobj.increase action machine.Assistance_crobj_parsing_machine_t.data;
-   }  ;;
-
-let prudent_push machine = try (None,Some(one_step_more machine)) with 
-   Assistance_double_partial_crobj.End_reached(solution) -> (Some solution,None);;
-
-exception First_step_exn of Assistance_crobj_basic_increase_t.t ;; 
-
-let first_step s =
-   let (action,next_idx) = next_basic_increase s 1 in 
-   match action with 
-    Assistance_crobj_basic_increase_t.Push_int(i)->(Some(Assistance_concrete_object_t.Int(i)),None,next_idx)
-   |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->(Some(Assistance_concrete_object.wrap_encoded_string(encoded_s)),None,next_idx)
-   |Assistance_crobj_basic_increase_t.Open(opening)->(None,Some(Assistance_double_partial_crobj.initialize(opening)),next_idx)
-   |_->raise(First_step_exn(action));;
-
-exception Ends_too_soon of Assistance_concrete_object_t.t * string ;; 
-
-let parse s =
-    let (opt_quick_result,opt_start,next_idx) = first_step s in 
-    match opt_quick_result with 
-    Some (res)-> if next_idx < (String.length s)
-                 then raise(Ends_too_soon(res,s)) 
-                 else res 
-    |None -> let start_partial_obj = Assistance_option.unpack opt_start in   
-             let machine = {
-                Assistance_crobj_parsing_machine_t.parsed_one = s ;
-                Assistance_crobj_parsing_machine_t.current_index = next_idx ;
-                Assistance_crobj_parsing_machine_t.data = start_partial_obj;
-             } in 
-             let rec iterator = (fun mach ->
-                let (opt_sol,opt_term) = prudent_push mach in 
-                match opt_term with 
-                None -> Assistance_option.unpack opt_sol 
-                |Some(term)->iterator(term) 
-             ) in 
-             iterator machine;;
-
-let rec unparse = function 
-   Assistance_concrete_object_t.Int(i)->string_of_int i 
-   |String(t)->string_opener^(Assistance_encoded_string.store t)^string_closer
-   |Uple(l)->let temp1=Assistance_image.image unparse l in 
-             uple_opener^(String.concat uple_separator temp1)^uple_closer
-   |List(l)->let temp1=Assistance_image.image unparse l in 
-             list_opener^(String.concat list_separator temp1)^list_closer 
-   |Array(l)->let temp1=Assistance_image.image unparse l in 
-             array_opener^(String.concat array_separator temp1)^array_closer
-   |Record(l)->let temp1=Assistance_image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
-             record_opener^(String.concat record_separator temp1)^record_closer          
-   |Variant(constructor,l)->let temp1=Assistance_image.image unparse l in 
-             constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
-
-end;;
-
-let parse = Private.parse;;
-let unparse = Private.unparse;;
-
-end;;
-
-
-
-
-
-
-module Assistance_isolated_occurrences=struct
-
-(*
-
-#use"lib/isolated_occurrences.ml";;
-
-Used to detect mentions of previously defined names in
-the same OCaml module.
-
-An occurrence of a substring is isolated when it 
-cannot be extended to a meaningful Ocaml name. So we look at
-the surrounding characters, on the left and on the right.
-
-
-*)
-
-module Private=struct
-
-exception Unclear_left_char of char;;
-exception Unclear_right_char of char;;
-
-let rejected_left_chars=
-  [
-   	'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
-    'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
-    'u';'v';'w';'x';'y';'z';
-    'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
-    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
-    'U';'V';'W';'X';'Y';'Z';
-    '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
-    '_';
-  ];;
-
-let admitted_left_chars=
-  [
-   	'(' ; ')' ; ';' ; ' ' ;'\n';'\r';'=';'<';'>';'+';'*';'/';'-'; '.'; ',';
-  ];;
-
-let rejected_right_chars=
-  [
-   	'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
-    'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
-    'u';'v';'w';'x';'y';'z';
-    'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
-    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
-    'U';'V';'W';'X';'Y';'Z';
-    '0';'1';'2';'3';'4';'5';'6';'7';'8';'9';
-    '_';
-  ];;
-
-let admitted_right_chars=
-  [
-   	'(' ; ')' ; ';' ; ' ' ;'\n';'\r';'=';'<';'>';'+';'*';'/';'-'; '.'; ',';
-  ];;
-
-let test_for_left_admissiblity c=
-   if List.mem c rejected_left_chars then false else
-   if List.mem c admitted_left_chars then true else
-   raise(Unclear_left_char(c));;
-   
-let test_for_right_admissiblity c=
-   if List.mem c rejected_right_chars then false else
-   if List.mem c admitted_right_chars then true else
-   raise(Unclear_right_char(c));;   
-   
-let leftmost_small_test  s j=
-   if j=0 
-   then true 
-   else test_for_left_admissiblity (String.get s (j-1));;
-
-let rightmost_small_test  s j=
-   if j=((String.length s)+1) 
-   then true 
-   else test_for_right_admissiblity (String.get s (j-1));;   
-   
-
-end;;
-
-let of_in substr s=
-  let l_substr=String.length substr 
-  and n=String.length(s) in
-  let main_test= (
-    fun k->
-      if ((String.sub s (k-1) l_substr)<>substr)
-      then false
-      else 
-      ( Private.leftmost_small_test s (k-1) )
-      &&
-      ( Private.rightmost_small_test s (k+l_substr) )
-      
-  ) in
-  Assistance_option.filter_and_unpack(
-     fun k->
-       if main_test k
-       then Some(k,k+l_substr-1)
-       else None
-  ) (Assistance_int_range.range 1 (n+1-l_substr));;
-
-   
-(*   
-   
-of_in "garfield" 
-"let x=garfield in let y=subgarfield and z=garfield2 in";;
-
-of_in "garfield" "garfield is a cat";;
-
-of_in "Boogie.Woogie.c" "48+Boogie.Woogie.c";;
-
-
-*)              
-
-end;;
-
-
-
-
-
-
-module Assistance_ocaml_gsyntax_category=struct
-
-(*
-
-#use"lib/Ocaml_analysis/ocaml_gsyntax_category.ml";;
-
-*)
-
-type t=
-     Value
-    |Type
-    |Exception 
-    |Module_opener
-    |Module_closer 
-    |Module_inclusion;;
-    
-               
-
-end;;
-
-
-
-
-
-
-module Assistance_ocaml_gsyntax_item=struct
-
-(*
-
-#use"lib/Ocaml_analysis/ocaml_gsyntax_item.ml";;
-
-*)
-
-type t={
-  category : Assistance_ocaml_gsyntax_category.t;
-  name : string;
-  interval_for_name : int*int;
-  whole : string;
-  content : string;
-  interval_for_content : int*int;  
-  is_an_included_item : bool;
-};;
-
-let name x=x.name;;
-let content x=x.content;;
-let whole x=x.whole;;
-
-let make cat nm nm_itv intr ctnt ctnt_itv incldd_or_not=
-    {
-  		category =cat;
-        name =nm;
-        interval_for_name =nm_itv;
-        whole =intr;
-        content =ctnt;
-        interval_for_content =ctnt_itv;  
-        is_an_included_item =incldd_or_not;
-    };;
-
-let prepend_prefix prefix x=
-    {
-  		category =x.category;
-        name =prefix^"."^x.name;
-        interval_for_name =x.interval_for_name;
-        whole =x.whole;
-        content =x.content;
-        interval_for_content =x.interval_for_content;  
-        is_an_included_item =x.is_an_included_item;
-    };;
-    
-let include_in_new_scope new_scope x=
-    {
-  		category =x.category;
-        name =new_scope^(Assistance_cull_string.before_rightmost_possibly_all x.name '.');
-        interval_for_name =x.interval_for_name;
-        whole =x.whole;
-        content =x.content;
-        interval_for_content =x.interval_for_content;  
-        is_an_included_item =true;
-    };;    
-    
-let make_name_coincide_with_content x=
-        {
-            category =x.category;
-            name =x.content;
-            interval_for_name =x.interval_for_name;
-            whole =x.whole;
-            content =x.content;
-            interval_for_content =x.interval_for_content;  
-            is_an_included_item =x.is_an_included_item;
-        };;    
-    
-    
-    
-    
-    
-    
-               
-
-end;;
-
-
-
-
-
-
-module Assistance_overwrite_at_intervals=struct
-
-(*
-
-#use"lib/overwrite_at_intervals.ml";;
-
-*)
-
-
-
-let inside_string replacings s=
-  let n=String.length s
-  and r=List.length replacings in
-  let x_coord=(fun j->
-    if j=1 then 1 else
-    snd(fst(List.nth replacings ((j-3)/2)))+1
-  ) and y_coord=(fun j->
-   if j=2*r+1 then n else
-    fst(fst(List.nth replacings ((j-1)/2)))-1
-  ) in
-  let xy_substring=(fun j->
-    Assistance_cull_string.interval s (x_coord j) (y_coord j)
-  ) in
-  let all_parts=Assistance_int_range.scale (
-    fun j->
-      if (j mod 2)=1
-      then xy_substring j
-      else snd(List.nth replacings ((j-2)/2))
-  ) 1 (2*r+1) in
-  String.concat "" all_parts;;
-
-(*
-
-inside_string
- [(7,12),"garfield";(23,24),"jack";(30,30),"gas"]
- "12345678901234567890123456789012345678901234567890";;
- 
-
-*)
-
-let inside_file replacings fn=
-  let old_t=Assistance_io.read_whole_file fn in
-  let new_t=inside_string replacings old_t in
-  Assistance_io.overwrite_with fn new_t;;  
-  
-
-
-
-
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser=struct
-
-(*
-
-#use"lib/GParser/gparser.ml";;
-
-*)
-
-type t=
-     Constant of string
-    |Enclosure of string*string
-    |Footless_constant of string
-    |Sample_char of string
-    |Sample_neg of string
-    |Sample_star of string
-    |Sample_negstar of string
-    |Sample_plus of string
-    |Race of string*string
-    |Comment of string*string*string*string
-    |House_with_doors of string*string*((string*string) list)
-    |Chain of t list
-    |Disjunction of t list
-    |Star of t
-    |Detailed_star of t
-    |One_or_more of t
-    |Optional of t
-    |Recoiling_ending of t*t
-    |Detailed_chain of t list
-;;
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_result=struct
-
-(*
-
-#use"lib/GParser/gparser_result.ml";;
-
-*)
-
-
-type t={
-   whole_range : int*int ;
-   important_ranges : (int*int) list;
-   final_cursor_position : int; 
-   disjunction_index : int option;
-};;
-
-let whole_range x=x.whole_range;;
-let important_ranges x=x.important_ranges;;
-let final_cursor_position x=x.final_cursor_position;;
-let disjunction_index x=x.disjunction_index;;
-
-let veil b c d e={
-   whole_range =b;
-   important_ranges =c;
-   final_cursor_position =d; 
-   disjunction_index=e;
-};;
-
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_fun=struct
-
-(*
-
-#use"lib/GParser/gparser_fun.ml";;
-
-*)
-
-type t=(string->int->(Assistance_gparser_result.t option));;
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_house_with_doors=struct
-
-(*
-
-#use"lib/GParser/gparser_house_with_doors.ml";;
-
-*)
-
-module Private=struct
-type mistletoe={
-     main_opener:string;
-     main_closer:string;
-     other_enclosers: (string*string) list;
-     processed_argument: string;
-     initial_index: int;
-};;
-
-type walker={
-    current_index : int;
-    current_depth : int;
-    awaited_closer : string option;
-    answer : Assistance_gparser_result.t option;
-};;
-
-
-let new_walker_in_first_case_in_hwd (m,wlkr)=
-   let opt1=Assistance_option.seek(fun (opener,closer)->
-     Assistance_substring.is_a_substring_located_at opener 
-        m.processed_argument wlkr.current_index
-   ) m.other_enclosers in
-   if opt1<>None
-   then let (op1,cl1)=Assistance_option.unpack opt1 in
-        {
-        	current_index =wlkr.current_index+(String.length op1);
-            current_depth =wlkr.current_depth;
-            awaited_closer=Some(cl1);
-            answer =None;
-        }
-   else
-   if Assistance_substring.is_a_substring_located_at m.main_opener 
-        m.processed_argument wlkr.current_index
-   then {
-        	current_index =wlkr.current_index+(String.length m.main_opener);
-            current_depth =wlkr.current_depth+1;
-            awaited_closer=None;
-            answer =None;
-        }
-   else   
-   if not(Assistance_substring.is_a_substring_located_at m.main_closer 
-      m.processed_argument wlkr.current_index)
-   then {
-        	current_index =wlkr.current_index+1;
-            current_depth =wlkr.current_depth;
-            awaited_closer=None;
-            answer =None;
-        }
-   else    
-   if wlkr.current_depth>1
-   then {
-        	current_index =wlkr.current_index+(String.length m.main_closer);
-            current_depth =wlkr.current_depth-1;
-            awaited_closer=None;
-            answer =None;
-        }
-   else  
-   let j1=wlkr.current_index+(String.length m.main_closer) in
-   let res=Assistance_gparser_result.veil
-               (m.initial_index,j1-1)
-               []
-               j1
-               None        in
-        {
-        	current_index =wlkr.current_index+(String.length m.main_closer);
-            current_depth =wlkr.current_depth-1;
-            awaited_closer=None;
-            answer =Some(res);
-        };;
-   
-
-let first_case_in_hwd 
-   (m,wlkr)=(m,new_walker_in_first_case_in_hwd (m,wlkr));;
-  
-let second_case_in_hwd (m,wlkr)=
-  let rparen=Assistance_option.unpack wlkr.awaited_closer in
-  if Assistance_substring.is_a_substring_located_at rparen 
-      m.processed_argument wlkr.current_index
-  then (m,{
-        	current_index =wlkr.current_index+(String.length rparen);
-            current_depth =wlkr.current_depth;
-            awaited_closer=None;
-            answer =None;
-        })
-  else (m,{
-        	current_index =wlkr.current_index+1;
-            current_depth =wlkr.current_depth;
-            awaited_closer=wlkr.awaited_closer;
-            answer =None;
-        });;
-
-let pusher_for_hwd w=
-  let (m,wlkr)=w in
-  if wlkr.answer=None
-  then 
-       (
-         if wlkr.awaited_closer=None
-         then first_case_in_hwd w
-         else second_case_in_hwd w       
-        )
-  else w;;  
-   
-let rec iterator_for_hwd w=
-   let (m,wlkr)=w in
-   if wlkr.answer<>None
-   then wlkr.answer
-   else
-   if wlkr.current_index>(String.length m.processed_argument)
-   then None
-   else iterator_for_hwd (pusher_for_hwd w);; 
-  
-let starter_for_hwd (main_opener,main_closer) other_enclosers s i=
-  (
-    {
-     main_opener=main_opener;
-     main_closer=main_closer;
-     other_enclosers=other_enclosers;
-     processed_argument=s;
-     initial_index=i;
-    }
-  ,
-    {
-      current_index =i+(String.length main_opener);
-      current_depth =1;
-      awaited_closer=None;
-      answer =None;
-    }
-  );;
-end;;  
-
-let hwd
-   (main_opener,main_closer)
-     other_enclosers=
-   let rec tempf=(fun s i->
-        if not(Assistance_substring.is_a_substring_located_at main_opener s i)
-        then None 
-        else 
-          
-          Private.iterator_for_hwd 
-         (Private.starter_for_hwd (main_opener,main_closer) other_enclosers s i)
-   ) in
-   (tempf:Assistance_gparser_fun.t);;      
-      
-(*
-
-hwd ("(*","*)") ["\"","\""] "(* Bye \"*)\" bye bird *)456" 1;;
-
-*)
-
-
-
-         
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_ocaml_comment=struct
-
-(*
-
-#use"lib/GParser/gparser_ocaml_comment.ml";;
-
-*)
-
-module Private=struct
-type mistletoe={
-     comment_opener:string;
-     comment_closer:string;
-     quote_opener:string;
-     quote_closer:string;
-     processed_argument: string;
-     initial_index: int;
-};;
-
-type walker={
-    current_index : int;
-    current_depth : int;
-    quote_mode : bool;
-    answer : Assistance_gparser_result.t option;
-    length_of_preceding_backslash_wall :int;
-};;
-
-let update_backslash_wall_length (m,wlkr)=
-if (Assistance_strung.get m.processed_argument wlkr.current_index)='\\'
-then (wlkr.length_of_preceding_backslash_wall)+1
-else 0;;
-
-
-let new_walker_in_first_case_in_hwd (m,wlkr)=
-   if Assistance_substring.is_a_substring_located_at
-     m.quote_opener m.processed_argument wlkr.current_index
-   then {
-        	current_index =wlkr.current_index+(String.length m.quote_opener);
-            current_depth =wlkr.current_depth;
-            quote_mode=true;
-            answer =None;
-            length_of_preceding_backslash_wall=0;
-        }
-   else
-   if Assistance_substring.is_a_substring_located_at m.comment_opener 
-        m.processed_argument wlkr.current_index
-   then {
-        	current_index =wlkr.current_index+(String.length m.comment_opener);
-            current_depth =wlkr.current_depth+1;
-            quote_mode=false;
-            answer =None;
-            length_of_preceding_backslash_wall=0;
-        }
-   else   
-   if not(Assistance_substring.is_a_substring_located_at m.comment_closer 
-      m.processed_argument wlkr.current_index)
-   then {
-        	current_index =wlkr.current_index+1;
-            current_depth =wlkr.current_depth;
-            quote_mode=false;
-            answer =None;
-            length_of_preceding_backslash_wall=
-               update_backslash_wall_length(m,wlkr);
-        }
-   else    
-   if wlkr.current_depth>1
-   then {
-        	current_index =wlkr.current_index+(String.length m.comment_closer);
-            current_depth =wlkr.current_depth-1;
-            quote_mode=false;
-            answer =None;
-            length_of_preceding_backslash_wall=0;
-        }
-   else  
-   let j1=wlkr.current_index+(String.length m.comment_closer) in
-   let res=Assistance_gparser_result.veil
-               (m.initial_index,j1-1)
-               []
-               j1
-               None        in
-        {
-        	current_index =wlkr.current_index+(String.length m.comment_closer);
-            current_depth =wlkr.current_depth-1;
-            quote_mode=false;
-            answer =Some(res);
-            length_of_preceding_backslash_wall=0;
-        };;
-   
-
-let first_case_in_hwd 
-   (m,wlkr)=(m,new_walker_in_first_case_in_hwd (m,wlkr));;
-  
-let second_case_in_hwd (m,wlkr)=
-  if (Assistance_substring.is_a_substring_located_at m.quote_closer
-      m.processed_argument wlkr.current_index)
-     &&
-     ((wlkr.length_of_preceding_backslash_wall mod 2)=0) 
-  then (m,{
-        	current_index =wlkr.current_index+(String.length m.quote_closer);
-            current_depth =wlkr.current_depth;
-            quote_mode=false;
-            answer =None;
-            length_of_preceding_backslash_wall=0;
-        })
-  else (m,{
-        	current_index =wlkr.current_index+1;
-            current_depth =wlkr.current_depth;
-            quote_mode=true;
-            answer =None;
-            length_of_preceding_backslash_wall=
-               update_backslash_wall_length(m,wlkr);
-        });;
-
-let pusher_for_hwd w=
-  let (m,wlkr)=w in
-  if wlkr.answer=None
-  then 
-       (
-         if not(wlkr.quote_mode)
-         then first_case_in_hwd w
-         else second_case_in_hwd w       
-        )
-  else w;;  
-   
-let rec iterator_for_main_prsr w=
-   let (m,wlkr)=w in
-   if wlkr.answer<>None
-   then wlkr.answer
-   else
-   if wlkr.current_index>(String.length m.processed_argument)
-   then None
-   else iterator_for_main_prsr (pusher_for_hwd w);; 
-  
-let starter_for_main_prsr 
-(comment_opener,comment_closer) 
- (quote_opener,quote_closer) s i=
-  (
-    {
-     comment_opener=comment_opener;
-     comment_closer=comment_closer;
-     quote_opener=quote_opener;
-     quote_closer=quote_closer;
-     processed_argument=s;
-     initial_index=i;
-    }
-  ,
-    {
-      current_index =i+(String.length comment_opener);
-      current_depth =1;
-      quote_mode=false;
-      answer =None;
-      length_of_preceding_backslash_wall=0;
-    }
-  );;
-end;;  
-
-let main_prsr
-   (comment_opener,comment_closer)
-     (quote_opener,quote_closer)=
-   let rec tempf=(fun s i->
-        if not(Assistance_substring.is_a_substring_located_at comment_opener s i)
-        then None 
-        else 
-          
-          Private.iterator_for_main_prsr 
-         (Private.starter_for_main_prsr (comment_opener,comment_closer) 
-            (quote_opener,quote_closer) s i)
-   ) in
-   (tempf:Assistance_gparser_fun.t);;      
-      
-(*
-
-main_prsr ("(*","*)") ("\"","\"") "(* Bye \"*)\" bye bird *)456" 1;;
-main_prsr ("(*","*)") ("\"","\"") "(* Bye \"uu\" bye bird *)456" 1;;
-main_prsr ("(*","*)") ("\"","\"") "(* Bye \"uu\\\" *) \"  *)234" 1;;
-
-
-*)
-
-
-
-         
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_apply=struct
-
-(*
-
-#use"lib/GParser/gparser_apply.ml";;
-
-*)
-
-module Private=struct
-
-let enclosure (left_encloser,right_encloser)=
-   let tempf=(fun s i1->
-   if (not(Assistance_substring.is_a_substring_located_at left_encloser s i1))
-   then None
-   else 
-   let i2=i1+(String.length left_encloser) in
-   let i3=Assistance_substring.leftmost_index_of_in_from right_encloser s i2 in
-   if i3<1
-   then None 
-   else
-   let i4=i3+(String.length right_encloser)-1 in
-   let res= Assistance_gparser_result.veil
-               (i1,i4)
-               [i2,i3-1]
-               (i4+1)
-               None in
-   Some(res)) in
-   (tempf: Assistance_gparser_fun.t);;
-   
-let constant t=
-   let tempf=(fun s i1->
-   if (not(Assistance_substring.is_a_substring_located_at t s i1))
-   then None
-   else 
-   let i2=i1+(String.length t) in
-   let res= Assistance_gparser_result.veil
-               (i1,i2-1)
-               []
-               i2
-               None in
-   Some(res)) in
-   (tempf: Assistance_gparser_fun.t);;
-
-
-let footless_constant t=
-   let tempf=(fun s i1->
-   if (not(Assistance_substring.is_a_substring_located_at t s i1))
-   then None
-   else 
-   let i2=i1+(String.length t) in
-   let res= Assistance_gparser_result.veil
-               (i1,i2-1)
-               []
-               (i2-1)
-               None in
-   Some(res)) in
-   (tempf:Assistance_gparser_fun.t);;
-
-let sample_char t=
-   let lc=Assistance_strung.explode t in
-   let tempf=(fun s i->
-        let c=Assistance_strung.get s i in
-        if List.mem c lc
-        then Some(Assistance_gparser_result.veil
-               (i,i)
-               []
-               (i+1)
-               None)
-        else None) in
-   (tempf:Assistance_gparser_fun.t);;
-
-let sample_neg t=
-   let lc=Assistance_strung.explode t in
-   let tempf=(fun s i->
-        let c=Assistance_strung.get s i in
-        if not(List.mem c lc)
-        then Some(Assistance_gparser_result.veil
-               (i,i)
-               []
-               (i+1)
-               None)
-        else None) in
-   (tempf:Assistance_gparser_fun.t);;
-
-let sample_star t=
-   let lc=Assistance_strung.explode t in
-   let tempf=(fun s i1->
-        let j=Assistance_strung.char_finder_from (fun c->not(List.mem c lc)) s i1 in
-        let better_j=(if j<1 then (String.length s)+1 else j) in
-        let res=Assistance_gparser_result.veil
-               (i1,better_j-1)
-               []
-               better_j
-               None in
-   Some(res)) in
-   (tempf:Assistance_gparser_fun.t);;
-
-let sample_negstar t=
-   let lc=Assistance_strung.explode t in
-   let tempf=(fun s i1->
-        let j=Assistance_strung.char_finder_from (fun c->List.mem c lc) s i1 in
-        let better_j=(if j<1 then (String.length s)+1 else j) in
-        let res=Assistance_gparser_result.veil
-               (i1,better_j-1)
-               []
-               better_j
-               None in
-   Some(res)) in
-   (tempf:Assistance_gparser_fun.t);;
-
-let sample_plus t=
-   let lc=Assistance_strung.explode t in
-   let tempf=(fun s i1->
-        if i1>(String.length s) then None else
-        if (not(List.mem (Assistance_strung.get s i1 ) lc)) then None else
-        let j=Assistance_strung.char_finder_from (fun c->not(List.mem c lc)) s i1 in
-        let better_j=(if j<1 then (String.length s)+1 else j) in
-        let res=Assistance_gparser_result.veil
-               (i1,better_j-1)
-               []
-               better_j
-               None in
-   Some(res)) in
-   (tempf:Assistance_gparser_fun.t);;
-   
-
-let race (continuer,finalizer)=
-   let rec tempf=(fun (s,i1,k)->
-        if k>(String.length s)
-        then None
-        else
-        if Assistance_substring.is_a_substring_located_at continuer s k
-        then tempf(s,i1,k+(String.length continuer))
-        else
-        if (not(Assistance_substring.is_a_substring_located_at finalizer s k))
-        then tempf(s,i1,k+1)
-        else
-        let j1=k+(String.length finalizer) in
-        let res=Assistance_gparser_result.veil
-               (i1,j1-1)
-               []
-               (j1-1)
-               None in
-        Some(res)) in
-   ((fun s i->tempf(s,i,i)):Assistance_gparser_fun.t);;   
-      
-let house_with_doors=Assistance_gparser_house_with_doors.hwd;;
-
-
-type chain_artefact=
-     Usual of (int * int) list * Assistance_gparser_fun.t list * bytes * int * int 
-    |Result_found of Assistance_gparser_result.t
-    |Failure_found;;
-
-let chain l=
-  let main_f=
-  	(fun s i->
-   		let rec tempf=
-   		(
-         	fun (imp_ranges,da_ober,s,i0,k)->
-      		match da_ober with
-      		[]->Some(
-           		    	Assistance_gparser_result.veil
-               			(i0,k-1)
-               			imp_ranges
-               			k
-               			None
-          			)
-       		|prsr::rest->   
-         		(
-           			match prsr s k with
-            		None->None
-           		  |Some(res)->tempf(
-           		       imp_ranges@(Assistance_gparser_result.important_ranges res),
-                       rest,s,i0,Assistance_gparser_result.final_cursor_position res)
-                )
-         )  
-    in tempf([],l,s,i,i)
-    ) in
-  (main_f:Assistance_gparser_fun.t);;
-
-let detailed_chain l=
-  let main_f=
-  	(fun s i->
-   		let rec tempf=
-   		(
-         	fun (imp_ranges,da_ober,s,i0,k)->
-      		match da_ober with
-      		[]->Some(
-           		    	Assistance_gparser_result.veil
-               			(i0,k-1)
-               			(List.rev imp_ranges)
-               			k
-               			None
-          			)
-       		|prsr::rest->   
-         		(
-           			match prsr s k with
-            		None->None
-           		  |Some(res)->tempf(
-           		       (Assistance_gparser_result.whole_range res)::imp_ranges,
-                       rest,s,i0,Assistance_gparser_result.final_cursor_position res)
-                )
-         )  
-    in tempf([],l,s,i,i)
-    ) in
-  (main_f:Assistance_gparser_fun.t);;
-
-let debugful_detailed_chain l=
-  let main_f=
-  	(fun s i->
-   		let rec tempf=
-   		(
-         	fun (imp_ranges,da_ober,s,i0,k,opt)->
-      		match da_ober with
-      		[]->let sol=Some(
-           		    	Assistance_gparser_result.veil
-               			(i0,k-1)
-               			(List.rev imp_ranges)
-               			k
-               			None
-          			) in
-          	     (imp_ranges,da_ober,s,i0,k,sol) 		
-       		|prsr::rest->   
-         		(
-           			match prsr s k with
-            		None->(imp_ranges,da_ober,s,i0,k,opt)
-           		  |Some(res)->tempf(
-           		       (Assistance_gparser_result.whole_range res)::imp_ranges,
-                       rest,s,i0,Assistance_gparser_result.final_cursor_position res,None)
-                )
-         )  
-    in tempf([],l,s,i,i,None)
-    ) in
-  main_f;;
-
-let disjunction l=
-   let indexed_l=Assistance_int_range.index_everything l in   
-   let rec tempf=(fun
-   (da_ober,s,i0)->
-      match da_ober with
-      []->None 
-      |(j,prsr)::rest->
-         (
-           match prsr s i0 with
-             None->tempf(rest,s,i0)
-           |Some(res)->
-          Some(
-             Assistance_gparser_result.veil
-               (Assistance_gparser_result.whole_range res)
-               (Assistance_gparser_result.important_ranges res)
-               (Assistance_gparser_result.final_cursor_position res)
-               (Some j)
-           )
-         )   
-   ) in
-   ((fun s i->tempf (indexed_l,s,i)):Assistance_gparser_fun.t);;
-
-let star prsr=
-   let rec tempf=(fun
-   (imp_ranges,s,i0,k)->
-      match prsr s k with
-       None->Some(
-             Assistance_gparser_result.veil
-               (i0,k-1)
-               (imp_ranges)
-               k
-               None
-            )
-      |Some(res)->tempf(imp_ranges@(Assistance_gparser_result.important_ranges res),
-                       s,i0,Assistance_gparser_result.final_cursor_position res)
-   
-   ) in
-   ((fun s i->tempf ([],s,i,i)):Assistance_gparser_fun.t);;
-
-let detailed_star prsr=
-   let rec tempf=(fun
-   (imp_ranges,s,i0,k)->
-      match prsr s k with
-       None->Some(
-             Assistance_gparser_result.veil
-               (i0,k-1)
-               (List.rev(imp_ranges))
-               k
-               None
-            )
-      |Some(res)->tempf((Assistance_gparser_result.whole_range res)::imp_ranges,
-                       s,i0,Assistance_gparser_result.final_cursor_position res)
-   
-   ) in
-   ((fun s i->tempf ([],s,i,i)):Assistance_gparser_fun.t);;   
-   
-   
-let one_or_more prsr=chain [prsr;star prsr];;
-
-let optional prsr=
-   let rec tempf=(fun s i->
-      match prsr s i with
-       Some(res)->Some(
-            Assistance_gparser_result.veil
-               (Assistance_gparser_result.whole_range res)
-               (Assistance_gparser_result.important_ranges res)
-               (Assistance_gparser_result.final_cursor_position res)
-               None
-            )
-      |None->Some(
-            Assistance_gparser_result.veil
-               (i,i-1)
-               []
-               i
-               None
-            )
-   
-   ) in
-   (tempf:Assistance_gparser_fun.t);;
-
-
-let recoiling_ending x y=
-   let tempf=(fun s i->
-      match x s i with
-       None->None
-      |Some(res)->
-                  
-                  let j=Assistance_gparser_result.final_cursor_position res in
-                  if y s j=None then None else
-                  Some(
-                  Assistance_gparser_result.veil
-                  (i,j-1)
-                  (Assistance_gparser_result.important_ranges res)
-                  j
-                  None
-                  )
-   ) in
-   (tempf:Assistance_gparser_fun.t);;
-     
-let rec apply=function        
-     Assistance_gparser.Constant(s)->constant s
-    |Assistance_gparser.Enclosure(s1,s2)->enclosure (s1,s2)
-    |Assistance_gparser.Footless_constant(s)->footless_constant s
-    |Assistance_gparser.Sample_char(s)->sample_char s
-    |Assistance_gparser.Sample_neg(s)->sample_neg s
-    |Assistance_gparser.Sample_star(s)->sample_star s
-    |Assistance_gparser.Sample_negstar(s)->sample_negstar s
-    |Assistance_gparser.Sample_plus(s)->sample_plus s
-    |Assistance_gparser.Race(s1,s2)->race(s1,s2)
-    |Assistance_gparser.Comment(s1,s2,s3,s4)->Assistance_gparser_ocaml_comment.main_prsr(s1,s2)(s3,s4)
-    |Assistance_gparser.House_with_doors(s1,s2,l)->house_with_doors (s1,s2) l
-    |Assistance_gparser.Chain(l)->chain(Assistance_image.image apply l)
-    |Assistance_gparser.Disjunction(l)->disjunction(Assistance_image.image apply l)
-    |Assistance_gparser.Star(x)->star(apply x)
-    |Assistance_gparser.Detailed_star(x)->detailed_star(apply x)
-    |Assistance_gparser.One_or_more(x)->one_or_more(apply x)
-    |Assistance_gparser.Optional(x)->optional(apply x)
-    |Assistance_gparser.Recoiling_ending(x,y)->recoiling_ending (apply x) (apply y)
-    |Assistance_gparser.Detailed_chain(l)->detailed_chain(Assistance_image.image apply l);;
-   
-end;;   
-   
-let apply=Private.apply;;   
-   
-(*
-
-
-*)   
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_list_with_indices=struct
-
-(*
-
-#use"lib/list_with_indices.ml";;
-
-*)
-
-exception Bad_set_of_indices;;
-
-let list_with_indices l=
-  let n=List.length l in
-  let temp1=Assistance_int_range.scale (fun i->Assistance_option.seek(fun p->fst(p)=i) l) 1 n in
-  if List.mem None temp1
-  then raise(Bad_set_of_indices)
-  else
-  Assistance_int_range.scale (fun
-     i->snd(Assistance_listennou.force_find(fun p->fst(p)=i) l)
-  ) 1 n;;
-
-(*
-
-list_with_indices [3,"a";1,"b";2,"c"];;
-
-*)  
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_gparser_for_ocaml_language=struct
-
-(*
-
-#use"lib/GParser/gparser_for_ocaml_language.ml";;
-
-*)
-
-let double_semicolon=Assistance_particular_string.double_semicolon;;
-
-let prsr_for_comment=
-  Assistance_gparser.Comment ("(*","*)","\"","\"");;
-
-
-let prsr_for_sharp_comment=Assistance_gparser.Enclosure ("\n#","\n");;
-
-let prsr_for_space=Assistance_gparser.Constant " ";;
-let prsr_for_tab=Assistance_gparser.Constant "\t";;
-
-
-let prsr_for_space_or_tab=Assistance_gparser.Disjunction [prsr_for_space;prsr_for_tab];;
-let prsr_for_linebreak=Assistance_gparser.Constant "\n";;
-let prsr_for_newline=Assistance_gparser.Constant "\012";;
-let prsr_for_windows_newline=Assistance_gparser.Constant "\r";;
-let prsr_for_individual_white=Assistance_gparser.Disjunction 
-[prsr_for_space;prsr_for_tab;prsr_for_linebreak;prsr_for_newline;prsr_for_windows_newline];;
-
-let prsr_for_inline_white_maybe=Assistance_gparser.Star prsr_for_space_or_tab;;
-let prsr_for_white_maybe=Assistance_gparser.Star prsr_for_individual_white;;
-let prsr_for_white=Assistance_gparser.One_or_more prsr_for_individual_white;;
-
-let prsr_for_special_sharp=Assistance_gparser.Chain
-   [
-     Assistance_gparser.Constant "#";
-     prsr_for_inline_white_maybe;
-     Assistance_gparser.Sample_star "0123456789";
-     prsr_for_inline_white_maybe;
-     Assistance_gparser.Constant "\"";
-     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ/.";
-     Assistance_gparser.Constant "\"";
-     prsr_for_inline_white_maybe;
-   ];;
-
-let prsr_for_uncapitalized_word=Assistance_gparser.Chain
-   [
-     Assistance_gparser.Sample_char "abcdefghijklmnopqrstuvwxyz_";
-     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-   ];;
-
-let prsr_for_capitalized_word=Assistance_gparser.Chain
-   [
-     Assistance_gparser.Sample_char "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ012356789";
-   ];;
-
-let prsr_for_pointing_module=Assistance_gparser.Chain
-   [
-     prsr_for_capitalized_word;
-     Assistance_gparser.Constant ".";
-   ];;
-
-let prsr_for_wholly_lowercase_name=
-   Assistance_gparser.Chain
-   [
-     Assistance_gparser.Sample_char "abcdefghijklmnopqrstuvwxyz_";
-     Assistance_gparser.Sample_star "abcdefghijklmnopqrstuvwxyz_";
-   ];;
-
-
-let prsr_for_element_in_uple_in_typedef=
-   Assistance_gparser.Chain
-   [
-     Assistance_gparser.Constant "'";
-      prsr_for_uncapitalized_word; 
-     prsr_for_white_maybe; 
-     Assistance_gparser.Constant ",";
-     prsr_for_white_maybe; 
-   ];;
-
-let prsr_for_parameters1_in_type=
-   Assistance_gparser.Chain
-   [
-     Assistance_gparser.Constant "'";
-      prsr_for_uncapitalized_word; 
-     prsr_for_white_maybe; 
-   ];;
-
-let prsr_for_parameters2_in_type=
-   Assistance_gparser.Chain
-   [
-     Assistance_gparser.Constant "(";
-     prsr_for_white_maybe; 
-     Assistance_gparser.Star(prsr_for_element_in_uple_in_typedef);
-     prsr_for_white_maybe; 
-     Assistance_gparser.Constant "'";
-     prsr_for_uncapitalized_word; 
-     prsr_for_white_maybe; 
-     Assistance_gparser.Constant ")";
-     prsr_for_white_maybe; 
-   ];;
-
-   
-
-let prsr_for_parameters_in_type=
-   Assistance_gparser.Disjunction
-   [
-     prsr_for_parameters1_in_type;
-     prsr_for_parameters2_in_type;
-   ];;
-
-let prsr_for_rec_followed_by_white=Assistance_gparser.Chain
-   [
-     Assistance_gparser.Optional(Assistance_gparser.Constant "rec");
-     prsr_for_white;
-   ];;
-  
-
-module Private=struct
-let list_for_value_making=
-   [
-     Assistance_gparser.Constant "let";
-     prsr_for_white;
-     Assistance_gparser.Optional(prsr_for_rec_followed_by_white);
-     prsr_for_uncapitalized_word;
-     prsr_for_white_maybe;
-     Assistance_gparser.Enclosure ("","=");
-     Assistance_gparser.Enclosure ("",double_semicolon);
-   ];;
-  
-end;;
-
-let index_for_name_in_value_parser=Assistance_listennou.find_index
-   prsr_for_uncapitalized_word Private.list_for_value_making;;
-
-let index_for_content_in_value_parser=Assistance_listennou.find_index
-   (Assistance_gparser.Enclosure ("",double_semicolon)) Private.list_for_value_making;; 
-   
-
-let prsr_for_value_making=Assistance_gparser.Detailed_chain
-   Private.list_for_value_making;;
-
-let prsr_for_type_making=Assistance_gparser.Detailed_chain
-   [
-     Assistance_gparser.Constant "type";
-     prsr_for_white;
-     Assistance_gparser.Optional(prsr_for_parameters_in_type);
-     prsr_for_uncapitalized_word;
-     prsr_for_white_maybe;
-     Assistance_gparser.Enclosure ("","=");
-     Assistance_gparser.Enclosure ("",double_semicolon);
-   ];;
-
-
-
-let prsr_for_exception_making=Assistance_gparser.Detailed_chain
-     [
-     Assistance_gparser.Constant "exception";
-     prsr_for_white;
-     prsr_for_capitalized_word;
-     Assistance_gparser.Enclosure ("",double_semicolon);
-   ];;
-
-let prsr_for_module_opener=
-   Assistance_gparser.Detailed_chain
-   [
-     Assistance_gparser.Constant "module";
-     prsr_for_white;
-     prsr_for_capitalized_word;
-     prsr_for_white_maybe;
-     Assistance_gparser.Constant "=";
-     prsr_for_white_maybe;
-     Assistance_gparser.Constant "struct";
-   ];;
-
-let prsr_for_module_closer=
-   Assistance_gparser.Chain
-   [
-     Assistance_gparser.Constant "end";
-     prsr_for_white_maybe;
-     Assistance_gparser.Constant double_semicolon;
-   ];;
-
-let prsr_for_module_inclusion=
-   Assistance_gparser.Detailed_chain
-   [
-     Assistance_gparser.Constant "include ";
-     prsr_for_white_maybe;
-     prsr_for_capitalized_word;
-     prsr_for_white_maybe;
-     Assistance_gparser.Constant double_semicolon;
-   ];;
-
-let prsr_for_special_names=
-   Assistance_gparser.Disjunction
-     [
-       Assistance_gparser.Constant "add_to_vvv ";
-       Assistance_gparser.Constant "add_data ";
-       Assistance_gparser.Constant "add_data\n";
-       Assistance_gparser.Constant "add_label ";
-       Assistance_gparser.Constant "add_recognizer ";
-       Assistance_gparser.Constant "add_shortcut ";
-       Assistance_gparser.Constant "define_precedence_set ";
-       Assistance_gparser.Constant "get_name_for_set ";
-     ];;   
-   
-let prsr_for_specialities=Assistance_gparser.Chain
-   [
-     prsr_for_special_names;
-     Assistance_gparser.Enclosure ("",double_semicolon);
-   ];;   
-
-let index_for_value=1;;
-let index_for_type=2;;
-let index_for_exception=3;;
-let index_for_comment=4;;
-let index_for_sharp_comment=5;;
-let index_for_special_sharp=6;;
-let index_for_module_opener=7;;
-let index_for_module_closer=8;;
-let index_for_module_inclusion=9;;
-let index_for_specialities=10;;
-let index_for_white=11;;
-
-
-let elt_prsr=Assistance_gparser.Disjunction 
-  (
-     Assistance_list_with_indices.list_with_indices
-     [
-       index_for_value           ,prsr_for_value_making;
-       index_for_type            ,prsr_for_type_making;
-       index_for_exception       ,prsr_for_exception_making;
-       index_for_comment         ,prsr_for_comment;
-       index_for_sharp_comment   ,prsr_for_sharp_comment;
-       index_for_special_sharp   ,prsr_for_special_sharp;
-       index_for_module_opener   ,prsr_for_module_opener;
-       index_for_module_closer   ,prsr_for_module_closer;
-       index_for_module_inclusion,prsr_for_module_inclusion;
-       index_for_specialities    ,prsr_for_specialities;
-       index_for_white           ,prsr_for_white;
-     ]
-   )
-;;
-
-
-let main_prsr=
-   Assistance_gparser.Detailed_star elt_prsr;;
-
-
-
-   
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_pre_read_ocaml_files=struct
-
-(*
-
-#use"lib/Ocaml_analysis/pre_read_ocaml_files.ml";;
-
-Originated as the code shared by modules
-read_ocaml_files and read_ocaml_files_without_expanding_inclusions.
-
-*)
-
-exception Pre_read_exn of string;;
-
-module Private=struct
-  exception Unreadable of string;;
-  
-  let accuse_final_excerpt s i=
-    let j=min(String.length s)(i+100) in
-    raise(Unreadable(Assistance_cull_string.interval s i j));;
-  
-  let uncatched_read1 s=
-    let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.main_prsr s 1 in
-    if opt=None then accuse_final_excerpt s 1 else
-    let res=Assistance_option.unpack opt in 
-    let p=Assistance_gparser_result.final_cursor_position res in
-    if p<=(String.length s) 
-    then accuse_final_excerpt s p
-    else 
-    let temp1=Assistance_gparser_result.important_ranges res in
-    Assistance_image.image (fun (i,j)->
-      let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.elt_prsr s i in
-      let res=Assistance_option.unpack opt in
-      ((i,j),Assistance_option.unpack(Assistance_gparser_result.disjunction_index res))
-    ) temp1;;
-  
-  exception Read1_exn of string;;
-  
-  let read1 s= try uncatched_read1 s with Unreadable(t)->raise(Read1_exn(t));;
-    
-  let describe_value_item s (i,j)=
-       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_value_making s i in
-       let res=Assistance_option.unpack opt in
-       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 
-            (Assistance_gparser_for_ocaml_language.index_for_name_in_value_parser-1)
-       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 
-            (Assistance_gparser_for_ocaml_language.index_for_content_in_value_parser-1) 
-       and (i3,j3)=Assistance_gparser_result.whole_range res in
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Value
-            (Assistance_cull_string.interval s i1 j1)
-            (i1,j1)
-            (Assistance_cull_string.interval s i3 j3)
-            (* the -2 of because of the 2 characters in the double semicolon *)
-            (Assistance_cull_string.interval s i2 (j2-2))
-            (i2,j2-2)
-            false;;
-  
-  let describe_type_item s (i,j)=
-       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_type_making s i in
-       let res=Assistance_option.unpack opt in
-       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 3
-       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 6 
-       and (i3,j3)=Assistance_gparser_result.whole_range res in
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Type
-            (Assistance_cull_string.interval s i1 j1)
-            (i1,j1)
-            (Assistance_cull_string.interval s i3 j3)
-            (* the -2 of because of the 2 characters in the double semicolon *)
-            (Assistance_cull_string.interval s i2 (j2-2))
-            (i2,j2-2)
-            false;;
-  
-  let describe_exception_item s (i,j)=
-       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_exception_making s i in
-       let res=Assistance_option.unpack opt in
-       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2
-       and (i2,j2)=List.nth(Assistance_gparser_result.important_ranges res) 3 
-       and (i3,j3)=Assistance_gparser_result.whole_range res in
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Exception
-            (Assistance_cull_string.interval s i1 j1)
-            (i1,j1)
-            (Assistance_cull_string.interval s i3 j3)
-            (* the -2 of because of the 2 characters in the double semicolon *)
-            (Assistance_cull_string.interval s i2 (j2-2))
-            (i2,j2-2)
-            false;;
-  
-  let describe_module_opener_item s (i,j)=
-       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_module_opener s i in
-       let res=Assistance_option.unpack opt in
-       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2
-       and (i3,j3)=Assistance_gparser_result.whole_range res in 
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Module_opener
-            (Assistance_cull_string.interval s i1 j1)
-            (i1,j1)
-            (Assistance_cull_string.interval s i3 j3)
-            ""
-            (0,0)
-            false;;
-  
-  
-  let describe_module_closer_item=
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Module_closer
-            ""
-            (0,0)
-            ""
-            ""
-            (0,0)
-            false;;
-  
-  
-  let describe_module_inclusion_item s (i,j)=
-       let opt=Assistance_gparser_apply.apply Assistance_gparser_for_ocaml_language.prsr_for_module_inclusion s i in
-       let res=Assistance_option.unpack opt in
-       let (i1,j1)=List.nth(Assistance_gparser_result.important_ranges res) 2 
-       and (i3,j3)=Assistance_gparser_result.whole_range res in 
-         Assistance_ocaml_gsyntax_item.make
-            Assistance_ocaml_gsyntax_category.Module_inclusion
-            (Assistance_cull_string.interval s i1 j1)
-            (i1,j1)
-            (Assistance_cull_string.interval s i3 j3)
-            ""
-            (0,0)
-            false;;
-            
-   let describe_item s ((i,j),idx)=
-     if idx=Assistance_gparser_for_ocaml_language.index_for_value
-     then Some(describe_value_item s (i,j))
-     else
-     if idx=Assistance_gparser_for_ocaml_language.index_for_type
-     then Some(describe_type_item s (i,j))
-     else
-     if idx=Assistance_gparser_for_ocaml_language.index_for_exception
-     then Some(describe_exception_item s (i,j))
-     else
-     if idx=Assistance_gparser_for_ocaml_language.index_for_module_opener
-     then Some(describe_module_opener_item s (i,j))
-     else
-     if idx=Assistance_gparser_for_ocaml_language.index_for_module_closer
-     then Some(describe_module_closer_item)
-     else          
-     if idx=Assistance_gparser_for_ocaml_language.index_for_module_inclusion
-     then Some(describe_module_inclusion_item s (i,j))
-     else None;;
-     
-  let uncatched_read2 s=
-     Assistance_option.filter_and_unpack (describe_item s) (read1 s);;   
-     
-  
-  
-  let pre_read s= try uncatched_read2 s with Read1_exn(t)->raise(Pre_read_exn(t));;
-  end;;
-
-  let pre_read =Private.pre_read;;           
-
-end;;
-
-
-
-
-
-
-module Assistance_read_ocaml_files=struct
-
-(*
-
-#use"lib/Ocaml_analysis/read_ocaml_files.ml";;
-
-*)
-
-module Private=struct
-  
-
-  
-  let module_inclusion_in_pusher    
-     (graet,current_full_scope,current_names) x=
-      let included_module=x.Assistance_ocaml_gsyntax_item.name in
-          let full_scope=current_full_scope^"."^included_module in
-          let maybe_included_items=List.filter(
-             fun y->let nm_y=y.Assistance_ocaml_gsyntax_item.name in
-             (Assistance_supstring.begins_with nm_y full_scope)
-             ||
-             (Assistance_supstring.begins_with nm_y included_module)  
-          ) graet in 
-          (* local redifinition has priority over an outside definition *)
-          let chosen_scope=(if
-            List.exists(fun y->
-              y.Assistance_ocaml_gsyntax_item.name=included_module
-            ) maybe_included_items
-            then included_module
-            else full_scope
-          ) in
-           let included_items=List.filter(
-             fun y->y.Assistance_ocaml_gsyntax_item.name=chosen_scope
-           ) maybe_included_items in
-           let renamed_included_items=Assistance_image.image 
-           (Assistance_ocaml_gsyntax_item.include_in_new_scope full_scope )
-           included_items in
-           (List.rev_append renamed_included_items graet,current_full_scope,current_names);;
-     
-  let first_pusher_for_modulename_prepension_and_inclusion_expansion  
-     walker_state x=
-     let (graet,current_full_scope,current_names)=walker_state in
-    match x.Assistance_ocaml_gsyntax_item.category with
-      Assistance_ocaml_gsyntax_category.Value                                                                          
-    | Assistance_ocaml_gsyntax_category.Type
-    | Assistance_ocaml_gsyntax_category.Exception->
-            let new_x=Assistance_ocaml_gsyntax_item.prepend_prefix current_full_scope x in
-            (new_x::graet,current_full_scope,current_names)
-    | Assistance_ocaml_gsyntax_category.Module_opener->
-            let new_name=x.Assistance_ocaml_gsyntax_item.name in
-            let new_names=current_names@[new_name] in
-            let new_full_scope=String.concat "." new_names in
-            (graet,new_full_scope,new_names)
-    | Assistance_ocaml_gsyntax_category.Module_closer->
-            let new_names=List.rev(List.tl(List.rev(current_names))) in
-            let new_full_scope=String.concat "." new_names in
-            (graet,new_full_scope,new_names)
-    | Assistance_ocaml_gsyntax_category.Module_inclusion->
-           module_inclusion_in_pusher (graet,current_full_scope,current_names) x;;
-  
-  exception Pusher23_exn;;
-  
-  let pusher_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober)=
-     match da_ober with
-     []->raise(Pusher23_exn)
-     |x::peurrest->(first_pusher_for_modulename_prepension_and_inclusion_expansion 
-     walker_state x,peurrest);;    
-  
-           
-  let rec iterator_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober)=
-     if da_ober=[] 
-     then let  (graet,_,_)=walker_state in List.rev graet
-     else iterator_for_modulename_prepension_and_inclusion_expansion(
-       pusher_for_modulename_prepension_and_inclusion_expansion (walker_state,da_ober));; 
-  
-  
-  let prepend_modulenames_and_expand_inclusions data_before (current_module,l)=
-      iterator_for_modulename_prepension_and_inclusion_expansion 
-        ((data_before,current_module,String.split_on_char '.' current_module),l);;
-  
-  end;;
-  
-  exception Reading_error of Assistance_absolute_path.t * string;;
-  
-  let read_ocaml_files l_ap=
-     let temp1=Assistance_image.image( fun ap->
-     let s_ap=Assistance_absolute_path.to_string ap
-     and text=Assistance_io.read_whole_file ap in
-     let unpointed=Assistance_cull_string.before_rightmost s_ap '.' in
-     let module_name=String.capitalize_ascii (Assistance_cull_string.after_rightmost unpointed '/') in
-     try (module_name,Assistance_pre_read_ocaml_files.pre_read text)  with
-     Assistance_pre_read_ocaml_files.Pre_read_exn(t)->raise(Reading_error(ap,t)) 
-     ) l_ap in 
-     List.fold_left Private.prepend_modulenames_and_expand_inclusions [] temp1;;
-     
-     
-  (*
-  
-  let g1=German_wrapper.data();;
-  let g2=List.filter Modulesystem_data.ml_present g1;;
-  let g3=List.flatten (image Modulesystem_data.acolytes g2);;
-  let g4=List.filter (fun mlx->snd(Mlx_filename.decompose mlx)=Ocaml_ending.ml) g3;;
-  let g5=image Mlx_filename.to_absolute_path g4;;
-  
-  let g6=read3 g5;;
-  
-  
-  let g6=image (fun ap->let s=Io.read_whole_file ap in
-    (-(String.length s),(ap,s))
-  ) g5 ;;
-  let g7=image snd (ofo(Tidel2.diforchan g6));;
-  let g8=Explicit.image (fun (ap,s)->(ap,read2 s)) g7;;
-  let g9=Explicit.image (fun (ap,l)->
-    from_level2_to_level3 ([],"Moody") l
-  ) g8;;
-  
-  *)
-  
-    
-  (*  
-  
-  let s1="let jiving=234  ;;";;
-  describe_value_item s1 (1,String.length s1);;
-  
-  let s2="type ('a,'b) sister=('a list)*'b*string;;";;
-  describe_type_item s2 (1,String.length s2);;
-  
-  let s3="type sister=(int list)*float*string;;";;
-  describe_type_item s3 (1,String.length s3);;
-  
-  let s4="exception Foobar of string*int;;";;
-  describe_exception_item s4 (1,String.length s4);;
-  
-  let s5="exception Foobar;;";;
-  describe_exception_item s5 (1,String.length s5);;
-  
-  let s6="module  Foobar=struct";;
-  describe_module_opener_item s6 (1,String.length s6);;
-  
-  let s7="end\n;;";;
-  describe_module_opener_item s7 (1,String.length s7);;
-  
-  let s8="include Leap\n;;";;
-  describe_module_inclusion_item s8 (1,String.length s8);;
-     
-  *)   
-     
-       
-                
-
-end;;
-
-
-
-
-
-
-module Assistance_rename_moduled_value_in_file=struct
-
-(*
-
-#use"lib/Ocaml_analysis/rename_moduled_value_in_file.ml";;
-
-*)
-
-exception No_module_given of string;;
-exception No_value_with_name of string;;
-
-let rename_moduled_value_in_file preceding_files old_name new_name path=
-   let j=Assistance_substring.leftmost_index_of_in "." old_name in
-   if j<0 
-   then raise(No_module_given(old_name))
-   else 
-   let module_name=Assistance_cull_string.beginning (j-1) old_name in
-   let temp3=Assistance_read_ocaml_files.read_ocaml_files preceding_files in
-   let opt_temp4=Assistance_option.seek (fun itm->
-     (itm.Assistance_ocaml_gsyntax_item.name)=old_name
-   ) temp3 in
-   if opt_temp4=None
-   then raise(No_value_with_name(old_name))
-   else
-   let temp4=Assistance_option.unpack(opt_temp4) in
-   let (i1,j1)=temp4.Assistance_ocaml_gsyntax_item.interval_for_name in
-   let _=Assistance_overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
-   let temp3_again=Assistance_read_ocaml_files.read_ocaml_files preceding_files in
-   let beheaded_name=Assistance_cull_string.cobeginning j old_name in
-   let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
-   (Assistance_cull_string.before_rightmost beheaded_name '.',new_name) in
-   let new_beheaded_name=s_new_beheaded_name in
-   let s_new_full_name=module_name^"."^s_new_beheaded_name in
-   let temp4_again=Assistance_listennou.force_find (fun itm->
-     (itm.Assistance_ocaml_gsyntax_item.name)=s_new_full_name
-   ) temp3_again in
-   let k1=Assistance_listennou.find_index temp4_again temp3_again in
-   let temp5=Assistance_listennou.big_tail k1 temp3_again in
-   let temp6=Assistance_option.filter_and_unpack(
-      fun itm->
-        let txt=itm.Assistance_ocaml_gsyntax_item.content in
-        let ttemp7=Assistance_isolated_occurrences.of_in 
-           beheaded_name txt in
-        if ttemp7<>[]
-        then  let isoc=Assistance_isolated_occurrences.of_in beheaded_name txt in
-              let replacings=Assistance_image.image (fun p->(p,new_beheaded_name)) isoc in
-              let new_txt=Assistance_overwrite_at_intervals.inside_string
-                   replacings txt in
-             Some(itm.Assistance_ocaml_gsyntax_item.interval_for_content,new_txt)
-        else None   
-   ) temp5 in
-   Assistance_overwrite_at_intervals.inside_file temp6 path;;
-
-
-end;;
-
-
-
-
-
-
-module Assistance_find_suitable_ending=struct
-
-(*
-
-#use"lib/find_suitable_ending.ml";;
-
-*)
-
-(*
-
-Note that the order in Ocaml_ending.correspondances is important
-
-*)
-
-exception No_suitable_location of Assistance_dfa_root_t.t*(Assistance_dfa_subdirectory_t.t list)*string;;
-
-let find_file_location dir l_subdir old_x=
-  let x=String.uncapitalize_ascii old_x in
-  let s_dir=Assistance_dfa_root.connectable_to_subpath(dir) in
-  let original_endings=Assistance_image.image Assistance_dfa_ending.connectable_to_modulename Assistance_dfa_ending.all_ocaml_endings in
-  let endings=(
-     if List.exists (fun edg->Assistance_supstring.ends_with x edg) original_endings
-     then [""]
-     else original_endings
-  ) in
-  let temp1=Assistance_cartesian.product(l_subdir) endings in
-  let tempf=(fun (sd,edg)->
-  	let s1=s_dir^(Assistance_dfa_subdirectory.connectable_to_subpath sd)^x^edg in
-  	if Sys.file_exists s1
-  	then Some(Assistance_absolute_path.of_string s1)
-  	else None
-  ) in
-  let opt=Assistance_option.find_and_stop tempf temp1 in
-  if opt=None
-  then raise(No_suitable_location(dir ,l_subdir,x))
-  else  Assistance_option.unpack(opt);;           
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_module_small_details_t=struct
-
-(*
-
-#use"lib/Filewatching/fw_module_small_details_t.ml";;
-
-
-*)
-
-type t ={
-  used_modules : Assistance_dfa_module_t.t list ;
-  used_libraries : Assistance_ocaml_library_t.t list ;
-  has_printer : bool ;
-  subdirectory : Assistance_dfa_subdirectory_t.t ;
-  principal_ending : Assistance_dfa_ocaml_ending_t.t ;
-  mli_present : bool ;
-  principal_modification_time : string ;
-  mli_modification_time : string option ;
-};;
-
-
-
-end;;
-
-
-
-
-
-
 module Assistance_fw_configuration=struct
 
 (*
@@ -10702,7 +11032,7 @@ let helper2_during_inspection fw accu l_pairs =
        fun (_,_,opt) -> opt <> None 
    ) temp1 in
    let good_pairs = Assistance_image.image (fun 
-     (rl,old_mtime,opt) -> (rl,old_mtime,Assistance_option.unpack opt)
+     (rl,old_mtime,opt) -> (rl,old_mtime,Option.get opt)
    ) good_temp1 
    and missing_files = Assistance_image.image (fun (rl,_,_)->rl) bad_temp1 in
    let _ = announce_missing_files missing_files in 
@@ -10853,8 +11183,8 @@ let check_that_no_change_has_occurred fw =
 let first_init config =
    let the_root = Assistance_fw_poly.root config in 
    let the_dir =  Assistance_directory_name.of_string (Assistance_dfa_root.without_trailing_slash the_root) in 
-   let (list1,_) = Assistance_more_unix.complete_ls_with_ignored_subdirs the_dir (Assistance_fw_poly.ignored_subdirectories config) false in 
-   let list2 = Assistance_option.filter_and_unpack(
+   let (list1,_) = Assistance_unix_again.complete_ls_with_ignored_subdirs the_dir (Assistance_fw_poly.ignored_subdirectories config) false in 
+   let list2 = List.filter_map(
             fun ap-> try Some(Assistance_dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 
    ) list1 in
@@ -10886,7 +11216,7 @@ let overwrite_file_if_it_exists fw rootless new_content =
 
 let register_rootless_paths fw rootless_paths= 
    let s_root = Assistance_dfa_root.connectable_to_subpath (Assistance_fw_poly.root fw) in
-   let nonexistent_paths = Assistance_option.filter_and_unpack (
+   let nonexistent_paths = List.filter_map (
       fun rp-> let s_full_path = s_root^(Assistance_dfn_rootless.to_line rp)  in 
       if not(Sys.file_exists s_full_path)
       then Some(s_full_path)
@@ -11050,7 +11380,7 @@ module Private = struct
       canonical_tripartition fw all_files ;;
 
    let compilable_files fw =
-      Assistance_option.filter_and_unpack (
+      List.filter_map (
          fun (rl,_)->
             if Assistance_dfa_ending.is_compilable (Assistance_dfn_rootless.to_ending rl)
             then Some rl 
@@ -11174,7 +11504,7 @@ module Private = struct
    let replace_string old_fw (replacee,replacer) = 
       let apply = (fun par files->
          Assistance_file_watcher.apply_text_transformation_on_some_files par 
-         (Assistance_replace_inside.replace_inside_string ~display_number_of_matches:false (replacee,replacer)) files
+         (Assistance_replace_inside.replace_inside_text ~display_number_of_matches:false (replacee,replacer)) files
       ) in 
       let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
       let old_parent = parent old_fw in    
@@ -11244,6 +11574,35 @@ let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
 let usual_compilable_files = Private.usual_compilable_files ;;
 
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_fw_module_small_details_t=struct
+
+(*
+
+#use"lib/Filewatching/fw_module_small_details_t.ml";;
+
+
+*)
+
+type t ={
+  used_modules : Assistance_dfa_module_t.t list ;
+  used_libraries : Assistance_ocaml_library_t.t list ;
+  has_printer : bool ;
+  subdirectory : Assistance_dfa_subdirectory_t.t ;
+  principal_ending : Assistance_dfa_ocaml_ending_t.t ;
+  mli_present : bool ;
+  principal_modification_time : string ;
+  mli_modification_time : string option ;
+};;
 
 
 
@@ -11539,7 +11898,7 @@ let lex_order = ((fun (Assistance_dfa_module_t.M m1) (Assistance_dfa_module_t.M 
 
 let compute_details_from_acolytes_list_for_one_module l=
    let temp1 = Assistance_image.image (fun (rl,details)->(Assistance_dfn_rootless.to_ending rl,(rl,details))) l in 
-   let temp2 = Assistance_listennou.partition_according_to_fst temp1 in 
+   let temp2 = Assistance_partition_list.according_to_fst temp1 ~assume_connectedness:false  in 
    let should_be_empty = List.filter (fun (_edg,l_rl)->List.length(l_rl)>1) temp2 in 
    if should_be_empty<>[]
    then let clearer_picture = Assistance_image.image (fun (edg,detailed_l) -> (edg,Assistance_image.image fst detailed_l) ) 
@@ -11560,7 +11919,7 @@ let compute_details_from_acolytes_list_for_one_module l=
       else Some(snd(List.hd temp4))) in
    let principal_detailed_rless = (
       if temp5=[]
-      then Assistance_option.unpack opt_mli_detailed_rless 
+      then Option.get opt_mli_detailed_rless 
       else snd(List.hd temp5)    
    ) in     
    let (principal_rless,principal_details) = principal_detailed_rless in 
@@ -11599,7 +11958,7 @@ let compute_details_from_acolytes_list_for_several_modules compilable_files =
     let temp1 = Assistance_image.image (fun (rless,details)->
        (Assistance_dfn_rootless.to_module rless,(rless,details))  
     ) compilable_files in 
-    let temp2 = Assistance_listennou.partition_according_to_fst temp1 in 
+    let temp2 = Assistance_partition_list.according_to_fst temp1  in 
     Assistance_image.image (fun (mn,l)->
       (mn,compute_details_from_acolytes_list_for_one_module l)
       ) temp2 ;;
@@ -11611,14 +11970,13 @@ let is_overriden_by_item rl (rl2,opt) =
 
 let is_overriden_by_list rl l = List.exists (is_overriden_by_item rl) l ;;    
 
-let recompute_module_details_from_list_of_changes fw mod_name unfiltered_l =
+let recompute_details_for_module small_details mod_name unfiltered_l =
    let l = List.filter (fun (rl,_)->(Assistance_dfn_rootless.to_module rl) = mod_name ) unfiltered_l in 
    let extra_data = List.filter (
-          fun (rl,_) ->
-          ((Assistance_dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
-      ) ( Assistance_fw_with_small_details.small_details_in_files fw) in 
-      compute_details_from_acolytes_list_for_one_module ((Assistance_option.filter_and_unpack snd l)@extra_data) ;;     
-
+                fun (rl,_) ->
+                ((Assistance_dfn_rootless.to_module rl) = mod_name) && (not(is_overriden_by_list rl l))
+   ) small_details in 
+   compute_details_from_acolytes_list_for_one_module ((List.filter_map snd l)@extra_data) ;;           
 
 end ;;   
 
@@ -11636,137 +11994,20 @@ let modularize_details fw  =
       (Assistance_fw_poly.small_details_in_files fw)  in
    Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;
 
+let modularize_from_compilable_files_and_small_details u_files small_details = 
+   let temp1=List.filter (fun (rl,_)->List.mem rl u_files) small_details in
+   Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;   
 
 let mli_present fw = fw.Assistance_fw_module_small_details_t.mli_present ;; 
 let opt_mli_modification_time fw = fw.Assistance_fw_module_small_details_t.mli_modification_time ;;      
 let principal_ending fw = fw.Assistance_fw_module_small_details_t.principal_ending ;; 
 let principal_modification_time fw = fw.Assistance_fw_module_small_details_t.principal_modification_time ;;     
-let recompute_module_details_from_list_of_changes = Private.recompute_module_details_from_list_of_changes ;;
+let recompute_details_for_module = Private.recompute_details_for_module ;; 
 let subdirectory fw = fw.Assistance_fw_module_small_details_t.subdirectory ;;  
 let used_libraries fw = fw.Assistance_fw_module_small_details_t.used_libraries ;;  
 let used_modules fw = fw.Assistance_fw_module_small_details_t.used_modules ;;  
 
 
-
-end;;
-
-
-
-
-
-
-module Assistance_reconstruct_linear_poset=struct
-
-(*
-
-#use"lib/reconstruct_linear_poset.ml";;
-
-Computes the (canonical) maximal acyclic sub-poset of a given poset, returns
-it as a list L where each element of L is a triple (a,anc_a,a_is_clean)
-where anc_a is the list of all ancestors of a, ordered as in L, and a_is_clean
-is a boolean indicating if a is the ancestor or a descendant of an "active"
-element.
-
-Also returns a (non-canonical,non-exhaustive) set of cycles.
-
-
-*)
-
-
-let iterator coat 
-  (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt1)=
-    (* 
-    between is a "chained" list of pairs (x1,x2),(x2,x3), ...
-    (stocked in reverse actually)
-    that will possibly lead to a cycle
-    *)
-    if opt1<>None then ([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],[],opt1) else
-    if (between,not_yet_checked)=([],[]) 
-    then ([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],[],
-          Some(cycles,Assistance_listennou.rev_map (fun (z,p)->(z,fst p)) checked)) 
-    else
-    let a=
-    	  (if between=[] 
-    	   then List.hd(not_yet_checked)
-           else snd(List.hd(between))
-          ) in
-    let not_yet_checked2=List.filter (fun z->z<>a) not_yet_checked in
-    let coat_a=coat(a) in
-    let coatoms_of_a=Assistance_set_of_polys.safe_set(coat_a) in
-    let temp1=Assistance_set_of_polys.setminus coatoms_of_a checked_union in
-    if Assistance_set_of_polys.length(temp1)=0
-    then let temp3=coatoms_of_a::(Assistance_image.image (fun z->snd(List.assoc z checked)) 
-                      (coat_a)) in
-         let ordered_set_version=Assistance_set_of_polys.fold_merge(temp3) in
-         let temp4=Assistance_option.filter_and_unpack (
-           fun (b,_)->if Assistance_set_of_polys.mem b ordered_set_version
-             then Some(b)
-             else None
-         ) checked in
-         let list_version=List.rev(temp4) in
-         let data_for_a=(list_version,ordered_set_version) in
-         ((a,data_for_a)::checked,Assistance_set_of_polys.insert a checked_union,
-         cycles,cycles_union,[],not_yet_checked2,None)
-    else
-    if Assistance_set_of_polys.mem a temp1
-    then ([],Assistance_set_of_polys.empty_set,[a]::cycles,Assistance_set_of_polys.insert a cycles_union,
-         [],not_yet_checked2,None) 
-    else 
-    if (not(Assistance_set_of_polys.does_not_intersect temp1 cycles_union))
-    then (checked,checked_union,cycles,Assistance_set_of_polys.insert a cycles_union,
-         [],not_yet_checked2,None) 
-    else 
-    (*see if we can close the cycle *)
-    match Assistance_option.seek(fun (x,y)->Assistance_set_of_polys.mem x temp1) between with
-     None->(checked,checked_union,cycles,cycles_union,
-     		(a,Assistance_set_of_polys.hd temp1)::between,not_yet_checked,None)
-    |Some(p)->
-        let (before,_,after)=Assistance_three_parts.select_center_element_and_reverse_left (fun x->x=p) between in
-        let temp2=Assistance_image.image fst before in
-        let new_cycle=(fst p)::(temp2@[a]) in
-        let ordered_cycle=Assistance_set_of_polys.sort new_cycle in
-        let not_yet_checked3=List.filter (fun z->Assistance_set_of_polys.nmem z ordered_cycle) not_yet_checked in
-        (checked,checked_union,new_cycle::cycles,
-        Assistance_set_of_polys.merge ordered_cycle cycles_union,
-        [],not_yet_checked3,None);;
-
-let reconstruct_linear_poset coat l=
-  let rec tempf=(fun
-  (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt)->
-    if opt<>None
-    then Assistance_option.unpack opt
-    else tempf(iterator coat 
-    (checked,checked_union,cycles,cycles_union,between,not_yet_checked,opt))
-    ) in
-    tempf([],Assistance_set_of_polys.empty_set,[],Assistance_set_of_polys.empty_set,[],l,None);;
-    
-(*
-
-let sugar i=
-   if (i<4)||(i>20) then [] else
-   if i=11 then [5] else [i+1];;
-    
-reconstruct_linear_poset sugar (ennig 1 30);;  
-
-let some_edges=
-  [
-    (1,4);(1,16);(2,6);(2,7);(3,16);(7,11);(7,19);(8,11);(8,15);(9,19);
-    (10,1);(10,18);(11,2);(12,16);(13,5);(15,13);(16,17);(17,10);(17,14);(19,20);
-    (20,21);(21,9)
-  
-  ];;
-
-let brown j=image fst (List.filter (fun x->snd(x)=j) some_edges);;
-
-reconstruct_linear_poset brown (ennig 1 21);;  
-
-
-*)
- 
-    
-    
-    
-               
 
 end;;
 
@@ -11817,7 +12058,7 @@ let compute_dependencies  l =
   let _ = treat_circular_dependencies cycles in
   let coatoms = Assistance_memoized.make (fun mname ->
     let old_order = coatoms_in_lex_order mname in 
-    Assistance_option.filter_and_unpack (fun (mn,_)->
+    List.filter_map (fun (mn,_)->
        if Assistance_ordered.mem lex_order mn old_order 
        then Some mn 
        else None  
@@ -11842,7 +12083,7 @@ let rec iterator_for_ancestor_computation (treated,to_be_treated) =
    | (mn,coat_mn) :: others ->
       let temp1 = (coat_mn) :: (Assistance_image.image (fun mn2->snd(List.assoc mn2 treated)) coat_mn) in 
       let ancestors_in_lex_order = Assistance_ordered.sort lex_order (List.flatten temp1) in 
-      let ancestors_mn = Assistance_option.filter_and_unpack (
+      let ancestors_mn = List.filter_map (
          fun (mn3,_) ->
             if Assistance_ordered.mem lex_order mn3  ancestors_in_lex_order 
             then Some mn3 
@@ -11881,6 +12122,7 @@ module Assistance_fw_with_dependencies=struct
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Assistance_dfa_subdirectory_t.t list) ;;
+exception Module_not_found_exn of string ;;
 
 module Private = struct
 
@@ -12016,7 +12258,11 @@ let replace_value old_fw pair =
 module Modularized_details = struct 
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
- let force_get fw = Assistance_fw_module_small_details.modularize_details (parent fw)
+ let force_get fw = 
+  let par_fw = parent fw in 
+  let u_files=Assistance_fw_with_small_details.usual_compilable_files par_fw 
+  and small_details = Assistance_fw_poly.small_details_in_files par_fw in 
+  Assistance_fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;
  let get fw = 
    let idx = index fw in 
    match Hashtbl.find_opt the_hashtbl idx with 
@@ -12080,7 +12326,8 @@ let overwrite_file_if_it_exists old_fw pair =
             ) [change] in
           if temp1 <> []
           then let new_parent = parent new_fw in 
-               (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+               (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent)
+                    mn temp1)
           else old_pair 
       ) in 
  Assistance_image.image tempf old_val) in 
@@ -12105,14 +12352,14 @@ let register_rootless_paths old_fw rootlesses =
   let tempf1 = (
     fun old_pair -> 
       let (mn,_) = old_pair in 
-      let temp1 = Assistance_option.filter_and_unpack (fun (rl,details2)->
+      let temp1 = List.filter_map (fun (rl,details2)->
          if (Assistance_dfn_rootless.to_module rl)= mn
          then Some(rl,Some(rl,details2))
          else None 
         ) overlapping in
       if temp1 <> []
       then let new_parent = parent new_fw in 
-           (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+           (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
       else old_pair 
   ) in 
   let answer = (Assistance_image.image tempf1 old_val)@
@@ -12132,7 +12379,7 @@ let relocate_module_to old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12151,7 +12398,7 @@ let remove_files old_fw files_to_be_removed =
        ) extra in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12171,7 +12418,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      if temp1 <> []
      then let new_parent = parent new_fw in 
           let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12190,7 +12437,7 @@ let rename_subdirectory_as old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12209,7 +12456,7 @@ let replace_string old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12228,7 +12475,7 @@ let replace_value old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Assistance_fw_module_small_details.recompute_module_details_from_list_of_changes new_parent mn temp1)
+          (mn, Assistance_fw_module_small_details.recompute_details_for_module (Assistance_fw_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Assistance_image.image tempf old_val in 
@@ -12304,7 +12551,7 @@ let register_rootless_paths old_fw rootlesses =
  let (new_fw,_) = visible in 
  let old_val = get old_fw in 
  let extended_details_list = Modularized_details.get new_fw in 
- let new_details = Assistance_listennou.big_tail (List.length old_val) extended_details_list in
+ let new_details = Assistance_list_again.long_tail (List.length old_val) extended_details_list in
  let new_modules_in_order = Assistance_image.image fst (Assistance_fw_determine_order.main new_details) in 
  let new_details_in_order = Assistance_ordered_misc.reorder_list_of_pairs_using_list_of_singles
      new_details new_modules_in_order in 
@@ -12728,7 +12975,7 @@ end ;;
 module All_printables = struct 
 
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
- let force_get fw =  let mods_without_subdirs = Assistance_option.filter_and_unpack (
+ let force_get fw =  let mods_without_subdirs = List.filter_map (
   fun (mn,details) ->
  if Assistance_fw_module_small_details.has_printer details
   then Some mn
@@ -12858,7 +13105,8 @@ end ;;
   
   module Exit = All_printables ;; 
 
-  let details_for_module  fw mn = List.assoc mn (Modularized_details.get fw) ;;
+  let details_for_module  fw mn = try List.assoc mn (Modularized_details.get fw) with 
+   Not_found -> raise(Module_not_found_exn(Assistance_dfa_module.to_line mn));;
   let check_ending_on_module fw edg  mn=
    if edg=Assistance_fw_module_small_details.principal_ending (details_for_module fw mn)
    then true 
@@ -12867,7 +13115,7 @@ end ;;
    then Assistance_fw_module_small_details.mli_present (details_for_module fw mn) 
    else false;;
   let modules_with_their_ancestors fw l=
-   let temp1=Assistance_option.filter_and_unpack (
+   let temp1=List.filter_map (
      fun (nm,_)->if List.mem nm l then Some nm else None
      ) (Order.get fw )   in 
    let temp2=Assistance_image.image (
@@ -12875,7 +13123,7 @@ end ;;
        (snd (List.assoc nm (Order.get fw)))@[nm] 
    ) temp1 in 
    let temp3=List.flatten temp2 in 
-   Assistance_listennou.nonredundant_version temp3;;
+   Assistance_list_again.nonredundant_version temp3;;
   
   let root fw = Assistance_fw_poly.root  (parent fw) ;;
 
@@ -12899,7 +13147,7 @@ end ;;
 
   let acolytes_at_module fw mn=
     let eless = endingless_at_module fw mn in
-    Assistance_option.filter_and_unpack (fun 
+    List.filter_map (fun 
     edg->
       if check_ending_in_at_module edg fw mn
       then Some(Assistance_dfn_join.to_ending eless (Assistance_dfa_ocaml_ending.to_ending edg))
@@ -12912,7 +13160,7 @@ end ;;
        
  let all_moduled_mlx_paths cs=Assistance_image.image Assistance_dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
 
-let archived_mlx_paths cs = Assistance_option.filter_and_unpack (
+let archived_mlx_paths cs = List.filter_map (
    fun rl -> let edg = Assistance_dfn_rootless.to_ending rl in 
      if List.mem edg Assistance_dfa_ending.all_ocaml_endings 
      then let full = Assistance_dfn_join.root_to_rootless (root cs) rl in 
@@ -12932,7 +13180,7 @@ let all_mlx_paths cs = (archived_mlx_paths cs) @ (all_moduled_mlx_paths cs) ;;
  let temp4=Assistance_image.image fst temp3 in 
  let temp5=Assistance_ordered.sort Assistance_total_ordering.lex_for_strings temp4 in
  Assistance_image.image (
-    fun x->(x,Assistance_option.filter_and_unpack(
+    fun x->(x,List.filter_map(
       fun (y,ap)->if y=x then Some(ap) else None
     ) temp3)
  ) temp5 ;;
@@ -12946,9 +13194,9 @@ let show_value_occurrences fw t=
   let temp3=Assistance_substring.occurrences_of_in t text in 
   let mname=Assistance_cull_string.cobeginning(m)(Assistance_absolute_path.to_string ap) in
   Assistance_image.image (fun occ_idx ->
-    let line_idx = Assistance_strung.number_of_lines_before text occ_idx in 
-    let closeup = Assistance_cull_string.closeup_around_index text occ_idx in 
-    mname^", line "^(string_of_int line_idx)^" :\n"^closeup
+    let center_line_idx = (Assistance_strung.number_of_lines_before text occ_idx)+1 in 
+    let closeup = Assistance_lines_in_text.closeup_around_index text occ_idx in 
+    mname^", line "^(string_of_int center_line_idx)^" :\n"^closeup
   ) temp3
 ) temp1 in
  let temp4=List.flatten temp2 in
@@ -12960,7 +13208,7 @@ let number_of_modules fw = List.length (Order.get fw) ;;
 let below fw eless=
   let mods_in_order = Order.get fw in 
   let mn0=Assistance_dfn_endingless.to_module eless  in
-  Assistance_option.filter_and_unpack(fun (mn,_)->
+  List.filter_map(fun (mn,_)->
     if List.mem mn0 (snd(List.assoc mn mods_in_order))
     then Some(mn)
     else None) mods_in_order;;
@@ -12979,7 +13227,7 @@ let decipher_path fw x=Assistance_find_suitable_ending.find_file_location
 let decipher_module fw capitalized_or_not_x=
   let x=String.uncapitalize_ascii capitalized_or_not_x in 
   let s=Assistance_cull_string.before_rightmost_possibly_all x '.' in
-  match (Assistance_option.find_and_stop(
+  match (List.find_map(
       fun edg->
       let t=s^(Assistance_dfa_ending.connectable_to_modulename edg) in 
       try(Some(decipher_path fw t)) with _->None
@@ -12994,7 +13242,7 @@ let decipher_module fw capitalized_or_not_x=
 
   let below fw mn0 =
         let ordered_data = Order.get fw in 
-        Assistance_option.filter_and_unpack(fun (mn,_)->
+        List.filter_map(fun (mn,_)->
             let ancestors_for_mn = snd (List.assoc mn ordered_data) in 
             if List.mem mn0 ancestors_for_mn
             then Some(mn)
@@ -13002,7 +13250,7 @@ let decipher_module fw capitalized_or_not_x=
    
   let directly_below fw mn0 =
     let ordered_data = Order.get fw in 
-    Assistance_option.filter_and_unpack(fun (mn,_)->
+    List.filter_map(fun (mn,_)->
       let fathers_for_mn = fst (List.assoc mn ordered_data) in 
         if List.mem mn0 fathers_for_mn
         then Some(mn)
@@ -13010,7 +13258,7 @@ let decipher_module fw capitalized_or_not_x=
 
 
   let modules_using_value fw value_name =
-    Assistance_option.filter_and_unpack (fun (mn,_)->
+    List.filter_map (fun (mn,_)->
       let eless=endingless_at_module fw mn
       and pr_end=Assistance_fw_module_small_details.principal_ending (details_for_module fw mn) in
       let mlx=Assistance_dfn_join.to_ending eless (Assistance_dfa_ocaml_ending.to_ending pr_end) in
@@ -13024,7 +13272,7 @@ let decipher_module fw capitalized_or_not_x=
   let find_subdir_from_suffix fw possibly_slashed_suffix =
     let suffix = Assistance_cull_string.trim_slashes_on_the_right possibly_slashed_suffix  in
     let temp1 = List.filter (
-    fun subdir -> Assistance_supstring.contains (Assistance_dfa_subdirectory.without_trailing_slash subdir) suffix
+    fun subdir -> Assistance_substring.is_a_substring_of suffix (Assistance_dfa_subdirectory.without_trailing_slash subdir) 
     ) (All_subdirectories.get fw) in 
     let test_for_minimality = (fun subdir1->
      List.for_all (fun subdir2 ->
@@ -13036,7 +13284,7 @@ let decipher_module fw capitalized_or_not_x=
     if List.length(temp2)<>1
     then raise(Find_subdir_from_suffix_exn(suffix,temp2))
     else let (Assistance_dfa_subdirectory_t.SD container) = List.hd temp2 in 
-         let j1 = Assistance_substring.leftmost_index_of_in suffix container in 
+         let j1 = Option.get(Assistance_substring.leftmost_index_of_in_from_opt suffix container 1) in 
          let j2 = j1 + (String.length suffix) -1 in 
         Assistance_dfa_subdirectory.of_line(Assistance_cull_string.beginning j2 container);;
 
@@ -13055,10 +13303,16 @@ let decipher_module fw capitalized_or_not_x=
         let _ =  (
           if s_ending = "ml"
           then Assistance_put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
-        Assistance_unix_command.uc ("open -a \"/Applications/Visual Studio Code.app\" "^s_ap2);;      
+        (*
+           
+        On a Mac, this was 
+        Unix_command.uc ("open -a \"/Applications/Sublime Text.app\" "^s_ap2);; 
+
+        *)  
+        Assistance_unix_command.uc ("xdg-open "^s_ap2);;      
 
     let all_moduled_ml_absolute_paths fw =  
-        Assistance_option.filter_and_unpack (fun (mn,_)->
+        List.filter_map (fun (mn,_)->
           if not(check_ending_in_at_module Assistance_dfa_ocaml_ending_t.Ml fw mn)
           then None
           else 
@@ -13090,7 +13344,7 @@ let test_for_foreign root ap =
 
 
 let check_module_sequence_for_forgettability fw l=
- let modules_below = Assistance_option.filter_and_unpack (
+ let modules_below = List.filter_map (
    fun (mn,(_,ancestors_for_mn)) -> 
     if List.exists (fun mn2->
        List.mem mn2 ancestors_for_mn
@@ -13160,75 +13414,6 @@ end;;
 
 
 
-module Assistance_compilation_mode_t=struct
-
-(* 
-
-#use"lib/Compilation_management/compilation_mode_t.ml";;
-
-*)
-
-
-type t=
-   Usual
-  |Debug
-  |Executable;;
-
-   
-
-           
-
-end;;
-
-
-
-
-
-
-module Assistance_compilation_mode=struct
-
-(* 
-
-#use"lib/Compilation_management/compilation_mode.ml";;
-
-*)
-
-exception Ending_for_last_module_exn ;; 
-exception Ending_for_nonlast_module_exn ;; 
-
-let workspace = function 
-   Assistance_compilation_mode_t.Usual->Assistance_coma_constant.usual_build_subdir
-                     |Debug->Assistance_coma_constant.debug_build_subdir
-                     |Executable->Assistance_coma_constant.exec_build_subdir;;
-
-let ending_for_last_module = function 
-   Assistance_compilation_mode_t.Usual-> raise(Ending_for_last_module_exn)
-                     |Debug->".cmo"
-                     |Executable->".ml";;
-
-let ending_for_nonlast_module = function 
-   Assistance_compilation_mode_t.Usual-> raise(Ending_for_nonlast_module_exn)
-                     |Debug->".cmo"
-                     |Executable->".cmx";;                     
-
-let executioner = function 
-   Assistance_compilation_mode_t.Usual->"ocamlc -bin-annot "
-                     |Debug->"ocamlc -g "
-                     |Executable->"ocamlopt ";;
-
-let ending_for_final_product = function 
-   Assistance_compilation_mode_t.Usual->""
-                     |Debug->".ocaml_debuggable "
-                     |Executable->".ocaml_executable ";;   
-           
-
-end;;
-
-
-
-
-
-
 module Assistance_commands_for_batch_compilation=struct
 
 (* 
@@ -13240,15 +13425,25 @@ module Assistance_commands_for_batch_compilation=struct
 
 module Private = struct
 
-  let needed_dirs_and_libs_in_command cmod fw mn=
+   let line_for_libs cmod lib_names = 
     let extension=(if cmod=Assistance_compilation_mode_t.Executable then ".cmxa" else ".cma") in
+    (* Before OCaml 5.0, this used to be : *)
+      String.concat(" ") (Assistance_image.image(fun z->
+        let lib = Assistance_ocaml_library.file_for_library(z)in 
+        "-I +"^lib^" "^lib^extension) lib_names) 
+    
+    (* Since OCaml 5.0 *)
+    (* String.concat(" ") (Image.image(fun z->"-I +"^(Ocaml_library.file_for_library(z))) lib_names *);;
+
+
+  let needed_dirs_and_libs_in_command cmod fw mn=
+    
     let s_root=Assistance_dfa_root.connectable_to_subpath(Assistance_fw_with_dependencies.root fw) in
     let dirs=
     "-I "^s_root^(Assistance_dfa_subdirectory.connectable_to_subpath(Assistance_compilation_mode.workspace cmod))
-   and libs=String.concat(" ")
-     (Assistance_image.image(fun z->Assistance_ocaml_library.file_for_library(z)^extension)
-     (Assistance_fw_with_dependencies.needed_libs_for_module fw mn)) in
-     String.concat " " ["";dirs;libs;""];;
+   and prelibs = Assistance_fw_with_dependencies.needed_libs_for_module fw mn in 
+   let libs=line_for_libs cmod prelibs in 
+    String.concat " " ["";dirs;libs;""];;
   
   
   let command_for_cmi (cmod:Assistance_compilation_mode_t.t) dir fw hm=
@@ -13286,7 +13481,7 @@ module Private = struct
                        "mv "^s_fhm^".cm* "^s_root^workdir
                      ]
               ) in 
-              Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;;
+              Assistance_option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;;
      
     let hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds =
        (* 
@@ -13329,7 +13524,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
       else central_cmds)
-      in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+      in Assistance_option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
     let command_for_cmo_from_mly (cmod:Assistance_compilation_mode_t.t) dir fw eless=
       let nm=Assistance_dfn_endingless.to_module eless in
@@ -13353,7 +13548,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds 
       else central_cmds)
-      in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+      in Assistance_option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
 
 
@@ -13377,7 +13572,7 @@ module Private = struct
       (if (not mli_reg) &&(Sys.file_exists(full_mli))
       then hack_to_ignore_present_but_unregistered_mli s_root full_mli central_cmds
       else central_cmds)
-      in Assistance_option.add_element_on_the_right almost_full_answer opt_exec_move;; 
+      in Assistance_option_again.argument_on_the_right (fun x y->x@[y]) almost_full_answer opt_exec_move;; 
 
 
   
@@ -13458,10 +13653,8 @@ module Private = struct
       let pre_libs1=Assistance_image.image 
        (fun (_,nm) -> Assistance_set_of_polys.sort(Assistance_fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Assistance_set_of_polys.forget_order (Assistance_set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-      let extension=".cma" in
-      let libs=String.concat(" ")
-        (Assistance_image.image(fun z->Assistance_ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-      Assistance_option.add_element_on_the_right   
+      let libs=line_for_libs cmod pre_libs2 in 
+        Assistance_option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         (Assistance_compilation_mode.executioner cmod)^
         " -I "^s_root^workdir^" "^
@@ -13505,10 +13698,8 @@ module Private = struct
       let pre_libs1=Assistance_image.image 
        (fun (_,nm) -> Assistance_set_of_polys.sort(Assistance_fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Assistance_set_of_polys.forget_order (Assistance_set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
-      let extension=(if cmod=Assistance_compilation_mode_t.Executable then ".cmxa" else ".cma") in
-      let libs=String.concat(" ")
-        (Assistance_image.image(fun z->Assistance_ocaml_library.file_for_library(z)^extension) pre_libs2) in 
-      Assistance_option.add_element_on_the_right  
+      let libs=line_for_libs cmod pre_libs2 in 
+        Assistance_option_again.argument_on_the_right (fun x y->x@[y])  
       [ 
         ((Assistance_compilation_mode.executioner cmod)^
          " -I "^s_root^workdir^" "^
@@ -13529,40 +13720,6 @@ let predebuggable = Private.command_for_predebuggable ;;
 let debuggable_or_executable  = Private.command_for_debuggable_or_executable ;;   
   
   
-
-end;;
-
-
-
-
-
-
-module Assistance_no_slashes=struct
-
-(*
-
-#use"lib/no_slashes.ml";;
-
-*)
-
-type t=NS of string;;
-
-exception Slash_at of string*int;;
-
-let to_string(NS s)=s;;
-
-let of_string s=
-  let n=String.length s in
-  let rec tempf=(fun i->
-  if i>n
-  then NS s
-  else if (String.get s (i-1))='/'
-       then raise(Slash_at(s,i))
-       else tempf(i+1)
-  ) in
-  tempf 1;;
-  
-           
 
 end;;
 
@@ -13663,7 +13820,7 @@ module Private = struct
              ) triples_after in 
              let rejected_siblings_with_redundancies =  
                 Assistance_image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
-             let rejected_siblings = Assistance_listennou.nonredundant_version rejected_siblings_with_redundancies in    
+             let rejected_siblings = Assistance_list_again.nonredundant_version rejected_siblings_with_redundancies in    
              let newly_rejected = (nm,eless)::rejected_siblings in 
              let newly_rejected_mods = Assistance_image.image fst newly_rejected in 
              let old_list_of_cmpl_results= get_cmpl_results fw in 
@@ -13698,9 +13855,9 @@ module Private = struct
   
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
      match cmod with 
-     Assistance_compilation_mode_t.Usual->Assistance_option.unpack opt_modnames
+     Assistance_compilation_mode_t.Usual->Option.get opt_modnames
      |Assistance_compilation_mode_t.Debug
-     |Assistance_compilation_mode_t.Executable->let rootless_path=Assistance_option.unpack opt_rootless_path in 
+     |Assistance_compilation_mode_t.Executable->let rootless_path=Option.get opt_rootless_path in 
          let full_path=Assistance_absolute_path.of_string(
           (Assistance_dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Assistance_look_for_module_names.names_in_mlx_file full_path in 
@@ -13725,7 +13882,7 @@ module Private = struct
       Assistance_compilation_mode_t.Usual
      |Assistance_compilation_mode_t.Executable ->[] 
      |Assistance_compilation_mode_t.Debug->
-        let rootless_path=Assistance_option.unpack opt_rootless_path in 
+        let rootless_path=Option.get opt_rootless_path in 
         Command.predebuggable fw rootless_path) in 
      cmds;;
   
@@ -13736,7 +13893,7 @@ module Private = struct
      Assistance_compilation_mode_t.Usual->[] 
      |Assistance_compilation_mode_t.Debug
      |Assistance_compilation_mode_t.Executable->
-        let rootless_path=Assistance_option.unpack opt_rootless_path in 
+        let rootless_path=Option.get opt_rootless_path in 
         Command.debuggable_or_executable cmod fw rootless_path) in 
      cmds;;   
   
@@ -13827,7 +13984,7 @@ module Private = struct
   let show_value_occurrences fw mn = Assistance_fw_with_dependencies.show_value_occurrences (parent fw) mn ;;
 
   let up_to_date_elesses fw =
-    Assistance_option.filter_and_unpack (
+    List.filter_map (
       fun mn->
         if last_compilation_result_for_module fw mn
         then Some(Assistance_fw_with_dependencies.endingless_at_module fw mn)
@@ -13879,7 +14036,7 @@ module Private = struct
 
    let of_configuration config =
       let root = Assistance_fw_poly.root config in 
-      let _=(Assistance_more_unix.create_subdirs_and_fill_files_if_necessary root
+      let _=(Assistance_unix_again.create_subdirs_and_fill_files_if_necessary root
        Assistance_coma_constant.minimal_set_of_needed_dirs 
            Assistance_coma_constant.conventional_files_with_minimal_content) in 
       let initial_parent = Assistance_fw_with_dependencies.of_configuration config in 
@@ -13914,7 +14071,7 @@ module Private = struct
      let old_nm=Assistance_dfn_middle.to_module old_middle_name in
      let new_nm=Assistance_dfa_module.of_line (Assistance_no_slashes.to_string new_nonslashed_name) in  
      let old_parent = parent fw in 
-     let separated_acolytes_below=Assistance_option.filter_and_unpack(
+     let separated_acolytes_below=List.filter_map(
        fun mn->
         if List.mem old_nm (Assistance_fw_with_dependencies.ancestors_for_module old_parent mn)
        then Some(Assistance_image.image (Assistance_dfn_full.to_rootless) (Assistance_fw_with_dependencies.acolytes_at_module old_parent mn))
@@ -14009,6 +14166,116 @@ let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 
 let usual_recompile = Private.usual_recompile ;;  
   
+  
+  
+
+end;;
+
+
+
+
+
+
+module Assistance_transmit_change_to_github=struct
+
+(* 
+
+#use"lib/Githubbing/transmit_change_to_github.ml";;
+
+*)
+
+module Private = struct
+
+let commands_for_backup config diff=
+   if Assistance_dircopy_diff.is_empty diff
+   then ([],[])
+   else 
+   let source_dir = Assistance_fw_poly.root config 
+   and destination_dir = Assistance_fw_poly.dir_for_backup config in 
+   let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
+   let created_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_created diff) in
+   let temp2=List.filter_map
+   (fun fn->
+     if String.contains fn '/'
+     then let dn=Assistance_cull_string.before_rightmost fn '/' in
+          Some("mkdir -p "^s_destination^dn)
+     else None 
+    ) created_ones in
+   let temp3=Assistance_ordered.sort Assistance_total_ordering.silex_for_strings temp2 in
+   let s_source=Assistance_dfa_root.connectable_to_subpath source_dir in
+   let temp4=Assistance_image.image(
+      fun fn->
+      "cp "^s_source^fn^" "^s_destination^(Assistance_cull_string.before_rightmost fn '/')
+   ) created_ones in
+   let changed_ones=Assistance_image.image Assistance_dfn_rootless.to_line (Assistance_dircopy_diff.recently_changed diff) in
+   let temp5=Assistance_image.image(
+      fun fn->
+      "cp "^s_source^fn^" "^s_destination^fn
+   ) changed_ones in
+   let temp6=Assistance_image.image(
+      fun fn->
+      "git -C "^s_destination^" add "^fn
+   ) (created_ones@changed_ones) in
+   let temp7=Assistance_image.image(
+      fun rl->
+      let fn = Assistance_dfn_rootless.to_line rl in 
+      "git -C "^s_destination^" rm "^fn
+   ) (Assistance_dircopy_diff.recently_deleted diff) in
+   let temp8= Assistance_image.image (
+     fun (replacer,replacee) ->
+       let s_replacer = Assistance_dfn_rootless.to_line  replacer 
+       and s_backup_dir = Assistance_dfa_root.connectable_to_subpath destination_dir in 
+       let s_full_path = s_backup_dir^(Assistance_dfn_rootless.to_line replacee) in 
+       Assistance_unix_command.prefix_for_replacing_patterns^s_replacer^" "^s_full_path
+   ) (Assistance_fw_poly.encoding_protected_files config) in 
+   (temp3@temp4@temp5@temp8,temp6@temp7);;
+
+let backup_with_message config  diff msg=
+  let destination_dir = Assistance_fw_poly.dir_for_backup config in 
+  let (nongit_cmds,git_cmds)=commands_for_backup config diff in
+  let s_destination=Assistance_dfa_root.connectable_to_subpath destination_dir in
+  let _=Assistance_image.image Assistance_unix_command.uc nongit_cmds in
+  let _=(
+  if Assistance_fw_poly.gitpush_after_backup config
+  then let cwd=Sys.getcwd() in
+       Assistance_image.image Assistance_unix_command.uc
+       (
+       [Assistance_unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git -C "^s_destination^" commit -m \""^msg^"\"";
+         "git -C "^s_destination^" push"
+       ]@
+       [Assistance_unix_command.cd cwd]
+       ) 
+  else let cwd=Sys.getcwd() in
+       Assistance_image.image Assistance_unix_command.uc
+       (
+       [Assistance_unix_command.cd s_destination]@   
+       git_cmds@   
+       [
+         "git -C "^s_destination^" commit -m \""^msg^"\""
+       ]@
+       [Assistance_unix_command.cd cwd]
+       ) 
+  ) in
+  ();;
+
+let backup config diff opt_msg=
+  if Assistance_dircopy_diff.is_empty diff
+  then (print_string "No recent changes to commit ...";flush stdout) 
+  else 
+  let msg=(
+   match opt_msg with
+    None->Assistance_dircopy_diff.explain diff
+   |Some(msg0)->msg0) in
+  backup_with_message config diff msg;;
+  
+end ;; 
+
+let backup config diff opt_msg=
+  Private.backup config diff opt_msg;;
+
   
   
 
@@ -14503,10 +14770,12 @@ module Assistance_modify_coma_state=struct
          if not(String.contains old_sov '.')
          then Reference.replace_string cs_ref old_sov new_sov 
          else 
-         let j=Assistance_substring.leftmost_index_of_in "." old_sov in
-         if j<0 
+         let j_opt=Assistance_substring.leftmost_index_of_in_from_opt "." old_sov 1 in
+         if j_opt= None
          then raise(Rename_string_or_value_exn(old_sov))
-         else let module_name=Assistance_cull_string.beginning (j-1) old_sov in
+         else 
+         let j = Option.get j_opt in 
+         let module_name=Assistance_cull_string.beginning (j-1) old_sov in
          let endingless= Assistance_fw_with_dependencies.decipher_module (!cs_ref)  module_name 
          and path= Assistance_fw_with_dependencies.decipher_path (!cs_ref)  module_name in 
          let nm=Assistance_dfn_endingless.to_module endingless in

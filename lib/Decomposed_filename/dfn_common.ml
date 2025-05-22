@@ -4,7 +4,7 @@
 
 *)
 
-exception No_dot_in_string_to_rootless of string;;
+exception No_dot_in_str_to_rootless of string;;
 exception Decompose_absolute_path_using_root_exn of Absolute_path.t * Dfa_root_t.t;;
 
 let string_of_sm (s,m)=
@@ -20,7 +20,7 @@ let string_to_sm s=
 
 let string_to_rootless line=
   if not(String.contains line '.')
-  then raise(No_dot_in_string_to_rootless(line)) 
+  then raise(No_dot_in_str_to_rootless(line)) 
   else 
   let (rest,ending) = Cull_string.split_wrt_rightmost line '.' in 
   let (s,m) = string_to_sm rest in 

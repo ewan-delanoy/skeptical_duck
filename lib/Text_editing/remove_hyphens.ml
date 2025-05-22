@@ -17,7 +17,7 @@ let is_a_lowercase_letter  = char_is_in_range (97,122) ;;
 
 end ;;
 
-let in_string text =
+let in_text text =
     let n = String.length text in 
     let getchar = Strung.get text in 
     let dashes = List.filter (
@@ -35,7 +35,7 @@ let in_string text =
 
 let in_file fn=
     let old_text=Io.read_whole_file fn in
-    let new_text=in_string old_text  in
+    let new_text=in_text old_text  in
     Io.overwrite_with fn new_text;; 
 
 

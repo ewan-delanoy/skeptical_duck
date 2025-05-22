@@ -4,6 +4,7 @@
 
 *)
 
+module Private = struct
 
 let separator = " \205\140 ";;
 
@@ -23,7 +24,7 @@ let replace_inside_text (Compact_replacer_t.CR(l)) old_text =
 let replace_inside_file (Compact_replacer_t.CR(l)) fn =
    Replace_inside.replace_several_inside_file l fn ;;
 
-let reverse_replace_inside_string (Compact_replacer_t.CR(old_l)) old_text =
+let reverse_replace_inside_text (Compact_replacer_t.CR(old_l)) old_text =
    let l = Image.image (fun (x,y)->(y,x)) old_l in 
    Replace_inside.replace_several_inside_text l old_text ;;
 
@@ -53,3 +54,10 @@ let z3 = parse z2;;
 let check = (z3=z1);;
 
 *)
+
+end ;;
+
+let execute = Private.execute ;;
+
+let reverse_execute = Private.reverse_execute ;; 
+

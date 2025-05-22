@@ -45,10 +45,10 @@ module Private = struct
 
 end ;;
 
-let in_string = Private.remove_all_blankets ;;
+let in_text = Private.remove_all_blankets ;;
 
 let in_file fn=
     let old_text=Io.read_whole_file fn in
-    let new_text=in_string old_text  in
+    let new_text=in_text old_text  in
     Io.overwrite_with fn new_text;; 
 

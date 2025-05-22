@@ -206,6 +206,8 @@ let overwrite_between_markers_inside_file
     let new_text=overwrite_between_markers_inside_text ~overwriter:b (bm,em) old_text in
     Io.overwrite_with fn new_text;;      
 
+let pair_for_commenting_or_uncommenting = 
+     Private.pair_for_commenting_or_uncommenting ;;
 
 let replace_inside_text ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
   Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) text ;;

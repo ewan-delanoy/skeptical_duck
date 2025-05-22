@@ -133,7 +133,7 @@ let decompose app s=
          List.rev(data.partial_result));;   
 
 
-let in_string app txt=
+let in_text app txt=
    let formal_app = Image.image (fun (l_par,r_par)->P(l_par,r_par)) app in 
    let temp1 = decompose formal_app txt in  
    let temp2 = Image.image (fun (opt,snippet)->
@@ -145,14 +145,14 @@ let in_string app txt=
    
 let in_file app ap =
     let old_text = Io.read_whole_file ap in 
-    let new_text = in_string app old_text in 
+    let new_text = in_text app old_text in 
     Io.overwrite_with ap new_text ;;
 
 
 end ;; 
 
 let in_file = Private.in_file ;;
-let in_string = Private.in_string ;;
+let in_text = Private.in_text ;;
 
 
 (*
