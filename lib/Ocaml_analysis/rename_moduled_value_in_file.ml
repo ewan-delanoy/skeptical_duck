@@ -23,7 +23,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    else
    let temp4=Option.get(opt_temp4) in
    let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
-   let _=Overwrite_at_intervals.inside_file [(i1,j1),new_name] path in
+   let _=Replace_inside.overwrite_at_intervals_inside_file [(i1,j1),new_name] path in
    let temp3_again=Read_ocaml_files.read_ocaml_files preceding_files in
    let beheaded_name=Cull_string.cobeginning j old_name in
    let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
