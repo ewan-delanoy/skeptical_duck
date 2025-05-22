@@ -17,7 +17,7 @@ let parse descr =
    let tg =(fun k->List.nth temp1 (k-1)) in  
    Compact_replacer_t.CR(Int_range.scale (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
 
-let replace_inside_string (Compact_replacer_t.CR(l)) old_text =
+let replace_inside_text (Compact_replacer_t.CR(l)) old_text =
    Replace_inside.replace_several_inside_text l old_text ;;
 
 let replace_inside_file (Compact_replacer_t.CR(l)) fn =
