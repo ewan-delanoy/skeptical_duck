@@ -16574,7 +16574,7 @@ let ap1 = Absolute_path.of_string "../Idaho/Filewatching/fw_with_githubbing.ml" 
 let text1 = Io.read_whole_file ap1 ;;
 let (before1,old_center1,after1) = Lines_in_text.tripartition_associated_to_interval 
     text1 257 336 ;;
-let new_center1 = Lines_in_text.remove_lines_containing_substring_in_string
+let new_center1 = Lines_in_text.remove_lines_containing_substring_in_text
   "shrinkable" old_center1 ;;
 let new_text1 = String.concat "\n" [before1;new_center1;after1] ;;  
 Io.overwrite_with ap1 new_text1 ;;

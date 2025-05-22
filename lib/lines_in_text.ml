@@ -506,7 +506,7 @@ let interval = Private.interval ;;
       let new_text=remove_interval old_text i j  in
      Io.overwrite_with fn new_text;;   
   
-  let remove_lines_containing_substring_in_string pattern text =
+  let remove_lines_containing_substring_in_text pattern text =
      let old_indexed_lines=indexed_lines text in
      let temp2=List.filter (fun (_,line)->not(Substring.is_a_substring_of pattern line)) old_indexed_lines  in
      let new_indexed_lines=Image.image snd temp2 in
@@ -514,7 +514,7 @@ let interval = Private.interval ;;
    
    let remove_lines_containing_substring_in_file pattern fn=
        let old_text=Io.read_whole_file fn in
-       let new_text=remove_lines_containing_substring_in_string pattern old_text  in
+       let new_text=remove_lines_containing_substring_in_text pattern old_text  in
       Io.overwrite_with fn new_text;;   
   
 let findreplace_in_interval (x,y) s i j=
