@@ -139,16 +139,16 @@ end ;;
 module Constructor = struct 
 
 let of_fw_config_and_github_config fw_config github_config = 
-  let (Mw_with_githubbing_t.Subclass fw_with_githubbing) = 
-    Mw_with_githubbing.Constructor.of_fw_config_and_github_config fw_config github_config in 
+  let fw_with_githubbing = 
+    Mw_with_githubbing.of_fw_config_and_github_config fw_config github_config in 
   Mw_with_persisting_t.Subclass fw_with_githubbing ;;
 
 let of_fw_with_batch_compilation fw =
   Mw_with_persisting_t.Subclass fw ;;
 
 let plunge_fw_config_with_github_config fw_config github_config = 
-  let (Mw_with_githubbing_t.Subclass fw_with_githubbing) = 
-     Mw_with_githubbing.Constructor.plunge_fw_config_with_github_config fw_config github_config in 
+  let fw_with_githubbing = 
+     Mw_with_githubbing.plunge_fw_config_with_github_config fw_config github_config in 
   Mw_with_persisting_t.Subclass fw_with_githubbing ;;
 
 end ;;  
@@ -198,7 +198,7 @@ Mw_with_persisting_t.Subclass(Mw_with_githubbing.forget_modules fw mods);;
 
 let forget_nonmodular_rootlesses (Mw_with_persisting_t.Subclass fw) rls= 
 Mw_with_persisting_t.Subclass(
-  Mw_with_githubbing.Common.forget_nonmodular_rootlesses fw rls);;
+  Mw_with_githubbing.forget_nonmodular_rootlesses fw rls);;
 
 let gitpush_after_backup (Mw_with_persisting_t.Subclass fw) = 
    fw.Mw_poly_t.gitpush_after_backup ;;
@@ -266,7 +266,7 @@ let usual_compilable_files (Mw_with_persisting_t.Subclass fw) =
 
 let usual_recompile (Mw_with_persisting_t.Subclass fw) opt_comment=
 Mw_with_persisting_t.Subclass(
-  Mw_with_githubbing.Common.usual_recompile fw opt_comment);;
+  Mw_with_githubbing.usual_recompile fw opt_comment);;
 
 
 end ;;  
