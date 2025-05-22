@@ -5,8 +5,6 @@
 *)
 
 exception Ambiguity of string*int*int;;
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
 
 
 module Private = struct 
@@ -118,15 +116,8 @@ let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_a
 let overwrite_between_markers_inside_string ~overwriter:b (bm,em)
    s1=
      if (bm,em)=("","") then b else
-     let i1=Private.substring_leftmost_index_from bm s1 0 in
-     if i1=(-1) then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm)-1 in
-     let i2=Private.substring_leftmost_index_from em s1 (j1+1) in
-     if i2=(-1) then raise(Absent_ending_marker(em)) else
-     let before=String.sub s1 0 (j1+1)
-     and after=String.sub s1 i2 (String.length(s1)-i2) 
-     in
-     before^b^after ;; 
+     let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+     before^bm^b^em^after ;; 
      
 let overwrite_between_markers_inside_file 
    ~overwriter:b (bm,em)
@@ -139,16 +130,8 @@ let overwrite_between_markers_inside_file
 let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em)
    s1=
      if (bm,em)=("","") then b else
-     let i1=Private.substring_leftmost_index_from bm s1 0 in
-     if i1=(-1) then raise(Absent_beginning_marker(bm)) else
-     let j1=i1+(String.length bm)-1 in
-     let i2=Private.substring_leftmost_index_from em s1 (j1+1) in
-     if i2=(-1) then raise(Absent_ending_marker(bm)) else
-     let corrected_i2=i2+(String.length bm)-1 in
-     let before=String.sub s1 0 i1
-     and after=String.sub s1 corrected_i2 (String.length(s1)-corrected_i2) 
-     in
-     before^b^after ;; 
+      let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) s1 in
+      before^bm^b^em^after ;; 
      
 let overwrite_and_dump_markers_inside_file 
 ~overwriter:b (bm,em)
