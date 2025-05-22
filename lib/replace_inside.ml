@@ -188,7 +188,7 @@ let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_a
     let new_text=replace_several_inside_text ~display_number_of_matches ~silent_on_ambiguity l old_text  in
     Io.overwrite_with fn new_text;; 
 
-let uncomment_between_markers_inside_string (bm,em) text=
+let uncomment_between_markers_inside_text (bm,em) text=
       let (before,between,after) = Cull_string.tripartition_using_markers (bm,em) text in
       before^bm^(
        Cull_string.two_sided_cutting Private.pair_for_commenting_or_uncommenting  
@@ -197,7 +197,7 @@ let uncomment_between_markers_inside_string (bm,em) text=
 
  let uncomment_between_markers_inside_file (bm,em) fn =
    let old_text=Io.read_whole_file fn in
-   let new_text=uncomment_between_markers_inside_string (bm,em) old_text in
+   let new_text=uncomment_between_markers_inside_text (bm,em) old_text in
    Io.overwrite_with fn new_text;; 
 
 
