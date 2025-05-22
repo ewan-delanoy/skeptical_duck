@@ -165,14 +165,9 @@ two_sided_cutting ("ab","efg") "abcdefg";;
 
 
  
-let between_markers (bm,em) s=
-     if (bm,em)=("","") then s else
-     let i1_opt=Substring.leftmost_index_of_in_from_opt bm s 1  in
-     if i1_opt=None then raise(Absent_beginning_marker(bm)) else
-     let j1=(Option.get i1_opt)+(String.length bm) in
-     let i2_opt=Substring.leftmost_index_of_in_from_opt em s (j1+1) in
-     if i2_opt<None then raise(Absent_ending_marker(bm)) else
-     interval s j1 ((Option.get i2_opt)-1);; 
+let between_markers markers text=
+  let (_,middle,_) = tripartition_using_markers markers text in 
+  middle;; 
  
 let optional_between_markers p s=
    try Some(between_markers p s) with _->None;; 
