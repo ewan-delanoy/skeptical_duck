@@ -1113,7 +1113,7 @@ module Private = struct
           (fun (fn, replacements) ->
             let old_text = Capsule.read_file cpsl fn in
             let new_text =
-              Replace_inside.replace_several_inside_string
+              Replace_inside.replace_several_inside_text
                 ~display_number_of_matches:true
                 replacements
                 old_text

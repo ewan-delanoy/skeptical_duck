@@ -18,14 +18,14 @@ let parse descr =
    Compact_replacer_t.CR(Int_range.scale (fun j->(tg (2*j-1),tg (2*j)) ) 1 m );;
 
 let replace_inside_string (Compact_replacer_t.CR(l)) old_text =
-   Replace_inside.replace_several_inside_string l old_text ;;
+   Replace_inside.replace_several_inside_text l old_text ;;
 
 let replace_inside_file (Compact_replacer_t.CR(l)) fn =
    Replace_inside.replace_several_inside_file l fn ;;
 
 let reverse_replace_inside_string (Compact_replacer_t.CR(old_l)) old_text =
    let l = Image.image (fun (x,y)->(y,x)) old_l in 
-   Replace_inside.replace_several_inside_string l old_text ;;
+   Replace_inside.replace_several_inside_text l old_text ;;
 
 let reverse_replace_inside_file (Compact_replacer_t.CR(old_l)) fn =
    let l = Image.image (fun (x,y)->(y,x)) old_l in 

@@ -369,9 +369,9 @@ let rewrite_footer footer =
       let effective_actions = List.filter_map (
          fun (should_do,action) -> if should_do then Some action else None
       ) possible_actions in  
-      Replace_inside.replace_several_inside_string effective_actions line
+      Replace_inside.replace_several_inside_text effective_actions line
    ) footer_lines in 
-   Replace_inside.replace_several_inside_string 
+   Replace_inside.replace_several_inside_text 
      [("\\newline\n\\indent","\\newline\n\n\n\\indent");
       ",\\newline",".\\newline"]
    (String.concat "\n" new_footer_lines) ;;
@@ -4425,13 +4425,13 @@ let check_failure txt =
 
 let ff k =
    let temp1 = List_again.long_head k z8 in 
-   let new_text = Replace_inside.replace_several_inside_string
+   let new_text = Replace_inside.replace_several_inside_text
        temp1 text1 in 
    check_failure new_text ;;    
 
 let z9 = List.filter (fun (x,y)->y<>"/* COMMENT 52 */") z8 ;;
 
-let special_text = Replace_inside.replace_several_inside_string
+let special_text = Replace_inside.replace_several_inside_text
        z9 text1 ;; *)
 
 (*
@@ -15201,7 +15201,7 @@ let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
 
 let act () = 
   let stored_text = Io.read_whole_file temporary_store in 
-  let temp1 = Replace_inside.replace_several_inside_string 
+  let temp1 = Replace_inside.replace_several_inside_text 
    ["[","";"]","";"(","";")",""] stored_text in
   let xsums = Str.split (Str.regexp_string ",") temp1 in 
   let dim_after = List.length xsums in  
@@ -15315,7 +15315,7 @@ let transmitter_file = Absolute_path.of_string "Fads/pan.ml";;
 
 
 let stored_text = Io.read_whole_file temporary_store ;;
-let temp1 = Replace_inside.replace_several_inside_string 
+let temp1 = Replace_inside.replace_several_inside_text 
   ["[","";"]","";"(","";")",""] stored_text ;;
 let xsums = Str.split (Str.regexp_string ",") temp1 ;;
 let dim_after = List.length xsums ;;
@@ -18171,7 +18171,7 @@ let copy_whole spice=
    let temp1 = Image.image (extract_interval) (!(associated_ref spice)) in
    let whole = String.concat "\n\n" temp1 
    and s = spice_to_string spice in 
-   let corrected_whole = Replace_inside.replace_several_inside_string
+   let corrected_whole = Replace_inside.replace_several_inside_text
     (!ref_for_replacements) whole in 
    Replace_inside.overwrite_between_markers_inside_file
    ~overwriter:corrected_whole
@@ -19202,7 +19202,7 @@ let tex_ap = Absolute_path.of_string
 let full_text = "\n"^(String.concat "\n" partial_texts)^"\n" ;;
 
 
-let adjusted_text = Replace_inside.replace_several_inside_string 
+let adjusted_text = Replace_inside.replace_several_inside_text 
    ["&","\\&";
     "$","\\$";
     "#","\\#";

@@ -83,7 +83,7 @@ let commands_for_filename_renaming ks rep =
   fun ap ->
      let s_ap =  Absolute_path.to_string ap in 
      let (before,old_after) = Cull_string.split_wrt_rightmost s_ap '/' in 
-     let new_after = Replace_inside.replace_several_inside_string 
+     let new_after = Replace_inside.replace_several_inside_text 
           enhanced_rep old_after in 
      if new_after<>old_after  
      then Some(s_ap,before^"/"^new_after)
@@ -211,7 +211,7 @@ let modifications = List.filter_map (
   fun ap ->
      let s_ap =  Absolute_path.to_string ap in 
      let (before,old_after) = Cull_string.split_wrt_rightmost s_ap '/' in 
-     let new_after = Replace_inside.replace_several_inside_string 
+     let new_after = Replace_inside.replace_several_inside_text 
           enhanced_rep1 old_after in 
      if new_after<>old_after  
      then Some(s_ap,before^"/"^new_after)

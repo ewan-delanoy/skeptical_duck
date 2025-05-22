@@ -171,7 +171,7 @@ let overwrite_between_markers_inside_file
 let replace_inside_text ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) text=
   Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) text ;;
  
-let replace_several_inside_string ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
+let replace_several_inside_text ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l t=List.fold_left 
 (fun s (a,b)->Private.my_global_replace display_number_of_matches silent_on_ambiguity (a,b) s ) t l;;  
  
 let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=false) (a,b) fn=
@@ -185,7 +185,7 @@ let replace_inside_file ?(display_number_of_matches=true) ?(silent_on_ambiguity=
 
 let replace_several_inside_file ?(display_number_of_matches=false) ?(silent_on_ambiguity=false) l fn=
     let old_text=Io.read_whole_file fn in
-    let new_text=replace_several_inside_string ~display_number_of_matches ~silent_on_ambiguity l old_text  in
+    let new_text=replace_several_inside_text ~display_number_of_matches ~silent_on_ambiguity l old_text  in
     Io.overwrite_with fn new_text;; 
 
 let uncomment_between_markers_inside_string (bm,em) text=

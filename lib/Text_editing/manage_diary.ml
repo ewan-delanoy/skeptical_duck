@@ -173,7 +173,7 @@ module Private = struct
    let findreplace_at_index_in replacements k (D snippets) =
       let (old_title,old_content) = List.nth snippets (k-1) in 
       let new_content = 
-         Replace_inside.replace_several_inside_string 
+         Replace_inside.replace_several_inside_text 
            replacements old_content in 
       let n = List.length snippets in 
       D(Int_range.scale (fun j->

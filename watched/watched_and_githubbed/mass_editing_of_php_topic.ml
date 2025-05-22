@@ -343,7 +343,7 @@ let remove_yrl_related_annotations text =
 let remove_annotations text =
    let text1 = remove_quote_related_annotations text in 
    let text2 = remove_yrl_related_annotations text1 in 
-   Replace_inside.replace_several_inside_string 
+   Replace_inside.replace_several_inside_text 
    [
        "<s>","";"</s>","";"<e>","";"</e>","";"\\n","\n";
        "<r>","";"</r>","";"<I>","";"</I>","";"(\195\160 suivre)","";

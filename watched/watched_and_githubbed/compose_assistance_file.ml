@@ -29,7 +29,7 @@ let g2 = Image.image (
 
 let g3=Modularize.modularize_several "assistance_" g2;;
 
-let g4=Replace_inside.replace_several_inside_string
+let g4=Replace_inside.replace_several_inside_text
   [
     "let githubbing=true;;",
     "let githubbing=false;;"

@@ -10,7 +10,7 @@ exception Nondisjoint_ranges of (int * int) * (int * int) ;;
 
 module Private = struct
 
-let translate_usual_tags = Replace_inside.replace_several_inside_string 
+let translate_usual_tags = Replace_inside.replace_several_inside_text 
 ["<i>","[i]";"</i>","[/i]";"<b>","[b]";"</b>","[/b]";
 "<center>","[center]";"</center>","[/center]";"<p>","";"</p>",""] ;;
 
