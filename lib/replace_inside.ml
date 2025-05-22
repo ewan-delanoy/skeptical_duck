@@ -127,7 +127,7 @@ let comment_out_between_markers_inside_file (bm,em) fn =
   let new_text=comment_out_between_markers_inside_text (bm,em) old_text in
   Io.overwrite_with fn new_text;; 
 
-let overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) text=
+let overwrite_and_dump_markers_inside_text ~overwriter:b (bm,em) text=
      if (bm,em)=("","") then b else
       let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) text in
       before^bm^b^em^after ;; 
@@ -136,7 +136,7 @@ let overwrite_and_dump_markers_inside_file
 ~overwriter:b (bm,em)
    fn =
     let old_text=Io.read_whole_file fn in
-    let new_text=overwrite_and_dump_markers_inside_string ~overwriter:b (bm,em) old_text in
+    let new_text=overwrite_and_dump_markers_inside_text ~overwriter:b (bm,em) old_text in
     Io.overwrite_with fn new_text;;      
  
 (* 
