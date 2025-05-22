@@ -14,10 +14,10 @@ exception Unfinished_double_quoted_string ;;
 
 module Private = struct 
 
-  let lines old_s=
-     let left_offset=(if String.starts_with ~prefix:"\n" old_s  then "\n" else "")
-     and right_offset=(if String.ends_with ~suffix:"\n" old_s  then "\n" else "") in
-     let s=left_offset^old_s^right_offset in
+  let lines old_text=
+     let left_offset=(if String.starts_with ~prefix:"\n" old_text  then "\n" else "")
+     and right_offset=(if String.ends_with ~suffix:"\n" old_text  then "\n" else "") in
+     let s=left_offset^old_text^right_offset in
      Str.split (Str.regexp_string "\n") s ;;
 
   let indexed_lines text=
@@ -81,14 +81,14 @@ module Private = struct
      
    exception Lines_in_char_range_exn of int*int;;
 
-   let number_of_lines_in_char_interval s  i j=
+   let number_of_lines_in_char_interval text  i j=
      try (List.length(List.filter (fun k->
-         String.get s (k-1)='\n'
+         String.get text (k-1)='\n'
      ) (Int_range.range i j))) with
      _->raise(Lines_in_char_range_exn(i,j));;    
 
-   let duplicate_interval_in_string (i,j) s = 
-     let (before,itv,after) = tripartition_associated_to_interval s i j in 
+   let duplicate_interval_in_string (i,j) text = 
+     let (before,itv,after) = tripartition_associated_to_interval text i j in 
      before^itv^"\n"^itv^after ;;
 
   (* duplicate_interval_in_string (2,4) "1\n2\n3\n4\n5\n";; *)
@@ -98,13 +98,13 @@ module Private = struct
      let new_text = duplicate_interval_in_string (i,j) old_text in 
      Io.overwrite_with src_file new_text ;; 
 
-   let naive_closeup_around_index s j=
-     let n=String.length s in
+   let naive_closeup_around_index text j=
+     let n=String.length text in
      let temp1=List.filter(fun j->(String.get s (j-1))='\n')(Int_range.range 1 n) in
      let (temp2,temp3)=Hurried.partition_in_two_parts(fun k->k<j) temp1 in
      let a=(if List.length(temp2)<6 then 1 else List.nth(List.rev temp2)(5))
      and b=(if List.length(temp3)<6 then n else List.nth(temp3)(5)) in
-     (a,String.sub s a (b-a));;
+     (a,String.sub text a (b-a));;
 
   let closeup_around_index text idx =
      let (char_idx,subtext) = naive_closeup_around_index text idx in 
