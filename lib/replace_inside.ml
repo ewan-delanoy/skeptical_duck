@@ -155,6 +155,45 @@ overwrite_and_dump_markers_inside_text
      
 *)
 
+let overwrite_at_intervals_inside_text replacings text=
+  let n=String.length text
+  and r=List.length replacings in
+  let x_coord=(fun j->
+    if j=1 then 1 else
+    snd(fst(List.nth replacings ((j-3)/2)))+1
+  ) and y_coord=(fun j->
+   if j=2*r+1 then n else
+    fst(fst(List.nth replacings ((j-1)/2)))-1
+  ) in
+  let xy_substring=(fun j->
+    Cull_string.interval text (x_coord j) (y_coord j)
+  ) in
+  let all_parts=Int_range.scale (
+    fun j->
+      if (j mod 2)=1
+      then xy_substring j
+      else snd(List.nth replacings ((j-2)/2))
+  ) 1 (2*r+1) in
+  String.concat "" all_parts;;
+
+(*
+
+overwrite_at_intervals_inside_text
+ [(7,12),"garfield";(23,24),"jack";(30,30),"gas"]
+ "12345678901234567890123456789012345678901234567890";;
+ 
+
+*)
+
+let overwrite_at_intervals_inside_file replacings fn=
+  let old_text=Io.read_whole_file fn in
+  let new_text=overwrite_at_intervals_inside_text replacings old_text in
+  Io.overwrite_with fn new_text;;  
+  
+
+
+
+
 let overwrite_between_markers_inside_text ~overwriter:b (bm,em) text=
      if (bm,em)=("","") then b else
      let (before,_between,after) = Cull_string.tripartition_using_markers (bm,em) text in
