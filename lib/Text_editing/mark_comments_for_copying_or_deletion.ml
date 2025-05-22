@@ -48,7 +48,7 @@ let check_for_overlapping_intervals indexed_lines pairs =
 
 
 let ranges_for_marked_comments text =
-   let indexed_lines = Lines_in_string.indexed_lines text in 
+   let indexed_lines = Lines_in_text.indexed_lines text in 
    let openers = List.filter_map (
       fun (line_idx,line) ->
        if is_an_opening_line line
@@ -120,12 +120,12 @@ let copy_between_strings src old_dest =
    let ranges = ranges_for_marked_comments src in 
    let copier = (
      fun dest1 pair ->
-      Lines_in_string.copy_interval_from_string_to_string 
+      Lines_in_text.copy_interval_from_string_to_string 
         pair src dest1
    ) in 
    let temp_dest = 
       List.fold_left copier old_dest ranges in  
-   let indexed_lines = Lines_in_string.indexed_lines temp_dest in 
+   let indexed_lines = Lines_in_text.indexed_lines temp_dest in 
    let final_lines = Image.image 
      (unmark_line_according_to_rangelist ranges) indexed_lines in 
    String.concat "\n" final_lines ;;   
@@ -140,7 +140,7 @@ copy_between_strings
 
 let delete_in_string src =
   let ranges = ranges_for_marked_comments src in 
-  let indexed_lines = Lines_in_string.indexed_lines src in 
+  let indexed_lines = Lines_in_text.indexed_lines src in 
   let is_to_be_kept = (fun idx ->
     List.for_all (fun (a,b)->(idx<a)||(b<idx)) ranges
   ) in 

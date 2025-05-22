@@ -48,7 +48,7 @@ let towards_first_page_extraction lines =
 let re_merge l = String.concat "\n" (Image.image snd l) ;;     
 
 let extract_first_page_and_remerge text =
-    let indexed_lines = Lines_in_string.indexed_lines text in 
+    let indexed_lines = Lines_in_text.indexed_lines text in 
     let (_before_block1,block1,lines_in_page1,lines_after_page1) = 
     towards_first_page_extraction indexed_lines in 
     (re_merge (block1@lines_in_page1), re_merge lines_after_page1) ;; 
@@ -68,7 +68,7 @@ let extract_page_number_from_percent_block three_lines =
 
 
 let read_number_of_first_page text =
-  let indexed_lines = Lines_in_string.indexed_lines text in 
+  let indexed_lines = Lines_in_text.indexed_lines text in 
   let (_before_block1,block1,_lines_in_page1,_lines_after_page1) = 
     towards_first_page_extraction indexed_lines in 
     extract_page_number_from_percent_block block1 ;;  
@@ -91,7 +91,7 @@ let rec helper_for_page_extraction verbose (treated,current_percent_block,to_be_
 
 
 let extract_all_pages_in_lined_form verbose text =
-  let indexed_lines = Lines_in_string.indexed_lines text in 
+  let indexed_lines = Lines_in_text.indexed_lines text in 
   match seek_next_percent_block ([],indexed_lines) with 
       None -> raise No_pages_to_extract
      |Some(_before_block1,block1,after_block1) -> 

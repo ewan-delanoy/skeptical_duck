@@ -98,7 +98,7 @@ module Snip170=struct
       ) related_barleys_for_all_pages) ;;
   
   let insert_at_all_lines (left,right) text =
-     let old_lines = Lines_in_string.lines text in 
+     let old_lines = Lines_in_text.lines text in 
      let young_lines = Image.image (
       fun line -> 
         if List.mem (Cull_string.trim_spaces line) 
@@ -109,7 +109,7 @@ module Snip170=struct
      String.concat "\n" young_lines ;;
   
   let remove_unusable_lines text =
-     let old_lines = Lines_in_string.lines text in 
+     let old_lines = Lines_in_text.lines text in 
      let young_lines = List.filter (
       fun line -> 
         not(List.mem (Cull_string.trim_spaces line) 
@@ -294,7 +294,7 @@ let deal_with_line_ending inserted_ender trimmed_line =
    else (string_before_line_ender trimmed_line) ^ inserted_ender ;;
    
 let deal_with_line_endings_in_paragraph special_treatment_for_last_line text = 
-   let nonempty_lines = Lines_in_string.lines text in 
+   let nonempty_lines = Lines_in_text.lines text in 
    if not special_treatment_for_last_line 
    then String.concat "\n" 
          (Image.image (deal_with_line_ending "\\linebreak")  nonempty_lines)
@@ -312,7 +312,7 @@ let deal_with_line_endings_in_paragraph special_treatment_for_last_line text =
 
 
 let rewrite_main_text main_text =
-   let indexed_mt_lines = Lines_in_string.indexed_lines main_text in 
+   let indexed_mt_lines = Lines_in_text.indexed_lines main_text in 
    let line_is_a_paragraph_closer =  (
      fun (line_idx,line) -> 
       match List.assoc_opt (line_idx+1) indexed_mt_lines with
@@ -342,7 +342,7 @@ let rewrite_main_text main_text =
    String.concat "\n" new_mt_lines ;;
 
 let rewrite_footer footer =
-   let footer_lines = Lines_in_string.indexed_lines footer in 
+   let footer_lines = Lines_in_text.indexed_lines footer in 
    let lines_for_new_footnotes = List.filter_map (
      fun (line_idx,line) -> 
       if has_naive_reference line then Some line_idx else None  
@@ -449,7 +449,7 @@ let adjust_linebreaks () =
    write_to_walker new_text ;;   
 
 let improve_line_endings ?(special_treatment_for_last_line=true) i j =
-   Lines_in_string.modify_interval_inside_file
+   Lines_in_text.modify_interval_inside_file
    (deal_with_line_endings_in_paragraph special_treatment_for_last_line) 
     walker_ap i j ;;
 
@@ -541,24 +541,24 @@ let enforce_replacements () = Chronometer.it Incremental_replace_on_a_set_of_fil
 let after1_ap = Absolute_path.of_string 
 (building_site ^ "bonvallet_after_part1.txt") ;;
 let act () =
-Lines_in_string.remove_interval_in_file after1_ap 5 4933;;
+Lines_in_text.remove_interval_in_file after1_ap 5 4933;;
 
 
 let part1_ap = Absolute_path.of_string 
 (building_site ^ "bonvallet_part1.txt") ;;
 let act () =
-Lines_in_string.remove_interval_in_file part1_ap 2247 2308;;
+Lines_in_text.remove_interval_in_file part1_ap 2247 2308;;
 
 let part2_ap = Absolute_path.of_string 
 (building_site ^ "bonvallet_part2.txt") ;;
 
 let act () =
-Lines_in_string.remove_interval_in_file part2_ap 5656 10818;;
+Lines_in_text.remove_interval_in_file part2_ap 5656 10818;;
 
 let part3_ap = Absolute_path.of_string 
 (building_site ^ "bonvallet_part3.txt") ;;
 let act () =
-Lines_in_string.remove_interval_in_file part3_ap 15 10583;;
+Lines_in_text.remove_interval_in_file part3_ap 15 10583;;
 
 
 end ;;
@@ -2438,7 +2438,7 @@ let ap1 =
 
 let text1 = Io.read_whole_file ap1 ;;  
 
-module Pri = Lines_in_string.Private ;;
+module Pri = Lines_in_text.Private ;;
 
 open Pri;;
 
@@ -2598,7 +2598,7 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
-  let lines_outside_cee_comments = Lines_in_string.lines ;;
+  let lines_outside_cee_comments = Lines_in_text.lines ;;
 
   let indexed_lines_outside_cee_comments text = 
      Int_range.index_everything (lines_outside_cee_comments text) ;; 
@@ -3073,11 +3073,11 @@ let last_endif_in_text text =
  
 let put_first_ivy_on_first_line text = 
   let line_idx = first_ivy_in_text text in 
-  Lines_in_string.put_line_first_in_string line_idx text ;;
+  Lines_in_text.put_line_first_in_string line_idx text ;;
 
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
-  let temp_text = Lines_in_string.put_line_last_in_string line_idx text in 
+  let temp_text = Lines_in_text.put_line_last_in_string line_idx text in 
   let temp_lines = List.rev(lines_outside_cee_comments temp_text) in 
   let (temp_last_line,temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
@@ -3439,7 +3439,7 @@ module Private = struct
 
   let lines_outside_cee_comments = 
     
-    Lines_in_string.lines (* _outside_cee_comments *) ;;
+    Lines_in_text.lines (* _outside_cee_comments *) ;;
 
   let indexed_lines_outside_cee_comments text = 
      Int_range.index_everything (lines_outside_cee_comments text) ;; 
@@ -3926,11 +3926,11 @@ let last_endif_in_text text =
  
 let put_first_ivy_on_first_line text = 
   let line_idx = first_ivy_in_text text in 
-  Lines_in_string.put_line_first_in_string line_idx text ;;
+  Lines_in_text.put_line_first_in_string line_idx text ;;
 
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
-  let temp_text = Lines_in_string.put_line_last_in_string line_idx text in 
+  let temp_text = Lines_in_text.put_line_last_in_string line_idx text in 
   let temp_lines = List.rev(lines_outside_cee_comments temp_text) in 
   let (temp_last_line,temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
@@ -4450,7 +4450,7 @@ Snippet 158 : Debug Lines_in_string.Private.lines_outside_cee_comments
 ************************************************************************************************************************)
 module Snip158=struct
 
-open Lines_in_string.Private ;;
+open Lines_in_text.Private ;;
 
 let txt1 = String.concat "\n" [
    "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
@@ -4759,9 +4759,9 @@ let txt2 = tt "common_now.css" ;;
 let txt1 = tt "colours_before.css" ;;
 let txt2 = tt "colours_now.css" ;;
 
-let l_txt1 = Lines_in_string.indexed_lines txt1 ;;
+let l_txt1 = Lines_in_text.indexed_lines txt1 ;;
 
-let l_txt2 = Lines_in_string.indexed_lines txt2 ;;
+let l_txt2 = Lines_in_text.indexed_lines txt2 ;;
 
 let m1 = min(List.length l_txt1)(List.length l_txt2) ;; 
 
@@ -5978,7 +5978,7 @@ module Snip139=struct
   
   let text1 = Io.read_whole_file ap1 ;; 
   
-  let lines1 = Lines_in_string.indexed_lines text1 ;; 
+  let lines1 = Lines_in_text.indexed_lines text1 ;; 
   
   let (lines2,lines3) = List.partition (
     fun (idx,line) -> idx <= 56 
@@ -6031,9 +6031,9 @@ module Snip137=struct
   (Absolute_path.of_string
   (home^"/Teuliou/OCaml/skeptical_duck/lib/Cee_language/cee_text.ml"));;
   
-  let all_lines1 = Lines_in_string.lines u1 ;;
+  let all_lines1 = Lines_in_text.lines u1 ;;
   
-  let all_lines2 = Lines_in_string.lines u2 ;;
+  let all_lines2 = Lines_in_text.lines u2 ;;
   
   let m = min (List.length all_lines1) (List.length all_lines2) ;;
   
@@ -6864,7 +6864,7 @@ let ap2= Absolute_path.of_string "~/Teuliou/Experimenting_with_php/snapshot1_for
 
 let libtool_text  =  (Io.read_whole_file ap2)^"\n***" ;; 
 
-let libtool_lines = Lines_in_string.indexed_lines libtool_text ;;
+let libtool_lines = Lines_in_text.indexed_lines libtool_text ;;
 let table_for_star_index_to_line_index = 
    Int_range.index_everything (List.filter_map (fun 
    (line_idx,line) ->
@@ -7250,7 +7250,7 @@ module Snip130=struct
   *)
   
   let get_ingredients_for_target target_name = 
-    let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
+    let temp1 = Lines_in_text.indexed_lines (!makefile_ref) 
     and prefix = target_name^":" in 
     let (idx1,line1) = List.find (
           fun (_,line) -> String.starts_with ~prefix line 
@@ -7260,7 +7260,7 @@ module Snip130=struct
     (idx1,extract_ingredients (!makefile_ref) left_offset) ;;
     
   let get_makefile_variable_list_value vname = 
-    let temp1 = Lines_in_string.indexed_lines (!makefile_ref) 
+    let temp1 = Lines_in_text.indexed_lines (!makefile_ref) 
     and prefix = vname^" = " in 
     let (idx1,line1) = List.find (
           fun (_,line) -> String.starts_with ~prefix line 
@@ -7522,7 +7522,7 @@ let ap1 = Absolute_path.of_string
 
 let text1 = Io.read_whole_file ap1 ;; 
 
-let lines1 = Lines_in_string.enhanced_indexed_lines text1 ;;  
+let lines1 = Lines_in_text.enhanced_indexed_lines text1 ;;  
 
 let prefix1="public String ";;
 
@@ -7556,7 +7556,7 @@ let extract1 (length_before,line_index,line) =
 
 let newly_created_lines = List.filter_map extract1 lines1 ;; 
 
-let old_lines = Lines_in_string.indexed_lines text1 ;;
+let old_lines = Lines_in_text.indexed_lines text1 ;;
 
 let modified_lines = Image.image (
    fun (idx,line) ->
@@ -7933,7 +7933,7 @@ let package_from_line_opt untrimmed_line =
 exception Extract_package_from_text_exn ;;
    
 let extract_package_from_text text = 
-    let lines = Lines_in_string.lines text in 
+    let lines = Lines_in_text.lines text in 
     match List.find_map package_from_line_opt lines with 
      None -> raise Extract_package_from_text_exn 
     |Some (pn) -> pn ;;  
@@ -7961,7 +7961,7 @@ let import_from_line_opt untrimmed_line =
   Some(Cull_string.split_wrt_rightmost line3 '.');;      
 
 let extract_imports_from_text text = 
-    let lines = Lines_in_string.lines text in 
+    let lines = Lines_in_text.lines text in 
     List.filter_map import_from_line_opt lines ;;
 
 let extract_imports_from_java_file =Memoized.make(fun jf -> 
@@ -10147,7 +10147,7 @@ module Snip123=struct
       replacements:=reps;
       rep()
      ) ;; 
-  let ch line_nbr = Strung.explode(List.nth (Lines_in_string.lines(txt())) (line_nbr-1)) ;; 
+  let ch line_nbr = Strung.explode(List.nth (Lines_in_text.lines(txt())) (line_nbr-1)) ;; 
   
   sr [
       ("E\204\129","\195\137");
@@ -10195,7 +10195,7 @@ module Snip122=struct
 
   let ap1 = Absolute_path.of_string (home^"/Downloads/api-v2.txt") ;; 
 let u1 = Io.read_whole_file ap1 ;; 
-let lines1 = Lines_in_string.indexed_lines u1 ;; 
+let lines1 = Lines_in_text.indexed_lines u1 ;; 
 
 let the_line = List.assoc 2048 lines1 ;; 
 
@@ -10220,7 +10220,7 @@ module Snip121=struct
   "~/Teuliou/Sites/Angular/External/original_orders.txt" ;; 
 
 let u1 = Io.read_whole_file ap1 ;;  
-let lines1 = Lines_in_string.lines u1 ;; 
+let lines1 = Lines_in_text.lines u1 ;; 
 
 let improve_line line =
    if not(String.contains line ':')
@@ -11277,7 +11277,7 @@ let polished_ap = Absolute_path.of_string (building_site^"polished_cmist.txt") ;
 let walker_ap = Absolute_path.of_string (building_site^"walker_cmist.txt") ;;  
 
   let u1 = Io.read_whole_file walker_ap ;; 
-  let u2 = Lines_in_string.lines u1 ;; 
+  let u2 = Lines_in_text.lines u1 ;; 
   let u3 = List.filter (fun line -> line<>"") u2 ;; 
   let u4 = List.filter (fun line -> 
       Substring.is_a_substring_of "Conocimiento obscuro" line 
@@ -11298,7 +11298,7 @@ module Snip113=struct
 
   let ap1 = Absolute_path.of_string "~/Downloads/stack.txt";;
   let old_text = Io.read_whole_file ap1 ;; 
-  let old_lines = Lines_in_string.lines old_text ;; 
+  let old_lines = Lines_in_text.lines old_text ;; 
   let new_lines = Image.image (fun line->">! "^line) old_lines ;; 
   let new_text = String.concat "\n" new_lines ;; 
   let act () = Io.overwrite_with ap1 new_text ;; 
@@ -11497,8 +11497,8 @@ let s_ap1 = (Dfa_root.connectable_to_subpath this_root) ^ "lib/Szemeredi/sz3p.ml
 let ap1 = Absolute_path.of_string s_ap1 ;; 
 
 let z1 = Io.read_whole_file ap1 ;; 
-let z2 = Lines_in_string.interval z1 60 81 ;; 
-let z3 = Lines_in_string.lines z2 ;; 
+let z2 = Lines_in_text.interval z1 60 81 ;; 
+let z3 = Lines_in_text.lines z2 ;; 
 let z4 = Image.image (
   fun line -> 
     let line2 = Cull_string.trim_spaces line in 
@@ -12061,8 +12061,8 @@ Snippet 102 : Construct a get_variant_name function from a long type definition
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "lib/Padioleau/yp_php_lexer.mll" ;; 
 let old_text = Io.read_whole_file ap1;;
-let (before_u1,u1,after_u1) = Lines_in_string.tripartition_associated_to_interval old_text 1142 1320 ;; 
-let u2 = Lines_in_string.lines u1 ;; 
+let (before_u1,u1,after_u1) = Lines_in_text.tripartition_associated_to_interval old_text 1142 1320 ;; 
+let u2 = Lines_in_text.lines u1 ;; 
 let u3 = Image.image (fun line->
   Option.get(Cull_string.before_and_after " of " line)) u2 ;; 
 let u4 = Ordered.sort Total_ordering.silex_for_strings  (Image.image snd u3) ;; 
@@ -12591,7 +12591,7 @@ Snippet 97 : Copy large interval of text from a file to another
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Githubbed_archive/Szemeredi_problem/current_stab_at_szemeredi_problem.ml" ;;
 let ap1 = Absolute_path.of_string "Fads/nap.ml" ;;
-Lines_in_string.duplicate_interval_in_file (228,287) ap1 ;; 
+Lines_in_text.duplicate_interval_in_file (228,287) ap1 ;; 
 
 let ap2 = Absolute_path.of_string "Fads/pan.ml";; 
 
@@ -12993,7 +12993,7 @@ Snippet 95 : Remove lines starting with a # in a file (can be used with ocamllex
 ************************************************************************************************************************)
 let ap3 = Absolute_path.of_string "Fads/jug.ml";; 
 let text3 = Io.read_whole_file ap3 ;;
-let lines = Lines_in_string.lines text3 ;; 
+let lines = Lines_in_text.lines text3 ;; 
 let good_lines = List.filter (fun line->not(String.starts_with ~prefix:"#" line )) lines ;;
 let new_text3 = String.concat "\n" good_lines ;; 
 Io.overwrite_with ap3 new_text3 ;; 
@@ -13003,7 +13003,7 @@ Snippet 94 : Extract token types from a .mli file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/Extract_php_lexer_from_padioleau/Originals/parser_php.mly" ;; 
 let u1 = Io.read_whole_file ap1 ;;
-let u2 = Lines_in_string.interval u1 110 236 ;;
+let u2 = Lines_in_text.interval u1 110 236 ;;
 let u3 = Outside_ocaml_comments_and_strings.good_substrings u2 ;; 
 let u4 = String.concat " " (Image.image (fun (_,_,s,_)->s) u3) ;;
 let u5 = Substring.occurrences_of_in "%token" u4 ;; 
@@ -13142,8 +13142,8 @@ Snippet 91 : Read a file and remove tabs in each line
 ************************************************************************************************************************)
 let ap3 = Absolute_path.of_string "Fads/pan.ml" ;;
 let z4 = Io.read_whole_file ap3 ;;
-let z5 = Lines_in_string.interval z4 9 21 ;;
-let z6 = Lines_in_string.lines z5 ;; 
+let z5 = Lines_in_text.interval z4 9 21 ;;
+let z6 = Lines_in_text.lines z5 ;; 
 let z7 = Image.image String.lowercase_ascii z6 ;;
 let z8 = Ordered.sort Total_ordering.lex_for_strings z7 ;;
 let z9 = Image.image (Str.split (Str.regexp_string "\t")) z6;;
@@ -14563,7 +14563,7 @@ let officialize () =
   ) ;;
 
 let compress_paragraph_in_walker_interval i j=
-   Lines_in_string.findreplace_in_interval_in_file ("\n"," ") walker_ap  i j ;; 
+   Lines_in_text.findreplace_in_interval_in_file ("\n"," ") walker_ap  i j ;; 
 
 let this_ap = Absolute_path.of_string 
    (home^"/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/pan.ml") ;;
@@ -14868,8 +14868,8 @@ let current_module = ref ("parse_info") ;;
 let ap1() = Absolute_path.of_string ("../Cherokee/old_"^(!current_module)^".ml") ;;
 let ap2() = Absolute_path.of_string ("../Cherokee/"^(!current_module)^".ml") ;;
 
-let ci i j= Lines_in_string.copy_interval_from_file_to_file (i,j) (ap1()) (ap2()) ;;
-let ri i j = Lines_in_string.remove_interval_in_file (ap2()) i j ;;
+let ci i j= Lines_in_text.copy_interval_from_file_to_file (i,j) (ap1()) (ap2()) ;;
+let ri i j = Lines_in_text.remove_interval_in_file (ap2()) i j ;;
 
 let act1 () = Replace_inside.replace_several_inside_file 
  [("PI.","Parse_info.")] (ap2()) ;;
@@ -14880,7 +14880,7 @@ let act1 () = Replace_inside.replace_several_inside_file
 let r1 = [("T.","Parser_js.");("TH.","Token_helpers_js.");("Ast.","Ast_js.")]
 
 
-let (a,b,c) = Lines_in_string.tripartition_associated_to_interval "" 79 123 ;;
+let (a,b,c) = Lines_in_text.tripartition_associated_to_interval "" 79 123 ;;
 let new_b = Replace_inside.replace_inside_text ("-> T","-> Parser_js.T") b ;;
 let text2 = String.concat "\n" [a;new_b;c] ;;
 
@@ -15533,7 +15533,7 @@ let ap1 = Absolute_path.of_string
    "Compilation_management/commands_for_batch_compilation.ml" ;;
 let text1 = Io.read_whole_file ap1 ;;
 
-let (a,b,c) = Lines_in_string.tripartition_associated_to_interval text1 75 97 ;;
+let (a,b,c) = Lines_in_text.tripartition_associated_to_interval text1 75 97 ;;
 
 let text2 = String.concat "\n\n" [a;b;b;c] ;;
 
@@ -15964,7 +15964,7 @@ Snippet 66 : Transfer a large snippet from one file to another
 open Needed_values ;;
 
 let z1 = rf "Fads/nap.ml" ;;
-let z2 = Lines_in_string.interval z1 209 298 ;;
+let z2 = Lines_in_text.interval z1 209 298 ;;
 let ap = Absolute_path.of_string "Fads/pan.ml" ;;
 let z3 () = Io.Private.append_string_to_file z2 ap ;;
 
@@ -16509,9 +16509,9 @@ Ordered.setminus Total_ordering.for_integers (Int_range.range 1 32)
 Snippet 61 : Transform a text in an Ocaml string 
 ************************************************************************************************************************)
 let z1 = Needed_values.rf "Fads/nap.ml"  ;;
-let z2 = Lines_in_string.interval z1 12 25 ;;
+let z2 = Lines_in_text.interval z1 12 25 ;;
 let z3 = Replace_inside.replace_inside_text ("\"","\\\"") z2;;
-let z4 = Lines_in_string.lines z3 ;;
+let z4 = Lines_in_text.lines z3 ;;
 let z5 = Image.image (fun line -> "\"" ^ (Cull_string.trim_spaces line) ^ "\"") z4 ;; 
 let z6 = "\n\n\n" ^ (String.concat ";\n" z5) ^ "\n\n\n" ;;
 let z7 () = print_string z6 ;;
@@ -16572,14 +16572,14 @@ Snippet 59 : Modifying line intervals in a file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "../Idaho/Filewatching/fw_with_githubbing.ml" ;;
 let text1 = Io.read_whole_file ap1 ;;
-let (before1,old_center1,after1) = Lines_in_string.tripartition_associated_to_interval 
+let (before1,old_center1,after1) = Lines_in_text.tripartition_associated_to_interval 
     text1 257 336 ;;
-let new_center1 = Lines_in_string.remove_lines_containing_substring_in_string
+let new_center1 = Lines_in_text.remove_lines_containing_substring_in_string
   "shrinkable" old_center1 ;;
 let new_text1 = String.concat "\n" [before1;new_center1;after1] ;;  
 Io.overwrite_with ap1 new_text1 ;;
 
-Lines_in_string.remove_interval_in_file ap1 169 253 ;;
+Lines_in_text.remove_interval_in_file ap1 169 253 ;;
 
 (************************************************************************************************************************
 Snippet 58 : Enumerating subgroups of S4 
@@ -16696,16 +16696,16 @@ Snippet 56 : Removing indentation in a paragraph in a file
 ************************************************************************************************************************)
 let ap1 = Absolute_path.of_string "Fads/pan.ml" ;;
 
-let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with 
+let act1 () = Lines_in_text.shift_indentation_in_interval_in_file_with 
 (41,45) (Absolute_path.of_string "watched/watched_not_githubbed/jug.ml")
  ~shift_amplitude:(-12) ~forced:false ;; 
 
- let act1 () = Lines_in_string.shift_indentation_in_interval_in_file_with 
+ let act1 () = Lines_in_text.shift_indentation_in_interval_in_file_with 
 (608,635) (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml")
  ~shift_amplitude:(-8) ~forced:false ;; 
 
 
-let act2 () = Lines_in_string.remove_interval_in_file 
+let act2 () = Lines_in_text.remove_interval_in_file 
  (Absolute_path.of_string "lib/Szemeredi/sz3_preliminaries.ml") 346 580 ;; 
 
 (************************************************************************************************************************
@@ -16714,8 +16714,8 @@ Snippet 55 : Intertwining prints for debugging purposes
 open Needed_values ;;
 
 let z1 = rf "Fads/pan.ml" ;;
-let z2 = Lines_in_string.interval z1 10 58 ;;
-let z3 = Lines_in_string.lines z2 ;;
+let z2 = Lines_in_text.interval z1 10 58 ;;
+let z3 = Lines_in_text.lines z2 ;;
 let z4 = List.filter (fun line -> Cull_string.trim_spaces line <> "" ) z3 ;; 
 let z5 = Int_range.index_everything z4 ;; 
 let z6 = Image.image (
@@ -17426,10 +17426,10 @@ open Needed_values ;;
 let ap = Absolute_path.of_string "Filewatching/fw_with_githubbing.ml";;
 let old_text = Io.read_whole_file ap ;;
 
-let part1= Lines_in_string.interval old_text 1 171 ;;
-let part2= Lines_in_string.interval old_text 172 254;;
+let part1= Lines_in_text.interval old_text 1 171 ;;
+let part2= Lines_in_text.interval old_text 172 254;;
 
-let lines1 = Lines_in_string.lines part2 ;;
+let lines1 = Lines_in_text.lines part2 ;;
 let lines2 = Image.image (Cull_string.cobeginning 5) lines1 ;;
 let new_part2 = String.concat "\n" lines2 ;;
 let new_text = part1 ^ "\n" ^ new_part2 ;;
@@ -17744,7 +17744,7 @@ let z2 = Lines_in_string.interval (rf z1) 60 67 ;;
 Snippet 46 : A useful shortcut using Lines_in_string.remove_interval_in_file 
 ************************************************************************************************************************)
 let ri fn x y =
-     Lines_in_string.remove_interval_in_file 
+     Lines_in_text.remove_interval_in_file 
       (Absolute_path.of_string fn) x y ;;
 
 (************************************************************************************************************************
@@ -17915,8 +17915,8 @@ let z4 () = print_string z3 ;;
 
 let fn = "Filewatching/fw_with_dependencies.ml";;
 let fn = "Fads/jug.ml";;
-let z5 = Lines_in_string.interval (rf fn) 9 92 ;;
-let z6 = Lines_in_string.lines z5;;
+let z5 = Lines_in_text.interval (rf fn) 9 92 ;;
+let z6 = Lines_in_text.lines z5;;
 let z7 = Image.image (fun line->"   \""^line^"\";") z6;;
 let z8 = "\n\n\n"^(String.concat "\n" z7)^"\n\n\n" ;;
 let z9  = print_string z8 ;;
@@ -17954,10 +17954,10 @@ open Needed_values ;;
 
 let ap1 = Absolute_path.of_string "../Idaho/Compilation_management/coma_state.ml" ;;
 let ap1_text = Io.read_whole_file ap1 ;;
-let to_be_replaced = Lines_in_string.interval ap1_text 1 676 ;;
+let to_be_replaced = Lines_in_text.interval ap1_text 1 676 ;;
 
 let towards_complement = rf "Fads/pan.ml";;
-let replacement = Lines_in_string.interval towards_complement 9 240 ;;
+let replacement = Lines_in_text.interval towards_complement 9 240 ;;
 
 let act7 () = Replace_inside.replace_inside_file (to_be_replaced,replacement) ap1;;
 
@@ -17972,7 +17972,7 @@ let cmd_for_z0 = gc ^ "ls-tree -r HEAD > ~/Downloads/temp.txt";;
 let z0 = Sys.command cmd_for_z0 ;;
 
 let z1 = rf "~/Downloads/temp.txt";;
-let z2 = Lines_in_string.lines z1 ;;
+let z2 = Lines_in_text.lines z1 ;;
 let z3 = List.filter (fun line->
    Substring.is_a_substring_of "depth_one" line 
   ) z2;;
@@ -18037,23 +18037,23 @@ open Needed_values ;;
 
 let w2 = Image.image fst (vfm "Fw_with_dependencies") ;;
 let z1 = rf "Filewatching/fw_with_dependencies.ml";;
-let z2 = Lines_in_string.interval z1 1304 1351 ;;
+let z2 = Lines_in_text.interval z1 1304 1351 ;;
 
 let w2 = Image.image fst (vfm "Fw_with_small_details") ;;
 let z1 = rf "Filewatching/fw_with_small_details.ml";;
-let z2 = Lines_in_string.interval z1 309 334 ;;
+let z2 = Lines_in_text.interval z1 309 334 ;;
 
 let w2 = Image.image fst (vfm "Fw_with_archives") ;;
 let z1 = rf "Filewatching/fw_with_archives.ml";;
-let z2 = Lines_in_string.interval z1 285 317 ;;
+let z2 = Lines_in_text.interval z1 285 317 ;;
 
 let w2 = Image.image fst (vfm "File_watcher") ;;
 let z1 = rf "Filewatching/file_watcher.ml";;
-let z2 = Lines_in_string.interval z1 526 549 ;;
+let z2 = Lines_in_text.interval z1 526 549 ;;
 
 let w2 = Image.image fst (vfm "Fw_configuration") ;;
 
-let z3 = Lines_in_string.lines z2 ;;
+let z3 = Lines_in_text.lines z2 ;;
 let z4 = Image.image (
   fun line->
     let j1=(try String.index_from line 1 ' ' with _->0)
@@ -18096,8 +18096,8 @@ Snippet 36 : Get a list of value names from an interval of lines in a file
 open Needed_values ;;
 
 let u1 = rf "Filewatching/fw_with_dependencies.ml";;
-let u2 = Lines_in_string.interval u1 33 48 ;;
-let u3 = Lines_in_string.lines u2 ;;
+let u2 = Lines_in_text.interval u1 33 48 ;;
+let u3 = Lines_in_text.lines u2 ;;
 (*
 let compute_names = Image.image (
   fun line ->
@@ -18114,7 +18114,7 @@ Snippet 35 : Using intervals of line indices to extract values from a module
 open Needed_values ;;
 
 let u1 = Needed_values.rf "Compilation_management/coma_state.ml";;
-let u2 = Lines_in_string.indexed_lines u1 ;; 
+let u2 = Lines_in_text.indexed_lines u1 ;; 
 
 let extract_interval ((i,j),_) =
    let temp1 = List.filter (fun (k,_)->(i<=k) && (k<=j)) u2 in 
@@ -18576,7 +18576,7 @@ Snippet  21 : Remove interval of lines in a file
 ************************************************************************************************************************)
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
-let v1 = Lines_in_string.indexed_lines old_text ;;
+let v1 = Lines_in_text.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (
    fun (j,line)->
@@ -18600,7 +18600,7 @@ let act () = Replace_inside.replace_inside_file (old_snippet,new_snippet) ap ;;
 
 let ap = Absolute_path.of_string "Imported/Aantron/aantron_markup.ml";;
 let old_text = Io.read_whole_file ap ;;
-let v1 = Lines_in_string.indexed_lines old_text ;;
+let v1 = Lines_in_text.indexed_lines old_text ;;
 let v2 = List.filter (fun (j,line)->(299<=j)&&(j<=338) ) v1 ;;
 let v3 = Image.image (fun (j,line)->Cull_string.trim_spaces line) v2 ;;
 let v4 = List.filter (String.starts_with ~prefix:"The value ") v3;;
@@ -18619,7 +18619,7 @@ let v9 = print_string v8 ;;
 Snippet  20 : Removing module wrappers in a set of files
 ************************************************************************************************************************)
 let remove_module_wrapper_in_text text =
-  let lines = Lines_in_string.indexed_lines text in 
+  let lines = Lines_in_text.indexed_lines text in 
   let (i1,_)= List.find (fun (_,line)->
     String.starts_with ~prefix:"module " (Cull_string.trim_spaces line) 
   ) lines in
@@ -18676,7 +18676,7 @@ let dir = (Sys.getenv "HOME")^"/Teuliou/html_files/Translations/";;
 let ap1 =   Absolute_path.create_file_if_absent (dir^"/notes_to_dot.txt") ;;
 
 let text1= Io.read_whole_file ap1;;
-let lines1 = Lines_in_string.indexed_lines text1;;
+let lines1 = Lines_in_text.indexed_lines text1;;
 
 let act1 () = Replace_inside.replace_several_inside_file reps ap1;;
 
@@ -18722,7 +18722,7 @@ let loop () =
 
 let tr k = Io_again.transfer_first_lines_of_to k end_ap beg_ap;;
 
-let ll k = let temp = Lines_in_string.interval (Io.read_whole_file end_ap) k k in 
+let ll k = let temp = Lines_in_text.interval (Io.read_whole_file end_ap) k k in 
   (temp,Strung.explode temp);;
 
 let rye (a,b) = Replace_inside.replace_inside_file (a,b) end_ap ;; 
@@ -18730,7 +18730,7 @@ let rye (a,b) = Replace_inside.replace_inside_file (a,b) end_ap ;;
 let rblap () = Remove_blank_lines_around_percents.in_file end_ap ;;
 
 let rlc pattern = 
-   let _ = Lines_in_string.remove_lines_containing_substring_in_file 
+   let _ = Lines_in_text.remove_lines_containing_substring_in_file 
    pattern end_ap in rblap ();;
 
 let usual_cleaning () =
@@ -18768,7 +18768,7 @@ let reform_line x=
   if (x="")||(String.starts_with ~prefix:blanks x ) then x else blanks^x;; 
 
 let reform_string s=
-  let temp1 = Lines_in_string.lines s in 
+  let temp1 = Lines_in_text.lines s in 
   let temp2 = Image.image reform_line temp1 in 
   String.concat "\n" temp2 ;;
 
@@ -18855,7 +18855,7 @@ let the_ap = Absolute_path.of_string
 
 let old_text = Io.read_whole_file the_ap ;;
 
-let to_be_deleted = Lines_in_string.interval old_text 3387 4948 ;;
+let to_be_deleted = Lines_in_text.interval old_text 3387 4948 ;;
 
 Replace_inside.replace_inside_file (to_be_deleted,"") the_ap ;; 
 

@@ -966,7 +966,7 @@ module Private = struct
       Private2.included_source_dirs_for_file Capsule.separate_commands cpsl includer_fn
     in
     let text = Capsule.read_file cpsl includer_fn in
-    let lines = Lines_in_string.indexed_lines text in
+    let lines = Lines_in_text.indexed_lines text in
     let temp5 = Cee_text.included_nonlocal_files_in_text text in
     let temp6 =
       List.filter_map
@@ -1038,7 +1038,7 @@ module Private = struct
     in
     let text = Capsule.read_file cpsl includer_fn in
     let temp1 = Cee_text.included_local_files_in_text text
-    and lines = Lines_in_string.indexed_lines text in
+    and lines = Lines_in_text.indexed_lines text in
     let temp2 =
       Image.image
         (fun (line_nbr, vague_included_fn) ->
@@ -1212,7 +1212,7 @@ module Private = struct
         List.iter (
           fun (idx,(includer_file,data_for_includer_file)) ->
             let filecontent = Capsule.read_file cpsl includer_file in 
-            let indexed_lines = Lines_in_string.indexed_lines filecontent in 
+            let indexed_lines = Lines_in_text.indexed_lines filecontent in 
             let modified_lines = Image.image (
               fun (line_idx,old_line) ->
              match List.assoc_opt line_idx data_for_includer_file with 

@@ -238,7 +238,7 @@ let initialize ldc =
 let reload ldc = 
    let ap_for_persistence = persisted_file_listing_dir_content ldc in 
    let text = Io.read_whole_file ap_for_persistence in 
-   let filenames = Lines_in_string.lines text in 
+   let filenames = Lines_in_text.lines text in 
    {
       Local_dircopy_t.config = ldc;
       remote_files = filenames;

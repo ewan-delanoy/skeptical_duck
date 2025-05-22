@@ -223,7 +223,7 @@ let glue_lines = function
 
 let parse_makefile mkf_text = 
    let (Makefile_t.MT text) = mkf_text in 
-   let lines1 = Lines_in_string.enhanced_indexed_lines text in 
+   let lines1 = Lines_in_text.enhanced_indexed_lines text in 
    let lines2 = List.filter (fun (_c_idx,_l_idx,line)->
         not(
           (String.starts_with ~prefix:"#" line ) ||
