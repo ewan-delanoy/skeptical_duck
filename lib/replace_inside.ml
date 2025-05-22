@@ -92,7 +92,7 @@ let pair_for_commenting_or_uncommenting =
 
 end ;;
 
-let at_char_intervals_inside_string s l=
+let at_char_intervals_inside_text s l=
   if l=[] then s else
   let n=String.length s in
   let temp1=List_again.universal_delta_list l 
@@ -108,7 +108,7 @@ let at_char_intervals_inside_string s l=
 let at_char_intervals_inside_file 
   fn l=
    let s1=Io.read_whole_file fn in
-   let s2=at_char_intervals_inside_string s1 l in
+   let s2=at_char_intervals_inside_text s1 l in
    Io.overwrite_with fn s2;;     
 
 (*    
