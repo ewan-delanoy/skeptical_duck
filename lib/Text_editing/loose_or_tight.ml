@@ -23,8 +23,8 @@ let markers_from_content content =
   (
     ("(* Beginning of loose version of "^content^" *)",
      "(* End"^   " of loose version of "^content^" *)"),
-    ("(* Beginning of loose version of "^content^" *)",
-     "(* End"^   " of loose version of "^content^" *)")
+    ("(* Beginning of tight version of "^content^" *)",
+     "(* End"^   " of tight version of "^content^" *)")
   ) ;; 
 
 let compute_node  
@@ -36,8 +36,8 @@ let compute_node
   |Some(loose,tight) -> (loose,tight)
   ) in 
   {
-    markers_for_tight_version = mrkrs_for_loose ;
-    markers_for_loose_version = mrkrs_for_tight ;
+    markers_for_loose_version = mrkrs_for_loose ;
+    markers_for_tight_version = mrkrs_for_tight ;
     the_marked_file = marked_file ;
   } ;; 
 
