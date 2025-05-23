@@ -5,14 +5,22 @@
 *)
 
 (* Beginning of loose version of the genesis of Mw_with_persisting.t *)
-(*
 
-let a = 1 ;;
+type t = Subclass of Mw_poly_t.t  ;;
 
-*)
+module Genesis = struct 
+
+let parent (Subclass x) = x ;;
+
+let extend x = Subclass x ;;
+
+end ;;  
+
 (* End of loose version of the genesis of Mw_with_persisting.t *)
 
 (* Beginning of tight version of the genesis of Mw_with_persisting.t *)
+(*
+
 
 type t = { parent : Mw_poly_t.t } ;;
 
@@ -24,6 +32,8 @@ let extend x = {parent = x} ;;
 
 end ;;  
 
+
+*)
 (* End of tight version of the genesis of Mw_with_persisting.t *)
 
 module Private=struct

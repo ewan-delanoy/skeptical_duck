@@ -12,7 +12,7 @@ Snippet 171 : Debug the Loose_or_tight module
 module Snip171=struct
 
 
-  let ap1 = Absolute_path.of_string
+let ap1 = Absolute_path.of_string
   "lib/Mad_world/Filewatching/mw_with_persisting.ml";;
 
 let act () = 
