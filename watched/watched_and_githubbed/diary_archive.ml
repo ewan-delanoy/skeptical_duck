@@ -1,14 +1,50 @@
 (************************************************************************************************************************
-Snippet 171 : 
+Snippet 172 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 170 : Finish an OCR job, and use Coherent_pdf.corep_cuttable_transform
+Snippet 171 : Debug the Loose_or_tight module
 ************************************************************************************************************************)
 
+module Snip171=struct
+
+
+  let ap1 = Absolute_path.of_string
+  "lib/Mad_world/Filewatching/mw_with_persisting.ml";;
+
+let act () = 
+   Loose_or_tight.toggle ap1 
+    ~purpose_name:"the genesis of Mw_with_persisting.t" ;;  
+
+open Loose_or_tight.Private ;;
+
+let node1 = compute_node   ~content:"the genesis of Mw_with_persisting.t" 
+  ap1 ;;
+
+let bad2 () = toggle_node node1 ;;
+  
+let state1 = get_state_for_chosen_marker node1 Loose ;;
+
+let bad3 = get_state_for_chosen_marker node1 Tight ;; 
+
+let ctnt = get_content_for_chosen_marker node1 Tight ;; 
+
+let get_state_for_chosen_marker node loose_or_tight=
+ content_state(get_content_for_chosen_marker node loose_or_tight);;
+
+ 
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 170 : Finish an OCR job, and use Coherent_pdf.corep_cuttable_transform
+************************************************************************************************************************)
 module Snip170=struct
 
   let dir2 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Text" ;;
