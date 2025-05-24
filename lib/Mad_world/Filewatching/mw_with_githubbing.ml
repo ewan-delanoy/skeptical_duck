@@ -4,38 +4,6 @@
 
 *)
 
-(* Beginning of loose version of the genesis of Mw_with_persisting.t *)
-
-type t = (* Subclass of *) Mw_poly_t.t  ;;
-
-module Genesis = struct 
-
-let parent x = x ;;
-
-let extend x = x ;;
-
-end ;;  
-
-(* End of loose version of the genesis of Mw_with_persisting.t *)
-
-(* Beginning of tight version of the genesis of Mw_with_persisting.t *)
-(*
-
-
-type t = { parent : Mw_poly_t.t } ;;
-
-module Genesis = struct 
-
-let parent x = x.parent ;;
-
-let extend x = {parent = x} ;;
-
-end ;;  
-
-
-*)
-(* End of tight version of the genesis of Mw_with_persisting.t *)
-
 
 module Private = struct
 
@@ -159,35 +127,12 @@ module Private = struct
     
 end;;  
       
-module Constructor = struct
-let of_fw_config_and_github_config fw_config github_config = Private.usual_extension 
-(Mw_with_batch_compilation.of_configuration fw_config)
-(Mw_poly.dir_for_backup github_config) 
-(Mw_poly.gitpush_after_backup github_config) 
-(Mw_poly.github_url github_config)
-(Mw_poly.encoding_protected_files github_config);;
-
-let of_fw_with_batch_compilation =Private.usual_extension ;;
-
-let plunge_fw_config_with_github_config fw_config github_config= Private.usual_extension 
-  (Mw_with_batch_compilation.plunge_fw_configuration fw_config)
-  (Mw_poly.dir_for_backup github_config) 
-  (Mw_poly.gitpush_after_backup github_config) 
-  (Mw_poly.github_url github_config)
-  (Mw_poly.encoding_protected_files github_config);;
-
-end ;;
-
-module Not_Inherited = struct
-
-
 
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
-
-let modern_recompile fw changed_modules_in_any_order =  
-  Mw_with_batch_compilation.modern_recompile fw changed_modules_in_any_order ;;
-
+let of_fw_with_batch_compilation =Private.usual_extension ;;
+let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
+let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
 let relocate_module_to  = Private.relocate_module_to ;;         
 let rename_module = Private.rename_module ;;   
@@ -195,121 +140,4 @@ let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
 let usual_recompile = Private.usual_recompile ;;
-
-end ;;
-
-
-let all_endinglesses fw =
-  Mw_with_dependencies.all_endinglesses (Genesis.parent fw) ;;
-
-let ancestors_for_module fw mn=
-  Mw_with_dependencies.ancestors_for_module (Genesis.parent fw) mn;;
-
-let below fw mn =
-    Mw_with_dependencies.below (Genesis.parent fw) mn ;;
-
-let check_that_no_change_has_occurred fw= 
-    Mw_file_watcher.check_that_no_change_has_occurred 
-      (Genesis.parent fw) ;;
-
-let clean_debug_dir fw = 
-  Mw_with_batch_compilation.clean_debug_dir (Genesis.parent fw) ;;
-
-
-let clean_exec_dir fw = 
-  Mw_with_batch_compilation.clean_exec_dir (Genesis.parent fw) ;;
-
-let decipher_module fw mn=
-    Mw_with_dependencies.decipher_module (Genesis.parent fw) mn;;
-
-let decipher_path fw path=
-    Mw_with_dependencies.decipher_path (Genesis.parent fw) path;;    
-
-let dep_ordered_modules fw = 
-      Mw_with_dependencies.dep_ordered_modules fw ;;  
-    
-
-let direct_fathers_for_module fw mn =
-    Mw_with_dependencies.direct_fathers_for_module (Genesis.parent fw) mn ;;
-
-let directly_below fw mn =
-    Mw_with_dependencies.directly_below (Genesis.parent fw) mn ;;
-
-let duplicate_module fw old_t1 old_t2=
-  Mw_with_dependencies.duplicate_module (Genesis.parent fw) old_t1 old_t2 ;;
-
-let endingless_at_module fw mn=
-  Mw_with_dependencies.endingless_at_module (Genesis.parent fw) mn;;
-
-let find_subdir_from_suffix fw possibly_slashed_suffix =
-    Mw_with_dependencies.find_subdir_from_suffix 
-    (Genesis.parent fw) possibly_slashed_suffix ;; 
-
-let forget_modules = Not_Inherited.forget_modules ;;
-
-let forget_nonmodular_rootlesses = Not_Inherited.forget_nonmodular_rootlesses ;;
-
-let gitpush_after_backup fw = 
-  Mw_poly.gitpush_after_backup (Genesis.parent fw) ;;
-
-let latest_changes fw =
-    Mw_with_archives.latest_changes (Genesis.parent fw) ;;
-
-let list_values_from_module fw mn =
-    Mw_with_dependencies.list_values_from_module (Genesis.parent fw) mn ;;
-
-let modern_recompile = Not_Inherited.modern_recompile ;;
-
-let modules_using_value fw value_name =
-    Mw_with_dependencies.modules_using_value (Genesis.parent fw) value_name ;;
-
-let noncompilable_files fw = 
-   Mw_with_archives.noncompilable_files (Genesis.parent fw) ;;
-
-let number_of_modules fw = 
-   Mw_with_dependencies.number_of_modules (Genesis.parent fw) ;;
-
-
-
-let overwrite_file_if_it_exists fw pair =  
-    Mw_with_dependencies.overwrite_file_if_it_exists (Genesis.parent fw) pair ;;
-
-    
-   
-let register_rootless_paths = Not_Inherited.register_rootless_paths ;; 
-  
-let relocate_module_to = Not_Inherited.relocate_module_to ;; 
-  
-let rename_module = Not_Inherited.rename_module ;;
-
-let rename_subdirectory_as = Not_Inherited.rename_subdirectory_as ;;
-
-let replace_string = Not_Inherited.replace_string ;;
-
-let replace_value = Not_Inherited.replace_value ;;
-
-let root fw = fw.Mw_poly_t.root ;;
-
-let set_gitpush_after_backup fw gab= 
-Genesis.extend(
-  Mw_poly.set_gitpush_after_backup (Genesis.parent fw) gab);;
-
-let show_value_occurrences fw mn = 
-  Mw_with_dependencies.show_value_occurrences (Genesis.parent fw) mn ;;  
-
-let start_debugging fw =
-  Mw_with_batch_compilation.start_debugging (Genesis.parent fw) ;;
-
-let start_executing fw short_path=
- Mw_with_batch_compilation.start_executing (Genesis.parent fw) short_path ;;
-
-
-let usual_compilable_files fw = 
-    Mw_with_archives.usual_compilable_files (Genesis.parent fw) ;;
- 
-
-let usual_recompile = Not_Inherited.usual_recompile ;;
-
-
-
 
