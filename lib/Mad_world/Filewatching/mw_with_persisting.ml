@@ -183,6 +183,15 @@ let plunge_fw_config_with_github_config fw_config github_config =
 
 end ;;  
 
+module NotInherited = struct 
+
+  let persist fw= Private.save_all (Genesis.parent fw);;
+ 
+  let read_persistent_version fw = 
+      Genesis.extend(Private.read_persistent_version (Genesis.parent fw));;
+       
+
+end ;;  
  
 
 let all_endinglesses fw =
@@ -255,10 +264,10 @@ let number_of_modules fw =
 let overwrite_file_if_it_exists fw pair =  
     Mw_with_dependencies.overwrite_file_if_it_exists (Genesis.parent fw) pair ;;
  
-let persist fw= Private.save_all (Genesis.parent fw);;
+let persist = NotInherited.persist;;
  
-let read_persistent_version fw = 
-    Genesis.extend(Private.read_persistent_version (Genesis.parent fw));;
+let read_persistent_version = 
+    NotInherited.read_persistent_version ;;
     
    
 let register_rootless_paths fw rootless_paths = 

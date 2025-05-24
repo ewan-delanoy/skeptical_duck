@@ -6,6 +6,9 @@
 
 exception Content_state_exn of string ;;
 exception Toggle_exn of Absolute_path.t ;;
+exception Node_global_state_exn of Absolute_path.t ;;
+
+type t = Loose |Tight ;;
 
 module Private =struct
 
@@ -15,7 +18,7 @@ type node_t = {
   the_marked_file : Absolute_path.t ;
 } ;; 
 
-type t = Loose |Tight ;;
+
 
 type state = Commented |Uncommented ;;
 
@@ -102,6 +105,28 @@ let toggle marked_file ~purpose_name=
   let node = compute_node   ~content:purpose_name marked_file in 
   toggle_node node ;;
 
+let global_node_state node = 
+    let state1 = get_state_for_chosen_marker node Loose 
+    and state2 = get_state_for_chosen_marker node Tight in 
+    if state1 = state2 
+    then raise(Node_global_state_exn node.the_marked_file) 
+    else
+    if state1 = Uncommented 
+    then Loose    
+    else Tight ;;
+
+let set_node_state node wanted_state = 
+   let old_state = global_node_state node in 
+   if wanted_state = old_state 
+   then ()
+   else toggle_node node ;;
+
+let set marked_file ~purpose_name wanted_state=      
+   let node = compute_node   ~content:purpose_name marked_file in 
+   set_node_state node wanted_state ;;
+
+
 end ;;  
 
+let set = Private.set ;;
 let toggle = Private.toggle ;; 
