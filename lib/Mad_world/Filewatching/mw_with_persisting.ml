@@ -170,15 +170,17 @@ module Constructor = struct
 
 let of_fw_config_and_github_config fw_config github_config = 
   let fw_with_githubbing = 
-    Mw_with_githubbing.of_fw_config_and_github_config fw_config github_config in 
+    Mw_with_githubbing.Constructor.of_fw_config_and_github_config fw_config github_config in 
   Genesis.extend fw_with_githubbing ;;
 
-let of_fw_with_batch_compilation fw =
-  Genesis.extend fw ;;
+let of_fw_with_batch_compilation fw_batch backup_dir gab git_url enc_files=
+  let fw_with_githubbing = 
+    Mw_with_githubbing.Constructor.of_fw_with_batch_compilation fw_batch backup_dir gab git_url enc_files in 
+  Genesis.extend fw_with_githubbing ;;
 
 let plunge_fw_config_with_github_config fw_config github_config = 
   let fw_with_githubbing = 
-     Mw_with_githubbing.plunge_fw_config_with_github_config fw_config github_config in 
+     Mw_with_githubbing.Constructor.plunge_fw_config_with_github_config fw_config github_config in 
   Genesis.extend fw_with_githubbing ;;
 
 end ;;  
@@ -220,6 +222,10 @@ let decipher_module fw mn=
 let decipher_path fw path=
     Mw_with_dependencies.decipher_path (Genesis.parent fw) path;;    
 
+(* Handle at *) Mw_with_dependencies.dep_ordered_modules ;;   
+let dep_ordered_modules fw =
+   Mw_with_dependencies.dep_ordered_modules (Genesis.parent fw) ;;
+
 let direct_fathers_for_module fw mn =
     Mw_with_dependencies.direct_fathers_for_module (Genesis.parent fw) mn ;;
 
@@ -251,6 +257,11 @@ let latest_changes fw =
 
 let list_values_from_module fw mn =
     Mw_with_dependencies.list_values_from_module (Genesis.parent fw) mn ;;
+
+(* Handle at *) Mw_with_batch_compilation.modern_recompile ;;
+let modern_recompile fw mods= 
+   Genesis.extend(Mw_with_githubbing.modern_recompile 
+   (Genesis.parent fw) mods);;
 
 let modules_using_value fw value_name =
     Mw_with_dependencies.modules_using_value (Genesis.parent fw) value_name ;;
