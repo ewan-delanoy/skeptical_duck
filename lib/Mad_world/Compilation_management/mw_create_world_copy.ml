@@ -53,15 +53,19 @@ module Private = struct
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
 
   let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false)  summary =
+      let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destination) '/' in
       let (conv_files,needed_dirs) = (
         if Mw_needed_data_summary.is_everything summary
-        then (Coma_constant.conventional_files_with_full_content,
+        then (Coma_constant.conventional_files_with_full_content proj_name,
               Coma_constant.full_set_of_needed_dirs)
-        else (Coma_constant.conventional_files_with_minimal_content,
+        else (Coma_constant.conventional_files_with_minimal_content proj_name,
               Coma_constant.minimal_set_of_needed_dirs)
       ) in 
-      let _=Unix_again.clear_directory_contents destination in 
-
+      let _=Unix_again.delete_directory destination in 
+      let old_dir = Sys.getcwd () in 
+      let _ = Sys.chdir ((Sys.getenv "HOME")^"/Teuliou/OCaml/") in 
+      let _ = Unix_command.uc ("dune init proj "^proj_name) in 
+      let _ = Sys.chdir old_dir in  
       let _=(Unix_again.create_subdirs_and_fill_files
       destination needed_dirs conv_files) in 
       let (modules_in_good_order,compilables,noncompilables) = 

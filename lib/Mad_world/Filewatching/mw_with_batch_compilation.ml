@@ -304,9 +304,10 @@ module Private = struct
 
    let of_configuration config =
       let root = Mw_poly.root config in 
+      let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash root) '/' in
       let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
-       Coma_constant.minimal_set_of_needed_dirs 
-           Coma_constant.conventional_files_with_minimal_content) in 
+        Coma_constant.minimal_set_of_needed_dirs 
+         (Coma_constant.conventional_files_with_minimal_content proj_name)) in 
       let initial_parent = Mw_with_dependencies.of_configuration config in 
       let fw = of_fw_with_dependencies initial_parent in 
       let mods = Mw_with_dependencies.dep_ordered_modules initial_parent in 
