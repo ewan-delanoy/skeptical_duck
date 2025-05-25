@@ -45,7 +45,7 @@ let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;
 let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
 
 let short_path_for_diary_file= Dfn_short.of_line"diary_archive.ml";;
-let short_path_for_dune_file= Dfn_short.of_line"dune_file.ml";;
+let short_path_for_dune_file= Dfn_short.of_line"dune.txt";;
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
 let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
@@ -148,6 +148,7 @@ let minimal_set_of_needed_dirs =
     watched_and_githubbed_subdir;
     githubbed_nonml_files_subdir;
     nongithubbed_nonml_files_subdir;
+    directives_subdir
   ] ;;  
 
 let full_set_of_needed_dirs = 
