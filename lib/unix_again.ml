@@ -203,6 +203,12 @@ let clear_directory_contents root =
     Sys.command cmd;;
 
 
+let delete_directory root =
+      let s_root = Dfa_root.connectable_to_subpath root in 
+      let cmd = "rm -rf "^s_root in 
+      Sys.command cmd;;
+  
+
 let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
    let s_root = Dfa_root.connectable_to_subpath root in 
    let cmds1=Image.image (
@@ -271,6 +277,7 @@ let compute_with_time_constraint = Private.compute_with_time_constraint ;;
 let clear_directory_contents = Private.clear_directory_contents;;
 let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
 let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
+let delete_directory = Private.delete_directory ;;
 let is_a_directory=Private.is_a_directory;;   
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
 let simple_ls=Private.ls;;

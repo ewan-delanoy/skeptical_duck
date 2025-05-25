@@ -1,5 +1,23 @@
 (* 
 #use"lib/Mad_world/Compilation_management/mw_other_coma_state.ml";;
+
+Commands to re-create the directories : 
+
+mkdir Idaho_backup Cherokee_backup
+dune init proj Idaho
+dune init proj Cherokee
+cp skeptical_duck/lib/dune Idaho/lib/dune ; then in the filecontent, replace
+skeptical_duck with idaho
+cp skeptical_duck/lib/dune Cherokee/lib/dune ; then in the filecontent, replace
+skeptical_duck with idaho
+mkdir -p Idaho/debugging Idaho/directives Idaho/nonml_files/nongithubbed_nonml_files Idaho/nonml_files/nongithubbed_nonml_files Idaho/watched/watched_and_githubbed Idaho/watched/watched_not_githubbed 
+mkdir -p Cherokee/debugging Cherokee/directives Cherokee/nonml_files/nongithubbed_nonml_files Cherokee/nonml_files/nongithubbed_nonml_files Cherokee/watched/watched_and_githubbed Cherokee/watched/watched_not_githubbed 
+cp skeptical_duck/watched/dune Idaho/watched/dune
+cp skeptical_duck/watched/dune Cherokee/watched/dune
+sn skeptical_duck/watched/dune Idaho/watched/dune Cherokee/watched/dune
+touch Idaho/directives/my_loadings.ml Idaho/directives/my_printers.ml
+touch Cherokee/directives/my_loadings.ml Cherokee/directives/my_printers.ml
+
 *)
 
 
@@ -55,6 +73,17 @@ let force_compute_unofficial_changes ()=
       fun path->
          "cp "^next_root^path^" "^this_root^path 
    ) l;;    
+   
+   let commands_for_recreating_from_scratch = 
+      [
+       "dune init proj Idaho";
+       "mkdir -p Idaho/debugging Idaho/directives Idaho/nonml_files/nongithubbed_nonml_files "^
+       "Idaho/nonml_files/nongithubbed_nonml_files Idaho/watched/watched_and_githubbed Idaho/watched/watched_not_githubbed";
+       "touch Idaho/directives/my_loadings.ml Idaho/directives/my_printers.ml "^
+       "Idaho/lib/dune Idaho/watched/dune";
+      ] ;;
+
+      
    
 
 end;;
