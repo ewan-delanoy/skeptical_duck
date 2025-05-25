@@ -14870,9 +14870,12 @@ let cs_ref=ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config
 let s_root = Dfa_root.connectable_to_subpath root ;;
 let s_above_root = Cull_string.before_rightmost (Dfa_root.without_trailing_slash root) '/';;
 
-let a1 =(Unix_again.create_subdirs_and_fill_files_if_necessary root
+let a1 =
+  let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash root) '/' in
+  (Unix_again.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
-           Coma_constant.conventional_files_with_minimal_content) ;;
+           (Coma_constant.conventional_files_with_minimal_content proj_name)
+            ) ;;
 
 let a2 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "common.ml";;
 let a3 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "common2.ml";;
@@ -15461,15 +15464,6 @@ let cs_ref=ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config
 let s_root = Dfa_root.connectable_to_subpath root ;;
 let s_above_root = Cull_string.before_rightmost (Dfa_root.without_trailing_slash root) '/';;
 
-let a1 =(Unix_again.create_subdirs_and_fill_files_if_necessary root
-       Coma_constant.minimal_set_of_needed_dirs 
-           Coma_constant.conventional_files_with_minimal_content) ;;
-
-
-
-let a1 =(Unix_again.create_subdirs_and_fill_files_if_necessary root
-       Coma_constant.minimal_set_of_needed_dirs 
-           Coma_constant.conventional_files_with_minimal_content) ;;
 
 let a2 = Modify_coma_state.Syntactic_sugar.register_one cs_ref "cherokee_token.ml";;
 

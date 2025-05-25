@@ -63,7 +63,7 @@ module Private = struct
       ) in 
       let _=Unix_again.delete_directory destination in 
       let old_dir = Sys.getcwd () in 
-      let _ = Sys.chdir ((Sys.getenv "HOME")^"/Teuliou/OCaml/") in 
+      let _ = Sys.chdir (Coma_big_constant.root_of_root) in 
       let _ = Unix_command.uc ("dune init proj "^proj_name) in 
       let _ = Sys.chdir old_dir in  
       let _=(Unix_again.create_subdirs_and_fill_files
