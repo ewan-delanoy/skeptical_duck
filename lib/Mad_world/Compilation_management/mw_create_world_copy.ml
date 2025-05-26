@@ -54,6 +54,8 @@ module Private = struct
 
   let command_for_dune_untexting root =
     let s_root = Dfa_root.connectable_to_subpath root in 
+    "mv "^s_root^"bin/dune.txt "^s_root^"bin/dune "^
+    " && "^
     "mv "^s_root^"lib/dune.txt "^s_root^"lib/dune "^
     " && "^
     "mv "^s_root^"watched/dune.txt "^s_root^"watched/dune ";;

@@ -105,8 +105,8 @@ let text_for_bindune_file proj_name =
   let p = String.uncapitalize_ascii proj_name in 
   "(executable \n"^
   " (public_name "^p^")\n"^
-  " (name main)"^
-  " (libraries "^p^"lib))\n";;
+  " (name main)\n"^
+  " (libraries "^p^"_lib))\n";;
 
 let text_for_libdune_file proj_name =
    let p = String.uncapitalize_ascii proj_name in 

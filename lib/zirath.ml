@@ -99,6 +99,7 @@ module type Q_TYPE =
     val div : t -> t -> t
     val equals : t -> t -> bool
     val floor : t -> Z.t
+    val fold_max : t list -> t
     val geq : t -> t -> bool
     val gt : t -> t -> bool
     val leq : t -> t -> bool
@@ -145,6 +146,8 @@ module Q = (struct
      then q
      else Z.add q Z.one;; 
 
+  let max (Wrap x) (Wrap y) = (Wrap(Quay.max x y)) ;;   
+
   end ;;
 
   let abs (Wrap x) = (Wrap(Quay.abs x)) ;;
@@ -157,6 +160,8 @@ module Q = (struct
   let equals (Wrap x) (Wrap y) = Quay.equal x y ;;
 
   let floor = Private.floor ;;
+
+  let fold_max l = List.fold_left Private.max (List.hd l) (List.tl l)  ;;
  
   let geq (Wrap x) (Wrap y) = Quay.geq x y ;;
 
@@ -167,7 +172,7 @@ module Q = (struct
 
   let make x y = Wrap(Quay.make (Z.to_zarith x) (Z.to_zarith y));;
 
-  let max (Wrap x) (Wrap y) = (Wrap(Quay.max x y)) ;;
+  let max = Private.max ;;
   let min (Wrap x) (Wrap y) = (Wrap(Quay.min x y)) ;;
   let mul (Wrap x) (Wrap y) = (Wrap(Quay.mul x y)) ;;
 
