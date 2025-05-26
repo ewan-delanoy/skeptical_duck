@@ -16,8 +16,8 @@ let triple = (root,backup_dir,githubbing);;
 end;;
 module Next_World=struct
 
-let root=Dfa_root.of_line (root_of_root^"Idaho");;
-let backup_dir=Dfa_root.of_line (root_of_root^"Idaho_backup") ;;
+let root=Dfa_root.of_line (root_of_root^"idaho");;
+let backup_dir=Dfa_root.of_line (root_of_root^"idaho_backup") ;;
 let githubbing=false;;
 let triple = (root,backup_dir,githubbing);;
 

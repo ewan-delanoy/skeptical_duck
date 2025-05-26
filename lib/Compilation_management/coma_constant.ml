@@ -52,6 +52,8 @@ let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
+let rootless_path_for_bindune_file=
+  Dfn_join.subdirectory_to_short  dune_bin_subdir short_path_for_dune_file;;  
 
 let rootless_path_for_diary_file=
   Dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
@@ -99,6 +101,13 @@ let minimalist_text_for_ocamlinit =
       "\ninitialize_toplevel()"^Particular_string.double_semicolon
        ) ;; 
 
+let text_for_bindune_file proj_name =
+  let p = String.uncapitalize_ascii proj_name in 
+  "(executable \n"^
+  " (public_name "^p^")\n"^
+  " (name main)"^
+  " (libraries "^p^"lib))\n";;
+
 let text_for_libdune_file proj_name =
    let p = String.uncapitalize_ascii proj_name in 
    "(include_subdirs unqualified)\n"^
@@ -124,6 +133,7 @@ let common_part_in_conventional_files proj_name=
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
      rootless_path_for_diary_file, "";
+     rootless_path_for_bindune_file, text_for_bindune_file proj_name;
      rootless_path_for_libdune_file, text_for_libdune_file proj_name;
      rootless_path_for_watcheddune_file, text_for_watcheddune_file proj_name;
    ] ;;     

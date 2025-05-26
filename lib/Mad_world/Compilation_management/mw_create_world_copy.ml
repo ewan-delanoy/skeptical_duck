@@ -52,6 +52,12 @@ module Private = struct
   
   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
 
+  let command_for_dune_untexting root =
+    let s_root = Dfa_root.connectable_to_subpath root in 
+    "mv "^s_root^"lib/dune.txt "^s_root^"lib/dune "^
+    " && "^
+    "mv "^s_root^"watched/dune.txt "^s_root^"watched/dune ";;
+
   let frozen_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false)  summary =
       let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destination) '/' in
       let (conv_files,needed_dirs) = (
@@ -68,6 +74,7 @@ module Private = struct
       let _ = Sys.chdir old_dir in  
       let _=(Unix_again.create_subdirs_and_fill_files
       destination needed_dirs conv_files) in 
+      let _ = Unix_command.uc (command_for_dune_untexting destination) in 
       let (modules_in_good_order,compilables,noncompilables) = 
           Mw_needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
