@@ -44,19 +44,28 @@ module Private = struct
      "end"^ds;
      "\n\n\n"
      ]);;
-    let commands_for_copying cs rootlesses destination=
-       let s_old_root=Dfa_root.connectable_to_subpath(Mw_poly.root cs) 
-       and s_new_root=Dfa_root.connectable_to_subpath destination in 
-       let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
-       let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
-       let dir_commands = Image.image (
-         fun subdir ->"mkdir -p "^s_new_root^(Dfa_subdirectory.without_trailing_slash subdir)
-       ) needed_subdirs 
-       and file_commands = Image.image (fun rootless->
-           let line = Dfn_rootless.to_line rootless in 
-           "cp "^s_old_root^line^" "^s_new_root^(Cull_string.before_rightmost line '/')
-      ) rootlesses in 
-      dir_commands @ file_commands;;
+
+let commands_for_copying cs rootlesses destination git_dir=
+     let s_old_root=Dfa_root.connectable_to_subpath(Mw_poly.root cs) 
+     and s_new_root=Dfa_root.connectable_to_subpath destination 
+     and s_git_root=Dfa_root.connectable_to_subpath git_dir in
+     let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
+     let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
+     let dir_commands1 = Image.image (
+       fun subdir ->"mkdir -p "^s_new_root^(Dfa_subdirectory.without_trailing_slash subdir)
+     ) needed_subdirs 
+     and dir_commands2 = Image.image (
+      fun subdir ->"mkdir -p "^s_git_root^(Dfa_subdirectory.without_trailing_slash subdir)
+    ) needed_subdirs 
+     and file_commands1 = Image.image (fun rootless->
+         let line = Dfn_rootless.to_line rootless in 
+         "cp "^s_old_root^line^" "^s_new_root^(Cull_string.before_rightmost line '/')
+    ) rootlesses 
+    and file_commands2 = Image.image (fun rootless->
+      let line = Dfn_rootless.to_line rootless in 
+      "cp "^s_old_root^line^" "^s_git_root^(Cull_string.before_rightmost line '/')
+   ) rootlesses in 
+    dir_commands1 @ dir_commands2 @ file_commands1 @ file_commands2;;     
   
     
   
@@ -90,7 +99,7 @@ module Private = struct
       let (modules_in_good_order,compilables,noncompilables) = 
           Mw_needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
-       (commands_for_copying cs (compilables@noncompilables) destination) in
+       (commands_for_copying cs (compilables@noncompilables) destination destbackupdir) in
       let parameters_ap = Absolute_path.of_string 
        (Dfn_common.recompose_potential_absolute_path destination 
         Coma_constant.rootless_path_for_parametersfile) 
