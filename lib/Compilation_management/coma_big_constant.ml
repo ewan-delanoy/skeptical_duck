@@ -24,8 +24,8 @@ let triple = (root,backup_dir,githubbing);;
 end;;
 module Third_World=struct
 
-let root=Dfa_root.of_line (root_of_root^"Cherokee") ;;
-let backup_dir=Dfa_root.of_line (root_of_root^"Cherokee_backup") ;;
+let root=Dfa_root.of_line (root_of_root^"cherokee") ;;
+let backup_dir=Dfa_root.of_line (root_of_root^"cherokee_backup") ;;
 let githubbing=false;;
 let triple = (root,backup_dir,githubbing);;
 
