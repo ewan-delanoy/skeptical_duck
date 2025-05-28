@@ -8,31 +8,42 @@ module Private = struct
 
   let text_for_big_constants_file_in_other_world destination destbackupdir destgab =
     let ds = Particular_string.double_semicolon in 
-    String.concat "\n" [
+    let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destination) '/'
+    and git_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destbackupdir) '/' in
+    let proj_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root) '/'
+    and git_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir) '/' in
+    let passage_appearing_twice =
+    [
+      "let root=Dfa_root.of_line  (root_of_root^\""^proj_name2^"\") "^ds;
+      "let backup_dir=Dfa_root.of_line (root_of_root^\""^git_name2^"\") "^ds;
+      "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^ds;
+      "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
+    ] in        
+    String.concat "\n" ([
       "\n(* "; 
       "#use\"Compilation_management/coma_big_constant.ml\""^ds;
      "*)\n"; 
      "let github_url = \""^(Coma_big_constant.github_url)^"\""^ds;
+     "let home = Sys.getenv \"HOME\" "^ds;
+     "let root_of_root = home^\"/Teuliou/OCaml/\" "^ds^"\n";
      "module This_World=struct\n";
-     "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash destination)^"\""^ds;
-     "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash destbackupdir)^"\""^ds;
+     "let root=Dfa_root.of_line (root_of_root^\""^proj_name^"\") "^ds;
+     "let backup_dir=Dfa_root.of_line (root_of_root^\""^git_name^"\") "^ds;
      "let githubbing="^(string_of_bool destgab)^ds;
      "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
      "end"^ds;
-     "module Next_World=struct\n";
-     "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\""^ds;
-     "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\""^ds;
-     "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^ds;
-     "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
+     "module Next_World=struct\n"
+    ]
+    @passage_appearing_twice@
+    [
      "end"^ds;
-     "module Third_World=struct\n";
-     "let root=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root)^"\""^ds;
-     "let backup_dir=Dfa_root.of_line \""^(Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir)^"\""^ds;
-     "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^ds;
-     "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
+     "module Third_World=struct\n"
+     ]
+     @passage_appearing_twice@
+     [ 
      "end"^ds;
      "\n\n\n"
-     ];;
+     ]);;
   
     let commands_for_copying cs rootlesses destination=
        let s_old_root=Dfa_root.connectable_to_subpath(Fw_poly.root cs) 
