@@ -1,14 +1,96 @@
 (************************************************************************************************************************
-Snippet 173 : 
+Snippet 174 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 172 : Combinatorics on Komal problem
+Snippet 173 : Some old conversion code
 ************************************************************************************************************************)
 
+module Snip173=struct
+
+(*
+
+module ConvertToMw = struct 
+
+  let from_fw_instance_index (Fw_instance_index_t.I x) = Mw_instance_index_t.I x ;;
+  let from_fw_state_index (Fw_state_index_t.I x) = Mw_state_index_t.I x ;;
+
+  let from_fw_file_small_details fsd = 
+    {
+       Mw_file_small_details_t.used_modules = fsd.Fw_file_small_details_t.used_modules;
+       used_libraries = fsd.Fw_file_small_details_t.used_libraries;
+       has_printer = fsd.Fw_file_small_details_t.has_printer;
+       modification_time = fsd.Fw_file_small_details_t.modification_time;
+    };;  
+
+  let from_fw_poly fw = 
+    let (instance_idx,state_idx) = fw.Fw_poly_t.index_for_caching in 
+    {
+      Mw_poly_t.type_name = 
+       Replace_inside.replace_inside_text ("Fw_","Mw_")
+       fw.Fw_poly_t.type_name ;
+      dir_for_backup = fw.Fw_poly_t.dir_for_backup  ;
+      encoding_protected_files = fw.Fw_poly_t.encoding_protected_files ;
+      github_url = fw.Fw_poly_t.github_url ;
+      gitpush_after_backup = fw.Fw_poly_t.gitpush_after_backup ;
+      ignored_files = fw.Fw_poly_t.ignored_files ;
+      ignored_subdirectories = fw.Fw_poly_t.ignored_subdirectories ;
+      index_for_caching = (from_fw_instance_index instance_idx,
+                           from_fw_state_index state_idx) ;
+      last_compilation_result_for_module = fw.Fw_poly_t.last_compilation_result_for_module ;
+      root = fw.Fw_poly_t.root ;
+      small_details_in_files = 
+       Image.image (
+          fun (r,smde) -> (r,from_fw_file_small_details smde)
+       ) fw.Fw_poly_t.small_details_in_files;
+      subdirs_for_archived_mlx_files = fw.Fw_poly_t.subdirs_for_archived_mlx_files ;
+      watched_files = fw.Fw_poly_t.watched_files ;
+   } ;;
+
+
+end ;;  
+
+let old_cs = ConvertToMw.from_fw_poly (!(Usual_coma_state.main_ref)) ;;
+
+(*
+let bad1 () = Mw_other_coma_state.repopulate 
+Mw_needed_data_summary_t.Everything ;;
+*)
+
+let summary = Mw_needed_data_summary_t.Everything ;;
+
+Mw_other_coma_state.Private.ref_for_unofficial_changes:=None ;;
+
+let (next_dest,next_backup,next_gab) = 
+   Coma_big_constant.Next_World.triple ;;
+
+Hashtbl.length   Mw_with_dependencies.Private.Modularized_details.the_hashtbl ;;
+Hashtbl.length   Mw_with_dependencies.Private.Order.the_hashtbl ;;
+
+Hashtbl.clear   Mw_with_dependencies.Private.Modularized_details.the_hashtbl ;;
+Hashtbl.clear   Mw_with_dependencies.Private.Order.the_hashtbl ;;
+
+let act ()=
+  Chronometer.it
+ (Mw_create_world_copy.fully_developed_copy
+   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
+   old_cs) summary
+  ;;   
+
+
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 172 : Combinatorics on Komal problem
+************************************************************************************************************************)
 module Snip172=struct
 
   open Zirath ;;
