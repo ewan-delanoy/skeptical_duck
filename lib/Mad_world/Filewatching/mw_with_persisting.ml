@@ -17,7 +17,7 @@ module Private=struct
         "#directory\""^s_root^(Dfa_subdirectory.connectable_to_subpath sd)^"\";"^";"
       ) (building_site::dirs) in
       let part2=String.concat "\n" temp5 
-      and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n\n\n" in
+      and part3="\n\n#load\"str.cma\";"^";\n#load\"unix.cma\";"^";\n#load\"zarith.cma\";"^";\n\n\n" in
       let temp2=Image.image (
         function hm->
           let nm = Dfn_endingless.to_module hm in  
