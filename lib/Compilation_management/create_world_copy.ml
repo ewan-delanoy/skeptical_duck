@@ -81,12 +81,14 @@ module Private = struct
           Needed_data_summary.expand cs summary in 
       let _=Image.image Unix_command.uc 
        (commands_for_copying cs (compilables@noncompilables) destination) in
+       let parameters_ap = Absolute_path.of_string 
+       (Dfn_common.recompose_potential_absolute_path destination 
+        Coma_constant.rootless_path_for_parametersfile) 
+      and new_content = text_for_big_constants_file_in_other_world destination destbackupdir destgab in
+      let _=Io.overwrite_with parameters_ap new_content in  
       let faraway_config = Fw_configuration.of_root destination in 
-      let faraway_fw1 = Fw_with_dependencies.of_configuration_and_list (faraway_config,compilables@noncompilables) in  
-      let (faraway_fw,_) =Fw_with_small_details.overwrite_file_if_it_exists faraway_fw1 
-                     (Coma_constant.rootless_path_for_parametersfile, 
-                       text_for_big_constants_file_in_other_world destination destbackupdir destgab) in 
-      (modules_in_good_order,faraway_fw);; 
+      let faraway_fw = Fw_with_dependencies.of_configuration_and_list (faraway_config,compilables@noncompilables) in  
+      (modules_in_good_order,faraway_fw);;  
 
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
       let (_,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
