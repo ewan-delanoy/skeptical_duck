@@ -1,14 +1,98 @@
 (************************************************************************************************************************
-Snippet 172 : 
+Snippet 173 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 171 : Debug the Loose_or_tight module
+Snippet 172 : Combinatorics on Komal problem
 ************************************************************************************************************************)
 
+module Snip172=struct
+
+  open Zirath ;;
+
+  let param = 5 ;;
+  
+  (*
+  
+  
+  #install_printer Zirath.Q.trinp_out ;;
+  
+  *)
+  
+  let df i j = Zirath.Q.of_ints 1 (abs(j-i)) ;;
+  
+  let before_crocodile l =
+    let get = (fun k->List.nth l (k-1)) in
+    let indexed_l = Int_range.index_everything l in 
+    let inside_map = (
+      fun (idx_for_v,v) ->
+        let ttemp2 = List.filter_map (
+           fun idx_for_w ->
+             let w = get idx_for_w in 
+             if List.mem(abs(w-v)) [1;2]
+             then Some((idx_for_w,w),df v w) 
+             else None
+        ) (Int_range.range 1 (idx_for_v-1)) in
+        (idx_for_v,(v,ttemp2))
+    ) in 
+    Image.image inside_map indexed_l ;;
+  
+  let rec helper_for_crocodile (treated,to_be_treated) = 
+    match to_be_treated with
+    [] -> List.rev_map snd treated  
+    | (idx_for_v,(v,constraints)) :: others ->
+      if constraints = [] 
+      then helper_for_crocodile ((idx_for_v,(Q.zero,None))::treated,others)
+      else
+      let pairs_below = Image.image (fun 
+      ((idx_for_w,w),d) -> (w,Q.add (fst(List.assoc idx_for_w treated)) d)
+      ) constraints in 
+      let rationals_below = Image.image snd pairs_below in   
+      let final_max = Q.fold_max rationals_below in 
+      let (w0,_) = List.find (fun (_,m)->m=final_max) pairs_below in
+      helper_for_crocodile ((idx_for_v,(final_max,Some w0))::treated,others) ;;
+  
+  let crocodile perm = 
+     helper_for_crocodile ([],before_crocodile perm) ;;
+  
+  let rewrite (perm,croc) =
+     let n = List.length perm 
+     and temp1 = List.combine perm croc in 
+     Int_range.scale (fun j->List.assoc j temp1) 1 n ;;
+  
+  let perms1 = Permutation.iii param ;;
+  
+  let res1 = Explicit.image (fun perm->(perm,crocodile perm)) perms1 ;;
+  
+  let u1 = Image.image 
+  (fun (perm,croc) -> ((perm,croc),Q.fold_max (Image.image fst croc))) res1 ;;
+  
+  let minnie1 = Q.fold_min (Image.image snd u1);;
+  
+  let u2 = List.filter (
+    fun (_,m) -> m = minnie1
+  ) u1 ;;
+  
+  let u3 = Image.image (fun (p,_)->rewrite p) u2 ;;
+  
+  let u4 = Image.image (Image.image (fun (q,data)->
+      (Q.div q minnie1,data)
+    )) u3 ;;
+  
+  let u5 = Image.image (Image.image fst) u4 ;;
+  
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 171 : Debug the Loose_or_tight module
+************************************************************************************************************************)
 module Snip171=struct
 
 
@@ -819,6 +903,9 @@ ap1 ~outputfile_name:"first_page_contraventions"
 let ap2 = Absolute_path.of_string 
 "~/Teuliou/Heavy/bonvallet_remasterised.pdf";;
 
+let act6 () = Coherent_pdf.corep_cuttable_transform
+ap2 ~outputfile_name:"printable_remasterised_bonvallet"
+;;
 
 end ;;
 

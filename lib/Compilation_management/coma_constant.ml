@@ -91,12 +91,13 @@ let git_ignored_subdirectories =
   ];;
 
 
-let minimalist_text_for_ocamlinit =
-   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.double_semicolon^
+let minimalist_text_for_ocamlinit proj_name=
+  "open "^(String.capitalize_ascii proj_name)^"_lib ;;"^
+  "\n#use\""^(Dfn_rootless.to_line rootless_path_for_loadingsfile)^"\""^Particular_string.double_semicolon^
   "\n#use\""^(Dfn_rootless.to_line rootless_path_for_printersfile)^"\""^Particular_string.double_semicolon;;
 
- let full_text_for_ocamlinit = (
-      minimalist_text_for_ocamlinit^
+ let full_text_for_ocamlinit proj_name= (
+      (minimalist_text_for_ocamlinit proj_name)^
       "\nopen Needed_values"^Particular_string.double_semicolon^
       "\ninitialize_toplevel()"^Particular_string.double_semicolon
        ) ;; 
@@ -141,13 +142,13 @@ let common_part_in_conventional_files proj_name=
 
 let conventional_files_with_full_content proj_name=  
    [
-     rootless_path_for_ocamlinit, full_text_for_ocamlinit ;
+     rootless_path_for_ocamlinit, full_text_for_ocamlinit proj_name ;
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
    ] @ (common_part_in_conventional_files proj_name) ;;      
 
 let conventional_files_with_minimal_content proj_name=    
    [
-     rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit ;
+     rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit proj_name ;
    ] @ (common_part_in_conventional_files proj_name) ;;      
 
 
