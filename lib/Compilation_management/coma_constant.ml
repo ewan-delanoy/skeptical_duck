@@ -42,7 +42,7 @@ let build_subdir =   Dfa_subdirectory.extend nongithubbed_nonml_files_subdir "_b
 let usual_build_subdir= Dfa_subdirectory.extend build_subdir "_usual_build";;
 let debug_build_subdir= Dfa_subdirectory.extend build_subdir "_debug_build";;  
 let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;  
-let parameters_subdir= Dfa_subdirectory.of_line "Compilation_management";;
+let parameters_subdir= Dfa_subdirectory.extend dune_lib_subdir "Compilation_management";;
 
 let short_path_for_diary_file= Dfn_short.of_line"diary_archive.ml";;
 let short_path_for_dune_file= Dfn_short.of_line"dune.txt";;
