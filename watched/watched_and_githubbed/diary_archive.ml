@@ -1,14 +1,48 @@
 (************************************************************************************************************************
-Snippet 174 : 
+Snippet 175 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 173 : Some old conversion code
+Snippet 174 : Delete all modules in a subdirectory
 ************************************************************************************************************************)
 
+module Snip174=struct
+
+  let ae = Usual_coma_state.all_endinglesses () ;;
+
+  let sd1 = Dfa_subdirectory.of_line "lib/Mad_world" ;;
+  
+  let u1 = List.filter (
+    fun rl -> Dfa_subdirectory.begins_with (Dfn_endingless.to_subdirectory rl) sd1
+  ) ae ;;
+  
+  let u2 = Image.image (
+    fun rl -> Dfa_module.to_line (Dfn_endingless.to_module rl)
+  ) u1 ;;
+  
+  let act () = fgs ["mw_file_small_details_t"; "mw_file_small_details"; "mw_instance_index_t";
+  "mw_state_index_t"; "mw_indexer"; "mw_poly_t"; "mw_poly";
+  "mw_configuration"; "mw_file_watcher"; "mw_with_archives";
+  "mw_module_small_details_t"; "mw_with_small_details";
+  "mw_module_small_details"; "mw_determine_order"; "mw_with_dependencies";
+  "mw_transmit_change_to_github"; "mw_commands_for_batch_compilation";
+  "mw_with_batch_compilation"; "mw_with_githubbing"; "mw_with_persisting";
+  "mw_modify_coma_state"; "mw_needed_data_summary_t";
+  "mw_needed_data_summary"; "mw_create_world_copy"; "mw_usual_coma_state";
+  "mw_other_coma_state"; "mw_constant"; "mw_check_ocaml_dircopy";
+  "mw_needed_values"; "mw_self_contained_module_copy"] ;;
+  
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 173 : Some old conversion code
+************************************************************************************************************************)
 module Snip173=struct
 
 (*
