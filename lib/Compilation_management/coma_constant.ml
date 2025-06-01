@@ -168,6 +168,13 @@ let full_set_of_needed_dirs =
     [
     ] ;;  
 
+let nongithubbed_high_subdirs = [
+   dune_bin_subdir;
+   dune_build_subdir;
+   dune_test_subdir;
+   nonml_files_subdir;
+] ;;
+
 end ;;
 
  let conventional_files_with_full_content = Private.conventional_files_with_full_content ;;
@@ -181,6 +188,7 @@ end ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
  let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let nongithubbed_high_subdirs = Private.nongithubbed_high_subdirs ;;
  let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
  let rootless_path_for_loadingsfile = Private.rootless_path_for_loadingsfile ;;
