@@ -18,10 +18,11 @@ let watched_subdir=
 let outer_subdir=
   Dfa_subdirectory.of_line "qfff";;
 
-let dune_lib_subdir= Dfa_subdirectory.of_line "lib";;
 let dune_bin_subdir= Dfa_subdirectory.of_line "bin";;  
 let dune_build_subdir= Dfa_subdirectory.of_line "_build";;
+let dune_lib_subdir= Dfa_subdirectory.of_line "lib";;
 let dune_test_subdir= Dfa_subdirectory.of_line "test";;
+let dune_watched_subdir= Dfa_subdirectory.of_line "watched";; 
 
 let nonml_files_subdir=
   Dfa_subdirectory.of_line "nonml_files";;
@@ -173,6 +174,8 @@ end ;;
  let conventional_files_with_minimal_content = Private.conventional_files_with_minimal_content ;;
  let debug_build_subdir = Private.debug_build_subdir ;;
  let debugging_subdir = Private.debugging_subdir ;;
+ let dune_lib_subdir = Private.dune_lib_subdir ;;
+ let dune_watched_subdir = Private.dune_watched_subdir ;;
  let exec_build_subdir = Private.exec_build_subdir ;;
  let full_set_of_needed_dirs = Private.full_set_of_needed_dirs ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;

@@ -208,8 +208,7 @@ let delete_directory root =
   let cmd = "rm -rf "^s_root in 
   Sys.command cmd;;
   
-let empty_directory root =
-   let s_root = Dfa_root.connectable_to_subpath root in 
+let empty_directory s_root =
    let cmd = "rm -rf "^s_root^"*" in 
    Sys.command cmd;;      
 
