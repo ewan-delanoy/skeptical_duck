@@ -9,7 +9,8 @@ let ref_for_unofficial_changes = ref (None: Dircopy_diff_t.t option) ;;
 
 let force_compute_changes_in_experimental_version () =
   Prepare_dircopy_update.compute_restricted_diff
-  Coma_big_constant.This_World.root Coma_big_constant.Next_World.root ([],[]) ;;
+  Coma_big_constant.This_World.root Coma_big_constant.Next_World.root 
+   (Coma_constant.nongithubbed_high_subdirs,[]) ;;
 
 end ;;  
 
