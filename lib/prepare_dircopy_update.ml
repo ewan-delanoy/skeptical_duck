@@ -4,10 +4,9 @@
 
 *)
 
-let compute_deleted_in_diff sourcedir destdir=
+let compute_deleted_in_diff (sourcedir,l) destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
    and s_destdir=Dfa_root.connectable_to_subpath destdir in
-   let temp1=Unix_again.quick_beheaded_complete_ls s_destdir in
    List.filter_map(
        fun s->if (s<>"README")
               &&(not(String.starts_with ~prefix:".git/" s )) 
@@ -16,7 +15,7 @@ let compute_deleted_in_diff sourcedir destdir=
                    then None
                    else Some(Dfn_rootless.of_line s))
               else None
-   ) temp1;;
+   ) l;;
    
 let compute_nondeleted_in_diff (sourcedir,l) destdir=
    let s_sourcedir=Dfa_root.connectable_to_subpath sourcedir
@@ -45,7 +44,7 @@ let compute_diff (sourcedir,l) destdir=
    let (created,changed)=compute_nondeleted_in_diff (sourcedir,l) destdir in
    Dircopy_diff.constructor
    
-   	(compute_deleted_in_diff sourcedir destdir)
+   	(compute_deleted_in_diff (sourcedir,l) destdir)
    	changed
    	created
    ;;
