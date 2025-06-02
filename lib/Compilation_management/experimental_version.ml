@@ -8,11 +8,29 @@ module Private = struct
 let ref_for_unofficial_changes = ref (None: Dircopy_diff_t.t option) ;;
 
 let force_compute_changes_in_experimental_version () =
+  let this_root = Coma_big_constant.This_World.root in 
+  let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash this_root) '/' in
   Prepare_dircopy_update.compute_restricted_diff
   Coma_big_constant.This_World.root Coma_big_constant.Next_World.root 
-   (Coma_constant.nongithubbed_high_subdirs,[]) ;;
+   (Coma_constant.nongithubbed_high_subdirs,
+   Image.image Dfn_rootless.to_line
+   (Coma_constant.nongithubbed_high_files proj_name)) ;;
+
+   let changes_in_experimental_version () = 
+    match (!(ref_for_unofficial_changes)) with 
+    Some old_answer -> old_answer 
+    |None ->
+     let answer = force_compute_changes_in_experimental_version () in 
+     let _ = (ref_for_unofficial_changes:=Some answer) in 
+     answer ;;
 
 end ;;  
+
+let commands_for_change_officialization () =
+  let diff = Private.changes_in_experimental_version () in 
+  Prepare_dircopy_update.commands_for_update 
+  (Coma_big_constant.This_World.root,
+   Coma_big_constant.Next_World.root) diff ;; 
 
 let create_experimental_copy_from_scratch () =
   let old_cs = (!(Usual_coma_state.main_ref)) in 
@@ -44,13 +62,8 @@ let empty_and_refill_experimental_copy () =
   Unix_command.conditional_multiple_uc [cmd1;cmd2] ;; 
 
    
-let changes_in_experimental_version () = 
-  match (!(Private.ref_for_unofficial_changes)) with 
-  Some old_answer -> old_answer 
-  |None ->
-   let answer = Private.force_compute_changes_in_experimental_version () in 
-   let _ = (Private.ref_for_unofficial_changes:=Some answer) in 
-   answer ;;
+let changes_in_experimental_version = Private.changes_in_experimental_version ;;  
+ 
 
 let force_compute_changes_in_experimental_version = Private.force_compute_changes_in_experimental_version ;;
 

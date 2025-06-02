@@ -64,7 +64,7 @@ let rootless_path_for_libdune_file=
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
 let rootless_path_for_ocamlformat_file =
-    Dfn_rootless.of_line ".ocamformat" ;;   
+    Dfn_rootless.of_line ".ocamlformat" ;;   
 let rootless_path_for_ocamlinit_file =
   Dfn_rootless.of_line ".ocamlinit" ;; 
   
