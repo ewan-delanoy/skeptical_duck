@@ -63,6 +63,14 @@ let rootless_path_for_libdune_file=
   Dfn_join.subdirectory_to_short  dune_lib_subdir short_path_for_dune_file;;  
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
+let rootless_path_for_ocamlformat_file =
+    Dfn_rootless.of_line ".ocamformat" ;;   
+let rootless_path_for_ocamlinit_file =
+  Dfn_rootless.of_line ".ocamlinit" ;; 
+  
+let rootless_path_for_opam_file proj_name=
+    Dfn_rootless.of_line ((String.uncapitalize_ascii proj_name)^".opam") ;;   
+  
 let rootless_path_for_painful_debugging_file=
   Dfn_join.subdirectory_to_short  watched_not_githubbed_subdir short_path_for_painful_debugging_file;;
 let rootless_path_for_parametersfile=
@@ -169,11 +177,21 @@ let full_set_of_needed_dirs =
     ] ;;  
 
 let nongithubbed_high_subdirs = [
+   directives_subdir;
+   debugging_subdir;
    dune_bin_subdir;
    dune_build_subdir;
    dune_test_subdir;
    nonml_files_subdir;
+   watched_not_githubbed_subdir;
 ] ;;
+
+let nongithubbed_high_files proj_name = [
+  rootless_path_for_ocamlformat_file ;   
+  rootless_path_for_ocamlinit_file ; 
+  rootless_path_for_opam_file proj_name;   
+] ;;
+
 
 end ;;
 
@@ -188,6 +206,7 @@ end ;;
  let git_ignored_subdirectories = Private.git_ignored_subdirectories ;;
  let watched_and_githubbed_subdir = Private.watched_and_githubbed_subdir ;;
  let minimal_set_of_needed_dirs = Private.minimal_set_of_needed_dirs ;;
+ let nongithubbed_high_files = Private.nongithubbed_high_files ;;
  let nongithubbed_high_subdirs = Private.nongithubbed_high_subdirs ;;
  let nongithubbed_nonml_files_subdir = Private.nongithubbed_nonml_files_subdir ;;
  let rootless_path_for_diary_file = Private.rootless_path_for_diary_file ;;
