@@ -8,8 +8,8 @@
 type field_t = Field of string ;;
 
 type t = {
-  fields_with_their_types : (field_t * string) list;
-  fieldsets_with_their_names : ((field_t list) * string) list;
+  fields_with_their_types : (Pmrp_field_t.t * string) list;
+  fieldsets_with_their_names : ((Pmrp_field_t.t list) * string) list;
 } ;; 
 
 
