@@ -19,7 +19,7 @@ let ml_content config=
 
 let write_ml_content config ap = 
   let _ = Io.overwrite_with ap (ml_content config) in 
-  Put_use_directive_in_initial_comment.prepend_or_replace_with_usual
+  Use_directive_in_initial_comment.prepend_or_replace_with_usual
    Coma_big_constant.This_World.root ap ;;
 
 
