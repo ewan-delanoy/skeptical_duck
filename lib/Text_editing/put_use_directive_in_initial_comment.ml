@@ -26,26 +26,39 @@ let detect_initial_comment_in_text text =
 
 let detect_initial_comment_in_file  fn =  detect_initial_comment_in_text  (Io.read_whole_file fn) ;;
 
-let in_text ~new_directive text =
-  match detect_initial_comment_in_text text  with 
-  None -> text 
-  |Some(i1,_line1,_i2) ->
-    let old_lines = Lines_in_text.indexed_lines text in 
-    let new_lines = Image.image (fun (line_idx,line)->
-        if line_idx = i1 then new_directive else line
+let compute_text_with_replaced_directive ~directive_line_idx ~new_directive old_text =
+  let old_lines = Lines_in_text.indexed_lines old_text in 
+  let fresh_lines = Image.image (fun (line_idx,line)->
+        if line_idx = directive_line_idx then new_directive else line
       ) old_lines in 
-   String.concat "\n" new_lines ;;   
+  String.concat "\n" fresh_lines ;; 
 
-let in_file ~new_directive fn =   
+let replace_if_present_in_text ~new_directive old_text =
+  match detect_initial_comment_in_text old_text  with 
+  None -> old_text 
+  |Some(i1,_line1,_i2) ->
+    compute_text_with_replaced_directive ~directive_line_idx:i1 ~new_directive old_text ;;   
+
+let prepend_in_text  ~new_directive old_text =
+  "(*\n\n\n" ^ new_directive ^ "\n\n\n*)\n\n\n" ^old_text ;;
+
+let prepend_or_replace_if_present_in_file ~new_directive fn =   
+      let old_text = Io.read_whole_file fn in 
+      let new_text = (
+      match detect_initial_comment_in_text old_text  with 
+     None -> prepend_in_text  ~new_directive old_text
+     |Some(i1,_line1,_i2) ->
+        compute_text_with_replaced_directive 
+        ~directive_line_idx:i1 ~new_directive old_text) in 
+       Io.overwrite_with fn new_text;;
+
+
+let replace_if_present_in_file ~new_directive fn =   
    let old_text = Io.read_whole_file fn in 
    match detect_initial_comment_in_text old_text  with 
   None -> () 
   |Some(i1,_line1,_i2) ->
-    let old_lines = Lines_in_text.indexed_lines old_text in 
-    let new_lines = Image.image (fun (line_idx,line)->
-        if line_idx = i1 then new_directive else line
-      ) old_lines in 
-    let new_text = String.concat "\n" new_lines in 
+    let new_text = compute_text_with_replaced_directive ~directive_line_idx:i1 ~new_directive old_text in 
     Io.overwrite_with fn new_text;;
 
 let usual root ap =
@@ -53,7 +66,11 @@ let usual root ap =
     let s_cdir=Dfa_root.connectable_to_subpath root in 
     let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
     "#use\""^shortened_path^"\";"^";" ;;
-    
+
+let prepend_or_replace_with_usual root ap =
+      let new_directive = usual root ap in 
+      prepend_or_replace_if_present_in_file ~new_directive ap;;       
+
 let replace_with_usual root ap =
     let new_directive = usual root ap in 
-    in_file ~new_directive ap;;    
+    replace_if_present_in_file ~new_directive ap;;    
