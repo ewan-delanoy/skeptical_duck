@@ -20,7 +20,7 @@ let ml_content config=
 let write_ml_content config ap = 
   let _ = Io.overwrite_with ap (ml_content config) in 
   Use_directive_in_initial_comment.prepend_or_replace_with_usual
-   Coma_big_constant.This_World.root ap ;;
+   Coma_big_constant.This_World.root (config.Pmrp_config_t.receiving_file) ;;
 
 
 let config1 = {
@@ -29,12 +29,11 @@ let config1 = {
   Pmrp_field_t.F "pear", "string";
   ];
   fieldsets_with_their_names=[];
+  receiving_file = (Absolute_path.of_string 
+  "lib/Poor_mans_row_polymorphism/pmrp_guinea_pig.ml");
 } ;; 
 
-let guinea_pig_ap = Absolute_path.of_string 
-   "lib/Poor_mans_row_polymorphism/pmrp_guinea_pig.ml";; 
-
-let act1 () = write_ml_content config1 guinea_pig_ap;; 
+let act1 () = write_ml_content config1 ;; 
 
 
   
