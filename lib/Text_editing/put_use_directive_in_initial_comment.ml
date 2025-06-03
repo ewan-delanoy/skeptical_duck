@@ -4,6 +4,8 @@
 
 *)
 
+module Private = struct
+
 let detect_initial_comment_in_text text = 
   let lines = Lines_in_text.indexed_lines text in 
   let first_line = snd (List.hd lines) in 
@@ -42,23 +44,25 @@ let replace_if_present_in_text ~new_directive old_text =
 let prepend_in_text  ~new_directive old_text =
   "(*\n\n\n" ^ new_directive ^ "\n\n\n*)\n\n\n" ^old_text ;;
 
+  end ;;
+
 let prepend_or_replace_if_present_in_file ~new_directive fn =   
       let old_text = Io.read_whole_file fn in 
       let new_text = (
-      match detect_initial_comment_in_text old_text  with 
-     None -> prepend_in_text  ~new_directive old_text
+      match Private.detect_initial_comment_in_text old_text  with 
+     None -> Private.prepend_in_text  ~new_directive old_text
      |Some(i1,_line1,_i2) ->
-        compute_text_with_replaced_directive 
+        Private.compute_text_with_replaced_directive 
         ~directive_line_idx:i1 ~new_directive old_text) in 
        Io.overwrite_with fn new_text;;
 
 
 let replace_if_present_in_file ~new_directive fn =   
    let old_text = Io.read_whole_file fn in 
-   match detect_initial_comment_in_text old_text  with 
+   match Private.detect_initial_comment_in_text old_text  with 
   None -> () 
   |Some(i1,_line1,_i2) ->
-    let new_text = compute_text_with_replaced_directive ~directive_line_idx:i1 ~new_directive old_text in 
+    let new_text = Private.compute_text_with_replaced_directive ~directive_line_idx:i1 ~new_directive old_text in 
     Io.overwrite_with fn new_text;;
 
 let usual root ap =
