@@ -54,6 +54,6 @@ let usual root ap =
     let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
     "#use\""^shortened_path^"\";"^";" ;;
     
-let put_usual root ap =
+let replace_with_usual root ap =
     let new_directive = usual root ap in 
     in_file ~new_directive ap;;    

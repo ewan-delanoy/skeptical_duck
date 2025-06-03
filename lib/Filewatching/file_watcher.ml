@@ -208,7 +208,7 @@ let check_that_no_change_has_occurred fw =
        let root = Fw_poly.root fw in 
        let full = Dfn_join.root_to_rootless root rless in 
        let ap = Dfn_full.to_absolute_path full in 
-       Put_use_directive_in_initial_comment.put_usual root ap
+       Put_use_directive_in_initial_comment.replace_with_usual root ap
     ;;    
          
 

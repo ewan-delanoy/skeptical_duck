@@ -1188,7 +1188,7 @@ let decipher_module fw capitalized_or_not_x=
         let ap2=Absolute_path.of_string s_ap2 in
         let _ =  (
           if s_ending = "ml"
-          then Put_use_directive_in_initial_comment.put_usual (root fw) ap2) in 
+          then Put_use_directive_in_initial_comment.replace_with_usual (root fw) ap2) in 
         (*
            
         On a Mac, this was 
