@@ -37,11 +37,11 @@ let in_text ~new_directive text =
    String.concat "\n" new_lines ;;   
 
 let in_file ~new_directive fn =   
-   let text = Io.read_whole_file fn in 
-   match detect_initial_comment_in_text text  with 
+   let old_text = Io.read_whole_file fn in 
+   match detect_initial_comment_in_text old_text  with 
   None -> () 
   |Some(i1,_line1,_i2) ->
-    let old_lines = Lines_in_text.indexed_lines text in 
+    let old_lines = Lines_in_text.indexed_lines old_text in 
     let new_lines = Image.image (fun (line_idx,line)->
         if line_idx = i1 then new_directive else line
       ) old_lines in 
