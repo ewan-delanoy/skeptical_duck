@@ -1004,12 +1004,17 @@ let ap1 = Absolute_path.of_string
 let ap1 = Absolute_path.of_string 
 "~/Teuliou/Heavy/Workshop/first_page.pdf";;
 
+let ap1 = Absolute_path.of_string 
+"~/Downloads/Herri_Delfin/herri.pdf";;
+
+
 let see1 = Coherent_pdf.sizes_for_each_page ap1 ;;
 
+let fl_mean l = (List.fold_left (+.) 0. l) /. (float_of_int(List.length l)) ;;
 
 let act4 () = Coherent_pdf.force_same_size_for_all_pages
-ap1 ~outputfile_name:"contraventions"
-    ~forced_width:2132 ~forced_height:1241
+ap1 ~outputfile_name:"herri"
+    ~forced_width:922 ~forced_height:1380
 ;;
 
 let act5 () = Coherent_pdf.corep_foldable_transform
