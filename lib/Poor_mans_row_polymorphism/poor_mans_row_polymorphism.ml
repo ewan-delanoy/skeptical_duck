@@ -66,7 +66,7 @@ let config1 = {
   Pmrp_field_t.F "cranberry", "float";
   Pmrp_field_t.F "strawberry", "int list";
   ];
-  fieldsets_with_their_names=[];
+  fieldsets=[];
   mutable_fields=[];
   receiving_file = (Absolute_path.of_string 
   "lib/Poor_mans_row_polymorphism/pmrp_guinea_pig.ml");
