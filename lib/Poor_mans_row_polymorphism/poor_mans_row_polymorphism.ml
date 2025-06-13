@@ -12,7 +12,13 @@ let protect t =
 
 let code_for_getters config =
   let lines = Image.image (
-    fun (Pmrp_field_t.F(s),_)->"let "^s^" = Me([ (Pmrp_field_t.F \""^s^"\") ],(fun x ->x."^s^")) "^ds
+    fun (Pmrp_field_t.F(s),t)->"let "^s^
+    " = { \n"^
+  " sto_input_fieldset = [ Pmrp_field_t.F \""^s^"\" ] ;\n"^
+  " sto_additional_info = Some \"(getter)\" ;\n"^
+  " sto_output_type = \""^t^"\" ;\n"^
+  " sto_actor = (fun x ->x."^s^");\n"^
+  "} " ^ds
   ) config.Pmrp_config_t.fields_with_their_types in 
   String.concat "" lines ;;
 
@@ -34,20 +40,27 @@ let ml_content config=
    config.Pmrp_config_t.fields_with_their_types)
   ) ^
   "\n} "^ds^
+  "type 'a outside_to_self_mapper_t   = { \n"^
+  " ots_input_fieldset : string ;\n"^
+  " ots_output_fieldset : Pmrp_field_set_t.t ;\n"^
+  " ots_additional_info : string option ;\n"^
+  " ots_actor: 'a -> t; "^
+  "} " ^ds^
+  "type 'b self_to_outside_mapper_t   = { \n"^
+  " sto_input_fieldset : Pmrp_field_set_t.t ;\n"^
+  " sto_output_type : string ;\n"^
+  " sto_additional_info : string option ;\n"^
+  " sto_actor: t -> 'b; "^
+  "} " ^ds^
   "type self_to_self_mapper_t   = { \n"^
-  " sts_input_fieldset : (Pmrp_field_t.t list) option ;\n"^
-  " sts_output_fieldset : (Pmrp_field_t.t list) option ;\n"^
+  " sts_input_fieldset : Pmrp_field_set_t.t ;\n"^
+  " sts_output_fieldset : Pmrp_field_set_t.t ;\n"^
   " sts_additional_info : string option ;\n"^
   " sts_actor: t -> t; "^
   "} " ^ds^
-  "type modifier_t    = { mo_active_fields: Pmrp_field_t.t list ; mo_actor: t -> t } " ^ds^
-  "type 'a extender_t = { ex_fields_before: Pmrp_field_t.t list ; ex_added_fields: Pmrp_field_t.t list ; ex_actor: t -> 'a -> t } " ^ds^
-  "type shortener_t   = { sh_removed_fields: Pmrp_field_t.t list ; sh_actor: t -> t } " ^ds^
-  "let apply_method    mthd x   = mthd.me_actor x " ^ds^
-  "let apply_modifier  mdfr x   = mdfr.mo_actor x " ^ds^
-  "let apply_extender  extr x y = extr.ex_actor x y " ^ds^
-  "let apply_shortener shnr x   = shnr.sh_actor x " ^ds^
-  (* "let apply_extender (Ex(Pmrp_field_t.F(s),f=v)) x = {x with "^s^" = v} " ^ds^ *)
+  "let apply_ots f x   = f.ots_actor x " ^ds^
+  "let apply_sto f x   = f.sto_actor x " ^ds^
+  "let apply_sts f x   = f.sts_actor x " ^ds^
   (code_for_getters config)^
   "\n\n\n";;
 
