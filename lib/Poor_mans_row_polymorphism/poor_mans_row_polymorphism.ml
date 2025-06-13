@@ -34,7 +34,12 @@ let ml_content config=
    config.Pmrp_config_t.fields_with_their_types)
   ) ^
   "\n} "^ds^
-  "type 'b method_t   = { me_active_fields: Pmrp_field_t.t list ; me_actor: t -> 'b } " ^ds^
+  "type self_to_self_mapper_t   = { \n"^
+  " sts_input_fieldset : (Pmrp_field_t.t list) option ;\n"^
+  " sts_output_fieldset : (Pmrp_field_t.t list) option ;\n"^
+  " sts_description : string option ;\n"^
+  " sts_actor: t -> t; "^
+  "} " ^ds^
   "type modifier_t    = { mo_active_fields: Pmrp_field_t.t list ; mo_actor: t -> t } " ^ds^
   "type 'a extender_t = { ex_fields_before: Pmrp_field_t.t list ; ex_added_fields: Pmrp_field_t.t list ; ex_actor: t -> 'a -> t } " ^ds^
   "type shortener_t   = { sh_removed_fields: Pmrp_field_t.t list ; sh_actor: t -> t } " ^ds^

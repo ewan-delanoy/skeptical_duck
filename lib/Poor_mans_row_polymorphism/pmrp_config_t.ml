@@ -5,8 +5,6 @@
 *)
 
 
-type field_t = Field of string ;;
-
 type t = {
   fields_with_their_types : (Pmrp_field_t.t * string) list;
   fieldsets_with_their_names : ((Pmrp_field_t.t list) * string) list;
