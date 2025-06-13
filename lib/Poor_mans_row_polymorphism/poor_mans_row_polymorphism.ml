@@ -37,7 +37,7 @@ let ml_content config=
   "type self_to_self_mapper_t   = { \n"^
   " sts_input_fieldset : (Pmrp_field_t.t list) option ;\n"^
   " sts_output_fieldset : (Pmrp_field_t.t list) option ;\n"^
-  " sts_description : string option ;\n"^
+  " sts_additional_info : string option ;\n"^
   " sts_actor: t -> t; "^
   "} " ^ds^
   "type modifier_t    = { mo_active_fields: Pmrp_field_t.t list ; mo_actor: t -> t } " ^ds^
