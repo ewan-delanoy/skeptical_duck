@@ -37,7 +37,7 @@ let getter_item (Pmrp_field_t.F(s),t) =
   " dm_input = Pmrp_involved_or_not_t.Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
   " dm_output = Pmrp_involved_or_not_t.Not_involved(\""^t^"\") ;\n"^
   " dm_additional_info = Some \"(getter)\" ;\n"^
-  " dm_actor= (fun x ->x."^s^");\n"^
+  " dm_actor= (fun x ->try Option.get(x."^s^") with _ ->raise(Get_exn(\""^s^"\")));\n"^
   "} " ^ds ;
 } ;;
 
@@ -52,7 +52,7 @@ let setter_item (Pmrp_field_t.F(s),t) =
   " dm2_input2 = Pmrp_involved_or_not_t.Not_involved(\""^t^"\") ;\n"^
   " dm2_output = Pmrp_involved_or_not_t.Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
   " dm2_additional_info = Some \"(setter)\" ;\n"^
-  " dm2_actor= (fun x v->{ x with "^s^" = v});\n"^
+  " dm2_actor= (fun x v->{ x with "^s^" = Some v});\n"^
   "} " ^ds ;
 } ;;
 
@@ -75,7 +75,7 @@ let main_type_definition_item config =
     "type t = {\n" ^
   (
    String.concat "\n" (Image.image
-   (fun (Pmrp_field_t.F(s),t)->"   "^s^" : "^t^" ;")
+   (fun (Pmrp_field_t.F(s),t)->"   "^s^" : "^(protect t)^" option ;")
    config.Pmrp_config_t.fields_with_their_types)
   ) ^
   "\n}" in 
@@ -150,7 +150,20 @@ let all_applier_items =
       dm2_applier_item
     ]) ;;
 
-let all_non_typedef_items config = 
+let get_exn_applier_item =
+  {
+    item_name = "Get_exn";
+    code_for_transparent_mli = "exception Get_exn of string" ;
+    code_for_opaque_mli ="exception Get_exn of string";
+    code_for_ml = "exception Get_exn of string " ^ds ;
+  } ;;      
+
+let all_exn_items = 
+    sort_items [
+     get_exn_applier_item
+    ];;
+
+let all_non_typedef_non_exn_items config = 
    fold_merge_items [
     all_applier_items;
     all_getter_items config;
@@ -158,7 +171,9 @@ let all_non_typedef_items config =
    ];;
 
 let all_items config = 
-  (all_type_definitions_items config) @ (all_non_typedef_items config) ;;
+  (all_type_definitions_items config) @ 
+  (all_exn_items) @
+  (all_non_typedef_non_exn_items config) ;;
 
 let ml_content config= 
   let items = all_items config in 
