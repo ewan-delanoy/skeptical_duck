@@ -34,24 +34,25 @@ let getter_item (Pmrp_field_t.F(s),t) =
    code_for_opaque_mli ="val "^s^" : (t,"^t^") decorated_map1";
    code_for_ml = 
   "let "^s^" = { \n"^
-  " dm_input = Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
-  " dm_output = Not_involved(\""^t^"\") ;\n"^
+  " dm_input = Pmrp_involved_or_not_t.Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
+  " dm_output = Pmrp_involved_or_not_t.Not_involved(\""^t^"\") ;\n"^
   " dm_additional_info = Some \"(getter)\" ;\n"^
   " dm_actor= (fun x ->x."^s^");\n"^
   "} " ^ds ;
 } ;;
 
-let setter_item (Pmrp_field_t.F(s),_t) =
+let setter_item (Pmrp_field_t.F(s),t) =
   {
-   item_name = s;
-   code_for_transparent_mli ="val set_"^s^" : (t,t) decorated_map1" ;
-   code_for_opaque_mli ="val set_"^s^" : (t,t) decorated_map1";
+   item_name = "set_"^s;
+   code_for_transparent_mli ="val set_"^s^" : (t,"^t^",t) decorated_map2" ;
+   code_for_opaque_mli ="val set_"^s^" : (t,"^t^",t) decorated_map2";
    code_for_ml = 
-  "let "^s^" = { \n"^
-  " dm_input = Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
-  " dm_output = Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
-  " dm_additional_info = Some \"(getter)\" ;\n"^
-  " dm_actor= (fun x ->x."^s^");\n"^
+  "let set_"^s^"= { \n"^
+  " dm2_input1 = Pmrp_involved_or_not_t.Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
+  " dm2_input2 = Pmrp_involved_or_not_t.Not_involved(\""^t^"\") ;\n"^
+  " dm2_output = Pmrp_involved_or_not_t.Involved(Pmrp_field_set.make [ Pmrp_field_t.F \""^s^"\" ]) ;\n"^
+  " dm2_additional_info = Some \"(setter)\" ;\n"^
+  " dm2_actor= (fun x v->{ x with "^s^" = v});\n"^
   "} " ^ds ;
 } ;;
 
@@ -60,6 +61,13 @@ let all_getter_items config =
   sort_items(
   Image.image getter_item config.Pmrp_config_t.fields_with_their_types
   );;
+let all_setter_items config = 
+  let typed_fields = Image.image (
+   fun field -> (field,List.assoc field config.Pmrp_config_t.fields_with_their_types)
+  ) config.Pmrp_config_t.mutable_fields in
+    sort_items(
+    Image.image setter_item typed_fields
+    );;
 
 
 let main_type_definition_item config =
@@ -78,25 +86,11 @@ let main_type_definition_item config =
      code_for_ml = definition_body^" " ^ds ;
   } ;;
 
-let involved_or_not_definition_item =
-    let definition_body = 
-    "type involved_or_not_t   =  \n"^
-    " Involved of  Pmrp_field_set_t.t\n"^
-    " | Not_involved of string"
-    in 
-    {
-       item_name = "involved_or_not_t";
-       code_for_transparent_mli = definition_body ;
-       code_for_opaque_mli ="";
-       code_for_ml = definition_body^" " ^ds ;
-    } ;;
-
-
 let decorated_map1_definition_item =
     let definition_body = 
     "type ('a,'b) decorated_map1   = { \n"^
-    " dm_input : involved_or_not_t ;\n"^
-    " dm_output : involved_or_not_t ;\n"^
+    " dm_input : Pmrp_involved_or_not_t.t ;\n"^
+    " dm_output : Pmrp_involved_or_not_t.t ;\n"^
     " dm_additional_info : string option ;\n"^
     " dm_actor: 'a -> 'b; \n"^
     "}"
@@ -111,9 +105,9 @@ let decorated_map1_definition_item =
 let decorated_map2_definition_item =
   let definition_body = 
     "type ('a1,'a2, 'b) decorated_map2   = { \n"^
-    " dm2_input1 : involved_or_not_t ;\n"^
-    " dm2_input2 : involved_or_not_t ;\n"^
-    " dm2_output : involved_or_not_t ;\n"^
+    " dm2_input1 : Pmrp_involved_or_not_t.t ;\n"^
+    " dm2_input2 : Pmrp_involved_or_not_t.t ;\n"^
+    " dm2_output : Pmrp_involved_or_not_t.t ;\n"^
     " dm2_additional_info : string option ;\n"^
     " dm2_actor: 'a1 -> 'a2 -> 'b; \n"^
     "}"
@@ -130,7 +124,6 @@ let decorated_map2_definition_item =
 let all_type_definitions_items config =
   [
     (main_type_definition_item config);
-    involved_or_not_definition_item;
     decorated_map1_definition_item;
     decorated_map2_definition_item;
   ] ;;
@@ -160,7 +153,8 @@ let all_applier_items =
 let all_non_typedef_items config = 
    fold_merge_items [
     all_applier_items;
-    all_getter_items config
+    all_getter_items config;
+    all_setter_items config
    ];;
 
 let all_items config = 
@@ -189,7 +183,7 @@ let config1 = {
   Pmrp_field_t.F "strawberry", "int list";
   ];
   fieldsets=[];
-  mutable_fields=[];
+  mutable_fields=[Pmrp_field_t.F "apple";Pmrp_field_t.F "pear"];
   receiving_file = (Absolute_path.of_string 
   "lib/Poor_mans_row_polymorphism/pmrp_guinea_pig.ml");
 } ;; 

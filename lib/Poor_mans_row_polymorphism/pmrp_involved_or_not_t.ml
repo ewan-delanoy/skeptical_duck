@@ -5,7 +5,7 @@
 *)
 
 
-type involved_or_not_t   =  
+type t =  
  Involved of  Pmrp_field_set_t.t
  | Not_involved of string ;;
 
