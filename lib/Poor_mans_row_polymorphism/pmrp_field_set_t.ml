@@ -7,7 +7,7 @@
 
 type t = {
   name : string;
-  fields : Pmrp_field_t.t list;
+  fields : Pmrp_types.field list;
 } ;;
 
 
