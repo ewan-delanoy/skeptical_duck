@@ -15,7 +15,7 @@ let make ?nondefault_name l=
       | None -> "< "^(String.concat " ; " temp)^" >"
     ) in 
    {
-     Pmrp_field_set_t.name = final_name;
+     Pmrp_types.field_set_name = final_name;
      fields = fields_in_order;
    } ;;
 

@@ -7,6 +7,11 @@
 
 type field = F of string ;;
 
+type field_set = {
+  field_set_name : string;
+  fields : field list;
+} ;;
+
 
 
 

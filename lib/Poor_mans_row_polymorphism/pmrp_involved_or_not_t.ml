@@ -6,7 +6,7 @@
 
 
 type t =  
- Involved of  Pmrp_field_set_t.t
+ Involved of  Pmrp_types.field_set
  | Not_involved of string ;;
 
 
