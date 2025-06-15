@@ -12,6 +12,10 @@ type field_set = {
   fields : field list;
 } ;;
 
+type involved_or_not =  
+   Involved of  field_set
+ | Not_involved of string ;;
+
 type config = {
   fields_with_their_types : (field * string) list;
   fieldsets : field_set  list;
