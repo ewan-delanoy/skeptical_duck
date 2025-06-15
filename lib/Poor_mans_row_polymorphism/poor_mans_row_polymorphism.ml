@@ -59,12 +59,12 @@ let setter_item (Pmrp_types.F(s),t) =
 
 let all_getter_items config =
   sort_items(
-  Image.image getter_item config.Pmrp_config_t.fields_with_their_types
+  Image.image getter_item config.Pmrp_types.fields_with_their_types
   );;
 let all_setter_items config = 
   let typed_fields = Image.image (
-   fun field -> (field,List.assoc field config.Pmrp_config_t.fields_with_their_types)
-  ) config.Pmrp_config_t.mutable_fields in
+   fun field -> (field,List.assoc field config.Pmrp_types.fields_with_their_types)
+  ) config.Pmrp_types.mutable_fields in
     sort_items(
     Image.image setter_item typed_fields
     );;
@@ -76,7 +76,7 @@ let main_type_definition_item config =
   (
    String.concat "\n" (Image.image
    (fun (Pmrp_types.F(s),t)->"   "^s^" : "^(protect t)^" option ;")
-   config.Pmrp_config_t.fields_with_their_types)
+   config.Pmrp_types.fields_with_their_types)
   ) ^
   "\n}" in 
     {
@@ -184,14 +184,14 @@ let ml_content config=
 
 
 let write_ml_content config = 
-  let  ap = config.Pmrp_config_t.receiving_file in
+  let  ap = config.Pmrp_types.receiving_file in
   let _ = Io.overwrite_with ap (ml_content config) in 
   Use_directive_in_initial_comment.prepend_or_replace_with_usual
    Coma_big_constant.This_World.root ap ;;
 
 
 let config1 = {
-  Pmrp_config_t.fields_with_their_types = [
+  Pmrp_types.fields_with_their_types = [
   Pmrp_types.F "apple", "int";
   Pmrp_types.F "pear", "string";
   Pmrp_types.F "cranberry", "float";

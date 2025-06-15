@@ -12,6 +12,12 @@ type field_set = {
   fields : field list;
 } ;;
 
+type config = {
+  fields_with_their_types : (field * string) list;
+  fieldsets : field_set  list;
+  mutable_fields : field list;
+  receiving_file : Absolute_path.t;
+} ;; 
 
 
 
