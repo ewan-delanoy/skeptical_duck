@@ -189,7 +189,7 @@ let setter_item field =
   "let set_"^s^"= { \n"^
   " dm2_input1 = Pmrp_types.Involved("^s^"_singleton_fieldset) ;\n"^
   " dm2_input2 = Pmrp_types.Not_involved("^s^"_inhabitated_type) ;\n"^
-  " dm2_output = Pmrp_types.Involved("^s^"_singleton_field_set) ;\n"^
+  " dm2_output = Pmrp_types.Involved("^s^"_singleton_fieldset) ;\n"^
   " dm2_additional_info = Some \"(setter)\" ;\n"^
   " dm2_actor= (fun x v->{ x with "^s^" = Some v});\n"^
   "} " ^ds ;
