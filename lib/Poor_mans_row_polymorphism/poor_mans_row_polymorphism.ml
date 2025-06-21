@@ -340,20 +340,32 @@ let all_primary_non_typedef_non_exn_items config =
     ];;
  
 let test_for_getexn_raise_with_n_arguments n=
-    let sn = string_of_int n in 
-    let axes = (String.concat " " (Int_range.scale (fun j->"x"^(string_of_int j)) 1 n))
-    and arrows = (String.concat " -> " (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n)) in 
-      let definition_body = 
-      "let getexn_is_raised_in_dm"^sn^" f "^axes^" =  \n"^
-      "try (fun _ ->false)(f "^axes^") with \n" ^
-      "Get_exn _ -> true "^ds in 
-      {
-         item_name = "getexn_is_raised_in_dm"^sn;
-         code_for_transparent_mli = "val getexn_is_raised_in_dm"^sn^" : ( t -> "^arrows^" -> 'b) -> "^arrows^" -> bool";
-         code_for_opaque_mli ="";
-         code_for_ml = definition_body ;
-      } ;;
+  let sn = string_of_int n in 
+  let axes = (String.concat " " (Int_range.scale (fun j->"x"^(string_of_int j)) 1 n))
+  and arrows = (String.concat " -> " (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n)) in 
+  let definition_body = 
+  "let getexn_is_raised_in_dm"^sn^" f "^axes^" =  \n"^
+  "try (fun _ ->false)(f "^axes^") with \n" ^
+  "Get_exn _ -> true "^ds in 
+  {
+    item_name = "getexn_is_raised_in_dm"^sn;
+    code_for_transparent_mli = "val getexn_is_raised_in_dm"^sn^" : ( t -> "^arrows^" -> 'b) -> "^arrows^" -> bool";
+    code_for_opaque_mli ="";
+    code_for_ml = definition_body ;
+  } ;;
+    
 
+
+  let ordinal_number k = 
+    if k=1 then "1st" else 
+    if k=2 then "2nd" else
+    if k=2 then "3rd" else
+    (string_of_int k)^"th" ;;  
+  
+  
+ 
+  
+  
 
 let all_secondary_items config= 
   [   
