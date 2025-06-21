@@ -12,6 +12,7 @@ type inhabitated_type = {
 type field = {
   field_name : string ;
   field_type : inhabitated_type ;
+  is_mutable : bool ;
 } ;;
 
 type field_set = {
@@ -26,7 +27,6 @@ type involved_or_not =
 type config = {
   fields_in_config : field list;
   field_sets : field_set  list;
-  mutable_fields : field list;
   receiving_file : Absolute_path.t;
 } ;; 
 

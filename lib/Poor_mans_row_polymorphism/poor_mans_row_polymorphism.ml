@@ -56,6 +56,7 @@ let field_definition_item field =
     "let "^s^"_field = { \n"^
     " Pmrp_types.field_name = \""^s^"\"  ;\n"^
     " field_type = "^s^"_inhabitated_type  ;\n"^
+    " is_mutable = "^(string_of_bool field.Pmrp_types.is_mutable)^" ;\n"^
     "} " ^ds ;
   } ;;
   
@@ -171,10 +172,10 @@ let getter_item field =
    code_for_opaque_mli ="val "^s^" : (t,"^t^") decorated_map1";
    code_for_ml = 
   "let "^s^" = { \n"^
-  " dm_input = Pmrp_types.Involved("^s^"_singleton_fieldset) ;\n"^
-  " dm_output = Pmrp_types.Not_involved("^s^"_inhabitated_type) ;\n"^
-  " dm_additional_info = Some \"(getter)\" ;\n"^
-  " dm_actor= (fun x ->try Option.get(x."^s^") with _ ->raise(Get_exn(\""^s^"\")));\n"^
+  " dm1_input1 = Pmrp_types.Involved("^s^"_singleton_fieldset) ;\n"^
+  " dm1_output = Pmrp_types.Not_involved("^s^"_inhabitated_type) ;\n"^
+  " dm1_additional_info = Some \"(getter)\" ;\n"^
+  " dm1_actor= (fun x ->try Option.get(x."^s^") with _ ->raise(Get_exn(\""^s^"\")));\n"^
   "} " ^ds ;
 } ;;
 
@@ -195,6 +196,11 @@ let setter_item field =
   "} " ^ds ;
 } ;;
 
+let setter_item_opt field = 
+   if field.Pmrp_types.is_mutable 
+   then Some(setter_item field) 
+   else None ;;
+
 
 let all_getter_items config =
   sort_items(
@@ -202,7 +208,7 @@ let all_getter_items config =
   );;
 let all_setter_items config = 
     sort_items(
-    Image.image setter_item config.Pmrp_types.mutable_fields
+    List.filter_map setter_item_opt config.Pmrp_types.fields_in_config
     );;
 
 
@@ -226,71 +232,70 @@ let main_type_definition_item config =
      code_for_ml = definition_body^" " ^ds ;
   } ;;
 
-let decorated_map1_definition_item =
+let decorated_map_definition_with_n_arguments n=
+  let sn = string_of_int n in 
+  let uple = "("^(String.concat "," (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n))^",'b)"
+  and arrows = (String.concat " -> " (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n))^" -> 'b" in 
     let definition_body = 
-    "type ('a,'b) decorated_map1   = { \n"^
-    " dm_input : Pmrp_types.involved_or_not ;\n"^
-    " dm_output : Pmrp_types.involved_or_not ;\n"^
-    " dm_additional_info : string option ;\n"^
-    " dm_actor: 'a -> 'b; \n"^
+    "type "^uple^" decorated_map"^sn^" = { \n"^
+    (
+     String.concat ""
+      (Int_range.scale (fun j->
+        " dm"^sn^"_input"^(string_of_int j)^
+        " : Pmrp_types.involved_or_not ;\n"
+        ) 1 n)
+    )^
+    " dm"^sn^"_output : Pmrp_types.involved_or_not ;\n"^
+    " dm"^sn^"_additional_info : string option ;\n"^
+    " dm"^sn^"_actor: "^arrows^" ; \n"^
     "}"
     in 
     {
-       item_name = "decorated_map1";
+       item_name = "decorated_map"^sn;
        code_for_transparent_mli = definition_body ;
-       code_for_opaque_mli ="type ('a,'b) decorated_map1";
+       code_for_opaque_mli ="type "^uple^" decorated_map"^sn;
        code_for_ml = definition_body^" " ^ds ;
     } ;;
 
-let decorated_map2_definition_item =
-  let definition_body = 
-    "type ('a1,'a2, 'b) decorated_map2   = { \n"^
-    " dm2_input1 : Pmrp_types.involved_or_not ;\n"^
-    " dm2_input2 : Pmrp_types.involved_or_not ;\n"^
-    " dm2_output : Pmrp_types.involved_or_not ;\n"^
-    " dm2_additional_info : string option ;\n"^
-    " dm2_actor: 'a1 -> 'a2 -> 'b; \n"^
-    "}"
-    in 
-    {
-         item_name = "decorated_map2";
-         code_for_transparent_mli = definition_body ;
-         code_for_opaque_mli ="type ('a1,'a2, 'b) decorated_map2";
-         code_for_ml = definition_body^" " ^ds ;
-    } ;;
-  
+
+let max_number_of_arguments = 2;;  
 
 
 let all_type_definitions_items config =
   [
-    (main_type_definition_item config);
-    decorated_map1_definition_item;
-    decorated_map2_definition_item;
-  ] ;;
+    (main_type_definition_item config)
+  ]
+  @
+  (Int_range.scale decorated_map_definition_with_n_arguments 
+  1 max_number_of_arguments)
+  ;;
 
-let dm1_applier_item =
+let applier_with_n_arguments n=
+  let sn = string_of_int n in 
+  let uple = "("^(String.concat "," (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n))^",'b)" 
+  and axes = (String.concat " " (Int_range.scale (fun j->"x"^(string_of_int j)) 1 n))
+  and arrows = (String.concat " -> " (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n)) in 
+  let val_signature =  
+    "val apply_decorated_map"^sn^" : "^
+    uple^" decorated_map"^sn^" -> "^arrows^" -> 'b" in  
+  let definition_body = 
+    "let  apply_decorated_map"^sn^" f " ^ axes ^ "= \n"^
+    " f.dm"^sn^"_actor "^axes^" "^ds
+    in 
     {
-       item_name = "apply_decorated_map1";
-       code_for_transparent_mli = "('a,'b) decorated_map1 -> 'a -> 'b" ;
-       code_for_opaque_mli ="('a,'b) decorated_map1 -> 'a -> 'b";
-       code_for_ml = "let apply_decorated_map1 f x   = f.dm_actor x " ^ds ;
-    } ;;  
-
-let dm2_applier_item =
-    {
-      item_name = "apply_decorated_map2";
-      code_for_transparent_mli = "('a1,'a2, 'b) decorated_map2 -> 'a1 -> 'a2 -> 'b" ;
-      code_for_opaque_mli ="('a1,'a2, 'b) decorated_map2 -> 'a1 -> 'a2 -> 'b";
-      code_for_ml = "let apply_decorated_map2 f x1 x2 = f.dm2_actor x1 x2 " ^ds ;
-    } ;;      
+       item_name = "apply_decorated_map"^sn;
+       code_for_transparent_mli = val_signature ;
+       code_for_opaque_mli =val_signature;
+       code_for_ml = definition_body ;
+    } ;;
 
 let all_applier_items =
-    (sort_items [
-      dm1_applier_item;
-      dm2_applier_item
-    ]) ;;
+    (sort_items 
+    (Int_range.scale applier_with_n_arguments 
+     1 max_number_of_arguments)
+    ) ;;
 
-let get_exn_applier_item =
+let get_exn_item =
   {
     item_name = "Get_exn";
     code_for_transparent_mli = "exception Get_exn of string" ;
@@ -300,7 +305,7 @@ let get_exn_applier_item =
 
 let all_exn_items = 
     sort_items [
-     get_exn_applier_item
+     get_exn_item
     ];;
 
 let active_fields_item config =
@@ -327,20 +332,45 @@ let active_fields_item config =
     code_for_ml = definition_body^" " ^ds ;
   } ;;
    
+let all_primary_non_typedef_non_exn_items config = 
+    fold_merge_items [
+     all_applier_items;
+     all_getter_items config;
+     all_setter_items config;
+    ];;
+ 
+let test_for_getexn_raise_with_n_arguments n=
+    let sn = string_of_int n in 
+    let axes = (String.concat " " (Int_range.scale (fun j->"x"^(string_of_int j)) 1 n))
+    and arrows = (String.concat " -> " (Int_range.scale (fun j->"'a"^(string_of_int j)) 1 n)) in 
+      let definition_body = 
+      "let getexn_is_raised_in_dm"^sn^" f "^axes^" =  \n"^
+      "try (fun _ ->false)(f "^axes^") with \n" ^
+      "Get_exn _ -> true "^ds in 
+      {
+         item_name = "getexn_is_raised_in_dm"^sn;
+         code_for_transparent_mli = "val getexn_is_raised_in_dm"^sn^" : ( t -> "^arrows^" -> 'b) -> "^arrows^" -> bool";
+         code_for_opaque_mli ="";
+         code_for_ml = definition_body ;
+      } ;;
 
-let all_non_typedef_non_exn_items config = 
-   fold_merge_items [
-    all_applier_items;
-    all_getter_items config;
-    all_setter_items config;
-    [active_fields_item config];
-   ];;
+
+let all_secondary_items config= 
+  [   
+     active_fields_item config;
+  ] @
+  (
+    (Int_range.scale test_for_getexn_raise_with_n_arguments
+     1 max_number_of_arguments)
+  );;
+
 
 let all_items config = 
   (all_type_definitions_items config) @ 
   (all_exn_items) @
   (all_cumulative_data_items config) @
-  (all_non_typedef_non_exn_items config) ;;
+  (all_primary_non_typedef_non_exn_items config) @
+  (all_secondary_items config) ;;
 
 let ml_content config= 
   let items = all_items config in 
@@ -360,22 +390,29 @@ let write_ml_content config =
 let apple_field = 
   {Pmrp_types.field_name = "apple"; 
    field_type={Pmrp_types.type_name="int";
-   inhabitant="0"} }  ;;
+   inhabitant="0";
+   };
+   is_mutable=true }  ;;
 
 let pear_field = 
     {Pmrp_types.field_name = "pear"; 
      field_type={Pmrp_types.type_name="string";
-     inhabitant="\"\""} }  ;;   
+     inhabitant="\"\"";
+     };
+     is_mutable=false }  ;;   
 
 let cranberry_field = 
   {Pmrp_types.field_name = "cranberry"; 
     field_type={Pmrp_types.type_name="float";
-    inhabitant="0."} }  ;;
+    inhabitant="0.";
+    };
+    is_mutable=true }  ;;
 
 let strawberry_field = 
   {Pmrp_types.field_name = "strawberry"; 
     field_type={Pmrp_types.type_name="int list";
-    inhabitant="[]"} }  ;;
+    inhabitant="[]"};
+    is_mutable=false }  ;;
 
 let nonberry_field_set = {
   Pmrp_types.field_set_name ="nonberry";
@@ -390,12 +427,31 @@ let config1 = {
     strawberry_field;
   ];
   field_sets=[nonberry_field_set];
-  mutable_fields=[apple_field;strawberry_field];
   receiving_file = (Absolute_path.of_string 
   "lib/Poor_mans_row_polymorphism/pmrp_guinea_pig.ml");
 } ;; 
 
 let act1 () = write_ml_content config1 ;; 
 
+(*
+let sg1 = 
+  let config = config1 in 
+  [  
+  (all_type_definitions_items config) ;
+  (all_exn_items) ;
+  (all_cumulative_data_items config) ;
+  (all_primary_non_typedef_non_exn_items config) ;
+  (all_secondary_items config) 
+];;
 
-  
+let sg2 = Image.image (Image.image (fun item ->item.item_name)) sg1 ;;
+let sg3 = 
+let config = config1 in 
+   [
+   all_applier_items;
+   all_getter_items config;
+   all_setter_items config;
+  ];;
+
+let sg4 = Image.image (Image.image (fun item ->item.item_name)) sg3 ;;  
+*)
