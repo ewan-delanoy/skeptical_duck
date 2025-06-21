@@ -7,7 +7,22 @@
 type t =
    With_githubbing of Fw_poly_t.t;;
 
-module Fwc_with_githubbing = struct 
+module Lfw_with_archives = struct 
+
+  let check_that_no_change_has_occurred   (With_githubbing fw)=
+    Fw_with_archives.check_that_no_change_has_occurred fw ;; 
+    
+end ;;    
+    
+module Lfw_with_dependencies = struct 
+  let dep_ordered_modules   (With_githubbing fw)=
+    Fw_with_dependencies.dep_ordered_modules fw ;; 
+        
+end ;;    
+    
+
+
+module Lfwc_with_githubbing = struct 
 
 let forget_modules (With_githubbing fw) mods=
     With_githubbing(Fw_with_githubbing.forget_modules fw mods) ;;
