@@ -1007,6 +1007,27 @@ let ap1 = Absolute_path.of_string
 let ap1 = Absolute_path.of_string 
 "~/Downloads/Herri_Delfin/herri.pdf";;
 
+let ap1 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/Bonvallet/almost_all_bonvallet.pdf";;
+
+let ap2 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/Bonvallet/pstarter.pdf";;
+
+let ap3 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/Bonvallet/bonvallet.pdf";;
+
+let ap4 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/Bonvallet/bonvallet_with_uniform_pagesize.pdf";;
+
+let ap5 = Absolute_path.of_string 
+"~/Teuliou/Heavy/Workshop/Bonvallet/bonvallet_front_page.pdf";;
+
+
+
+let act4 () = Coherent_pdf.force_same_size_for_all_pages
+ap3 ~outputfile_name:"banvollet"
+    ~forced_width:595 ~forced_height:842
+;;
 
 let see1 = Coherent_pdf.sizes_for_each_page ap1 ;;
 
@@ -1014,11 +1035,15 @@ let fl_mean l = (List.fold_left (+.) 0. l) /. (float_of_int(List.length l)) ;;
 
 let act4 () = Coherent_pdf.force_same_size_for_all_pages
 ap1 ~outputfile_name:"herri"
-    ~forced_width:922 ~forced_height:1380
+    ~forced_width:595 ~forced_height:842
 ;;
 
 let act5 () = Coherent_pdf.corep_foldable_transform
-ap1 ~outputfile_name:"first_page_contraventions"
+ap4 ~outputfile_name:"printable_remasterised_bonvallet_without_front_page"
+;;
+
+let act6 () = Coherent_pdf.corep_foldable_transform
+ap5 ~outputfile_name:"printable_remasterised_bonvallet_front_page"
 ;;
 
 let ap2 = Absolute_path.of_string 

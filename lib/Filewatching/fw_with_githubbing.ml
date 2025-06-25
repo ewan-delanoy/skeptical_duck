@@ -130,6 +130,7 @@ end;;
 
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
+let of_concrete_object = Fw_poly.of_concrete_object ;;
 let of_fw_with_batch_compilation =Private.usual_extension ;;
 let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
@@ -139,5 +140,9 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
+let set_gitpush_after_backup = Fw_poly.set_gitpush_after_backup ;;
+let to_concrete_object = Fw_poly.to_concrete_object ;;
+let to_fw_configuration = Fw_poly.to_fw_configuration ;;
+let to_github_configuration = Fw_poly.to_github_configuration ;;
 let usual_recompile = Private.usual_recompile ;;
 

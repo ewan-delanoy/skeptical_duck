@@ -17,12 +17,12 @@ let main_ref=
   ~github_url:Coma_big_constant.github_url
   ~encoding_protected_files:[]
   in 
-  ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
+  ref(Fwc_final_poly.Lfwc_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
 
 let ref_for_unofficial_changes = ref(None : (string list) option) ;;  
 
 let force_compute_unofficial_changes ()=
-   let temp1=Fw_with_dependencies.all_moduled_mlx_files (!main_ref) in 
+   let temp1=Fwc_final_poly.Lfw_with_dependencies.all_moduled_mlx_files (!main_ref) in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
    let temp2=Explicit.filter (
@@ -58,17 +58,17 @@ let force_compute_unofficial_changes ()=
 
 end;;
 
-let above modname=Fw_with_dependencies.ancestors_for_module (!(Private.main_ref)) modname;;
+let above modname=Fwc_final_poly.Lfw_with_dependencies.ancestors_for_module (!(Private.main_ref)) modname;;
 
 
-let below modname=Fw_with_dependencies.below (!(Private.main_ref)) modname;;
+let below modname=Fwc_final_poly.Lfw_with_dependencies.below (!(Private.main_ref)) modname;;
 
 
 let duplicate_module old_t1 old_t2=
-  Fw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+Fwc_final_poly.Lfw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
   let find_endingless modname = 
-   Fw_with_dependencies.endingless_at_module
+   Fwc_final_poly.Lfw_with_dependencies.endingless_at_module
     (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=
@@ -85,7 +85,7 @@ let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;;
 let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
 let list_values_from_module_in_modulesystem module_name=
-   Fw_with_dependencies.list_values_from_module (!(Private.main_ref)) module_name;;
+Fwc_final_poly.Lfw_with_dependencies.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
@@ -134,7 +134,7 @@ let repopulate summary=
 let see_yet_unofficial_changes = Private.see_yet_unofficial_changes ;;    
 
 let show_value_occurrences_in_modulesystem module_name=
-   Fw_with_batch_compilation.show_value_occurrences
+  Fwc_final_poly.Lfw_with_batch_compilation.show_value_occurrences
    (!(Private.main_ref)) module_name;;
 
 

@@ -94,13 +94,12 @@ module Private=struct
 
        
       
-
-    let save_all cs=
-      let root_dir = Fw_poly.root cs 
-      and elesses = Fw_with_batch_compilation.up_to_date_elesses cs
-      and crobj_form = Fw_poly.to_concrete_object cs 
-      and directories = Fw_with_dependencies.all_subdirectories cs 
-      and printer_equipped_types = Fw_with_batch_compilation.preq_types_with_extra_info cs 
+    let save_all fw=
+      let root_dir = Fwc_final_poly.Lfw_configuration.root fw 
+      and elesses = Fwc_final_poly.Lfw_with_batch_compilation.up_to_date_elesses fw
+      and crobj_form = Fwc_final_poly.Lfwc_with_githubbing.to_concrete_object fw 
+      and directories = Fwc_final_poly.Lfw_with_dependencies.all_subdirectories fw 
+      and printer_equipped_types = Fwc_final_poly.Lfw_with_batch_compilation.preq_types_with_extra_info fw 
         in
        write_all 
       (
@@ -113,11 +112,11 @@ module Private=struct
       ;;
 
     let read_persistent_version fw=
-      let full_path=Dfn_join.root_to_rootless (Fw_poly.root fw)  Coma_constant.rootless_path_for_targetfile in
+      let full_path=Dfn_join.root_to_rootless (Fwc_final_poly.Lfw_configuration.root fw)  Coma_constant.rootless_path_for_targetfile in
       let ap= Dfn_full.to_absolute_path full_path in
       let the_archive=Io.read_whole_file ap in
       let archived_object = Crobj_parsing.parse the_archive in 
-      Fw_poly.of_concrete_object archived_object;;   
+      Fwc_final_poly.Lfwc_with_githubbing.of_concrete_object archived_object;;   
 
 end;;  
 

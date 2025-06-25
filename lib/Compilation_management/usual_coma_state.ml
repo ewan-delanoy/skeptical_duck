@@ -18,19 +18,19 @@ let main_ref=
   ~github_url:Coma_big_constant.github_url
   ~encoding_protected_files:[]
   in 
-  ref(Fw_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
+  ref(Fwc_final_poly.Lfwc_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
 end;;
 
-let all_endinglesses ()=Fw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
+let all_endinglesses ()=Fwc_final_poly.Lfw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
 
-let clean_debug_dir ()=Fw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
-let clean_exec_dir ()=Fw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;
+let clean_debug_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
+let clean_exec_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;
 
 let duplicate_module old_t1 old_t2=
-  Fw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
+Fwc_final_poly.Lfw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
 let find_endingless modname = 
-  Fw_with_dependencies.endingless_at_module
+  Fwc_final_poly.Lfw_with_dependencies.endingless_at_module
    (!(Private.main_ref)) (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
@@ -43,16 +43,16 @@ let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Priva
 
 let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let internet_access () = Fw_poly.gitpush_after_backup (!(Private.main_ref)) ;;
+let internet_access () = Fwc_final_poly.Lfwc_with_githubbing.gitpush_after_backup (!(Private.main_ref)) ;;
 
-let latest_changes ()=Fw_with_archives.latest_changes (!(Private.main_ref));;
+let latest_changes ()= Fwc_final_poly.Lfw_with_archives.latest_changes (!(Private.main_ref));;
 
 let list_values_from_module_in_modulesystem module_name=
-   Fw_with_dependencies.list_values_from_module (!(Private.main_ref)) module_name;;
+Fwc_final_poly.Lfw_with_dependencies.list_values_from_module (!(Private.main_ref)) module_name;;
 
 let main_ref=Private.main_ref;;
 
-let modules_using_value x=Fw_with_dependencies.modules_using_value (!(Private.main_ref)) x;;
+let modules_using_value x=Fwc_final_poly.Lfw_with_dependencies.modules_using_value (!(Private.main_ref)) x;;
 
 let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
@@ -81,28 +81,28 @@ let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private
 
 
 let show_value_occurrences_in_modulesystem module_name=
-   Fw_with_batch_compilation.show_value_occurrences (!(Private.main_ref)) module_name;;
+  Fwc_final_poly.Lfw_with_batch_compilation.show_value_occurrences (!(Private.main_ref)) module_name;;
 
-let start_debugging ()=Fw_with_batch_compilation.start_debugging (!(Private.main_ref));;
-let start_executing short_path= Fw_with_batch_compilation.start_executing (!(Private.main_ref)) short_path;;
+let start_debugging ()=Fwc_final_poly.Lfw_with_batch_compilation.start_debugging (!(Private.main_ref));;
+let start_executing short_path= Fwc_final_poly.Lfw_with_batch_compilation.start_executing (!(Private.main_ref)) short_path;;
 
 
 let sugared_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_dependencies.ancestors_for_module (!(Private.main_ref)) mn0);;
+  (Fwc_final_poly.Lfw_with_dependencies.ancestors_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_below capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_dependencies.below (!(Private.main_ref)) mn0);;
+  (Fwc_final_poly.Lfw_with_dependencies.below (!(Private.main_ref)) mn0);;
 
 let sugared_directly_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   Image.image Dfa_module.to_line
-  (Fw_with_dependencies.direct_fathers_for_module (!(Private.main_ref)) mn0);;
+  (Fwc_final_poly.Lfw_with_dependencies.direct_fathers_for_module (!(Private.main_ref)) mn0);;
 
 let sugared_directly_below capitalized_or_not_module_name=
 let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
 Image.image Dfa_module.to_line
-(Fw_with_dependencies.directly_below (!(Private.main_ref)) mn0);;
+(Fwc_final_poly.Lfw_with_dependencies.directly_below (!(Private.main_ref)) mn0);;
