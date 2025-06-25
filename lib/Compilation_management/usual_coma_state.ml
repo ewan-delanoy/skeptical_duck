@@ -23,6 +23,27 @@ end;;
 
 let all_endinglesses ()=Fwc_final_poly.Lfw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
 
+let changed_files_in_foreign_copy ()=
+   let temp1=Fwc_final_poly.Lfw_with_dependencies.all_moduled_mlx_files (!(Private.main_ref)) in 
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let temp2=Explicit.filter (
+      fun full_path->
+         let rootless = Dfn_full.to_rootless full_path in 
+         if rootless = Coma_constant.rootless_path_for_parametersfile 
+         then false 
+         else 
+         let path = Dfn_rootless.to_line rootless in 
+         let ap1=Absolute_path.of_string(this_root^path) 
+         and ap2=Absolute_path.of_string(next_root^path) in 
+         Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
+   ) temp1 in 
+   Image.image (fun full_path->
+      Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
+   ) temp2 ;;    
+
+
+
 let clean_debug_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;
 
