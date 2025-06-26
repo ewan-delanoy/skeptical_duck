@@ -199,6 +199,30 @@ module OnSiteCommand = struct
     "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf replacer_copy.pdf"
     ] ;;
 
+  let remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name= 
+    let left_part = (
+       if (first_in_cut<=1) then ("",[]) else 
+        ("left.pdf",
+        ["cpdf initial_copy.pdf 1-"^(string_of_int (first_in_cut-1))^
+        " -o left.pdf"]
+        )
+    ) 
+    and right_part = (
+       if (last_in_cut>=total_nbr_of_pages) then ("",[]) else 
+        ("right.pdf",["cpdf initial_copy.pdf "^
+        (string_of_int (last_in_cut+1))^"-"^
+        (string_of_int total_nbr_of_pages)^
+        " -o right.pdf"])
+    ) in
+    
+    (snd left_part)@
+    (snd right_part)@
+ [
+  "cpdf "^(fst left_part)^" "^(fst right_part)^" -o "^outputfile_name^".pdf";
+  "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf"
+  ] ;;
+
+
 end ;;  
 
 
@@ -241,10 +265,28 @@ module Command = struct
    (OnSiteCommand.replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
     ["cd "^current_dir];; 
 
+  let remove_interval_inside 
+    ~patient:patient_ap 
+   ~first_in_cut ~last_in_cut outputfile_name = 
+   let current_dir = Sys.getcwd () in 
+   let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name) @
+    ["cd "^current_dir];; 
+
+
+
 end ;;  
 
 let average_page_width_and_height = 
     Private.average_page_width_and_height ;;
+
+let command_for_naive_implosion ~prefix ~first ~last =
+  "cpdf "^
+  (String.concat " " 
+  (Int_range.scale (fun t->prefix^(string_of_int t)^".pdf") first last))^
+  " -o whole.pdf" ;; 
 
 let corep_cuttable_transform ap ~outputfile_name= 
     Unix_command.conditional_multiple_uc 
@@ -261,7 +303,16 @@ let force_same_size_for_all_pages ap ~outputfile_name
 
 let number_of_pages_in_pdf = 
     Private.number_of_pages_in_pdf ;;
-      
+
+let remove_interval_inside 
+    ~patient:patient_ap 
+    ~first_in_cut ~last_in_cut ~outputfile_name = 
+    Unix_command.conditional_multiple_uc  (
+     Command.remove_interval_inside 
+     ~patient:patient_ap 
+   ~first_in_cut ~last_in_cut outputfile_name 
+    ) ;;    
+
 let replace_inside 
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut ~outputfile_name = 
