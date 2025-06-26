@@ -354,6 +354,7 @@ let ignored_subdirectories x = Private.get_ignored_subdirectories x;;
 let index_for_caching x = Private.get_index_for_caching x;;
 let last_compilation_result_for_module x = Private.get_last_compilation_result_for_module x;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
+let of_partial_concrete_object = Private.PartialCrobj.of_concrete_object ;;
 let origin = Private.origin ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Private.get_type_name fw)^" >") ;;
@@ -389,4 +390,7 @@ let to_github_configuration fw  =
    fw with 
    Fw_poly_t.type_name = Some "Github_configuration" ;
 } ;;
+
+let to_partial_concrete_object = Private.PartialCrobj.to_concrete_object ;;
+
 let watched_files x = Private.get_watched_files x;;
