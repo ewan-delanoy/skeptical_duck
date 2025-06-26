@@ -312,6 +312,7 @@ let ignored_subdirectories x = Private.get_ignored_subdirectories x;;
 let index_for_caching x = Private.get_index_for_caching x;;
 let last_compilation_result_for_module x = Private.get_last_compilation_result_for_module x;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
+let origin = Private.origin ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Private.get_type_name fw)^" >") ;;
 let root x = Private.get_root x;;

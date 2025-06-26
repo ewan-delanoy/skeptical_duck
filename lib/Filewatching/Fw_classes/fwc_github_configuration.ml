@@ -4,8 +4,8 @@
 
 *)
 
+
 (*
-type delta_t = Fw_poly_t.t ;;
 type t = Fw_poly_t.t ;;
 
 module Private = struct 
