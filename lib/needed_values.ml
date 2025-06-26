@@ -45,12 +45,6 @@ let lc () = let _ = Usual_coma_state.latest_changes () in ();;
 
 let muv=Usual_coma_state.modules_using_value;;
 
-let ocs=Other_coma_state.main_ref;;
-
-let osv=Other_coma_state.show_value_occurrences_in_modulesystem;;  
-
-let ovfm modname =Other_coma_state.list_values_from_module_in_modulesystem modname ;;
-
 let reco msg=Usual_coma_state.recompile (Some msg);; 
 
 let rsp msg = Usual_coma_state.recompile (Some (msg^ " in Sz3_preliminaries"));; 
@@ -64,8 +58,6 @@ let relo = Usual_coma_state.relocate_module_to;;
 let ren = Usual_coma_state.rename_module;;
 
 let rensub = Usual_coma_state.rename_subdirectory;;
-
-let ruco () = Other_coma_state.recompile None ;; 
 
 let rf x=Io.read_whole_file (Absolute_path.of_string x);;
 
