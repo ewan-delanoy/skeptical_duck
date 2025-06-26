@@ -22,6 +22,15 @@ let main_ref=
 
   let ref_for_unofficial_changes = ref(None : (string list) option) ;; 
 
+  let commands_for_change_officialization l=
+   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   Image.image (
+      fun path->
+         "cp "^next_root^path^" "^this_root^path 
+   ) l;;    
+    
+
 end;;
 
 let all_endinglesses ()=Fwc_final_poly.Lfw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
@@ -88,6 +97,11 @@ Fwc_final_poly.Lfw_with_dependencies.list_values_from_module (!(Private.main_ref
 let main_ref=Private.main_ref;;
 
 let modules_using_value x=Fwc_final_poly.Lfw_with_dependencies.modules_using_value (!(Private.main_ref)) x;;
+
+let officialize_foreign_changes () =
+   let temp1 = changed_files_in_foreign_copy () in 
+   let cmds = Private.commands_for_change_officialization temp1 in
+   Unix_command.conditional_multiple_uc cmds;;
 
 let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
