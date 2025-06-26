@@ -4665,18 +4665,70 @@ end;;
 
 
 
-module Assistance_directory_name_t=struct
+module Assistance_chronometer=struct
 
 (*
 
-Directories name, with the trailing slash removed.
+#use"lib/chronometer.ml";;
 
-#use"lib/directory_name_t.ml";;
+*) 
 
-*)
+let rewrite_days=function
+0->""
+|1->"1 day,"
+|x->string_of_int(x)^" days,";;
 
-type t=D of string;;
+let rewrite_hours=function
+0->""
+|1->"1 hour,"
+|x->string_of_int(x)^" hours,";;
 
+let rewrite_minutes=function
+0->""
+|1->"1 minute,"
+|x->string_of_int(x)^" minutes,";;
+
+let rewrite_seconds=function
+0->""
+|1->"1 second."
+|x->string_of_int(x)^" seconds.";;
+
+let rewrite_float x=
+   let i=int_of_float(x) in
+   let v_sec=(i mod 60) and q_sec=(i/60) in
+   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
+   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
+   let s_day=rewrite_days(q_hour)
+   and s_hour=rewrite_hours(v_hour)
+   and s_min=rewrite_minutes(v_min)
+   and s_sec=rewrite_seconds(v_sec) in
+   s_day^s_hour^s_min^s_sec;;
+  
+let rewrite_duration x=
+   if x=0. 
+   then "Computation was quick.\n"
+   else "Computation lasted "^(rewrite_float x)^"\n";;
+
+ let timer=ref(0.000);;  
+ 
+ let duration_of_computation f x=
+   let t0=Unix.time() in
+   let _=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   (print_string(rewrite_duration (!timer));flush stdout);;
+ 
+ let duration_of_last_computation ()=
+  (print_string(rewrite_duration (!timer));flush stdout);;
+   
+   
+ let  it f x=
+  let t0=Unix.time() in
+   let y=f(x) in
+   let _=(timer:=Unix.time()-.t0) in
+   let _=(print_string(rewrite_duration (!timer));flush stdout) in
+   y;;
+ 
+   
            
 
 end;;
@@ -4686,40 +4738,42 @@ end;;
 
 
 
-module Assistance_directory_name=struct
+module Assistance_coma_big_constant=struct
 
-(*
-
-Directories name, with the trailing slash removed.
-
-#use"lib/directory_name.ml";;
-
+(* 
+#use"lib/Compilation_management/coma_big_constant.ml";;
 *)
 
+let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
+let home = Sys.getenv "HOME" ;;
+let root_of_root = home^"/Teuliou/OCaml/" ;;
+
+module This_World=struct
+
+let root=Assistance_dfa_root.of_line (root_of_root^"skeptical_duck");;
+let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_ocaml");;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Next_World=struct
+
+let root=Assistance_dfa_root.of_line (root_of_root^"idaho");;
+let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_idaho") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
+module Third_World=struct
+
+let root=Assistance_dfa_root.of_line (root_of_root^"cherokee") ;;
+let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_cherokee") ;;
+let githubbing=false;;
+let triple = (root,backup_dir,githubbing);;
+
+end;;
 
 
-exception Non_directory of string;;
-exception File_not_found of string * (Assistance_directory_name_t.t list);;
-
-let find_file_with_directory_list fname l=
-  match List.find_map (
-     fun (Assistance_directory_name_t.D s_dir) ->
-      let full_path = s_dir^"/"^fname in 
-      if Sys.file_exists full_path 
-      then Some(Assistance_absolute_path.of_string full_path)
-      else None
-  ) l with 
-  None -> raise(File_not_found(fname,l))
-  |Some(ap) -> ap;;
-
-
-let of_string s=
-  let temp1=Assistance_tools_for_absolute_path.of_string s in
-  if Sys.is_directory temp1
-  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
-  else raise(Non_directory(s));;
-
-let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
 
 
 
@@ -6467,20 +6521,21 @@ module Assistance_fw_poly_t=struct
 
 
 type t = { 
-   type_name : string ;
-   root : Assistance_dfa_root_t.t ;
-   ignored_subdirectories : Assistance_dfa_subdirectory_t.t list ;
-   ignored_files : Assistance_dfn_rootless_t.t list ;
-   watched_files : (Assistance_dfn_rootless_t.t * string) list ;
-   subdirs_for_archived_mlx_files : Assistance_dfa_subdirectory_t.t list ;
-   small_details_in_files : (Assistance_dfn_rootless_t.t * Assistance_fw_file_small_details_t.t) list ;
-   index_for_caching : Assistance_fw_instance_index_t.t * Assistance_fw_state_index_t.t ;
-   last_compilation_result_for_module : (Assistance_dfa_module_t.t * bool) list ;
-   dir_for_backup : Assistance_dfa_root_t.t ;
-   gitpush_after_backup : bool ;
-   github_url : string ;
-   encoding_protected_files : (Assistance_dfn_rootless_t.t * Assistance_dfn_rootless_t.t) list ;
+   type_name : string option;
+   root : Assistance_dfa_root_t.t option;
+   ignored_subdirectories : Assistance_dfa_subdirectory_t.t list option;
+   ignored_files : Assistance_dfn_rootless_t.t list option;
+   watched_files : (Assistance_dfn_rootless_t.t * string) list option;
+   subdirs_for_archived_mlx_files : (Assistance_dfa_subdirectory_t.t list) option ;
+   small_details_in_files : ((Assistance_dfn_rootless_t.t * Assistance_fw_file_small_details_t.t) list) option;
+   index_for_caching : (Assistance_fw_instance_index_t.t * Assistance_fw_state_index_t.t) option;
+   last_compilation_result_for_module : ((Assistance_dfa_module_t.t * bool) list) option ;
+   dir_for_backup : Assistance_dfa_root_t.t option;
+   gitpush_after_backup : bool option;
+   github_url : string option;
+   encoding_protected_files : ((Assistance_dfn_rootless_t.t * Assistance_dfn_rootless_t.t) list) option;
 } ;;
+
 
 end;;
 
@@ -6498,7 +6553,25 @@ module Assistance_fw_poly=struct
 *)
 
 
+exception Get_exn of string ;;
+
 module Private = struct 
+
+let  get_type_name fw = try Option.get ( fw.Assistance_fw_poly_t.type_name )  with _ -> raise(Get_exn("type_name")) ;;
+let  get_dir_for_backup fw = try Option.get ( fw.Assistance_fw_poly_t.dir_for_backup )  with _ -> raise(Get_exn("dir_for_backup")) ;;
+let  get_encoding_protected_files fw = try Option.get ( fw.Assistance_fw_poly_t.encoding_protected_files )  with _ -> raise(Get_exn("encoding_protected_files")) ;;
+let  get_github_url fw = try Option.get ( fw.Assistance_fw_poly_t.github_url )  with _ -> raise(Get_exn("github_url")) ;;
+let  get_gitpush_after_backup fw = try Option.get ( fw.Assistance_fw_poly_t.gitpush_after_backup )  with _ -> raise(Get_exn("gitpush_after_backup")) ;;
+let  get_index_for_caching fw = try Option.get ( fw.Assistance_fw_poly_t.index_for_caching )  with _ -> raise(Get_exn("index_for_caching")) ;;
+let  get_ignored_files fw = try Option.get ( fw.Assistance_fw_poly_t.ignored_files )  with _ -> raise(Get_exn("ignored_files")) ;;
+let  get_ignored_subdirectories fw = try Option.get (fw.Assistance_fw_poly_t.ignored_subdirectories )  with _ -> raise(Get_exn("ignored_subdirectories")) ;;
+let  get_last_compilation_result_for_module fw = try Option.get ( fw.Assistance_fw_poly_t.last_compilation_result_for_module )  with _ -> raise(Get_exn("last_compilation_result_for_module")) ;;
+let  get_root fw = try Option.get ( fw.Assistance_fw_poly_t.root )  with _ -> raise(Get_exn("root")) ;;
+let  get_small_details_in_files fw = try Option.get ( fw.Assistance_fw_poly_t.small_details_in_files )  with _ -> raise(Get_exn("small_details_in_files")) ;;
+let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Assistance_fw_poly_t.subdirs_for_archived_mlx_files )  with _ -> raise(Get_exn("subdirs_for_archived_mlx_files")) ;;
+let  get_watched_files fw = try Option.get ( fw.Assistance_fw_poly_t.watched_files )  with _ -> raise(Get_exn("watched_files")) ;;
+   
+
 
 module Crobj = struct 
 let salt = "Fw_poly_t." ;;
@@ -6518,36 +6591,36 @@ let label_for_watched_files                      = salt ^ "watched_files" ;;
 let of_concrete_object ccrt_obj = 
  let g=Assistance_concrete_object.get_record ccrt_obj in 
  {
-   Assistance_fw_poly_t.type_name = Assistance_crobj_converter.string_of_concrete_object (g label_for_type_name) ;
-   dir_for_backup = Assistance_dfa_root.of_concrete_object (g label_for_dir_for_backup)  ;
-   encoding_protected_files = Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_dfn_rootless.of_concrete_object (g label_for_encoding_protected_files)  ;
-   github_url = Assistance_crobj_converter.string_of_concrete_object (g label_for_github_url)  ;
-   gitpush_after_backup = Assistance_crobj_converter.bool_of_concrete_object (g label_for_gitpush_after_backup)  ;
-   ignored_files = Assistance_crobj_converter_combinator.to_list Assistance_dfn_rootless.of_concrete_object (g label_for_ignored_files)  ;
-   ignored_subdirectories = Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories)  ;
-   index_for_caching = (Assistance_fw_indexer.make_full_instance ()) ;
-   last_compilation_result_for_module = Assistance_crobj_converter_combinator.to_pair_list Assistance_dfa_module.of_concrete_object Assistance_crobj_converter.bool_of_concrete_object (g label_for_last_compilation_result_for_module)  ;
-   root = Assistance_dfa_root.of_concrete_object (g label_for_root)  ;
-   small_details_in_files = Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_fw_file_small_details.of_concrete_object (g label_for_small_details_in_files)  ;
-   subdirs_for_archived_mlx_files = Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files)  ;
-   watched_files = Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_crobj_converter.string_of_concrete_object (g label_for_watched_files)  ;
+   Assistance_fw_poly_t.type_name = Some(Assistance_crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   dir_for_backup = Some(Assistance_dfa_root.of_concrete_object (g label_for_dir_for_backup))  ;
+   encoding_protected_files = Some(Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_dfn_rootless.of_concrete_object (g label_for_encoding_protected_files))  ;
+   github_url = Some(Assistance_crobj_converter.string_of_concrete_object (g label_for_github_url))  ;
+   gitpush_after_backup = Some(Assistance_crobj_converter.bool_of_concrete_object (g label_for_gitpush_after_backup))  ;
+   ignored_files = Some(Assistance_crobj_converter_combinator.to_list Assistance_dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
+   ignored_subdirectories = Some(Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
+   index_for_caching = Some (Assistance_fw_indexer.make_full_instance ()) ;
+   last_compilation_result_for_module = Some(Assistance_crobj_converter_combinator.to_pair_list Assistance_dfa_module.of_concrete_object Assistance_crobj_converter.bool_of_concrete_object (g label_for_last_compilation_result_for_module))  ;
+   root = Some(Assistance_dfa_root.of_concrete_object (g label_for_root))  ;
+   small_details_in_files = Some(Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))  ;
+   subdirs_for_archived_mlx_files = Some(Assistance_crobj_converter_combinator.to_list Assistance_dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files))  ;
+   watched_files = Some(Assistance_crobj_converter_combinator.to_pair_list Assistance_dfn_rootless.of_concrete_object Assistance_crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
 } ;;
 
 let to_concrete_object fw = 
  let items =  
  [
-     label_for_type_name, Assistance_crobj_converter.string_to_concrete_object fw.Assistance_fw_poly_t.type_name ;
-     label_for_dir_for_backup, Assistance_dfa_root.to_concrete_object fw.Assistance_fw_poly_t.dir_for_backup ;
-     label_for_encoding_protected_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_dfn_rootless.to_concrete_object fw.Assistance_fw_poly_t.encoding_protected_files ;
-     label_for_github_url, Assistance_crobj_converter.string_to_concrete_object fw.Assistance_fw_poly_t.github_url ;
-     label_for_gitpush_after_backup, Assistance_crobj_converter.bool_to_concrete_object fw.Assistance_fw_poly_t.gitpush_after_backup ;
-     label_for_ignored_files, Assistance_crobj_converter_combinator.of_list Assistance_dfn_rootless.to_concrete_object fw.Assistance_fw_poly_t.ignored_files ;
-     label_for_ignored_subdirectories, Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object fw.Assistance_fw_poly_t.ignored_subdirectories ;
-     label_for_last_compilation_result_for_module, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfa_module.to_concrete_object Assistance_crobj_converter.bool_to_concrete_object fw.Assistance_fw_poly_t.last_compilation_result_for_module ;
-     label_for_root, Assistance_dfa_root.to_concrete_object fw.Assistance_fw_poly_t.root ;
-     label_for_small_details_in_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_fw_file_small_details.to_concrete_object fw.Assistance_fw_poly_t.small_details_in_files ;
-     label_for_subdirs_for_archived_mlx_files, Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object fw.Assistance_fw_poly_t.subdirs_for_archived_mlx_files ;
-     label_for_watched_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_crobj_converter.string_to_concrete_object fw.Assistance_fw_poly_t.watched_files ;
+   label_for_type_name, Assistance_crobj_converter.string_to_concrete_object (get_type_name fw);
+   label_for_dir_for_backup, Assistance_dfa_root.to_concrete_object ( get_dir_for_backup fw ) ;
+   label_for_encoding_protected_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_dfn_rootless.to_concrete_object ( get_encoding_protected_files fw ) ;
+   label_for_github_url, Assistance_crobj_converter.string_to_concrete_object ( get_github_url fw ) ;
+   label_for_gitpush_after_backup, Assistance_crobj_converter.bool_to_concrete_object ( get_gitpush_after_backup fw ) ;
+   label_for_ignored_files, Assistance_crobj_converter_combinator.of_list Assistance_dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
+   label_for_ignored_subdirectories, Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
+   label_for_last_compilation_result_for_module, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfa_module.to_concrete_object Assistance_crobj_converter.bool_to_concrete_object ( get_last_compilation_result_for_module fw ) ;
+   label_for_root, Assistance_dfa_root.to_concrete_object ( get_root fw ) ;
+   label_for_small_details_in_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_fw_file_small_details.to_concrete_object ( get_small_details_in_files fw ) ;
+   label_for_subdirs_for_archived_mlx_files, Assistance_crobj_converter_combinator.of_list Assistance_dfa_subdirectory.to_concrete_object ( get_subdirs_for_archived_mlx_files fw ) ;
+   label_for_watched_files, Assistance_crobj_converter_combinator.of_pair_list Assistance_dfn_rootless.to_concrete_object Assistance_crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
  ] in 
  Assistance_concrete_object_t.Record items ;;
 
@@ -6556,41 +6629,40 @@ end;;
 
 
 
-
 module Extender = struct 
 
 let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_with_archives" ;
-   subdirs_for_archived_mlx_files = v1_archives_subdirs ;
+   Assistance_fw_poly_t.type_name = Some"Fw_with_archives" ;
+   subdirs_for_archived_mlx_files = Some v1_archives_subdirs ;
 } ;;
 let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
-   Assistance_fw_poly_t.type_name = "File_watcher" ;
-   watched_files = v1_files ;
+   Assistance_fw_poly_t.type_name = Some "File_watcher" ;
+   watched_files = Some v1_files ;
 } ;;
 let fw_with_archives_to_fw_with_small_details fw ~small_details_in_files:v1_small_details = {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_with_small_details" ;
-   small_details_in_files = v1_small_details ;
+   Assistance_fw_poly_t.type_name = Some "Fw_with_small_details" ;
+   small_details_in_files = Some v1_small_details ;
 } ;;
 let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_with_githubbing" ;
-   dir_for_backup = v1_backup_dir ;
-   gitpush_after_backup = v2_gab ;
-   github_url = v3_url ;
-   encoding_protected_files = v4_protected_pairs ;
+   Assistance_fw_poly_t.type_name = Some "Fw_with_githubbing" ;
+   dir_for_backup = Some v1_backup_dir ;
+   gitpush_after_backup = Some v2_gab ;
+   github_url = Some v3_url ;
+   encoding_protected_files = Some v4_protected_pairs ;
 } ;;
 let fw_with_dependencies_to_fw_with_batch_compilation fw ~last_compilation_result_for_module:v1_compilation_results = {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_with_batch_compilation" ;
-   last_compilation_result_for_module = v1_compilation_results ;
+   Assistance_fw_poly_t.type_name = Some "Fw_with_batch_compilation" ;
+   last_compilation_result_for_module = Some v1_compilation_results ;
 } ;;
 let fw_with_small_details_to_fw_with_dependencies fw ~index_for_caching:v1_cache_idx = {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_with_dependencies" ;
-   index_for_caching = v1_cache_idx ;
+   Assistance_fw_poly_t.type_name = Some "Fw_with_dependencies" ;
+   index_for_caching = Some v1_cache_idx ;
 } ;;
 end;;
 
@@ -6607,37 +6679,37 @@ exception No_designated_parent of string ;;
 exception Set_parent_exn of string ;; 
 
 let get_parent_name fw = 
- let name = fw.Assistance_fw_poly_t.type_name in 
+ let name = get_type_name fw in 
  match List.assoc_opt name designated_parents with 
   Some(answer) ->answer
  |None -> raise (No_designated_parent(name)) ;;
 
 let sp_for_fw_with_archives child new_parent = 
  Extender.file_watcher_to_fw_with_archives new_parent 
-   ~subdirs_for_archived_mlx_files:(child.Assistance_fw_poly_t.subdirs_for_archived_mlx_files)
+   ~subdirs_for_archived_mlx_files:(get_subdirs_for_archived_mlx_files child)
  ;;
 let sp_for_fw_with_small_details child new_parent = 
  Extender.fw_with_archives_to_fw_with_small_details new_parent 
-   ~small_details_in_files:(child.Assistance_fw_poly_t.small_details_in_files)
+   ~small_details_in_files:(get_small_details_in_files child)
  ;;
 let sp_for_fw_with_dependencies child new_parent = 
  Extender.fw_with_small_details_to_fw_with_dependencies new_parent 
-   ~index_for_caching:(child.Assistance_fw_poly_t.index_for_caching)
+   ~index_for_caching:(get_index_for_caching child)
  ;;
 let sp_for_fw_with_batch_compilation child new_parent = 
  Extender.fw_with_dependencies_to_fw_with_batch_compilation new_parent 
-   ~last_compilation_result_for_module:(child.Assistance_fw_poly_t.last_compilation_result_for_module)
+   ~last_compilation_result_for_module:(get_last_compilation_result_for_module child)
  ;;
 let sp_for_fw_with_githubbing child new_parent = 
  Extender.fw_with_batch_compilation_to_fw_with_githubbing new_parent 
-   ~dir_for_backup:(child.Assistance_fw_poly_t.dir_for_backup)
-   ~gitpush_after_backup:(child.Assistance_fw_poly_t.gitpush_after_backup)
-   ~github_url:(child.Assistance_fw_poly_t.github_url)
-   ~encoding_protected_files:(child.Assistance_fw_poly_t.encoding_protected_files)
+   ~dir_for_backup:(get_dir_for_backup child)
+   ~gitpush_after_backup:(get_gitpush_after_backup child)
+   ~github_url:(get_github_url child)
+   ~encoding_protected_files:(get_encoding_protected_files child)
  ;;
 
 let set ~child ~new_parent = 
- let name = child.Assistance_fw_poly_t.type_name in 
+ let name = get_type_name child in 
  match List.assoc_opt name [
    "Fw_with_archives" , sp_for_fw_with_archives child new_parent ;
    "Fw_with_small_details" , sp_for_fw_with_small_details child new_parent ;
@@ -6650,7 +6722,7 @@ let set ~child ~new_parent =
 
 let get child = 
  let parent_name = get_parent_name child in 
- { child with Assistance_fw_poly_t.type_name = parent_name } ;;
+ { child with Assistance_fw_poly_t.type_name = Some parent_name } ;;
 
 end;; 
 
@@ -6658,19 +6730,19 @@ end;;
 
 
 let origin = {
-   Assistance_fw_poly_t.type_name = "" ;
-   dir_for_backup = Assistance_dfa_root.of_line "dummy" ;
-   encoding_protected_files = [] ;
-   github_url = "" ;
-   gitpush_after_backup = false ;
-   ignored_files = [] ;
-   ignored_subdirectories = [] ;
-   index_for_caching = (Assistance_fw_indexer.make_full_instance ()) ;
-   last_compilation_result_for_module = [] ;
-   root = Assistance_dfa_root.of_line "dummy" ;
-   small_details_in_files = [] ;
-   subdirs_for_archived_mlx_files = [] ;
-   watched_files = [] ;
+   Assistance_fw_poly_t.type_name = Some "" ;
+   dir_for_backup = Some(Assistance_dfa_root.of_line "dummy") ;
+   encoding_protected_files = Some [] ;
+   github_url = Some "" ;
+   gitpush_after_backup = Some false ;
+   ignored_files = Some [] ;
+   ignored_subdirectories = Some [] ;
+   index_for_caching = Some (Assistance_fw_indexer.make_full_instance ()) ;
+   last_compilation_result_for_module = Some [] ;
+   root = Some (Assistance_dfa_root.of_line "dummy") ;
+   small_details_in_files = Some [] ;
+   subdirs_for_archived_mlx_files = Some [] ;
+   watched_files = Some [] ;
 } ;;
 
 module Type_information = struct 
@@ -6691,7 +6763,7 @@ let get_fields_from_name tname =
    try List.assoc tname fields_for_instances with
     _ -> raise(Get_fields_exn(tname)) ;;
 
-let get_fields fw = get_fields_from_name fw.Assistance_fw_poly_t.type_name ;; 
+let get_fields fw = get_fields_from_name (get_type_name fw);; 
 
 let data_for_fields = [
    "dir_for_backup" , "Dfa_root_t.t";
@@ -6719,7 +6791,7 @@ let element_in_show_fields (fd_name,fd_type) = (String.make 3 ' ') ^ fd_name ^ "
 let show_fields fw = 
  let fields = get_fields fw in 
  let data = Assistance_image.image get_field_data fields in 
- let msg = " "^ (fw.Assistance_fw_poly_t.type_name) ^ " : {\n" ^ 
+ let msg = " "^ (get_type_name fw) ^ " : {\n" ^ 
  (String.concat "\n" (Assistance_image.image element_in_show_fields data))
  ^ " \n } " in
  print_string ("\n\n"^msg^"\n\n");;
@@ -6759,70 +6831,70 @@ end;;
 
 let construct_fw_configuration ~root:v1_r ~ignored_subdirectories:v2_ign_subdirs ~ignored_files:v3_ign_files = {
    Private.origin with 
-   Assistance_fw_poly_t.type_name = "Fw_configuration" ;
-   root = v1_r ;
-   ignored_subdirectories = v2_ign_subdirs ;
-   ignored_files = v3_ign_files ;
+   Assistance_fw_poly_t.type_name = Some "Fw_configuration" ;
+   root = Some v1_r ;
+   ignored_subdirectories = Some v2_ign_subdirs ;
+   ignored_files = Some v3_ign_files ;
 } ;;
 let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~gitpush_after_backup:v3_gab ~github_url:v4_url ~encoding_protected_files:v5_protected_pairs = {
    Private.origin with 
-   Assistance_fw_poly_t.type_name = "Github_configuration" ;
-   root = v1_r ;
-   dir_for_backup = v2_backup_dir ;
-   gitpush_after_backup = v3_gab ;
-   github_url = v4_url ;
-   encoding_protected_files = v5_protected_pairs ;
+   Assistance_fw_poly_t.type_name = Some "Github_configuration" ;
+   root = Some v1_r ;
+   dir_for_backup = Some v2_backup_dir ;
+   gitpush_after_backup = Some v3_gab ;
+   github_url = Some v4_url ;
+   encoding_protected_files = Some v5_protected_pairs ;
 } ;;
-let dir_for_backup x = x.Assistance_fw_poly_t.dir_for_backup ;;
-let encoding_protected_files x = x.Assistance_fw_poly_t.encoding_protected_files ;;
+let dir_for_backup x = Private.get_dir_for_backup x;;
+let encoding_protected_files x = Private.get_encoding_protected_files x;;
 let extend_file_watcher_to_fw_with_archives  = Private.Extender.file_watcher_to_fw_with_archives ;;
 let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
 let extend_fw_with_archives_to_fw_with_small_details  = Private.Extender.fw_with_archives_to_fw_with_small_details ;;
 let extend_fw_with_batch_compilation_to_fw_with_githubbing  = Private.Extender.fw_with_batch_compilation_to_fw_with_githubbing ;;
 let extend_fw_with_dependencies_to_fw_with_batch_compilation  = Private.Extender.fw_with_dependencies_to_fw_with_batch_compilation ;;
 let extend_fw_with_small_details_to_fw_with_dependencies  = Private.Extender.fw_with_small_details_to_fw_with_dependencies ;;
-let github_url x = x.Assistance_fw_poly_t.github_url ;;
-let gitpush_after_backup x = x.Assistance_fw_poly_t.gitpush_after_backup ;;
-let ignored_files x = x.Assistance_fw_poly_t.ignored_files ;;
-let ignored_subdirectories x = x.Assistance_fw_poly_t.ignored_subdirectories ;;
-let index_for_caching x = x.Assistance_fw_poly_t.index_for_caching ;;
-let last_compilation_result_for_module x = x.Assistance_fw_poly_t.last_compilation_result_for_module ;;
+let github_url x = Private.get_github_url x;;
+let gitpush_after_backup x = Private.get_gitpush_after_backup x;;
+let ignored_files x = Private.get_ignored_files x;;
+let ignored_subdirectories x = Private.get_ignored_subdirectories x;;
+let index_for_caching x = Private.get_index_for_caching x;;
+let last_compilation_result_for_module x = Private.get_last_compilation_result_for_module x;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let parent  = Private.Parent.get ;;
-let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(fw.Assistance_fw_poly_t.type_name)^" >") ;;
-let root x = x.Assistance_fw_poly_t.root ;;
-let set_dir_for_backup x backup_dir = { x with Assistance_fw_poly_t.dir_for_backup = backup_dir} ;;
-let set_encoding_protected_files x protected_pairs = { x with Assistance_fw_poly_t.encoding_protected_files = protected_pairs} ;;
-let set_github_url x url = { x with Assistance_fw_poly_t.github_url = url} ;;
-let set_gitpush_after_backup x gab = { x with Assistance_fw_poly_t.gitpush_after_backup = gab} ;;
-let set_ignored_files x ign_files = { x with Assistance_fw_poly_t.ignored_files = ign_files} ;;
-let set_ignored_subdirectories x ign_subdirs = { x with Assistance_fw_poly_t.ignored_subdirectories = ign_subdirs} ;;
-let set_index_for_caching x cache_idx = { x with Assistance_fw_poly_t.index_for_caching = cache_idx} ;;
-let set_last_compilation_result_for_module x compilation_results = { x with Assistance_fw_poly_t.last_compilation_result_for_module = compilation_results} ;;
+let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Private.get_type_name fw)^" >") ;;
+let root x = Private.get_root x;;
+let set_dir_for_backup x backup_dir = { x with Assistance_fw_poly_t.dir_for_backup = Some backup_dir} ;;
+let set_encoding_protected_files x protected_pairs = { x with Assistance_fw_poly_t.encoding_protected_files = Some protected_pairs} ;;
+let set_github_url x url = { x with Assistance_fw_poly_t.github_url = Some url} ;;
+let set_gitpush_after_backup x gab = { x with Assistance_fw_poly_t.gitpush_after_backup = Some gab} ;;
+let set_ignored_files x ign_files = { x with Assistance_fw_poly_t.ignored_files = Some ign_files} ;;
+let set_ignored_subdirectories x ign_subdirs = { x with Assistance_fw_poly_t.ignored_subdirectories = Some ign_subdirs} ;;
+let set_index_for_caching x cache_idx = { x with Assistance_fw_poly_t.index_for_caching = Some cache_idx} ;;
+let set_last_compilation_result_for_module x compilation_results = { x with Assistance_fw_poly_t.last_compilation_result_for_module = Some compilation_results} ;;
 let set_parent  = Private.Parent.set ;;
-let set_root x r = { x with Assistance_fw_poly_t.root = r} ;;
-let set_small_details_in_files x small_details = { x with Assistance_fw_poly_t.small_details_in_files = small_details} ;;
-let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Assistance_fw_poly_t.subdirs_for_archived_mlx_files = archives_subdirs} ;;
-let set_watched_files x files = { x with Assistance_fw_poly_t.watched_files = files} ;;
+let set_root x r = { x with Assistance_fw_poly_t.root = Some r} ;;
+let set_small_details_in_files x small_details = { x with Assistance_fw_poly_t.small_details_in_files = Some small_details} ;;
+let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Assistance_fw_poly_t.subdirs_for_archived_mlx_files = Some archives_subdirs} ;;
+let set_watched_files x files = { x with Assistance_fw_poly_t.watched_files = Some files} ;;
 let show_fields  = Private.Type_information.show_fields ;;
-let small_details_in_files x = x.Assistance_fw_poly_t.small_details_in_files ;;
-let subdirs_for_archived_mlx_files x = x.Assistance_fw_poly_t.subdirs_for_archived_mlx_files ;;
+let small_details_in_files x = Private.get_small_details_in_files x;;
+let subdirs_for_archived_mlx_files x = Private.get_subdirs_for_archived_mlx_files x ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let to_fw_configuration fw  = 
-  let tname = fw.Assistance_fw_poly_t.type_name in 
+  let tname = Private.get_type_name fw in 
   let _ = Private.Type_information.check_inclusion "fw_configuration" tname in 
    {
    fw with 
-   Assistance_fw_poly_t.type_name = "Fw_configuration" ;
+   Assistance_fw_poly_t.type_name = Some "Fw_configuration" ;
 } ;;
 let to_github_configuration fw  = 
-  let tname = fw.Assistance_fw_poly_t.type_name in 
+  let tname = Private.get_type_name fw in 
   let _ = Private.Type_information.check_inclusion "github_configuration" tname in 
    {
    fw with 
-   Assistance_fw_poly_t.type_name = "Github_configuration" ;
+   Assistance_fw_poly_t.type_name = Some "Github_configuration" ;
 } ;;
-let watched_files x = x.Assistance_fw_poly_t.watched_files ;;
+let watched_files x = Private.get_watched_files x;;
 
 end;;
 
@@ -6874,71 +6946,136 @@ end;;
 
 
 
-module Assistance_chronometer=struct
+module Assistance_find_suitable_ending=struct
 
 (*
 
-#use"lib/chronometer.ml";;
+#use"lib/find_suitable_ending.ml";;
 
-*) 
+*)
 
-let rewrite_days=function
-0->""
-|1->"1 day,"
-|x->string_of_int(x)^" days,";;
+(*
 
-let rewrite_hours=function
-0->""
-|1->"1 hour,"
-|x->string_of_int(x)^" hours,";;
+Note that the order in Ocaml_ending.correspondances is important
 
-let rewrite_minutes=function
-0->""
-|1->"1 minute,"
-|x->string_of_int(x)^" minutes,";;
+*)
 
-let rewrite_seconds=function
-0->""
-|1->"1 second."
-|x->string_of_int(x)^" seconds.";;
+exception No_suitable_location of Assistance_dfa_root_t.t*(Assistance_dfa_subdirectory_t.t list)*string;;
 
-let rewrite_float x=
-   let i=int_of_float(x) in
-   let v_sec=(i mod 60) and q_sec=(i/60) in
-   let v_min=(q_sec mod 60) and q_min=(q_sec/60) in
-   let v_hour=(q_min mod 24) and q_hour=(q_min/24) in
-   let s_day=rewrite_days(q_hour)
-   and s_hour=rewrite_hours(v_hour)
-   and s_min=rewrite_minutes(v_min)
-   and s_sec=rewrite_seconds(v_sec) in
-   s_day^s_hour^s_min^s_sec;;
-  
-let rewrite_duration x=
-   if x=0. 
-   then "Computation was quick.\n"
-   else "Computation lasted "^(rewrite_float x)^"\n";;
+let find_file_location dir l_subdir old_x=
+  let x=String.uncapitalize_ascii old_x in
+  let s_dir=Assistance_dfa_root.connectable_to_subpath(dir) in
+  let original_endings=Assistance_image.image Assistance_dfa_ending.connectable_to_modulename Assistance_dfa_ending.all_ocaml_endings in
+  let endings=(
+     if List.exists (fun edg->String.ends_with ~suffix:edg x) original_endings
+     then [""]
+     else original_endings
+  ) in
+  let temp1=Assistance_cartesian.product(l_subdir) endings in
+  let tempf=(fun (sd,edg)->
+  	let s1=s_dir^(Assistance_dfa_subdirectory.connectable_to_subpath sd)^x^edg in
+  	if Sys.file_exists s1
+  	then Some(Assistance_absolute_path.of_string s1)
+  	else None
+  ) in
+  let opt=List.find_map tempf temp1 in
+  if opt=None
+  then raise(No_suitable_location(dir ,l_subdir,x))
+  else  Option.get(opt);;           
 
- let timer=ref(0.000);;  
- 
- let duration_of_computation f x=
-   let t0=Unix.time() in
-   let _=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   (print_string(rewrite_duration (!timer));flush stdout);;
- 
- let duration_of_last_computation ()=
-  (print_string(rewrite_duration (!timer));flush stdout);;
-   
-   
- let  it f x=
-  let t0=Unix.time() in
-   let y=f(x) in
-   let _=(timer:=Unix.time()-.t0) in
-   let _=(print_string(rewrite_duration (!timer));flush stdout) in
-   y;;
- 
-   
+end;;
+
+
+
+
+
+
+module Assistance_fw_module_small_details_t=struct
+
+(*
+
+#use"lib/Filewatching/fw_module_small_details_t.ml";;
+
+
+*)
+
+type t ={
+  used_modules : Assistance_dfa_module_t.t list ;
+  used_libraries : Assistance_ocaml_library_t.t list ;
+  has_printer : bool ;
+  subdirectory : Assistance_dfa_subdirectory_t.t ;
+  principal_ending : Assistance_dfa_ocaml_ending_t.t ;
+  mli_present : bool ;
+  principal_modification_time : string ;
+  mli_modification_time : string option ;
+};;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_directory_name_t=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"lib/directory_name_t.ml";;
+
+*)
+
+type t=D of string;;
+
            
+
+end;;
+
+
+
+
+
+
+module Assistance_directory_name=struct
+
+(*
+
+Directories name, with the trailing slash removed.
+
+#use"lib/directory_name.ml";;
+
+*)
+
+
+
+exception Non_directory of string;;
+exception File_not_found of string * (Assistance_directory_name_t.t list);;
+
+let find_file_with_directory_list fname l=
+  match List.find_map (
+     fun (Assistance_directory_name_t.D s_dir) ->
+      let full_path = s_dir^"/"^fname in 
+      if Sys.file_exists full_path 
+      then Some(Assistance_absolute_path.of_string full_path)
+      else None
+  ) l with 
+  None -> raise(File_not_found(fname,l))
+  |Some(ap) -> ap;;
+
+
+let of_string s=
+  let temp1=Assistance_tools_for_absolute_path.of_string s in
+  if Sys.is_directory temp1
+  then Assistance_directory_name_t.D(Assistance_tools_for_absolute_path.remove_trailing_slash temp1)
+  else raise(Non_directory(s));;
+
+let connectable_to_subpath (Assistance_directory_name_t.D s)=s^"/";;
+
+
 
 end;;
 
@@ -10640,79 +10777,6 @@ end;;
 
 
 
-module Assistance_find_suitable_ending=struct
-
-(*
-
-#use"lib/find_suitable_ending.ml";;
-
-*)
-
-(*
-
-Note that the order in Ocaml_ending.correspondances is important
-
-*)
-
-exception No_suitable_location of Assistance_dfa_root_t.t*(Assistance_dfa_subdirectory_t.t list)*string;;
-
-let find_file_location dir l_subdir old_x=
-  let x=String.uncapitalize_ascii old_x in
-  let s_dir=Assistance_dfa_root.connectable_to_subpath(dir) in
-  let original_endings=Assistance_image.image Assistance_dfa_ending.connectable_to_modulename Assistance_dfa_ending.all_ocaml_endings in
-  let endings=(
-     if List.exists (fun edg->String.ends_with ~suffix:edg x) original_endings
-     then [""]
-     else original_endings
-  ) in
-  let temp1=Assistance_cartesian.product(l_subdir) endings in
-  let tempf=(fun (sd,edg)->
-  	let s1=s_dir^(Assistance_dfa_subdirectory.connectable_to_subpath sd)^x^edg in
-  	if Sys.file_exists s1
-  	then Some(Assistance_absolute_path.of_string s1)
-  	else None
-  ) in
-  let opt=List.find_map tempf temp1 in
-  if opt=None
-  then raise(No_suitable_location(dir ,l_subdir,x))
-  else  Option.get(opt);;           
-
-end;;
-
-
-
-
-
-
-module Assistance_fw_module_small_details_t=struct
-
-(*
-
-#use"lib/Filewatching/fw_module_small_details_t.ml";;
-
-
-*)
-
-type t ={
-  used_modules : Assistance_dfa_module_t.t list ;
-  used_libraries : Assistance_ocaml_library_t.t list ;
-  has_printer : bool ;
-  subdirectory : Assistance_dfa_subdirectory_t.t ;
-  principal_ending : Assistance_dfa_ocaml_ending_t.t ;
-  mli_present : bool ;
-  principal_modification_time : string ;
-  mli_modification_time : string option ;
-};;
-
-
-
-end;;
-
-
-
-
-
-
 module Assistance_fw_with_small_details=struct
 
 (*
@@ -13516,6 +13580,547 @@ end;;
 
 
 
+module Assistance_crobj_category_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
+
+
+*)
+
+
+type t= 
+    Uple 
+   |List 
+   |Array 
+   |Record
+   |Variant;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_opening_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
+
+
+
+*)
+
+
+type t= 
+    Uple 
+   |List 
+   |Array 
+   |Record 
+   |Variant of string;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_basic_increase_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
+
+
+*)
+
+
+type t= 
+     Push_int of int 
+    |Push_string of Assistance_encoded_string_t.t 
+    |Push_field_name  of string 
+    |Open of Assistance_crobj_opening_t.t 
+    |Separate of Assistance_crobj_category_t.t
+    |Close of Assistance_crobj_category_t.t;;
+    
+
+
+        
+
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_partial_crobj_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
+
+For convenience, the list is reversed when the partial object is closed and becomes full
+(new objects are therefore appended directly to the left on a partial object).
+
+
+*)
+
+
+type t= 
+   |Uple of Assistance_concrete_object_t.t list
+   |List of Assistance_concrete_object_t.t list
+   |Array of Assistance_concrete_object_t.t list
+   |Record of ((string*Assistance_concrete_object_t.t) list)
+   |RecordPlusFieldName of ((string*Assistance_concrete_object_t.t) list)*string
+   |Variant of string*(Assistance_concrete_object_t.t list);;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_double_partial_crobj_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
+
+First argument says if a comma appears last, waiting for another item.
+
+The two last arguments are t * (t list) rather than just t list, to enforce
+a non-empty list. 
+
+*)
+
+
+type t= Double of bool * Assistance_partial_crobj_t.t * (Assistance_partial_crobj_t.t list) ;;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_parsing_machine_t=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
+
+
+*)
+
+type t= 
+    {
+       parsed_one    : string;
+       current_index : int;
+       data : Assistance_double_partial_crobj_t.t;
+    };;
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_partial_crobj=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
+
+
+*)
+
+exception Field_With_No_Name of Assistance_concrete_object_t.t;;
+exception Unused_Field_Name of string;;
+exception Misapplied_Field_Name of string;;
+exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
+
+let initialize=function 
+    Assistance_crobj_opening_t.Uple -> Assistance_partial_crobj_t.Uple[]
+   |Assistance_crobj_opening_t.List -> Assistance_partial_crobj_t.List[]
+   |Assistance_crobj_opening_t.Array -> Assistance_partial_crobj_t.Array[]
+   |Assistance_crobj_opening_t.Record->Assistance_partial_crobj_t.Record([])
+   |Assistance_crobj_opening_t.Variant(constructor)->Assistance_partial_crobj_t.Variant(constructor,[]);;
+
+let category = function 
+    Assistance_partial_crobj_t.Uple(_)->Assistance_crobj_category_t.Uple
+   |Assistance_partial_crobj_t.List(_)->Assistance_crobj_category_t.List
+   |Assistance_partial_crobj_t.Array(_)->Assistance_crobj_category_t.Array
+   |Assistance_partial_crobj_t.Record(_)->Assistance_crobj_category_t.Record
+   |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)->Assistance_crobj_category_t.Record
+   |Assistance_partial_crobj_t.Variant(_,_)->Assistance_crobj_category_t.Variant;;
+ 
+
+let push_one_more_item item =function 
+    Assistance_partial_crobj_t.Uple(l)->Assistance_partial_crobj_t.Uple(item::l)
+   |Assistance_partial_crobj_t.List(l)->Assistance_partial_crobj_t.List(item::l)
+   |Assistance_partial_crobj_t.Array(l)->Assistance_partial_crobj_t.Array(item::l)
+   |Assistance_partial_crobj_t.Record(_)->raise(Field_With_No_Name(item))
+   |Assistance_partial_crobj_t.RecordPlusFieldName(l,rcdname)->Assistance_partial_crobj_t.Record((rcdname,item)::l)
+   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_partial_crobj_t.Variant(constructor,item :: l);;
+
+let push_int i = push_one_more_item (Assistance_concrete_object_t.Int(i));;
+let push_string encoded_s = push_one_more_item (Assistance_concrete_object.wrap_encoded_string encoded_s);;
+
+let push_field_name recdname=function 
+    Assistance_partial_crobj_t.Record(l)->Assistance_partial_crobj_t.RecordPlusFieldName(l,recdname)
+    |Assistance_partial_crobj_t.Uple(_)
+    |Assistance_partial_crobj_t.List(_)
+    |Assistance_partial_crobj_t.Array(_)
+    |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)
+    |Assistance_partial_crobj_t.Variant(_,_) 
+        ->raise(Misapplied_Field_Name(recdname));;
+
+
+
+let close =function 
+    Assistance_partial_crobj_t.Uple(l)->Assistance_concrete_object_t.Uple(List.rev l)
+   |Assistance_partial_crobj_t.List(l)->Assistance_concrete_object_t.List(List.rev l)
+   |Assistance_partial_crobj_t.Array(l)->Assistance_concrete_object_t.Array(List.rev l)
+   |Assistance_partial_crobj_t.Record(l)->Assistance_concrete_object_t.Record(List.rev l)
+   |Assistance_partial_crobj_t.RecordPlusFieldName(_,rcdname)->raise(Unused_Field_Name(rcdname))
+   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_concrete_object_t.Variant(constructor,List.rev l);;
+
+
+let check_category_and_close ctgr pcrobj=
+   if category(pcrobj)<>ctgr 
+   then raise(Category_Mismatch(ctgr,pcrobj))
+   else 
+   close pcrobj;;
+
+end;;
+
+
+
+
+
+
+module Assistance_double_partial_crobj=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
+
+*)
+
+exception Close_on_separator;;
+exception Redundant_separator;;
+exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
+exception End_reached of Assistance_concrete_object_t.t ;;
+
+module Private = struct 
+
+let push_int i (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_int i last_opened,opened_before));;
+
+let push_string encoded_s (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_string encoded_s last_opened,opened_before));;    
+
+let push_separator ctgr (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
+  if separator_present
+  then raise(Redundant_separator)
+  else 
+        let ctgr2 = Assistance_partial_crobj.category last_opened in 
+        if ctgr <> ctgr2
+        then raise(Category_Mismatch(ctgr,last_opened))
+        else  (Assistance_double_partial_crobj_t.Double(true,last_opened,opened_before));;
+
+let push_field_name record_name (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+  (Assistance_double_partial_crobj_t.Double(false,
+    Assistance_partial_crobj.push_field_name record_name last_opened,opened_before));;    
+
+let open_new opening 
+   (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
+    Assistance_double_partial_crobj_t.Double(false,
+      Assistance_partial_crobj.initialize opening,last_opened::opened_before);;
+
+
+
+let close ctgr
+    (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
+    if separator_present 
+    then raise(Close_on_separator)
+    else 
+    let newfound=Assistance_partial_crobj.check_category_and_close ctgr last_opened in 
+    match opened_before with 
+    []->raise(End_reached(newfound))
+    |next_opened_one::others ->
+      let new_frontier = Assistance_partial_crobj.push_one_more_item newfound next_opened_one in 
+      Assistance_double_partial_crobj_t.Double(false,new_frontier,others);;
+
+end ;; 
+
+let initialize opening = 
+    Assistance_double_partial_crobj_t.Double(false,Assistance_partial_crobj.initialize opening,[]);;
+
+let increase = function 
+   Assistance_crobj_basic_increase_t.Push_int(i)->Private.push_int i 
+    |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->Private.push_string encoded_s 
+    |Assistance_crobj_basic_increase_t.Push_field_name(rcdname)->Private.push_field_name rcdname
+    |Assistance_crobj_basic_increase_t.Open(opening) -> Private.open_new opening
+    |Assistance_crobj_basic_increase_t.Separate(cat) -> Private.push_separator cat 
+    |Assistance_crobj_basic_increase_t.Close(cat) -> Private.close cat;;
+        
+
+
+
+
+
+
+end;;
+
+
+
+
+
+
+module Assistance_crobj_parsing=struct
+
+(* 
+
+#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
+
+
+*)
+
+exception Unreadable of int * string ;;
+
+module Private = struct
+
+let salt = Assistance_encoded_string.salt ;; 
+
+let array_opener = salt ^ "ao";;
+let list_opener = salt ^ "lo";;
+let record_opener = salt ^ "ro";;
+let string_opener = salt ^ "so";;
+let uple_opener = salt ^ "uo";; 
+let variant_opener = salt ^ "vo";; 
+
+let array_separator = salt ^ "as";;
+let list_separator = salt ^ "ls";;
+let record_separator = salt ^ "rs";;
+let uple_separator = salt ^ "us";; 
+let variant_separator = salt ^ "vs";; 
+
+let array_closer = salt ^ "ac";;
+let list_closer = salt ^ "lc";;
+let record_closer = salt ^ "rc";;
+let string_closer = salt ^ "sc";;
+let uple_closer = salt ^ "uc";; 
+let variant_closer = salt ^ "vc";; 
+
+let record_arrow = salt ^ "ra";;
+
+
+let array_cat = Assistance_crobj_category_t.Array
+and list_cat  = Assistance_crobj_category_t.List
+and record_cat = Assistance_crobj_category_t.Record 
+and uple_cat = Assistance_crobj_category_t.Uple 
+and variant_cat = Assistance_crobj_category_t.Variant;;
+
+let list_for_category_of_lexeme=[
+    (array_opener,array_cat); 
+    (list_opener,list_cat); 
+    (record_opener,record_cat); 
+    (uple_opener,uple_cat); 
+    (variant_opener,variant_cat); 
+
+    (array_separator,array_cat); 
+    (list_separator,list_cat); 
+    (record_separator,record_cat); 
+    (uple_separator,uple_cat); 
+    (variant_separator,variant_cat); 
+
+    (array_closer,array_cat); 
+    (list_closer,list_cat); 
+    (record_closer,record_cat); 
+    (uple_closer,uple_cat); 
+    (variant_closer,variant_cat); 
+
+    (record_arrow,record_cat); (* a little bit of convenient convention here *)
+];;
+
+let category_of_lexeme lexeme=List.assoc lexeme list_for_category_of_lexeme;;
+
+let list_for_preludeless_increasers=[
+    (array_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Array)); 
+    (list_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.List)); 
+    (record_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Record)); 
+    (uple_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Uple)); 
+
+    (array_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Array)); 
+    (list_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.List)); 
+    (record_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Record)); 
+    (uple_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Uple)); 
+    (variant_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Variant)); 
+
+    (array_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Array)); 
+    (list_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.List)); 
+    (record_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Record)); 
+    (uple_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Uple)); 
+    (variant_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Variant)); 
+
+];;
+
+exception Unreadable_int of string;;
+
+let parse_int s=try int_of_string s with _->raise(Unreadable_int(s));;
+
+let next_basic_increase_in_variant_opening_case s idx idx1=
+   let opening = Assistance_crobj_opening_t.Variant (Assistance_cull_string.interval s idx (idx1-1)) in 
+   (Assistance_crobj_basic_increase_t.Open(opening),idx1+(String.length variant_opener));;
+
+let next_basic_increase_in_field_naming_case s idx idx1=
+   let name = Assistance_cull_string.interval s idx (idx1-1) in 
+   (Assistance_crobj_basic_increase_t.Push_field_name(name),idx1+(String.length record_arrow));;
+
+let next_basic_increase_in_preludy_case s idx idx1=
+   if Assistance_substring.is_a_substring_located_at variant_opener s idx1 
+   then next_basic_increase_in_variant_opening_case s idx idx1
+   else 
+   if Assistance_substring.is_a_substring_located_at record_arrow s idx1 
+   then next_basic_increase_in_field_naming_case s idx idx1
+   else let i=parse_int(Assistance_cull_string.interval s idx (idx1-1)) in 
+       (Assistance_crobj_basic_increase_t.Push_int(i),idx1);;
+
+
+exception Missing_string_closer of int * string;;
+
+let next_basic_increase_in_push_string_case s idx=
+   let idx1=idx+(String.length string_opener) in 
+   let idx2_opt=Assistance_substring.leftmost_index_of_in_from_opt string_closer s idx1 in 
+   if idx2_opt = None
+   then raise(Missing_string_closer(idx1,s))
+   else
+   let idx2 = Option.get idx2_opt in    
+   (* we know that the string is already encoded *)
+   let encoded_s = Assistance_encoded_string.retrieve (Assistance_cull_string.interval s idx1 (idx2-1)) in 
+   (Assistance_crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
+
+
+
+
+exception Unreadable_increase of int * string ;;
+
+let next_basic_increase  s idx=
+   let idx1_opt= Assistance_substring.leftmost_index_of_in_from_opt salt s idx in 
+   if idx1_opt = None 
+   then let i=parse_int (Assistance_cull_string.cobeginning (idx-1) s) in
+        (Assistance_crobj_basic_increase_t.Push_int(i),String.length(s)+1)
+   else      
+   let idx1 = Option.get idx1_opt in    
+   if idx1>idx 
+   then next_basic_increase_in_preludy_case s idx idx1
+   else 
+   if Assistance_substring.is_a_substring_located_at string_opener s idx 
+   then next_basic_increase_in_push_string_case s idx
+   else 
+   match List.find_opt (fun 
+      (text,_action)->Assistance_substring.is_a_substring_located_at text s idx
+   ) list_for_preludeless_increasers with 
+   None -> raise(Unreadable_increase(idx,s))
+   |Some(text,action)->(action,idx+(String.length text));;
+
+let one_step_more machine =
+   let (action,next_idx) =
+      next_basic_increase machine.Assistance_crobj_parsing_machine_t.parsed_one 
+                            machine.Assistance_crobj_parsing_machine_t.current_index in 
+   {
+      machine with 
+      Assistance_crobj_parsing_machine_t.current_index = next_idx ;
+      Assistance_crobj_parsing_machine_t.data = Assistance_double_partial_crobj.increase action machine.Assistance_crobj_parsing_machine_t.data;
+   }  ;;
+
+let prudent_push machine = try (None,Some(one_step_more machine)) with 
+   Assistance_double_partial_crobj.End_reached(solution) -> (Some solution,None);;
+
+exception First_step_exn of Assistance_crobj_basic_increase_t.t ;; 
+
+let first_step s =
+   let (action,next_idx) = next_basic_increase s 1 in 
+   match action with 
+    Assistance_crobj_basic_increase_t.Push_int(i)->(Some(Assistance_concrete_object_t.Int(i)),None,next_idx)
+   |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->(Some(Assistance_concrete_object.wrap_encoded_string(encoded_s)),None,next_idx)
+   |Assistance_crobj_basic_increase_t.Open(opening)->(None,Some(Assistance_double_partial_crobj.initialize(opening)),next_idx)
+   |Assistance_crobj_basic_increase_t.Push_field_name(_)
+   |Assistance_crobj_basic_increase_t.Separate(_)
+   |Assistance_crobj_basic_increase_t.Close(_) ->raise(First_step_exn(action));;
+
+exception Ends_too_soon of Assistance_concrete_object_t.t * string ;; 
+
+let parse s =
+    let (opt_quick_result,opt_start,next_idx) = first_step s in 
+    match opt_quick_result with 
+    Some (res)-> if next_idx < (String.length s)
+                 then raise(Ends_too_soon(res,s)) 
+                 else res 
+    |None -> let start_partial_obj = Option.get opt_start in   
+             let machine = {
+                Assistance_crobj_parsing_machine_t.parsed_one = s ;
+                Assistance_crobj_parsing_machine_t.current_index = next_idx ;
+                Assistance_crobj_parsing_machine_t.data = start_partial_obj;
+             } in 
+             let rec iterator = (fun mach ->
+                let (opt_sol,opt_term) = prudent_push mach in 
+                match opt_term with 
+                None -> Option.get opt_sol 
+                |Some(term)->iterator(term) 
+             ) in 
+             iterator machine;;
+
+let rec unparse = function 
+   Assistance_concrete_object_t.Int(i)->string_of_int i 
+   |Assistance_concrete_object_t.String(t)->string_opener^(Assistance_encoded_string.store t)^string_closer
+   |Assistance_concrete_object_t.Uple(l)->let temp1=Assistance_image.image unparse l in 
+             uple_opener^(String.concat uple_separator temp1)^uple_closer
+   |Assistance_concrete_object_t.List(l)->let temp1=Assistance_image.image unparse l in 
+             list_opener^(String.concat list_separator temp1)^list_closer 
+   |Assistance_concrete_object_t.Array(l)->let temp1=Assistance_image.image unparse l in 
+             array_opener^(String.concat array_separator temp1)^array_closer
+   |Assistance_concrete_object_t.Record(l)->let temp1=Assistance_image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
+             record_opener^(String.concat record_separator temp1)^record_closer          
+   |Assistance_concrete_object_t.Variant(constructor,l)->let temp1=Assistance_image.image unparse l in 
+             constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
+
+end;;
+
+let parse = Private.parse;;
+let unparse = Private.unparse;;
+
+end;;
+
+
+
+
+
+
 module Assistance_dircopy_diff_t=struct
 
 (*
@@ -14139,593 +14744,6 @@ end;;
 
 
 
-module Assistance_coma_big_constant=struct
-
-(* 
-#use"lib/Compilation_management/coma_big_constant.ml";;
-*)
-
-let github_url = "https://github.com/ewan-delanoy/skeptical_duck";;
-let home = Sys.getenv "HOME" ;;
-let root_of_root = home^"/Teuliou/OCaml/" ;;
-
-module This_World=struct
-
-let root=Assistance_dfa_root.of_line (root_of_root^"skeptical_duck");;
-let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_ocaml");;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Next_World=struct
-
-let root=Assistance_dfa_root.of_line (root_of_root^"idaho");;
-let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_idaho") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-module Third_World=struct
-
-let root=Assistance_dfa_root.of_line (root_of_root^"cherokee") ;;
-let backup_dir=Assistance_dfa_root.of_line (root_of_root^"Githubbed_cherokee") ;;
-let githubbing=false;;
-let triple = (root,backup_dir,githubbing);;
-
-end;;
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_category_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_category_t.ml";;
-
-
-*)
-
-
-type t= 
-    Uple 
-   |List 
-   |Array 
-   |Record
-   |Variant;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_opening_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_opening_t.ml";;
-
-
-
-*)
-
-
-type t= 
-    Uple 
-   |List 
-   |Array 
-   |Record 
-   |Variant of string;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_basic_increase_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_basic_increase_t.ml";;
-
-
-*)
-
-
-type t= 
-     Push_int of int 
-    |Push_string of Assistance_encoded_string_t.t 
-    |Push_field_name  of string 
-    |Open of Assistance_crobj_opening_t.t 
-    |Separate of Assistance_crobj_category_t.t
-    |Close of Assistance_crobj_category_t.t;;
-    
-
-
-        
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_partial_crobj_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj_t.ml";;
-
-For convenience, the list is reversed when the partial object is closed and becomes full
-(new objects are therefore appended directly to the left on a partial object).
-
-
-*)
-
-
-type t= 
-   |Uple of Assistance_concrete_object_t.t list
-   |List of Assistance_concrete_object_t.t list
-   |Array of Assistance_concrete_object_t.t list
-   |Record of ((string*Assistance_concrete_object_t.t) list)
-   |RecordPlusFieldName of ((string*Assistance_concrete_object_t.t) list)*string
-   |Variant of string*(Assistance_concrete_object_t.t list);;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_double_partial_crobj_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj_t.ml";;
-
-First argument says if a comma appears last, waiting for another item.
-
-The two last arguments are t * (t list) rather than just t list, to enforce
-a non-empty list. 
-
-*)
-
-
-type t= Double of bool * Assistance_partial_crobj_t.t * (Assistance_partial_crobj_t.t list) ;;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_parsing_machine_t=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing_machine_t.ml";;
-
-
-*)
-
-type t= 
-    {
-       parsed_one    : string;
-       current_index : int;
-       data : Assistance_double_partial_crobj_t.t;
-    };;
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_partial_crobj=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/partial_crobj.ml";;
-
-
-*)
-
-exception Field_With_No_Name of Assistance_concrete_object_t.t;;
-exception Unused_Field_Name of string;;
-exception Misapplied_Field_Name of string;;
-exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
-
-let initialize=function 
-    Assistance_crobj_opening_t.Uple -> Assistance_partial_crobj_t.Uple[]
-   |Assistance_crobj_opening_t.List -> Assistance_partial_crobj_t.List[]
-   |Assistance_crobj_opening_t.Array -> Assistance_partial_crobj_t.Array[]
-   |Assistance_crobj_opening_t.Record->Assistance_partial_crobj_t.Record([])
-   |Assistance_crobj_opening_t.Variant(constructor)->Assistance_partial_crobj_t.Variant(constructor,[]);;
-
-let category = function 
-    Assistance_partial_crobj_t.Uple(_)->Assistance_crobj_category_t.Uple
-   |Assistance_partial_crobj_t.List(_)->Assistance_crobj_category_t.List
-   |Assistance_partial_crobj_t.Array(_)->Assistance_crobj_category_t.Array
-   |Assistance_partial_crobj_t.Record(_)->Assistance_crobj_category_t.Record
-   |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)->Assistance_crobj_category_t.Record
-   |Assistance_partial_crobj_t.Variant(_,_)->Assistance_crobj_category_t.Variant;;
- 
-
-let push_one_more_item item =function 
-    Assistance_partial_crobj_t.Uple(l)->Assistance_partial_crobj_t.Uple(item::l)
-   |Assistance_partial_crobj_t.List(l)->Assistance_partial_crobj_t.List(item::l)
-   |Assistance_partial_crobj_t.Array(l)->Assistance_partial_crobj_t.Array(item::l)
-   |Assistance_partial_crobj_t.Record(_)->raise(Field_With_No_Name(item))
-   |Assistance_partial_crobj_t.RecordPlusFieldName(l,rcdname)->Assistance_partial_crobj_t.Record((rcdname,item)::l)
-   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_partial_crobj_t.Variant(constructor,item :: l);;
-
-let push_int i = push_one_more_item (Assistance_concrete_object_t.Int(i));;
-let push_string encoded_s = push_one_more_item (Assistance_concrete_object.wrap_encoded_string encoded_s);;
-
-let push_field_name recdname=function 
-    Assistance_partial_crobj_t.Record(l)->Assistance_partial_crobj_t.RecordPlusFieldName(l,recdname)
-    |Assistance_partial_crobj_t.Uple(_)
-    |Assistance_partial_crobj_t.List(_)
-    |Assistance_partial_crobj_t.Array(_)
-    |Assistance_partial_crobj_t.RecordPlusFieldName(_,_)
-    |Assistance_partial_crobj_t.Variant(_,_) 
-        ->raise(Misapplied_Field_Name(recdname));;
-
-
-
-let close =function 
-    Assistance_partial_crobj_t.Uple(l)->Assistance_concrete_object_t.Uple(List.rev l)
-   |Assistance_partial_crobj_t.List(l)->Assistance_concrete_object_t.List(List.rev l)
-   |Assistance_partial_crobj_t.Array(l)->Assistance_concrete_object_t.Array(List.rev l)
-   |Assistance_partial_crobj_t.Record(l)->Assistance_concrete_object_t.Record(List.rev l)
-   |Assistance_partial_crobj_t.RecordPlusFieldName(_,rcdname)->raise(Unused_Field_Name(rcdname))
-   |Assistance_partial_crobj_t.Variant(constructor,l)->Assistance_concrete_object_t.Variant(constructor,List.rev l);;
-
-
-let check_category_and_close ctgr pcrobj=
-   if category(pcrobj)<>ctgr 
-   then raise(Category_Mismatch(ctgr,pcrobj))
-   else 
-   close pcrobj;;
-
-end;;
-
-
-
-
-
-
-module Assistance_double_partial_crobj=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/double_partial_crobj.ml";;
-
-*)
-
-exception Close_on_separator;;
-exception Redundant_separator;;
-exception Category_Mismatch of Assistance_crobj_category_t.t * Assistance_partial_crobj_t.t;;
-exception End_reached of Assistance_concrete_object_t.t ;;
-
-module Private = struct 
-
-let push_int i (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_int i last_opened,opened_before));;
-
-let push_string encoded_s (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_string encoded_s last_opened,opened_before));;    
-
-let push_separator ctgr (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
-  if separator_present
-  then raise(Redundant_separator)
-  else 
-        let ctgr2 = Assistance_partial_crobj.category last_opened in 
-        if ctgr <> ctgr2
-        then raise(Category_Mismatch(ctgr,last_opened))
-        else  (Assistance_double_partial_crobj_t.Double(true,last_opened,opened_before));;
-
-let push_field_name record_name (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-  (Assistance_double_partial_crobj_t.Double(false,
-    Assistance_partial_crobj.push_field_name record_name last_opened,opened_before));;    
-
-let open_new opening 
-   (Assistance_double_partial_crobj_t.Double(_,last_opened,opened_before))=
-    Assistance_double_partial_crobj_t.Double(false,
-      Assistance_partial_crobj.initialize opening,last_opened::opened_before);;
-
-
-
-let close ctgr
-    (Assistance_double_partial_crobj_t.Double(separator_present,last_opened,opened_before))=
-    if separator_present 
-    then raise(Close_on_separator)
-    else 
-    let newfound=Assistance_partial_crobj.check_category_and_close ctgr last_opened in 
-    match opened_before with 
-    []->raise(End_reached(newfound))
-    |next_opened_one::others ->
-      let new_frontier = Assistance_partial_crobj.push_one_more_item newfound next_opened_one in 
-      Assistance_double_partial_crobj_t.Double(false,new_frontier,others);;
-
-end ;; 
-
-let initialize opening = 
-    Assistance_double_partial_crobj_t.Double(false,Assistance_partial_crobj.initialize opening,[]);;
-
-let increase = function 
-   Assistance_crobj_basic_increase_t.Push_int(i)->Private.push_int i 
-    |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->Private.push_string encoded_s 
-    |Assistance_crobj_basic_increase_t.Push_field_name(rcdname)->Private.push_field_name rcdname
-    |Assistance_crobj_basic_increase_t.Open(opening) -> Private.open_new opening
-    |Assistance_crobj_basic_increase_t.Separate(cat) -> Private.push_separator cat 
-    |Assistance_crobj_basic_increase_t.Close(cat) -> Private.close cat;;
-        
-
-
-
-
-
-
-end;;
-
-
-
-
-
-
-module Assistance_crobj_parsing=struct
-
-(* 
-
-#use"lib/Ocaml_analysis/Concrete_ocaml_objects/crobj_parsing.ml";;
-
-
-*)
-
-exception Unreadable of int * string ;;
-
-module Private = struct
-
-let salt = Assistance_encoded_string.salt ;; 
-
-let array_opener = salt ^ "ao";;
-let list_opener = salt ^ "lo";;
-let record_opener = salt ^ "ro";;
-let string_opener = salt ^ "so";;
-let uple_opener = salt ^ "uo";; 
-let variant_opener = salt ^ "vo";; 
-
-let array_separator = salt ^ "as";;
-let list_separator = salt ^ "ls";;
-let record_separator = salt ^ "rs";;
-let uple_separator = salt ^ "us";; 
-let variant_separator = salt ^ "vs";; 
-
-let array_closer = salt ^ "ac";;
-let list_closer = salt ^ "lc";;
-let record_closer = salt ^ "rc";;
-let string_closer = salt ^ "sc";;
-let uple_closer = salt ^ "uc";; 
-let variant_closer = salt ^ "vc";; 
-
-let record_arrow = salt ^ "ra";;
-
-
-let array_cat = Assistance_crobj_category_t.Array
-and list_cat  = Assistance_crobj_category_t.List
-and record_cat = Assistance_crobj_category_t.Record 
-and uple_cat = Assistance_crobj_category_t.Uple 
-and variant_cat = Assistance_crobj_category_t.Variant;;
-
-let list_for_category_of_lexeme=[
-    (array_opener,array_cat); 
-    (list_opener,list_cat); 
-    (record_opener,record_cat); 
-    (uple_opener,uple_cat); 
-    (variant_opener,variant_cat); 
-
-    (array_separator,array_cat); 
-    (list_separator,list_cat); 
-    (record_separator,record_cat); 
-    (uple_separator,uple_cat); 
-    (variant_separator,variant_cat); 
-
-    (array_closer,array_cat); 
-    (list_closer,list_cat); 
-    (record_closer,record_cat); 
-    (uple_closer,uple_cat); 
-    (variant_closer,variant_cat); 
-
-    (record_arrow,record_cat); (* a little bit of convenient convention here *)
-];;
-
-let category_of_lexeme lexeme=List.assoc lexeme list_for_category_of_lexeme;;
-
-let list_for_preludeless_increasers=[
-    (array_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Array)); 
-    (list_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.List)); 
-    (record_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Record)); 
-    (uple_opener,Assistance_crobj_basic_increase_t.Open(Assistance_crobj_opening_t.Uple)); 
-
-    (array_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Array)); 
-    (list_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.List)); 
-    (record_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Record)); 
-    (uple_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Uple)); 
-    (variant_separator,Assistance_crobj_basic_increase_t.Separate(Assistance_crobj_category_t.Variant)); 
-
-    (array_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Array)); 
-    (list_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.List)); 
-    (record_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Record)); 
-    (uple_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Uple)); 
-    (variant_closer,Assistance_crobj_basic_increase_t.Close(Assistance_crobj_category_t.Variant)); 
-
-];;
-
-exception Unreadable_int of string;;
-
-let parse_int s=try int_of_string s with _->raise(Unreadable_int(s));;
-
-let next_basic_increase_in_variant_opening_case s idx idx1=
-   let opening = Assistance_crobj_opening_t.Variant (Assistance_cull_string.interval s idx (idx1-1)) in 
-   (Assistance_crobj_basic_increase_t.Open(opening),idx1+(String.length variant_opener));;
-
-let next_basic_increase_in_field_naming_case s idx idx1=
-   let name = Assistance_cull_string.interval s idx (idx1-1) in 
-   (Assistance_crobj_basic_increase_t.Push_field_name(name),idx1+(String.length record_arrow));;
-
-let next_basic_increase_in_preludy_case s idx idx1=
-   if Assistance_substring.is_a_substring_located_at variant_opener s idx1 
-   then next_basic_increase_in_variant_opening_case s idx idx1
-   else 
-   if Assistance_substring.is_a_substring_located_at record_arrow s idx1 
-   then next_basic_increase_in_field_naming_case s idx idx1
-   else let i=parse_int(Assistance_cull_string.interval s idx (idx1-1)) in 
-       (Assistance_crobj_basic_increase_t.Push_int(i),idx1);;
-
-
-exception Missing_string_closer of int * string;;
-
-let next_basic_increase_in_push_string_case s idx=
-   let idx1=idx+(String.length string_opener) in 
-   let idx2_opt=Assistance_substring.leftmost_index_of_in_from_opt string_closer s idx1 in 
-   if idx2_opt = None
-   then raise(Missing_string_closer(idx1,s))
-   else
-   let idx2 = Option.get idx2_opt in    
-   (* we know that the string is already encoded *)
-   let encoded_s = Assistance_encoded_string.retrieve (Assistance_cull_string.interval s idx1 (idx2-1)) in 
-   (Assistance_crobj_basic_increase_t.Push_string(encoded_s),idx2+(String.length string_closer));;
-
-
-
-
-exception Unreadable_increase of int * string ;;
-
-let next_basic_increase  s idx=
-   let idx1_opt= Assistance_substring.leftmost_index_of_in_from_opt salt s idx in 
-   if idx1_opt = None 
-   then let i=parse_int (Assistance_cull_string.cobeginning (idx-1) s) in
-        (Assistance_crobj_basic_increase_t.Push_int(i),String.length(s)+1)
-   else      
-   let idx1 = Option.get idx1_opt in    
-   if idx1>idx 
-   then next_basic_increase_in_preludy_case s idx idx1
-   else 
-   if Assistance_substring.is_a_substring_located_at string_opener s idx 
-   then next_basic_increase_in_push_string_case s idx
-   else 
-   match List.find_opt (fun 
-      (text,_action)->Assistance_substring.is_a_substring_located_at text s idx
-   ) list_for_preludeless_increasers with 
-   None -> raise(Unreadable_increase(idx,s))
-   |Some(text,action)->(action,idx+(String.length text));;
-
-let one_step_more machine =
-   let (action,next_idx) =
-      next_basic_increase machine.Assistance_crobj_parsing_machine_t.parsed_one 
-                            machine.Assistance_crobj_parsing_machine_t.current_index in 
-   {
-      machine with 
-      Assistance_crobj_parsing_machine_t.current_index = next_idx ;
-      Assistance_crobj_parsing_machine_t.data = Assistance_double_partial_crobj.increase action machine.Assistance_crobj_parsing_machine_t.data;
-   }  ;;
-
-let prudent_push machine = try (None,Some(one_step_more machine)) with 
-   Assistance_double_partial_crobj.End_reached(solution) -> (Some solution,None);;
-
-exception First_step_exn of Assistance_crobj_basic_increase_t.t ;; 
-
-let first_step s =
-   let (action,next_idx) = next_basic_increase s 1 in 
-   match action with 
-    Assistance_crobj_basic_increase_t.Push_int(i)->(Some(Assistance_concrete_object_t.Int(i)),None,next_idx)
-   |Assistance_crobj_basic_increase_t.Push_string(encoded_s)->(Some(Assistance_concrete_object.wrap_encoded_string(encoded_s)),None,next_idx)
-   |Assistance_crobj_basic_increase_t.Open(opening)->(None,Some(Assistance_double_partial_crobj.initialize(opening)),next_idx)
-   |Assistance_crobj_basic_increase_t.Push_field_name(_)
-   |Assistance_crobj_basic_increase_t.Separate(_)
-   |Assistance_crobj_basic_increase_t.Close(_) ->raise(First_step_exn(action));;
-
-exception Ends_too_soon of Assistance_concrete_object_t.t * string ;; 
-
-let parse s =
-    let (opt_quick_result,opt_start,next_idx) = first_step s in 
-    match opt_quick_result with 
-    Some (res)-> if next_idx < (String.length s)
-                 then raise(Ends_too_soon(res,s)) 
-                 else res 
-    |None -> let start_partial_obj = Option.get opt_start in   
-             let machine = {
-                Assistance_crobj_parsing_machine_t.parsed_one = s ;
-                Assistance_crobj_parsing_machine_t.current_index = next_idx ;
-                Assistance_crobj_parsing_machine_t.data = start_partial_obj;
-             } in 
-             let rec iterator = (fun mach ->
-                let (opt_sol,opt_term) = prudent_push mach in 
-                match opt_term with 
-                None -> Option.get opt_sol 
-                |Some(term)->iterator(term) 
-             ) in 
-             iterator machine;;
-
-let rec unparse = function 
-   Assistance_concrete_object_t.Int(i)->string_of_int i 
-   |Assistance_concrete_object_t.String(t)->string_opener^(Assistance_encoded_string.store t)^string_closer
-   |Assistance_concrete_object_t.Uple(l)->let temp1=Assistance_image.image unparse l in 
-             uple_opener^(String.concat uple_separator temp1)^uple_closer
-   |Assistance_concrete_object_t.List(l)->let temp1=Assistance_image.image unparse l in 
-             list_opener^(String.concat list_separator temp1)^list_closer 
-   |Assistance_concrete_object_t.Array(l)->let temp1=Assistance_image.image unparse l in 
-             array_opener^(String.concat array_separator temp1)^array_closer
-   |Assistance_concrete_object_t.Record(l)->let temp1=Assistance_image.image (fun (key,vaal)->key ^ record_arrow ^ (unparse vaal))  l in 
-             record_opener^(String.concat record_separator temp1)^record_closer          
-   |Assistance_concrete_object_t.Variant(constructor,l)->let temp1=Assistance_image.image unparse l in 
-             constructor^variant_opener^(String.concat variant_separator temp1)^variant_closer ;; 
-
-end;;
-
-let parse = Private.parse;;
-let unparse = Private.unparse;;
-
-end;;
-
-
-
-
-
-
 module Assistance_fw_with_persisting=struct
 
 (* 
@@ -15111,6 +15129,27 @@ let main_ref=
 end;;
 
 let all_endinglesses ()=Assistance_fwc_final_poly.Lfw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
+
+let changed_files_in_foreign_copy ()=
+   let temp1=Assistance_fwc_final_poly.Lfw_with_dependencies.all_moduled_mlx_files (!(Private.main_ref)) in 
+   let this_root = Assistance_dfa_root.connectable_to_subpath (Assistance_coma_big_constant.This_World.root) 
+   and next_root = Assistance_dfa_root.connectable_to_subpath (Assistance_coma_big_constant.Next_World.root) in 
+   let temp2=Assistance_explicit.filter (
+      fun full_path->
+         let rootless = Assistance_dfn_full.to_rootless full_path in 
+         if rootless = Assistance_coma_constant.rootless_path_for_parametersfile 
+         then false 
+         else 
+         let path = Assistance_dfn_rootless.to_line rootless in 
+         let ap1=Assistance_absolute_path.of_string(this_root^path) 
+         and ap2=Assistance_absolute_path.of_string(next_root^path) in 
+         Assistance_io.read_whole_file(ap1)<>Assistance_io.read_whole_file(ap2)
+   ) temp1 in 
+   Assistance_image.image (fun full_path->
+      Assistance_dfn_rootless.to_line(Assistance_dfn_full.to_rootless full_path)  
+   ) temp2 ;;    
+
+
 
 let clean_debug_dir ()=Assistance_fwc_final_poly.Lfw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Assistance_fwc_final_poly.Lfw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;

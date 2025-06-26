@@ -11,9 +11,7 @@ module Private = struct
     of string * string * string * string ;;  
   let home = Sys.getenv "HOME" ;;
 
-  let work_path = 
-          home ^ 
-        "/Teuliou/Printable/" ;;
+  let work_path = home ^ "/Teuliou/Heavy/Scanning/Workshop/" ;;
 
   let commands_for_number_of_pages_in_pdf ap = 
     let temp_file = work_path ^ "temp.txt" in 
