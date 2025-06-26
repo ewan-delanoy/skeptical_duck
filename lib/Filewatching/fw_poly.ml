@@ -24,6 +24,23 @@ let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Fw_poly_t.subdi
 let  get_watched_files fw = try Option.get ( fw.Fw_poly_t.watched_files )  with _ -> raise(Get_exn("watched_files")) ;;
    
 
+let origin = {
+   Fw_poly_t.type_name = Some "" ;
+   dir_for_backup = Some(Dfa_root.of_line "dummy") ;
+   encoding_protected_files = Some [] ;
+   github_url = Some "" ;
+   gitpush_after_backup = Some false ;
+   ignored_files = Some [] ;
+   ignored_subdirectories = Some [] ;
+   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
+   last_compilation_result_for_module = Some [] ;
+   root = Some (Dfa_root.of_line "dummy") ;
+   small_details_in_files = Some [] ;
+   subdirs_for_archived_mlx_files = Some [] ;
+   watched_files = Some [] ;
+} ;;
+
+
 
 module Crobj = struct 
 let salt = "Fw_poly_t." ;;
@@ -79,7 +96,48 @@ let to_concrete_object fw =
 
 end;; 
 
+module PartialCrobj = struct 
+let salt = "Fw_poly_t." ;;
+let label_for_type_name                          = salt ^ "type_name" ;;
+let label_for_ignored_files                      = salt ^ "ignored_files" ;;
+let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
+let label_for_last_compilation_result_for_module = salt ^ "last_compilation_result_for_module" ;;
+let label_for_root                               = salt ^ "root" ;;
+let label_for_small_details_in_files             = salt ^ "small_details_in_files" ;;
+let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
+let label_for_watched_files                      = salt ^ "watched_files" ;;
 
+let of_concrete_object ccrt_obj = 
+ let g=Concrete_object.get_record ccrt_obj in 
+ {
+   origin with
+   Fw_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
+   ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
+   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
+   last_compilation_result_for_module = Some(Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object (g label_for_last_compilation_result_for_module))  ;
+   root = Some(Dfa_root.of_concrete_object (g label_for_root))  ;
+   small_details_in_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))  ;
+   subdirs_for_archived_mlx_files = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files))  ;
+   watched_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
+} ;;
+
+let to_concrete_object fw = 
+ let items =  
+ [
+   label_for_type_name, Crobj_converter.string_to_concrete_object (get_type_name fw);
+   label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
+   label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
+   label_for_last_compilation_result_for_module, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object ( get_last_compilation_result_for_module fw ) ;
+   label_for_root, Dfa_root.to_concrete_object ( get_root fw ) ;
+   label_for_small_details_in_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object ( get_small_details_in_files fw ) ;
+   label_for_subdirs_for_archived_mlx_files, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_subdirs_for_archived_mlx_files fw ) ;
+   label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
+ ] in 
+ Concrete_object_t.Record items ;;
+
+
+end;; 
 
 module Extender = struct 
 
@@ -180,22 +238,6 @@ end;;
 
 
 
-
-let origin = {
-   Fw_poly_t.type_name = Some "" ;
-   dir_for_backup = Some(Dfa_root.of_line "dummy") ;
-   encoding_protected_files = Some [] ;
-   github_url = Some "" ;
-   gitpush_after_backup = Some false ;
-   ignored_files = Some [] ;
-   ignored_subdirectories = Some [] ;
-   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
-   last_compilation_result_for_module = Some [] ;
-   root = Some (Dfa_root.of_line "dummy") ;
-   small_details_in_files = Some [] ;
-   subdirs_for_archived_mlx_files = Some [] ;
-   watched_files = Some [] ;
-} ;;
 
 module Type_information = struct 
 let fields_for_instances = [
