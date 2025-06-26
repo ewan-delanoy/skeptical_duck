@@ -417,6 +417,8 @@ let list_values_from_module = Private.list_values_from_module ;;
 let modern_recompile = Private.modern_recompile ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_configuration = Private.of_configuration ;;
+
+let of_concrete_object = Fw_poly.of_partial_concrete_object ;;
 let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
 let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
@@ -431,6 +433,7 @@ let root = Private.root ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
+let to_concrete_object = Fw_poly.to_partial_concrete_object ;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 
 let usual_recompile = Private.usual_recompile ;;  
