@@ -19,6 +19,9 @@ let main_ref=
   ~encoding_protected_files:[]
   in 
   ref(Fwc_final_poly.Lfwc_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config);;
+
+  let ref_for_unofficial_changes = ref(None : (string list) option) ;; 
+
 end;;
 
 let all_endinglesses ()=Fwc_final_poly.Lfw_with_dependencies.all_endinglesses (!(Private.main_ref)) ;; 
@@ -38,14 +41,25 @@ let changed_files_in_foreign_copy ()=
          and ap2=Absolute_path.of_string(next_root^path) in 
          Io.read_whole_file(ap1)<>Io.read_whole_file(ap2)
    ) temp1 in 
-   Image.image (fun full_path->
+   let answer = Image.image (fun full_path->
       Dfn_rootless.to_line(Dfn_full.to_rootless full_path)  
-   ) temp2 ;;    
+   ) temp2 in 
+   let _ = (Private.ref_for_unofficial_changes := Some answer) in 
+   answer;;    
 
 
 
 let clean_debug_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_debug_dir (!(Private.main_ref));;
 let clean_exec_dir ()=Fwc_final_poly.Lfw_with_batch_compilation.clean_exec_dir (!(Private.main_ref));;
+
+let create_foreign_copy summary=
+  let _ = (Private.ref_for_unofficial_changes:=None) in 
+  let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
+  let _=Create_world_copy.fully_developed_copy
+  (!Private.main_ref) summary
+  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
+  in 
+  () ;; 
 
 let duplicate_module old_t1 old_t2=
 Fwc_final_poly.Lfw_with_dependencies.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
