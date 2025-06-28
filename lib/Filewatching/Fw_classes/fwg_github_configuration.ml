@@ -31,7 +31,10 @@ let gitpush_after_backup fw = Fw_poly.gitpush_after_backup fw  ;;
 
 let github_url fw = Fw_poly.github_url fw  ;;
 
-
+let set_gitpush_after_backup fw new_gab = {
+  fw with
+  Fw_flattened_poly_t.gitpush_after_backup = Some new_gab  ;
+} ;;
 
 
 module Crobj = struct 
@@ -78,4 +81,6 @@ let github_url = Private.github_url  ;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
 
 let make = Private.make ;;
+
+let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;

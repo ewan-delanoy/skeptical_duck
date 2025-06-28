@@ -405,7 +405,7 @@ module Private = struct
     *)
     (fw2,(changed_uc,changed_files)) ;;   
 
-  
+  let to_fw_configuration fw = Fw_poly.to_fw_configuration fw ;;
 
   end ;;
   
@@ -434,6 +434,7 @@ let show_value_occurrences = Private.show_value_occurrences ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
 let to_concrete_object = Fw_poly.to_partial_concrete_object ;;
+let to_fw_configuration = Private.to_fw_configuration;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 
 let usual_recompile = Private.usual_recompile ;;  
