@@ -33,14 +33,14 @@ let of_concrete_object ccrt_obj =
   let g=Concrete_object.get_record ccrt_obj in 
   make 
    (Fw_with_batch_compilation.of_concrete_object (g label_for_parent))
-   (Fwg_github_configuration.of_concrete_object (g label_for_github_config))
+   (Fwc_github_configuration.of_concrete_object (g label_for_github_config))
   ;;
 
 let to_concrete_object fw = 
  let items =  
  [
    label_for_parent, Fw_with_batch_compilation.to_concrete_object ( parent fw ) ;
-   label_for_github_config, Fwg_github_configuration.to_concrete_object ( github_configuration fw ) ;
+   label_for_github_config, Fwc_github_configuration.to_concrete_object ( github_configuration fw ) ;
  ] in 
  Concrete_object_t.Record items ;;
 
