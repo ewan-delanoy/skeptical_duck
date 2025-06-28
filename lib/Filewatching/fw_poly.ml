@@ -9,23 +9,23 @@ exception Get_exn of string ;;
 
 module Private = struct 
 
-let  get_type_name fw = try Option.get ( fw.Fw_poly_t.type_name )  with _ -> raise(Get_exn("type_name")) ;;
-let  get_dir_for_backup fw = try Option.get ( fw.Fw_poly_t.dir_for_backup )  with _ -> raise(Get_exn("dir_for_backup")) ;;
-let  get_encoding_protected_files fw = try Option.get ( fw.Fw_poly_t.encoding_protected_files )  with _ -> raise(Get_exn("encoding_protected_files")) ;;
-let  get_github_url fw = try Option.get ( fw.Fw_poly_t.github_url )  with _ -> raise(Get_exn("github_url")) ;;
-let  get_gitpush_after_backup fw = try Option.get ( fw.Fw_poly_t.gitpush_after_backup )  with _ -> raise(Get_exn("gitpush_after_backup")) ;;
-let  get_index_for_caching fw = try Option.get ( fw.Fw_poly_t.index_for_caching )  with _ -> raise(Get_exn("index_for_caching")) ;;
-let  get_ignored_files fw = try Option.get ( fw.Fw_poly_t.ignored_files )  with _ -> raise(Get_exn("ignored_files")) ;;
-let  get_ignored_subdirectories fw = try Option.get (fw.Fw_poly_t.ignored_subdirectories )  with _ -> raise(Get_exn("ignored_subdirectories")) ;;
-let  get_last_compilation_result_for_module fw = try Option.get ( fw.Fw_poly_t.last_compilation_result_for_module )  with _ -> raise(Get_exn("last_compilation_result_for_module")) ;;
-let  get_root fw = try Option.get ( fw.Fw_poly_t.root )  with _ -> raise(Get_exn("root")) ;;
-let  get_small_details_in_files fw = try Option.get ( fw.Fw_poly_t.small_details_in_files )  with _ -> raise(Get_exn("small_details_in_files")) ;;
-let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Fw_poly_t.subdirs_for_archived_mlx_files )  with _ -> raise(Get_exn("subdirs_for_archived_mlx_files")) ;;
-let  get_watched_files fw = try Option.get ( fw.Fw_poly_t.watched_files )  with _ -> raise(Get_exn("watched_files")) ;;
+let  get_type_name fw = try Option.get ( fw.Fw_flattened_poly_t.type_name )  with _ -> raise(Get_exn("type_name")) ;;
+let  get_dir_for_backup fw = try Option.get ( fw.Fw_flattened_poly_t.dir_for_backup )  with _ -> raise(Get_exn("dir_for_backup")) ;;
+let  get_encoding_protected_files fw = try Option.get ( fw.Fw_flattened_poly_t.encoding_protected_files )  with _ -> raise(Get_exn("encoding_protected_files")) ;;
+let  get_github_url fw = try Option.get ( fw.Fw_flattened_poly_t.github_url )  with _ -> raise(Get_exn("github_url")) ;;
+let  get_gitpush_after_backup fw = try Option.get ( fw.Fw_flattened_poly_t.gitpush_after_backup )  with _ -> raise(Get_exn("gitpush_after_backup")) ;;
+let  get_index_for_caching fw = try Option.get ( fw.Fw_flattened_poly_t.index_for_caching )  with _ -> raise(Get_exn("index_for_caching")) ;;
+let  get_ignored_files fw = try Option.get ( fw.Fw_flattened_poly_t.ignored_files )  with _ -> raise(Get_exn("ignored_files")) ;;
+let  get_ignored_subdirectories fw = try Option.get (fw.Fw_flattened_poly_t.ignored_subdirectories )  with _ -> raise(Get_exn("ignored_subdirectories")) ;;
+let  get_last_compilation_result_for_module fw = try Option.get ( fw.Fw_flattened_poly_t.last_compilation_result_for_module )  with _ -> raise(Get_exn("last_compilation_result_for_module")) ;;
+let  get_root fw = try Option.get ( fw.Fw_flattened_poly_t.root )  with _ -> raise(Get_exn("root")) ;;
+let  get_small_details_in_files fw = try Option.get ( fw.Fw_flattened_poly_t.small_details_in_files )  with _ -> raise(Get_exn("small_details_in_files")) ;;
+let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Fw_flattened_poly_t.subdirs_for_archived_mlx_files )  with _ -> raise(Get_exn("subdirs_for_archived_mlx_files")) ;;
+let  get_watched_files fw = try Option.get ( fw.Fw_flattened_poly_t.watched_files )  with _ -> raise(Get_exn("watched_files")) ;;
    
 
 let origin = {
-   Fw_poly_t.type_name = Some "" ;
+   Fw_flattened_poly_t.type_name = Some "" ;
    dir_for_backup = Some(Dfa_root.of_line "dummy") ;
    encoding_protected_files = Some [] ;
    github_url = Some "" ;
@@ -60,7 +60,7 @@ let label_for_watched_files                      = salt ^ "watched_files" ;;
 let of_concrete_object ccrt_obj = 
  let g=Concrete_object.get_record ccrt_obj in 
  {
-   Fw_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
    dir_for_backup = Some(Dfa_root.of_concrete_object (g label_for_dir_for_backup))  ;
    encoding_protected_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Dfn_rootless.of_concrete_object (g label_for_encoding_protected_files))  ;
    github_url = Some(Crobj_converter.string_of_concrete_object (g label_for_github_url))  ;
@@ -111,7 +111,7 @@ let of_concrete_object ccrt_obj =
  let g=Concrete_object.get_record ccrt_obj in 
  {
    origin with
-   Fw_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
    ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
    ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
    index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
@@ -143,22 +143,22 @@ module Extender = struct
 
 let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
    fw with 
-   Fw_poly_t.type_name = Some"Fw_with_archives" ;
+   Fw_flattened_poly_t.type_name = Some"Fw_with_archives" ;
    subdirs_for_archived_mlx_files = Some v1_archives_subdirs ;
 } ;;
 let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
-   Fw_poly_t.type_name = Some "File_watcher" ;
+   Fw_flattened_poly_t.type_name = Some "File_watcher" ;
    watched_files = Some v1_files ;
 } ;;
 let fw_with_archives_to_fw_with_small_details fw ~small_details_in_files:v1_small_details = {
    fw with 
-   Fw_poly_t.type_name = Some "Fw_with_small_details" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_with_small_details" ;
    small_details_in_files = Some v1_small_details ;
 } ;;
 let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup_dir ~gitpush_after_backup:v2_gab ~github_url:v3_url ~encoding_protected_files:v4_protected_pairs = {
    fw with 
-   Fw_poly_t.type_name = Some "Fw_with_githubbing" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_with_githubbing" ;
    dir_for_backup = Some v1_backup_dir ;
    gitpush_after_backup = Some v2_gab ;
    github_url = Some v3_url ;
@@ -166,12 +166,12 @@ let fw_with_batch_compilation_to_fw_with_githubbing fw ~dir_for_backup:v1_backup
 } ;;
 let fw_with_dependencies_to_fw_with_batch_compilation fw ~last_compilation_result_for_module:v1_compilation_results = {
    fw with 
-   Fw_poly_t.type_name = Some "Fw_with_batch_compilation" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_with_batch_compilation" ;
    last_compilation_result_for_module = Some v1_compilation_results ;
 } ;;
 let fw_with_small_details_to_fw_with_dependencies fw ~index_for_caching:v1_cache_idx = {
    fw with 
-   Fw_poly_t.type_name = Some "Fw_with_dependencies" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" ;
    index_for_caching = Some v1_cache_idx ;
 } ;;
 end;;
@@ -232,7 +232,7 @@ let set ~child ~new_parent =
 
 let get child = 
  let parent_name = get_parent_name child in 
- { child with Fw_poly_t.type_name = Some parent_name } ;;
+ { child with Fw_flattened_poly_t.type_name = Some parent_name } ;;
 
 end;; 
 
@@ -325,14 +325,14 @@ end;;
 
 let construct_fw_configuration ~root:v1_r ~ignored_subdirectories:v2_ign_subdirs ~ignored_files:v3_ign_files = {
    Private.origin with 
-   Fw_poly_t.type_name = Some "Fw_configuration" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_configuration" ;
    root = Some v1_r ;
    ignored_subdirectories = Some v2_ign_subdirs ;
    ignored_files = Some v3_ign_files ;
 } ;;
 let construct_github_configuration ~root:v1_r ~dir_for_backup:v2_backup_dir ~gitpush_after_backup:v3_gab ~github_url:v4_url ~encoding_protected_files:v5_protected_pairs = {
    Private.origin with 
-   Fw_poly_t.type_name = Some "Github_configuration" ;
+   Fw_flattened_poly_t.type_name = Some "Github_configuration" ;
    root = Some v1_r ;
    dir_for_backup = Some v2_backup_dir ;
    gitpush_after_backup = Some v3_gab ;
@@ -359,19 +359,19 @@ let origin = Private.origin ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Private.get_type_name fw)^" >") ;;
 let root x = Private.get_root x;;
-let set_dir_for_backup x backup_dir = { x with Fw_poly_t.dir_for_backup = Some backup_dir} ;;
-let set_encoding_protected_files x protected_pairs = { x with Fw_poly_t.encoding_protected_files = Some protected_pairs} ;;
-let set_github_url x url = { x with Fw_poly_t.github_url = Some url} ;;
-let set_gitpush_after_backup x gab = { x with Fw_poly_t.gitpush_after_backup = Some gab} ;;
-let set_ignored_files x ign_files = { x with Fw_poly_t.ignored_files = Some ign_files} ;;
-let set_ignored_subdirectories x ign_subdirs = { x with Fw_poly_t.ignored_subdirectories = Some ign_subdirs} ;;
-let set_index_for_caching x cache_idx = { x with Fw_poly_t.index_for_caching = Some cache_idx} ;;
-let set_last_compilation_result_for_module x compilation_results = { x with Fw_poly_t.last_compilation_result_for_module = Some compilation_results} ;;
+let set_dir_for_backup x backup_dir = { x with Fw_flattened_poly_t.dir_for_backup = Some backup_dir} ;;
+let set_encoding_protected_files x protected_pairs = { x with Fw_flattened_poly_t.encoding_protected_files = Some protected_pairs} ;;
+let set_github_url x url = { x with Fw_flattened_poly_t.github_url = Some url} ;;
+let set_gitpush_after_backup x gab = { x with Fw_flattened_poly_t.gitpush_after_backup = Some gab} ;;
+let set_ignored_files x ign_files = { x with Fw_flattened_poly_t.ignored_files = Some ign_files} ;;
+let set_ignored_subdirectories x ign_subdirs = { x with Fw_flattened_poly_t.ignored_subdirectories = Some ign_subdirs} ;;
+let set_index_for_caching x cache_idx = { x with Fw_flattened_poly_t.index_for_caching = Some cache_idx} ;;
+let set_last_compilation_result_for_module x compilation_results = { x with Fw_flattened_poly_t.last_compilation_result_for_module = Some compilation_results} ;;
 let set_parent  = Private.Parent.set ;;
-let set_root x r = { x with Fw_poly_t.root = Some r} ;;
-let set_small_details_in_files x small_details = { x with Fw_poly_t.small_details_in_files = Some small_details} ;;
-let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_poly_t.subdirs_for_archived_mlx_files = Some archives_subdirs} ;;
-let set_watched_files x files = { x with Fw_poly_t.watched_files = Some files} ;;
+let set_root x r = { x with Fw_flattened_poly_t.root = Some r} ;;
+let set_small_details_in_files x small_details = { x with Fw_flattened_poly_t.small_details_in_files = Some small_details} ;;
+let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_flattened_poly_t.subdirs_for_archived_mlx_files = Some archives_subdirs} ;;
+let set_watched_files x files = { x with Fw_flattened_poly_t.watched_files = Some files} ;;
 let show_fields  = Private.Type_information.show_fields ;;
 let small_details_in_files x = Private.get_small_details_in_files x;;
 let subdirs_for_archived_mlx_files x = Private.get_subdirs_for_archived_mlx_files x ;;
@@ -381,14 +381,14 @@ let to_fw_configuration fw  =
   let _ = Private.Type_information.check_inclusion "fw_configuration" tname in 
    {
    fw with 
-   Fw_poly_t.type_name = Some "Fw_configuration" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_configuration" ;
 } ;;
 let to_github_configuration fw  = 
   let tname = Private.get_type_name fw in 
   let _ = Private.Type_information.check_inclusion "github_configuration" tname in 
    {
    fw with 
-   Fw_poly_t.type_name = Some "Github_configuration" ;
+   Fw_flattened_poly_t.type_name = Some "Github_configuration" ;
 } ;;
 
 let to_partial_concrete_object = Private.PartialCrobj.to_concrete_object ;;

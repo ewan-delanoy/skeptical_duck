@@ -4,7 +4,7 @@
 
 *)
 
-type t = Final of Fw_poly_t.t;;
+type t = Final of Fw_flattened_poly_t.t;;
 
 module Lfw_configuration = struct 
 

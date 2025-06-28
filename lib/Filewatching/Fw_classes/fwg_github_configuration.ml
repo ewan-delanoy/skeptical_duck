@@ -6,7 +6,7 @@
 
 
 
-type t = Fw_poly_t.t ;;
+type t = Fw_flattened_poly_t.t ;;
 
 module Private = struct 
 
@@ -16,7 +16,7 @@ let make
 ~v_github_url
 ~v_encoding_protected_files = {
   Fw_poly.origin with
-  Fw_poly_t.type_name = Some "Fwc_github_configuration_t" ;
+  Fw_flattened_poly_t.type_name = Some "Fwc_github_configuration_t" ;
   dir_for_backup = Some(v_dir_for_backup)  ;
   encoding_protected_files = Some(v_encoding_protected_files)  ;
   github_url = Some(v_github_url)  ;
