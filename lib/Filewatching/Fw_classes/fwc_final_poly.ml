@@ -115,53 +115,53 @@ end ;;
 module Lfwc_with_githubbing = struct 
 
 let forget_modules (Final fw) mods=
-    Final(Fw_with_githubbing.forget_modules fw mods) ;;
+    Final(Fwc_with_githubbing.forget_modules fw mods) ;;
 let forget_nonmodular_rootlesses (Final fw) rls=
-    Final(Fw_with_githubbing.forget_nonmodular_rootlesses fw rls) ;;  
+    Final(Fwc_with_githubbing.forget_nonmodular_rootlesses fw rls) ;;  
 let gitpush_after_backup (Final fw) =
     Fw_poly.gitpush_after_backup fw ;;  
-let of_concrete_object cr = Final(Fw_with_githubbing.of_concrete_object cr) ;;    
+let of_concrete_object cr = Final(Fwc_with_githubbing.of_concrete_object cr) ;;    
 let of_fw_config_and_github_config fw_config github_config=
-    Final(Fw_with_githubbing.of_fw_config_and_github_config 
+    Final(Fwc_with_githubbing.of_fw_config_and_github_config 
     fw_config github_config) ;;        
 let of_fw_with_batch_compilation fw_batch backup_dir gab git_url enc_files=
-    Final(Fw_with_githubbing.of_fw_with_batch_compilation 
+    Final(Fwc_with_githubbing.of_fw_with_batch_compilation 
     fw_batch backup_dir gab git_url enc_files) ;;  
 let plunge_fw_config_with_github_config fw_config github_config=
-    Final(Fw_with_githubbing.plunge_fw_config_with_github_config 
+    Final(Fwc_with_githubbing.plunge_fw_config_with_github_config 
     fw_config github_config) ;;
 let register_rootless_paths (Final fw) rls=
-    Final(Fw_with_githubbing.register_rootless_paths fw rls) ;;
+    Final(Fwc_with_githubbing.register_rootless_paths fw rls) ;;
 let relocate_module_to (Final fw) mod_name new_subdir=
-    Final(Fw_with_githubbing.relocate_module_to 
+    Final(Fwc_with_githubbing.relocate_module_to 
     fw mod_name new_subdir) ;;
 let rename_module (Final fw) old_middle_name new_nonslashed_name=
-    Final(Fw_with_githubbing.rename_module 
+    Final(Fwc_with_githubbing.rename_module 
     fw old_middle_name new_nonslashed_name) ;;
 
 let rename_subdirectory_as (Final fw) (old_subdir,new_subdir)=
-    Final(Fw_with_githubbing.rename_subdirectory_as 
+    Final(Fwc_with_githubbing.rename_subdirectory_as 
     fw (old_subdir,new_subdir)) ;;
 
 let replace_string (Final fw) old_s new_s=
-    Final(Fw_with_githubbing.replace_string 
+    Final(Fwc_with_githubbing.replace_string 
     fw old_s new_s) ;;
 
 let replace_value (Final fw) ((preceding_files,path),(old_v,new_v))=
-    Final(Fw_with_githubbing.replace_value 
+    Final(Fwc_with_githubbing.replace_value 
     fw ((preceding_files,path),(old_v,new_v)) ) ;;
 
 let set_gitpush_after_backup (Final fw) gab = 
-      Final(Fw_with_githubbing.set_gitpush_after_backup fw gab) ;; 
+      Final(Fwc_with_githubbing.set_gitpush_after_backup fw gab) ;; 
 
-let to_concrete_object (Final fw) = Fw_with_githubbing.to_concrete_object fw ;;
+let to_concrete_object (Final fw) = Fwc_with_githubbing.to_concrete_object fw ;;
 
-let to_fw_configuration (Final fw) = Fw_with_githubbing.to_fw_configuration fw ;;
+let to_fw_configuration (Final fw) = Fwc_with_githubbing.to_fw_configuration fw ;;
 
-let to_github_configuration (Final fw) = Fw_with_githubbing.to_github_configuration fw ;;
+let to_github_configuration (Final fw) = Fwc_with_githubbing.to_github_configuration fw ;;
 
 let usual_recompile (Final fw) opt_comment=
-    Final(Fw_with_githubbing.usual_recompile fw opt_comment) ;;
+    Final(Fwc_with_githubbing.usual_recompile fw opt_comment) ;;
 
 end ;;  
 
