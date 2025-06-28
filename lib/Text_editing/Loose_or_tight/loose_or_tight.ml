@@ -18,9 +18,14 @@ exception Node_global_state_exn of Absolute_path.t ;;
 
 type t = Loose |Tight ;;
 
+type list_t = {
+   purpose : string ;
+   files : Absolute_path.t list;
+} ;;
+
 module Private =struct
 
-type node_t = {
+type configuration_t = {
   markers_for_loose_version : string * string ;
   markers_for_tight_version : string * string ;
   the_marked_file : Absolute_path.t ;
@@ -30,7 +35,7 @@ type node_t = {
 
 type state = Commented |Uncommented ;;
 
-let markers_from_content content = 
+let markers_from_purpose content = 
   (
     ("(* Beginning of loose version of "^content^" *)",
      "(* End"^   " of loose version of "^content^" *)"),
@@ -38,28 +43,22 @@ let markers_from_content content =
      "(* End"^   " of tight version of "^content^" *)")
   ) ;; 
 
-let compute_node  
-  ?markers_for_loose_followed_by_tight ?(content="the unknown thing") 
-  marked_file= 
-  let (mrkrs_for_loose,mrkrs_for_tight) = (
-  match markers_for_loose_followed_by_tight with 
-  None -> markers_from_content content    
-  |Some(loose,tight) -> (loose,tight)
-  ) in 
+let compute_configuration  ?(purpose="the unknown thing") marked_file= 
+  let (mrkrs_for_loose,mrkrs_for_tight) = markers_from_purpose purpose in 
   {
     markers_for_loose_version = mrkrs_for_loose ;
     markers_for_tight_version = mrkrs_for_tight ;
     the_marked_file = marked_file ;
   } ;; 
 
-let get_marker node = function  
-   Loose ->node.markers_for_loose_version
-  |Tight ->node.markers_for_tight_version ;;
+let get_marker config = function  
+   Loose -> config.markers_for_loose_version
+  |Tight -> config.markers_for_tight_version ;;
 
-let get_content_for_chosen_marker node loose_or_tight=
-  let markers = get_marker node loose_or_tight in 
+let get_content_for_chosen_marker config loose_or_tight=
+  let markers = get_marker config loose_or_tight in 
   Cull_string.between_markers markers 
-  (Io.read_whole_file node.the_marked_file) ;; 
+  (Io.read_whole_file config.the_marked_file) ;; 
 
 let content_state content = 
   let (starter,ender) = Replace_inside.pair_for_commenting_or_uncommenting in
@@ -71,13 +70,18 @@ let content_state content =
        then Commented 
        else Uncommented;;    
 
-let get_state_for_chosen_marker node loose_or_tight=
- content_state(get_content_for_chosen_marker node loose_or_tight);;
+let get_state_for_chosen_marker config loose_or_tight=
+ content_state(get_content_for_chosen_marker config loose_or_tight);;
+
+let contrary_state = function 
+  Uncommented -> Commented 
+ |Commented-> Uncommented ;;
 
  let unsafe_set_content_state content new_state = 
   (*
   note that this is weaker than an ordinary setter,
-  only works correctly when the state is changed. Hence the "unsafe" prefix
+  only works correctly when the state is changed. 
+  The "safe, working in all cases" version is just below
   *)
   let pair = Replace_inside.pair_for_commenting_or_uncommenting in
   match new_state with 
@@ -86,66 +90,73 @@ let get_state_for_chosen_marker node loose_or_tight=
     let (starter,ender) = pair in
     starter^content^ender ;;    
 
-let contrary_state = function 
-   Uncommented -> Commented 
-  |Commented-> Uncommented ;;
+let set_content_state old_content new_state = 
+  let old_state = content_state old_content in
+  if old_state = new_state 
+  then old_content 
+  else unsafe_set_content_state old_content new_state ;;
 
-let change_state_for_chosen_marker node loose_or_tight = 
-  let old_content = get_content_for_chosen_marker node loose_or_tight in 
-  let old_state = content_state old_content in 
-  let new_state = contrary_state old_state in
+
+let set_state_for_chosen_marker config loose_or_tight new_state= 
+  let old_content = get_content_for_chosen_marker config loose_or_tight in 
   let new_content = unsafe_set_content_state old_content new_state 
-  and markers = get_marker node loose_or_tight in
+  and markers = get_marker config loose_or_tight in
   Replace_inside.overwrite_between_markers_inside_file 
-   ~overwriter:new_content markers node.the_marked_file ;; 
+   ~overwriter:new_content markers config.the_marked_file ;; 
 
-let toggle_node node = 
-  let state1 = get_state_for_chosen_marker node Loose 
-  and state2 = get_state_for_chosen_marker node Tight in 
-  if state1 = state2 
-  then raise(Toggle_exn node.the_marked_file) 
-  else
-    
-    (change_state_for_chosen_marker node Loose ;
-     change_state_for_chosen_marker node Tight );;
+let set_state_for_both_markers config new_state = 
+  (
+    set_state_for_chosen_marker config Loose new_state;
+    set_state_for_chosen_marker config Tight (contrary_state new_state)
+  )
+
+let set_loosetight_biparagraph config new_state = 
+    set_state_for_both_markers config new_state ;;
+
+let toggle_loosetight_biparagraph config = 
+  let old_state = get_state_for_chosen_marker config Loose in 
+  let new_state = contrary_state old_state in 
+  set_state_for_both_markers config new_state ;;
 
 let toggle marked_file ~purpose_name=      
-  let node = compute_node   ~content:purpose_name marked_file in 
-  toggle_node node ;;
-
-let global_node_state node = 
-    let state1 = get_state_for_chosen_marker node Loose 
-    and state2 = get_state_for_chosen_marker node Tight in 
-    if state1 = state2 
-    then raise(Node_global_state_exn node.the_marked_file) 
-    else
-    if state1 = Uncommented 
-    then Loose    
-    else Tight ;;
-
-let set_node_state node wanted_state = 
-   let old_state = global_node_state node in 
-   if wanted_state = old_state 
-   then ()
-   else toggle_node node ;;
+  let config = compute_configuration   ~purpose:purpose_name marked_file in 
+  toggle_loosetight_biparagraph config ;;
 
 let set marked_file ~purpose_name wanted_state=      
-   let node = compute_node   ~content:purpose_name marked_file in 
-   set_node_state node wanted_state ;;
+   let config = compute_configuration   ~purpose:purpose_name marked_file in 
+   set_loosetight_biparagraph config wanted_state ;;
 
 let write_loose_tight_template_in_file_at_line ap ~purpose_name ~line_number = 
-   let ((beg1,end1),(beg2,end2)) = markers_from_content purpose_name in 
+   let ((beg1,end1),(beg2,end2)) = markers_from_purpose purpose_name in 
    let text =
     String.concat "\n"
-    [beg1;"";"(* ... Put loose version here ... *)";end1;"";
-     beg2;"";"(* ... Put tight version here ... *)";end2] in 
+    [beg1;"";"(* ... Put loose version here ... *)";"";end1;"";
+     beg2;"";"(* ... Put tight version here ... *)";"";end2] in 
    Lines_in_text.insert_after_line_inside_file ap ~line_number
       ~inserted_snippet:text ;;  
+
+let global_state_for_file_list fl =
+   (* We just look at the first file in the list. 
+    This is arbitrary but convenient *)
+   let file = List.hd fl.files in 
+   let config = compute_configuration ~purpose:fl.purpose file in 
+   get_state_for_chosen_marker config Loose ;;
+
+let set_in_file_list fl wanted_state = 
+  List.iter (
+    fun file -> set ~purpose_name:fl.purpose file wanted_state
+  )  fl.files ;;
+let toggle_in_file_list fl = 
+  let old_state = global_state_for_file_list fl in 
+  let new_state = contrary_state old_state in 
+  set_in_file_list fl new_state ;;
 
 
 end ;;  
 
 
 let set = Private.set ;;
+let set_in_file_list = Private.set_in_file_list ;;
 let toggle = Private.toggle ;; 
+let toggle_in_file_list = Private.toggle_in_file_list ;;
 let write_loose_tight_template_in_file_at_line = Private.write_loose_tight_template_in_file_at_line ;;

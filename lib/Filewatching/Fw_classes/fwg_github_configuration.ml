@@ -5,6 +5,15 @@
 *)
 
 
+(* Beginning of loose version of file-watching *)
+
+(* ... Put loose version here ... *)
+(* End of loose version of file-watching *)
+
+(* Beginning of tight version of file-watching *)
+
+(* ... Put tight version here ... *)
+(* End of tight version of file-watching *)
 
 type t = Fw_flattened_poly_t.t ;;
 
