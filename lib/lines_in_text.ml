@@ -438,6 +438,17 @@ lines_inside_or_outside_cee_comments txt3 ;;
     let new_text = modify_interval_inside_text f old_text i j in 
     Io.overwrite_with src_file new_text ;;    
 
+  let insert_after_line_inside_text text ~line_number ~inserted_snippet=
+      let (before,itv,after) = tripartition_associated_to_interval text line_number line_number in 
+      let new_itv = itv^"\n"^inserted_snippet in 
+      before ^ new_itv ^ after ;;
+ 
+  let insert_after_line_inside_file src_file ~line_number ~inserted_snippet=
+     let old_text = Io.read_whole_file src_file  in 
+     let new_text = insert_after_line_inside_text old_text ~line_number ~inserted_snippet in 
+     Io.overwrite_with src_file new_text ;;   
+
+
   end ;;   
 
 
@@ -471,9 +482,10 @@ lines_inside_or_outside_cee_comments txt3 ;;
   
   *)
 
-  
+  let insert_after_line_inside_file = Private.insert_after_line_inside_file ;;
+  let insert_after_line_inside_text = Private.insert_after_line_inside_text ;;
 
-let interval = Private.interval ;;
+  let interval = Private.interval ;;
 
    let line_index_from_char_index text char_idx=
       1+(Private.number_of_lines_in_char_interval text 1 char_idx);;
