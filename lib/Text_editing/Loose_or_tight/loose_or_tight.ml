@@ -133,8 +133,19 @@ let set marked_file ~purpose_name wanted_state=
    let node = compute_node   ~content:purpose_name marked_file in 
    set_node_state node wanted_state ;;
 
+let write_loose_tight_template_in_file_at_line ap ~purpose_name ~line_number = 
+   let ((beg1,end1),(beg2,end2)) = markers_from_content purpose_name in 
+   let text =
+    String.concat "\n"
+    [beg1;"";"(* ... Put loose version here ... *)";end1;"";
+     beg2;"";"(* ... Put tight version here ... *)";end2] in 
+   Lines_in_text.insert_after_line_inside_file ap ~line_number
+      ~inserted_snippet:text ;;  
+
 
 end ;;  
 
+
 let set = Private.set ;;
 let toggle = Private.toggle ;; 
+let write_loose_tight_template_in_file_at_line = Private.write_loose_tight_template_in_file_at_line ;;
