@@ -1,6 +1,6 @@
 (*
 
-#use"Text_editing/Loose_or_tight/loose_or_tight.ml";;
+#use"lib/Text_editing/Loose_or_tight/loose_or_tight.ml";;
 
 In certain parts of Ocaml Code, some "tight" snippet may
 be replaced by a "loose" snippet. One possiblity is to store
