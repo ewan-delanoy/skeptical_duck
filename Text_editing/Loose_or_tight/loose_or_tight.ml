@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Text_editing/loose_or_tight.ml";;
+#use"Text_editing/Loose_or_tight/loose_or_tight.ml";;
 
 *)
 
