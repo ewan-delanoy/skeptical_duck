@@ -1,6 +1,6 @@
 (* 
 
-#use"lib/Filewatching/Fw_classes/fwc_github_configuration.ml";;
+#use"lib/Filewatching/Fw_classes/fwg_github_configuration.ml";;
 
 *)
 
