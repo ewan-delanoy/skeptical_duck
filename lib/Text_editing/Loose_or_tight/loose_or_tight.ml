@@ -13,8 +13,6 @@ configuration and manage the loose/tight pair.
 *)
 
 exception Content_state_exn of string ;;
-exception Toggle_exn of Absolute_path.t ;;
-exception Node_global_state_exn of Absolute_path.t ;;
 
 type t = Loose |Tight ;;
 
