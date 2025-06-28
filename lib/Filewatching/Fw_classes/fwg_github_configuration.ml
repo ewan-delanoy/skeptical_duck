@@ -5,15 +5,7 @@
 *)
 
 
-(* Beginning of loose version of file-watching *)
-
-(* ... Put loose version here ... *)
-(* End of loose version of file-watching *)
-
-(* Beginning of tight version of file-watching *)
-
-(* ... Put tight version here ... *)
-(* End of tight version of file-watching *)
+(* Beginning of loose version of file watching *)
 
 type t = Fw_flattened_poly_t.t ;;
 
@@ -45,6 +37,17 @@ let set_gitpush_after_backup fw new_gab = {
   Fw_flattened_poly_t.gitpush_after_backup = Some new_gab  ;
 } ;;
 
+end ;;
+
+(* End of loose version of file watching *)
+
+(* Beginning of tight version of file watching *)
+
+(* ... Put tight version here ... *)
+
+(* End of tight version of file watching *)
+
+
 
 module Crobj = struct 
 let salt = "Fwc_github_configuration_t." ;;
@@ -56,7 +59,7 @@ let label_for_gitpush_after_backup               = salt ^ "gitpush_after_backup"
 
 let of_concrete_object ccrt_obj = 
   let g=Concrete_object.get_record ccrt_obj in 
-  make 
+  Private.make 
    ~v_dir_for_backup:(Dfa_root.of_concrete_object (g label_for_dir_for_backup))
    ~v_gitpush_after_backup:(Crobj_converter.bool_of_concrete_object (g label_for_gitpush_after_backup))
    ~v_github_url:(Crobj_converter.string_of_concrete_object (g label_for_github_url))
@@ -66,17 +69,15 @@ let of_concrete_object ccrt_obj =
 let to_concrete_object fw = 
  let items =  
  [
-   label_for_dir_for_backup, Dfa_root.to_concrete_object ( dir_for_backup fw ) ;
-   label_for_encoding_protected_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object ( encoding_protected_files fw ) ;
-   label_for_github_url, Crobj_converter.string_to_concrete_object ( github_url fw ) ;
-   label_for_gitpush_after_backup, Crobj_converter.bool_to_concrete_object ( gitpush_after_backup fw ) ;
+   label_for_dir_for_backup, Dfa_root.to_concrete_object ( Private.dir_for_backup fw ) ;
+   label_for_encoding_protected_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Dfn_rootless.to_concrete_object ( Private.encoding_protected_files fw ) ;
+   label_for_github_url, Crobj_converter.string_to_concrete_object ( Private.github_url fw ) ;
+   label_for_gitpush_after_backup, Crobj_converter.bool_to_concrete_object ( Private.gitpush_after_backup fw ) ;
  ] in 
  Concrete_object_t.Record items ;;
 
 
 end;; 
-
-end ;; 
 
 
 let dir_for_backup = Private.dir_for_backup ;;
@@ -87,9 +88,9 @@ let gitpush_after_backup = Private.gitpush_after_backup ;;
 
 let github_url = Private.github_url  ;;
 
-let of_concrete_object = Private.Crobj.of_concrete_object ;;
+let of_concrete_object = Crobj.of_concrete_object ;;
 
 let make = Private.make ;;
 
 let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
+let to_concrete_object = Crobj.to_concrete_object ;;

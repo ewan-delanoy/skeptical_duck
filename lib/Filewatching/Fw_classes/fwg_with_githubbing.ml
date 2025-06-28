@@ -5,6 +5,7 @@
 *)
 
 
+(* Beginning of loose version of file watching *)
 
 type t = Fw_flattened_poly_t.t ;;
 
@@ -25,3 +26,13 @@ let make fw_batch github_config = {
   github_url = Some (Fwg_github_configuration.github_url github_config)  ;
   encoding_protected_files = Some (Fwg_github_configuration.encoding_protected_files github_config) ;
 } ;;
+
+
+(* End of loose version of file watching *)
+
+(* Beginning of tight version of file watching *)
+
+(* ... Put tight version here ... *)
+
+(* End of tight version of file watching *)
+
