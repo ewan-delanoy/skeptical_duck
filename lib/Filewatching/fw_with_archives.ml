@@ -24,24 +24,24 @@ module Private = struct
       Fw_poly.extend_file_watcher_to_fw_with_archives
         par ~subdirs_for_archived_mlx_files:subdirs ;;
       
-   let plunge_fw_configuration config = constructor(File_watcher.plunge_fw_configuration config) None ;;
-   let of_configuration config = constructor(File_watcher.of_configuration config) None ;;
-   let of_configuration_and_list config l = constructor (File_watcher.of_configuration_and_list config l) None;;
+   let plunge_fw_configuration config = constructor(Fw_file_watcher.plunge_fw_configuration config) None ;;
+   let of_configuration config = constructor(Fw_file_watcher.of_configuration config) None ;;
+   let of_configuration_and_list config l = constructor (Fw_file_watcher.of_configuration_and_list config l) None;;
    let overwrite_file_if_it_exists fw rl new_content = 
       let old_parent = parent fw in 
-      let (new_parent,file_exists) = File_watcher.overwrite_file_if_it_exists old_parent rl new_content in 
+      let (new_parent,file_exists) = Fw_file_watcher.overwrite_file_if_it_exists old_parent rl new_content in 
       (update_parent fw new_parent,file_exists);;
    let register_rootless_paths fw rls = 
       let old_parent = parent fw in 
-      let new_parent = File_watcher.register_rootless_paths old_parent rls in 
+      let new_parent = Fw_file_watcher.register_rootless_paths old_parent rls in 
       update_parent fw new_parent ;;   
    let remove_files fw rls = 
       let old_parent = parent fw in 
-      let new_parent = File_watcher.remove_files old_parent rls in 
+      let new_parent = Fw_file_watcher.remove_files old_parent rls in 
       update_parent fw new_parent ;;               
    let rename_subdirectory_as fw sd_pair = 
       let old_parent = parent fw in 
-      let (new_parent,extra) = File_watcher.rename_subdirectory_as old_parent sd_pair in 
+      let (new_parent,extra) = Fw_file_watcher.rename_subdirectory_as old_parent sd_pair in 
       (update_parent fw new_parent,extra) ;;  
      
 
@@ -90,7 +90,7 @@ module Private = struct
                  fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
          ) u_files in  
       let old_parent = parent fw in    
-      let new_parent = File_watcher.remove_files old_parent the_files in 
+      let new_parent = Fw_file_watcher.remove_files old_parent the_files in 
       (update_parent fw new_parent,the_files) ;;      
    
    
@@ -114,14 +114,14 @@ module Private = struct
    let inspect_and_update old_fw = 
       let old_parent = parent old_fw in    
       let (new_parent,changed_files) = 
-          File_watcher.inspect_and_update old_parent
+          Fw_file_watcher.inspect_and_update old_parent
            ~verbose:false in 
       let new_fw = update_parent old_fw new_parent in     
       let (a_files,u_files,_nc_files) = announce_changes new_fw changed_files in 
       (new_fw,changed_files,(a_files,u_files)) ;;   
 
    let latest_changes fw = 
-      let changed_files = File_watcher.latest_changes (parent fw) ~verbose:false in 
+      let changed_files = Fw_file_watcher.latest_changes (parent fw) ~verbose:false in 
       announce_changes fw changed_files ;;
 
    let noncompilable_files fw  =
@@ -139,7 +139,7 @@ module Private = struct
       let replacements = Image.image (fun path->
          (path,Dfn_rootless.relocate_to path new_subdir)
        ) the_files in 
-      let new_parent = File_watcher.rename_files old_parent replacements in 
+      let new_parent = Fw_file_watcher.rename_files old_parent replacements in 
       (update_parent fw new_parent,replacements)  ;;
          
    let rename_module_on_filename_level old_fw (old_module,new_module) = 
@@ -151,13 +151,13 @@ module Private = struct
       let replacements = Image.image (fun old_rl->
                    (old_rl,Dfn_rootless.rename_module_as (old_module,new_module) old_rl )) acolytes in
       let old_parent = parent old_fw in    
-      let new_parent = File_watcher.rename_files old_parent replacements in                    
+      let new_parent = Fw_file_watcher.rename_files old_parent replacements in                    
       let new_fw = update_parent old_fw new_parent in 
       (new_fw,replacements) ;;     
                
    let rename_module_on_content_level old_fw (old_module,new_module) files_to_be_rewritten =
       let apply = (fun par files->
-         File_watcher.apply_text_transformation_on_some_files par 
+         Fw_file_watcher.apply_text_transformation_on_some_files par 
          (Look_for_module_names.change_module_name_in_ml_ocamlcode  
          old_module new_module) files
       ) in 
@@ -185,7 +185,7 @@ module Private = struct
       
    let replace_string old_fw (replacee,replacer) = 
       let apply = (fun par files->
-         File_watcher.apply_text_transformation_on_some_files par 
+         Fw_file_watcher.apply_text_transformation_on_some_files par 
          (Replace_inside.replace_inside_text ~display_number_of_matches:false (replacee,replacer)) files
       ) in 
       let (all_a_files,all_u_files,_) = full_tripartition old_fw  in 
@@ -213,7 +213,7 @@ module Private = struct
       let old_parent = parent old_fw in   
       let rootless = Dfn_common.decompose_absolute_path_using_root path 
         (Fw_poly.root old_parent)  in 
-      let par2= File_watcher.update_some_files old_parent [rootless] in 
+      let par2= Fw_file_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 
       let all_changes = changed_a_files@rootless::changed_u_files in       
@@ -230,7 +230,7 @@ module Private = struct
       a_files ;;     
      
    let check_that_no_change_has_occurred fw =
-      File_watcher.check_that_no_change_has_occurred (parent fw) ;; 
+      Fw_file_watcher.check_that_no_change_has_occurred (parent fw) ;; 
       
 end ;;
 
