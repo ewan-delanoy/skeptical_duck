@@ -18,5 +18,25 @@ type t = {
    dir_for_backup : Dfa_root_t.t option;
    gitpush_after_backup : bool option;
    github_url : string option;
-   encoding_protected_files : ((Dfn_rootless_t.t * Dfn_rootless_t.t) list) option;
+   encoding_protected_files : ((Dfn_rootless_t.t * Dfn_rootless_t.t) list) option; 
+} ;;
+
+let origin = {
+   type_name = Some "" ;
+   ignored_files = Some [] ;
+   ignored_subdirectories = Some [] ;
+   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
+   last_compilation_result_for_module = Some [] ;
+   root = Some (Dfa_root.of_line "dummy") ;
+   small_details_in_files = Some [] ;
+   subdirs_for_archived_mlx_files = Some [] ;
+   watched_files = Some [] ;
+   dir_for_backup = None ;
+   encoding_protected_files = None ;
+   github_url = None ;
+   gitpush_after_backup = None ;
+   (* dir_for_backup = Some(Dfa_root.of_line "dummy") ;
+   encoding_protected_files = Some [] ;
+   github_url = Some "" ;
+   gitpush_after_backup = Some false ; *) 
 } ;;

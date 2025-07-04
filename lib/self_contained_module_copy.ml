@@ -22,10 +22,10 @@ let unsharped_content hm=
 let self_contained_module_copy prefix hm=
    let fw=(!(Usual_coma_state.main_ref)) in 
    let nm=Dfn_endingless.to_module hm in
-   let those_above=( Fw_final_poly.Lfw_with_dependencies.ancestors_for_module fw nm)@[nm] in
+   let those_above=( Fw_final_poly.ancestors_for_module fw nm)@[nm] in
    let temp1=Image.image (
        fun nm2->
-         let hm2=Fw_final_poly.Lfw_with_dependencies.endingless_at_module fw nm2 in
+         let hm2=Fw_final_poly.endingless_at_module fw nm2 in
          let mlx=Dfn_join.to_ending hm2 Dfa_ending.ml in
          let ap=Dfn_full.to_absolute_path mlx in
          let naked_name=Modularize.module_name_from_path ap in
