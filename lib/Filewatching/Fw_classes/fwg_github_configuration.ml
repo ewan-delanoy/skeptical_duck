@@ -6,6 +6,8 @@
 
 
 (* Beginning of loose version of file watching *)
+(*
+
 
 type t = Fw_flattened_poly_t.t ;;
 
@@ -37,11 +39,11 @@ let make
 let root fw = match fw.Fw_flattened_poly_t.root with Some x -> x | None -> raise(Get_exn "root")  ;;
 
 
+
+*)
 (* End of loose version of file watching *)
 
 (* Beginning of tight version of file watching *)
-(*
-
 
 type t = { 
   root : Dfa_root_t.t ;
@@ -75,7 +77,5 @@ let make
 } ;;
 
 let root fw = fw.root ;;
-
-*)
 (* End of tight version of file watching *)
 

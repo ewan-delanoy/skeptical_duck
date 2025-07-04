@@ -6,6 +6,8 @@
 
 
 (* Beginning of loose version of file watching *)
+(*
+
 
 type t = Fw_flattened_poly_t.t ;;
 
@@ -28,11 +30,11 @@ let make fw_batch github_config = {
 } ;;
 
 
+
+*)
 (* End of loose version of file watching *)
 
 (* Beginning of tight version of file watching *)
-(*
-
 
 type t = {
   _parent : Fw_flattened_poly_t.t;
@@ -47,7 +49,5 @@ let make fw_batch github_configuration = {
   github_config = github_configuration ;
 } ;;
 
-
-*)
 (* End of tight version of file watching *)
 
