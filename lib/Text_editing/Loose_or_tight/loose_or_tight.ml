@@ -97,7 +97,7 @@ let set_content_state old_content new_state =
 
 let set_state_for_chosen_marker config loose_or_tight new_state= 
   let old_content = get_content_for_chosen_marker config loose_or_tight in 
-  let new_content = unsafe_set_content_state old_content new_state 
+  let new_content = set_content_state old_content new_state 
   and markers = get_marker config loose_or_tight in
   Replace_inside.overwrite_between_markers_inside_file 
    ~overwriter:new_content markers config.the_marked_file ;; 

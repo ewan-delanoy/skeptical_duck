@@ -1,8 +1,204 @@
 (************************************************************************************************************************
-Snippet 168 : 
+Snippet 171 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 170 : Comparator for a record type
+************************************************************************************************************************)
+
+module Snip170=struct
+
+  let differences fw1 fw2 = 
+    let temp =
+    [
+      ("type_name",(fw1.Fw_flattened_poly_t.type_name=fw2.Fw_flattened_poly_t.type_name));
+      ("root",(fw1.Fw_flattened_poly_t.root=fw2.Fw_flattened_poly_t.root));
+      ("ignored_subdirectories",(fw1.Fw_flattened_poly_t.ignored_subdirectories=fw2.Fw_flattened_poly_t.ignored_subdirectories));
+      ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
+      ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
+      ("subdirs_for_archived_mlx_files",(fw1.Fw_flattened_poly_t.subdirs_for_archived_mlx_files=fw2.Fw_flattened_poly_t.subdirs_for_archived_mlx_files));
+      ("small_details_in_files",(fw1.Fw_flattened_poly_t.small_details_in_files=fw2.Fw_flattened_poly_t.small_details_in_files));
+      ("index_for_caching",(fw1.Fw_flattened_poly_t.index_for_caching=fw2.Fw_flattened_poly_t.index_for_caching));
+      ("last_compilation_result_for_module",(fw1.Fw_flattened_poly_t.last_compilation_result_for_module=fw2.Fw_flattened_poly_t.last_compilation_result_for_module));
+      ("dir_for_backup",(fw1.Fw_flattened_poly_t.dir_for_backup=fw2.Fw_flattened_poly_t.dir_for_backup));
+      ("gitpush_after_backup",(fw1.Fw_flattened_poly_t.gitpush_after_backup=fw2.Fw_flattened_poly_t.gitpush_after_backup));
+      ("github_url",(fw1.Fw_flattened_poly_t.github_url=fw2.Fw_flattened_poly_t.github_url));
+      ("encoding_protected_files",(fw1.Fw_flattened_poly_t.encoding_protected_files=fw2.Fw_flattened_poly_t.encoding_protected_files));
+  
+    ] in 
+    List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
+  
+  let txt1 = rf "lib/Filewatching/fw_flattened_poly_t.ml" ;;
+  
+  let txt2 = Lines_in_text.interval txt1 9 21 ;;
+  
+  let u1 = Lines_in_text.lines txt2 ;;
+  
+  let u2 = Image.image (fun s->Cull_string.before_rightmost s ':') u1 ;;
+  
+  let u3 = Image.image Cull_string.trim_spaces u2 ;; 
+  
+  let u4 = Image.image (
+    fun s -> "   (\""^s^"\",(fw1.Fw_flattened_poly_t."^s^"=fw2.Fw_flattened_poly_t."^s^"));"
+  ) u3 ;;
+  
+  let u5 = "\n\n\n" ^ (String.concat "\n" u4) ^ "\n\n\n" ;; 
+  
+  let u6 () = print_string u5 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 169 : Bevy of values
+************************************************************************************************************************)
+module Snip169=struct
+
+  let designated_parents = [
+    "Fw_with_archives" , "File_watcher" ;
+    "Fw_with_small_details" , "Fw_with_archives" ;
+    "Fw_with_dependencies" , "Fw_with_small_details" ;
+    "Fw_with_batch_compilation" , "Fw_with_dependencies" ;
+    "Fw_with_githubbing" , "Fw_with_batch_compilation" ;
+] ;;
+
+  let f1 = Fw_with_dependencies.all_endinglesses ;;
+  let f2 = Fw_with_dependencies.all_moduled_mlx_files ;;
+  let f3 = Fw_with_dependencies.all_subdirectories ;;
+  let f4 = Fw_with_dependencies.ancestors_for_module ;;
+  let f5 = Fw_with_dependencies.below ;;
+  let f6 = Fw_with_archives.check_that_no_change_has_occurred ;;
+  let f7 = Fw_with_batch_compilation.clean_debug_dir ;;
+  let f8 = Fw_with_batch_compilation.clean_exec_dir ;;
+  let f9 = Fw_with_dependencies.decipher_module ;;
+  let f10 = Fw_with_dependencies.decipher_path ;;
+  let f11 = Fw_with_dependencies.dep_ordered_modules ;;
+  let f12 = Fw_with_dependencies.directly_below ;;
+  let f13 = Fw_with_dependencies.direct_fathers_for_module ;;
+  let f14 = Fw_with_dependencies.duplicate_module ;;
+  let f15 = Fw_with_dependencies.endingless_at_module ;;
+  let f16 = Fw_with_dependencies.find_subdir_from_suffix ;;
+  let f17 = Fwc_with_githubbing.forget_modules ;;
+  let f18 = Fwc_with_githubbing.forget_nonmodular_rootlesses ;;
+  let f19 = Fwg_github_configuration.gitpush_after_backup ;;
+  let f20 = Fw_poly.ignored_files ;;
+  let f21 = Fw_poly.ignored_subdirectories ;;
+  let f22 = Fw_with_archives.latest_changes ;;
+  let f23 = Fw_with_dependencies.list_values_from_module ;;
+  let f24 = Fw_with_batch_compilation.modern_recompile ;;
+  let f25 = Fw_with_dependencies.modules_using_value ;;
+  let f26 = Fw_with_archives.noncompilable_files ;;
+  let f27 = Fw_with_dependencies.number_of_modules ;;
+  let f28 = Fwc_with_githubbing.of_concrete_object ;;
+  let f29 = Fwc_with_githubbing.of_fw_config_and_github_config ;;
+  let f30 = Fwc_with_githubbing.of_fw_with_batch_compilation ;;
+  let f31 = Fwc_with_githubbing.plunge_fw_config_with_github_config ;;
+  let f32 = Fw_with_batch_compilation.preq_types_with_extra_info ;;
+  let f33 = Fwc_with_githubbing.register_rootless_paths ;;
+  let f34 = Fwc_with_githubbing.relocate_module_to ;;
+  let f35 = Fwc_with_githubbing.rename_module ;;
+  let f36 = Fwc_with_githubbing.rename_subdirectory_as ;;
+  let f37 = Fwc_with_githubbing.replace_string ;;
+  let f38 = Fwc_with_githubbing.replace_value ;;
+  let f39 = Fw_configuration.root ;;
+  let f40 = Fwc_with_githubbing.set_gitpush_after_backup ;;
+  let f41 = Fw_with_batch_compilation.show_value_occurrences ;;
+  let f42 = Fw_with_batch_compilation.start_debugging ;;
+  let f43 = Fw_with_batch_compilation.start_executing ;;
+  let f44 = Fw_configuration.test_for_admissibility ;;
+  let f45 = Fwc_with_githubbing.to_concrete_object ;;
+  let f46 = Fwc_with_githubbing.to_fw_configuration ;;
+  let f47 = Fwc_with_githubbing.to_github_configuration ;;
+  let f48 = Fw_with_batch_compilation.up_to_date_elesses ;;
+  let f49 = Fw_with_archives.usual_compilable_files ;;
+  let f50 = Fwc_with_githubbing.usual_recompile ;;
+  
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 168 : Extracting modules and values from an OCaml snippet
+************************************************************************************************************************)
+module Snip168=struct
+
+(* extract module names *)
+
+let ap1 = Absolute_path.of_string "lib/Filewatching/fw_final_poly.ml" ;;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let lines_in_text1 = Lines_in_text.indexed_lines text1 ;;
+
+let u1 = Image.image (
+  fun (idx,line) -> (idx,Cull_string.trim_spaces line)) lines_in_text1 ;;
+
+let u2 = List.filter (fun (idx,line) -> 
+  String.starts_with line ~prefix:"module ") u1 ;;
+
+let u3 = Image.image (fun(idx,line)->(idx,
+ Cull_string.two_sided_cutting ("module "," = struct") line)) u2;;  
+
+let u4 =  u3 @ [(165,"...")] ;;
+
+let u5 = List_again.universal_delta_list u4 ;;
+
+let u6 = Image.image (fun ((i1,m1),(i2,_))->(m1,(i1,i2-1))) u5 ;;
+
+let u7 = Image.image (fun (old_mod_name,(i,j))->
+  let new_mod_name = (
+    if old_mod_name = "Lfw_file_watcher" then "File_watcher" else
+    String.capitalize_ascii(Cull_string.cobeginning 1 old_mod_name)) in 
+  (new_mod_name,(i,j)
+)) u6 ;;  
+
+let extract_values_in_module (i,j) = 
+  let subtext = Lines_in_text.interval text1 i j in 
+  let lines2 = Lines_in_text.lines subtext in 
+  let lines3 = Image.image Cull_string.trim_spaces lines2 in  
+  let lines4 = List.filter(fun x->String.starts_with x ~prefix:"let ") lines3 in  
+  let lines5 = Image.image Cull_string.trim_spaces lines4 in 
+  let lines6 = Image.image (Cull_string.cobeginning 4) lines5 in
+  let lines7 = Image.image (fun x->let k=String.index x ' ' in
+  Cull_string.beginning k x) lines6 in 
+  lines7 ;;
+
+let u8 = Image.image (fun (mod_name,(i,j))->(mod_name,
+   extract_values_in_module (i,j)
+)) u7 ;;  
+
+let unordered_pairs = List.flatten(Image.image (
+   fun (mod_name,vals) -> 
+    Image.image (fun vaal->(vaal,mod_name)) vals
+) u8);;
+
+let values = Ordered.sort 
+  Total_ordering.lex_for_strings (Image.image fst unordered_pairs) ;; 
+
+let u9 = Image.image (
+  fun vaal -> (vaal,List.filter_map (fun p->if fst p=vaal then Some(snd p) else None) unordered_pairs)
+) values;;
+
+let u10 = Image.image (fun (vaal,l)->(vaal,List.hd l)) u9 ;;
+
+let u11 = Int_range.index_everything u10 ;; 
+
+let u12 = "\n\n\n" ^ (String.concat "\n" 
+(Image.image (fun (k,(v,m))->
+  "let f"^(string_of_int k)^" = "^m^"."^v^" ;;"  
+) u11)) ^ "\n\n\n" ;; 
+
+let ap1 = Absolute_path.of_string "watched/watched_not_githubbed/cloth.ml";;
+
+
+let act () = Lines_in_text.insert_after_line_inside_file 
+ap1 ~line_number:11 ~inserted_snippet:u12 ;;
+
+end ;;
 
 
 (************************************************************************************************************************
@@ -12,15 +208,15 @@ module Snip175=struct
 
 
   let sipdf = "~/Teuliou/Heavy/Scanning/Single_Pdf/Colette/" ;;
-  let ap1 = Absolute_path.of_string (sipdf^"Erratum/erratum_001.pdf") ;;
-  let ap2 = Absolute_path.of_string (sipdf^"p3.pdf") ;;
+  let ap1 = Absolute_path.of_string (sipdf^"sk456.pdf") ;;
+  let ap2 = Absolute_path.of_string (sipdf^"skeudennou.pdf") ;;
   
   let act1 () = Coherent_pdf.replace_inside 
   ~patient:ap2
   ~replacer:ap1
-  ~left_of_cut:1 
-  ~right_of_cut:3 
-  ~outputfile_name:"new_p3" ;;
+  ~left_of_cut:2 
+  ~right_of_cut:3
+  ~outputfile_name:"helena" ;;
   
   let ap3 = Absolute_path.of_string (sipdf^"Erratum/erratum_002.pdf") ;;
   let ap4 = Absolute_path.of_string (sipdf^"p4.pdf") ;;
@@ -256,11 +452,49 @@ end ;;
 
 
 (************************************************************************************************************************
-Snippet 163 : Debug the Loose_or_tight module
+Snippet 163 : Miscellaneous copy-paste
 ************************************************************************************************************************)
 module Snip171=struct
 
-
+  let ap1 = Absolute_path.of_string 
+  ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/Filewatching/fw_final_poly.ml");;
+  
+  let txt1 = Io.read_whole_file ap1 ;; 
+  
+  let txt2 = Lines_in_text.interval txt1 62 146 ;;
+  
+  let u1 = Lines_in_text.lines txt2 ;;
+  
+  let u2 = Image.image Cull_string.trim_spaces u1 ;;
+  
+  let u3 = List.filter(fun x->String.starts_with x ~prefix:"let ") u2 ;;
+  
+  let u4 = Image.image (Cull_string.cobeginning 4) u3 ;;
+  
+  let u5 = Image.image (fun x->let k=String.index x ' ' in
+  Cull_string.beginning k x) u4 ;;
+  
+  let u6 = u5 @ [
+    "root";"ignored_files";"ignored_subdirectories";"test_for_admissibility"
+  ];;
+  
+  let u7 = Ordered.sort Total_ordering.lex_for_strings u6 ;;
+  
+  let ap2 = Absolute_path.of_string 
+  ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/draft.ml");;
+  
+  let txt3 = Io.read_whole_file ap2 ;; 
+  
+  let txt4 = Lines_in_text.interval txt3 2 3 ;;
+  
+  let u8 = Image.image (fun x->
+    Replace_inside.replace_inside_text ("root",x) txt4 
+    ) u7;;
+  
+  let u9 = String.concat "\n\n" u8;;  
+  
+  let act () = Lines_in_text.insert_after_line_inside_file
+     ap1 ~line_number:15~inserted_snippet:u9 ;;
 
 
 
