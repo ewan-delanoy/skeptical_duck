@@ -20,10 +20,10 @@ module Private = struct
 
   let needed_dirs_and_libs_in_command cmod fw mn=
     
-    let s_root=Dfa_root.connectable_to_subpath(Fw_with_dependencies.root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Fwc_with_depencies.root fw) in
     let dirs=
     "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
-   and prelibs = Fw_with_dependencies.needed_libs_for_module fw mn in 
+   and prelibs = Fwc_with_depencies.needed_libs_for_module fw mn in 
    let libs=line_for_libs cmod prelibs in 
     String.concat " " ["";dirs;libs;""];;
   
@@ -32,7 +32,7 @@ module Private = struct
       let nm=Dfn_endingless.to_module hm in
       let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_fhm=Dfn_endingless.to_line hm in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli  nm in
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli  nm in
       let ending=(if mli_reg then ".mli" else ".ml") in
       let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
       let opt_exec_move=(if (cmod=Compilation_mode_t.Executable)&&(not(mli_reg)) 
@@ -89,7 +89,7 @@ module Private = struct
       let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_eless=Dfn_endingless.to_line eless in
       let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
       let full_mli=s_eless^".mli" in
       let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
       let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
@@ -113,7 +113,7 @@ module Private = struct
       let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_eless=Dfn_endingless.to_line eless in
       let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
       let full_mli=s_eless^".mli" in
       let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
       let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
@@ -139,7 +139,7 @@ module Private = struct
       let s_root=Dfa_root.connectable_to_subpath(dir) in
       let s_eless=Dfn_endingless.to_line eless in
       let dir_and_libs=needed_dirs_and_libs_in_command cmod fw nm in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
       let full_mli=s_eless^".mli" in
       let workdir = Dfa_subdirectory.connectable_to_subpath (Compilation_mode.workspace cmod ) in 
       let opt_exec_move=(if cmod=Compilation_mode_t.Executable 
@@ -161,13 +161,13 @@ module Private = struct
 
 
   let command_for_mli_module_separate_compilation cmod fw eless =
-      let dir = Fw_with_dependencies.root fw in 
+      let dir = Fwc_with_depencies.root fw in 
       command_for_cmi cmod dir fw eless;;
 
   let command_for_ml_module_separate_compilation cmod fw eless =
-      let dir = Fw_with_dependencies.root fw in 
+      let dir = Fwc_with_depencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo cmod dir fw eless in 
       if mli_reg
@@ -177,9 +177,9 @@ module Private = struct
       List.flatten temp2;;
 
   let command_for_mll_module_separate_compilation cmod fw eless =
-      let dir = Fw_with_dependencies.root fw in 
+      let dir = Fwc_with_depencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo_from_mll cmod dir fw eless in 
       if mli_reg
@@ -189,9 +189,9 @@ module Private = struct
       List.flatten temp2;;
 
   let command_for_mly_module_separate_compilation cmod fw eless =
-      let dir = Fw_with_dependencies.root fw in 
+      let dir = Fwc_with_depencies.root fw in 
       let nm=Dfn_endingless.to_module eless in
-      let mli_reg=Fw_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+      let mli_reg=Fwc_with_depencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
       let co=command_for_cmo_from_mly cmod dir fw eless in 
       if mli_reg
@@ -213,16 +213,16 @@ module Private = struct
   exception  Command_for_predebuggable_or_preexecutable_exn;;
   
   let command_for_predebuggable fw short_path=
-      let root = Fw_with_dependencies.root fw in 
+      let root = Fwc_with_depencies.root fw in 
       let s_root=Dfa_root.connectable_to_subpath root  in
       let cmod = Compilation_mode_t.Debug in 
       let full_path=Absolute_path.of_string(
           s_root^short_path) in 
       let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-      let nm_deps = Fw_with_dependencies.modules_with_their_ancestors fw nm_direct_deps in 
+      let nm_deps = Fwc_with_depencies.modules_with_their_ancestors fw nm_direct_deps in 
       let nm_deps_with_subdirs = Image.image (
          fun nm->
-                 let subdir=Fw_with_dependencies.subdir_for_module fw nm in 
+                 let subdir=Fwc_with_depencies.subdir_for_module fw nm in 
           (subdir,nm)
       ) nm_deps in 
       let workdir=
@@ -233,7 +233,7 @@ module Private = struct
         Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
           (Image.image Dfa_module.to_line nm_direct_deps)) in 
       let pre_libs1=Image.image 
-       (fun (_,nm) -> Set_of_polys.sort(Fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
+       (fun (_,nm) -> Set_of_polys.sort(Fwc_with_depencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
       let libs=line_for_libs cmod pre_libs2 in 
         Option_again.argument_on_the_right (fun x y->x@[y])  
@@ -251,14 +251,14 @@ module Private = struct
   exception  Command_for_debuggable_or_executable_exn;;
   
   let command_for_debuggable_or_executable cmod fw rootless_path=
-    let root = Fw_with_dependencies.root fw in 
+    let root = Fwc_with_depencies.root fw in 
     let s_root=Dfa_root.connectable_to_subpath root  in
       if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
       let full_path=Absolute_path.of_string(s_root^rootless_path) in 
       let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-      let nm_deps =Fw_with_dependencies.modules_with_their_ancestors fw nm_direct_deps in 
+      let nm_deps =Fwc_with_depencies.modules_with_their_ancestors fw nm_direct_deps in 
       let nm_deps_with_subdirs = Image.image (
-         fun nm->let subdir=Fw_with_dependencies.subdir_for_module fw nm in 
+         fun nm->let subdir=Fwc_with_depencies.subdir_for_module fw nm in 
           (subdir,nm)
       ) nm_deps in 
       let workdir=
@@ -278,7 +278,7 @@ module Private = struct
         Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
           (Image.image Dfa_module.to_line nm_direct_deps)) in 
       let pre_libs1=Image.image 
-       (fun (_,nm) -> Set_of_polys.sort(Fw_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
+       (fun (_,nm) -> Set_of_polys.sort(Fwc_with_depencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
       let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
       let libs=line_for_libs cmod pre_libs2 in 
         Option_again.argument_on_the_right (fun x y->x@[y])  

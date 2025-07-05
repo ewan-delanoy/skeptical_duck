@@ -23,7 +23,7 @@ let all_endinglesses final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.all_endinglesses" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_endinglesses" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_endinglesses" )
-  |With_dependencies (fw) -> Fw_with_dependencies.all_endinglesses fw
+  |With_dependencies (fw) -> Fwc_with_depencies.all_endinglesses fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_endinglesses fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_endinglesses fw ;;
 
@@ -32,7 +32,7 @@ let all_moduled_mlx_files final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.all_moduled_mlx_files" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_moduled_mlx_files" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_moduled_mlx_files" )
-  |With_dependencies (fw) -> Fw_with_dependencies.all_moduled_mlx_files fw
+  |With_dependencies (fw) -> Fwc_with_depencies.all_moduled_mlx_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_moduled_mlx_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_moduled_mlx_files fw ;;
 
@@ -41,7 +41,7 @@ let all_subdirectories final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.all_subdirectories" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_subdirectories" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_subdirectories" )
-  |With_dependencies (fw) -> Fw_with_dependencies.all_subdirectories fw
+  |With_dependencies (fw) -> Fwc_with_depencies.all_subdirectories fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_subdirectories fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_subdirectories fw ;;
 
@@ -50,7 +50,7 @@ let ancestors_for_module final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ancestors_for_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.ancestors_for_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.ancestors_for_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.ancestors_for_module fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.ancestors_for_module fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ancestors_for_module fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ancestors_for_module fw mn ;;
 
@@ -59,7 +59,7 @@ let below final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.below" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.below" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.below" )
-  |With_dependencies (fw) -> Fw_with_dependencies.below fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.below fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.below fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.below fw mn ;;
 
@@ -68,7 +68,7 @@ let check_that_no_change_has_occurred final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.check_that_no_change_has_occurred" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.check_that_no_change_has_occurred" )
   |With_archives (fw) -> Fw_with_archives.check_that_no_change_has_occurred fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.check_that_no_change_has_occurred fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.check_that_no_change_has_occurred fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.check_that_no_change_has_occurred fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.check_that_no_change_has_occurred fw ;;
 
@@ -95,7 +95,7 @@ let decipher_module final_fw capitalized_or_not_x = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.decipher_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.decipher_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.decipher_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.decipher_module fw capitalized_or_not_x
+  |With_dependencies (fw) -> Fwc_with_depencies.decipher_module fw capitalized_or_not_x
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.decipher_module fw capitalized_or_not_x
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.decipher_module fw capitalized_or_not_x ;;
 
@@ -104,7 +104,7 @@ let decipher_path final_fw x = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.decipher_path" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.decipher_path" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.decipher_path" )
-  |With_dependencies (fw) -> Fw_with_dependencies.decipher_path fw x
+  |With_dependencies (fw) -> Fwc_with_depencies.decipher_path fw x
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.decipher_path fw x
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.decipher_path fw x ;;
 
@@ -113,7 +113,7 @@ let dep_ordered_modules final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.dep_ordered_modules" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.dep_ordered_modules" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.dep_ordered_modules" )
-  |With_dependencies (fw) -> Fw_with_dependencies.dep_ordered_modules fw
+  |With_dependencies (fw) -> Fwc_with_depencies.dep_ordered_modules fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.dep_ordered_modules fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.dep_ordered_modules fw ;;
 
@@ -122,7 +122,7 @@ let directly_below final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.directly_below" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.directly_below" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.directly_below" )
-  |With_dependencies (fw) -> Fw_with_dependencies.directly_below fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.directly_below fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.directly_below fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.directly_below fw mn ;;
 
@@ -131,7 +131,7 @@ let direct_fathers_for_module final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.direct_fathers_for_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.direct_fathers_for_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.direct_fathers_for_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.direct_fathers_for_module fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.direct_fathers_for_module fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.direct_fathers_for_module fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.direct_fathers_for_module fw mn ;;
 
@@ -140,7 +140,7 @@ let duplicate_module final_fw old_t1 old_t2 = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.duplicate_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.duplicate_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.duplicate_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.duplicate_module fw old_t1 old_t2
+  |With_dependencies (fw) -> Fwc_with_depencies.duplicate_module fw old_t1 old_t2
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.duplicate_module fw old_t1 old_t2
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.duplicate_module fw old_t1 old_t2 ;;
 
@@ -149,7 +149,7 @@ let endingless_at_module final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.endingless_at_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.endingless_at_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.endingless_at_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.endingless_at_module fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.endingless_at_module fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.endingless_at_module fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.endingless_at_module fw mn ;;
 
@@ -158,7 +158,7 @@ let find_subdir_from_suffix final_fw possibly_slashed_suffix = match final_fw wi
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.find_subdir_from_suffix" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.find_subdir_from_suffix" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.find_subdir_from_suffix" )
-  |With_dependencies (fw) -> Fw_with_dependencies.find_subdir_from_suffix fw possibly_slashed_suffix
+  |With_dependencies (fw) -> Fwc_with_depencies.find_subdir_from_suffix fw possibly_slashed_suffix
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.find_subdir_from_suffix fw possibly_slashed_suffix
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.find_subdir_from_suffix fw possibly_slashed_suffix ;;
 
@@ -207,7 +207,7 @@ let ignored_files final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_files" )
   |Watcher (fw) -> Fw_file_watcher.ignored_files fw
   |With_archives (fw) -> Fw_with_archives.Field.ignored_files fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.ignored_files fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.ignored_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_files fw ;;
 
@@ -216,7 +216,7 @@ let ignored_subdirectories final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_subdirectories" )
   |Watcher (fw) -> Fw_file_watcher.ignored_subdirectories fw
   |With_archives (fw) -> Fw_with_archives.Field.ignored_subdirectories fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.ignored_subdirectories fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.ignored_subdirectories fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_subdirectories fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_subdirectories fw ;;
 
@@ -225,7 +225,7 @@ let latest_changes final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.latest_changes" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.latest_changes" )
   |With_archives (fw) -> Fw_with_archives.latest_changes fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.latest_changes fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.latest_changes fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.latest_changes fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.latest_changes fw ;;
 
@@ -234,7 +234,7 @@ let list_values_from_module final_fw mn = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.list_values_from_module" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.list_values_from_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.list_values_from_module" )
-  |With_dependencies (fw) -> Fw_with_dependencies.list_values_from_module fw mn
+  |With_dependencies (fw) -> Fwc_with_depencies.list_values_from_module fw mn
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.list_values_from_module fw mn
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.list_values_from_module fw mn ;;
 
@@ -253,7 +253,7 @@ let modules_using_value final_fw value_name = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.modules_using_value" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.modules_using_value" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.modules_using_value" )
-  |With_dependencies (fw) -> Fw_with_dependencies.modules_using_value fw value_name
+  |With_dependencies (fw) -> Fwc_with_depencies.modules_using_value fw value_name
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.modules_using_value fw value_name
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.modules_using_value fw value_name ;;
 
@@ -262,7 +262,7 @@ let noncompilable_files final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.noncompilable_files" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.noncompilable_files" )
   |With_archives (fw) -> Fw_with_archives.noncompilable_files fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.noncompilable_files fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.noncompilable_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.noncompilable_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.noncompilable_files fw ;;
 
@@ -271,7 +271,7 @@ let number_of_modules final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.number_of_modules" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.number_of_modules" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.number_of_modules" )
-  |With_dependencies (fw) -> Fw_with_dependencies.number_of_modules fw
+  |With_dependencies (fw) -> Fwc_with_depencies.number_of_modules fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.number_of_modules fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.number_of_modules fw ;;
 
@@ -347,7 +347,7 @@ let root final_fw  = match final_fw with
   |Configuration (fw) -> Fw_configuration.root fw
   |Watcher (fw) -> Fw_file_watcher.Field.root fw
   |With_archives (fw) -> Fw_with_archives.Field.root fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.root fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.root fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.root fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.root fw ;;
 
@@ -365,7 +365,7 @@ let show_value_occurrences final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.show_value_occurrences" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.show_value_occurrences" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.show_value_occurrences" )
-  |With_dependencies (fw) -> Fw_with_dependencies.show_value_occurrences fw
+  |With_dependencies (fw) -> Fwc_with_depencies.show_value_occurrences fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.show_value_occurrences fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.show_value_occurrences fw ;;
 
@@ -392,7 +392,7 @@ let test_for_admissibility final_fw rl = match final_fw with
   |Configuration (fw) -> Fw_configuration.test_for_admissibility fw rl
   |Watcher (fw) -> Fw_file_watcher.Field.test_for_admissibility fw rl
   |With_archives (fw) -> Fw_file_watcher.Field.test_for_admissibility fw rl
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.test_for_admissibility fw rl
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.test_for_admissibility fw rl
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.test_for_admissibility fw rl
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.test_for_admissibility fw rl ;;
 
@@ -410,7 +410,7 @@ let to_fw_configuration final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.to_fw_configuration" )
   |Watcher (fw) -> Fw_file_watcher.Field.to_fw_configuration fw
   |With_archives (fw) -> Fw_with_archives.Field.to_fw_configuration fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.to_fw_configuration fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.to_fw_configuration fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.to_fw_configuration fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.to_fw_configuration fw  ;;
 
@@ -428,7 +428,7 @@ let usual_compilable_files final_fw  = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.usual_compilable_files" )
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.usual_compilable_files" )
   |With_archives (fw) -> Fw_with_archives.usual_compilable_files fw
-  |With_dependencies (fw) -> Fw_with_dependencies.Field.usual_compilable_files fw
+  |With_dependencies (fw) -> Fwc_with_depencies.Field.usual_compilable_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.usual_compilable_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.usual_compilable_files fw ;;
 
