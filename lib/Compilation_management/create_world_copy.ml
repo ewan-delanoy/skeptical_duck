@@ -112,7 +112,7 @@ module Private = struct
   let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
       let (_,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
       let faraway_cs1 = Fw_final_poly.of_fw_with_batch_compilation 
-                          (Fw_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
+                          (Fwc_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
                              destbackupdir destgab Coma_big_constant.github_url [] in 
       let all_modules = Fw_final_poly.dep_ordered_modules faraway_cs1 in 
       let faraway_cs2 = Fw_final_poly.modern_recompile faraway_cs1 all_modules in 

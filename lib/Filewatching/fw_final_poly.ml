@@ -38,9 +38,9 @@ let  check_that_no_change_has_occurred_on_fw_with_dependencies fw = Fw_with_arch
 let  check_that_no_change_has_occurred_on_fw_with_batch_compilation fw = check_that_no_change_has_occurred_on_fw_with_dependencies(Fw_poly.parent fw)  ;;
 let  check_that_no_change_has_occurred_on_fw_with_githubbing fw = check_that_no_change_has_occurred_on_fw_with_batch_compilation(Fwg_with_githubbing.parent fw)  ;;
 
-let  clean_debug_dir_on_fw_with_githubbing fw = Fw_with_batch_compilation.clean_debug_dir(Fwg_with_githubbing.parent fw)  ;;
+let  clean_debug_dir_on_fw_with_githubbing fw = Fwc_with_batch_compilation.clean_debug_dir(Fwg_with_githubbing.parent fw)  ;;
 
-let  clean_exec_dir_on_fw_with_githubbing fw = Fw_with_batch_compilation.clean_exec_dir(Fwg_with_githubbing.parent fw)  ;;
+let  clean_exec_dir_on_fw_with_githubbing fw = Fwc_with_batch_compilation.clean_exec_dir(Fwg_with_githubbing.parent fw)  ;;
 
 let  decipher_module_on_fw_with_batch_compilation fw capitalized_or_not_x = Fw_with_dependencies.decipher_module(Fw_poly.parent fw) capitalized_or_not_x ;;
 let  decipher_module_on_fw_with_githubbing fw capitalized_or_not_x = decipher_module_on_fw_with_batch_compilation(Fwg_with_githubbing.parent fw) capitalized_or_not_x ;;
@@ -89,7 +89,7 @@ let  latest_changes_on_fw_with_githubbing fw = latest_changes_on_fw_with_batch_c
 let  list_values_from_module_on_fw_with_batch_compilation fw mn = Fw_with_dependencies.list_values_from_module(Fw_poly.parent fw) mn ;;
 let  list_values_from_module_on_fw_with_githubbing fw mn = list_values_from_module_on_fw_with_batch_compilation(Fwg_with_githubbing.parent fw) mn ;;
 
-let  modern_recompile_on_fw_with_githubbing fw changed_mods = Fwc_with_githubbing.Field.set_parent fw (Fw_with_batch_compilation.modern_recompile(Fwg_with_githubbing.parent fw) changed_mods ) ;;
+let  modern_recompile_on_fw_with_githubbing fw changed_mods = Fwc_with_githubbing.Field.set_parent fw (Fwc_with_batch_compilation.modern_recompile(Fwg_with_githubbing.parent fw) changed_mods ) ;;
 
 let  modules_using_value_on_fw_with_batch_compilation fw value_name = Fw_with_dependencies.modules_using_value(Fw_poly.parent fw) value_name ;;
 let  modules_using_value_on_fw_with_githubbing fw value_name = modules_using_value_on_fw_with_batch_compilation(Fwg_with_githubbing.parent fw) value_name ;;
@@ -109,7 +109,7 @@ let  number_of_modules_on_fw_with_githubbing fw = number_of_modules_on_fw_with_b
 
 
 
-let  preq_types_with_extra_info_on_fw_with_githubbing fw = Fw_with_batch_compilation.preq_types_with_extra_info(Fwg_with_githubbing.parent fw)  ;;
+let  preq_types_with_extra_info_on_fw_with_githubbing fw = Fwc_with_batch_compilation.preq_types_with_extra_info(Fwg_with_githubbing.parent fw)  ;;
 
 
 
@@ -131,11 +131,11 @@ let  root_on_fw_with_githubbing fw = root_on_fw_with_batch_compilation(Fwg_with_
 
 
 
-let  show_value_occurrences_on_fw_with_githubbing fw = Fw_with_batch_compilation.show_value_occurrences(Fwg_with_githubbing.parent fw)  ;;
+let  show_value_occurrences_on_fw_with_githubbing fw = Fwc_with_batch_compilation.show_value_occurrences(Fwg_with_githubbing.parent fw)  ;;
 
-let  start_debugging_on_fw_with_githubbing fw = Fw_with_batch_compilation.start_debugging(Fwg_with_githubbing.parent fw)  ;;
+let  start_debugging_on_fw_with_githubbing fw = Fwc_with_batch_compilation.start_debugging(Fwg_with_githubbing.parent fw)  ;;
 
-let  start_executing_on_fw_with_githubbing fw = Fw_with_batch_compilation.start_executing(Fwg_with_githubbing.parent fw)  ;;
+let  start_executing_on_fw_with_githubbing fw = Fwc_with_batch_compilation.start_executing(Fwg_with_githubbing.parent fw)  ;;
 
 let  test_for_admissibility_on_file_watcher fw rl = Fw_configuration.test_for_admissibility(Fw_poly.parent fw) rl ;;
 let  test_for_admissibility_on_fw_with_archives fw rl = test_for_admissibility_on_file_watcher(Fw_poly.parent fw) rl ;;
@@ -149,7 +149,7 @@ let  test_for_admissibility_on_fw_with_githubbing fw rl = test_for_admissibility
 
 
 
-let  up_to_date_elesses_on_fw_with_githubbing fw = Fw_with_batch_compilation.up_to_date_elesses(Fwg_with_githubbing.parent fw)  ;;
+let  up_to_date_elesses_on_fw_with_githubbing fw = Fwc_with_batch_compilation.up_to_date_elesses(Fwg_with_githubbing.parent fw)  ;;
 
 let  usual_compilable_files_on_fw_with_dependencies fw = Fw_with_archives.usual_compilable_files(Fw_poly.parent fw)  ;;
 let  usual_compilable_files_on_fw_with_batch_compilation fw = usual_compilable_files_on_fw_with_dependencies(Fw_poly.parent fw)  ;;
@@ -220,7 +220,7 @@ let clean_debug_dir final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.clean_debug_dir" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_debug_dir" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_debug_dir" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.clean_debug_dir fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_debug_dir fw
   |With_githubbing (fw) -> Private.clean_debug_dir_on_fw_with_githubbing fw ;;
 
 let clean_exec_dir final_fw  = match final_fw with 
@@ -229,7 +229,7 @@ let clean_exec_dir final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.clean_exec_dir" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_exec_dir" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_exec_dir" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.clean_exec_dir fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_exec_dir fw
   |With_githubbing (fw) -> Private.clean_exec_dir_on_fw_with_githubbing fw ;;
 
 let decipher_module final_fw capitalized_or_not_x = match final_fw with 
@@ -374,7 +374,7 @@ let modern_recompile final_fw changed_mods = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.modern_recompile" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.modern_recompile" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.modern_recompile" )
-  |With_batch_compilation (fw) -> With_batch_compilation( Fw_with_batch_compilation.modern_recompile fw changed_mods )
+  |With_batch_compilation (fw) -> With_batch_compilation( Fwc_with_batch_compilation.modern_recompile fw changed_mods )
   |With_githubbing (fw) -> With_githubbing( Private.modern_recompile_on_fw_with_githubbing fw changed_mods ) ;;
 
 let modules_using_value final_fw value_name = match final_fw with 
@@ -414,7 +414,7 @@ let preq_types_with_extra_info final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.preq_types_with_extra_info" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.preq_types_with_extra_info" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.preq_types_with_extra_info" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.preq_types_with_extra_info fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.preq_types_with_extra_info fw
   |With_githubbing (fw) -> Private.preq_types_with_extra_info_on_fw_with_githubbing fw ;;
 
 let register_rootless_paths final_fw rootlesses = match final_fw with 
@@ -495,7 +495,7 @@ let show_value_occurrences final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.show_value_occurrences" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.show_value_occurrences" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.show_value_occurrences" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.show_value_occurrences fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.show_value_occurrences fw
   |With_githubbing (fw) -> Private.show_value_occurrences_on_fw_with_githubbing fw ;;
 
 let start_debugging final_fw  = match final_fw with 
@@ -504,7 +504,7 @@ let start_debugging final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.start_debugging" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.start_debugging" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_debugging" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.start_debugging fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_debugging fw
   |With_githubbing (fw) -> Private.start_debugging_on_fw_with_githubbing fw ;;
 
 let start_executing final_fw  = match final_fw with 
@@ -513,7 +513,7 @@ let start_executing final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.start_executing" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.start_executing" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_executing" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.start_executing fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_executing fw
   |With_githubbing (fw) -> Private.start_executing_on_fw_with_githubbing fw ;;
 
 let test_for_admissibility final_fw rl = match final_fw with 
@@ -558,7 +558,7 @@ let up_to_date_elesses final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "File_watcher.up_to_date_elesses" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.up_to_date_elesses" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.up_to_date_elesses" )
-  |With_batch_compilation (fw) -> Fw_with_batch_compilation.up_to_date_elesses fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.up_to_date_elesses fw
   |With_githubbing (fw) -> Private.up_to_date_elesses_on_fw_with_githubbing fw ;;
 
 let usual_compilable_files final_fw  = match final_fw with 
