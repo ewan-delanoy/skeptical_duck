@@ -37,8 +37,8 @@ let create_experimental_copy_from_scratch () =
   let (next_dest,next_backup,next_gab) = 
    Coma_big_constant.Next_World.triple in 
  let _ = (
-   Hashtbl.clear   Fwc_with_depencies.Private.Modularized_details.the_hashtbl ;
-   Hashtbl.clear   Fwc_with_depencies.Private.Order.the_hashtbl ;
+   Hashtbl.clear   Fwc_with_dependencies.Private.Modularized_details.the_hashtbl ;
+   Hashtbl.clear   Fwc_with_dependencies.Private.Order.the_hashtbl ;
  ) in 
   Chronometer.it
  (Create_world_copy.fully_developed_copy

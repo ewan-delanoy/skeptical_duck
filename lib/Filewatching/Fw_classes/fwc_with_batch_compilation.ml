@@ -8,30 +8,30 @@ exception Rename_string_or_value_exn of string ;;
 
 module Field = struct
 
-  module Parent = Fwc_with_depencies.Field ;;
+  module Parent = Fwc_with_dependencies.Field ;;
   let parent = Fwg_with_batch_compilation.parent ;;
 
-  let all_endinglesses fw = Fwc_with_depencies.all_endinglesses (parent fw) ;;
-  let all_moduled_mlx_files fw = Fwc_with_depencies.all_moduled_mlx_files (parent fw) ;;
-  let all_subdirectories fw = Fwc_with_depencies.all_subdirectories (parent fw) ;;
-  let ancestors_for_module fw = Fwc_with_depencies.ancestors_for_module (parent fw) ;;
-  let below fw = Fwc_with_depencies.below (parent fw) ;;
+  let all_endinglesses fw = Fwc_with_dependencies.all_endinglesses (parent fw) ;;
+  let all_moduled_mlx_files fw = Fwc_with_dependencies.all_moduled_mlx_files (parent fw) ;;
+  let all_subdirectories fw = Fwc_with_dependencies.all_subdirectories (parent fw) ;;
+  let ancestors_for_module fw = Fwc_with_dependencies.ancestors_for_module (parent fw) ;;
+  let below fw = Fwc_with_dependencies.below (parent fw) ;;
  
 
   let check_module_sequence_for_forgettability fw =
-    Fwc_with_depencies.check_module_sequence_for_forgettability (parent fw) ;;
+    Fwc_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
 
   let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
   
 
-  let decipher_module fw = Fwc_with_depencies.decipher_module (parent fw) ;;
-  let decipher_path fw = Fwc_with_depencies.decipher_path (parent fw) ;;
-  let dep_ordered_modules fw = Fwc_with_depencies.dep_ordered_modules (parent fw) ;;
-  let directly_below fw = Fwc_with_depencies.directly_below (parent fw) ;;
-  let direct_fathers_for_module fw = Fwc_with_depencies.direct_fathers_for_module (parent fw) ;;
-  let duplicate_module fw = Fwc_with_depencies.duplicate_module (parent fw) ;;
-  let endingless_at_module fw = Fwc_with_depencies.endingless_at_module (parent fw) ;;
-  let find_subdir_from_suffix fw = Fwc_with_depencies.find_subdir_from_suffix (parent fw) ;;
+  let decipher_module fw = Fwc_with_dependencies.decipher_module (parent fw) ;;
+  let decipher_path fw = Fwc_with_dependencies.decipher_path (parent fw) ;;
+  let dep_ordered_modules fw = Fwc_with_dependencies.dep_ordered_modules (parent fw) ;;
+  let directly_below fw = Fwc_with_dependencies.directly_below (parent fw) ;;
+  let direct_fathers_for_module fw = Fwc_with_dependencies.direct_fathers_for_module (parent fw) ;;
+  let duplicate_module fw = Fwc_with_dependencies.duplicate_module (parent fw) ;;
+  let endingless_at_module fw = Fwc_with_dependencies.endingless_at_module (parent fw) ;;
+  let find_subdir_from_suffix fw = Fwc_with_dependencies.find_subdir_from_suffix (parent fw) ;;
  
   
   let ignored_files fw = Parent.ignored_files (parent fw) ;;
@@ -41,16 +41,16 @@ module Field = struct
   let  latest_changes fw = Parent.latest_changes(parent fw)  ;;   
 
   let list_values_from_module fw =
-      Fwc_with_depencies.list_values_from_module (parent fw) ;;
+      Fwc_with_dependencies.list_values_from_module (parent fw) ;;
       
   let modules_using_value fw =
-        Fwc_with_depencies.modules_using_value (parent fw) ;;    
+        Fwc_with_dependencies.modules_using_value (parent fw) ;;    
 
   let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;;  
 
 
   let number_of_modules fw =
-      Fwc_with_depencies.number_of_modules (parent fw) ;;
+      Fwc_with_dependencies.number_of_modules (parent fw) ;;
 
   let root fw = Parent.root (parent fw) ;;
 
@@ -63,7 +63,7 @@ module Field = struct
        new_lcr ;;    
 
   let show_value_occurrences fw =
-    Fwc_with_depencies.show_value_occurrences (parent fw) ;;
+    Fwc_with_dependencies.show_value_occurrences (parent fw) ;;
     
 
   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
@@ -86,14 +86,14 @@ let label_for_last_compilation_result  = salt ^ "last_compilation_result" ;;
 let of_concrete_object ccrt_obj = 
   let g=Concrete_object.get_record ccrt_obj in 
   Fwg_with_batch_compilation.make 
-  (Fwc_with_depencies.of_concrete_object (g label_for_parent))
+  (Fwc_with_dependencies.of_concrete_object (g label_for_parent))
   (Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object  (g label_for_last_compilation_result))
   ;;
     
 let to_concrete_object fw = 
   let items =  
   [
-       label_for_parent, Fwc_with_depencies.to_concrete_object ( Fwg_with_batch_compilation.parent fw ) ;
+       label_for_parent, Fwc_with_dependencies.to_concrete_object ( Fwg_with_batch_compilation.parent fw ) ;
        label_for_last_compilation_result, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object 
         ( Fwg_with_batch_compilation.last_compilation_result_for_module fw ) ;
   ] in 
@@ -117,7 +117,7 @@ end;;
     List.assoc mn (get_cmpl_results fw) ;;
 
   let modules_with_their_ancestors fw l=
-    Fwc_with_depencies.modules_with_their_ancestors
+    Fwc_with_dependencies.modules_with_their_ancestors
      (parent fw) l ;;
   let root fw = Fw_poly.root (parent fw) ;;   
   let set_cmpl_result_at_module fw mn0 new_res = 
@@ -136,7 +136,7 @@ end;;
       Image.image (fun middle->
        let mn = Dfn_middle.to_module middle in 
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
-      ) (Fwc_with_depencies.printer_equipped_types (parent fw)) ;;  
+      ) (Fwc_with_dependencies.printer_equipped_types (parent fw)) ;;  
   
   
   module Command = struct 
@@ -174,7 +174,7 @@ end;;
               let (rejected_siblings_as_triples,survivors)=List.partition
              (
                 fun (nm2,_,_)->
-                  List.mem nm (Fwc_with_depencies.ancestors_for_module (parent fw) nm2)
+                  List.mem nm (Fwc_with_dependencies.ancestors_for_module (parent fw) nm2)
              ) triples_after in 
              let rejected_siblings_with_redundancies =  
                 Image.image (fun (nm2,eless2,_)->(nm2,eless2) ) rejected_siblings_as_triples in 
@@ -200,7 +200,7 @@ end;;
     ) deps) 
     and printer_equipped_types = preq_types_with_extra_info fw  in 
     let printable_deps = List.filter (
-      fun mn -> let eless = Fwc_with_depencies.endingless_at_module (parent fw) mn in 
+      fun mn -> let eless = Fwc_with_dependencies.endingless_at_module (parent fw) mn in 
       List.mem (eless,true) printer_equipped_types
     ) deps in 
     let temp2 = Image.image (fun mname->
@@ -220,7 +220,7 @@ end;;
           (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
          let nm_deps=modules_with_their_ancestors fw nm_direct_deps in 
-         let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_depencies.dep_ordered_modules (parent fw)) in 
+         let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_dependencies.dep_ordered_modules (parent fw)) in 
          let _=(if cmod = Compilation_mode_t.Debug 
                 then prepare_pretty_printers_for_ocamldebug fw deps) in 
          deps;;
@@ -229,10 +229,10 @@ end;;
      let pfw = parent fw in 
      let l=dependencies_inside_shaft cmod fw (opt_modulenames,opt_rootless_path) in 
      let temp1=Image.image (fun mn->
-       let eless=Fwc_with_depencies.endingless_at_module pfw mn 
-       and pr_ending = Fwc_with_depencies.principal_ending_for_module pfw mn in 
+       let eless=Fwc_with_dependencies.endingless_at_module pfw mn 
+       and pr_ending = Fwc_with_dependencies.principal_ending_for_module pfw mn in 
        let cmds=Command.module_separate_compilation cmod fw eless pr_ending in 
-      Image.image (fun cmd->(mn,Fwc_with_depencies.endingless_at_module pfw mn,cmd) ) cmds ) l in 
+      Image.image (fun cmd->(mn,Fwc_with_dependencies.endingless_at_module pfw mn,cmd) ) cmds ) l in 
       List.flatten temp1;;
   
   let list_of_commands_for_connecting_part_of_feydeau cmod fw (_,opt_rootless_path)=
@@ -345,17 +345,17 @@ end;;
     List.filter_map (
       fun mn->
         if last_compilation_result_for_module fw mn
-        then Some(Fwc_with_depencies.endingless_at_module pfw mn)
+        then Some(Fwc_with_dependencies.endingless_at_module pfw mn)
         else None
-    )(Fwc_with_depencies.dep_ordered_modules pfw);;
+    )(Fwc_with_dependencies.dep_ordered_modules pfw);;
 
-  let number_of_modules fw = Fwc_with_depencies.number_of_modules (parent fw) ;;  
+  let number_of_modules fw = Fwc_with_dependencies.number_of_modules (parent fw) ;;  
   
   
   let modern_recompile fw changed_modules_in_any_order = 
       if changed_modules_in_any_order=[] then fw else
       let (all_deps,new_deps,_changed_modules) = 
-        Fwc_with_depencies.below_several (parent fw) changed_modules_in_any_order in     
+        Fwc_with_dependencies.below_several (parent fw) changed_modules_in_any_order in     
       let _ = Strung.announce 
       ~trailer:("The following modules need to be recompiled \n"^
       "because they depend on directly changed modules :")
@@ -366,7 +366,7 @@ end;;
       fw2 ;;
 
    let forget_modules fw mod_names=
-      let (new_parent,removed_files) = Fwc_with_depencies.forget_modules (parent fw) mod_names in  
+      let (new_parent,removed_files) = Fwc_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Image.image Dfa_module.to_line mod_names in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
      let s_root=Dfa_root.connectable_to_subpath(root fw) in
@@ -379,19 +379,19 @@ end;;
       (Field.set_parent fw new_parent,removed_files);;
    
    let remove_files fw rootless_paths=
-      let (new_parent,_)=Fwc_with_depencies.remove_files (parent fw) rootless_paths in   
+      let (new_parent,_)=Fwc_with_dependencies.remove_files (parent fw) rootless_paths in   
       Field.set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
       let (new_parent,((_changed_archived_compilables,changed_usual_compilables),_,changed_files))
-         =Fwc_with_depencies.inspect_and_update (parent fw) in   
+         =Fwc_with_dependencies.inspect_and_update (parent fw) in   
       (Field.set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
    let of_fw_with_dependencies fw_with_deps = 
     Fwg_with_batch_compilation.make fw_with_deps 
     (Image.image (
         fun mn -> (mn,false)
-    ) (Fwc_with_depencies.dep_ordered_modules fw_with_deps));;   
+    ) (Fwc_with_dependencies.dep_ordered_modules fw_with_deps));;   
 
    let of_configuration config =
       let root = Fw_poly.root config in 
@@ -399,9 +399,9 @@ end;;
       let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
            (Coma_constant.conventional_files_with_minimal_content proj_name)) in 
-      let initial_parent = Fwc_with_depencies.of_configuration config in 
+      let initial_parent = Fwc_with_dependencies.of_configuration config in 
       let fw = of_fw_with_dependencies initial_parent in 
-      let mods = Fwc_with_depencies.dep_ordered_modules initial_parent in 
+      let mods = Fwc_with_dependencies.dep_ordered_modules initial_parent in 
       let (fw2,_rejected_pairs,accepted_pairs) = Ocaml_target_making.usual_feydeau fw mods in 
         let cmpl_results = Image.image (
              fun mn -> (mn,List.exists (fun (mn2,_)->mn2 = mn) accepted_pairs)
@@ -410,21 +410,21 @@ end;;
    
    let register_rootless_paths fw rps=
       let (new_parent,((_ac_paths,uc_paths,_nc_paths),_))=
-       Fwc_with_depencies.register_rootless_paths (parent fw) rps in   
+       Fwc_with_dependencies.register_rootless_paths (parent fw) rps in   
       let old_list_of_cmpl_results= get_cmpl_results fw in 
      let new_list_of_cmpl_results = Image.image (
         fun mn -> 
           match List.assoc_opt mn old_list_of_cmpl_results with 
           None -> (mn,false)
           |Some(old_res) -> (mn,old_res)
-     ) (Fwc_with_depencies.dep_ordered_modules new_parent) in 
+     ) (Fwc_with_dependencies.dep_ordered_modules new_parent) in 
      let fw2 = Fwg_with_batch_compilation.make new_parent new_list_of_cmpl_results in 
      let unordered_mods = Image.image Dfn_rootless.to_module uc_paths in  
      modern_recompile  fw2 unordered_mods;;
    
   
    let relocate_module_to fw mod_name new_subdir=
-      let (new_parent,replacements)=Fwc_with_depencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
+      let (new_parent,replacements)=Fwc_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
       (Field.set_parent fw new_parent,replacements) ;;
    
    let rename_module fw old_middle_name new_nonslashed_name=
@@ -433,12 +433,12 @@ end;;
      let old_parent = parent fw in 
      let separated_acolytes_below=List.filter_map(
        fun mn->
-        if List.mem old_nm (Fwc_with_depencies.ancestors_for_module old_parent mn)
-       then Some(Image.image (Dfn_full.to_rootless) (Fwc_with_depencies.acolytes_at_module old_parent mn))
+        if List.mem old_nm (Fwc_with_dependencies.ancestors_for_module old_parent mn)
+       then Some(Image.image (Dfn_full.to_rootless) (Fwc_with_dependencies.acolytes_at_module old_parent mn))
        else None
-   ) (Fwc_with_depencies.dep_ordered_modules old_parent) in
+   ) (Fwc_with_dependencies.dep_ordered_modules old_parent) in
      let all_acolytes_below=List.flatten separated_acolytes_below in
-     let (new_parent,changes) = Fwc_with_depencies.rename_module_on_filename_level_and_in_files 
+     let (new_parent,changes) = Fwc_with_dependencies.rename_module_on_filename_level_and_in_files 
       old_parent (old_nm,new_nm,all_acolytes_below) in 
     let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Image.image (
@@ -461,13 +461,13 @@ end;;
       
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
-      let (new_parent,extra)=Fwc_with_depencies.rename_subdirectory_as 
+      let (new_parent,extra)=Fwc_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
          (Field.set_parent fw new_parent,extra) ;;
    
     let replace_string fw old_s new_s =
          let old_parent = parent fw in 
-         let (new_parent,(changes1,all_changed_files)) = Fwc_with_depencies.replace_string old_parent (old_s,new_s) in 
+         let (new_parent,(changes1,all_changed_files)) = Fwc_with_dependencies.replace_string old_parent (old_s,new_s) in 
          let changed_rootlesses = Image.image fst changes1 in 
          let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
          (Field.set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
@@ -475,7 +475,7 @@ end;;
     
     let replace_value fw ((preceding_files,path),(old_v,new_v)) =
           let old_parent = parent fw in 
-          let (new_parent,(u_changes,all_changes)) = Fwc_with_depencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
+          let (new_parent,(u_changes,all_changes)) = Fwc_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
           let changed_rootlesses = Image.image fst u_changes in 
           let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
           (Field.set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
@@ -484,7 +484,7 @@ end;;
      
 
   let plunge_fw_configuration config = 
-    Fwg_with_batch_compilation.make (Fwc_with_depencies.plunge_fw_configuration config) [];;
+    Fwg_with_batch_compilation.make (Fwc_with_dependencies.plunge_fw_configuration config) [];;
 
   let usual_recompile fw = 
     let (fw1,(changed_uc,changed_files)) = inspect_and_update fw  in 
