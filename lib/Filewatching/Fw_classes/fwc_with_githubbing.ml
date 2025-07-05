@@ -5,11 +5,88 @@
 *)
 
 
+
 module Field = struct
+
+module Parent = Fwc_with_batch_compilation.Field ;;
+let parent = Fwg_with_githubbing.parent ;;
 
 let set_parent fw fw_batch =
   Fwg_with_githubbing.make fw_batch 
      (Fwg_with_githubbing.github_configuration fw) ;;
+
+
+let all_endinglesses fw = Parent.all_endinglesses (parent fw) ;;
+let all_moduled_mlx_files fw = Parent.all_moduled_mlx_files (parent fw) ;;
+let all_subdirectories fw = Parent.all_subdirectories (parent fw) ;;
+let ancestors_for_module fw = Parent.ancestors_for_module (parent fw) ;;
+let below fw = Parent.below (parent fw) ;;
+
+let check_module_sequence_for_forgettability fw = 
+  Parent.check_module_sequence_for_forgettability (parent fw) ;;
+
+let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
+  
+
+let  clean_debug_dir fw = Fwc_with_batch_compilation.clean_debug_dir(parent fw)  ;;
+
+let  clean_exec_dir fw = Fwc_with_batch_compilation.clean_exec_dir(parent fw)  ;;
+
+let decipher_module fw = Parent.decipher_module (parent fw) ;;
+let decipher_path fw = Parent.decipher_path (parent fw) ;;
+let dep_ordered_modules fw = Parent.dep_ordered_modules (parent fw) ;;
+let directly_below fw = Parent.directly_below (parent fw) ;;
+let direct_fathers_for_module fw = Parent.direct_fathers_for_module (parent fw) ;;
+let duplicate_module fw = Parent.duplicate_module (parent fw) ;;
+let endingless_at_module fw = Parent.endingless_at_module (parent fw) ;;
+let find_subdir_from_suffix fw = Parent.find_subdir_from_suffix (parent fw) ;;
+
+
+let gitpush_after_backup fw = Fwg_github_configuration.gitpush_after_backup (Fwg_with_githubbing.github_configuration fw) ;;
+
+let ignored_files fw = Parent.ignored_files (parent fw) ;;
+let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
+
+
+let  latest_changes fw = Parent.latest_changes(parent fw)  ;;    
+
+let list_values_from_module fw = Parent.list_values_from_module(parent fw)  ;;
+
+let  modern_recompile fw changed_mods = 
+  set_parent fw (Fwc_with_batch_compilation.modern_recompile
+       (Fwg_with_githubbing.parent fw) changed_mods ) ;;
+
+
+let modules_using_value fw = Parent.modules_using_value (parent fw) ;; 
+
+let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;; 
+
+let number_of_modules fw = Parent.number_of_modules (parent fw) ;;
+let  preq_types_with_extra_info fw = Fwc_with_batch_compilation.preq_types_with_extra_info(parent fw)  ;;
+
+let root fw = Parent.root (parent fw) ;;
+
+let set_gitpush_after_backup fw gab = 
+  let old_github_config = Fwg_with_githubbing.github_configuration fw in 
+  let new_github_config = Fwc_github_configuration.Field.set_gitpush_after_backup old_github_config gab in 
+  Fwg_with_githubbing.make (parent fw) new_github_config ;;
+
+
+
+let  show_value_occurrences fw = Parent.show_value_occurrences(parent fw)  ;;
+
+let  start_debugging fw = Fwc_with_batch_compilation.start_debugging(parent fw)  ;;
+
+let  start_executing fw = Fwc_with_batch_compilation.start_executing(parent fw)  ;;
+
+let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+
+let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+
+let  up_to_date_elesses fw = Fwc_with_batch_compilation.up_to_date_elesses(parent fw)  ;;
+
+
+let  usual_compilable_files fw = Parent.usual_compilable_files(parent fw)  ;; 
 
 
 end ;;  
@@ -22,10 +99,9 @@ let github_configuration = Fwg_with_githubbing.github_configuration ;;
 let make = Fwg_with_githubbing.make;;
 
 
-
 let usual_extension fw_batch backup_dir gab git_url enc_files = 
   make fw_batch (Fwg_github_configuration.make 
- ~v_root:(Fw_poly.root fw_batch)
+ ~v_root:(Fwc_with_batch_compilation.Field.root fw_batch)
   ~v_dir_for_backup:backup_dir
 ~v_gitpush_after_backup:gab
 ~v_github_url:git_url
@@ -55,8 +131,7 @@ let to_concrete_object fw =
 
 end;; 
 
-let root fw = Fw_poly.root (parent fw) ;;
-  
+ 
 
   let set_parent ~child ~new_parent = 
    make new_parent child ;;
@@ -65,7 +140,7 @@ let root fw = Fw_poly.root (parent fw) ;;
   let usual_batch fw modnames = 
     let (new_parent,rejected_ones,accepted_ones) = 
       Fwc_with_batch_compilation.usual_batch (parent fw) modnames in 
-    (set_parent ~child:(github_configuration fw) ~new_parent,rejected_ones,accepted_ones) ;; 
+    (Field.set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
   
   
 
@@ -87,7 +162,7 @@ let root fw = Fw_poly.root (parent fw) ;;
   exception Forget_modules_exn of Dfa_module_t.t  list ;;     
 
   let forget_modules fw mods = 
-    let check = Fw_with_dependencies.check_module_sequence_for_forgettability (parent fw) mods in 
+    let check = Field.check_module_sequence_for_forgettability fw mods in 
     if check <> []
     then raise(Forget_modules_exn(check))
     else
@@ -168,11 +243,9 @@ let root fw = Fw_poly.root (parent fw) ;;
     let _ = backup fw diff opt_comment in 
     set_parent ~child:(github_configuration fw) ~new_parent ;;
 
-  let set_gitpush_after_backup fw gab = 
-    let old_github_config = github_configuration fw in 
-    let new_github_config = Fwc_github_configuration.Field.set_gitpush_after_backup old_github_config gab in 
-    make (parent fw) new_github_config ;;
+ 
 
+    
 
 end ;; 
 
@@ -189,9 +262,6 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
-let set_gitpush_after_backup = Private.set_gitpush_after_backup ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
-let to_fw_configuration fw = Fwc_with_batch_compilation.to_fw_configuration (Private.parent fw) ;;
-let to_github_configuration = Private.github_configuration ;;
 let usual_recompile = Private.usual_recompile ;;
 

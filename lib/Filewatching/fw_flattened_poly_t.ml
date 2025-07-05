@@ -4,7 +4,6 @@
 
 *)
 
-
 type t = { 
    type_name : string option;
    root : Dfa_root_t.t option;
@@ -26,17 +25,14 @@ let origin = {
    ignored_files = Some [] ;
    ignored_subdirectories = Some [] ;
    index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
-   last_compilation_result_for_module = Some [] ;
    root = Some (Dfa_root.of_line "dummy") ;
    small_details_in_files = Some [] ;
    subdirs_for_archived_mlx_files = Some [] ;
    watched_files = Some [] ;
+
+   last_compilation_result_for_module = None ;
    dir_for_backup = None ;
    encoding_protected_files = None ;
    github_url = None ;
-   gitpush_after_backup = None ;
-   (* dir_for_backup = Some(Dfa_root.of_line "dummy") ;
-   encoding_protected_files = Some [] ;
-   github_url = Some "" ;
-   gitpush_after_backup = Some false ; *) 
+   gitpush_after_backup = None ;  
 } ;;

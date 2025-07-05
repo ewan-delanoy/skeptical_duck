@@ -13,7 +13,6 @@ let  get_type_name fw = try Option.get ( fw.Fw_flattened_poly_t.type_name )  wit
 let  get_index_for_caching fw = try Option.get ( fw.Fw_flattened_poly_t.index_for_caching )  with _ -> raise(Get_exn("index_for_caching")) ;;
 let  get_ignored_files fw = try Option.get ( fw.Fw_flattened_poly_t.ignored_files )  with _ -> raise(Get_exn("ignored_files")) ;;
 let  get_ignored_subdirectories fw = try Option.get (fw.Fw_flattened_poly_t.ignored_subdirectories )  with _ -> raise(Get_exn("ignored_subdirectories")) ;;
-let  get_last_compilation_result_for_module fw = try Option.get ( fw.Fw_flattened_poly_t.last_compilation_result_for_module )  with _ -> raise(Get_exn("last_compilation_result_for_module")) ;;
 let  get_root fw = try Option.get ( fw.Fw_flattened_poly_t.root )  with _ -> raise(Get_exn("root")) ;;
 let  get_small_details_in_files fw = try Option.get ( fw.Fw_flattened_poly_t.small_details_in_files )  with _ -> raise(Get_exn("small_details_in_files")) ;;
 let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Fw_flattened_poly_t.subdirs_for_archived_mlx_files )  with _ -> raise(Get_exn("subdirs_for_archived_mlx_files")) ;;
@@ -29,51 +28,6 @@ let salt = "Fw_poly_t." ;;
 let label_for_type_name                          = salt ^ "type_name" ;;
 let label_for_ignored_files                      = salt ^ "ignored_files" ;;
 let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
-let label_for_last_compilation_result_for_module = salt ^ "last_compilation_result_for_module" ;;
-let label_for_root                               = salt ^ "root" ;;
-let label_for_small_details_in_files             = salt ^ "small_details_in_files" ;;
-let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
-let label_for_watched_files                      = salt ^ "watched_files" ;;
-
-let of_concrete_object ccrt_obj = 
- let g=Concrete_object.get_record ccrt_obj in 
- {
-   Fw_flattened_poly_t.origin with
-   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
-   ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
-   ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
-   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
-   last_compilation_result_for_module = Some(Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object (g label_for_last_compilation_result_for_module))  ;
-   root = Some(Dfa_root.of_concrete_object (g label_for_root))  ;
-   small_details_in_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))  ;
-   subdirs_for_archived_mlx_files = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files))  ;
-   watched_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
-} ;;
-
-let to_concrete_object fw = 
- let items =  
- [
-   label_for_type_name, Crobj_converter.string_to_concrete_object (get_type_name fw);
-   label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
-   label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
-   label_for_last_compilation_result_for_module, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object ( get_last_compilation_result_for_module fw ) ;
-   label_for_root, Dfa_root.to_concrete_object ( get_root fw ) ;
-   label_for_small_details_in_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object ( get_small_details_in_files fw ) ;
-   label_for_subdirs_for_archived_mlx_files, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_subdirs_for_archived_mlx_files fw ) ;
-   label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
- ] in 
- Concrete_object_t.Record items ;;
-
-
-end;; 
-
-
-
-module PartialCrobj = struct 
-let salt = "Fw_poly_t." ;;
-let label_for_type_name                          = salt ^ "type_name" ;;
-let label_for_ignored_files                      = salt ^ "ignored_files" ;;
-let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
 let label_for_root                               = salt ^ "root" ;;
 let label_for_small_details_in_files             = salt ^ "small_details_in_files" ;;
 let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
@@ -107,7 +61,7 @@ let to_concrete_object fw =
  Concrete_object_t.Record items ;;
 
 
-end;; 
+end;;
 
 
 
@@ -129,11 +83,7 @@ let fw_with_archives_to_fw_with_small_details fw ~small_details_in_files:v1_smal
    small_details_in_files = Some v1_small_details ;
 } ;;
 
-let fw_with_dependencies_to_fw_with_batch_compilation fw ~last_compilation_result_for_module:v1_compilation_results = {
-   fw with 
-   Fw_flattened_poly_t.type_name = Some "Fw_with_batch_compilation" ;
-   last_compilation_result_for_module = Some v1_compilation_results ;
-} ;;
+
 let fw_with_small_details_to_fw_with_dependencies fw ~index_for_caching:v1_cache_idx = {
    fw with 
    Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" ;
@@ -171,11 +121,6 @@ let sp_for_fw_with_dependencies child new_parent =
  Extender.fw_with_small_details_to_fw_with_dependencies new_parent 
    ~index_for_caching:(get_index_for_caching child)
  ;;
-let sp_for_fw_with_batch_compilation child new_parent = 
- Extender.fw_with_dependencies_to_fw_with_batch_compilation new_parent 
-   ~last_compilation_result_for_module:(get_last_compilation_result_for_module child)
- ;;
-
 
 let set ~child ~new_parent = 
  let name = get_type_name child in 
@@ -183,7 +128,6 @@ let set ~child ~new_parent =
    "Fw_with_archives" , sp_for_fw_with_archives child new_parent ;
    "Fw_with_small_details" , sp_for_fw_with_small_details child new_parent ;
    "Fw_with_dependencies" , sp_for_fw_with_dependencies child new_parent ;
-   "Fw_with_batch_compilation" , sp_for_fw_with_batch_compilation child new_parent ;
  ] with 
   Some(answer) ->answer
  |None -> raise (Set_parent_exn(name)) ;;
@@ -293,13 +237,11 @@ let construct_fw_configuration ~root:v1_r ~ignored_subdirectories:v2_ign_subdirs
 let extend_file_watcher_to_fw_with_archives  = Private.Extender.file_watcher_to_fw_with_archives ;;
 let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
 let extend_fw_with_archives_to_fw_with_small_details  = Private.Extender.fw_with_archives_to_fw_with_small_details ;;
-let extend_fw_with_dependencies_to_fw_with_batch_compilation  = Private.Extender.fw_with_dependencies_to_fw_with_batch_compilation ;;
 let extend_fw_with_small_details_to_fw_with_dependencies  = Private.Extender.fw_with_small_details_to_fw_with_dependencies ;;
 
 let ignored_files x = Private.get_ignored_files x;;
 let ignored_subdirectories x = Private.get_ignored_subdirectories x;;
 let index_for_caching x = Private.get_index_for_caching x;;
-let last_compilation_result_for_module x = Private.get_last_compilation_result_for_module x;;
 let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let parent  = Private.Parent.get ;;
 let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Private.get_type_name fw)^" >") ;;
@@ -307,7 +249,6 @@ let root x = Private.get_root x;;
 let set_ignored_files x ign_files = { x with Fw_flattened_poly_t.ignored_files = Some ign_files} ;;
 let set_ignored_subdirectories x ign_subdirs = { x with Fw_flattened_poly_t.ignored_subdirectories = Some ign_subdirs} ;;
 let set_index_for_caching x cache_idx = { x with Fw_flattened_poly_t.index_for_caching = Some cache_idx} ;;
-let set_last_compilation_result_for_module x compilation_results = { x with Fw_flattened_poly_t.last_compilation_result_for_module = Some compilation_results} ;;
 let set_parent  = Private.Parent.set ;;
 let set_root x r = { x with Fw_flattened_poly_t.root = Some r} ;;
 let set_small_details_in_files x small_details = { x with Fw_flattened_poly_t.small_details_in_files = Some small_details} ;;

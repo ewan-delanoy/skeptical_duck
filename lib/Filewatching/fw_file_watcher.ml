@@ -4,9 +4,24 @@
 
 *)
 
+
 exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
+
+module Field = struct 
+
+   module Parent = Fw_configuration ;;
+   let parent = Fw_poly.parent ;;
+
+   let root fw = Fw_configuration.root (parent fw) ;;
+
+   let test_for_admissibility fw = Fw_configuration.test_for_admissibility (parent fw) ;;
+
+   let to_fw_configuration fw = parent fw ;;
+
+end ;;   
+
 
 module Private = struct
 
@@ -326,6 +341,8 @@ end;;
 
 let apply_text_transformation_on_some_files = Private.apply_text_transformation_on_some_files;;
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
+let ignored_files = Fw_poly.ignored_files ;;
+let ignored_subdirectories = Fw_poly.ignored_subdirectories ;;
 let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
 let of_configuration = Private.of_configuration ;;

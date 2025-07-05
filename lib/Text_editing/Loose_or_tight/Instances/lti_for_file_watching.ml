@@ -15,11 +15,13 @@ let the_list =
     Absolute_path.of_string("lib/Filewatching/Fw_classes/fwg_"^fn^".ml")
 ) [
    "github_configuration";
+   "with_batch_compilation";
    "with_githubbing"
 ] 
   };;
 
 end ;;  
+
 
 let set = Loose_or_tight.set_in_file_list Private.the_list ;;
 let toggle () = Loose_or_tight.toggle_in_file_list Private.the_list ;;

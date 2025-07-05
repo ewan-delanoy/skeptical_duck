@@ -35,7 +35,7 @@
          let refresh fw =
             let fw2= Fw_final_poly.of_fw_config_and_github_config 
             (Fw_final_poly.to_fw_configuration fw) 
-            (Fw_final_poly.to_github_configuration fw)  in 
+            (Fw_final_poly.github_configuration fw)  in 
             let _=Fw_with_persisting.persist fw2 in 
             fw2;;       
 
@@ -182,6 +182,7 @@
       let new_nonslashed_name = No_slashes.of_string (String.uncapitalize_ascii new_name) in 
       Reference.rename_module fw_ref old_middle_name new_nonslashed_name;; 
    
+      
    exception Rename_string_or_value_exn of string ;;
 
    let rename_string_or_value fw_ref old_sov new_sov =

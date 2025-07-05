@@ -10,6 +10,31 @@ exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 exception Module_not_found_exn of string ;;
 
+module Field = struct 
+
+  module Parent = Fw_with_archives.Field ;;
+  let parent = Fw_poly.parent ;;
+  
+  let check_that_no_change_has_occurred fw = Fw_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
+
+  let ignored_files fw = Parent.ignored_files (parent fw) ;;
+  let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
+
+  let  latest_changes fw = Fw_with_archives.latest_changes(parent fw)  ;;  
+
+  let  noncompilable_files fw = Fw_with_archives.noncompilable_files(parent fw)  ;;  
+
+  let root fw = Parent.root (parent fw) ;;
+
+  let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+  let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+
+  let  usual_compilable_files fw = Fw_with_archives.usual_compilable_files(parent fw)  ;;  
+
+end ;;  
+
+
+
 module Private = struct
 
  let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
@@ -1126,6 +1151,7 @@ let decipher_module fw capitalized_or_not_x=
   
   let above fw mn = snd (List.assoc mn (Order.get fw));;
 
+  
   let below fw mn0 =
         let ordered_data = Order.get fw in 
         List.filter_map(fun (mn,_)->

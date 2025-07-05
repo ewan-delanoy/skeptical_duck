@@ -14,8 +14,9 @@ let cod ()=
    let ucs = (!(Usual_coma_state.main_ref)) in 
    Check_ocaml_dircopy.check 
      (Fw_final_poly.to_fw_configuration ucs) 
-        (Fw_final_poly.to_github_configuration ucs);;
+        (Fw_final_poly.github_configuration ucs);;
 
+        
         
 let dabo = Usual_coma_state.sugared_directly_above;;
 

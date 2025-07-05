@@ -37,7 +37,7 @@ let make fw_batch github_config = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fw_flattened_poly_t.t;
+  _parent : Fwg_with_batch_compilation.t;
   github_config : Fwg_github_configuration.t;
 } ;;
 
@@ -50,4 +50,5 @@ let make fw_batch github_configuration = {
 } ;;
 
 (* End of tight version of file watching *)
+
 
