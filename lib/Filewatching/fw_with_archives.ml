@@ -4,6 +4,20 @@
 
 *)
 
+
+module Field = struct 
+
+   module Parent = Fw_file_watcher.Field ;;
+   let parent = Fw_poly.parent ;;
+
+   let ignored_files fw = Fw_file_watcher.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Fw_file_watcher.ignored_subdirectories (parent fw) ;;
+   let root fw = Parent.root (parent fw) ;;
+   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+
+end ;;   
+
 module Private = struct
 
    let parent fw = Fw_poly.parent fw ;;
@@ -224,6 +238,7 @@ module Private = struct
       let (_,u_files,_) = canonical_tripartition fw all_files in 
       u_files ;;        
 
+      
    let archived_files fw  =
       let all_files = Image.image fst (watched_files fw) in 
       let (a_files,_,_) = canonical_tripartition fw all_files in 
