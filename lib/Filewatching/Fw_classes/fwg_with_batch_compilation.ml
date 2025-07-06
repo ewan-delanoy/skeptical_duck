@@ -6,7 +6,7 @@
 
 
 (* Beginning of loose version of file watching *)
-
+(*
 
 
 type t = Fw_flattened_poly_t.t ;;
@@ -28,11 +28,11 @@ let make fw_with_deps lcr = {
 
 
 
-
+*)
 (* End of loose version of file watching *)
 
 (* Beginning of tight version of file watching *)
-(*
+
 type t = {
   _parent : Fw_flattened_poly_t.t;
   last_compilation_result_for_module : ((Dfa_module_t.t * bool) list);
@@ -45,7 +45,7 @@ let make fw_batch lcr = {
   _parent = fw_batch ;
   last_compilation_result_for_module = lcr ;
 } ;;
-*)
+
 (* End of tight version of file watching *)
 
 
