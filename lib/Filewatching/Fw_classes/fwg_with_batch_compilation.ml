@@ -41,8 +41,8 @@ type t = {
 let parent fw = fw._parent ;; 
 let last_compilation_result_for_module fw = fw.last_compilation_result_for_module ;; 
 
-let make fw_batch lcr = {
-  _parent = fw_batch ;
+let make fw_with_deps lcr = {
+  _parent = fw_with_deps ;
   last_compilation_result_for_module = lcr ;
 } ;;
 
