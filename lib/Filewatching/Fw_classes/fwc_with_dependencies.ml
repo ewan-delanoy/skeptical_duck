@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Filewatching/Fw_classes/fwc_with_dependencies.ml";;
+#use"lib/Filewatching/Fw_classes/coming_soon_fwc_with_dependencies.ml";;
 
 *)
 
@@ -13,7 +13,7 @@ exception Module_not_found_exn of string ;;
 module Field = struct 
 
   module Parent = Fw_with_archives.Field ;;
-  let parent = Fw_poly.parent ;;
+  let parent = Fwg_with_dependencies.parent ;;
   
   let check_that_no_change_has_occurred fw = Fw_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
 
@@ -26,7 +26,22 @@ module Field = struct
 
   let root fw = Parent.root (parent fw) ;;
 
+  let test_equality fw1 fw2 = 
+    (
+      Fw_with_archives.Field.test_equality (parent fw1) (parent fw2)
+    )
+    @
+    (
+      List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
+      [
+        (*
+        "index_for_caching",((Fwg_with_dependencies.index_for_caching fw1)=(Fwg_with_dependencies.index_for_caching fw2))
+        *)
+      ]
+    ) ;; 
+
   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+  
   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
 
   let  usual_compilable_files fw = Fw_with_archives.usual_compilable_files(parent fw)  ;;  
@@ -38,12 +53,24 @@ end ;;
 module Private = struct
 
  let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
- let index fw = Fw_poly.index_for_caching fw ;; 
- let parent fw = Fw_poly.parent fw ;;
- let usual_extension fw_parent instance_idx = 
-    Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
-      fw_parent 
-       ~index_for_caching:(expand_index instance_idx) ;;
+ let index fw = Fwg_with_dependencies.index_for_caching fw ;; 
+ let parent fw = Fwg_with_dependencies.parent fw ;;
+ let usual_extension fw_with_archives instance_idx = 
+    Fwg_with_dependencies.make 
+    fw_with_archives (expand_index instance_idx) ;;
+
+
+  module Crobj = struct 
+
+  let of_concrete_object crobj = 
+      let instance_idx = Fw_indexer.create_new_instance () in   
+      Fwg_with_dependencies.make 
+        (Fw_with_archives.of_concrete_object crobj) (expand_index instance_idx) ;;
+
+  let to_concrete_object fw = Fw_with_archives.to_concrete_object 
+      (parent fw) ;;
+
+  end ;;  
 
 
 (* Pre-processed text starts here *)
@@ -1071,15 +1098,15 @@ end ;;
        
  let all_moduled_mlx_paths cs=Image.image Dfn_full.to_absolute_path (all_moduled_mlx_files cs);;  
 
-let archived_mlx_paths cs = List.filter_map (
+let archived_mlx_paths fw = List.filter_map (
    fun rl -> let edg = Dfn_rootless.to_ending rl in 
      if List.mem edg Dfa_ending.all_ocaml_endings 
-     then let full = Dfn_join.root_to_rootless (root cs) rl in 
+     then let full = Dfn_join.root_to_rootless (root fw) rl in 
            Some(Dfn_full.to_absolute_path full)
      else None   
-) (Fw_with_archives.archived_files cs);;
+) (Fw_with_archives.archived_files (parent fw));;
 
-let all_mlx_paths cs = (archived_mlx_paths cs) @ (all_moduled_mlx_paths cs) ;;
+let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 
  let list_values_from_module fw module_name=
  let temp1=all_mlx_paths fw in
@@ -1294,11 +1321,7 @@ let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let number_of_modules = Private.number_of_modules ;;
-let of_concrete_object crobj = 
-    let instance_idx = Fw_indexer.create_new_instance () in   
-    Fw_poly.extend_fw_with_small_details_to_fw_with_dependencies 
-      (Fw_poly.of_concrete_object crobj) 
-      ~index_for_caching:(Private.expand_index instance_idx) ;;
+let of_concrete_object = Private.Crobj.of_concrete_object ;; 
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
@@ -1315,5 +1338,5 @@ let replace_value = Private.Exit.replace_value ;;
 let root fw = Fw_poly.root (Private.parent fw) ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
-let to_concrete_object fw = Fw_poly.to_concrete_object (Private.parent fw) ;;
+let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;

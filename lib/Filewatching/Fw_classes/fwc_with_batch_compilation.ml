@@ -65,6 +65,19 @@ module Field = struct
   let show_value_occurrences fw =
     Fwc_with_dependencies.show_value_occurrences (parent fw) ;;
     
+    let test_equality fw1 fw2 = 
+      (
+        Fwc_with_dependencies.Field.test_equality (parent fw1) (parent fw2)
+      )
+      @
+      (
+        List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
+        [
+          "last_compilation_result_for_module",(
+            (Fwg_with_batch_compilation.last_compilation_result_for_module fw1)=
+          (Fwg_with_batch_compilation.last_compilation_result_for_module fw2))
+        ]
+      ) ;;
 
   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
 
@@ -119,7 +132,7 @@ end;;
   let modules_with_their_ancestors fw l=
     Fwc_with_dependencies.modules_with_their_ancestors
      (parent fw) l ;;
-  let root fw = Fw_poly.root (parent fw) ;;   
+  
   let set_cmpl_result_at_module fw mn0 new_res = 
     let old_list_of_cmpl_results= get_cmpl_results fw in 
     let new_list_of_cmpl_results = Image.image (
@@ -132,7 +145,7 @@ end;;
     set_cmpl_results fw new_list_of_cmpl_results ;;
   
   let preq_types_with_extra_info fw =
-      let root = root fw  in 
+      let root = Field.root fw  in 
       Image.image (fun middle->
        let mn = Dfn_middle.to_module middle in 
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
@@ -208,7 +221,7 @@ end;;
       "install_printer "^(String.capitalize_ascii s)^".print_out"
     ) printable_deps in 
     let full_text = String.concat "\n" (temp1@temp2) in 
-    let ppodbg_path = ocamldebug_printersfile_path (root fw) in 
+    let ppodbg_path = ocamldebug_printersfile_path (Field.root fw) in 
     Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
   
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
@@ -217,7 +230,7 @@ end;;
      |Compilation_mode_t.Debug
      |Compilation_mode_t.Executable->let rootless_path=Option.get opt_rootless_path in 
          let full_path=Absolute_path.of_string(
-          (Dfa_root.connectable_to_subpath (root fw))^rootless_path) in 
+          (Dfa_root.connectable_to_subpath (Field.root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
          let nm_deps=modules_with_their_ancestors fw nm_direct_deps in 
          let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_dependencies.dep_ordered_modules (parent fw)) in 
@@ -295,7 +308,7 @@ end;;
   
   
   let clean_debug_dir fw=
-    let s_root=Dfa_root.connectable_to_subpath(root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
     let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath
        (Coma_constant.debug_build_subdir)) in 
     Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
@@ -307,7 +320,7 @@ end;;
   
   let start_debugging fw=
     let  _=clean_debug_dir fw in
-    let ppodbg_path = ocamldebug_printersfile_path (root fw) in 
+    let ppodbg_path = ocamldebug_printersfile_path (Field.root fw) in 
     let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
     let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug fw debugged_file_path in 
     let answer=Unix_command.conditional_multiple_uc cmds in 
@@ -328,7 +341,7 @@ end;;
     answer;;   
      
   let clean_exec_dir fw=
-    let s_root=Dfa_root.connectable_to_subpath(root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
     let s_exec_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.exec_build_subdir)) in 
     Unix_command.uc("rm -f "^s_exec_dir^"*.cm*"^" "^s_exec_dir^"*.ocaml_executable"^" "^s_exec_dir^"*.o");;
      
@@ -369,7 +382,7 @@ end;;
       let (new_parent,removed_files) = Fwc_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Image.image Dfa_module.to_line mod_names in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
-     let s_root=Dfa_root.connectable_to_subpath(root fw) in
+     let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
      let s_build_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.usual_build_subdir)) in 
      let _=Image.image
                       (fun (mname,edg)->
@@ -449,7 +462,7 @@ end;;
            else old_pair    
       ) old_list_of_cmpl_results in   
       let fw2 = Fwg_with_batch_compilation.make new_parent new_list_of_cmpl_results in 
-      let root_dir=root fw in 
+      let root_dir=Field.root fw in 
       let s_root=Dfa_root.connectable_to_subpath root_dir in   
       let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
       let _=Unix_command.uc

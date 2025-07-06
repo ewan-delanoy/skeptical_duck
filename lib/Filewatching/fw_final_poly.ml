@@ -11,7 +11,7 @@ type t =
   |Github_configuration of  Fwg_github_configuration.t
   |Watcher of Fw_flattened_poly_t.t
   |With_archives of Fw_flattened_poly_t.t
-  |With_dependencies of Fw_flattened_poly_t.t
+  |With_dependencies of Fwg_with_dependencies.t
   |With_batch_compilation of Fwg_with_batch_compilation.t
   |With_githubbing of Fwg_with_githubbing.t
 ;;
@@ -387,6 +387,7 @@ let start_executing final_fw  = match final_fw with
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_executing fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.start_executing fw ;;
 
+
 let test_for_admissibility final_fw rl = match final_fw with 
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.test_for_admissibility" )
   |Configuration (fw) -> Fw_configuration.test_for_admissibility fw rl
@@ -413,6 +414,8 @@ let to_fw_configuration final_fw  = match final_fw with
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.to_fw_configuration fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.to_fw_configuration fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.to_fw_configuration fw  ;;
+
+
 
 let up_to_date_elesses final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.up_to_date_elesses" )

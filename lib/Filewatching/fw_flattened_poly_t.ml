@@ -24,12 +24,11 @@ let origin = {
    type_name = Some "" ;
    ignored_files = Some [] ;
    ignored_subdirectories = Some [] ;
-   index_for_caching = Some (Fw_indexer.make_full_instance ()) ;
    root = Some (Dfa_root.of_line "dummy") ;
    small_details_in_files = Some [] ;
    subdirs_for_archived_mlx_files = Some [] ;
    watched_files = Some [] ;
-
+   index_for_caching = None ;
    last_compilation_result_for_module = None ;
    dir_for_backup = None ;
    encoding_protected_files = None ;

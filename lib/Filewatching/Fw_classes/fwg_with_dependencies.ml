@@ -16,7 +16,7 @@ let parent fw = {
   Fw_flattened_poly_t.type_name = Some "Fw_with_archives" 
  } ;; 
 
-let index_for_caching fw = match fw.Fw_flattened_poly_t.last_compilation_result_for_module with Some x -> x | None -> raise(Get_exn "index_for_caching")  ;;
+let index_for_caching fw = match fw.Fw_flattened_poly_t.index_for_caching with Some x -> x | None -> raise(Get_exn "index_for_caching")  ;;
 
 
 let make fw_with_archives ifc = {

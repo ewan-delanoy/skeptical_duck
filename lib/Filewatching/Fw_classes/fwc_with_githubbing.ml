@@ -79,6 +79,28 @@ let  start_debugging fw = Fwc_with_batch_compilation.start_debugging(parent fw) 
 
 let  start_executing fw = Fwc_with_batch_compilation.start_executing(parent fw)  ;;
 
+let test_equality fw1 fw2 = 
+  let gc = Fwg_with_githubbing.github_configuration in 
+  let get_github_root = (fun fw->Fwg_github_configuration.root(gc fw))
+  and get_dir_for_backup = (fun fw->Fwg_github_configuration.dir_for_backup(gc fw))
+  and get_github_url = (fun fw->Fwg_github_configuration.github_url(gc fw))
+  and get_encoding_protected_files = (fun fw->Fwg_github_configuration.encoding_protected_files(gc fw)) in 
+
+  (
+    Fwc_with_batch_compilation.Field.test_equality (parent fw1) (parent fw2)
+  )
+  @
+  (
+    List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
+    [
+      "github_root",((get_github_root fw1)=(get_github_root fw2));
+      "dir_for_backup",((get_dir_for_backup fw1)=(get_dir_for_backup fw2));
+      "github_url",((get_github_url fw1)=(get_github_url fw2));
+      "encoding_protected_files",((get_encoding_protected_files fw1)=(get_encoding_protected_files fw2));
+    ]
+  ) ;;
+
+  
 let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
 
 let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
