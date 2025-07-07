@@ -15,7 +15,7 @@ let the_list =
     Absolute_path.of_string("lib/Filewatching/Fw_classes/fwg_"^fn^".ml")
 ) [
    "github_configuration";
-   "with_archives";
+   (* "with_archives"; *)
    "with_dependencies";
    "with_batch_compilation";
    "with_githubbing";
