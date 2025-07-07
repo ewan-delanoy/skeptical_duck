@@ -12,7 +12,7 @@ exception Module_not_found_exn of string ;;
 
 module Field = struct 
 
-  module Parent = Fw_with_small_details.Field ;;
+  module Parent = Fwc_with_small_details.Field ;;
   let parent = Fwg_with_dependencies.parent ;;
   
   let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
@@ -78,31 +78,31 @@ module Private = struct
 
 module Entrance = struct 
 
-let forget_modules = Fw_with_small_details.forget_modules ;;
+let forget_modules = Fwc_with_small_details.forget_modules ;;
 
-let inspect_and_update = Fw_with_small_details.inspect_and_update ;;
+let inspect_and_update = Fwc_with_small_details.inspect_and_update ;;
 
-let of_configuration = Fw_with_small_details.of_configuration ;;
+let of_configuration = Fwc_with_small_details.of_configuration ;;
 
-let of_configuration_and_list = Fw_with_small_details.of_configuration_and_list ;;
+let of_configuration_and_list = Fwc_with_small_details.of_configuration_and_list ;;
 
-let overwrite_file_if_it_exists = Fw_with_small_details.overwrite_file_if_it_exists ;;
+let overwrite_file_if_it_exists = Fwc_with_small_details.overwrite_file_if_it_exists ;;
 
-let plunge_fw_configuration = Fw_with_small_details.plunge_fw_configuration ;;
+let plunge_fw_configuration = Fwc_with_small_details.plunge_fw_configuration ;;
 
-let register_rootless_paths = Fw_with_small_details.register_rootless_paths ;;
+let register_rootless_paths = Fwc_with_small_details.register_rootless_paths ;;
 
-let relocate_module_to = Fw_with_small_details.relocate_module_to ;;
+let relocate_module_to = Fwc_with_small_details.relocate_module_to ;;
 
-let remove_files = Fw_with_small_details.remove_files ;;
+let remove_files = Fwc_with_small_details.remove_files ;;
 
-let rename_module_on_filename_level_and_in_files = Fw_with_small_details.rename_module_on_filename_level_and_in_files ;;
+let rename_module_on_filename_level_and_in_files = Fwc_with_small_details.rename_module_on_filename_level_and_in_files ;;
 
-let rename_subdirectory_as = Fw_with_small_details.rename_subdirectory_as ;;
+let rename_subdirectory_as = Fwc_with_small_details.rename_subdirectory_as ;;
 
-let replace_string = Fw_with_small_details.replace_string ;;
+let replace_string = Fwc_with_small_details.replace_string ;;
 
-let replace_value = Fw_with_small_details.replace_value ;;end ;;
+let replace_value = Fwc_with_small_details.replace_value ;;end ;;
 
 
 module Cached = struct 
@@ -198,7 +198,7 @@ module Modularized_details = struct
  let the_hashtbl = ((Hashtbl.create 10)) ;; 
  let force_get fw = 
   let par_fw = parent fw in 
-  let u_files=Fw_with_small_details.usual_compilable_files par_fw 
+  let u_files=Fwc_with_small_details.usual_compilable_files par_fw 
   and small_details = Fw_poly.small_details_in_files par_fw in 
   Fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;
  let get fw = 
@@ -264,7 +264,7 @@ let overwrite_file_if_it_exists old_fw pair =
             ) [change] in
           if temp1 <> []
           then let new_parent = parent new_fw in 
-               (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent)
+               (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent)
                     mn temp1)
           else old_pair 
       ) in 
@@ -297,7 +297,7 @@ let register_rootless_paths old_fw rootlesses =
         ) overlapping in
       if temp1 <> []
       then let new_parent = parent new_fw in 
-           (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+           (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
       else old_pair 
   ) in 
   let answer = (Image.image tempf1 old_val)@
@@ -317,7 +317,7 @@ let relocate_module_to old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -336,7 +336,7 @@ let remove_files old_fw files_to_be_removed =
        ) extra in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -356,7 +356,7 @@ let rename_module_on_filename_level_and_in_files old_fw triple =
      if temp1 <> []
      then let new_parent = parent new_fw in 
           let mn = (if pre_mn = old_mn then new_mn else pre_mn) in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -375,7 +375,7 @@ let rename_subdirectory_as old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -394,7 +394,7 @@ let replace_string old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -413,7 +413,7 @@ let replace_value old_fw pair =
        ) (fst extra) in
      if temp1 <> []
      then let new_parent = parent new_fw in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fw_with_small_details.small_details_in_files new_parent) mn temp1)
+          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_parent) mn temp1)
      else old_pair 
  ) in 
  let answer = Image.image tempf old_val in 
@@ -1339,4 +1339,4 @@ let root fw = Fw_poly.root (Private.parent fw) ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
-let usual_compilable_files fw = Fw_with_small_details.usual_compilable_files (Private.parent fw) ;;
+let usual_compilable_files fw = Fwc_with_small_details.usual_compilable_files (Private.parent fw) ;;
