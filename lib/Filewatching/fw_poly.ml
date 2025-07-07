@@ -64,6 +64,49 @@ end;;
 
 
 
+module PartialCrobj = struct 
+let salt = "Fw_poly_t." ;;
+let label_for_type_name                          = salt ^ "type_name" ;;
+let label_for_ignored_files                      = salt ^ "ignored_files" ;;
+let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
+let label_for_root                               = salt ^ "root" ;;
+let label_for_small_details_in_files             = salt ^ "small_details_in_files" ;;
+let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
+let label_for_watched_files                      = salt ^ "watched_files" ;;
+
+let of_concrete_object ccrt_obj = 
+ let g=Concrete_object.get_record ccrt_obj in 
+ {
+   Fw_flattened_poly_t.origin with
+   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
+   ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
+   root = Some(Dfa_root.of_concrete_object (g label_for_root))  ;
+   small_details_in_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))  ;
+   subdirs_for_archived_mlx_files = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files))  ;
+   watched_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
+} ;;
+
+let to_concrete_object fw = 
+ let items =  
+ [
+   label_for_type_name, Crobj_converter.string_to_concrete_object (get_type_name fw);
+   label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
+   label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
+   label_for_root, Dfa_root.to_concrete_object ( get_root fw ) ;
+   label_for_small_details_in_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object ( get_small_details_in_files fw ) ;
+   label_for_subdirs_for_archived_mlx_files, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_subdirs_for_archived_mlx_files fw ) ;
+   label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
+ ] in 
+ Concrete_object_t.Record items ;;
+
+
+end;;
+
+
+
+
+
 
 module Extender = struct 
 
@@ -74,7 +117,7 @@ let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archi
 } ;;
 let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
-   Fw_flattened_poly_t.type_name = Some "File_watcher" ;
+   Fw_flattened_poly_t.type_name = Some "Fw_file_watcher" ;
    watched_files = Some v1_files ;
 } ;;
 let fw_with_archives_to_fw_with_small_details fw ~small_details_in_files:v1_small_details = {
@@ -88,7 +131,8 @@ end;;
 
 module Parent = struct 
 let designated_parents = [
-    "Fw_with_archives" , "File_watcher" ;
+    "Fw_file_watcher", "Fw_configuration" ;
+    "Fw_with_archives" , "Fw_file_watcher" ;
     "Fw_with_small_details" , "Fw_with_archives" ;
     "Fw_with_dependencies" , "Fw_with_small_details" ;
     "Fw_with_batch_compilation" , "Fw_with_dependencies" ;
@@ -134,7 +178,7 @@ end;;
 module Type_information = struct 
 let fields_for_instances = [
 "Fw_configuration" , ["root";"ignored_subdirectories";"ignored_files"];
-"File_watcher" , ["root";"ignored_subdirectories";"ignored_files";"watched_files"];
+"Fw_file_watcher" , ["root";"ignored_subdirectories";"ignored_files";"watched_files"];
 "Fw_with_archives" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files"];
 "Fw_with_small_details" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files"];
 "Fw_with_dependencies" , ["root";"ignored_subdirectories";"ignored_files";"watched_files";"subdirs_for_archived_mlx_files";"small_details_in_files";"index_for_caching"];
