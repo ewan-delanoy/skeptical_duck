@@ -13,14 +13,14 @@ type t = Fw_flattened_poly_t.t ;;
 exception Get_exn of string ;;
 let parent fw = {
   fw with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_archives" 
+  Fw_flattened_poly_t.type_name = Some "Fw_with_small_details" 
  } ;; 
 
 let index_for_caching fw = match fw.Fw_flattened_poly_t.index_for_caching with Some x -> x | None -> raise(Get_exn "index_for_caching")  ;;
 
 
-let make fw_with_archives ifc = {
-  fw_with_archives with 
+let make fw_with_small_details ifc = {
+  fw_with_small_details with 
   Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" ;
   index_for_caching = Some ifc ;
 } ;;
@@ -41,8 +41,8 @@ type t = {
 let parent fw = fw._parent ;; 
 let index_for_caching fw = fw.index_for_caching ;; 
 
-let make fw_archives ifc = {
-  _parent = fw_archives ;
+let make fw_small_details ifc = {
+  _parent = fw_small_details ;
   index_for_caching = ifc ;
 } ;;
 
