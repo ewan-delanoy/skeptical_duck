@@ -12,23 +12,23 @@ exception Module_not_found_exn of string ;;
 
 module Field = struct 
 
-  module Parent = Fw_with_archives.Field ;;
+  module Parent = Fwc_with_archives.Field ;;
   let parent = Fwg_with_dependencies.parent ;;
   
-  let check_that_no_change_has_occurred fw = Fw_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
+  let check_that_no_change_has_occurred fw = Fwc_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
 
   let ignored_files fw = Parent.ignored_files (parent fw) ;;
   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
 
-  let  latest_changes fw = Fw_with_archives.latest_changes(parent fw)  ;;  
+  let  latest_changes fw = Fwc_with_archives.latest_changes(parent fw)  ;;  
 
-  let  noncompilable_files fw = Fw_with_archives.noncompilable_files(parent fw)  ;;  
+  let  noncompilable_files fw = Fwc_with_archives.noncompilable_files(parent fw)  ;;  
 
   let root fw = Parent.root (parent fw) ;;
 
   let test_equality fw1 fw2 = 
     (
-      Fw_with_archives.Field.test_equality (parent fw1) (parent fw2)
+      Fwc_with_archives.Field.test_equality (parent fw1) (parent fw2)
     )
     @
     (
@@ -44,7 +44,7 @@ module Field = struct
   
   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
 
-  let  usual_compilable_files fw = Fw_with_archives.usual_compilable_files(parent fw)  ;;  
+  let  usual_compilable_files fw = Fwc_with_archives.usual_compilable_files(parent fw)  ;;  
 
 end ;;  
 
@@ -65,9 +65,9 @@ module Private = struct
   let of_concrete_object crobj = 
       let instance_idx = Fw_indexer.create_new_instance () in   
       Fwg_with_dependencies.make 
-        (Fw_with_archives.of_concrete_object crobj) (expand_index instance_idx) ;;
+        (Fwc_with_archives.of_concrete_object crobj) (expand_index instance_idx) ;;
 
-  let to_concrete_object fw = Fw_with_archives.to_concrete_object 
+  let to_concrete_object fw = Fwc_with_archives.to_concrete_object 
       (parent fw) ;;
 
   end ;;  
@@ -1104,7 +1104,7 @@ let archived_mlx_paths fw = List.filter_map (
      then let full = Dfn_join.root_to_rootless (root fw) rl in 
            Some(Dfn_full.to_absolute_path full)
      else None   
-) (Fw_with_archives.archived_files (parent fw));;
+) (Fwc_with_archives.archived_files (parent fw));;
 
 let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 
