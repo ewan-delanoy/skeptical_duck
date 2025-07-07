@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Filewatching/Fw_classes/fw_with_archives.ml";;
+#use"lib/Filewatching/fw_with_archives.ml";;
 
 *)
 
