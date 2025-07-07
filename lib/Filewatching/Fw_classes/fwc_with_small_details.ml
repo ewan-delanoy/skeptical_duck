@@ -274,6 +274,7 @@ module Private = struct
    
    let forget_modules = Private.forget_modules ;;
    let inspect_and_update = Private.inspect_and_update;;
+   let of_concrete_object = Fw_poly.of_concrete_object ;;
    let of_configuration = Private.of_configuration ;;
    let of_configuration_and_list = Private.of_configuration_and_list ;;
    let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -286,5 +287,6 @@ module Private = struct
    let replace_string = Private.replace_string;;
    let replace_value = Private.replace_value;;
    let small_details_in_files = Private.small_details_in_files ;;
+   let to_concrete_object = Fw_poly.to_concrete_object ;;
    let usual_compilable_files fw = Fw_with_archives.usual_compilable_files (Private.parent fw) ;;
    

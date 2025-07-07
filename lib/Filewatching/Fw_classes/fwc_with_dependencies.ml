@@ -65,9 +65,9 @@ module Private = struct
   let of_concrete_object crobj = 
       let instance_idx = Fw_indexer.create_new_instance () in   
       Fwg_with_dependencies.make 
-        (Fw_with_archives.of_concrete_object crobj) (expand_index instance_idx) ;;
+        (Fwc_with_small_details.of_concrete_object crobj) (expand_index instance_idx) ;;
 
-  let to_concrete_object fw = Fw_with_archives.to_concrete_object 
+  let to_concrete_object fw = Fwc_with_small_details.to_concrete_object 
       (parent fw) ;;
 
   end ;;  
