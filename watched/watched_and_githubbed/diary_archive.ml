@@ -1,8 +1,203 @@
 (************************************************************************************************************************
-Snippet 171 : 
+Snippet 173 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 172 : Step in implementing a certain "Poor man's row polymorphism"
+************************************************************************************************************************)
+
+module Snip172=struct
+
+(*
+
+Step by step, we introduce an old module 
+into the row-polymorphism family. 
+
+*)
+
+(* Step 1 : Rename and relocate the module with a Fwc_prefix *)
+
+ren "fw_with_dependencies" "fwc_with_dependencies";;
+relo "fwc_with_dependencies" 
+(Dfa_subdirectory.of_line "lib/Filewatching/Fw_classes") ;; 
+
+(* Step 2 : Create the Fwg corresponding to the Fwc *)
+
+dm "fwc_with_dependencies" "fwg_with_dependencies" ;;
+
+(* Step 3 : register the Fwg file *)
+
+regi "lib/Filewatching/Fw_classes/fwg_with_dependencies.ml" ;;
+
+(* Step 4 : Update the list in the lti file *)
+
+(* Step 5 : Create a new Crobj submodule in Fw_poly *)
+
+let ap1 = Absolute_path.of_string "lib/Filewatching/fw_poly.ml";;
+
+let txt1 = Io.read_whole_file ap1;;
+
+let txt2 = 
+  Replace_inside.replace_inside_text ("Crobj ","PartialCrobj ")
+  ("\n\n\n"^(Lines_in_text.interval txt1 26 64)^"\n\n\n") ;;
+
+let act1 () = Lines_in_text.modify_interval_inside_file
+   (fun _->txt2) ap1 66 66 ;;
+
+
+(* Step 6 : Fill the Fwg file *)
+
+(* Step 7 : Add crobj conversions in the parent *)
+
+(*
+let of_concrete_object = Fw_poly.Private.PartialCrobj.of_concrete_object ;;
+
+let to_concrete_object = Fw_poly.Private.PartialCrobj.to_concrete_object ;;
+*)
+(* Step 8 : Create a temporary copy of the Fwc file, 
+which will soon replace it in the future *)
+
+dm "fwc_with_dependencies" "coming_soon_fwc_with_dependencies" ;;
+
+(* Step 9 : Modify the coming_soon file : replace calls to 
+Fw_poly by calls to the Fwg, add a Crobj submodule. 
+*)
+
+(* Step 10 : Create a foreign copy *)
+
+let act2() = Usual_coma_state.create_foreign_copy 
+   Needed_data_summary_t.Everything;;
+
+
+(* Step 11 : Copy the coming_soon file *)
+
+print_string
+("\n\n\ncp skeptical_duck/lib/Filewatching/Fw_classes/coming_soon_fwc_with_dependencies.ml "^
+"idaho/lib/Filewatching/Fw_classes/fwc_with_dependencies.ml\n\n\n");; 
+
+(* Step 12 : Remove some fields in Fw_flattened_t *)
+
+(* Step 13 : Put new Fw_poly.Crobj submodule *)
+
+let foreign_fw_poly_ap = Absolute_path.of_string 
+   ((Sys.getenv "HOME")^
+   "/Teuliou/OCaml/idaho/lib/Filewatching/fw_poly.ml") ;;
+let act3() = 
+   Lines_in_text.remove_interval_in_file foreign_fw_poly_ap 27 69 ;;
+
+(* Step 14 : Fix various places in the code until dune build passes *)
+
+(* Step 15 : Apply ti_for_file_watching.toggle() twice *)
+
+(* Step 16 : Test equality after a crobj back and forth *)
+
+let extract_wg = function 
+(Fw_final_poly.With_githubbing g) -> g | _ -> failwith("hum") ;;
+
+let g1 = extract_wg (!(Usual_coma_state.Private.main_ref)) ;;
+
+let cg1 = Fwc_with_githubbing.to_concrete_object g1 ;;
+
+let g2 = Fwc_with_githubbing.of_concrete_object cg1 ;;
+
+let test1 = Fwc_with_githubbing.Field.test_equality g1 g2 ;;
+
+(* Step 17 : Test if registering works *)
+
+let outside =   ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/") ;;
+
+let ap1 = Absolute_path.create_file_if_absent(outside^"za.ml")
+and ap2 = Absolute_path.create_file_if_absent(outside^"zb.ml")
+and ap3 = Absolute_path.create_file_if_absent(outside^"zc.ml") ;;
+
+let act4 () =
+(
+   Io.overwrite_with ap1 "let a = 3 ;;";
+   Io.overwrite_with ap2 "let b = Za.a + 4 ;;";
+   Io.overwrite_with ap3 "let c = 5 ;;";
+   ) ;; 
+
+let act5 () =
+  Io.overwrite_with ap3 "let c = Za.a + Zb.b + 5 ;;";
+;;    
+
+(* Step 18 : Officialize changes *)
+
+let g1 = Usual_coma_state.changed_files_in_foreign_copy () ;;
+
+Usual_coma_state.officialize_foreign_changes () ;;
+
+reco "use Fwg_with_dependencies in Fwc_with_dependencies";;
+
+(* Step 19 : reset *)
+
+(* dune utop lib *)
+
+Usual_coma_state.refresh() ;;
+
+(* dune utop lib *)
+
+fg "coming_soon_fwc_with_dependencies" ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 171 : Combinatorial musings related to twin primes
+************************************************************************************************************************)
+module Snip171=struct
+
+  let destroys l x = List.exists(fun y->x mod y=0) l ;;
+
+  let rec muu l x =
+    if (destroys l x)||(destroys l (x+2))
+    then muu l (x+1)
+    else x ;;  
+  
+  
+  
+  let q1=11;;
+  
+  let upper_bound = 1000 ;;
+  let tf1 =Memoized.make(fun p -> muu [2;3;q1;p] (p+1));;  
+  
+  let u1 = Int_range.scale tf1 (q1+1) upper_bound ;;
+      
+  let u2 = Int_range.scale (fun p-> (tf1 p)-p) (q1+1) upper_bound ;;
+    
+  let m1 = Max.list u2 ;;
+  
+  let u3 = List.filter (fun p->tf1(p)-p=m1) (Int_range.range (q1+1) upper_bound) ;;
+    
+  let u4 = Image.image (fun p->p mod (6*q1)) u3 ;;
+    
+  (*
+  
+  let tf1 =Memoized.make(fun p -> muu [2;3;5;p] (p+1));;  
+  
+  let u1 = Int_range.scale tf1 5 500 ;;
+    
+  let u2 = Int_range.scale (fun p-> (tf1 p)-p) 5 500 ;;
+  
+  let u3 = List.filter (fun p->tf1(p)-p=12) (Int_range.range 5 500) ;;
+  
+  let u4 = Image.image (fun p->p mod 30) u3 ;;
+  
+  
+  let tf1 p = muu [2;3;p] (p+1);;  
+  
+  let u1 = Int_range.scale tf1 5 50 ;;
+  
+  let u2 = Int_range.scale (fun p-> (tf1 p)-p) 5 50 ;;
+  
+  *)
+
+
+end ;;
 
 
 (************************************************************************************************************************
