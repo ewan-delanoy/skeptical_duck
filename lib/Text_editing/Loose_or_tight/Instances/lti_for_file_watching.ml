@@ -16,6 +16,7 @@ let the_list =
 ) [
    "github_configuration";
    (* "with_archives"; *)
+   "with_small_details";
    "with_dependencies";
    "with_batch_compilation";
    "with_githubbing";
