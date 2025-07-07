@@ -4,6 +4,46 @@
 
 *)
 
+module Field = struct 
+
+   module Parent = Fw_with_archives.Field ;;
+   let parent = Fw_poly.parent ;;
+
+
+   let check_that_no_change_has_occurred fw = Fw_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
+
+   let ignored_files fw = Parent.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
+
+   let  latest_changes fw = Fw_with_archives.latest_changes(parent fw)  ;;  
+
+   let  noncompilable_files fw = Fw_with_archives.noncompilable_files(parent fw)  ;;  
+
+   let root fw = Parent.root (parent fw) ;;
+
+
+   let test_equality fw1 fw2 = 
+      let temp =
+      [
+        ("type_name",(fw1.Fw_flattened_poly_t.type_name=fw2.Fw_flattened_poly_t.type_name));
+        ("root",(fw1.Fw_flattened_poly_t.root=fw2.Fw_flattened_poly_t.root));
+        ("ignored_subdirectories",(fw1.Fw_flattened_poly_t.ignored_subdirectories=fw2.Fw_flattened_poly_t.ignored_subdirectories));
+        ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
+        ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
+        ("subdirs_for_archived_mlx_files",(fw1.Fw_flattened_poly_t.subdirs_for_archived_mlx_files=fw2.Fw_flattened_poly_t.subdirs_for_archived_mlx_files));
+        ("small_details_in_files",(fw1.Fw_flattened_poly_t.small_details_in_files=fw2.Fw_flattened_poly_t.small_details_in_files));
+      ] in 
+      List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
+
+   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+  
+   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+    
+   let  usual_compilable_files fw = Fw_with_archives.usual_compilable_files(parent fw)  ;; 
+
+
+end ;;   
+
 
 module Private = struct
 

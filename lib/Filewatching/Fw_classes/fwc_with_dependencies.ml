@@ -12,17 +12,17 @@ exception Module_not_found_exn of string ;;
 
 module Field = struct 
 
-  module Parent = Fw_with_archives.Field ;;
+  module Parent = Fw_with_small_details.Field ;;
   let parent = Fwg_with_dependencies.parent ;;
   
-  let check_that_no_change_has_occurred fw = Fw_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
+  let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
 
   let ignored_files fw = Parent.ignored_files (parent fw) ;;
   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
 
-  let  latest_changes fw = Fw_with_archives.latest_changes(parent fw)  ;;  
+  let  latest_changes fw = Parent.latest_changes(parent fw)  ;;  
 
-  let  noncompilable_files fw = Fw_with_archives.noncompilable_files(parent fw)  ;;  
+  let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;;  
 
   let root fw = Parent.root (parent fw) ;;
 
@@ -44,7 +44,7 @@ module Field = struct
   
   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
 
-  let  usual_compilable_files fw = Fw_with_archives.usual_compilable_files(parent fw)  ;;  
+  let  usual_compilable_files fw = Parent.usual_compilable_files(parent fw)  ;;  
 
 end ;;  
 
