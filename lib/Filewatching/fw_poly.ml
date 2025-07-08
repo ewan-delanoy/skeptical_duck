@@ -60,6 +60,43 @@ end;;
 
 
 
+module PartialCrobj = struct 
+let salt = "Fw_poly_t." ;;
+let label_for_type_name                          = salt ^ "type_name" ;;
+let label_for_ignored_files                      = salt ^ "ignored_files" ;;
+let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
+let label_for_root                               = salt ^ "root" ;;
+let label_for_watched_files                      = salt ^ "watched_files" ;;
+
+let of_concrete_object ccrt_obj = 
+ let g=Concrete_object.get_record ccrt_obj in 
+ {
+   Fw_flattened_poly_t.origin with
+   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
+   ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
+   ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
+   root = Some(Dfa_root.of_concrete_object (g label_for_root))  ;
+   watched_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
+} ;;
+
+let to_concrete_object fw = 
+ let items =  
+ [
+   label_for_type_name, Crobj_converter.string_to_concrete_object (get_type_name fw);
+   label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
+   label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
+   label_for_root, Dfa_root.to_concrete_object ( get_root fw ) ;
+   label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
+ ] in 
+ Concrete_object_t.Record items ;;
+
+
+end;;
+
+
+
+
+
 
 
 
