@@ -1104,7 +1104,7 @@ let archived_mlx_paths fw = List.filter_map (
      then let full = Dfn_join.root_to_rootless (root fw) rl in 
            Some(Dfn_full.to_absolute_path full)
      else None   
-) (Fw_with_archives.archived_files (Fwg_with_small_details.parent(parent fw)));;
+) (Fwc_with_archives.archived_files (Fwg_with_small_details.parent(parent fw)));;
 
 let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 
