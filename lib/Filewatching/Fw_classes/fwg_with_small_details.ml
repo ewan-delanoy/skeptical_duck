@@ -21,7 +21,7 @@ let small_details_in_files fw = match fw.Fw_flattened_poly_t.small_details_in_fi
 
 let make fw_with_deps sdf = {
   fw_with_deps with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_batch_compilation" ;
+  Fw_flattened_poly_t.type_name = Some "Fw_with_small_details" ;
   small_details_in_files = Some sdf ;
 } ;;
 

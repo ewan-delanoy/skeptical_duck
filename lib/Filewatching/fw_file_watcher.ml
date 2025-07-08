@@ -16,6 +16,18 @@ module Field = struct
 
    let root fw = Fw_configuration.root (parent fw) ;;
 
+   let test_equality fw1 fw2 = 
+      let temp =
+      [
+        ("type_name",(fw1.Fw_flattened_poly_t.type_name=fw2.Fw_flattened_poly_t.type_name));
+        ("root",(fw1.Fw_flattened_poly_t.root=fw2.Fw_flattened_poly_t.root));
+        ("ignored_subdirectories",(fw1.Fw_flattened_poly_t.ignored_subdirectories=fw2.Fw_flattened_poly_t.ignored_subdirectories));
+        ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
+        ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
+      ] in 
+      List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
+    
+
    let test_for_admissibility fw = Fw_configuration.test_for_admissibility (parent fw) ;;
 
    let to_fw_configuration fw = parent fw ;;
@@ -345,6 +357,7 @@ let ignored_files = Fw_poly.ignored_files ;;
 let ignored_subdirectories = Fw_poly.ignored_subdirectories ;;
 let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
+let of_concrete_object = Fw_poly.Private.PartialCrobj.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -353,4 +366,6 @@ let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
+let to_concrete_object = Fw_poly.Private.PartialCrobj.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
+let watched_files = Fw_poly.watched_files ;;
