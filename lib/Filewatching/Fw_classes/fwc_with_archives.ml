@@ -8,7 +8,7 @@
 module Field = struct 
 
    module Parent = Fw_file_watcher.Field ;;
-   let parent = Fw_poly.parent ;;
+   let parent = Fwg_with_archives.parent ;;
 
    let ignored_files fw = Fw_file_watcher.ignored_files (parent fw) ;;
    let ignored_subdirectories fw = Fw_file_watcher.ignored_subdirectories (parent fw) ;;
@@ -17,39 +17,67 @@ module Field = struct
    let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
 
    let test_equality fw1 fw2 = 
-      let temp =
-      [
-        ("type_name",(fw1.Fw_flattened_poly_t.type_name=fw2.Fw_flattened_poly_t.type_name));
-        ("root",(fw1.Fw_flattened_poly_t.root=fw2.Fw_flattened_poly_t.root));
-        ("ignored_subdirectories",(fw1.Fw_flattened_poly_t.ignored_subdirectories=fw2.Fw_flattened_poly_t.ignored_subdirectories));
-        ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
-        ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
-        ("subdirs_for_archived_mlx_files",(fw1.Fw_flattened_poly_t.subdirs_for_archived_mlx_files=fw2.Fw_flattened_poly_t.subdirs_for_archived_mlx_files));
-      ] in 
-      List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
+      (
+        Fw_file_watcher.Field.test_equality (parent fw1) (parent fw2)
+      )
+      @
+      (
+        List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
+        [
+          "subdirs_for_archived_mlx_files",(
+            (Fwg_with_archives.subdirs_for_archived_mlx_files fw1)=
+          (Fwg_with_archives.subdirs_for_archived_mlx_files fw2))
+        ]
+      ) ;;
     
+   let watched_files fw = Fw_file_watcher.watched_files (parent fw) ;;   
 
 end ;;   
 
 module Private = struct
 
-   let parent fw = Fw_poly.parent fw ;;
+   module Crobj = struct 
+      let salt = "Fwc_with_archives." ;;
+      let label_for_parent = salt ^ "parent" ;;
+      let label_for_subdirs_for_archived_mlx_files  = salt ^ "subdirs_for_archived_mlx_files" ;;
+          
+          
+      let of_concrete_object ccrt_obj = 
+        let g=Concrete_object.get_record ccrt_obj in 
+        Fwg_with_archives.make 
+        (Fw_file_watcher.of_concrete_object (g label_for_parent))
+        (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object  (g label_for_subdirs_for_archived_mlx_files))
+        ;;
+          
+      let to_concrete_object fw = 
+        let items =  
+        [
+             label_for_parent, Fw_file_watcher.to_concrete_object ( Fwg_with_archives.parent fw ) ;
+             label_for_subdirs_for_archived_mlx_files, 
+             Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object 
+              (Fwg_with_archives.subdirs_for_archived_mlx_files fw ) ;
+        ] in 
+        Concrete_object_t.Record items ;;
+          
+          
+      end;; 
+
+   let parent fw = Field.parent fw ;;
    
    (* Inherited methods *)
 
-   (* let configuration fw = File_watcher.configuration (parent fw) ;;*)
 
-   let root fw = Fw_poly.root fw ;;
-   let update_parent fw new_parent = Fw_poly.set_parent ~child:fw ~new_parent ;;
-   let watched_files fw = Fw_poly.watched_files fw ;;
+   let root fw = Field.root fw ;;
+   let update_parent fw new_parent = 
+      Fwg_with_archives.make new_parent (Fwg_with_archives.subdirs_for_archived_mlx_files fw) ;;
+   let watched_files fw = Field.watched_files fw ;;
    
    (* End of inherited methods *)  
    (* Inherited constructors *)
 
    let constructor par opt_subdirs= 
       let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.watched_and_githubbed_subdir]) in    
-      Fw_poly.extend_file_watcher_to_fw_with_archives
-        par ~subdirs_for_archived_mlx_files:subdirs ;;
+      Fwg_with_archives.make par subdirs ;;
       
    let plunge_fw_configuration config = constructor(Fw_file_watcher.plunge_fw_configuration config) None ;;
    let of_configuration config = constructor(Fw_file_watcher.of_configuration config) None ;;
@@ -79,7 +107,7 @@ module Private = struct
                 fun rl->
                   Dfa_ending.is_compilable (Dfn_rootless.to_ending rl)
       )  all_files in 
-      let archived_subdirs = Fw_poly.subdirs_for_archived_mlx_files fw in 
+      let archived_subdirs = Fwg_with_archives.subdirs_for_archived_mlx_files fw in 
       let is_archived = (fun rl->List.exists (Dfn_rootless.is_in rl) archived_subdirs) in 
       let (a_files,u_files) = List.partition is_archived  c_files in 
       (a_files,u_files,nc_files) ;;     
@@ -97,7 +125,7 @@ module Private = struct
       )  (watched_files fw) ;;
       
    let compute_small_details_on_one_file fw rl=
-      let root = Fw_poly.root fw in 
+      let root = Field.root fw in 
       let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
       let ap = Absolute_path.of_string s_ap in 
       Fw_file_small_details.compute ap ;;
@@ -270,7 +298,7 @@ let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let noncompilable_files = Private.noncompilable_files ;;
-let of_concrete_object = Fw_poly.of_concrete_object ;;
+let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -283,5 +311,5 @@ let rename_module_on_filename_level_and_in_files = Private.rename_module_on_file
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
-let to_concrete_object = Fw_poly.to_concrete_object ;;
-let usual_compilable_files = Private.usual_compilable_files ;;
+let to_concrete_object = Private.Crobj.to_concrete_object ;;
+let usual_compilable_files = Private.usual_compilable_files ;; 

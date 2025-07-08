@@ -13,7 +13,6 @@ let  get_type_name fw = try Option.get ( fw.Fw_flattened_poly_t.type_name )  wit
 let  get_ignored_files fw = try Option.get ( fw.Fw_flattened_poly_t.ignored_files )  with _ -> raise(Get_exn("ignored_files")) ;;
 let  get_ignored_subdirectories fw = try Option.get (fw.Fw_flattened_poly_t.ignored_subdirectories )  with _ -> raise(Get_exn("ignored_subdirectories")) ;;
 let  get_root fw = try Option.get ( fw.Fw_flattened_poly_t.root )  with _ -> raise(Get_exn("root")) ;;
-let  get_subdirs_for_archived_mlx_files fw = try Option.get ( fw.Fw_flattened_poly_t.subdirs_for_archived_mlx_files )  with _ -> raise(Get_exn("subdirs_for_archived_mlx_files")) ;;
 let  get_watched_files fw = try Option.get ( fw.Fw_flattened_poly_t.watched_files )  with _ -> raise(Get_exn("watched_files")) ;;
    
 
@@ -22,45 +21,7 @@ let  get_watched_files fw = try Option.get ( fw.Fw_flattened_poly_t.watched_file
 
 
 module Crobj = struct 
-let salt = "Fw_poly_t." ;;
-let label_for_type_name                          = salt ^ "type_name" ;;
-let label_for_ignored_files                      = salt ^ "ignored_files" ;;
-let label_for_ignored_subdirectories             = salt ^ "ignored_subdirectories" ;;
-let label_for_root                               = salt ^ "root" ;;
-let label_for_subdirs_for_archived_mlx_files     = salt ^ "subdirs_for_archived_mlx_files" ;;
-let label_for_watched_files                      = salt ^ "watched_files" ;;
-
-let of_concrete_object ccrt_obj = 
- let g=Concrete_object.get_record ccrt_obj in 
- {
-   Fw_flattened_poly_t.origin with
-   Fw_flattened_poly_t.type_name = Some(Crobj_converter.string_of_concrete_object (g label_for_type_name)) ;
-   ignored_files = Some(Crobj_converter_combinator.to_list Dfn_rootless.of_concrete_object (g label_for_ignored_files))  ;
-   ignored_subdirectories = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_ignored_subdirectories))  ;
-   root = Some(Dfa_root.of_concrete_object (g label_for_root))  ;
-   subdirs_for_archived_mlx_files = Some(Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object (g label_for_subdirs_for_archived_mlx_files))  ;
-   watched_files = Some(Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))  ;
-} ;;
-
-let to_concrete_object fw = 
- let items =  
- [
-   label_for_type_name, Crobj_converter.string_to_concrete_object (get_type_name fw);
-   label_for_ignored_files, Crobj_converter_combinator.of_list Dfn_rootless.to_concrete_object ( get_ignored_files fw ) ;
-   label_for_ignored_subdirectories, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_ignored_subdirectories fw ) ;
-   label_for_root, Dfa_root.to_concrete_object ( get_root fw ) ;
-   label_for_subdirs_for_archived_mlx_files, Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object ( get_subdirs_for_archived_mlx_files fw ) ;
-   label_for_watched_files, Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object ( get_watched_files fw ) ;
- ] in 
- Concrete_object_t.Record items ;;
-
-
-end;;
-
-
-
-
-module PartialCrobj = struct 
+ 
 let salt = "Fw_poly_t." ;;
 let label_for_type_name                          = salt ^ "type_name" ;;
 let label_for_ignored_files                      = salt ^ "ignored_files" ;;
@@ -102,11 +63,6 @@ end;;
 
 module Extender = struct 
 
-let file_watcher_to_fw_with_archives fw ~subdirs_for_archived_mlx_files:v1_archives_subdirs = {
-   fw with 
-   Fw_flattened_poly_t.type_name = Some"Fw_with_archives" ;
-   subdirs_for_archived_mlx_files = Some v1_archives_subdirs ;
-} ;;
 let fw_configuration_to_file_watcher fw ~watched_files:v1_files = {
    fw with 
    Fw_flattened_poly_t.type_name = Some "Fw_file_watcher" ;
@@ -135,19 +91,8 @@ let get_parent_name fw =
   Some(answer) ->answer
  |None -> raise (No_designated_parent(name)) ;;
 
-let sp_for_fw_with_archives child new_parent = 
- Extender.file_watcher_to_fw_with_archives new_parent 
-   ~subdirs_for_archived_mlx_files:(get_subdirs_for_archived_mlx_files child)
- ;;
 
 
-let set ~child ~new_parent = 
- let name = get_type_name child in 
- match List.assoc_opt name [
-   "Fw_with_archives" , sp_for_fw_with_archives child new_parent ;
- ] with 
-  Some(answer) ->answer
- |None -> raise (Set_parent_exn(name)) ;;
 
 let get child = 
  let parent_name = get_parent_name child in 
@@ -251,7 +196,6 @@ let construct_fw_configuration ~root:v1_r ~ignored_subdirectories:v2_ign_subdirs
 } ;;
 
 
-let extend_file_watcher_to_fw_with_archives  = Private.Extender.file_watcher_to_fw_with_archives ;;
 let extend_fw_configuration_to_file_watcher  = Private.Extender.fw_configuration_to_file_watcher ;;
 
 let ignored_files x = Private.get_ignored_files x;;
@@ -262,12 +206,9 @@ let print_out (fmt:Format.formatter) fw  = Format.fprintf fmt "@[%s@]" ("< "^(Pr
 let root x = Private.get_root x;;
 let set_ignored_files x ign_files = { x with Fw_flattened_poly_t.ignored_files = Some ign_files} ;;
 let set_ignored_subdirectories x ign_subdirs = { x with Fw_flattened_poly_t.ignored_subdirectories = Some ign_subdirs} ;;
-let set_parent  = Private.Parent.set ;;
 let set_root x r = { x with Fw_flattened_poly_t.root = Some r} ;;
-let set_subdirs_for_archived_mlx_files x archives_subdirs = { x with Fw_flattened_poly_t.subdirs_for_archived_mlx_files = Some archives_subdirs} ;;
 let set_watched_files x files = { x with Fw_flattened_poly_t.watched_files = Some files} ;;
 let show_fields  = Private.Type_information.show_fields ;;
-let subdirs_for_archived_mlx_files x = Private.get_subdirs_for_archived_mlx_files x ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let to_fw_configuration fw  = 
   let tname = Private.get_type_name fw in 

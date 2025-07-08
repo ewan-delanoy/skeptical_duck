@@ -22,11 +22,11 @@ type t = {
 
 let origin = {
    type_name = Some "" ;
+   root = Some (Dfa_root.of_line "dummy") ;
    ignored_files = Some [] ;
    ignored_subdirectories = Some [] ;
-   root = Some (Dfa_root.of_line "dummy") ;
-   subdirs_for_archived_mlx_files = Some [] ;
    watched_files = Some [] ;
+   subdirs_for_archived_mlx_files = Some [] ;
    small_details_in_files = Some [] ;
    index_for_caching = None ;
    last_compilation_result_for_module = None ;

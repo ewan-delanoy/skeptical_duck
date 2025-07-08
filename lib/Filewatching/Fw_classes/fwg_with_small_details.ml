@@ -33,7 +33,7 @@ let make fw_with_deps sdf = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fw_flattened_poly_t.t;
+  _parent : Fwg_with_archives.t;
   small_details_in_files : ((Dfn_rootless_t.t * Fw_file_small_details_t.t) list);
 } ;;
 

@@ -10,7 +10,7 @@ type t =
   |Configuration of Fw_flattened_poly_t.t
   |Github_configuration of  Fwg_github_configuration.t
   |Watcher of Fw_flattened_poly_t.t
-  |With_archives of Fw_flattened_poly_t.t
+  |With_archives of Fwg_with_archives.t
   |With_dependencies of Fwg_with_dependencies.t
   |With_batch_compilation of Fwg_with_batch_compilation.t
   |With_githubbing of Fwg_with_githubbing.t
@@ -392,10 +392,11 @@ let test_for_admissibility final_fw rl = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.test_for_admissibility" )
   |Configuration (fw) -> Fw_configuration.test_for_admissibility fw rl
   |Watcher (fw) -> Fw_file_watcher.Field.test_for_admissibility fw rl
-  |With_archives (fw) -> Fw_file_watcher.Field.test_for_admissibility fw rl
+  |With_archives (fw) -> Fwc_with_archives.Field.test_for_admissibility fw rl
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.test_for_admissibility fw rl
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.test_for_admissibility fw rl
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.test_for_admissibility fw rl ;;
+
 
 let to_concrete_object final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.to_concrete_object" )
