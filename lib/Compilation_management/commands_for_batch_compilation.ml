@@ -20,7 +20,7 @@ module Private = struct
 
   let needed_dirs_and_libs_in_command cmod fw mn=
     
-    let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.Field.root fw) in
     let dirs=
     "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Compilation_mode.workspace cmod))
    and prelibs = Fwc_with_dependencies.needed_libs_for_module fw mn in 
@@ -161,11 +161,11 @@ module Private = struct
 
 
   let command_for_mli_module_separate_compilation cmod fw eless =
-      let dir = Fwc_with_dependencies.root fw in 
+      let dir = Fwc_with_dependencies.Field.root fw in 
       command_for_cmi cmod dir fw eless;;
 
   let command_for_ml_module_separate_compilation cmod fw eless =
-      let dir = Fwc_with_dependencies.root fw in 
+      let dir = Fwc_with_dependencies.Field.root fw in 
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
@@ -177,7 +177,7 @@ module Private = struct
       List.flatten temp2;;
 
   let command_for_mll_module_separate_compilation cmod fw eless =
-      let dir = Fwc_with_dependencies.root fw in 
+      let dir = Fwc_with_dependencies.Field.root fw in 
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
@@ -189,7 +189,7 @@ module Private = struct
       List.flatten temp2;;
 
   let command_for_mly_module_separate_compilation cmod fw eless =
-      let dir = Fwc_with_dependencies.root fw in 
+      let dir = Fwc_with_dependencies.Field.root fw in 
       let nm=Dfn_endingless.to_module eless in
       let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
       let temp2=(
@@ -213,7 +213,7 @@ module Private = struct
   exception  Command_for_predebuggable_or_preexecutable_exn;;
   
   let command_for_predebuggable fw short_path=
-      let root = Fwc_with_dependencies.root fw in 
+      let root = Fwc_with_dependencies.Field.root fw in 
       let s_root=Dfa_root.connectable_to_subpath root  in
       let cmod = Compilation_mode_t.Debug in 
       let full_path=Absolute_path.of_string(
@@ -251,7 +251,7 @@ module Private = struct
   exception  Command_for_debuggable_or_executable_exn;;
   
   let command_for_debuggable_or_executable cmod fw rootless_path=
-    let root = Fwc_with_dependencies.root fw in 
+    let root = Fwc_with_dependencies.Field.root fw in 
     let s_root=Dfa_root.connectable_to_subpath root  in
       if cmod=Compilation_mode_t.Usual then raise(Command_for_debuggable_or_executable_exn) else 
       let full_path=Absolute_path.of_string(s_root^rootless_path) in 

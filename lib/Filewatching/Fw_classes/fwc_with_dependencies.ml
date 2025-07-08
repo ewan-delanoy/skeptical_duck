@@ -28,7 +28,7 @@ module Field = struct
 
   let test_equality fw1 fw2 = 
     (
-      Fw_with_archives.Field.test_equality (parent fw1) (parent fw2)
+      Fwc_with_small_details.Field.test_equality (parent fw1) (parent fw2)
     )
     @
     (
@@ -199,7 +199,7 @@ module Modularized_details = struct
  let force_get fw = 
   let par_fw = parent fw in 
   let u_files=Fwc_with_small_details.usual_compilable_files par_fw 
-  and small_details = Fw_poly.small_details_in_files par_fw in 
+  and small_details = Fwg_with_small_details.small_details_in_files par_fw in 
   Fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;
  let get fw = 
    let idx = index fw in 
@@ -1063,7 +1063,7 @@ end ;;
    let temp3=List.flatten temp2 in 
    List_again.nonredundant_version temp3;;
   
-  let root fw = Fw_poly.root  (parent fw) ;;
+  let root fw = Field.root  (fw) ;;
 
   let subdir_for_module fw mn =Fw_module_small_details.subdirectory (details_for_module fw mn) ;;
 
@@ -1104,7 +1104,7 @@ let archived_mlx_paths fw = List.filter_map (
      then let full = Dfn_join.root_to_rootless (root fw) rl in 
            Some(Dfn_full.to_absolute_path full)
      else None   
-) (Fw_with_archives.archived_files (parent fw));;
+) (Fw_with_archives.archived_files (Fwg_with_small_details.parent(parent fw)));;
 
 let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 
@@ -1335,7 +1335,6 @@ let rename_module_on_filename_level_and_in_files = Private.Exit.rename_module_on
 let rename_subdirectory_as = Private.Exit.rename_subdirectory_as ;;
 let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
-let root fw = Fw_poly.root (Private.parent fw) ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;

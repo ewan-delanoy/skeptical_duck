@@ -25,7 +25,6 @@ module Field = struct
         ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
         ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
         ("subdirs_for_archived_mlx_files",(fw1.Fw_flattened_poly_t.subdirs_for_archived_mlx_files=fw2.Fw_flattened_poly_t.subdirs_for_archived_mlx_files));
-        ("small_details_in_files",(fw1.Fw_flattened_poly_t.small_details_in_files=fw2.Fw_flattened_poly_t.small_details_in_files));
       ] in 
       List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
     
@@ -271,7 +270,7 @@ let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let noncompilable_files = Private.noncompilable_files ;;
-let of_concrete_object = Fw_poly.Private.PartialCrobj.of_concrete_object ;;
+let of_concrete_object = Fw_poly.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -284,5 +283,5 @@ let rename_module_on_filename_level_and_in_files = Private.rename_module_on_file
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
-let to_concrete_object = Fw_poly.Private.PartialCrobj.to_concrete_object ;;
+let to_concrete_object = Fw_poly.to_concrete_object ;;
 let usual_compilable_files = Private.usual_compilable_files ;;

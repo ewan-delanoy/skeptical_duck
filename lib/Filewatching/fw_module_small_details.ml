@@ -111,11 +111,11 @@ let compute_details_from_acolytes_list_for_one_module = Private.compute_details_
 
 let compute_details_from_acolytes_list_for_several_modules = Private.compute_details_from_acolytes_list_for_several_modules ;;
 
-let modularize_details fw  = 
+(* let modularize_details fw  = 
    let u_files=Fwc_with_small_details.usual_compilable_files fw in 
    let temp1=List.filter (fun (rl,_)->List.mem rl u_files)
       (Fw_poly.small_details_in_files fw)  in
-   Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;
+   Private.compute_details_from_acolytes_list_for_several_modules temp1 ;; *)
 
 let modularize_from_compilable_files_and_small_details u_files small_details = 
    let temp1=List.filter (fun (rl,_)->List.mem rl u_files) small_details in
