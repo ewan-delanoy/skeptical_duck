@@ -32,7 +32,7 @@ let make fw_watcher subdirs = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fw_flattened_poly_t.t;
+  _parent : Fwg_file_watcher.t;
   subdirs_for_archived_mlx_files : (Dfa_subdirectory_t.t list);
 } ;;
 

@@ -10,8 +10,8 @@ module Field = struct
    module Parent = Fwc_file_watcher.Field ;;
    let parent = Fwg_with_archives.parent ;;
 
-   let ignored_files fw = Fwc_file_watcher.ignored_files (parent fw) ;;
-   let ignored_subdirectories fw = Fwc_file_watcher.ignored_subdirectories (parent fw) ;;
+   let ignored_files fw = Parent.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
    let root fw = Parent.root (parent fw) ;;
    let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
    let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
@@ -30,7 +30,7 @@ module Field = struct
         ]
       ) ;;
     
-   let watched_files fw = Fwc_file_watcher.watched_files (parent fw) ;;   
+   let watched_files fw = Fwg_file_watcher.watched_files (parent fw) ;;   
 
 end ;;   
 
@@ -267,7 +267,7 @@ module Private = struct
            path in 
       let old_parent = parent old_fw in   
       let rootless = Dfn_common.decompose_absolute_path_using_root path 
-        (Fw_poly.root old_parent)  in 
+        (Fwc_file_watcher.Field.root old_parent)  in 
       let par2= Fwc_file_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 

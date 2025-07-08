@@ -9,7 +9,7 @@ exception Absent_method of string ;;
 type t = 
   |Configuration of Fw_flattened_poly_t.t
   |Github_configuration of  Fwg_github_configuration.t
-  |Watcher of Fw_flattened_poly_t.t
+  |Watcher of Fwg_file_watcher.t
   |With_archives of Fwg_with_archives.t
   |With_dependencies of Fwg_with_dependencies.t
   |With_batch_compilation of Fwg_with_batch_compilation.t
@@ -203,18 +203,18 @@ let gitpush_after_backup final_fw  = match final_fw with
  ;;
 
 let ignored_files final_fw  = match final_fw with 
-  |Configuration _ -> raise ( Absent_method "Fw_configuration.ignored_files" )
+  |Configuration (fw) -> Fw_configuration.ignored_files fw
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_files" )
-  |Watcher (fw) -> Fwc_file_watcher.ignored_files fw
+  |Watcher (fw) -> Fwc_file_watcher.Field.ignored_files fw
   |With_archives (fw) -> Fwc_with_archives.Field.ignored_files fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.ignored_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_files fw ;;
 
 let ignored_subdirectories final_fw  = match final_fw with 
-  |Configuration _ -> raise ( Absent_method "Fw_configuration.ignored_subdirectories" )
+  |Configuration (fw) -> Fw_configuration.ignored_subdirectories fw
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_subdirectories" )
-  |Watcher (fw) -> Fwc_file_watcher.ignored_subdirectories fw
+  |Watcher (fw) -> Fwc_file_watcher.Field.ignored_subdirectories fw
   |With_archives (fw) -> Fwc_with_archives.Field.ignored_subdirectories fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.ignored_subdirectories fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_subdirectories fw

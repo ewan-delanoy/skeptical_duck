@@ -5,6 +5,14 @@
 *)
 
 
+let ignored_files fw = fw.Fw_flattened_poly_t.ignored_files ;;
+let ignored_subdirectories fw = fw.Fw_flattened_poly_t.ignored_subdirectories ;;
+
+
+
+let of_concrete_object = Fw_poly.of_concrete_object ;;
+
+
 let of_root root_dir = 
     Fw_poly.construct_fw_configuration 
       ~root:root_dir
@@ -30,3 +38,15 @@ let test_for_admissibility data rl=
   )
   ;;
 
+let test_equality fw1 fw2 = 
+    let temp =
+    [
+      ("root",(fw1.Fw_flattened_poly_t.root=fw2.Fw_flattened_poly_t.root));
+      ("ignored_subdirectories",(fw1.Fw_flattened_poly_t.ignored_subdirectories=fw2.Fw_flattened_poly_t.ignored_subdirectories));
+      ("ignored_files",(fw1.Fw_flattened_poly_t.ignored_files=fw2.Fw_flattened_poly_t.ignored_files));
+    ] in 
+    List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld) temp;;
+  
+
+
+let to_concrete_object = Fw_poly.to_concrete_object ;;
