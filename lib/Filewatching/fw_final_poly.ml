@@ -8,7 +8,7 @@ exception Absent_method of string ;;
 
 type t = 
   |Configuration of Fwc_configuration.t
-  |Github_configuration of  Fwg_github_configuration.t
+  |Github_configuration of  Fwc_github_configuration.t
   |Watcher of Fwg_file_watcher.t
   |With_archives of Fwg_with_archives.t
   |With_dependencies of Fwg_with_dependencies.t

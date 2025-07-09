@@ -42,7 +42,7 @@ let endingless_at_module fw = Parent.endingless_at_module (parent fw) ;;
 let find_subdir_from_suffix fw = Parent.find_subdir_from_suffix (parent fw) ;;
 
 
-let gitpush_after_backup fw = Fwg_github_configuration.gitpush_after_backup (Fwg_with_githubbing.github_configuration fw) ;;
+let gitpush_after_backup fw = Fwc_github_configuration.gitpush_after_backup (Fwg_with_githubbing.github_configuration fw) ;;
 
 let ignored_files fw = Parent.ignored_files (parent fw) ;;
 let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
@@ -68,7 +68,7 @@ let root fw = Parent.root (parent fw) ;;
 
 let set_gitpush_after_backup fw gab = 
   let old_github_config = Fwg_with_githubbing.github_configuration fw in 
-  let new_github_config = Fwc_github_configuration.Field.set_gitpush_after_backup old_github_config gab in 
+  let new_github_config = Fwc_github_configuration.set_gitpush_after_backup old_github_config gab in 
   Fwg_with_githubbing.make (parent fw) new_github_config ;;
 
 
@@ -81,10 +81,10 @@ let  start_executing fw = Fwc_with_batch_compilation.start_executing(parent fw) 
 
 let test_equality fw1 fw2 = 
   let gc = Fwg_with_githubbing.github_configuration in 
-  let get_github_root = (fun fw->Fwg_github_configuration.root(gc fw))
-  and get_dir_for_backup = (fun fw->Fwg_github_configuration.dir_for_backup(gc fw))
-  and get_github_url = (fun fw->Fwg_github_configuration.github_url(gc fw))
-  and get_encoding_protected_files = (fun fw->Fwg_github_configuration.encoding_protected_files(gc fw)) in 
+  let get_github_root = (fun fw->Fwc_github_configuration.root(gc fw))
+  and get_dir_for_backup = (fun fw->Fwc_github_configuration.dir_for_backup(gc fw))
+  and get_github_url = (fun fw->Fwc_github_configuration.github_url(gc fw))
+  and get_encoding_protected_files = (fun fw->Fwc_github_configuration.encoding_protected_files(gc fw)) in 
 
   (
     Fwc_with_batch_compilation.Field.test_equality (parent fw1) (parent fw2)
@@ -122,7 +122,7 @@ let make = Fwg_with_githubbing.make;;
 
 
 let usual_extension fw_batch backup_dir gab git_url enc_files = 
-  make fw_batch (Fwg_github_configuration.make 
+  make fw_batch (Fwc_github_configuration.make 
  ~v_root:(Fwc_with_batch_compilation.Field.root fw_batch)
   ~v_dir_for_backup:backup_dir
 ~v_gitpush_after_backup:gab
@@ -139,14 +139,14 @@ let of_concrete_object ccrt_obj =
   let g=Concrete_object.get_record ccrt_obj in 
   make 
    (Fwc_with_batch_compilation.of_concrete_object (g label_for_parent))
-   (Fwc_github_configuration.of_concrete_object (g label_for_github_config))
+   (Fwc_github_configuration.Crobj.of_concrete_object (g label_for_github_config))
   ;;
 
 let to_concrete_object fw = 
  let items =  
  [
    label_for_parent, Fwc_with_batch_compilation.to_concrete_object ( parent fw ) ;
-   label_for_github_config, Fwc_github_configuration.to_concrete_object ( github_configuration fw ) ;
+   label_for_github_config, Fwc_github_configuration.Crobj.to_concrete_object ( github_configuration fw ) ;
  ] in 
  Concrete_object_t.Record items ;;
 

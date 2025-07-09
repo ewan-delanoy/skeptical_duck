@@ -38,7 +38,7 @@ let make fw_batch github_config = {
 
 type t = {
   _parent : Fwg_with_batch_compilation.t;
-  github_config : Fwg_github_configuration.t;
+  github_config : Fwc_github_configuration.t;
 } ;;
 
 let parent fw = fw._parent ;; 
