@@ -18,9 +18,9 @@ let ignored_subdirectories fw = match fw.Fw_flattened_poly_t.ignored_subdirector
 let make v_root v_ignored_files v_ignored_subdirectories =  {
   Fw_flattened_poly_t.origin with
   Fw_flattened_poly_t.type_name = Some "Fwc_configuration" ;
-  root = Some(v_root) ;
-  ignored_files = v_ignored_files;
-  ignored_subdirectories = v_ignored_subdirectories;
+  root = Some v_root ;
+  ignored_files = Some v_ignored_files;
+  ignored_subdirectories = Some v_ignored_subdirectories;
 } ;;
 
 let root fw = match fw.Fw_flattened_poly_t.root with Some x -> x | None -> raise(Get_exn "root")  ;;

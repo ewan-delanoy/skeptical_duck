@@ -120,25 +120,25 @@ module Private = struct
       faraway_cs2;;                      
       
 
-    let unfreeze_copy cs destroot =
-        let old_fw_config = Fw_poly.to_fw_configuration cs in 
-        let remote_fw_config = Fw_poly.set_root old_fw_config  destroot in   
+    let unfreeze_copy old_fw_config destroot =
+        
+        let remote_fw_config = Fwc_configuration.Inherited.set_root old_fw_config  destroot in   
         let remote_github_config = Fwg_github_configuration.make 
         ~v_root:destroot
         ~v_dir_for_backup:default_backup_dir
         ~v_gitpush_after_backup:false
         ~v_github_url:Coma_big_constant.github_url
         ~v_encoding_protected_files:[] in 
-        let remote_cs = Fw_final_poly.of_fw_config_and_github_config remote_fw_config remote_github_config in 
-        let _ = Fw_with_persisting.persist remote_cs in 
-        remote_cs;;    
+        let remote_fw = Fw_final_poly.of_fw_config_and_github_config remote_fw_config remote_github_config in 
+        let _ = Fw_with_persisting.persist remote_fw in 
+        remote_fw;;    
         
 
 
   end ;;   
   
-  let frozen_copy cs ~destination ?(destbackupdir=Private.default_backup_dir) ?(destgab=false) summary=
-     let _ = Private.frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
+  let frozen_copy fw ~destination ?(destbackupdir=Private.default_backup_dir) ?(destgab=false) summary=
+     let _ = Private.frozen_copy fw ~destination ~destbackupdir ~destgab summary in 
      () ;;
   
   let fully_developed_copy = Private.fully_developed_copy ;; 

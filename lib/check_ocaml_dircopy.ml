@@ -54,7 +54,7 @@ let check fw_data github_data =
   let _= Unix_command.conditional_multiple_uc cmds in 
   let root_dir = Fwg_github_configuration.root github_data in 
   let diff1=Prepare_dircopy_update.compute_restricted_diff
-     root_dir remotedir (Fw_poly.ignored_subdirectories fw_data,
-        (Image.image Dfn_rootless.to_line (Fw_poly.ignored_files fw_data) )) in
+     root_dir remotedir (Fwc_configuration.ignored_subdirectories fw_data,
+        (Image.image Dfn_rootless.to_line (Fwc_configuration.ignored_files fw_data) )) in
   filter_diff_according_to_admissibility fw_data diff1;;
           

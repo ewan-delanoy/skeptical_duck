@@ -7,7 +7,7 @@
 exception Absent_method of string ;;
 
 type t = 
-  |Configuration of Fw_flattened_poly_t.t
+  |Configuration of Fwg_configuration.t
   |Github_configuration of  Fwg_github_configuration.t
   |Watcher of Fwg_file_watcher.t
   |With_archives of Fwg_with_archives.t

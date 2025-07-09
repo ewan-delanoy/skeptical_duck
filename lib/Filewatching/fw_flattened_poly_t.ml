@@ -21,17 +21,17 @@ type t = {
 } ;;
 
 let origin = {
-   type_name = Some "" ;
-   root = Some (Dfa_root.of_line "dummy") ;
-   ignored_files = Some [] ;
-   ignored_subdirectories = Some [] ;
-   watched_files = Some [] ;
-   subdirs_for_archived_mlx_files = Some [] ;
-   small_details_in_files = Some [] ;
+   type_name = None ;
+   root = None ;
+   ignored_files = None ;
+   ignored_subdirectories = None ;
+   watched_files = None ;
+   subdirs_for_archived_mlx_files = None ;
+   small_details_in_files = None ;
    index_for_caching = None ;
    last_compilation_result_for_module = None ;
    dir_for_backup = None ;
    encoding_protected_files = None ;
    github_url = None ;
    gitpush_after_backup = None ;  
-} ;;
+} ;; 

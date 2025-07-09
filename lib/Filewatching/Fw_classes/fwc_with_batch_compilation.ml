@@ -407,7 +407,7 @@ end;;
     ) (Fwc_with_dependencies.dep_ordered_modules fw_with_deps));;   
 
    let of_configuration config =
-      let root = Fw_poly.root config in 
+      let root = Fwc_configuration.root config in 
       let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash root) '/' in
       let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
        Coma_constant.minimal_set_of_needed_dirs 
