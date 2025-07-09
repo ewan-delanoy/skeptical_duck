@@ -14,6 +14,7 @@ let the_list =
    fun fn ->
     Absolute_path.of_string("lib/Filewatching/Fw_classes/fwg_"^fn^".ml")
 ) [
+   "configuration";
    "github_configuration";
    "file_watcher";
    "with_archives";
