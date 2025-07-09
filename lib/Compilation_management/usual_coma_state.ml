@@ -10,7 +10,7 @@ module Private = struct
 
 let main_ref=
   let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple in 
-  let fw_config = Fw_configuration.of_root root 
+  let fw_config = Fwc_configuration.of_root root 
   and github_config = Fwg_github_configuration.make 
   ~v_root:root
   ~v_dir_for_backup:backup_dir

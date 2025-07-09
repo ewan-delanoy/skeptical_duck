@@ -13,7 +13,7 @@ exception Failure_during_github_cloning;;
 let clone_download_location = (Sys.getenv "HOME")^"/Downloads/Clone";;
 
 let filter_diff_according_to_admissibility data diff=
-   let filter_list = List.filter (Fw_configuration.test_for_admissibility data) in 
+   let filter_list = List.filter (Fwc_configuration.test_for_admissibility data) in 
    {
     Dircopy_diff_t.recently_deleted = filter_list diff.Dircopy_diff_t.recently_deleted;
     Dircopy_diff_t.recently_changed = filter_list diff.Dircopy_diff_t.recently_changed;

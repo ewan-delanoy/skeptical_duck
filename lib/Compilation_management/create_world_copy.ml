@@ -105,7 +105,7 @@ module Private = struct
         Coma_constant.rootless_path_for_parametersfile) 
       and new_content = text_for_big_constants_file_in_other_world destination destbackupdir destgab in
       let _=Io.overwrite_with parameters_ap new_content in  
-      let faraway_config = Fw_configuration.of_root destination in 
+      let faraway_config = Fwc_configuration.of_root destination in 
       let faraway_fw = Fwc_with_dependencies.of_configuration_and_list (faraway_config,compilables@noncompilables) in  
       (modules_in_good_order,faraway_fw);;  
 

@@ -13,14 +13,14 @@ module Field = struct
 
    let parent = Fwg_file_watcher.parent ;;
 
-   let ignored_files fw = Fw_configuration.ignored_files (parent fw) ;;
-   let ignored_subdirectories fw = Fw_configuration.ignored_subdirectories (parent fw) ;;
+   let ignored_files fw = Fwc_configuration.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Fwc_configuration.ignored_subdirectories (parent fw) ;;
 
-   let root fw = Fw_configuration.root (parent fw) ;;
+   let root fw = Fwc_configuration.root (parent fw) ;;
 
    let test_equality fw1 fw2 = 
       (
-        Fw_configuration.test_equality (parent fw1) (parent fw2)
+        Fwc_configuration.test_equality (parent fw1) (parent fw2)
       )
       @
       (
@@ -33,7 +33,7 @@ module Field = struct
       ) ;;
     
 
-   let test_for_admissibility fw = Fw_configuration.test_for_admissibility (parent fw) ;;
+   let test_for_admissibility fw = Fwc_configuration.test_for_admissibility (parent fw) ;;
 
    let to_fw_configuration fw = parent fw ;;
 
@@ -52,7 +52,7 @@ module Private = struct
       let of_concrete_object ccrt_obj = 
         let g=Concrete_object.get_record ccrt_obj in 
         Fwg_file_watcher.make 
-        (Fw_configuration.of_concrete_object (g label_for_parent))
+        (Fwc_configuration.of_concrete_object (g label_for_parent))
         (Crobj_converter_combinator.to_pair_list 
         Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))
         ;;
@@ -60,7 +60,7 @@ module Private = struct
       let to_concrete_object fw = 
         let items =  
         [
-             label_for_parent, Fw_configuration.to_concrete_object ( Fwg_file_watcher.parent fw ) ;
+             label_for_parent, Fwc_configuration.to_concrete_object ( Fwg_file_watcher.parent fw ) ;
              label_for_watched_files, 
              Crobj_converter_combinator.of_pair_list 
              Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object
@@ -169,7 +169,7 @@ let get_content fw rootless =
     
 
 let of_configuration_and_list config to_be_watched =
-  let the_root = Fw_configuration.root config in  
+  let the_root = Fwc_configuration.root config in  
   let compute_info=( fun path->
     let s_root = Dfa_root.connectable_to_subpath the_root
     and s_path=Dfn_rootless.to_line path in 
@@ -276,14 +276,14 @@ let check_that_no_change_has_occurred fw =
          
 
 let first_init config =
-   let the_root = Fw_configuration.root config in 
+   let the_root = Fwc_configuration.root config in 
    let the_dir =  Directory_name.of_string (Dfa_root.without_trailing_slash the_root) in 
    let (list1,_) = Unix_again.complete_ls_with_ignored_subdirs the_dir (Fw_poly.ignored_subdirectories config) false in 
    let list2 = List.filter_map(
             fun ap-> try Some(Dfn_common.decompose_absolute_path_using_root ap the_root) with 
                      _->None 
    ) list1 in
-   List.filter (Fw_configuration.test_for_admissibility config) list2 ;;
+   List.filter (Fwc_configuration.test_for_admissibility config) list2 ;;
       
 let inspect_and_update fw ~verbose = 
    let (new_files,changed_files)= compute_changes_and_announce_them fw ~verbose in 

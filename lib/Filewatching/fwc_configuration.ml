@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Filewatching/fw_configuration.ml";;
+#use"lib/Filewatching/fwc_configuration.ml";;
 
 *)
 
