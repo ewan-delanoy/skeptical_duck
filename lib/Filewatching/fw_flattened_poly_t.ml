@@ -7,8 +7,8 @@
 type t = { 
    type_name : string option;
    root : Dfa_root_t.t option;
-   ignored_subdirectories : Dfa_subdirectory_t.t list option;
    ignored_files : Dfn_rootless_t.t list option;
+   ignored_subdirectories : Dfa_subdirectory_t.t list option;
    watched_files : (Dfn_rootless_t.t * string) list option;
    subdirs_for_archived_mlx_files : (Dfa_subdirectory_t.t list) option ;
    small_details_in_files : ((Dfn_rootless_t.t * Fw_file_small_details_t.t) list) option;

@@ -16,10 +16,10 @@ exception Get_exn of string ;;
 
 let dir_for_backup fw = match fw.Fw_flattened_poly_t.dir_for_backup with Some x -> x | None -> raise(Get_exn "dir_for_backup")  ;;
 
-let encoding_protected_files fw = match fw.Fw_flattened_poly_t.encoding_protected_files with Some x -> x | None -> raise(Get_exn "encoding_proetcted_files") ;;
+let encoding_protected_files fw = match fw.Fw_flattened_poly_t.encoding_protected_files with Some x -> x | None -> raise(Get_exn "encoding_protected_files") ;;
 
 let github_url fw = match fw.Fw_flattened_poly_t.github_url with Some x -> x | None -> raise(Get_exn "github_url") ;;
-let gitpush_after_backup fw = match fw.Fw_flattened_poly_t.gitpush_after_backup with Some x -> x | None -> raise(Get_exn "github_url");;
+let gitpush_after_backup fw = match fw.Fw_flattened_poly_t.gitpush_after_backup with Some x -> x | None -> raise(Get_exn "gitpush_after_backup");;
 
 let make 
 ~v_root
