@@ -194,7 +194,7 @@ let github_configuration final_fw  = match final_fw with
 
 let gitpush_after_backup final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.gitpush_after_backup" )
-  |Github_configuration (fw) -> Fwg_github_configuration.gitpush_after_backup fw
+  |Github_configuration (fw) -> Fwc_github_configuration.gitpush_after_backup fw
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.gitpush_after_backup" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.gitpush_after_backup" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.gitpush_after_backup" )
@@ -343,7 +343,7 @@ let replace_value final_fw pair_of_pairs = match final_fw with
   |With_githubbing (fw) -> With_githubbing( Fwc_with_githubbing.replace_value fw pair_of_pairs ) ;;
 
 let root final_fw  = match final_fw with 
-  |Github_configuration (fw) -> Fwg_github_configuration.root fw
+  |Github_configuration (fw) -> Fwc_github_configuration.root fw
   |Configuration (fw) -> Fwc_configuration.root fw
   |Watcher (fw) -> Fwc_file_watcher.Field.root fw
   |With_archives (fw) -> Fwc_with_archives.Field.root fw
