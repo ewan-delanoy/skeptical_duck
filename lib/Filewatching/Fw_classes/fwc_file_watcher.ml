@@ -405,3 +405,5 @@ let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
 let update_some_files = Private.update_some_files ;; 
 
+let watched_files = Fwg_file_watcher.watched_files ;;
+

@@ -32,7 +32,7 @@ module Field = struct
         ]
       ) ;;
     
-   let watched_files fw = Fwg_file_watcher.watched_files (parent fw) ;;   
+   let watched_files fw = Fwc_file_watcher.watched_files (parent fw) ;;   
 
 end ;;   
 
