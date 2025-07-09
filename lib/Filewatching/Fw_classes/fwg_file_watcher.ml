@@ -33,7 +33,7 @@ let make fw_config w_files = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fwg_configuration.t;
+  _parent : Fwc_configuration.t;
   watched_files : (Dfn_rootless_t.t * string) list;
 } ;;
 

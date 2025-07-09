@@ -4,6 +4,8 @@
 
 *)
 
+type t = Fwg_configuration.t ;;
+
 module Inherited = struct
   
 let set_root fw new_root =   
