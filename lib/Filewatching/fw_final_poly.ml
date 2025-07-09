@@ -10,7 +10,7 @@ type t =
   |Configuration of Fwc_configuration.t
   |Github_configuration of  Fwc_github_configuration.t
   |Watcher of Fwc_file_watcher.t
-  |With_archives of Fwg_with_archives.t
+  |With_archives of Fwc_with_archives.t
   |With_dependencies of Fwg_with_dependencies.t
   |With_batch_compilation of Fwg_with_batch_compilation.t
   |With_githubbing of Fwg_with_githubbing.t
@@ -206,7 +206,7 @@ let ignored_files final_fw  = match final_fw with
   |Configuration (fw) -> Fwc_configuration.ignored_files fw
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_files" )
   |Watcher (fw) -> Fwc_file_watcher.Inherited.ignored_files fw
-  |With_archives (fw) -> Fwc_with_archives.Field.ignored_files fw
+  |With_archives (fw) -> Fwc_with_archives.Inherited.ignored_files fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.ignored_files fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_files fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_files fw ;;
@@ -215,7 +215,7 @@ let ignored_subdirectories final_fw  = match final_fw with
   |Configuration (fw) -> Fwc_configuration.ignored_subdirectories fw
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.ignored_subdirectories" )
   |Watcher (fw) -> Fwc_file_watcher.Inherited.ignored_subdirectories fw
-  |With_archives (fw) -> Fwc_with_archives.Field.ignored_subdirectories fw
+  |With_archives (fw) -> Fwc_with_archives.Inherited.ignored_subdirectories fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.ignored_subdirectories fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_subdirectories fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_subdirectories fw ;;
@@ -346,7 +346,7 @@ let root final_fw  = match final_fw with
   |Github_configuration (fw) -> Fwc_github_configuration.root fw
   |Configuration (fw) -> Fwc_configuration.root fw
   |Watcher (fw) -> Fwc_file_watcher.Inherited.root fw
-  |With_archives (fw) -> Fwc_with_archives.Field.root fw
+  |With_archives (fw) -> Fwc_with_archives.Inherited.root fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.root fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.root fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.root fw ;;
@@ -392,7 +392,7 @@ let test_for_admissibility final_fw rl = match final_fw with
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.test_for_admissibility" )
   |Configuration (fw) -> Fwc_configuration.test_for_admissibility fw rl
   |Watcher (fw) -> Fwc_file_watcher.Inherited.test_for_admissibility fw rl
-  |With_archives (fw) -> Fwc_with_archives.Field.test_for_admissibility fw rl
+  |With_archives (fw) -> Fwc_with_archives.Inherited.test_for_admissibility fw rl
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.test_for_admissibility fw rl
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.test_for_admissibility fw rl
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.test_for_admissibility fw rl ;;
@@ -411,7 +411,7 @@ let to_fw_configuration final_fw  = match final_fw with
   |Configuration (fw)-> fw
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.to_fw_configuration" )
   |Watcher (fw) -> Fwc_file_watcher.Inherited.to_fw_configuration fw
-  |With_archives (fw) -> Fwc_with_archives.Field.to_fw_configuration fw
+  |With_archives (fw) -> Fwc_with_archives.Inherited.to_fw_configuration fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Field.to_fw_configuration fw
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.to_fw_configuration fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Field.to_fw_configuration fw  ;;

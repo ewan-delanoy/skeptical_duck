@@ -5,7 +5,9 @@
 *)
 
 
-module Field = struct 
+type t = Fwg_with_archives.t ;;
+
+module Inherited = struct 
 
    module Ancestry = Fwc_file_watcher.Inherited ;;
 
@@ -36,43 +38,45 @@ module Field = struct
 
 end ;;   
 
+module Crobj = struct 
+   let salt = "Fwc_with_archives." ;;
+   let label_for_parent = salt ^ "parent" ;;
+   let label_for_subdirs_for_archived_mlx_files  = salt ^ "subdirs_for_archived_mlx_files" ;;
+       
+       
+   let of_concrete_object ccrt_obj = 
+     let g=Concrete_object.get_record ccrt_obj in 
+     Fwg_with_archives.make 
+     (Fwc_file_watcher.Crobj.of_concrete_object (g label_for_parent))
+     (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object  (g label_for_subdirs_for_archived_mlx_files))
+     ;;
+       
+   let to_concrete_object fw = 
+     let items =  
+     [
+          label_for_parent, Fwc_file_watcher.Crobj.to_concrete_object ( Fwg_with_archives.parent fw ) ;
+          label_for_subdirs_for_archived_mlx_files, 
+          Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object 
+           (Fwg_with_archives.subdirs_for_archived_mlx_files fw ) ;
+     ] in 
+     Concrete_object_t.Record items ;;
+       
+       
+end;; 
+
 module Private = struct
 
-   module Crobj = struct 
-      let salt = "Fwc_with_archives." ;;
-      let label_for_parent = salt ^ "parent" ;;
-      let label_for_subdirs_for_archived_mlx_files  = salt ^ "subdirs_for_archived_mlx_files" ;;
-          
-          
-      let of_concrete_object ccrt_obj = 
-        let g=Concrete_object.get_record ccrt_obj in 
-        Fwg_with_archives.make 
-        (Fwc_file_watcher.Crobj.of_concrete_object (g label_for_parent))
-        (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object  (g label_for_subdirs_for_archived_mlx_files))
-        ;;
-          
-      let to_concrete_object fw = 
-        let items =  
-        [
-             label_for_parent, Fwc_file_watcher.Crobj.to_concrete_object ( Fwg_with_archives.parent fw ) ;
-             label_for_subdirs_for_archived_mlx_files, 
-             Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object 
-              (Fwg_with_archives.subdirs_for_archived_mlx_files fw ) ;
-        ] in 
-        Concrete_object_t.Record items ;;
-          
-          
-      end;; 
+ 
 
-   let parent fw = Field.parent fw ;;
+   let parent fw = Inherited.parent fw ;;
    
    (* Inherited methods *)
 
 
-   let root fw = Field.root fw ;;
+   let root fw = Inherited.root fw ;;
    let update_parent fw new_parent = 
       Fwg_with_archives.make new_parent (Fwg_with_archives.subdirs_for_archived_mlx_files fw) ;;
-   let watched_files fw = Field.watched_files fw ;;
+   let watched_files fw = Inherited.watched_files fw ;;
    
    (* End of inherited methods *)  
    (* Inherited constructors *)
@@ -127,7 +131,7 @@ module Private = struct
       )  (watched_files fw) ;;
       
    let compute_small_details_on_one_file fw rl=
-      let root = Field.root fw in 
+      let root = Inherited.root fw in 
       let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
       let ap = Absolute_path.of_string s_ap in 
       Fw_file_small_details.compute ap ;;
@@ -300,7 +304,6 @@ let forget_modules = Private.forget_modules ;;
 let inspect_and_update = Private.inspect_and_update ;;
 let latest_changes = Private.latest_changes ;;
 let noncompilable_files = Private.noncompilable_files ;;
-let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -313,5 +316,4 @@ let rename_module_on_filename_level_and_in_files = Private.rename_module_on_file
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let usual_compilable_files = Private.usual_compilable_files ;; 

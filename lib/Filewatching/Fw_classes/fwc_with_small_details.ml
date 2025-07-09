@@ -6,25 +6,27 @@
 
 module Field = struct 
 
-   module Parent = Fwc_with_archives.Field ;;
+   module Ancestry = Fwc_with_archives.Inherited ;;
+
+   module Parent = Fwc_with_archives;;
    let parent = Fwg_with_small_details.parent ;;
 
 
-   let check_that_no_change_has_occurred fw = Fwc_with_archives.check_that_no_change_has_occurred(parent fw)  ;;  
+   let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
 
-   let ignored_files fw = Parent.ignored_files (parent fw) ;;
-   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
+   let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
 
-   let  latest_changes fw = Fwc_with_archives.latest_changes(parent fw)  ;;  
+   let  latest_changes fw = Parent.latest_changes(parent fw)  ;;  
 
-   let  noncompilable_files fw = Fwc_with_archives.noncompilable_files(parent fw)  ;;  
+   let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;;  
 
-   let root fw = Parent.root (parent fw) ;;
+   let root fw = Ancestry.root (parent fw) ;;
 
 
    let test_equality fw1 fw2 = 
       (
-        Fwc_with_archives.Field.test_equality (parent fw1) (parent fw2)
+        Ancestry.test_equality (parent fw1) (parent fw2)
       )
       @
       (
@@ -36,9 +38,9 @@ module Field = struct
         ]
       ) ;;
 
-   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+   let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
   
-   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+   let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
     
    let  usual_compilable_files fw = Fwc_with_archives.usual_compilable_files(parent fw)  ;; 
 
@@ -57,14 +59,14 @@ module Private = struct
       let of_concrete_object ccrt_obj = 
         let g=Concrete_object.get_record ccrt_obj in 
         Fwg_with_small_details.make 
-        (Fwc_with_archives.of_concrete_object (g label_for_parent))
+        (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
         (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))
         ;;
           
       let to_concrete_object fw = 
         let items =  
         [
-             label_for_parent, Fwc_with_archives.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
+             label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
              label_for_small_details_in_files, 
              Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object
               (Fwg_with_small_details.small_details_in_files fw ) ;
