@@ -6,13 +6,6 @@
 
 type t = Fwg_configuration.t ;;
 
-module Inherited = struct
-  
-let set_root fw new_root =   
-  Fwg_configuration.make new_root 
-  (Fwg_configuration.ignored_files fw)  (Fwg_configuration.ignored_subdirectories fw) ;;
-
-end ;;
 
 module Crobj = struct 
 
@@ -52,6 +45,11 @@ let of_root root_dir = Fwg_configuration.make root_dir [] Coma_constant.git_igno
 
 
 let root = Fwg_configuration.root ;;
+
+let set_root fw new_root =   
+  Fwg_configuration.make new_root 
+  (Fwg_configuration.ignored_files fw)  (Fwg_configuration.ignored_subdirectories fw) ;;
+
 
 let test_for_admissibility data rl=
   (List.mem (

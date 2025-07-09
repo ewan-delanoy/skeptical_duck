@@ -7,18 +7,20 @@
 
 module Field = struct 
 
-   module Parent = Fwc_file_watcher.Field ;;
+   module Ancestry = Fwc_file_watcher.Inherited ;;
+
+   module Parent = Fwc_file_watcher ;;
    let parent = Fwg_with_archives.parent ;;
 
-   let ignored_files fw = Parent.ignored_files (parent fw) ;;
-   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
-   let root fw = Parent.root (parent fw) ;;
-   let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
-   let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+   let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
+   let root fw = Ancestry.root (parent fw) ;;
+   let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
+   let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
 
    let test_equality fw1 fw2 = 
       (
-        Fwc_file_watcher.Field.test_equality (parent fw1) (parent fw2)
+        Ancestry.test_equality (parent fw1) (parent fw2)
       )
       @
       (
@@ -45,14 +47,14 @@ module Private = struct
       let of_concrete_object ccrt_obj = 
         let g=Concrete_object.get_record ccrt_obj in 
         Fwg_with_archives.make 
-        (Fwc_file_watcher.of_concrete_object (g label_for_parent))
+        (Fwc_file_watcher.Crobj.of_concrete_object (g label_for_parent))
         (Crobj_converter_combinator.to_list Dfa_subdirectory.of_concrete_object  (g label_for_subdirs_for_archived_mlx_files))
         ;;
           
       let to_concrete_object fw = 
         let items =  
         [
-             label_for_parent, Fwc_file_watcher.to_concrete_object ( Fwg_with_archives.parent fw ) ;
+             label_for_parent, Fwc_file_watcher.Crobj.to_concrete_object ( Fwg_with_archives.parent fw ) ;
              label_for_subdirs_for_archived_mlx_files, 
              Crobj_converter_combinator.of_list Dfa_subdirectory.to_concrete_object 
               (Fwg_with_archives.subdirs_for_archived_mlx_files fw ) ;
@@ -267,7 +269,7 @@ module Private = struct
            path in 
       let old_parent = parent old_fw in   
       let rootless = Dfn_common.decompose_absolute_path_using_root path 
-        (Fwc_file_watcher.Field.root old_parent)  in 
+        (Fwc_file_watcher.Inherited.root old_parent)  in 
       let par2= Fwc_file_watcher.update_some_files old_parent [rootless] in 
       let fw2 = update_parent old_fw par2 in 
       let (fw3,(changed_a_files,changed_u_files))=replace_string fw2 (replacee,replacer) in 

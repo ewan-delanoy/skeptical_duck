@@ -4,23 +4,25 @@
 
 *)
 
+type t = Fwg_file_watcher.t ;;
 
 exception Register_rootless_path_exn of string list;;
 exception Already_registered_rootless_paths_exn of string list;;
 exception Change_has_occurred ;;
 
-module Field = struct 
+module Inherited = struct 
 
+   module Parent = Fwc_configuration;;
    let parent = Fwg_file_watcher.parent ;;
 
-   let ignored_files fw = Fwc_configuration.ignored_files (parent fw) ;;
-   let ignored_subdirectories fw = Fwc_configuration.ignored_subdirectories (parent fw) ;;
+   let ignored_files fw = Parent.ignored_files (parent fw) ;;
+   let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
 
-   let root fw = Fwc_configuration.root (parent fw) ;;
+   let root fw = Parent.root (parent fw) ;;
 
    let test_equality fw1 fw2 = 
       (
-        Fwc_configuration.test_equality (parent fw1) (parent fw2)
+        Parent.test_equality (parent fw1) (parent fw2)
       )
       @
       (
@@ -40,36 +42,38 @@ module Field = struct
 end ;;   
 
 
+module Crobj = struct 
+   let salt = "Fwc_file_watcher." ;;
+   let label_for_parent = salt ^ "parent" ;;
+   let label_for_watched_files  = salt ^ "watched_files" ;;
+       
+       
+   let of_concrete_object ccrt_obj = 
+     let g=Concrete_object.get_record ccrt_obj in 
+     Fwg_file_watcher.make 
+     (Fwc_configuration.Crobj.of_concrete_object (g label_for_parent))
+     (Crobj_converter_combinator.to_pair_list 
+     Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))
+     ;;
+       
+   let to_concrete_object fw = 
+     let items =  
+     [
+          label_for_parent, Fwc_configuration.Crobj.to_concrete_object ( Fwg_file_watcher.parent fw ) ;
+          label_for_watched_files, 
+          Crobj_converter_combinator.of_pair_list 
+          Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object
+           (Fwg_file_watcher.watched_files fw ) ;
+     ] in 
+     Concrete_object_t.Record items ;;
+       
+       
+end;; 
+
 module Private = struct
 
 
-   module Crobj = struct 
-      let salt = "Fwc_file_watcher." ;;
-      let label_for_parent = salt ^ "parent" ;;
-      let label_for_watched_files  = salt ^ "watched_files" ;;
-          
-          
-      let of_concrete_object ccrt_obj = 
-        let g=Concrete_object.get_record ccrt_obj in 
-        Fwg_file_watcher.make 
-        (Fwc_configuration.Crobj.of_concrete_object (g label_for_parent))
-        (Crobj_converter_combinator.to_pair_list 
-        Dfn_rootless.of_concrete_object Crobj_converter.string_of_concrete_object (g label_for_watched_files))
-        ;;
-          
-      let to_concrete_object fw = 
-        let items =  
-        [
-             label_for_parent, Fwc_configuration.Crobj.to_concrete_object ( Fwg_file_watcher.parent fw ) ;
-             label_for_watched_files, 
-             Crobj_converter_combinator.of_pair_list 
-             Dfn_rootless.to_concrete_object Crobj_converter.string_to_concrete_object
-              (Fwg_file_watcher.watched_files fw ) ;
-        ] in 
-        Concrete_object_t.Record items ;;
-          
-          
-      end;; 
+   
     
 
 (* Start of level 4 *)
@@ -94,7 +98,7 @@ let message_about_missing_files missing_files=
 let mtime file = string_of_float((Unix.stat file).Unix.st_mtime) ;;
 
 let recompute_mtime fw path =
-      let s_root = Dfa_root.connectable_to_subpath (Field.root fw) 
+      let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw) 
       and s_path=Dfn_rootless.to_line path in 
       let file = s_root^s_path in 
       mtime file;;
@@ -136,7 +140,7 @@ let helper2_during_inspection fw accu l_pairs =
    (new_l_pairs,List.rev(!accu));;
 
   let recompute_all_info fw path =
-    let s_root = Dfa_root.connectable_to_subpath (Field.root fw) 
+    let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw) 
     and s_path=Dfn_rootless.to_line path in 
     let file = s_root^s_path in 
     (path,mtime file);;
@@ -163,7 +167,7 @@ let compute_changes_and_announce_them fw ~verbose=
 (* let configuration fw = fw.File_watcher_t.configuration ;; *)
 
 let get_content fw rootless = 
-  let root = Field.root fw in 
+  let root = Inherited.root fw in 
   let s_ap = Dfn_common.recompose_potential_absolute_path root rootless in 
   Io.read_whole_file(Absolute_path.of_string s_ap);;     
     
@@ -238,7 +242,7 @@ let apply_text_transformation_on_pair fw tr changed_files_ref selected_files_opt
    then pair 
    else 
    let _=(changed_files_ref:= path:: (!changed_files_ref)) in 
-   let s_root = Dfa_root.connectable_to_subpath (Field.root fw) 
+   let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw) 
    and s_path=Dfn_rootless.to_line path in 
    let file = s_root^s_path in  
    let ap=Absolute_path.of_string file in 
@@ -268,7 +272,7 @@ let check_that_no_change_has_occurred fw =
     if (Dfn_rootless.to_ending rless)<> Dfa_ending.ml 
     then ()
     else
-       let root = Field.root fw in 
+       let root = Inherited.root fw in 
        let full = Dfn_join.root_to_rootless root rless in 
        let ap = Dfn_full.to_absolute_path full in 
        Use_directive_in_initial_comment.replace_with_usual root ap
@@ -301,7 +305,7 @@ let of_configuration config =
         
          
 let overwrite_file_if_it_exists fw rootless new_content =
-   let root = Field.root fw in 
+   let root = Inherited.root fw in 
    if List.exists ( fun (r,_)->r=rootless ) (watched_files fw)
    then let ap = Absolute_path.of_string (Dfn_common.recompose_potential_absolute_path root rootless) in 
          let _=Io.overwrite_with ap new_content in 
@@ -311,7 +315,7 @@ let overwrite_file_if_it_exists fw rootless new_content =
 
 
 let register_rootless_paths fw rootless_paths= 
-   let s_root = Dfa_root.connectable_to_subpath (Field.root fw) in
+   let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw) in
    let nonexistent_paths = List.filter_map (
       fun rp-> let s_full_path = s_root^(Dfn_rootless.to_line rp)  in 
       if not(Sys.file_exists s_full_path)
@@ -337,7 +341,7 @@ let register_rootless_paths fw rootless_paths=
 
 
 let remove_files fw rootless_paths=
- let s_root = Dfa_root.connectable_to_subpath (Field.root fw) in 
+ let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw) in 
  let removals_to_be_made = Image.image (
    fun path->" rm -f "^s_root^(Dfn_rootless.to_line path) 
  ) rootless_paths in 
@@ -349,7 +353,7 @@ let remove_files fw rootless_paths=
  ) ;;
 
 let rename_files fw renaming_schemes =
-    let s_root = Dfa_root.connectable_to_subpath (Field.root fw)  in 
+    let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw)  in 
     let displacements_to_be_made = Image.image (
       fun (path1,path2)->" mv "^s_root^(Dfn_rootless.to_line path1)^" "^
       s_root^(Dfn_rootless.to_line path2)
@@ -369,7 +373,7 @@ let rename_files fw renaming_schemes =
    set_watched_files fw  new_watched_files ;;
 
   let rename_subdirectory_as fw (old_subdir,new_subdir)=
-  let s_root = Dfa_root.connectable_to_subpath (Field.root fw)  in 
+  let s_root = Dfa_root.connectable_to_subpath (Inherited.root fw)  in 
   let s_old_subdir = Dfa_subdirectory.without_trailing_slash old_subdir 
   and s_new_subdir = Dfa_subdirectory.without_trailing_slash new_subdir in 
   let old_full_path = s_root^s_old_subdir 
@@ -391,7 +395,6 @@ let apply_text_transformation_on_some_files = Private.apply_text_transformation_
 let check_that_no_change_has_occurred = Private.check_that_no_change_has_occurred ;;
 let inspect_and_update = Private.inspect_and_update;; 
 let latest_changes = Private.latest_changes ;;
-let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let of_configuration = Private.of_configuration ;;
 let of_configuration_and_list = Private.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -400,6 +403,5 @@ let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let update_some_files = Private.update_some_files ;; 
 

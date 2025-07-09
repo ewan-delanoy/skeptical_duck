@@ -122,7 +122,7 @@ module Private = struct
 
     let unfreeze_copy old_fw_config destroot =
         
-        let remote_fw_config = Fwc_configuration.Inherited.set_root old_fw_config  destroot in   
+        let remote_fw_config = Fwc_configuration.set_root old_fw_config  destroot in   
         let remote_github_config = Fwc_github_configuration.make 
         ~v_root:destroot
         ~v_dir_for_backup:default_backup_dir
