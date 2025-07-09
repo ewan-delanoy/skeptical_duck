@@ -33,7 +33,7 @@ let make fw_with_small_details ifc = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fwg_with_small_details.t;
+  _parent : Fwc_with_small_details.t;
   index_for_caching : (Fw_instance_index_t.t * Fw_state_index_t.t);
 
 } ;;

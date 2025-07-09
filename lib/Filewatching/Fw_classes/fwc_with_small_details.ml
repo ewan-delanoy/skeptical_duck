@@ -4,7 +4,9 @@
 
 *)
 
-module Field = struct 
+type t = Fwg_with_small_details.t ;;
+
+module Inherited = struct 
 
    module Ancestry = Fwc_with_archives.Inherited ;;
 
@@ -12,6 +14,7 @@ module Field = struct
    let parent = Fwg_with_small_details.parent ;;
 
 
+   let archived_files fw = Parent.archived_files (parent fw) ;;
    let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
 
    let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
@@ -48,33 +51,36 @@ module Field = struct
 end ;;   
 
 
+module Crobj = struct 
+   let salt = "Fwc_with_small_details." ;;
+   let label_for_parent = salt ^ "parent" ;;
+   let label_for_small_details_in_files  = salt ^ "small_details_in_files" ;;
+       
+       
+   let of_concrete_object ccrt_obj = 
+     let g=Concrete_object.get_record ccrt_obj in 
+     Fwg_with_small_details.make 
+     (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
+     (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))
+     ;;
+       
+   let to_concrete_object fw = 
+     let items =  
+     [
+          label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
+          label_for_small_details_in_files, 
+          Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object
+           (Fwg_with_small_details.small_details_in_files fw ) ;
+     ] in 
+     Concrete_object_t.Record items ;;
+       
+       
+end;; 
+
+
 module Private = struct
 
-   module Crobj = struct 
-      let salt = "Fwc_with_small_details." ;;
-      let label_for_parent = salt ^ "parent" ;;
-      let label_for_small_details_in_files  = salt ^ "small_details_in_files" ;;
-          
-          
-      let of_concrete_object ccrt_obj = 
-        let g=Concrete_object.get_record ccrt_obj in 
-        Fwg_with_small_details.make 
-        (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
-        (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))
-        ;;
-          
-      let to_concrete_object fw = 
-        let items =  
-        [
-             label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
-             label_for_small_details_in_files, 
-             Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object
-              (Fwg_with_small_details.small_details_in_files fw ) ;
-        ] in 
-        Concrete_object_t.Record items ;;
-          
-          
-      end;; 
+  
 
 
 
@@ -91,7 +97,7 @@ module Private = struct
    let constructor mother =
       Fwg_with_small_details.make 
        mother  (Fwc_with_archives.compute_all_small_details mother) ;;
-   let root fw     = Field.root fw ;;  
+   let root fw     = Inherited.root fw ;;  
    let small_details_in_files fw = Fwg_with_small_details.small_details_in_files fw ;;  
    
    (* End of level 1 *)
@@ -308,7 +314,6 @@ module Private = struct
    
    let forget_modules = Private.forget_modules ;;
    let inspect_and_update = Private.inspect_and_update;;
-   let of_concrete_object = Private.Crobj.of_concrete_object ;;
    let of_configuration = Private.of_configuration ;;
    let of_configuration_and_list = Private.of_configuration_and_list ;;
    let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
@@ -321,6 +326,5 @@ module Private = struct
    let replace_string = Private.replace_string;;
    let replace_value = Private.replace_value;;
    let small_details_in_files = Private.small_details_in_files ;;
-   let to_concrete_object = Private.Crobj.to_concrete_object ;;
    let usual_compilable_files fw = Fwc_with_archives.usual_compilable_files (Private.parent fw) ;;
    

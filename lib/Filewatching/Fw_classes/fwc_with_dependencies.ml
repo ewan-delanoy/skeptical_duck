@@ -12,23 +12,23 @@ exception Module_not_found_exn of string ;;
 
 module Field = struct 
 
-  module Parent = Fwc_with_small_details.Field ;;
+  module Ancestry = Fwc_with_small_details.Inherited ;;
   let parent = Fwg_with_dependencies.parent ;;
   
-  let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
+  let check_that_no_change_has_occurred fw = Ancestry.check_that_no_change_has_occurred(parent fw)  ;;  
 
-  let ignored_files fw = Parent.ignored_files (parent fw) ;;
-  let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
+  let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
+  let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
 
-  let  latest_changes fw = Parent.latest_changes(parent fw)  ;;  
+  let  latest_changes fw = Ancestry.latest_changes(parent fw)  ;;  
 
-  let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;;  
+  let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;;  
 
-  let root fw = Parent.root (parent fw) ;;
+  let root fw = Ancestry.root (parent fw) ;;
 
   let test_equality fw1 fw2 = 
     (
-      Fwc_with_small_details.Field.test_equality (parent fw1) (parent fw2)
+      Ancestry.test_equality (parent fw1) (parent fw2)
     )
     @
     (
@@ -40,11 +40,11 @@ module Field = struct
       ]
     ) ;; 
 
-  let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
+  let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
   
-  let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
+  let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
 
-  let  usual_compilable_files fw = Parent.usual_compilable_files(parent fw)  ;;  
+  let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;;  
 
 end ;;  
 
@@ -65,9 +65,9 @@ module Private = struct
   let of_concrete_object crobj = 
       let instance_idx = Fw_indexer.create_new_instance () in   
       Fwg_with_dependencies.make 
-        (Fwc_with_small_details.of_concrete_object crobj) (expand_index instance_idx) ;;
+        (Fwc_with_small_details.Crobj.of_concrete_object crobj) (expand_index instance_idx) ;;
 
-  let to_concrete_object fw = Fwc_with_small_details.to_concrete_object 
+  let to_concrete_object fw = Fwc_with_small_details.Crobj.to_concrete_object 
       (parent fw) ;;
 
   end ;;  
@@ -199,7 +199,7 @@ module Modularized_details = struct
  let force_get fw = 
   let par_fw = parent fw in 
   let u_files=Fwc_with_small_details.usual_compilable_files par_fw 
-  and small_details = Fwg_with_small_details.small_details_in_files par_fw in 
+  and small_details = Fwc_with_small_details.small_details_in_files par_fw in 
   Fw_module_small_details.modularize_from_compilable_files_and_small_details u_files small_details ;;
  let get fw = 
    let idx = index fw in 
@@ -1104,7 +1104,8 @@ let archived_mlx_paths fw = List.filter_map (
      then let full = Dfn_join.root_to_rootless (root fw) rl in 
            Some(Dfn_full.to_absolute_path full)
      else None   
-) (Fwc_with_archives.archived_files (Fwg_with_small_details.parent(parent fw)));;
+) (Fwc_with_small_details.Inherited.archived_files (parent fw));;
+
 
 let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 
