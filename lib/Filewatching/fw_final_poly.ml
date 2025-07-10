@@ -12,8 +12,8 @@ type t =
   |Watcher of Fwc_file_watcher.t
   |With_archives of Fwc_with_archives.t
   |With_dependencies of Fwc_with_dependencies.t
-  |With_batch_compilation of Fwg_with_batch_compilation.t
-  |With_githubbing of Fwg_with_githubbing.t
+  |With_batch_compilation of Fwc_with_batch_compilation.t
+  |With_githubbing of Fwc_with_githubbing.t
 ;;
 
 
