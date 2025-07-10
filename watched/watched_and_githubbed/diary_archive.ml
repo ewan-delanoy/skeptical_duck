@@ -103,7 +103,7 @@ let cg1 = Fwc_with_githubbing.to_concrete_object g1 ;;
 
 let g2 = Fwc_with_githubbing.of_concrete_object cg1 ;;
 
-let test1 = Fwc_with_githubbing.Field.test_equality g1 g2 ;;
+let test1 = Fwc_with_githubbing.Inherited.test_equality g1 g2 ;;
 
 (* Step 17 : Test if registering works *)
 
@@ -299,13 +299,13 @@ module Snip169=struct
   let f37 = Fwc_with_githubbing.replace_string ;;
   let f38 = Fwc_with_githubbing.replace_value ;;
   let f39 = Fwc_configuration.root ;;
-  let f40 = Fwc_with_githubbing.Field.set_gitpush_after_backup ;;
-  let f41 = Fwc_with_batch_compilation.Field.show_value_occurrences ;;
+  let f40 = Fwc_with_githubbing.Inherited.set_gitpush_after_backup ;;
+  let f41 = Fwc_with_batch_compilation.Inherited.show_value_occurrences ;;
   let f42 = Fwc_with_batch_compilation.start_debugging ;;
   let f43 = Fwc_with_batch_compilation.start_executing ;;
   let f44 = Fwc_configuration.test_for_admissibility ;;
   let f45 = Fwc_with_githubbing.to_concrete_object ;;
-  let f46 = Fwc_with_githubbing.Field.to_fw_configuration ;;
+  let f46 = Fwc_with_githubbing.Inherited.to_fw_configuration ;;
   let f47 = Fwg_with_githubbing.github_configuration ;;
   let f48 = Fwc_with_batch_compilation.up_to_date_elesses ;;
   let f49 = Fwc_with_archives.usual_compilable_files ;;

@@ -4,9 +4,11 @@
 
 *)
    
+type t = Fwg_with_batch_compilation.t ;;
+
 exception Rename_string_or_value_exn of string ;;
 
-module Field = struct
+module Inherited = struct
 
   module Parent = Fwc_with_dependencies ;;
 
@@ -126,7 +128,7 @@ end;;
                "cmos_for_ocamldebug.txt";;
   let parent fw = Fwg_with_batch_compilation.parent fw;;
   let get_cmpl_results fw = Fwg_with_batch_compilation.last_compilation_result_for_module fw ;;
-  let set_cmpl_results fw new_list = Field.set_last_compilation_result fw new_list ;; 
+  let set_cmpl_results fw new_list = Inherited.set_last_compilation_result fw new_list ;; 
   
      
   let last_compilation_result_for_module fw mn = 
@@ -148,7 +150,7 @@ end;;
     set_cmpl_results fw new_list_of_cmpl_results ;;
   
   let preq_types_with_extra_info fw =
-      let root = Field.root fw  in 
+      let root = Inherited.root fw  in 
       Image.image (fun middle->
        let mn = Dfn_middle.to_module middle in 
        (Dfn_join.root_to_middle root middle,last_compilation_result_for_module fw mn)
@@ -224,7 +226,7 @@ end;;
       "install_printer "^(String.capitalize_ascii s)^".print_out"
     ) printable_deps in 
     let full_text = String.concat "\n" (temp1@temp2) in 
-    let ppodbg_path = ocamldebug_printersfile_path (Field.root fw) in 
+    let ppodbg_path = ocamldebug_printersfile_path (Inherited.root fw) in 
     Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
   
   let dependencies_inside_shaft cmod fw (opt_modnames,opt_rootless_path)=
@@ -233,7 +235,7 @@ end;;
      |Compilation_mode_t.Debug
      |Compilation_mode_t.Executable->let rootless_path=Option.get opt_rootless_path in 
          let full_path=Absolute_path.of_string(
-          (Dfa_root.connectable_to_subpath (Field.root fw))^rootless_path) in 
+          (Dfa_root.connectable_to_subpath (Inherited.root fw))^rootless_path) in 
          let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
          let nm_deps=modules_with_their_ancestors fw nm_direct_deps in 
          let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_dependencies.dep_ordered_modules (parent fw)) in 
@@ -311,7 +313,7 @@ end;;
   
   
   let clean_debug_dir fw=
-    let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Inherited.root fw) in
     let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath
        (Coma_constant.debug_build_subdir)) in 
     Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
@@ -323,7 +325,7 @@ end;;
   
   let start_debugging fw=
     let  _=clean_debug_dir fw in
-    let ppodbg_path = ocamldebug_printersfile_path (Field.root fw) in 
+    let ppodbg_path = ocamldebug_printersfile_path (Inherited.root fw) in 
     let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
     let cmds=Ocaml_target_making.list_of_commands_for_ternary_feydeau Compilation_mode_t.Debug fw debugged_file_path in 
     let answer=Unix_command.conditional_multiple_uc cmds in 
@@ -344,7 +346,7 @@ end;;
     answer;;   
      
   let clean_exec_dir fw=
-    let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
+    let s_root=Dfa_root.connectable_to_subpath(Inherited.root fw) in
     let s_exec_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.exec_build_subdir)) in 
     Unix_command.uc("rm -f "^s_exec_dir^"*.cm*"^" "^s_exec_dir^"*.ocaml_executable"^" "^s_exec_dir^"*.o");;
      
@@ -385,23 +387,23 @@ end;;
       let (new_parent,removed_files) = Fwc_with_dependencies.forget_modules (parent fw) mod_names in  
      let temp1 = Image.image Dfa_module.to_line mod_names in 
      let temp2 = Cartesian.product temp1 [".cm*";".d.cm*";".caml_debuggable"] in 
-     let s_root=Dfa_root.connectable_to_subpath(Field.root fw) in
+     let s_root=Dfa_root.connectable_to_subpath(Inherited.root fw) in
      let s_build_dir=s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.usual_build_subdir)) in 
      let _=Image.image
                       (fun (mname,edg)->
                        let cmd="rm -f "^s_build_dir^mname^edg in
                        Unix_command.uc(cmd))
                       temp2 in
-      (Field.set_parent fw new_parent,removed_files);;
+      (Inherited.set_parent fw new_parent,removed_files);;
    
    let remove_files fw rootless_paths=
       let (new_parent,_)=Fwc_with_dependencies.remove_files (parent fw) rootless_paths in   
-      Field.set_parent fw new_parent ;;   
+      Inherited.set_parent fw new_parent ;;   
    
    let inspect_and_update fw =
       let (new_parent,((_changed_archived_compilables,changed_usual_compilables),_,changed_files))
          =Fwc_with_dependencies.inspect_and_update (parent fw) in   
-      (Field.set_parent fw new_parent,(changed_usual_compilables,changed_files));;
+      (Inherited.set_parent fw new_parent,(changed_usual_compilables,changed_files));;
 
    let of_fw_with_dependencies fw_with_deps = 
     Fwg_with_batch_compilation.make fw_with_deps 
@@ -441,7 +443,7 @@ end;;
   
    let relocate_module_to fw mod_name new_subdir=
       let (new_parent,replacements)=Fwc_with_dependencies.relocate_module_to (parent fw) (mod_name,new_subdir) in   
-      (Field.set_parent fw new_parent,replacements) ;;
+      (Inherited.set_parent fw new_parent,replacements) ;;
    
    let rename_module fw old_middle_name new_nonslashed_name=
      let old_nm=Dfn_middle.to_module old_middle_name in
@@ -465,7 +467,7 @@ end;;
            else old_pair    
       ) old_list_of_cmpl_results in   
       let fw2 = Fwg_with_batch_compilation.make new_parent new_list_of_cmpl_results in 
-      let root_dir=Field.root fw in 
+      let root_dir=Inherited.root fw in 
       let s_root=Dfa_root.connectable_to_subpath root_dir in   
       let s_build_dir=Dfa_subdirectory.connectable_to_subpath (Coma_constant.usual_build_subdir) in  
       let _=Unix_command.uc
@@ -479,14 +481,14 @@ end;;
    let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,extra)=Fwc_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
-         (Field.set_parent fw new_parent,extra) ;;
+         (Inherited.set_parent fw new_parent,extra) ;;
    
     let replace_string fw old_s new_s =
          let old_parent = parent fw in 
          let (new_parent,(changes1,all_changed_files)) = Fwc_with_dependencies.replace_string old_parent (old_s,new_s) in 
          let changed_rootlesses = Image.image fst changes1 in 
          let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-         (Field.set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
+         (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
     
     
     let replace_value fw ((preceding_files,path),(old_v,new_v)) =
@@ -494,7 +496,7 @@ end;;
           let (new_parent,(u_changes,all_changes)) = Fwc_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
           let changed_rootlesses = Image.image fst u_changes in 
           let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-          (Field.set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
+          (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
 
 
      
@@ -537,7 +539,7 @@ let replace_value = Private.replace_value ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
 let to_concrete_object = Private.Crobj.to_concrete_object ;;
-let to_fw_configuration = Field.to_fw_configuration;;
+let to_fw_configuration = Inherited.to_fw_configuration;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 
 let usual_recompile = Private.usual_recompile ;;  

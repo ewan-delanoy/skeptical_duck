@@ -34,7 +34,7 @@ let make fw_with_deps lcr = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fwg_with_dependencies.t;
+  _parent : Fwc_with_dependencies.t;
   last_compilation_result_for_module : ((Dfa_module_t.t * bool) list);
 } ;;
 

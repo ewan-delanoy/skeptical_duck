@@ -24,8 +24,8 @@ let all_endinglesses final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_endinglesses" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_endinglesses" )
   |With_dependencies (fw) -> Fwc_with_dependencies.all_endinglesses fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_endinglesses fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_endinglesses fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.all_endinglesses fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.all_endinglesses fw ;;
 
 let all_moduled_mlx_files final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.all_moduled_mlx_files" )
@@ -33,8 +33,8 @@ let all_moduled_mlx_files final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_moduled_mlx_files" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_moduled_mlx_files" )
   |With_dependencies (fw) -> Fwc_with_dependencies.all_moduled_mlx_files fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_moduled_mlx_files fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_moduled_mlx_files fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.all_moduled_mlx_files fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.all_moduled_mlx_files fw ;;
 
 let all_subdirectories final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.all_subdirectories" )
@@ -42,8 +42,8 @@ let all_subdirectories final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.all_subdirectories" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.all_subdirectories" )
   |With_dependencies (fw) -> Fwc_with_dependencies.all_subdirectories fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.all_subdirectories fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.all_subdirectories fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.all_subdirectories fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.all_subdirectories fw ;;
 
 let ancestors_for_module final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.ancestors_for_module" )
@@ -51,8 +51,8 @@ let ancestors_for_module final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.ancestors_for_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.ancestors_for_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.ancestors_for_module fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ancestors_for_module fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.ancestors_for_module fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.ancestors_for_module fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.ancestors_for_module fw mn ;;
 
 let below final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.below" )
@@ -60,8 +60,8 @@ let below final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.below" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.below" )
   |With_dependencies (fw) -> Fwc_with_dependencies.below fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.below fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.below fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.below fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.below fw mn ;;
 
 let check_that_no_change_has_occurred final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.check_that_no_change_has_occurred" )
@@ -69,8 +69,8 @@ let check_that_no_change_has_occurred final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.check_that_no_change_has_occurred" )
   |With_archives (fw) -> Fwc_with_archives.check_that_no_change_has_occurred fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.check_that_no_change_has_occurred fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.check_that_no_change_has_occurred fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.check_that_no_change_has_occurred fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.check_that_no_change_has_occurred fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw ;;
 
 let clean_debug_dir final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.clean_debug_dir" )
@@ -79,7 +79,7 @@ let clean_debug_dir final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_debug_dir" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_debug_dir" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_debug_dir fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.clean_debug_dir fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.clean_debug_dir fw ;;
 
 let clean_exec_dir final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.clean_exec_dir" )
@@ -88,7 +88,7 @@ let clean_exec_dir final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_exec_dir" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_exec_dir" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_exec_dir fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.clean_exec_dir fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.clean_exec_dir fw ;;
 
 let decipher_module final_fw capitalized_or_not_x = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.decipher_module" )
@@ -96,8 +96,8 @@ let decipher_module final_fw capitalized_or_not_x = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.decipher_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.decipher_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.decipher_module fw capitalized_or_not_x
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.decipher_module fw capitalized_or_not_x
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.decipher_module fw capitalized_or_not_x ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.decipher_module fw capitalized_or_not_x
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.decipher_module fw capitalized_or_not_x ;;
 
 let decipher_path final_fw x = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.decipher_path" )
@@ -105,8 +105,8 @@ let decipher_path final_fw x = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.decipher_path" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.decipher_path" )
   |With_dependencies (fw) -> Fwc_with_dependencies.decipher_path fw x
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.decipher_path fw x
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.decipher_path fw x ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.decipher_path fw x
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.decipher_path fw x ;;
 
 let dep_ordered_modules final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.dep_ordered_modules" )
@@ -114,8 +114,8 @@ let dep_ordered_modules final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.dep_ordered_modules" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.dep_ordered_modules" )
   |With_dependencies (fw) -> Fwc_with_dependencies.dep_ordered_modules fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.dep_ordered_modules fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.dep_ordered_modules fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.dep_ordered_modules fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.dep_ordered_modules fw ;;
 
 let directly_below final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.directly_below" )
@@ -123,8 +123,8 @@ let directly_below final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.directly_below" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.directly_below" )
   |With_dependencies (fw) -> Fwc_with_dependencies.directly_below fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.directly_below fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.directly_below fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.directly_below fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.directly_below fw mn ;;
 
 let direct_fathers_for_module final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.direct_fathers_for_module" )
@@ -132,8 +132,8 @@ let direct_fathers_for_module final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.direct_fathers_for_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.direct_fathers_for_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.direct_fathers_for_module fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.direct_fathers_for_module fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.direct_fathers_for_module fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.direct_fathers_for_module fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.direct_fathers_for_module fw mn ;;
 
 let duplicate_module final_fw old_t1 old_t2 = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.duplicate_module" )
@@ -141,8 +141,8 @@ let duplicate_module final_fw old_t1 old_t2 = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.duplicate_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.duplicate_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.duplicate_module fw old_t1 old_t2
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.duplicate_module fw old_t1 old_t2
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.duplicate_module fw old_t1 old_t2 ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.duplicate_module fw old_t1 old_t2
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.duplicate_module fw old_t1 old_t2 ;;
 
 let endingless_at_module final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.endingless_at_module" )
@@ -150,8 +150,8 @@ let endingless_at_module final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.endingless_at_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.endingless_at_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.endingless_at_module fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.endingless_at_module fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.endingless_at_module fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.endingless_at_module fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.endingless_at_module fw mn ;;
 
 let find_subdir_from_suffix final_fw possibly_slashed_suffix = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.find_subdir_from_suffix" )
@@ -159,8 +159,8 @@ let find_subdir_from_suffix final_fw possibly_slashed_suffix = match final_fw wi
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.find_subdir_from_suffix" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.find_subdir_from_suffix" )
   |With_dependencies (fw) -> Fwc_with_dependencies.find_subdir_from_suffix fw possibly_slashed_suffix
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.find_subdir_from_suffix fw possibly_slashed_suffix
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.find_subdir_from_suffix fw possibly_slashed_suffix ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.find_subdir_from_suffix fw possibly_slashed_suffix
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.find_subdir_from_suffix fw possibly_slashed_suffix ;;
 
 let forget_modules final_fw mods = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.forget_modules" )
@@ -199,7 +199,7 @@ let gitpush_after_backup final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.gitpush_after_backup" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.gitpush_after_backup" )
   |With_batch_compilation _ -> raise ( Absent_method "Fw_with_batch_compilation.gitpush_after_backup" )
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.gitpush_after_backup fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.gitpush_after_backup fw
  ;;
 
 let ignored_files final_fw  = match final_fw with 
@@ -208,8 +208,8 @@ let ignored_files final_fw  = match final_fw with
   |Watcher (fw) -> Fwc_file_watcher.Inherited.ignored_files fw
   |With_archives (fw) -> Fwc_with_archives.Inherited.ignored_files fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.ignored_files fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_files fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_files fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.ignored_files fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.ignored_files fw ;;
 
 let ignored_subdirectories final_fw  = match final_fw with 
   |Configuration (fw) -> Fwc_configuration.ignored_subdirectories fw
@@ -217,8 +217,8 @@ let ignored_subdirectories final_fw  = match final_fw with
   |Watcher (fw) -> Fwc_file_watcher.Inherited.ignored_subdirectories fw
   |With_archives (fw) -> Fwc_with_archives.Inherited.ignored_subdirectories fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.ignored_subdirectories fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.ignored_subdirectories fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.ignored_subdirectories fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.ignored_subdirectories fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.ignored_subdirectories fw ;;
 
 let latest_changes final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.latest_changes" )
@@ -226,8 +226,8 @@ let latest_changes final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.latest_changes" )
   |With_archives (fw) -> Fwc_with_archives.latest_changes fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.latest_changes fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.latest_changes fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.latest_changes fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.latest_changes fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.latest_changes fw ;;
 
 let list_values_from_module final_fw mn = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.list_values_from_module" )
@@ -235,8 +235,8 @@ let list_values_from_module final_fw mn = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.list_values_from_module" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.list_values_from_module" )
   |With_dependencies (fw) -> Fwc_with_dependencies.list_values_from_module fw mn
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.list_values_from_module fw mn
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.list_values_from_module fw mn ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.list_values_from_module fw mn
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.list_values_from_module fw mn ;;
 
 let modern_recompile final_fw changed_mods = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.modern_recompile" )
@@ -245,7 +245,7 @@ let modern_recompile final_fw changed_mods = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.modern_recompile" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.modern_recompile" )
   |With_batch_compilation (fw) -> With_batch_compilation( Fwc_with_batch_compilation.modern_recompile fw changed_mods )
-  |With_githubbing (fw) -> With_githubbing( Fwc_with_githubbing.Field.modern_recompile fw changed_mods ) ;;
+  |With_githubbing (fw) -> With_githubbing( Fwc_with_githubbing.Inherited.modern_recompile fw changed_mods ) ;;
 
 
 let modules_using_value final_fw value_name = match final_fw with 
@@ -254,8 +254,8 @@ let modules_using_value final_fw value_name = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.modules_using_value" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.modules_using_value" )
   |With_dependencies (fw) -> Fwc_with_dependencies.modules_using_value fw value_name
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.modules_using_value fw value_name
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.modules_using_value fw value_name ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.modules_using_value fw value_name
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.modules_using_value fw value_name ;;
 
 let noncompilable_files final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.noncompilable_files" )
@@ -263,8 +263,8 @@ let noncompilable_files final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.noncompilable_files" )
   |With_archives (fw) -> Fwc_with_archives.noncompilable_files fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.noncompilable_files fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.noncompilable_files fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.noncompilable_files fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.noncompilable_files fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.noncompilable_files fw ;;
 
 let number_of_modules final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.number_of_modules" )
@@ -272,8 +272,8 @@ let number_of_modules final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.number_of_modules" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.number_of_modules" )
   |With_dependencies (fw) -> Fwc_with_dependencies.number_of_modules fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.number_of_modules fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.number_of_modules fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.number_of_modules fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.number_of_modules fw ;;
 
 let of_concrete_object crobj = With_githubbing( Fwc_with_githubbing.of_concrete_object crobj ) ;;
 let of_fw_config_and_github_config fw_config github_config = With_githubbing( Fwc_with_githubbing.of_fw_config_and_github_config fw_config github_config ) ;;
@@ -286,7 +286,7 @@ let preq_types_with_extra_info final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.preq_types_with_extra_info" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.preq_types_with_extra_info" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.preq_types_with_extra_info fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.preq_types_with_extra_info fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.preq_types_with_extra_info fw ;;
 
 let register_rootless_paths final_fw rootlesses = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.register_rootless_paths" )
@@ -348,8 +348,8 @@ let root final_fw  = match final_fw with
   |Watcher (fw) -> Fwc_file_watcher.Inherited.root fw
   |With_archives (fw) -> Fwc_with_archives.Inherited.root fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.root fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.root fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.root fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.root fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.root fw ;;
 
 let set_gitpush_after_backup final_fw gab = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.set_gitpush_after_backup" )
@@ -358,7 +358,7 @@ let set_gitpush_after_backup final_fw gab = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.set_gitpush_after_backup" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.set_gitpush_after_backup" )
   |With_batch_compilation _ -> raise ( Absent_method "Fw_with_batch_compilation.set_gitpush_after_backup" )
-  |With_githubbing (fw) -> With_githubbing( Fwc_with_githubbing.Field.set_gitpush_after_backup fw gab ) ;;
+  |With_githubbing (fw) -> With_githubbing( Fwc_with_githubbing.Inherited.set_gitpush_after_backup fw gab ) ;;
 
 let show_value_occurrences final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.show_value_occurrences" )
@@ -366,8 +366,8 @@ let show_value_occurrences final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.show_value_occurrences" )
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.show_value_occurrences" )
   |With_dependencies (fw) -> Fwc_with_dependencies.show_value_occurrences fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.show_value_occurrences fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.show_value_occurrences fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.show_value_occurrences fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.show_value_occurrences fw ;;
 
 let start_debugging final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.start_debugging" )
@@ -376,7 +376,7 @@ let start_debugging final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.start_debugging" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_debugging" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_debugging fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.start_debugging fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.start_debugging fw ;;
 
 let start_executing final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.start_executing" )
@@ -385,7 +385,7 @@ let start_executing final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.start_executing" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_executing" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_executing fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.start_executing fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.start_executing fw ;;
 
 
 let test_for_admissibility final_fw rl = match final_fw with 
@@ -394,8 +394,8 @@ let test_for_admissibility final_fw rl = match final_fw with
   |Watcher (fw) -> Fwc_file_watcher.Inherited.test_for_admissibility fw rl
   |With_archives (fw) -> Fwc_with_archives.Inherited.test_for_admissibility fw rl
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.test_for_admissibility fw rl
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.test_for_admissibility fw rl
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.test_for_admissibility fw rl ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.test_for_admissibility fw rl
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.test_for_admissibility fw rl ;;
 
 
 let to_concrete_object final_fw  = match final_fw with 
@@ -413,8 +413,8 @@ let to_fw_configuration final_fw  = match final_fw with
   |Watcher (fw) -> Fwc_file_watcher.Inherited.to_fw_configuration fw
   |With_archives (fw) -> Fwc_with_archives.Inherited.to_fw_configuration fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.to_fw_configuration fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.to_fw_configuration fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.to_fw_configuration fw  ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.to_fw_configuration fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.to_fw_configuration fw  ;;
 
 
 
@@ -425,7 +425,7 @@ let up_to_date_elesses final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.up_to_date_elesses" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.up_to_date_elesses" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.up_to_date_elesses fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.up_to_date_elesses fw ;;
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.up_to_date_elesses fw ;;
 
 let usual_compilable_files final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.usual_compilable_files" )
@@ -433,8 +433,8 @@ let usual_compilable_files final_fw  = match final_fw with
   |Watcher _ -> raise ( Absent_method "Fw_file_watcher.usual_compilable_files" )
   |With_archives (fw) -> Fwc_with_archives.usual_compilable_files fw
   |With_dependencies (fw) -> Fwc_with_dependencies.Inherited.usual_compilable_files fw
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Field.usual_compilable_files fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Field.usual_compilable_files fw ;;
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.usual_compilable_files fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.usual_compilable_files fw ;;
 
 let usual_recompile final_fw opt_comment = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.usual_recompile" )
