@@ -1,14 +1,36 @@
 (************************************************************************************************************************
-Snippet 173 : 
+Snippet 174 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 172 : Step in implementing a certain "Poor man's row polymorphism"
+Snippet 173 : Simple test
 ************************************************************************************************************************)
 
+module Snip173=struct
+
+  let outside =   ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/") ;;
+
+  let script_for_testing () =
+     let ap1 = Absolute_path.create_file_if_absent(outside^"za.ml")
+     and ap2 = Absolute_path.create_file_if_absent(outside^"zb.ml")
+     and ap3 = Absolute_path.create_file_if_absent(outside^"zc.ml") in 
+     (
+     Io.overwrite_with ap1 "let a = 3 ;;";
+     Io.overwrite_with ap2 "let b = Za.a + 4 ;;";
+     Io.overwrite_with ap3 "let c = 5 ;;";
+     ) ;; 
+      
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 172 : Step in implementing a certain "Poor man's row polymorphism"
+************************************************************************************************************************)
 module Snip172=struct
 
 (*
@@ -99,9 +121,9 @@ let extract_wg = function
 
 let g1 = extract_wg (!(Usual_coma_state.Private.main_ref)) ;;
 
-let cg1 = Fwc_with_githubbing.to_concrete_object g1 ;;
+let cg1 = Fwc_with_githubbing.Crobj.to_concrete_object g1 ;;
 
-let g2 = Fwc_with_githubbing.of_concrete_object cg1 ;;
+let g2 = Fwc_with_githubbing.Crobj.of_concrete_object cg1 ;;
 
 let test1 = Fwc_with_githubbing.Inherited.test_equality g1 g2 ;;
 
@@ -287,7 +309,7 @@ module Snip169=struct
   let f25 = Fwc_with_dependencies.modules_using_value ;;
   let f26 = Fwc_with_archives.noncompilable_files ;;
   let f27 = Fwc_with_dependencies.number_of_modules ;;
-  let f28 = Fwc_with_githubbing.of_concrete_object ;;
+  let f28 = Fwc_with_githubbing.Crobj.of_concrete_object ;;
   let f29 = Fwc_with_githubbing.of_fw_config_and_github_config ;;
   let f30 = Fwc_with_githubbing.of_fw_with_batch_compilation ;;
   let f31 = Fwc_with_githubbing.plunge_fw_config_with_github_config ;;
@@ -304,7 +326,7 @@ module Snip169=struct
   let f42 = Fwc_with_batch_compilation.start_debugging ;;
   let f43 = Fwc_with_batch_compilation.start_executing ;;
   let f44 = Fwc_configuration.test_for_admissibility ;;
-  let f45 = Fwc_with_githubbing.to_concrete_object ;;
+  let f45 = Fwc_with_githubbing.Crobj.to_concrete_object ;;
   let f46 = Fwc_with_githubbing.Inherited.to_fw_configuration ;;
   let f47 = Fwg_with_githubbing.github_configuration ;;
   let f48 = Fwc_with_batch_compilation.up_to_date_elesses ;;

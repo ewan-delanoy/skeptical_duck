@@ -93,32 +93,34 @@ module Inherited = struct
 
 end ;;  
 
-module Private = struct 
   
 module Crobj = struct 
-let salt = "Fwc_with_batch_compilation." ;;
-let label_for_parent = salt ^ "parent" ;;
-let label_for_last_compilation_result  = salt ^ "last_compilation_result" ;;
-    
-    
-let of_concrete_object ccrt_obj = 
-  let g=Concrete_object.get_record ccrt_obj in 
-  Fwg_with_batch_compilation.make 
-  (Fwc_with_dependencies.of_concrete_object (g label_for_parent))
-  (Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object  (g label_for_last_compilation_result))
-  ;;
-    
-let to_concrete_object fw = 
-  let items =  
-  [
-       label_for_parent, Fwc_with_dependencies.to_concrete_object ( Fwg_with_batch_compilation.parent fw ) ;
-       label_for_last_compilation_result, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object 
-        ( Fwg_with_batch_compilation.last_compilation_result_for_module fw ) ;
-  ] in 
-  Concrete_object_t.Record items ;;
-    
-    
+  let salt = "Fwc_with_batch_compilation." ;;
+  let label_for_parent = salt ^ "parent" ;;
+  let label_for_last_compilation_result  = salt ^ "last_compilation_result" ;;
+      
+      
+  let of_concrete_object ccrt_obj = 
+    let g=Concrete_object.get_record ccrt_obj in 
+    Fwg_with_batch_compilation.make 
+    (Fwc_with_dependencies.Crobj.of_concrete_object (g label_for_parent))
+    (Crobj_converter_combinator.to_pair_list Dfa_module.of_concrete_object Crobj_converter.bool_of_concrete_object  (g label_for_last_compilation_result))
+    ;;
+      
+  let to_concrete_object fw = 
+    let items =  
+    [
+         label_for_parent, Fwc_with_dependencies.Crobj.to_concrete_object ( Fwg_with_batch_compilation.parent fw ) ;
+         label_for_last_compilation_result, Crobj_converter_combinator.of_pair_list Dfa_module.to_concrete_object Crobj_converter.bool_to_concrete_object 
+          ( Fwg_with_batch_compilation.last_compilation_result_for_module fw ) ;
+    ] in 
+    Concrete_object_t.Record items ;;
+      
+      
 end;; 
+
+module Private = struct 
+
 
 
   let ocamldebug_printersfile_path root= 
@@ -524,8 +526,6 @@ let forget_modules = Private.forget_modules ;;
 let modern_recompile = Private.modern_recompile ;;
 let number_of_modules = Private.number_of_modules ;;
 let of_configuration = Private.of_configuration ;;
-
-let of_concrete_object = Private.Crobj.of_concrete_object ;;
 let of_fw_with_dependencies = Private.of_fw_with_dependencies ;;
 let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let preq_types_with_extra_info = Private.preq_types_with_extra_info ;;
@@ -538,7 +538,6 @@ let replace_string = Private.replace_string ;;
 let replace_value = Private.replace_value ;;
 let start_debugging = Private.start_debugging;;
 let start_executing = Private.start_executing ;;
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let to_fw_configuration = Inherited.to_fw_configuration;;
 let up_to_date_elesses = Private.up_to_date_elesses ;;
 let usual_batch = Private.Ocaml_target_making.usual_feydeau ;; 

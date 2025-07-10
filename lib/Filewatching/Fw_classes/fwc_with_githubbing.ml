@@ -116,6 +116,32 @@ module Inherited = struct
 end ;;  
 
 
+module Crobj = struct 
+  let salt = "Fwc_with_githubbing." ;;
+  let label_for_parent = salt ^ "parent" ;;
+  let label_for_github_config  = salt ^ "github_config" ;;
+  
+  
+  let of_concrete_object ccrt_obj = 
+    let g=Concrete_object.get_record ccrt_obj in 
+    Fwg_with_githubbing.make 
+     (Fwc_with_batch_compilation.Crobj.of_concrete_object (g label_for_parent))
+     (Fwc_github_configuration.Crobj.of_concrete_object (g label_for_github_config))
+    ;;
+  
+  let to_concrete_object fw = 
+   let items =  
+   [
+     label_for_parent, Fwc_with_batch_compilation.Crobj.to_concrete_object ( Fwg_with_githubbing.parent fw ) ;
+     label_for_github_config, Fwc_github_configuration.Crobj.to_concrete_object ( Fwg_with_githubbing.github_configuration fw ) ;
+   ] in 
+   Concrete_object_t.Record items ;;
+  
+  
+end;; 
+  
+   
+
 module Private = struct 
 
 let parent = Fwg_with_githubbing.parent ;; 
@@ -131,31 +157,6 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
 ~v_github_url:git_url
 ~v_encoding_protected_files:enc_files) ;;
 
-module Crobj = struct 
-let salt = "Fwc_with_githubbing." ;;
-let label_for_parent = salt ^ "parent" ;;
-let label_for_github_config  = salt ^ "github_config" ;;
-
-
-let of_concrete_object ccrt_obj = 
-  let g=Concrete_object.get_record ccrt_obj in 
-  make 
-   (Fwc_with_batch_compilation.of_concrete_object (g label_for_parent))
-   (Fwc_github_configuration.Crobj.of_concrete_object (g label_for_github_config))
-  ;;
-
-let to_concrete_object fw = 
- let items =  
- [
-   label_for_parent, Fwc_with_batch_compilation.to_concrete_object ( parent fw ) ;
-   label_for_github_config, Fwc_github_configuration.Crobj.to_concrete_object ( github_configuration fw ) ;
- ] in 
- Concrete_object_t.Record items ;;
-
-
-end;; 
-
- 
 
   let set_parent ~child ~new_parent = 
    make new_parent child ;;
@@ -277,7 +278,7 @@ end ;;
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
 let github_configuration = Fwg_with_githubbing.github_configuration ;;
-let of_concrete_object = Private.Crobj.of_concrete_object ;;
+
 let of_fw_with_batch_compilation =Private.usual_extension ;;
 let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
@@ -287,6 +288,5 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let usual_recompile = Private.usual_recompile ;;
 

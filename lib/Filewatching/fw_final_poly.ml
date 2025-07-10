@@ -275,7 +275,7 @@ let number_of_modules final_fw  = match final_fw with
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.number_of_modules fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.number_of_modules fw ;;
 
-let of_concrete_object crobj = With_githubbing( Fwc_with_githubbing.of_concrete_object crobj ) ;;
+let of_concrete_object crobj = With_githubbing( Fwc_with_githubbing.Crobj.of_concrete_object crobj ) ;;
 let of_fw_config_and_github_config fw_config github_config = With_githubbing( Fwc_with_githubbing.of_fw_config_and_github_config fw_config github_config ) ;;
 let of_fw_with_batch_compilation fw_batch backup_dir gab git_url enc_files = With_githubbing( Fwc_with_githubbing.of_fw_with_batch_compilation fw_batch backup_dir gab git_url enc_files ) ;;
 let plunge_fw_config_with_github_config fw_config github_config = With_githubbing( Fwc_with_githubbing.plunge_fw_config_with_github_config fw_config github_config ) ;;
@@ -405,7 +405,7 @@ let to_concrete_object final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.to_concrete_object" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.to_concrete_object" )
   |With_batch_compilation _ -> raise ( Absent_method "Fw_with_batch_compilation.to_concrete_object" )
-  |With_githubbing (fw) ->  Fwc_with_githubbing.to_concrete_object fw  ;;
+  |With_githubbing (fw) ->  Fwc_with_githubbing.Crobj.to_concrete_object fw  ;;
 
 let to_fw_configuration final_fw  = match final_fw with 
   |Configuration (fw)-> fw

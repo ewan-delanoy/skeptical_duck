@@ -448,6 +448,23 @@ lines_inside_or_outside_cee_comments txt3 ;;
      let new_text = insert_after_line_inside_text old_text ~line_number ~inserted_snippet in 
      Io.overwrite_with src_file new_text ;;   
 
+  let extract_ocaml_names_in_text full_text i j =
+    let subtext = interval full_text i j in 
+    let lines = lines subtext in
+    List.filter_map(fun line ->
+      if not (String.starts_with ~prefix:"let " line) 
+      then None 
+      else
+      let s= Cull_string.two_sided_cutting ("let ","") line in 
+      let i = String.index s ' ' in 
+      Some(Cull_string.beginning i s)
+    ) lines ;;
+
+    let extract_ocaml_names_in_file ap i j =
+      let full_text = Io.read_whole_file ap in 
+      extract_ocaml_names_in_text full_text i j;;  
+
+
 
   end ;;   
 
@@ -469,6 +486,10 @@ lines_inside_or_outside_cee_comments txt3 ;;
   
   *)
 
+  let extract_ocaml_names_in_file = Private.extract_ocaml_names_in_file ;;
+
+  let extract_ocaml_names_in_text = Private.extract_ocaml_names_in_text ;;
+  
   let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
 
 

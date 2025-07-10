@@ -49,6 +49,26 @@ module Inherited = struct
 
 end ;;  
 
+module Crobj = struct 
+
+  module Private = struct 
+
+    let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
+    let index fw = Fwg_with_dependencies.index_for_caching fw ;; 
+    let parent fw = Fwg_with_dependencies.parent fw ;;
+
+  end ;;   
+
+  let of_concrete_object crobj = 
+      let instance_idx = Fw_indexer.create_new_instance () in   
+      Fwg_with_dependencies.make 
+        (Fwc_with_small_details.Crobj.of_concrete_object crobj) (Private.expand_index instance_idx) ;;
+
+  let to_concrete_object fw = Fwc_with_small_details.Crobj.to_concrete_object 
+      (Private.parent fw) ;;
+
+end ;;  
+
 
 
 module Private = struct
@@ -61,17 +81,6 @@ module Private = struct
     fw_with_archives (expand_index instance_idx) ;;
 
 
-  module Crobj = struct 
-
-  let of_concrete_object crobj = 
-      let instance_idx = Fw_indexer.create_new_instance () in   
-      Fwg_with_dependencies.make 
-        (Fwc_with_small_details.Crobj.of_concrete_object crobj) (expand_index instance_idx) ;;
-
-  let to_concrete_object fw = Fwc_with_small_details.Crobj.to_concrete_object 
-      (parent fw) ;;
-
-  end ;;  
 
 
 (* Pre-processed text starts here *)
@@ -1323,7 +1332,6 @@ let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.Needed_libs.get fw) ;;
 let number_of_modules = Private.number_of_modules ;;
-let of_concrete_object = Private.Crobj.of_concrete_object ;; 
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
@@ -1339,5 +1347,4 @@ let replace_string = Private.Exit.replace_string ;;
 let replace_value = Private.Exit.replace_value ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
-let to_concrete_object = Private.Crobj.to_concrete_object ;;
 let usual_compilable_files fw = Fwc_with_small_details.usual_compilable_files (Private.parent fw) ;;
