@@ -8,52 +8,54 @@ exception Rename_string_or_value_exn of string ;;
 
 module Field = struct
 
-  module Parent = Fwc_with_dependencies.Field ;;
+  module Parent = Fwc_with_dependencies ;;
+
+  module Ancestry = Parent.Inherited ;;
   let parent = Fwg_with_batch_compilation.parent ;;
 
-  let all_endinglesses fw = Fwc_with_dependencies.all_endinglesses (parent fw) ;;
-  let all_moduled_mlx_files fw = Fwc_with_dependencies.all_moduled_mlx_files (parent fw) ;;
-  let all_subdirectories fw = Fwc_with_dependencies.all_subdirectories (parent fw) ;;
-  let ancestors_for_module fw = Fwc_with_dependencies.ancestors_for_module (parent fw) ;;
-  let below fw = Fwc_with_dependencies.below (parent fw) ;;
+  let all_endinglesses fw = Parent.all_endinglesses (parent fw) ;;
+  let all_moduled_mlx_files fw = Parent.all_moduled_mlx_files (parent fw) ;;
+  let all_subdirectories fw = Parent.all_subdirectories (parent fw) ;;
+  let ancestors_for_module fw = Parent.ancestors_for_module (parent fw) ;;
+  let below fw = Parent.below (parent fw) ;;
  
 
   let check_module_sequence_for_forgettability fw =
-    Fwc_with_dependencies.check_module_sequence_for_forgettability (parent fw) ;;
+    Parent.check_module_sequence_for_forgettability (parent fw) ;;
 
-  let check_that_no_change_has_occurred fw = Parent.check_that_no_change_has_occurred(parent fw)  ;;  
+  let check_that_no_change_has_occurred fw = Ancestry.check_that_no_change_has_occurred(parent fw)  ;;  
   
 
-  let decipher_module fw = Fwc_with_dependencies.decipher_module (parent fw) ;;
-  let decipher_path fw = Fwc_with_dependencies.decipher_path (parent fw) ;;
-  let dep_ordered_modules fw = Fwc_with_dependencies.dep_ordered_modules (parent fw) ;;
-  let directly_below fw = Fwc_with_dependencies.directly_below (parent fw) ;;
-  let direct_fathers_for_module fw = Fwc_with_dependencies.direct_fathers_for_module (parent fw) ;;
-  let duplicate_module fw = Fwc_with_dependencies.duplicate_module (parent fw) ;;
-  let endingless_at_module fw = Fwc_with_dependencies.endingless_at_module (parent fw) ;;
-  let find_subdir_from_suffix fw = Fwc_with_dependencies.find_subdir_from_suffix (parent fw) ;;
- 
+  let decipher_module fw = Parent.decipher_module (parent fw) ;;
+  let decipher_path fw = Parent.decipher_path (parent fw) ;;
+  let dep_ordered_modules fw = Parent.dep_ordered_modules (parent fw) ;;
+  let directly_below fw = Parent.directly_below (parent fw) ;;
+  let direct_fathers_for_module fw = Parent.direct_fathers_for_module (parent fw) ;;
+  let duplicate_module fw = Parent.duplicate_module (parent fw) ;;
+  let endingless_at_module fw = Parent.endingless_at_module (parent fw) ;;
+  let find_subdir_from_suffix fw = Parent.find_subdir_from_suffix (parent fw) ;;
   
-  let ignored_files fw = Parent.ignored_files (parent fw) ;;
-  let ignored_subdirectories fw = Parent.ignored_subdirectories (parent fw) ;;
   
-
-  let  latest_changes fw = Parent.latest_changes(parent fw)  ;;   
-
+  let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
+  let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
+  
+  
+  let  latest_changes fw = Ancestry.latest_changes(parent fw)  ;;   
+  
   let list_values_from_module fw =
-      Fwc_with_dependencies.list_values_from_module (parent fw) ;;
+      Parent.list_values_from_module (parent fw) ;;
       
   let modules_using_value fw =
-        Fwc_with_dependencies.modules_using_value (parent fw) ;;    
-
-  let  noncompilable_files fw = Parent.noncompilable_files(parent fw)  ;;  
-
-
+        Parent.modules_using_value (parent fw) ;;    
+  
+  let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;;  
+  
+  
   let number_of_modules fw =
-      Fwc_with_dependencies.number_of_modules (parent fw) ;;
-
-  let root fw = Parent.root (parent fw) ;;
-
+      Parent.number_of_modules (parent fw) ;;
+  
+  let root fw = Ancestry.root (parent fw) ;;
+  
   let set_parent fw fw_with_deps =
     Fwg_with_batch_compilation.make fw_with_deps 
        (Fwg_with_batch_compilation.last_compilation_result_for_module fw) ;;
@@ -61,13 +63,13 @@ module Field = struct
   let set_last_compilation_result fw new_lcr =
     Fwg_with_batch_compilation.make (Fwg_with_batch_compilation.parent fw)
        new_lcr ;;    
-
+  
   let show_value_occurrences fw =
-    Fwc_with_dependencies.show_value_occurrences (parent fw) ;;
+    Parent.show_value_occurrences (parent fw) ;;
     
     let test_equality fw1 fw2 = 
       (
-        Fwc_with_dependencies.Field.test_equality (parent fw1) (parent fw2)
+        Parent.Inherited.test_equality (parent fw1) (parent fw2)
       )
       @
       (
@@ -78,13 +80,14 @@ module Field = struct
           (Fwg_with_batch_compilation.last_compilation_result_for_module fw2))
         ]
       ) ;;
-
-  let test_for_admissibility fw = Parent.test_for_admissibility (parent fw) ;;
-
-  let to_fw_configuration fw = Parent.to_fw_configuration (parent fw) ;;
-
-  let  usual_compilable_files fw = Parent.usual_compilable_files(parent fw)  ;; 
-
+  
+  let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
+  
+  let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
+  
+  let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;; 
+  
+  
 
 end ;;  
 

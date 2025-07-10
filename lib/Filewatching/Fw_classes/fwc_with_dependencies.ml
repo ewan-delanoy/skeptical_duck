@@ -4,13 +4,14 @@
 
 *)
 
+type t = Fwg_with_dependencies.t ;; 
 
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
 exception Find_subdir_from_suffix_exn of string * (Dfa_subdirectory_t.t list) ;;
 exception Module_not_found_exn of string ;;
 
-module Field = struct 
+module Inherited = struct 
 
   module Ancestry = Fwc_with_small_details.Inherited ;;
   let parent = Fwg_with_dependencies.parent ;;
@@ -1063,7 +1064,7 @@ end ;;
    let temp3=List.flatten temp2 in 
    List_again.nonredundant_version temp3;;
   
-  let root fw = Field.root  (fw) ;;
+  let root fw = Inherited.root  (fw) ;;
 
   let subdir_for_module fw mn =Fw_module_small_details.subdirectory (details_for_module fw mn) ;;
 
