@@ -57,3 +57,8 @@ let combine_two_congruences (r1,a1) (r2,a2) =
 let combine_congruences = function
   []->(0,1)
  |a::b->List.fold_left combine_two_congruences a b;;
+
+let congruence_image (big_r,m) ~other_modulus =
+  let g = gcd m other_modulus in 
+  let r = big_r mod g in 
+  Int_range.scale (fun t->r+t*g) 0 ((other_modulus/g)-1) ;; 
