@@ -4,11 +4,30 @@
 
 *)
 
+
+module Private = struct 
+
+       let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
+       let to_list to_a crobj= Image.image to_a (Concrete_object.unwrap_list crobj);;
+         
+
+
+end ;;       
+
 let of_array of_a arr= Concrete_object_t.Array(Array.to_list(Array.map of_a arr));;
 let to_array to_a crobj= Array.map to_a (Concrete_object.unwrap_array crobj);;
 
-let of_list of_a l= Concrete_object_t.List(Image.image of_a l);;
-let to_list to_a crobj= Image.image to_a (Concrete_object.unwrap_list crobj);;
+
+let of_option of_a opt = match opt with
+ None -> Private.of_list of_a []
+ |Some x -> Private.of_list of_a [x] ;;
+
+let to_option to_a crobj = match Private.to_list to_a crobj with 
+  [] -> None 
+  | x :: _ -> Some x ;;
+
+let of_list = Private.of_list ;;
+let to_list = Private.to_list ;;
    
    
 let of_pair of_a of_b (a,b)=Concrete_object_t.Uple[of_a a;of_b b];;
