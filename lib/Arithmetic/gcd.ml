@@ -54,4 +54,6 @@ let combine_two_congruences (r1,a1) (r2,a2) =
   and common_modulus = lcm a1 a2 in 
   (common_remainder mod common_modulus, common_modulus) ;;
 
-
+let combine_congruences = function
+  []->(0,1)
+ |a::b->List.fold_left combine_two_congruences a b;;
