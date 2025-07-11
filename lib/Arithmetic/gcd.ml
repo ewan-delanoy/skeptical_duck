@@ -4,6 +4,9 @@
 
 *)
 
+
+exception Combine_two_congruences_exn of (int * int) * (int * int) * (int * int) ;; 
+
 module Private = struct 
 
 let rec helper_for_complete_gcd 
@@ -40,4 +43,15 @@ let lcm a b=(a*b)/(gcd a b);;
 let lcm_for_many=function
 []->1
 |a::b->List.fold_left lcm a b;;
+
+let combine_two_congruences (r1,a1) (r2,a2) =
+  let (_c1,c2,g) = complete_gcd a1 a2 in 
+  if ((r1-r2) mod g)<>0 
+  then raise(Combine_two_congruences_exn((r1,a1),(r2,a2),(r1-r2,g))) 
+  else
+  let r = (r1-r2)/g in 
+  let common_remainder = c2*r*a2+r2 
+  and common_modulus = lcm a1 a2 in 
+  (common_remainder mod common_modulus, common_modulus) ;;
+
 
