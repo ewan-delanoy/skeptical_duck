@@ -1,14 +1,97 @@
 (************************************************************************************************************************
-Snippet 174 : 
+Snippet 175 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 173 : Simple test
+Snippet 174 : Musings on twin primes
 ************************************************************************************************************************)
 
+module Snip174=struct
+
+  let i_order = Total_ordering.for_integers ;;
+  let i_sort = Ordered.sort  i_order ;;
+  
+  
+  let is_a_twin_prime =Memoized.make(fun n ->
+      (Primes.is_prime n) && (Primes.is_prime(n+2))
+  ) ;;
+  
+  let tp_list = Memoized.make (fun n->
+      let candidates = Int_range.range (n+1) (n*n-2) in 
+      List.filter is_a_twin_prime candidates
+  );;
+  
+  let upper_bound = 100 ;;
+  
+  module Crocodile = struct 
+  
+  type t = {
+     elements : (int * int) list ;
+     whole : int * int
+  } ;;
+  
+  let enlarge croc (r,m) = {
+     elements = (croc.elements) @ [r,m] ;
+     whole = Gcd.combine_two_congruences (croc.whole) (r,m)
+  } ;;
+  
+  let constructor elts = {
+     elements = elts ;
+     whole = Gcd.combine_congruences elts
+  } ;;
+  
+  
+  let check croc =
+     let n = snd(List.hd(List.rev(croc.elements))) 
+     and (r0,m0) = croc.whole in 
+     let temp1 = Int_range.scale (
+       fun m->(m,List.filter (fun x->x mod m0=r0) (tp_list m))
+     ) n upper_bound in 
+     List.filter_map (fun (m,l)->
+        if l=[] then Some m else None) temp1 ;;
+  
+  let to_string croc =
+     String.concat "-" (Image.image (fun (x,y)->string_of_int x)
+       croc.elements) ;;
+  
+  let image croc m =
+     Gcd.congruence_image croc.whole ~other_modulus:m ;;
+  
+  let descendants_for_one m croc =
+     let temp1 = image croc m in 
+     let temp2 = Image.image ( 
+      fun r->enlarge croc (r,m)
+     ) temp1 in  
+     List.filter (fun cr->check(cr)=[]) temp2 ;;
+  
+  let descendants m ll =
+     List.flatten(Image.image (descendants_for_one m) ll) ;;    
+  
+  let print_out (fmt:Format.formatter) ap=
+     Format.fprintf fmt "@[%s@]" (to_string ap);;
+  
+  end ;;   
+  
+  (* install_printer Crocodile.print_out ;; *)
+  
+  let croc1 = Crocodile.constructor [1,2;2,3] ;;
+  
+  let u1 = [croc1] ;;
+  
+  let u2 = Crocodile.descendants 4 u1 ;;
+     
+  let u3 = Crocodile.descendants 5 u2;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 173 : Simple test
+************************************************************************************************************************)
 module Snip173=struct
 
   let outside =   ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/") ;;

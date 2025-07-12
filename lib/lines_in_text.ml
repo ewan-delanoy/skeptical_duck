@@ -464,7 +464,29 @@ lines_inside_or_outside_cee_comments txt3 ;;
       let full_text = Io.read_whole_file ap in 
       extract_ocaml_names_in_text full_text i j;;  
 
+  let is_a_lowercase_letter = (
+     fun c -> let i = int_of_char c in 
+     (97<=i) && (i<=122)
+  ) ;;
 
+  let extract_field_names_from_type_definition_in_text full_text i j =
+        let subtext = interval full_text i j in 
+        let lines = lines subtext in
+        List.filter_map(fun untrimmed_line ->
+          let line = Cull_string.trim_spaces untrimmed_line in 
+          if not (is_a_lowercase_letter(String.get line 0)) 
+          then None 
+          else
+          match Strung.char_finder_from_inclusive_opt
+          (fun c->List.mem c [' ';':']) line 1 with 
+          None -> None
+          |Some i->
+          Some(Cull_string.beginning (i-1) line)
+        ) lines ;;
+        
+  let extract_field_names_from_type_definition_in_file ap i j =
+    let full_text = Io.read_whole_file ap in 
+    extract_field_names_from_type_definition_in_text full_text i j;;  
 
   end ;;   
 
@@ -485,6 +507,12 @@ lines_inside_or_outside_cee_comments txt3 ;;
   enhanced_indexed_lines "a\nb\n";;
   
   *)
+
+  let extract_field_names_from_type_definition_in_file = 
+    Private.extract_field_names_from_type_definition_in_file ;;
+
+  let extract_field_names_from_type_definition_in_text = 
+    Private.extract_field_names_from_type_definition_in_text ;;  
 
   let extract_ocaml_names_in_file = Private.extract_ocaml_names_in_file ;;
 
