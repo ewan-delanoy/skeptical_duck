@@ -12,6 +12,54 @@ exception Nonadmissible_acolytes_list of Dfn_rootless_t.t list ;;
 exception Several_locations_for_one_ending of (Dfa_ending_t.t * Dfn_rootless_t.t list) list;;
 exception Several_subdirectories_for_one_ending of Dfn_rootless_t.t * Dfn_rootless_t.t ;;
 
+module Crobj = struct 
+
+   let salt = "Fw_module_small_details_t." ;;
+   let used_modules_label                = salt ^ "used_modules" ;;
+   let used_libraries_label              = salt ^ "used_libraries" ;;
+   let has_printer_label                 = salt ^ "has_printer" ;;
+   let subdirectory_label                = salt ^ "subdirectory" ;;
+   let principal_ending_label            = salt ^ "principal_ending" ;;
+   let mli_present_label                 = salt ^ "mli_present" ;;
+   let principal_modification_time_label = salt ^ "principal_modification_time" ;;
+   let mli_modification_time_label       = salt ^ "mli_modification_time" ;;
+   
+   let of_concrete_object ccrt_obj = 
+     let g=Concrete_object.get_record ccrt_obj 
+     and cl = Crobj_converter_combinator.to_list 
+     and co = Crobj_converter_combinator.to_option in
+    {
+      Fw_module_small_details_t.used_modules = cl Dfa_module.of_concrete_object   (g used_modules_label);
+      used_libraries = cl Ocaml_library.of_concrete_object   (g used_libraries_label);
+      has_printer = Crobj_converter.bool_of_concrete_object   (g has_printer_label);
+      subdirectory = Dfa_subdirectory.of_concrete_object   (g subdirectory_label);
+      principal_ending = Dfa_ocaml_ending.of_concrete_object   (g principal_ending_label);
+      mli_present = Crobj_converter.bool_of_concrete_object (g mli_present_label);
+      principal_modification_time = Crobj_converter.string_of_concrete_object   (g principal_modification_time_label);
+      mli_modification_time = co Crobj_converter.string_of_concrete_object  (g mli_modification_time_label);
+    } ;;
+   
+   
+   let to_concrete_object msd = 
+     let cl = Crobj_converter_combinator.of_list 
+     and co = Crobj_converter_combinator.of_option in 
+     let items =
+    [
+      used_modules_label,  cl Dfa_module.to_concrete_object   (msd.Fw_module_small_details_t.used_modules);
+      used_libraries_label,  cl Ocaml_library.to_concrete_object   (msd.Fw_module_small_details_t.used_libraries);
+      has_printer_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_small_details_t.has_printer);
+      subdirectory_label,  Dfa_subdirectory.to_concrete_object   (msd.Fw_module_small_details_t.subdirectory);
+      principal_ending_label,  Dfa_ocaml_ending.to_concrete_object   (msd.Fw_module_small_details_t.principal_ending);
+      mli_present_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_small_details_t.mli_present);
+      principal_modification_time_label,  Crobj_converter.string_to_concrete_object   (msd.Fw_module_small_details_t.principal_modification_time);
+      mli_modification_time_label,  co Crobj_converter.string_to_concrete_object   (msd.Fw_module_small_details_t.mli_modification_time);
+    ] in 
+   Concrete_object_t.Record items;;
+   
+
+end ;;   
+
+
 module Private = struct 
 
 let lex_order = ((fun (Dfa_module_t.M m1) (Dfa_module_t.M m2)->
