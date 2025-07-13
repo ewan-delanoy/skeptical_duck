@@ -12,7 +12,6 @@ type t = {
    watched_files : (Dfn_rootless_t.t * string) list option;
    subdirs_for_archived_mlx_files : (Dfa_subdirectory_t.t list) option ;
    small_details_in_files : ((Dfn_rootless_t.t * Fw_file_small_details_t.t) list) option;
-   index_for_caching : (Fw_instance_index_t.t * Fw_state_index_t.t) option;
    dependencies : Fw_dependencies_t.t option;
    last_compilation_result_for_module : ((Dfa_module_t.t * bool) list) option ;
    dir_for_backup : Dfa_root_t.t option;
@@ -30,7 +29,6 @@ let origin = {
    watched_files = None ;
    subdirs_for_archived_mlx_files = None ;
    small_details_in_files = None ;
-   index_for_caching = None ;
    dependencies = None ;
    last_compilation_result_for_module = None ;
    dir_for_backup = None ;
