@@ -281,6 +281,7 @@ let github_configuration = Fwg_with_githubbing.github_configuration ;;
 
 let of_fw_with_batch_compilation =Private.usual_extension ;;
 let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
+let parent = Fwg_with_githubbing.parent ;;
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
 let relocate_module_to  = Private.relocate_module_to ;;         

@@ -188,7 +188,7 @@ let github_configuration final_fw  = match final_fw with
   |With_archives _ -> raise ( Absent_method "Fw_with_archives.github_configuration" )
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.github_configuration" )
   |With_batch_compilation _ -> raise ( Absent_method "Fw_with_batch_compilation.github_configuration" )
-  |With_githubbing (fw) ->  Fwg_with_githubbing.github_configuration fw  ;;
+  |With_githubbing (fw) ->  Fwc_with_githubbing.github_configuration fw  ;;
 
 
 
