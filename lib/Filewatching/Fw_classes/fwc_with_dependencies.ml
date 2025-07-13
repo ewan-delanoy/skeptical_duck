@@ -35,9 +35,9 @@ module Inherited = struct
     (
       List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
       [
-        (*
-        "index_for_caching",((Fwg_with_dependencies.index_for_caching fw1)=(Fwg_with_dependencies.index_for_caching fw2))
-        *)
+        
+        "dependencies",((Fwg_with_dependencies.dependencies fw1)=(Fwg_with_dependencies.dependencies fw2))
+        
       ]
     ) ;; 
 
@@ -53,8 +53,6 @@ module Crobj = struct
 
   module Private = struct 
 
-    let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
-    let index fw = Fwg_with_dependencies.index_for_caching fw ;; 
     let parent fw = Fwg_with_dependencies.parent fw ;;
 
   end ;;   
@@ -65,11 +63,9 @@ module Crobj = struct
       
 
   let of_concrete_object ccrt_obj = 
-    let instance_idx = Fw_indexer.create_new_instance () in   
     let g=Concrete_object.get_record ccrt_obj in 
     Fwg_with_dependencies.make 
     (Fwc_with_small_details.Crobj.of_concrete_object (g label_for_parent))
-    (Private.expand_index instance_idx)
     (Fw_dependencies.Crobj.of_concrete_object (g label_for_dependencies))
     ;;
 
@@ -86,12 +82,10 @@ end ;;
 
 module Private = struct
 
- let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
- let index fw = Fwg_with_dependencies.index_for_caching fw ;; 
- let parent fw = Fwg_with_dependencies.parent fw ;;
- let usual_extension fw_with_archives instance_idx = 
+  let parent fw = Fwg_with_dependencies.parent fw ;;
+ let usual_extension fw_with_archives = 
     Fwg_with_dependencies.make 
-    fw_with_archives (expand_index instance_idx) Fw_dependencies.starter;;
+    fw_with_archives Fw_dependencies.starter;;
 
 
 
@@ -102,13 +96,7 @@ module Core = struct
 
   let parent = Fwg_with_dependencies.parent ;;
   let dependencies = Fwg_with_dependencies.dependencies ;;
-  let index_for_cache = Fwg_with_dependencies.index_for_caching;;
-
-  let expand_index idx = (idx,Fw_indexer.get_state idx) ;;
-  let new_idx_pair () = expand_index(Fw_indexer.create_new_instance()) ;;
-
-  let make fw_dets deps= Fwg_with_dependencies.make fw_dets 
-    (new_idx_pair()) deps ;;
+  let make fw_dets deps= Fwg_with_dependencies.make fw_dets  deps ;;
 
 
 let forget_modules old_fw mods_to_be_erased =  
