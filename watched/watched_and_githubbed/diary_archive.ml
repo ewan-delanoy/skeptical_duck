@@ -1,14 +1,76 @@
 (************************************************************************************************************************
-Snippet 175 : 
+Snippet 177 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 174 : Musings on twin primes
+Snippet 176 : Check that double crobj conversion leads back to original
 ************************************************************************************************************************)
 
+module Snip176=struct
+
+(*
+
+let extract_last = function 
+(Fw_final_poly.With_githubbing g) -> g | _ -> failwith("hum") ;;
+
+let fw_with_githubbing = 
+  extract_last (!(Usual_coma_state.Private.main_ref)) ;;
+let fw_batch=Fwg_with_githubbing.parent fw_with_githubbing;;
+let fw_deps=Fwg_with_batch_compilation.parent fw_batch;;
+
+module Pri = Fwc_with_dependencies.Private ;;
+
+let get_tea fw  = {
+   Fw_dependencies_t.modularized_details = Pri.Modularized_details.get fw ;
+   order = Pri.Order.get fw;
+   needed_dirs = Pri.Needed_dirs.get fw;
+   needed_libs = Pri.Needed_libs.get fw;
+   all_subdirectories = Pri.All_subdirectories.get fw;
+   all_printables = Pri.All_printables.get fw;
+} ;;
+
+let t1 = get_tea fw_deps ;;
+
+let obj_t1 = Fw_dependencies.Crobj.to_concrete_object t1 ;;
+
+let t2 = Fw_dependencies.Crobj.of_concrete_object obj_t1 ;;
+
+let check = (t1 = t2) ;;
+
+*)
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 175 : Using Crobj_conversion_boilerplate.write 
+************************************************************************************************************************)
+module Snip175=struct
+
+  let ap1 = 
+    Absolute_path.of_string 
+    "lib/Filewatching/fw_dependencies.ml";;
+  
+  let u1 = Lines_in_text.extract_field_names_from_type_definition_in_file
+     ap1 8 13 ;;   
+  let u2 =  Crobj_conversion_boilerplate.write 
+   ~var_name:"msd" 
+     ~type_name:"Fw_dependencies_t" 
+      ~fields:u1 ;;   
+  
+  let u3 () = print_string u2 ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 174 : Musings on twin primes
+************************************************************************************************************************)
 module Snip174=struct
 
   let i_order = Total_ordering.for_integers ;;

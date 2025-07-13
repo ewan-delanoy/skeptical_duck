@@ -6,6 +6,8 @@
 
 let abo = Usual_coma_state.sugared_above;; 
 
+let afs = Manage_diary.append_fresh_snippet ;;
+
 let ae = Usual_coma_state.all_endinglesses;;
 
 let bel = Usual_coma_state.sugared_below;;

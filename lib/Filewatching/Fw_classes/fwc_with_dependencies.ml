@@ -1335,6 +1335,7 @@ let number_of_modules = Private.number_of_modules ;;
 let of_configuration = Private.Exit.of_configuration ;;
 let of_configuration_and_list = Private.Exit.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Exit.overwrite_file_if_it_exists ;;
+let parent = Fwg_with_dependencies.parent ;;
 let plunge_fw_configuration = Private.Exit.plunge_fw_configuration ;;
 let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.All_printables.get fw;;
