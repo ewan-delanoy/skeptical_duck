@@ -16,13 +16,16 @@ let parent fw = {
   Fw_flattened_poly_t.type_name = Some "Fw_with_small_details" 
  } ;; 
 
+let dependencies fw = match fw.Fw_flattened_poly_t.dependencies with Some x -> x | None -> raise(Get_exn "dependencies")  ;;
+
 let index_for_caching fw = match fw.Fw_flattened_poly_t.index_for_caching with Some x -> x | None -> raise(Get_exn "index_for_caching")  ;;
 
 
-let make fw_with_small_details ifc = {
+let make fw_with_small_details ifc deps = {
   fw_with_small_details with 
   Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" ;
   index_for_caching = Some ifc ;
+  dependencies = Some deps ;
 } ;;
 
 
@@ -35,15 +38,17 @@ let make fw_with_small_details ifc = {
 type t = {
   _parent : Fwc_with_small_details.t;
   index_for_caching : (Fw_instance_index_t.t * Fw_state_index_t.t);
-
+  dependencies : Fw_dependencies_t.t ;
 } ;;
 
 let parent fw = fw._parent ;; 
+let dependencies fw = fw.dependencies ;; 
 let index_for_caching fw = fw.index_for_caching ;; 
 
-let make fw_small_details ifc = {
+let make fw_small_details ifc deps = {
   _parent = fw_small_details ;
   index_for_caching = ifc ;
+  dependencies = deps ;
 } ;;
 
 (* End of tight version of file watching *)

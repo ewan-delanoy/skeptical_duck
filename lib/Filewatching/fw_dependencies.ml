@@ -482,3 +482,6 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
 end;;  
 
 module ReactOnReference = Private.ReactOnReference ;;
+
+let starter = Private.starter;;
+

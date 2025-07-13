@@ -59,16 +59,29 @@ module Crobj = struct
 
   end ;;   
 
-  let of_concrete_object crobj = 
-      let instance_idx = Fw_indexer.create_new_instance () in   
-      Fwg_with_dependencies.make 
-        (Fwc_with_small_details.Crobj.of_concrete_object crobj) (Private.expand_index instance_idx) ;;
+  let salt = "Fwc_with_dependencies." ;;
+  let label_for_parent = salt ^ "parent" ;;
+  let label_for_dependencies  = salt ^ "dependencies" ;;
+      
 
-  let to_concrete_object fw = Fwc_with_small_details.Crobj.to_concrete_object 
-      (Private.parent fw) ;;
+  let of_concrete_object ccrt_obj = 
+    let instance_idx = Fw_indexer.create_new_instance () in   
+    let g=Concrete_object.get_record ccrt_obj in 
+    Fwg_with_dependencies.make 
+    (Fwc_with_small_details.Crobj.of_concrete_object (g label_for_parent))
+    (Private.expand_index instance_idx)
+    (Fw_dependencies.Crobj.of_concrete_object (g label_for_dependencies))
+    ;;
+
+    let to_concrete_object fw = 
+      let items =  
+      [
+           label_for_parent, Fwc_with_small_details.Crobj.to_concrete_object ( Private.parent fw ) ;
+           label_for_dependencies, Fw_dependencies.Crobj.to_concrete_object (Fwg_with_dependencies.dependencies fw ) ;
+      ] in 
+      Concrete_object_t.Record items ;;
 
 end ;;  
-
 
 
 module Private = struct
@@ -78,7 +91,7 @@ module Private = struct
  let parent fw = Fwg_with_dependencies.parent fw ;;
  let usual_extension fw_with_archives instance_idx = 
     Fwg_with_dependencies.make 
-    fw_with_archives (expand_index instance_idx) ;;
+    fw_with_archives (expand_index instance_idx) Fw_dependencies.starter;;
 
 
 
