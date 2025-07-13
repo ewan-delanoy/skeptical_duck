@@ -530,7 +530,6 @@ module Snip170=struct
       ("watched_files",(fw1.Fw_flattened_poly_t.watched_files=fw2.Fw_flattened_poly_t.watched_files));
       ("subdirs_for_archived_mlx_files",(fw1.Fw_flattened_poly_t.subdirs_for_archived_mlx_files=fw2.Fw_flattened_poly_t.subdirs_for_archived_mlx_files));
       ("small_details_in_files",(fw1.Fw_flattened_poly_t.small_details_in_files=fw2.Fw_flattened_poly_t.small_details_in_files));
-      ("index_for_caching",(fw1.Fw_flattened_poly_t.index_for_caching=fw2.Fw_flattened_poly_t.index_for_caching));
       ("last_compilation_result_for_module",(fw1.Fw_flattened_poly_t.last_compilation_result_for_module=fw2.Fw_flattened_poly_t.last_compilation_result_for_module));
       ("dir_for_backup",(fw1.Fw_flattened_poly_t.dir_for_backup=fw2.Fw_flattened_poly_t.dir_for_backup));
       ("gitpush_after_backup",(fw1.Fw_flattened_poly_t.gitpush_after_backup=fw2.Fw_flattened_poly_t.gitpush_after_backup));

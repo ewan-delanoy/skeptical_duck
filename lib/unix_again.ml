@@ -212,7 +212,8 @@ let empty_directory s_root =
    let cmd = "rm -rf "^s_root^"*" in 
    Sys.command cmd;;      
 
-let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
+let create_subdirs_and_fill_files_if_necessary root subdirs 
+  (pointed_files_with_content,nonpointed_files_with_content) =
    let s_root = Dfa_root.connectable_to_subpath root in 
    let cmds1=Image.image (
       fun subdir -> 
@@ -225,27 +226,42 @@ let create_subdirs_and_fill_files_if_necessary root subdirs files_with_content =
         if Sys.file_exists full_path 
         then None 
         else Some(full_path,content)
-   ) files_with_content in 
+   ) pointed_files_with_content 
+   and temp2=List.filter_map (
+    fun (nonpointed,content)->
+       let full_path = s_root ^ nonpointed in 
+       if Sys.file_exists full_path 
+       then None 
+       else Some(full_path,content)
+  ) nonpointed_files_with_content in 
    Image.image (
       fun (full_path,content) ->
          let _=Sys.command("touch "^full_path) in 
          Io.overwrite_with (Absolute_path.of_string full_path) content
-   )  temp1;;
+   )  (temp1 @ temp2);;
 
 
-let create_subdirs_and_fill_files root subdirs files_with_content =
+let create_subdirs_and_fill_files root subdirs 
+  (pointed_files_with_content,nonpointed_files_with_content) =
    let s_root = Dfa_root.connectable_to_subpath root in 
    let cmds1=Image.image (
       fun subdir -> 
          "mkdir -p "^s_root^(Dfa_subdirectory.without_trailing_slash subdir)
    ) subdirs in 
    let _=Image.image Sys.command cmds1 in 
-   Image.image (
+   (Image.image (
      fun (rootless,content)->
         let full_path = Dfn_full.to_line(Dfn_join.root_to_rootless root rootless) in 
          let _=Sys.command("touch "^full_path) in 
          Io.overwrite_with (Absolute_path.of_string full_path) content
-   ) files_with_content;;
+   ) pointed_files_with_content,
+   Image.image (
+     fun (nonpointed,content)->
+        let full_path = s_root ^ nonpointed in 
+         let _=Sys.command("touch "^full_path) in 
+         Io.overwrite_with (Absolute_path.of_string full_path) content
+   ) nonpointed_files_with_content
+   );;
 
 let compute_with_time_constraint f x timeout =
       let _ =

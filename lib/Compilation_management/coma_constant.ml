@@ -46,21 +46,17 @@ let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;
 let parameters_subdir= Dfa_subdirectory.extend dune_lib_subdir "Compilation_management";;
 
 let short_path_for_diary_file= Dfn_short.of_line"diary_archive.ml";;
-let short_path_for_dune_file= Dfn_short.of_line"dune.txt";;
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
 let short_path_for_parametersfile= Dfn_short.of_line "coma_big_constant.ml";;
 let short_path_for_printersfile= Dfn_short.of_line "my_printers.ml";;
 let short_path_for_targetfile= Dfn_short.of_line "targetfile.ocaml_made";;
  
-let rootless_path_for_bindune_file=
-  Dfn_join.subdirectory_to_short  dune_bin_subdir short_path_for_dune_file;;  
 
 let rootless_path_for_diary_file=
   Dfn_join.subdirectory_to_short  watched_and_githubbed_subdir short_path_for_diary_file;;
 
-let rootless_path_for_libdune_file=
-  Dfn_join.subdirectory_to_short  dune_lib_subdir short_path_for_dune_file;;  
+
 let rootless_path_for_loadingsfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_loadingsfile;;
 let rootless_path_for_ocamlformat_file =
@@ -79,12 +75,12 @@ let rootless_path_for_printersfile=
   Dfn_join.subdirectory_to_short  directives_subdir short_path_for_printersfile;;
 let rootless_path_for_targetfile=
   Dfn_join.subdirectory_to_short  nongithubbed_nonml_files_subdir short_path_for_targetfile;;     
-let rootless_path_for_watcheddune_file=
-  Dfn_join.subdirectory_to_short  watched_subdir short_path_for_dune_file;;
 
 let rootless_path_for_ocamlinit = Dfn_rootless.of_line ".ocamlinit";;
 
-
+let nonpointed_path_for_bindune_file = "bin/dune" ;;
+let nonpointed_path_for_libdune_file = "lib/dune" ;;
+let nonpointed_path_for_watcheddune_file ="watched/dune" ;;
 
 let git_ignored_subdirectories =
   [
@@ -138,27 +134,31 @@ let text_for_printersfile = "\n\n (*Registered printers start here *) \n\n (*Reg
 let text_for_painful_debugging_file  = "\n\n(*\n\n#use\"Fads/painful_debugging.ml\""^Particular_string.double_semicolon^"\n\n*)\n\n" ;;
 
 let common_part_in_conventional_files proj_name= 
-   [
+   ([
      rootless_path_for_printersfile, text_for_printersfile ; 
      rootless_path_for_loadingsfile, "" ;
      rootless_path_for_targetfile, "";
      rootless_path_for_diary_file, "";
-     rootless_path_for_bindune_file, text_for_bindune_file proj_name;
-     rootless_path_for_libdune_file, text_for_libdune_file proj_name;
-     rootless_path_for_watcheddune_file, text_for_watcheddune_file proj_name;
-   ] ;;     
+   ],  
+   [ 
+     nonpointed_path_for_bindune_file, text_for_bindune_file proj_name;
+     nonpointed_path_for_libdune_file, text_for_libdune_file proj_name;
+     nonpointed_path_for_watcheddune_file, text_for_watcheddune_file proj_name;
+   ]) ;;     
 
 
 let conventional_files_with_full_content proj_name=  
-   [
+   let (pointed,nonpointed) = common_part_in_conventional_files proj_name in 
+   ([
      rootless_path_for_ocamlinit, full_text_for_ocamlinit proj_name ;
      rootless_path_for_painful_debugging_file, text_for_painful_debugging_file;
-   ] @ (common_part_in_conventional_files proj_name) ;;      
+   ] @ pointed, nonpointed) ;;      
 
 let conventional_files_with_minimal_content proj_name=    
-   [
+   let (pointed,nonpointed) = common_part_in_conventional_files proj_name in 
+   ([
      rootless_path_for_ocamlinit, minimalist_text_for_ocamlinit proj_name ;
-   ] @ (common_part_in_conventional_files proj_name) ;;      
+   ]  @ pointed, nonpointed) ;;      
 
 
 let minimal_set_of_needed_dirs = 
