@@ -237,7 +237,7 @@ let order deps_ref=
   (fun (mn,_)->not(List.mem mn mods_to_be_erased))
   ((!deps_ref).Fw_dependencies_t.modularized_details)
   and new_order = List.filter_map (fun (mn,(before,after))->
-    if tester mn then None else 
+    if not(tester mn) then None else 
     Some(mn,(before,List.filter tester after))  
     ) 
     ((!deps_ref).Fw_dependencies_t.order) 
