@@ -307,7 +307,7 @@ module Private = struct
         let ppodbg_path = ocamldebug_printersfile_path (Fwc_with_dependencies.Inherited.root fw) in 
         Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
 
-     let dependencies_inside_shaft_of_dbg fw (opt_modnames,opt_rootless_path)=
+     let dependencies_inside_shaft_of_dbg fw (_opt_modnames,opt_rootless_path)=
         let rootless_path=Option.get opt_rootless_path in 
         let full_path=Absolute_path.of_string(
          (Dfa_root.connectable_to_subpath (Fwc_with_dependencies.Inherited.root fw))^rootless_path) in 
@@ -358,7 +358,7 @@ let start_debugging fw=
    let msg=(
      if answer
      then "\n\n The debugging-friendly executable has been created. \n"^
-         "Now, go to "^dbgbuild_path^" and start \n\nocamldebug "^Pri.name_element_for_debugged_file^
+         "Now, go to "^dbgbuild_path^" and start \n\nocamldebug "^name_element_for_debugged_file^
           ".ocaml_debuggable\n\nin another terminal.\n\n"^
           "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
           "source "^ppodbg_path^" \n\n"

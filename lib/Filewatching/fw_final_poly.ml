@@ -416,7 +416,17 @@ let to_fw_configuration final_fw  = match final_fw with
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.to_fw_configuration fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.to_fw_configuration fw  ;;
 
-  let to_fw_with_githubbing final_fw  = match final_fw with  
+
+let to_fw_with_dependencies final_fw  = match final_fw with 
+  |Configuration _ -> raise ( Absent_method "Fw_configuration.to_fw_with_dependencies" )
+  |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.to_fw_with_dependencies" )
+  |Watcher _ -> raise ( Absent_method "Fw_file_watcher.to_fw_with_dependencies" )
+  |With_archives _ -> raise ( Absent_method "Fw_with_archives.to_fw_with_dependencies" )
+  |With_dependencies (fw) -> fw
+  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.to_fw_with_dependencies fw
+  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw ;;
+
+let to_fw_with_githubbing final_fw  = match final_fw with  
   |Configuration _ 
   |Github_configuration _ 
   |Watcher _ 
