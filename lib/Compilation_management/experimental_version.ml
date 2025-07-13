@@ -2,7 +2,7 @@
 #use"lib/Compilation_management/experimental_version.ml";;
 *)
 
-
+(*
 module Private = struct 
 
 let ref_for_unofficial_changes = ref (None: Dircopy_diff_t.t option) ;;
@@ -74,3 +74,4 @@ let officialize_changes () =
    Coma_big_constant.Next_World.root) diff in 
   Unix_command.conditional_multiple_uc cmds ;; 
      
+*)
