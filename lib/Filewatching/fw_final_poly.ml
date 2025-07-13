@@ -416,7 +416,14 @@ let to_fw_configuration final_fw  = match final_fw with
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.to_fw_configuration fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.to_fw_configuration fw  ;;
 
-
+  let to_fw_with_githubbing final_fw  = match final_fw with  
+  |Configuration _ 
+  |Github_configuration _ 
+  |Watcher _ 
+  |With_archives _ 
+  |With_dependencies _
+  |With_batch_compilation _ ->  failwith("in Fw_final_po"^"ly.to_fw_with_githubbing")
+  |With_githubbing (fw) -> fw   ;;
 
 let up_to_date_elesses final_fw  = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.up_to_date_elesses" )
