@@ -1,14 +1,162 @@
 (************************************************************************************************************************
-Snippet 177 : 
+Snippet 178 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 176 : Check that double crobj conversion leads back to original
+Snippet 177 : Miscellanea preparing a refactorization
 ************************************************************************************************************************)
 
+module Snip177=struct
+
+
+(*
+module type EXIT_TYPE = sig
+
+ val forget_modules :
+   Fwg_with_dependencies.t ->
+   Skeptical_duck_lib.Dfa_module_t.t list ->
+   Fwg_with_dependencies.t * Skeptical_duck_lib.Dfn_rootless_t.t list
+ val inspect_and_update :
+   Fwg_with_dependencies.t ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t list * Dfn_rootless_t.t list) *
+    (Dfn_rootless_t.t * Skeptical_duck_lib.Fw_file_small_details_t.t) list *
+    Dfn_rootless_t.t list)
+ val of_configuration : Fwg_configuration.t -> Fwg_with_dependencies.t
+ val of_configuration_and_list :
+   Fwg_configuration.t * Dfn_rootless_t.t list -> Fwg_with_dependencies.t
+ val overwrite_file_if_it_exists :
+   Fwg_with_dependencies.t ->
+   Dfn_rootless_t.t * string ->
+   Fwg_with_dependencies.t *
+   (Dfn_rootless_t.t * (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+   option
+ val plunge_fw_configuration :
+   Fwg_configuration.t -> Fwg_with_dependencies.t
+ val register_rootless_paths :
+   Fwg_with_dependencies.t ->
+   Dfn_rootless_t.t list ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t list * Dfn_rootless_t.t list * Dfn_rootless_t.t list) *
+    (Dfn_rootless_t.t * Fw_file_small_details_t.t) list)
+ val relocate_module_to :
+   Fwg_with_dependencies.t ->
+   Dfa_module_t.t * Skeptical_duck_lib.Dfa_subdirectory_t.t ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t *
+     (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+    list * (Dfn_rootless_t.t * Dfn_rootless_t.t) list)
+ val remove_files :
+   Fwg_with_dependencies.t ->
+   Dfn_rootless_t.t list ->
+   Fwg_with_dependencies.t * (Dfn_rootless_t.t * 'a option) list
+ val rename_module_on_filename_level_and_in_files :
+   Fwg_with_dependencies.t ->
+   Dfa_module_t.t * Dfa_module_t.t * Dfn_rootless_t.t list ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t *
+     (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+    list *
+    ((Dfn_rootless_t.t * Dfn_rootless_t.t) list * Dfn_rootless_t.t list))
+ val rename_subdirectory_as :
+   Fwg_with_dependencies.t ->
+   Dfa_subdirectory_t.t * Dfa_subdirectory_t.t ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t *
+     (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+    list * (Dfn_rootless_t.t * Dfn_rootless_t.t) list)
+ val replace_string :
+   Fwg_with_dependencies.t ->
+   string * string ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t *
+     (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+    list * Dfn_rootless_t.t list)
+ val replace_value :
+   Fwg_with_dependencies.t ->
+   (Absolute_path.t list * Absolute_path.t) * (string * string) ->
+   Fwg_with_dependencies.t *
+   ((Dfn_rootless_t.t *
+     (Dfn_rootless_t.t * Fw_file_small_details_t.t) option)
+    list * Dfn_rootless_t.t list)
+
+end ;;   
+
+module E1 = (Fwc_with_dependencies.Private.Exit:EXIT_TYPE) ;;
+module E2 = (Fwc_with_dependencies.Private.Core:EXIT_TYPE) ;;
+
+
+
+module C1 = Fwc_with_dependencies.Private.Exit ;;
+module C2 = Fwc_with_dependencies.Private.Core ;;
+
+*)
+
+
+let ap1 = Absolute_path.of_string 
+"lib/Filewatching/Fw_classes/fwc_with_dependencies.ml";;
+
+let txt1 = Io.read_whole_file ap1 ;;
+
+let txt2 = Lines_in_text.interval txt1 1076 1081 ;;
+
+let txt3 = Replace_inside.replace_inside_text ("All_printables","Core")
+txt2;;
+
+let act1 () = Lines_in_text.modify_interval_inside_file 
+(fun _->txt3) ap1 1064 1064 ;;
+
+let u1 = [
+   ("forget_modules",true,false,false,["mods_to_be_erased"]);
+   ("inspect_and_update",true,true,false,[]);
+   ("of_configuration",false,false,false,["config"]);
+   ("of_configuration_and_list",false,false,false,["(config,files)"]); 
+   ("overwrite_file_if_it_exists",true,true,false,["(rootless,new_content)"]);
+   ("plunge_fw_configuration",false,false,false,["config"]);
+   ("register_rootless_paths",true,true,false,["rootlesses"]);
+   ("relocate_module_to",true,true,false,["(mod_name,new_subdir)"]);
+   ("remove_files",true,true,false,["removed_rootless_paths"]);
+   ("rename_module_on_filename_level_and_in_files",true,true,true,["triple"]);
+   ("rename_subdirectory_as",true,true,true,["sdir_pair"]);
+   ("replace_string",true,true,false,["(replacee,replacer)"]);
+   ("replace_value",true,true,false,["(replacee,replacer)"]);
+];;
+
+let write (mthd_name,extra_before,extra_after,arg_reused,args) =
+   let arg = (match args with [] -> "" |_ ->List.hd args) in
+   let old_output = ( if extra_before then "(new_fw_dets,extra)" else "new_fw_dets") 
+   and opt_before = (if extra_after then "extra" else "")
+   and opt_after = (if arg_reused then arg else "") 
+   and final_output = ( if extra_before then ",extra" else "")in 
+ "let "^mthd_name^" old_fw "^arg^" =  \n"^
+ " let old_fw_dets = parent old_fw \n"^
+ " and deps_ref = ref (dependencies old_fw) in \n"^
+ " let "^old_output^" = Fwc_with_small_details."^mthd_name^" old_fw_dets "^arg^" in \n"^
+ " let _ = Fw_dependencies.ReactOnReference."^mthd_name^" "^opt_before^" new_fw_dets deps_ref "^opt_after^" in \n"^
+ " (make new_fw_dets(!deps_ref)"^final_output^");;" ;;
+
+let u2 = Image.image write u1 ;;
+
+let u3 = "\n\n\n"^(String.concat "\n\n" u2)^"\n\n\n" ;;
+
+let act2 () =
+    Replace_inside.overwrite_between_markers_inside_file
+    ~overwriter:u3 ("(* aaa *)","(* bbb *)") ap1 ;;
+
+let act3 () = Lines_in_text.remove_interval_in_file 
+    ap1 99 1061 ;;
+    
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 176 : Check that double crobj conversion leads back to original
+************************************************************************************************************************)
 module Snip176=struct
 
 (*
