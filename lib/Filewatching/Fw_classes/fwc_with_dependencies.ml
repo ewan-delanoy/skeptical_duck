@@ -45,6 +45,7 @@ module Inherited = struct
   
   let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
 
+  let to_fw_with_archives fw = Ancestry.to_fw_with_archives (parent fw) ;;
   let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;;  
 
 end ;;  

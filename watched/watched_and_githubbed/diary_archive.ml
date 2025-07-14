@@ -383,8 +383,7 @@ Fw_poly by calls to the Fwg, add a Crobj submodule.
 
 (* Step 10 : Create a foreign copy *)
 
-let act2() = Usual_coma_state.create_foreign_copy 
-   Needed_data_summary_t.Everything;;
+let act2() = Usual_coma_state.create_foreign_copy None;;
 
 
 (* Step 11 : Copy the coming_soon file *)
