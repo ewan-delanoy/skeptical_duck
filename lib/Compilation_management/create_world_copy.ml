@@ -88,7 +88,7 @@ module Private = struct
       let _ = Sys.chdir old_dir in  
       let _=(Unix_again.create_subdirs_and_fill_files
       destination needed_dirs conv_files) in 
-      let (modules_in_good_order,compilables,noncompilables) = 
+      let (_modules_in_good_order,compilables,noncompilables) = 
           Needed_data_summary.expand fw summary in 
       let _=Image.image Unix_command.uc 
        (commands_for_copying fw (compilables@noncompilables) destination destbackupdir) in
@@ -96,46 +96,16 @@ module Private = struct
        (Dfn_common.recompose_potential_absolute_path destination 
         Coma_constant.rootless_path_for_parametersfile) 
       and new_content = text_for_big_constants_file_in_other_world destination destbackupdir destgab in
-      let _=Io.overwrite_with parameters_ap new_content in  
-      let faraway_config = Fwc_configuration.of_root destination in 
-      let faraway_fw = Fwc_with_dependencies.of_configuration_and_list (faraway_config,compilables@noncompilables) in  
-      (modules_in_good_order,faraway_fw);;  
+      let _=Io.overwrite_with parameters_ap new_content in 
+      ();;  
 
-  let fully_developed_copy cs ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false) summary=
-      let (_,faraway_fw) = frozen_copy cs ~destination ~destbackupdir ~destgab summary in 
-      let faraway_cs1 = Fw_final_poly.of_fw_with_batch_compilation 
-                          (Fwc_with_batch_compilation.of_fw_with_dependencies faraway_fw) 
-                             destbackupdir destgab Coma_big_constant.github_url [] in 
-      let all_modules = Fw_final_poly.dep_ordered_modules faraway_cs1 in 
-      let faraway_cs2 = Fw_final_poly.modern_recompile faraway_cs1 all_modules in 
-      let _= Fw_with_persisting.persist faraway_cs2 in   
-      faraway_cs2;;                      
-      
-
-    let unfreeze_copy old_fw_config destroot =
-        
-        let remote_fw_config = Fwc_configuration.set_root old_fw_config  destroot in   
-        let remote_github_config = Fwc_github_configuration.make 
-        ~v_root:destroot
-        ~v_dir_for_backup:default_backup_dir
-        ~v_gitpush_after_backup:false
-        ~v_github_url:Coma_big_constant.github_url
-        ~v_encoding_protected_files:[] in 
-        let remote_fw = Fw_final_poly.of_fw_config_and_github_config remote_fw_config remote_github_config in 
-        let _ = Fw_with_persisting.persist remote_fw in 
-        remote_fw;;    
         
 
 
   end ;;   
   
-  let frozen_copy fw ~destination ?(destbackupdir=Private.default_backup_dir) ?(destgab=false) summary=
+  let copy fw ~destination ?(destbackupdir=Private.default_backup_dir) ?(destgab=false) summary=
      let _ = Private.frozen_copy fw ~destination ~destbackupdir ~destgab summary in 
      () ;;
-  
-  let fully_developed_copy = Private.fully_developed_copy ;; 
-  
-  let unfreeze_copy = Private.unfreeze_copy ;;
-  
-  
+
   

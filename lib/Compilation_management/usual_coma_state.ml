@@ -57,17 +57,18 @@ let changed_files_in_foreign_copy ()=
 
 
 
-let clean_debug_dir ()=Fw_final_poly.clean_debug_dir (!(Private.main_ref));;
-let clean_exec_dir ()=Fw_final_poly.clean_exec_dir (!(Private.main_ref));;
+let clean_debug_dir ()=
+  let ffw = (!(Private.main_ref)) in 
+  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
+  Fw_with_debugging.clean_debug_dir fw_deps;;
+
 
 let create_foreign_copy summary=
   let _ = (Private.ref_for_unofficial_changes:=None) in 
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
-  let _=Create_world_copy.fully_developed_copy
+  Create_world_copy.copy
   (!Private.main_ref) summary
-  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab
-  in 
-  () ;; 
+  ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
 
 let duplicate_module old_t1 old_t2=
 Fw_final_poly.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
@@ -131,8 +132,10 @@ let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private
 let show_value_occurrences_in_modulesystem module_name=
   Fw_final_poly.show_value_occurrences (!(Private.main_ref)) module_name;;
 
-let start_debugging ()=Fw_final_poly.start_debugging (!(Private.main_ref));;
-let start_executing short_path= Fw_final_poly.start_executing (!(Private.main_ref)) short_path;;
+let start_debugging ()=
+  let ffw = (!(Private.main_ref)) in 
+  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
+  Fw_with_debugging.start_debugging fw_deps;;
 
 
 let sugared_above capitalized_or_not_module_name=

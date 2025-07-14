@@ -72,24 +72,6 @@ let check_that_no_change_has_occurred final_fw  = match final_fw with
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.Inherited.check_that_no_change_has_occurred fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw ;;
 
-let clean_debug_dir final_fw  = match final_fw with 
-  |Configuration _ -> raise ( Absent_method "Fw_configuration.clean_debug_dir" )
-  |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.clean_debug_dir" )
-  |Watcher _ -> raise ( Absent_method "Fw_file_watcher.clean_debug_dir" )
-  |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_debug_dir" )
-  |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_debug_dir" )
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_debug_dir fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.clean_debug_dir fw ;;
-
-let clean_exec_dir final_fw  = match final_fw with 
-  |Configuration _ -> raise ( Absent_method "Fw_configuration.clean_exec_dir" )
-  |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.clean_exec_dir" )
-  |Watcher _ -> raise ( Absent_method "Fw_file_watcher.clean_exec_dir" )
-  |With_archives _ -> raise ( Absent_method "Fw_with_archives.clean_exec_dir" )
-  |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.clean_exec_dir" )
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.clean_exec_dir fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.clean_exec_dir fw ;;
-
 let decipher_module final_fw capitalized_or_not_x = match final_fw with 
   |Configuration _ -> raise ( Absent_method "Fw_configuration.decipher_module" )
   |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.decipher_module" )
@@ -377,15 +359,6 @@ let start_debugging final_fw  = match final_fw with
   |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_debugging" )
   |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_debugging fw
   |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.start_debugging fw ;;
-
-let start_executing final_fw  = match final_fw with 
-  |Configuration _ -> raise ( Absent_method "Fw_configuration.start_executing" )
-  |Github_configuration _ -> raise ( Absent_method "Fw_github_configuration.start_executing" )
-  |Watcher _ -> raise ( Absent_method "Fw_file_watcher.start_executing" )
-  |With_archives _ -> raise ( Absent_method "Fw_with_archives.start_executing" )
-  |With_dependencies _ -> raise ( Absent_method "Fw_with_dependencies.start_executing" )
-  |With_batch_compilation (fw) -> Fwc_with_batch_compilation.start_executing fw
-  |With_githubbing (fw) -> Fwc_with_githubbing.Inherited.start_executing fw ;;
 
 
 let test_for_admissibility final_fw rl = match final_fw with 

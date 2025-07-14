@@ -70,7 +70,6 @@ let rsh = Usual_coma_state.refresh;;
 let rv=Usual_coma_state.rename_string_or_value;;
 
 let sd ()=Usual_coma_state.start_debugging ();;
-let se =Usual_coma_state.start_executing;;
 
 let sv=Usual_coma_state.show_value_occurrences_in_modulesystem;;  
 
