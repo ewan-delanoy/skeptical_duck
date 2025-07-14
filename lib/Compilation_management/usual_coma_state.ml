@@ -64,10 +64,12 @@ let clean_debug_dir ()=
 
 
 let create_foreign_copy summary=
-  let _ = (Private.ref_for_unofficial_changes:=None) in 
+  let _ = (Private.ref_for_unofficial_changes:=None) in
+  let ffw = (!(Private.main_ref)) in 
+  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in  
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
-  Create_world_copy.copy
-  (!Private.main_ref) summary
+  Fw_with_world_copying.copy
+  fw_deps summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
 
 let duplicate_module old_t1 old_t2=
