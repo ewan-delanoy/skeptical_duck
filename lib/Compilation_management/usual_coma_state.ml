@@ -99,15 +99,15 @@ let find_endingless modname =
   Fwc_with_dependencies.endingless_at_module
    fw_deps (Dfa_module.of_line (String.capitalize_ascii modname));;
 
-let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
+let forget_one modname=Old_modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
 
-let forget_several modnames=Modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;
+let forget_several modnames=Old_modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;
 
-let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
+let initialize ()=Old_modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
+let initialize_if_empty ()=Old_modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
-let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
+let initialize ()=Old_modify_coma_state.Reference.initialize Private.main_ref ;; 
 
 let internet_access () = 
   let ffw = (!(Private.main_ref)) in 
@@ -138,27 +138,27 @@ let officialize_foreign_changes () =
    let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
 
-let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
+let recompile opt=Old_modify_coma_state.Reference.recompile Private.main_ref opt;;
    
 
-let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
+let refresh ()=Old_modify_coma_state.Reference.refresh Private.main_ref;;
 
-let register_rootless_line x=Modify_coma_state.Syntactic_sugar.register_one Private.main_ref x;;
+let register_rootless_line x=Old_modify_coma_state.Syntactic_sugar.register_one Private.main_ref x;;
   
-let register_rootless_lines x=Modify_coma_state.Syntactic_sugar.register_several Private.main_ref x;;
+let register_rootless_lines x=Old_modify_coma_state.Syntactic_sugar.register_several Private.main_ref x;;
 
 let relocate_module_to old_module_name new_subdir=
-   Modify_coma_state.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
+   Old_modify_coma_state.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
 
 let rename_subdirectory old_subdirname new_subdirname=
-    Modify_coma_state.Syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
+    Old_modify_coma_state.Syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
 
 let rename_module old_name new_name=
-   Modify_coma_state.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
+   Old_modify_coma_state.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
 
 
 let rename_string_or_value old_name new_name=
-   Modify_coma_state.Syntactic_sugar.rename_string_or_value
+   Old_modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let self_contained_module_copy ~prefix hm= 
@@ -166,7 +166,7 @@ let self_contained_module_copy ~prefix hm=
   let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
   Fw_self_contained_module_copy.copy fw_deps ~prefix hm ;;
 
-let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+let set_internet_access bowl=Old_modify_coma_state.Reference.internet_access Private.main_ref bowl;;
 
 
 let show_value_occurrences_in_modulesystem module_name=
