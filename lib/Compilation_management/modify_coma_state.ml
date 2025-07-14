@@ -12,23 +12,23 @@
          let forget_modules fw mod_names=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2 = Fw_final_poly.forget_modules fw mod_names in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;
    
          let forget_nonmodular_rootlesses fw rootless_paths=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2 = Fw_final_poly.forget_nonmodular_rootlesses fw rootless_paths in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;
    
          let internet_access fw bowl=   
             let fw2=Fw_final_poly.set_gitpush_after_backup fw bowl in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;
          
          let recompile fw opt_comment=
             let fw2= Fw_final_poly.usual_recompile fw opt_comment in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;
          
 
@@ -36,45 +36,45 @@
             let fw2= Fw_final_poly.of_fw_config_and_github_config 
             (Fw_final_poly.to_fw_configuration fw) 
             (Fw_final_poly.github_configuration fw)  in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;       
 
          let register_rootless_paths fw rootless_path=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2 = Fw_final_poly.register_rootless_paths fw rootless_path in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;  
    
          let relocate_module_to fw old_module new_subdir=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2 = Fw_final_poly.relocate_module_to fw old_module new_subdir in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;   
    
          let rename_module fw old_middle_name new_nonslashed_name=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2=Fw_final_poly.rename_module fw old_middle_name new_nonslashed_name in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;  
 
          let rename_subdirectory fw old_subdir new_subdir=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2=Fw_final_poly.rename_subdirectory_as fw (old_subdir,new_subdir) in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;  
 
 
          let replace_string fw old_s new_s=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2=Fw_final_poly.replace_string fw old_s new_s in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;     
     
          
          let replace_value fw ((preceding_files,path),(old_v,new_v))=
             let _=Fw_final_poly.check_that_no_change_has_occurred fw in 
             let fw2= Fw_final_poly.replace_value fw ((preceding_files,path),(old_v,new_v)) in 
-            let _=Fw_with_persisting.persist fw2 in 
+            let _=Old_fw_with_persisting.persist fw2 in 
             fw2;;        
    
    end ;;
@@ -90,7 +90,7 @@
             pfw:=new_fw;; 
    
          let initialize pfw =
-         let new_fw = Fw_with_persisting.read_persistent_version (!pfw) in 
+         let new_fw = Old_fw_with_persisting.read_persistent_version (!pfw) in 
          pfw:=new_fw;;
 
          let initialize_if_empty pfw =
