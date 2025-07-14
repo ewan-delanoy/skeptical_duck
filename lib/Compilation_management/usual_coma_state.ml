@@ -72,6 +72,12 @@ let create_foreign_copy summary=
   fw_deps summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
 
+let current_state ()=
+  let ffw = (!(Private.main_ref)) in 
+  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in 
+  fw_git;;
+
+
 let duplicate_module old_t1 old_t2=
 Fw_final_poly.duplicate_module (!(Private.main_ref)) old_t1 old_t2;;
 
