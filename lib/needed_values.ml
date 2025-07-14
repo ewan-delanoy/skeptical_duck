@@ -13,10 +13,10 @@ let ae = Usual_coma_state.all_endinglesses;;
 let bel = Usual_coma_state.sugared_below;;
 
 let cod ()=
-   let ucs = (!(Usual_coma_state.main_ref)) in 
+   let ucs = Usual_coma_state.current_state() in 
    Check_ocaml_dircopy.check 
-     (Fw_final_poly.to_fw_configuration ucs) 
-        (Fw_final_poly.github_configuration ucs);;
+     (Fwc_with_githubbing.Inherited.to_fw_configuration ucs) 
+        (Fwc_with_githubbing.github_configuration ucs);;
 
         
         
