@@ -23,7 +23,7 @@ let unsharped_content hm=
 
 end ;;
 
-let self_contained_module_copy fw prefix hm=
+let copy fw ~prefix hm=
    let nm=Dfn_endingless.to_module hm in
    let those_above=( Fwc_with_dependencies.ancestors_for_module fw nm)@[nm] in
    let temp1=Image.image (

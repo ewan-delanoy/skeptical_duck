@@ -134,6 +134,11 @@ let rename_string_or_value old_name new_name=
    Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
+let self_contained_module_copy ~prefix hm= 
+  let ffw = (!(Private.main_ref)) in 
+  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
+  Fw_self_contained_module_copy.copy fw_deps ~prefix hm ;;
+
 let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
 
 
