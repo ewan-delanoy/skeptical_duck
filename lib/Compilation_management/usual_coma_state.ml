@@ -18,7 +18,7 @@ let main_ref=
   ~v_github_url:Coma_big_constant.github_url
   ~v_encoding_protected_files:[] in 
   let final_fw = Fwc_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config in
-  ref(Fw_final_poly.With_githubbing final_fw);;
+  ref(final_fw);;
 
   let ref_for_unofficial_changes = ref(None : (string list) option) ;; 
 
@@ -34,13 +34,11 @@ let main_ref=
 end;;
 
 let all_endinglesses ()=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in 
+  let fw_git = (!(Private.main_ref)) in 
   Fwc_with_githubbing.Inherited.all_endinglesses fw_git ;; 
 
 let changed_files_in_foreign_copy ()= 
-   let ffw = (!(Private.main_ref)) in 
-   let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+   let fw_git = (!(Private.main_ref)) in 
    let temp1=Fwc_with_githubbing.Inherited.all_moduled_mlx_files fw_git in 
    let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
    and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
@@ -64,15 +62,13 @@ let changed_files_in_foreign_copy ()=
 
 
 let clean_debug_dir ()=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fw_debugging.clean_debug_dir fw_deps;;
 
 
 let create_foreign_copy summary =
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   let _ = (Private.ref_for_unofficial_changes:=None) in
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
@@ -81,55 +77,48 @@ let create_foreign_copy summary =
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
 
 let current_state ()=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in 
+  let fw_git = (!(Private.main_ref)) in 
   fw_git;;
 
 
 let duplicate_module old_t1 old_t2=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fwc_with_dependencies.duplicate_module fw_deps old_t1 old_t2;;
 
 let find_endingless modname = 
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fwc_with_dependencies.endingless_at_module
    fw_deps (Dfa_module.of_line (String.capitalize_ascii modname));;
 
-let forget_one modname=Old_modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
+let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref [modname];;
 
-let forget_several modnames=Old_modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;
+let forget_several modnames=Modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;
 
-let initialize ()=Old_modify_coma_state.Reference.initialize Private.main_ref ;; 
+let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
-let initialize_if_empty ()=Old_modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
+let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
 
-let initialize ()=Old_modify_coma_state.Reference.initialize Private.main_ref ;; 
+let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
 let internet_access () = 
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   Fwc_with_githubbing.Inherited.gitpush_after_backup fw_git ;;
 
 let latest_changes ()= 
-let ffw = (!(Private.main_ref)) in 
-let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
-let fw_arch = Fwc_with_githubbing.Inherited.to_fw_with_archives fw_git in 
-  Fwc_with_archives.latest_changes fw_arch;;
+  let fw_git = (!(Private.main_ref)) in 
+  let fw_arch = Fwc_with_githubbing.Inherited.to_fw_with_archives fw_git in 
+    Fwc_with_archives.latest_changes fw_arch;;
 
 let list_values_from_module_in_modulesystem module_name=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fwc_with_dependencies.list_values_from_module fw_deps module_name;;
 
 
 let modules_using_value x=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fwc_with_dependencies.modules_using_value fw_deps x;;
 
@@ -138,79 +127,73 @@ let officialize_foreign_changes () =
    let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
 
-let recompile opt=Old_modify_coma_state.Reference.recompile Private.main_ref opt;;
+let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
 
-let refresh ()=Old_modify_coma_state.Reference.refresh Private.main_ref;;
+let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
 
-let register_rootless_line x=Old_modify_coma_state.Syntactic_sugar.register_one Private.main_ref x;;
+let register_rootless_line x=Modify_coma_state.Syntactic_sugar.register_one Private.main_ref x;;
   
-let register_rootless_lines x=Old_modify_coma_state.Syntactic_sugar.register_several Private.main_ref x;;
+let register_rootless_lines x=Modify_coma_state.Syntactic_sugar.register_several Private.main_ref x;;
 
 let relocate_module_to old_module_name new_subdir=
-   Old_modify_coma_state.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
+   Modify_coma_state.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
 
 let rename_subdirectory old_subdirname new_subdirname=
-    Old_modify_coma_state.Syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
+    Modify_coma_state.Syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
 
 let rename_module old_name new_name=
-   Old_modify_coma_state.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
+   Modify_coma_state.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
 
 
 let rename_string_or_value old_name new_name=
-   Old_modify_coma_state.Syntactic_sugar.rename_string_or_value
+   Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let self_contained_module_copy ~prefix hm= 
-  let ffw = (!(Private.main_ref)) in 
-  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
+  let fw_git = (!(Private.main_ref)) in 
+  let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fw_self_contained_module_copy.copy fw_deps ~prefix hm ;;
 
-let set_internet_access bowl=Old_modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
 
 
 let show_value_occurrences_in_modulesystem module_name=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fwc_with_dependencies.show_value_occurrences fw_deps module_name;;
 
 let start_debugging ()=
-  let ffw = (!(Private.main_ref)) in 
-  let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
+let fw_git = (!(Private.main_ref)) in  
+let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fw_debugging.start_debugging fw_deps;;
 
 
 let sugared_above capitalized_or_not_module_name=
    
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
   (Fwc_with_dependencies.ancestors_for_module fw_deps mn0);;
 
 let sugared_below capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
   (Fwc_with_dependencies.below fw_deps mn0);;
 
 let sugared_directly_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
+  let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
   (Fwc_with_dependencies.direct_fathers_for_module fw_deps mn0);;
  
-
 let sugared_directly_below capitalized_or_not_module_name=
-let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
-  let ffw = (!(Private.main_ref)) in 
-  let fw_git = Fw_final_poly.to_fw_with_githubbing ffw in
-  let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
+  let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
+  let fw_git = (!(Private.main_ref)) in  
+  let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in  
   Image.image Dfa_module.to_line
   (Fwc_with_dependencies.directly_below fw_deps mn0);;

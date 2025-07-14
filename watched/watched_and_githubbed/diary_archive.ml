@@ -408,8 +408,11 @@ let act3() =
 
 (* Step 16 : Test equality after a crobj back and forth *)
 
-let extract_wg = function 
-(Fw_final_poly.With_githubbing g) -> g | _ -> failwith("hum") ;;
+let extract_wg g = g ;;
+
+
+(*function 
+(Fw_final_poly.With_githubbing g) -> g | _ -> failwith("hum") ;; *)
 
 let g1 = extract_wg (!(Usual_coma_state.Private.main_ref)) ;;
 
