@@ -68,7 +68,7 @@ let create_foreign_copy summary=
   let ffw = (!(Private.main_ref)) in 
   let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in  
   let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
-  Fw_with_world_copying.copy
+  Fw_world_copying.copy
   fw_deps summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
 
