@@ -60,7 +60,7 @@ let changed_files_in_foreign_copy ()=
 let clean_debug_dir ()=
   let ffw = (!(Private.main_ref)) in 
   let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
-  Fw_with_debugging.clean_debug_dir fw_deps;;
+  Fw_debugging.clean_debug_dir fw_deps;;
 
 
 let create_foreign_copy summary=
@@ -143,7 +143,7 @@ let show_value_occurrences_in_modulesystem module_name=
 let start_debugging ()=
   let ffw = (!(Private.main_ref)) in 
   let fw_deps = Fw_final_poly.to_fw_with_dependencies ffw in 
-  Fw_with_debugging.start_debugging fw_deps;;
+  Fw_debugging.start_debugging fw_deps;;
 
 
 let sugared_above capitalized_or_not_module_name=
