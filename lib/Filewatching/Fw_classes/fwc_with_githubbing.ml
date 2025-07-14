@@ -224,8 +224,18 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
       let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
       let _ = backup fw diff (Some msg) in     
       set_parent ~child:(github_configuration fw) ~new_parent ;;  
-
+  
+   let register_rootless_paths fw rootless_paths = 
+        let old_fw_deps = Inherited.to_fw_with_dependencies fw in 
+        let (new_fw_deps,_)=
+             Fwc_with_dependencies.register_rootless_paths old_fw_deps rootless_paths in 
+        let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+        let msg="register "^descr in 
+        let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
+        let _ = backup fw diff (Some msg) in     
+        Inherited.set_fw_with_dependencies fw new_fw_deps ;;    
    
+
 
   let relocate_module_to fw mod_name new_subdir = 
       let (new_parent,(_,replacements)) = Fwc_with_batch_compilation.relocate_module_to (parent fw) mod_name new_subdir in 
