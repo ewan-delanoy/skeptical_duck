@@ -68,6 +68,12 @@ module Inherited = struct
   
   let root fw = Ancestry.root (parent fw) ;;
   
+  let set_fw_with_dependencies fw fw_deps = 
+    let old_fw_batch = parent fw in 
+    let new_fw_batch = Fwc_with_batch_compilation.Inherited.set_fw_with_dependencies
+       old_fw_batch fw_deps in 
+    Fwg_with_githubbing.make new_fw_batch 
+       (Fwg_with_githubbing.github_configuration fw) ;;
   let set_gitpush_after_backup fw gab = 
     let old_github_config = Fwg_with_githubbing.github_configuration fw in 
     let new_github_config = Fwc_github_configuration.set_gitpush_after_backup old_github_config gab in 

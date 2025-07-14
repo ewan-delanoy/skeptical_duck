@@ -58,9 +58,10 @@ module Inherited = struct
   
   let root fw = Ancestry.root (parent fw) ;;
   
-  let set_parent fw fw_with_deps =
+  let set_fw_with_dependencies fw fw_with_deps =
     Fwg_with_batch_compilation.make fw_with_deps 
        (Fwg_with_batch_compilation.last_compilation_result_for_module fw) ;;
+  let set_parent  = set_fw_with_dependencies ;;
   
   let set_last_compilation_result fw new_lcr =
     Fwg_with_batch_compilation.make (Fwg_with_batch_compilation.parent fw)
