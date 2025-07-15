@@ -199,7 +199,17 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
       let _ = backup fw diff (Some msg) in     
       set_parent ~child:(github_configuration fw) ~new_parent ;;     
     
-  
+  let inspect_and_update fw opt_comment = 
+        let fw_batch = parent fw in 
+        let fw_with_deps = Fwc_with_batch_compilation.Private.parent fw_batch in
+        let (marcia_baila,(_,_,changed_files))
+                   =Fwc_with_dependencies.inspect_and_update fw_with_deps in 
+        let new_parent = Fwc_with_batch_compilation.Inherited.set_parent fw_batch marcia_baila  in 
+        let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
+        let _ = backup fw diff opt_comment in 
+        set_parent ~child:
+          (github_configuration fw) ~new_parent ;;  
+
   let register_rootless_paths fw rootless_paths = 
       let new_parent = Fwc_with_batch_compilation.register_rootless_paths (parent fw) rootless_paths in 
       let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
@@ -255,26 +265,21 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
       let _ = backup fw diff (Some msg) in 
       set_parent ~child:(github_configuration fw) ~new_parent ;;
 
-  let replace_value fw ((preceding_files,path),(old_v,new_v)) = 
-        let (parent1,(changed_modules_in_any_order,all_changes)) = 
-        Fwc_with_batch_compilation.replace_value (parent fw) ((preceding_files,path),(old_v,new_v))  in 
-        let new_parent = Fwc_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
-        let msg="rename "^old_v^" as "^new_v in 
-        let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changes in 
-        let _ = backup fw diff (Some msg) in 
-        set_parent ~child:(github_configuration fw) ~new_parent ;; 
+let replace_value fw
+      ((preceding_files,path),(old_v,new_v)) = 
+      let old_fw_deps = Inherited.uncle fw in 
+      let (new_fw_deps,(_u_changes,all_changes)) = 
+        Fwc_with_dependencies.replace_value old_fw_deps 
+         ((preceding_files,path),(old_v,new_v)) in 
+      let msg="rename "^old_v^" as "^new_v in 
+      let diff = Dircopy_diff.add_changes 
+      Dircopy_diff.empty_one all_changes in 
+      let _ = backup fw diff (Some msg) in 
+      Inherited.machen 
+       new_fw_deps (github_configuration fw)  ;;
  
    
-let inspect_and_update fw opt_comment = 
-  let fw_batch = parent fw in 
-  let fw_with_deps = Fwc_with_batch_compilation.Private.parent fw_batch in
-  let (marcia_baila,(_,_,changed_files))
-             =Fwc_with_dependencies.inspect_and_update fw_with_deps in 
-  let new_parent = Fwc_with_batch_compilation.Inherited.set_parent fw_batch marcia_baila  in 
-  let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
-  let _ = backup fw diff opt_comment in 
-  set_parent ~child:
-    (github_configuration fw) ~new_parent ;;  
+
       
 
  

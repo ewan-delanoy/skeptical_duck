@@ -582,8 +582,6 @@ module Snip169=struct
   let f4 = Fwc_with_dependencies.ancestors_for_module ;;
   let f5 = Fwc_with_dependencies.below ;;
   let f6 = Fwc_with_archives.check_that_no_change_has_occurred ;;
-  let f7 = Fwc_with_batch_compilation.clean_debug_dir ;;
-  let f8 = Fwc_with_batch_compilation.clean_exec_dir ;;
   let f9 = Fwc_with_dependencies.decipher_module ;;
   let f10 = Fwc_with_dependencies.decipher_path ;;
   let f11 = Fwc_with_dependencies.dep_ordered_modules ;;
@@ -605,7 +603,6 @@ module Snip169=struct
   let f27 = Fwc_with_dependencies.number_of_modules ;;
   let f28 = Fwc_with_githubbing.Crobj.of_concrete_object ;;
   let f31 = Fwc_with_githubbing.plunge_fw_config_with_github_config ;;
-  let f32 = Fwc_with_batch_compilation.preq_types_with_extra_info ;;
   let f33 = Fwc_with_githubbing.register_rootless_paths ;;
   let f34 = Fwc_with_githubbing.relocate_module_to ;;
   let f35 = Fwc_with_githubbing.rename_module ;;
@@ -615,13 +612,10 @@ module Snip169=struct
   let f39 = Fwc_configuration.root ;;
   let f40 = Fwc_with_githubbing.Inherited.set_gitpush_after_backup ;;
   let f41 = Fwc_with_batch_compilation.Inherited.show_value_occurrences ;;
-  let f42 = Fwc_with_batch_compilation.start_debugging ;;
-  let f43 = Fwc_with_batch_compilation.start_executing ;;
   let f44 = Fwc_configuration.test_for_admissibility ;;
   let f45 = Fwc_with_githubbing.Crobj.to_concrete_object ;;
   let f46 = Fwc_with_githubbing.Inherited.to_fw_configuration ;;
   let f47 = Fwg_with_githubbing.github_configuration ;;
-  let f48 = Fwc_with_batch_compilation.up_to_date_elesses ;;
   let f49 = Fwc_with_archives.usual_compilable_files ;;
 
 end ;;
@@ -18740,7 +18734,6 @@ let main ((i,j),name) spice=
 *)
 
 (*
-
 main ((961,985),"compute_principal_ending") Colombo;;  
 main ((1024,1031),"registrations_for_lonely_ending") Colombo;; 
 main ((1655,1658),"ocamldebug_printersfile_path") Colombo;;  

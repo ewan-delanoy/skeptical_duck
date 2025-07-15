@@ -484,25 +484,25 @@ module Private = struct
       (fw3,changes) ;;
       
    
-   let rename_subdirectory_as fw (old_subdir,new_subdir)=
+  let rename_subdirectory_as fw (old_subdir,new_subdir)=
       let (new_parent,extra)=Fwc_with_dependencies.rename_subdirectory_as 
          (parent fw) (old_subdir,new_subdir) in   
          (Inherited.set_parent fw new_parent,extra) ;;
    
-    let replace_string fw old_s new_s =
-         let old_parent = parent fw in 
-         let (new_parent,(changes1,all_changed_files)) = Fwc_with_dependencies.replace_string old_parent (old_s,new_s) in 
-         let changed_rootlesses = Image.image fst changes1 in 
-         let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-         (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
+  let replace_string fw old_s new_s =
+    let old_parent = parent fw in 
+    let (new_parent,(changes1,all_changed_files)) = Fwc_with_dependencies.replace_string old_parent (old_s,new_s) in 
+    let changed_rootlesses = Image.image fst changes1 in 
+    let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+    (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changed_files));; 
     
     
-    let replace_value fw ((preceding_files,path),(old_v,new_v)) =
-          let old_parent = parent fw in 
-          let (new_parent,(u_changes,all_changes)) = Fwc_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
-          let changed_rootlesses = Image.image fst u_changes in 
-          let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
-          (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
+  let replace_value fw ((preceding_files,path),(old_v,new_v)) =
+    let old_parent = parent fw in 
+    let (new_parent,(u_changes,all_changes)) = Fwc_with_dependencies.replace_value old_parent ((preceding_files,path),(old_v,new_v)) in 
+    let changed_rootlesses = Image.image fst u_changes in 
+    let changed_modules_in_any_order = Image.image Dfn_rootless.to_module changed_rootlesses in 
+    (Inherited.set_parent fw new_parent,(changed_modules_in_any_order,all_changes));;      
 
 
      
