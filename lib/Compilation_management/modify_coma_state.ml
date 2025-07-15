@@ -40,8 +40,8 @@
             let _=FromAncestors.persist fw2 in 
             fw2;;
          
-         let recompile fw opt_comment=
-            let fw2= Fwc_with_githubbing.usual_recompile fw opt_comment in 
+         let save_latest_changes fw opt_comment=
+            let fw2= Fwc_with_githubbing.inspect_and_update fw opt_comment in 
             let _=FromAncestors.persist fw2 in 
             fw2;;
          
@@ -122,8 +122,8 @@
             let new_fw = And_save.internet_access (!pfw) bowl in 
              pfw:=new_fw;;
    
-         let recompile pfw opt_comment=
-            let new_fw = And_save.recompile (!pfw) opt_comment in 
+         let save_latest_changes pfw opt_comment=
+            let new_fw = And_save.save_latest_changes (!pfw) opt_comment in 
             pfw:=new_fw;;
    
    

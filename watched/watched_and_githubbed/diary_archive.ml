@@ -447,7 +447,7 @@ let g1 = Usual_coma_state.changed_files_in_foreign_copy () ;;
 
 Usual_coma_state.officialize_foreign_changes () ;;
 
-reco "use Fwg_with_dependencies in Fwc_with_dependencies";;
+save "use Fwg_with_dependencies in Fwc_with_dependencies";;
 
 (* Step 19 : reset *)
 
@@ -604,8 +604,6 @@ module Snip169=struct
   let f26 = Fwc_with_archives.noncompilable_files ;;
   let f27 = Fwc_with_dependencies.number_of_modules ;;
   let f28 = Fwc_with_githubbing.Crobj.of_concrete_object ;;
-  let f29 = Fwc_with_githubbing.of_fw_config_and_github_config ;;
-  let f30 = Fwc_with_githubbing.of_fw_with_batch_compilation ;;
   let f31 = Fwc_with_githubbing.plunge_fw_config_with_github_config ;;
   let f32 = Fwc_with_batch_compilation.preq_types_with_extra_info ;;
   let f33 = Fwc_with_githubbing.register_rootless_paths ;;
@@ -625,8 +623,6 @@ module Snip169=struct
   let f47 = Fwg_with_githubbing.github_configuration ;;
   let f48 = Fwc_with_batch_compilation.up_to_date_elesses ;;
   let f49 = Fwc_with_archives.usual_compilable_files ;;
-  let f50 = Fwc_with_githubbing.usual_recompile ;;
-  
 
 end ;;
 
@@ -18582,7 +18578,7 @@ regi "Depth_one_testdir/Depth_two_testdir/adhoc/tf_five.ml";;
 
 Io.overwrite_with tf3 "let c=Tf_one.a+Tf_two.b;;" ;;
 
-reco "1";;
+save "1";;
 
 fgs ["tf_one";"tf_two";"tf_three";"tf_four";"tf_five"] ;;
 

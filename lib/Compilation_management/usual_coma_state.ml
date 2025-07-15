@@ -127,7 +127,6 @@ let officialize_foreign_changes () =
    let cmds = Private.commands_for_change_officialization temp1 in
    Unix_command.conditional_multiple_uc cmds;;
 
-let recompile opt=Modify_coma_state.Reference.recompile Private.main_ref opt;;
    
 
 let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
@@ -149,6 +148,9 @@ let rename_module old_name new_name=
 let rename_string_or_value old_name new_name=
    Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
+
+let save_latest_changes opt=Modify_coma_state.Reference.save_latest_changes Private.main_ref opt;;
+
 
 let self_contained_module_copy ~prefix hm= 
   let fw_git = (!(Private.main_ref)) in 

@@ -60,7 +60,6 @@ let noncompilable_files = Fwc_with_archives.noncompilable_files ;;
 
 let number_of_modules =  Fwc_with_dependencies.number_of_modules ;;
 let of_concrete_object = Fwc_with_githubbing.Crobj.of_concrete_object ;;
-let of_fw_config_and_github_config = Fwc_with_githubbing.of_fw_config_and_github_config  ;;
 
 let plunge_fw_config_with_github_config fw_config github_config =  Fwc_with_githubbing.plunge_fw_config_with_github_config fw_config github_config ;;
 let register_rootless_paths = Fwc_with_githubbing.register_rootless_paths  ;;
@@ -85,7 +84,5 @@ let test_for_admissibility = Fwc_configuration.test_for_admissibility  ;;
 
 let to_concrete_object = Fwc_with_githubbing.Crobj.to_concrete_object ;;
 let usual_compilable_files = Fwc_with_archives.usual_compilable_files  ;;
-
-let usual_recompile =  Fwc_with_githubbing.usual_recompile ;;
 
   

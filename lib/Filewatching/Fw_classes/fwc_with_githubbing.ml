@@ -8,84 +8,82 @@ type t = Fwg_with_githubbing.t ;;
 
 module Inherited = struct
 
-  module Parent = Fwc_with_batch_compilation ;;
+  module Aunt = Fwc_with_dependencies ;;
+
+  let uncle fw = Fwg_with_batch_compilation.parent 
+      (Fwg_with_githubbing.parent fw) ;;
+
+  module Tapistry = Aunt.Inherited ;;  
+
+  let machen fw_deps github_config= 
+    let fw_batch = Fwg_with_batch_compilation.make fw_deps [] in 
+    Fwg_with_githubbing.make fw_batch github_config ;;
+
+  
+
+  (* module Parent = Fwc_with_batch_compilation ;;
 
   module Ancestry = Parent.Inherited ;;
   let parent = Fwg_with_githubbing.parent ;;
   
   let set_parent fw fw_batch =
     Fwg_with_githubbing.make fw_batch 
-       (Fwg_with_githubbing.github_configuration fw) ;;
+       (Fwg_with_githubbing.github_configuration fw) ;; *)
   
   
-  let all_endinglesses fw = Ancestry.all_endinglesses (parent fw) ;;
-  let all_moduled_mlx_files fw = Ancestry.all_moduled_mlx_files (parent fw) ;;
-  let all_subdirectories fw = Ancestry.all_subdirectories (parent fw) ;;
-  let ancestors_for_module fw = Ancestry.ancestors_for_module (parent fw) ;;
-  let below fw = Ancestry.below (parent fw) ;;
+  let all_endinglesses fw = Aunt.all_endinglesses (uncle fw) ;;
+  let all_moduled_mlx_files fw = Aunt.all_moduled_mlx_files (uncle fw) ;;
+  let all_subdirectories fw = Aunt.all_subdirectories (uncle fw) ;;
+  let ancestors_for_module fw = Aunt.ancestors_for_module (uncle fw) ;;
+  let below fw = Aunt.below (uncle fw) ;;
   
   let check_module_sequence_for_forgettability fw = 
-    Ancestry.check_module_sequence_for_forgettability (parent fw) ;;
+    Aunt.check_module_sequence_for_forgettability (uncle fw) ;;
   
-  let check_that_no_change_has_occurred fw = Ancestry.check_that_no_change_has_occurred(parent fw)  ;;  
+  let check_that_no_change_has_occurred fw = 
+    Tapistry.check_that_no_change_has_occurred(uncle fw)  ;;  
     
   
-  let  clean_debug_dir fw = Parent.clean_debug_dir(parent fw)  ;;
-  
-  let  clean_exec_dir fw = Parent.clean_exec_dir(parent fw)  ;;
-  
-  let decipher_module fw = Ancestry.decipher_module (parent fw) ;;
-  let decipher_path fw = Ancestry.decipher_path (parent fw) ;;
-  let dep_ordered_modules fw = Ancestry.dep_ordered_modules (parent fw) ;;
-  let directly_below fw = Ancestry.directly_below (parent fw) ;;
-  let direct_fathers_for_module fw = Ancestry.direct_fathers_for_module (parent fw) ;;
-  let duplicate_module fw = Ancestry.duplicate_module (parent fw) ;;
-  let endingless_at_module fw = Ancestry.endingless_at_module (parent fw) ;;
-  let find_subdir_from_suffix fw = Ancestry.find_subdir_from_suffix (parent fw) ;;
+  let decipher_module fw = Aunt.decipher_module (uncle fw) ;;
+  let decipher_path fw = Aunt.decipher_path (uncle fw) ;;
+  let dep_ordered_modules fw = Aunt.dep_ordered_modules (uncle fw) ;;
+  let directly_below fw = Aunt.directly_below (uncle fw) ;;
+  let direct_fathers_for_module fw = Aunt.direct_fathers_for_module (uncle fw) ;;
+  let duplicate_module fw = Aunt.duplicate_module (uncle fw) ;;
+  let endingless_at_module fw = Aunt.endingless_at_module (uncle fw) ;;
+  let find_subdir_from_suffix fw = Aunt.find_subdir_from_suffix (uncle fw) ;;
   
   
   let gitpush_after_backup fw = Fwc_github_configuration.gitpush_after_backup (Fwg_with_githubbing.github_configuration fw) ;;
   
-  let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
-  let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
+  let ignored_files fw = Tapistry.ignored_files (uncle fw) ;;
+  let ignored_subdirectories fw = Tapistry.ignored_subdirectories (uncle fw) ;;
   
   
-  let  latest_changes fw = Ancestry.latest_changes(parent fw)  ;;    
+  let  latest_changes fw = Tapistry.latest_changes(uncle fw)  ;;    
   
-  let list_values_from_module fw = Ancestry.list_values_from_module(parent fw)  ;;
-  
-  let  modern_recompile fw changed_mods = 
-    set_parent fw (Parent.modern_recompile
-         (Fwg_with_githubbing.parent fw) changed_mods ) ;;
+  let list_values_from_module fw = Aunt.list_values_from_module(uncle fw)  ;;
   
   
-  let modules_using_value fw = Ancestry.modules_using_value (parent fw) ;; 
+  let modules_using_value fw = Aunt.modules_using_value (uncle fw) ;; 
   
-  let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
+  let  noncompilable_files fw = Tapistry.noncompilable_files(uncle fw)  ;; 
   
-  let number_of_modules fw = Ancestry.number_of_modules (parent fw) ;;
-  let  preq_types_with_extra_info fw = Parent.preq_types_with_extra_info(parent fw)  ;;
+  let number_of_modules fw = Aunt.number_of_modules (uncle fw) ;;
   
-  let root fw = Ancestry.root (parent fw) ;;
+  let root fw = Tapistry.root (uncle fw) ;;
   
   let set_fw_with_dependencies fw fw_deps = 
-    let old_fw_batch = parent fw in 
-    let new_fw_batch = Fwc_with_batch_compilation.Inherited.set_fw_with_dependencies
-       old_fw_batch fw_deps in 
-    Fwg_with_githubbing.make new_fw_batch 
+    machen fw_deps 
        (Fwg_with_githubbing.github_configuration fw) ;;
   let set_gitpush_after_backup fw gab = 
     let old_github_config = Fwg_with_githubbing.github_configuration fw in 
     let new_github_config = Fwc_github_configuration.set_gitpush_after_backup old_github_config gab in 
-    Fwg_with_githubbing.make (parent fw) new_github_config ;;
+    machen (uncle fw) new_github_config ;;
   
   
   
-  let  show_value_occurrences fw = Ancestry.show_value_occurrences(parent fw)  ;;
-  
-  let  start_debugging fw = Parent.start_debugging(parent fw)  ;;
-  
-  let  start_executing fw = Parent.start_executing(parent fw)  ;;
+  let  show_value_occurrences fw = Aunt.show_value_occurrences(uncle fw)  ;;
   
   let test_equality fw1 fw2 = 
     let gc = Fwg_with_githubbing.github_configuration in 
@@ -95,7 +93,7 @@ module Inherited = struct
     and get_encoding_protected_files = (fun fw->Fwc_github_configuration.encoding_protected_files(gc fw)) in 
   
     (
-      Ancestry.test_equality (parent fw1) (parent fw2)
+      Tapistry.test_equality (uncle fw1) (uncle fw2)
     )
     @
     (
@@ -109,18 +107,15 @@ module Inherited = struct
     ) ;;
   
     
-  let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
+  let test_for_admissibility fw = Tapistry.test_for_admissibility (uncle fw) ;;
   
-  let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
+  let to_fw_configuration fw = Tapistry.to_fw_configuration (uncle fw) ;;
   
-  let to_fw_with_archives fw = Ancestry.to_fw_with_archives (parent fw) ;;
-  let to_fw_with_dependencies fw = Fwc_with_batch_compilation.zxzxzx (parent fw) ;;
+  let to_fw_with_archives fw = Tapistry.to_fw_with_archives (uncle fw) ;;
+  let to_fw_with_dependencies fw = uncle fw ;;
 
-
-  let  up_to_date_elesses fw = Parent.up_to_date_elesses(parent fw)  ;;
   
-  
-  let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;; 
+  let  usual_compilable_files fw = Tapistry.usual_compilable_files(uncle fw)  ;; 
   
   
 end ;;  
@@ -171,23 +166,11 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
   let set_parent ~child ~new_parent = 
    make new_parent child ;;
   
-
-  let usual_batch fw modnames = 
-    let (new_parent,rejected_ones,accepted_ones) = 
-      Fwc_with_batch_compilation.usual_batch (parent fw) modnames in 
-    (Inherited.set_parent fw new_parent,rejected_ones,accepted_ones) ;; 
   
-  
-
-  
-  let of_fw_config_and_github_config fw_config github_config = 
-    make (Fwc_with_batch_compilation.of_configuration fw_config)
-       github_config ;;
-   
 
 
   let plunge_fw_config_with_github_config fw_config github_config= 
-   make (Fwc_with_batch_compilation.plunge_fw_configuration fw_config)
+   Inherited.machen (Fwc_with_dependencies.plunge_fw_configuration fw_config)
    github_config ;;
   
     
@@ -282,11 +265,17 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
         set_parent ~child:(github_configuration fw) ~new_parent ;; 
  
    
-  let usual_recompile fw opt_comment = 
-    let (new_parent,(_changed_uc,changed_files)) = Fwc_with_batch_compilation.usual_recompile (parent fw)  in 
-    let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
-    let _ = backup fw diff opt_comment in 
-    set_parent ~child:(github_configuration fw) ~new_parent ;;
+let inspect_and_update fw opt_comment = 
+  let fw_batch = parent fw in 
+  let fw_with_deps = Fwc_with_batch_compilation.Private.parent fw_batch in
+  let (marcia_baila,(_,_,changed_files))
+             =Fwc_with_dependencies.inspect_and_update fw_with_deps in 
+  let new_parent = Fwc_with_batch_compilation.Inherited.set_parent fw_batch marcia_baila  in 
+  let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
+  let _ = backup fw diff opt_comment in 
+  set_parent ~child:
+    (github_configuration fw) ~new_parent ;;  
+      
 
  
 
@@ -298,10 +287,9 @@ end ;;
 let forget_modules = Private.forget_modules ;; 
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
 let github_configuration = Fwg_with_githubbing.github_configuration ;;
-
+let inspect_and_update = Private.inspect_and_update ;;
 let of_fw_with_batch_compilation =Private.usual_extension ;;
-let of_fw_config_and_github_config = Private.of_fw_config_and_github_config ;;
-let parent = Fwg_with_githubbing.parent ;;
+
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
 let relocate_module_to  = Private.relocate_module_to ;;         
@@ -309,5 +297,5 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
-let usual_recompile = Private.usual_recompile ;;
+
 

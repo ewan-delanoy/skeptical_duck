@@ -48,13 +48,9 @@ let lc () = let _ = Usual_coma_state.latest_changes () in ();;
 
 let muv=Usual_coma_state.modules_using_value;;
 
-let reco msg=Usual_coma_state.recompile (Some msg);; 
-
-let rsp msg = Usual_coma_state.recompile (Some (msg^ " in Sz3_preliminaries"));; 
+let save msg=Usual_coma_state.save_latest_changes (Some msg);; 
 
 let regi rootless_line=Usual_coma_state.register_rootless_line rootless_line;;
-
-let regis rootless_lines=Usual_coma_state.register_rootless_lines rootless_lines;;
 
 let relo = Usual_coma_state.relocate_module_to;;
 
