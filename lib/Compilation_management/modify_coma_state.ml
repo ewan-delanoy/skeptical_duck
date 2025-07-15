@@ -46,12 +46,19 @@
             fw2;;
          
 
-         let refresh fw =
-            let fw2= Fwc_with_githubbing.of_fw_config_and_github_config 
-            (Fwc_with_githubbing.Inherited.to_fw_configuration fw) 
-            (Fwc_with_githubbing.github_configuration fw)  in 
-            let _=FromAncestors.persist fw2 in 
-            fw2;;       
+   let refresh fw =
+     let fw_config = Fwc_with_githubbing.Inherited.to_fw_configuration fw
+     and github_config = Fwc_with_githubbing.github_configuration fw in 
+     let root = Fwc_configuration.root fw_config in 
+     let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash root) '/' in
+     let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
+       Coma_constant.minimal_set_of_needed_dirs 
+           (Coma_constant.conventional_files_with_minimal_content proj_name)) in 
+     let fw_with_deps = Fwc_with_dependencies.of_configuration fw_config in 
+     let fw_batch=Fwg_with_batch_compilation.make fw_with_deps [] in 
+     let fw2= Fwg_with_githubbing.make fw_batch github_config  in 
+     let _=FromAncestors.persist fw2 in 
+     fw2;;       
 
          let register_rootless_paths fw rootless_path=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 

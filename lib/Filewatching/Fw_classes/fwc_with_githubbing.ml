@@ -114,7 +114,7 @@ module Inherited = struct
   let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
   
   let to_fw_with_archives fw = Ancestry.to_fw_with_archives (parent fw) ;;
-  let to_fw_with_dependencies fw = Ancestry.to_fw_with_dependencies (parent fw) ;;
+  let to_fw_with_dependencies fw = Fwc_with_batch_compilation.zxzxzx (parent fw) ;;
 
 
   let  up_to_date_elesses fw = Parent.up_to_date_elesses(parent fw)  ;;
