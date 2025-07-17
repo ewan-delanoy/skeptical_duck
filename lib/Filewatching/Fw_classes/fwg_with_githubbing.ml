@@ -13,7 +13,7 @@ type t = Fw_flattened_poly_t.t ;;
 
 let parent fw = {
   fw with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_batch_compilation" 
+  Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" 
  } ;; 
 let github_configuration fw = {
   fw with 
@@ -37,7 +37,7 @@ let make fw_batch github_config = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fwc_with_batch_compilation.t;
+  _parent : Fwc_with_dependencies.t;
   github_config : Fwc_github_configuration.t;
 } ;;
 

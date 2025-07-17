@@ -8,82 +8,70 @@ type t = Fwg_with_githubbing.t ;;
 
 module Inherited = struct
 
-  module Aunt = Fwc_with_dependencies ;;
+  module Parent = Fwc_with_dependencies ;;
 
-  let uncle fw = Fwg_with_batch_compilation.parent 
-      (Fwg_with_githubbing.parent fw) ;;
+  let parent fw = Fwg_with_githubbing.parent fw ;;
 
-  module Tapistry = Aunt.Inherited ;;  
+  module Ancestry = Parent.Inherited ;;  
 
-  let machen fw_deps github_config= 
-    let fw_batch = Fwg_with_batch_compilation.make fw_deps [] in 
-    Fwg_with_githubbing.make fw_batch github_config ;;
+  let make fw_deps github_config= 
+    Fwg_with_githubbing.make fw_deps github_config ;;
+
 
   
-
-  (* module Parent = Fwc_with_batch_compilation ;;
-
-  module Ancestry = Parent.Inherited ;;
-  let parent = Fwg_with_githubbing.parent ;;
-  
-  let set_parent fw fw_batch =
-    Fwg_with_githubbing.make fw_batch 
-       (Fwg_with_githubbing.github_configuration fw) ;; *)
-  
-  
-  let all_endinglesses fw = Aunt.all_endinglesses (uncle fw) ;;
-  let all_moduled_mlx_files fw = Aunt.all_moduled_mlx_files (uncle fw) ;;
-  let all_subdirectories fw = Aunt.all_subdirectories (uncle fw) ;;
-  let ancestors_for_module fw = Aunt.ancestors_for_module (uncle fw) ;;
-  let below fw = Aunt.below (uncle fw) ;;
+  let all_endinglesses fw = Parent.all_endinglesses (parent fw) ;;
+  let all_moduled_mlx_files fw = Parent.all_moduled_mlx_files (parent fw) ;;
+  let all_subdirectories fw = Parent.all_subdirectories (parent fw) ;;
+  let ancestors_for_module fw = Parent.ancestors_for_module (parent fw) ;;
+  let below fw = Parent.below (parent fw) ;;
   
   let check_module_sequence_for_forgettability fw = 
-    Aunt.check_module_sequence_for_forgettability (uncle fw) ;;
+    Parent.check_module_sequence_for_forgettability (parent fw) ;;
   
   let check_that_no_change_has_occurred fw = 
-    Tapistry.check_that_no_change_has_occurred(uncle fw)  ;;  
+    Ancestry.check_that_no_change_has_occurred(parent fw)  ;;  
     
   
-  let decipher_module fw = Aunt.decipher_module (uncle fw) ;;
-  let decipher_path fw = Aunt.decipher_path (uncle fw) ;;
-  let dep_ordered_modules fw = Aunt.dep_ordered_modules (uncle fw) ;;
-  let directly_below fw = Aunt.directly_below (uncle fw) ;;
-  let direct_fathers_for_module fw = Aunt.direct_fathers_for_module (uncle fw) ;;
-  let duplicate_module fw = Aunt.duplicate_module (uncle fw) ;;
-  let endingless_at_module fw = Aunt.endingless_at_module (uncle fw) ;;
-  let find_subdir_from_suffix fw = Aunt.find_subdir_from_suffix (uncle fw) ;;
+  let decipher_module fw = Parent.decipher_module (parent fw) ;;
+  let decipher_path fw = Parent.decipher_path (parent fw) ;;
+  let dep_ordered_modules fw = Parent.dep_ordered_modules (parent fw) ;;
+  let directly_below fw = Parent.directly_below (parent fw) ;;
+  let direct_fathers_for_module fw = Parent.direct_fathers_for_module (parent fw) ;;
+  let duplicate_module fw = Parent.duplicate_module (parent fw) ;;
+  let endingless_at_module fw = Parent.endingless_at_module (parent fw) ;;
+  let find_subdir_from_suffix fw = Parent.find_subdir_from_suffix (parent fw) ;;
   
   
   let gitpush_after_backup fw = Fwc_github_configuration.gitpush_after_backup (Fwg_with_githubbing.github_configuration fw) ;;
   
-  let ignored_files fw = Tapistry.ignored_files (uncle fw) ;;
-  let ignored_subdirectories fw = Tapistry.ignored_subdirectories (uncle fw) ;;
+  let ignored_files fw = Ancestry.ignored_files (parent fw) ;;
+  let ignored_subdirectories fw = Ancestry.ignored_subdirectories (parent fw) ;;
   
   
-  let  latest_changes fw = Tapistry.latest_changes(uncle fw)  ;;    
+  let  latest_changes fw = Ancestry.latest_changes(parent fw)  ;;    
   
-  let list_values_from_module fw = Aunt.list_values_from_module(uncle fw)  ;;
+  let list_values_from_module fw = Parent.list_values_from_module(parent fw)  ;;
   
   
-  let modules_using_value fw = Aunt.modules_using_value (uncle fw) ;; 
+  let modules_using_value fw = Parent.modules_using_value (parent fw) ;; 
   
-  let  noncompilable_files fw = Tapistry.noncompilable_files(uncle fw)  ;; 
+  let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
   
-  let number_of_modules fw = Aunt.number_of_modules (uncle fw) ;;
+  let number_of_modules fw = Parent.number_of_modules (parent fw) ;;
   
-  let root fw = Tapistry.root (uncle fw) ;;
+  let root fw = Ancestry.root (parent fw) ;;
   
   let set_fw_with_dependencies fw fw_deps = 
-    machen fw_deps 
+    make fw_deps 
        (Fwg_with_githubbing.github_configuration fw) ;;
   let set_gitpush_after_backup fw gab = 
     let old_github_config = Fwg_with_githubbing.github_configuration fw in 
     let new_github_config = Fwc_github_configuration.set_gitpush_after_backup old_github_config gab in 
-    machen (uncle fw) new_github_config ;;
+    make (parent fw) new_github_config ;;
   
   
   
-  let  show_value_occurrences fw = Aunt.show_value_occurrences(uncle fw)  ;;
+  let  show_value_occurrences fw = Parent.show_value_occurrences(parent fw)  ;;
   
   let test_equality fw1 fw2 = 
     let gc = Fwg_with_githubbing.github_configuration in 
@@ -93,7 +81,7 @@ module Inherited = struct
     and get_encoding_protected_files = (fun fw->Fwc_github_configuration.encoding_protected_files(gc fw)) in 
   
     (
-      Tapistry.test_equality (uncle fw1) (uncle fw2)
+      Ancestry.test_equality (parent fw1) (parent fw2)
     )
     @
     (
@@ -107,15 +95,15 @@ module Inherited = struct
     ) ;;
   
     
-  let test_for_admissibility fw = Tapistry.test_for_admissibility (uncle fw) ;;
+  let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
   
-  let to_fw_configuration fw = Tapistry.to_fw_configuration (uncle fw) ;;
+  let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
   
-  let to_fw_with_archives fw = Tapistry.to_fw_with_archives (uncle fw) ;;
-  let to_fw_with_dependencies fw = uncle fw ;;
+  let to_fw_with_archives fw = Ancestry.to_fw_with_archives (parent fw) ;;
+  let to_fw_with_dependencies fw = parent fw ;;
 
   
-  let  usual_compilable_files fw = Tapistry.usual_compilable_files(uncle fw)  ;; 
+  let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;; 
   
   
 end ;;  
@@ -130,14 +118,14 @@ module Crobj = struct
   let of_concrete_object ccrt_obj = 
     let g=Concrete_object.get_record ccrt_obj in 
     Fwg_with_githubbing.make 
-     (Fwc_with_batch_compilation.Crobj.of_concrete_object (g label_for_parent))
+     (Fwc_with_dependencies.Crobj.of_concrete_object (g label_for_parent))
      (Fwc_github_configuration.Crobj.of_concrete_object (g label_for_github_config))
     ;;
   
   let to_concrete_object fw = 
    let items =  
    [
-     label_for_parent, Fwc_with_batch_compilation.Crobj.to_concrete_object ( Fwg_with_githubbing.parent fw ) ;
+     label_for_parent, Fwc_with_dependencies.Crobj.to_concrete_object ( Fwg_with_githubbing.parent fw ) ;
      label_for_github_config, Fwc_github_configuration.Crobj.to_concrete_object ( Fwg_with_githubbing.github_configuration fw ) ;
    ] in 
    Concrete_object_t.Record items ;;
@@ -157,7 +145,7 @@ let make = Fwg_with_githubbing.make;;
 
 
   let plunge_fw_config_with_github_config fw_config github_config= 
-   Inherited.machen (Fwc_with_dependencies.plunge_fw_configuration fw_config)
+   Inherited.make (Fwc_with_dependencies.plunge_fw_configuration fw_config)
    github_config ;;
   
     
@@ -168,7 +156,7 @@ let make = Fwg_with_githubbing.make;;
 
 
 let forget_modules fw mods = 
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let check = Inherited.check_module_sequence_for_forgettability fw mods in 
   if check <> []
   then raise(Forget_modules_exn(check))
@@ -179,40 +167,40 @@ let forget_modules fw mods =
   let msg="delete "^descr in 
   let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
   let _ = backup fw diff (Some msg) in     
-  Inherited.machen new_fw_deps (github_configuration fw) ;;    
+  Inherited.make new_fw_deps (github_configuration fw) ;;    
 
 let forget_nonmodular_rootlesses fw rootless_paths = 
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,_) = Fwc_with_dependencies.remove_files 
          old_fw_deps rootless_paths in 
   let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
   let msg="delete "^descr in 
   let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
   let _ = backup fw diff (Some msg) in     
-  Inherited.machen new_fw_deps (github_configuration fw) ;;      
+  Inherited.make new_fw_deps (github_configuration fw) ;;      
     
 let inspect_and_update fw opt_comment = 
-  let old_fw_deps = Inherited.uncle fw in
+  let old_fw_deps = Inherited.parent fw in
   let (new_fw_deps,(_,_,changed_files))
                    =Fwc_with_dependencies.inspect_and_update old_fw_deps in 
   let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
   let _ = backup fw diff opt_comment in 
-  Inherited.machen new_fw_deps (github_configuration fw) ;;  
+  Inherited.make new_fw_deps (github_configuration fw) ;;  
 
 
 let register_rootless_paths fw rootless_paths = 
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,_)=
              Fwc_with_dependencies.register_rootless_paths old_fw_deps rootless_paths in 
   let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
   let msg="register "^descr in 
   let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
   let _ = backup fw diff (Some msg) in     
-  Inherited.machen new_fw_deps (github_configuration fw) ;;   
+  Inherited.make new_fw_deps (github_configuration fw) ;;   
    
 
 let relocate_module_to fw mod_name new_subdir = 
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,(_,replacements))=
   Fwc_with_dependencies.relocate_module_to old_fw_deps 
   (mod_name,new_subdir) in
@@ -220,13 +208,13 @@ let relocate_module_to fw mod_name new_subdir =
   (Dfa_subdirectory.connectable_to_subpath new_subdir) in 
   let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
   let _ = backup fw diff (Some msg) in     
-  Inherited.machen new_fw_deps (github_configuration fw) ;;  
+  Inherited.make new_fw_deps (github_configuration fw) ;;  
 
 let rename_module fw old_middle_name new_nonslashed_name = 
   let old_nm=Dfn_middle.to_module old_middle_name in
   let new_nm=Dfa_module.of_line 
            (No_slashes.to_string new_nonslashed_name) in  
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let separated_acolytes_below=List.filter_map(
     fun mn->
     if List.mem old_nm (Fwc_with_dependencies.ancestors_for_module 
@@ -246,10 +234,10 @@ let rename_module fw old_middle_name new_nonslashed_name =
   let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
   let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
   let _ = backup fw diff2 (Some msg) in  
-  Inherited.machen new_fw_deps (github_configuration fw) ;;   
+  Inherited.make new_fw_deps (github_configuration fw) ;;   
 
 let rename_subdirectory_as fw (old_subdir,new_subdir) = 
-  let old_fw_deps = Inherited.uncle fw in
+  let old_fw_deps = Inherited.parent fw in
   let (new_fw_deps,extra)=Fwc_with_dependencies.rename_subdirectory_as 
            old_fw_deps (old_subdir,new_subdir) in   
   let (_,original_reps) = extra in 
@@ -257,22 +245,22 @@ let rename_subdirectory_as fw (old_subdir,new_subdir) =
         ^" as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
   let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
   let _ = backup fw diff (Some msg) in   
-  Inherited.machen new_fw_deps (github_configuration fw);; 
+  Inherited.make new_fw_deps (github_configuration fw);; 
   
 let replace_string fw old_s new_s = 
-  let old_fw_deps = Inherited.uncle fw in 
+  let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,(_,all_changed_files)) = 
         Fwc_with_dependencies.replace_string old_fw_deps (old_s,new_s) in 
   let msg="rename "^old_s^" as "^new_s in 
   let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one 
       all_changed_files in 
   let _ = backup fw diff (Some msg) in 
-  Inherited.machen new_fw_deps (github_configuration fw)  ;; 
+  Inherited.make new_fw_deps (github_configuration fw)  ;; 
     
 
 let replace_value fw
       ((preceding_files,path),(old_v,new_v)) = 
-      let old_fw_deps = Inherited.uncle fw in 
+      let old_fw_deps = Inherited.parent fw in 
       let (new_fw_deps,(_u_changes,all_changes)) = 
         Fwc_with_dependencies.replace_value old_fw_deps 
          ((preceding_files,path),(old_v,new_v)) in 
@@ -280,7 +268,7 @@ let replace_value fw
       let diff = Dircopy_diff.add_changes 
       Dircopy_diff.empty_one all_changes in 
       let _ = backup fw diff (Some msg) in 
-      Inherited.machen 
+      Inherited.make 
        new_fw_deps (github_configuration fw)  ;;
  
    
