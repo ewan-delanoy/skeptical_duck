@@ -154,19 +154,6 @@ let github_configuration = Fwg_with_githubbing.github_configuration ;;
 let make = Fwg_with_githubbing.make;;
 
 
-let usual_extension fw_batch backup_dir gab git_url enc_files = 
-  make fw_batch (Fwc_github_configuration.make 
- ~v_root:(Fwc_with_batch_compilation.Inherited.root fw_batch)
-  ~v_dir_for_backup:backup_dir
-~v_gitpush_after_backup:gab
-~v_github_url:git_url
-~v_encoding_protected_files:enc_files) ;;
-
-
-  let set_parent ~child ~new_parent = 
-   make new_parent child ;;
-  
-  
 
 
   let plunge_fw_config_with_github_config fw_config github_config= 
@@ -179,91 +166,109 @@ let usual_extension fw_batch backup_dir gab git_url enc_files =
 
   exception Forget_modules_exn of Dfa_module_t.t  list ;;     
 
-  let forget_modules fw mods = 
-    let check = Inherited.check_module_sequence_for_forgettability fw mods in 
-    if check <> []
-    then raise(Forget_modules_exn(check))
-    else
-    let (new_parent,removed_files) = Fwc_with_batch_compilation.forget_modules (parent fw) mods in 
-    let descr = String.concat " , " (Image.image Dfa_module.to_line mods) in 
-    let msg="delete "^descr in 
-    let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
-    let _ = backup fw diff (Some msg) in     
-    set_parent ~child:(github_configuration fw) ~new_parent ;;     
 
-  let forget_nonmodular_rootlesses fw rootless_paths=
-      let new_parent = Fwc_with_batch_compilation.remove_files (parent fw) rootless_paths in 
-      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
-      let msg="delete "^descr in 
-      let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
-      let _ = backup fw diff (Some msg) in     
-      set_parent ~child:(github_configuration fw) ~new_parent ;;     
+let forget_modules fw mods = 
+  let old_fw_deps = Inherited.uncle fw in 
+  let check = Inherited.check_module_sequence_for_forgettability fw mods in 
+  if check <> []
+  then raise(Forget_modules_exn(check))
+  else
+  let (new_fw_deps,removed_files) = 
+  Fwc_with_dependencies.forget_modules old_fw_deps mods in 
+  let descr = String.concat " , " (Image.image Dfa_module.to_line mods) in 
+  let msg="delete "^descr in 
+  let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
+  let _ = backup fw diff (Some msg) in     
+  Inherited.machen new_fw_deps (github_configuration fw) ;;    
+
+let forget_nonmodular_rootlesses fw rootless_paths = 
+  let old_fw_deps = Inherited.uncle fw in 
+  let (new_fw_deps,_) = Fwc_with_dependencies.remove_files 
+         old_fw_deps rootless_paths in 
+  let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+  let msg="delete "^descr in 
+  let diff = Dircopy_diff.destroy Dircopy_diff.empty_one rootless_paths  in  
+  let _ = backup fw diff (Some msg) in     
+  Inherited.machen new_fw_deps (github_configuration fw) ;;      
     
-  let inspect_and_update fw opt_comment = 
-        let fw_batch = parent fw in 
-        let fw_with_deps = Fwc_with_batch_compilation.Private.parent fw_batch in
-        let (marcia_baila,(_,_,changed_files))
-                   =Fwc_with_dependencies.inspect_and_update fw_with_deps in 
-        let new_parent = Fwc_with_batch_compilation.Inherited.set_parent fw_batch marcia_baila  in 
-        let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
-        let _ = backup fw diff opt_comment in 
-        set_parent ~child:
-          (github_configuration fw) ~new_parent ;;  
+let inspect_and_update fw opt_comment = 
+  let old_fw_deps = Inherited.uncle fw in
+  let (new_fw_deps,(_,_,changed_files))
+                   =Fwc_with_dependencies.inspect_and_update old_fw_deps in 
+  let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
+  let _ = backup fw diff opt_comment in 
+  Inherited.machen new_fw_deps (github_configuration fw) ;;  
 
-  let register_rootless_paths fw rootless_paths = 
-      let new_parent = Fwc_with_batch_compilation.register_rootless_paths (parent fw) rootless_paths in 
-      let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
-      let msg="register "^descr in 
-      let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
-      let _ = backup fw diff (Some msg) in     
-      set_parent ~child:(github_configuration fw) ~new_parent ;;  
-  
-   let register_rootless_paths fw rootless_paths = 
-        let old_fw_deps = Inherited.to_fw_with_dependencies fw in 
-        let (new_fw_deps,_)=
+
+let register_rootless_paths fw rootless_paths = 
+  let old_fw_deps = Inherited.uncle fw in 
+  let (new_fw_deps,_)=
              Fwc_with_dependencies.register_rootless_paths old_fw_deps rootless_paths in 
-        let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
-        let msg="register "^descr in 
-        let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
-        let _ = backup fw diff (Some msg) in     
-        Inherited.set_fw_with_dependencies fw new_fw_deps ;;    
+  let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
+  let msg="register "^descr in 
+  let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
+  let _ = backup fw diff (Some msg) in     
+  Inherited.machen new_fw_deps (github_configuration fw) ;;   
    
 
+let relocate_module_to fw mod_name new_subdir = 
+  let old_fw_deps = Inherited.uncle fw in 
+  let (new_fw_deps,(_,replacements))=
+  Fwc_with_dependencies.relocate_module_to old_fw_deps 
+  (mod_name,new_subdir) in
+  let msg="move "^(Dfa_module.to_line mod_name)^" to "^
+  (Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+  let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
+  let _ = backup fw diff (Some msg) in     
+  Inherited.machen new_fw_deps (github_configuration fw) ;;  
 
-  let relocate_module_to fw mod_name new_subdir = 
-      let (new_parent,(_,replacements)) = Fwc_with_batch_compilation.relocate_module_to (parent fw) mod_name new_subdir in 
-      let msg="move "^(Dfa_module.to_line mod_name)^" to "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-      let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
-      let _ = backup fw diff (Some msg) in     
-      set_parent ~child:(github_configuration fw) ~new_parent ;; 
+let rename_module fw old_middle_name new_nonslashed_name = 
+  let old_nm=Dfn_middle.to_module old_middle_name in
+  let new_nm=Dfa_module.of_line 
+           (No_slashes.to_string new_nonslashed_name) in  
+  let old_fw_deps = Inherited.uncle fw in 
+  let separated_acolytes_below=List.filter_map(
+    fun mn->
+    if List.mem old_nm (Fwc_with_dependencies.ancestors_for_module 
+                old_fw_deps mn)
+    then Some(Image.image (Dfn_full.to_rootless) 
+             (Fwc_with_dependencies.acolytes_at_module old_fw_deps mn))
+    else None) 
+    (Fwc_with_dependencies.dep_ordered_modules old_fw_deps) in
+  let all_acolytes_below=List.flatten separated_acolytes_below in
+  let (new_fw_deps,changes) = 
+    Fwc_with_dependencies.rename_module_on_filename_level_and_in_files 
+            old_fw_deps (old_nm,new_nm,all_acolytes_below) in 
+  let (_,(file_renamings,changed_files)) = changes in 
+  let msg="rename "^(Dfa_module.to_line
+             (Dfn_middle.to_module old_middle_name))^
+                " as "^(No_slashes.to_string new_nonslashed_name) in       
+  let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
+  let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
+  let _ = backup fw diff2 (Some msg) in  
+  Inherited.machen new_fw_deps (github_configuration fw) ;;   
 
-  let rename_module fw old_middle_name new_nonslashed_name = 
-      let (new_parent,(_,(file_renamings,changed_files))) = Fwc_with_batch_compilation.rename_module (parent fw) old_middle_name new_nonslashed_name in 
-      let msg="rename "^(Dfa_module.to_line(Dfn_middle.to_module old_middle_name))^
-              " as "^(No_slashes.to_string new_nonslashed_name) in       
-      let diff1 = Dircopy_diff.replace Dircopy_diff.empty_one file_renamings  in  
-      let diff2 = Dircopy_diff.add_changes diff1  changed_files  in  
-      let _ = backup fw diff2 (Some msg) in     
-      set_parent ~child:(github_configuration fw) ~new_parent ;;    
-
-  let rename_subdirectory_as fw (old_subdir,new_subdir) = 
-    let (new_parent,(_,original_reps)) = Fwc_with_batch_compilation.rename_subdirectory_as 
-          (parent fw) (old_subdir,new_subdir) in 
-    let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)^
-          " as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
-    let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
-    let _ = backup fw diff (Some msg) in     
-    set_parent ~child:(github_configuration fw) ~new_parent ;; 
-
+let rename_subdirectory_as fw (old_subdir,new_subdir) = 
+  let old_fw_deps = Inherited.uncle fw in
+  let (new_fw_deps,extra)=Fwc_with_dependencies.rename_subdirectory_as 
+           old_fw_deps (old_subdir,new_subdir) in   
+  let (_,original_reps) = extra in 
+  let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)
+        ^" as "^(Dfa_subdirectory.connectable_to_subpath new_subdir) in 
+  let diff = Dircopy_diff.replace Dircopy_diff.empty_one original_reps in   
+  let _ = backup fw diff (Some msg) in   
+  Inherited.machen new_fw_deps (github_configuration fw);; 
   
-  let replace_string fw old_s new_s = 
-      let (parent1,(changed_modules_in_any_order,all_changed_files)) = 
-      Fwc_with_batch_compilation.replace_string (parent fw) old_s new_s  in 
-      let new_parent = Fwc_with_batch_compilation.modern_recompile parent1 changed_modules_in_any_order in 
-      let msg="rename "^old_s^" as "^new_s in 
-      let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one all_changed_files in 
-      let _ = backup fw diff (Some msg) in 
-      set_parent ~child:(github_configuration fw) ~new_parent ;;
+let replace_string fw old_s new_s = 
+  let old_fw_deps = Inherited.uncle fw in 
+  let (new_fw_deps,(_,all_changed_files)) = 
+        Fwc_with_dependencies.replace_string old_fw_deps (old_s,new_s) in 
+  let msg="rename "^old_s^" as "^new_s in 
+  let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one 
+      all_changed_files in 
+  let _ = backup fw diff (Some msg) in 
+  Inherited.machen new_fw_deps (github_configuration fw)  ;; 
+    
 
 let replace_value fw
       ((preceding_files,path),(old_v,new_v)) = 
@@ -293,7 +298,6 @@ let forget_modules = Private.forget_modules ;;
 let forget_nonmodular_rootlesses = Private.forget_nonmodular_rootlesses ;;  
 let github_configuration = Fwg_with_githubbing.github_configuration ;;
 let inspect_and_update = Private.inspect_and_update ;;
-let of_fw_with_batch_compilation =Private.usual_extension ;;
 
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
