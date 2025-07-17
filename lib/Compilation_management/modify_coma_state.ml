@@ -55,8 +55,7 @@
        Coma_constant.minimal_set_of_needed_dirs 
            (Coma_constant.conventional_files_with_minimal_content proj_name)) in 
      let fw_with_deps = Fwc_with_dependencies.of_configuration fw_config in 
-     let fw_batch=Fwg_with_batch_compilation.make fw_with_deps [] in 
-     let fw2= Fwg_with_githubbing.make fw_batch github_config  in 
+     let fw2= Fwc_with_githubbing.Inherited.machen fw_with_deps github_config  in 
      let _=FromAncestors.persist fw2 in 
      fw2;;       
 
