@@ -96,11 +96,8 @@ let forget_one modname=Modify_coma_state.Syntactic_sugar.forget Private.main_ref
 
 let forget_several modnames=Modify_coma_state.Syntactic_sugar.forget Private.main_ref modnames;;
 
-let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
+let load_persisted_version ()=Fw_act_on_reference.load_persisted_version Private.main_ref ;; 
 
-let initialize_if_empty ()=Modify_coma_state.Reference.initialize_if_empty Private.main_ref ;;                       
-
-let initialize ()=Modify_coma_state.Reference.initialize Private.main_ref ;; 
 
 let internet_access () = 
   let fw_git = (!(Private.main_ref)) in 
@@ -129,7 +126,7 @@ let officialize_foreign_changes () =
 
    
 
-let refresh ()=Modify_coma_state.Reference.refresh Private.main_ref;;
+let refresh ()=Fw_act_on_reference.refresh Private.main_ref;;
 
 let register_rootless_line x=Modify_coma_state.Syntactic_sugar.register_one Private.main_ref x;;
   
@@ -149,7 +146,7 @@ let rename_string_or_value old_name new_name=
    Modify_coma_state.Syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
-let save_latest_changes opt=Modify_coma_state.Reference.save_latest_changes Private.main_ref opt;;
+let save_latest_changes opt=Fw_act_on_reference.save_latest_changes Private.main_ref opt;;
 
 
 let self_contained_module_copy ~prefix hm= 
@@ -157,7 +154,7 @@ let self_contained_module_copy ~prefix hm=
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fw_self_contained_module_copy.copy fw_deps ~prefix hm ;;
 
-let set_internet_access bowl=Modify_coma_state.Reference.internet_access Private.main_ref bowl;;
+let set_internet_access bowl=Fw_act_on_reference.set_internet_access Private.main_ref bowl;;
 
 
 let show_value_occurrences_in_modulesystem module_name=

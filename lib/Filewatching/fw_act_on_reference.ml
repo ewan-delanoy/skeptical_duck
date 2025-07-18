@@ -2,6 +2,8 @@
 
 #use"lib/Filewatching/fw_act_on_reference.ml";;
 
+Follows Fw_automatic_persisting.
+
 *)
 
    

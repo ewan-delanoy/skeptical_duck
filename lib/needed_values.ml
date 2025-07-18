@@ -42,7 +42,7 @@ let ia = Usual_coma_state.set_internet_access;;
 
 let image = Image.image ;;
 
-let initialize_toplevel=Usual_coma_state.initialize_if_empty;;
+let initialize_toplevel=Usual_coma_state.load_persisted_version;;
 
 let lc () = let _ = Usual_coma_state.latest_changes () in ();; 
 
