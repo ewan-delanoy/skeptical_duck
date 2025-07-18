@@ -19,16 +19,16 @@ module Private = struct
               "cmos_for_ocamldebug.txt";;
 
   let clean_debug_dir fw=
-   let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.Inherited.root fw) in
+   let s_root=Dfa_root.connectable_to_subpath(Fwc_with_modular_infrastructure.Inherited.root fw) in
    let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath
       (Fw_constant.debug_build_subdir)) in 
    Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
 
    let preq_types_with_extra_info fw =
-     let root = Fwc_with_dependencies.Inherited.root fw  in 
+     let root = Fwc_with_modular_infrastructure.Inherited.root fw  in 
      Image.image (fun middle->
       (Dfn_join.root_to_middle root middle,true)
-     ) (Fwc_with_dependencies.printer_equipped_types fw) ;; 
+     ) (Fwc_with_modular_infrastructure.printer_equipped_types fw) ;; 
 
 
    module Command = struct 
@@ -45,10 +45,10 @@ module Private = struct
     
 
   let needed_dirs_and_libs_in_dbg_command fw mn=
-     let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.Inherited.root fw) in
+     let s_root=Dfa_root.connectable_to_subpath(Fwc_with_modular_infrastructure.Inherited.root fw) in
      let dirs=
      "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Fw_constant.debug_build_subdir))
-    and prelibs = Fwc_with_dependencies.needed_libs_for_module fw mn in 
+    and prelibs = Fwc_with_modular_infrastructure.needed_libs_for_module fw mn in 
     let libs=line_for_libs prelibs in 
      String.concat " " ["";dirs;libs;""];;
 
@@ -56,7 +56,7 @@ module Private = struct
      let nm=Dfn_endingless.to_module hm in
      let s_root=Dfa_root.connectable_to_subpath(dir) in
      let s_fhm=Dfn_endingless.to_line hm in
-     let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli  nm in
+     let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli  nm in
      let ending=(if mli_reg then ".mli" else ".ml") in
      let workdir = Dfa_subdirectory.connectable_to_subpath (Fw_constant.debug_build_subdir) in 
      let central_cmd=
@@ -106,7 +106,7 @@ module Private = struct
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
-         let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+         let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
@@ -125,7 +125,7 @@ module Private = struct
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
-         let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+         let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
@@ -146,7 +146,7 @@ module Private = struct
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
-         let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
+         let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let central_cmds=
@@ -161,13 +161,13 @@ module Private = struct
          
 
      let mli_module_separate_compilation_in_dbg fw eless =
-        let dir = Fwc_with_dependencies.Inherited.root fw in 
+        let dir = Fwc_with_modular_infrastructure.Inherited.root fw in 
         cmi_in_dbg dir fw eless;;
       
       let ml_module_separate_compilation_in_dbg fw eless =
-        let dir = Fwc_with_dependencies.Inherited.root fw in 
+        let dir = Fwc_with_modular_infrastructure.Inherited.root fw in 
         let nm=Dfn_endingless.to_module eless in
-        let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+        let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
         let temp2=(
         let co=cmo_in_dbg dir fw eless in 
         if mli_reg
@@ -177,9 +177,9 @@ module Private = struct
         List.flatten temp2;;
       
       let mll_module_separate_compilation_in_dbg fw eless =
-        let dir = Fwc_with_dependencies.Inherited.root fw in 
+        let dir = Fwc_with_modular_infrastructure.Inherited.root fw in 
         let nm=Dfn_endingless.to_module eless in
-        let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+        let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
         let temp2=(
         let co=cmo_from_mll_in_dbg dir fw eless in 
         if mli_reg
@@ -189,9 +189,9 @@ module Private = struct
         List.flatten temp2;;
       
       let mly_module_separate_compilation_in_dbg fw eless =
-        let dir = Fwc_with_dependencies.Inherited.root fw in 
+        let dir = Fwc_with_modular_infrastructure.Inherited.root fw in 
         let nm=Dfn_endingless.to_module eless in
-        let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
+        let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in
         let temp2=(
         let co=cmo_from_mly_in_dbg dir fw eless in 
         if mli_reg
@@ -210,15 +210,15 @@ module Private = struct
        ;;
    
      let predebuggable fw short_path=
-        let root = Fwc_with_dependencies.Inherited.root fw in 
+        let root = Fwc_with_modular_infrastructure.Inherited.root fw in 
         let s_root=Dfa_root.connectable_to_subpath root  in
         let full_path=Absolute_path.of_string(
             s_root^short_path) in 
         let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-        let nm_deps = Fwc_with_dependencies.modules_with_their_ancestors fw nm_direct_deps in 
+        let nm_deps = Fwc_with_modular_infrastructure.modules_with_their_ancestors fw nm_direct_deps in 
         let nm_deps_with_subdirs = Image.image (
            fun nm->
-                   let subdir=Fwc_with_dependencies.subdir_for_module fw nm in 
+                   let subdir=Fwc_with_modular_infrastructure.subdir_for_module fw nm in 
             (subdir,nm)
         ) nm_deps in 
         let workdir=
@@ -229,7 +229,7 @@ module Private = struct
           Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
             (Image.image Dfa_module.to_line nm_direct_deps)) in 
         let pre_libs1=Image.image 
-         (fun (_,nm) -> Set_of_polys.sort(Fwc_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
+         (fun (_,nm) -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
         let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
         let libs=line_for_libs pre_libs2 in 
           Option_again.argument_on_the_right (fun x y->x@[y])  
@@ -242,13 +242,13 @@ module Private = struct
     
 
      let debuggable fw rootless_path=
-        let root = Fwc_with_dependencies.Inherited.root fw in 
+        let root = Fwc_with_modular_infrastructure.Inherited.root fw in 
         let s_root=Dfa_root.connectable_to_subpath root  in
         let full_path=Absolute_path.of_string(s_root^rootless_path) in 
         let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-        let nm_deps =Fwc_with_dependencies.modules_with_their_ancestors fw nm_direct_deps in 
+        let nm_deps =Fwc_with_modular_infrastructure.modules_with_their_ancestors fw nm_direct_deps in 
         let nm_deps_with_subdirs = Image.image (
-          fun nm->let subdir=Fwc_with_dependencies.subdir_for_module fw nm in 
+          fun nm->let subdir=Fwc_with_modular_infrastructure.subdir_for_module fw nm in 
            (subdir,nm)
         ) nm_deps in 
         let workdir=
@@ -269,7 +269,7 @@ module Private = struct
          Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
            (Image.image Dfa_module.to_line nm_direct_deps)) in 
         let pre_libs1=Image.image 
-        (fun (_,nm) -> Set_of_polys.sort(Fwc_with_dependencies.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
+        (fun (_,nm) -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
        let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
        let libs=line_for_libs pre_libs2 in 
          Option_again.argument_on_the_right (fun x y->x@[y])  
@@ -296,7 +296,7 @@ module Private = struct
         ) deps) 
         and printer_equipped_types = preq_types_with_extra_info fw  in 
         let printable_deps = List.filter (
-          fun mn -> let eless = Fwc_with_dependencies.endingless_at_module fw mn in 
+          fun mn -> let eless = Fwc_with_modular_infrastructure.endingless_at_module fw mn in 
           List.mem (eless,true) printer_equipped_types
         ) deps in 
         let temp2 = Image.image (fun mname->
@@ -304,26 +304,26 @@ module Private = struct
           "install_printer "^(String.capitalize_ascii s)^".print_out"
         ) printable_deps in 
         let full_text = String.concat "\n" (temp1@temp2) in 
-        let ppodbg_path = ocamldebug_printersfile_path (Fwc_with_dependencies.Inherited.root fw) in 
+        let ppodbg_path = ocamldebug_printersfile_path (Fwc_with_modular_infrastructure.Inherited.root fw) in 
         Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
 
      let dependencies_inside_shaft_of_dbg fw (_opt_modnames,opt_rootless_path)=
         let rootless_path=Option.get opt_rootless_path in 
         let full_path=Absolute_path.of_string(
-         (Dfa_root.connectable_to_subpath (Fwc_with_dependencies.Inherited.root fw))^rootless_path) in 
+         (Dfa_root.connectable_to_subpath (Fwc_with_modular_infrastructure.Inherited.root fw))^rootless_path) in 
         let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
-        let nm_deps=Fwc_with_dependencies.modules_with_their_ancestors fw nm_direct_deps in 
-        let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_dependencies.dep_ordered_modules fw) in 
+        let nm_deps=Fwc_with_modular_infrastructure.modules_with_their_ancestors fw nm_direct_deps in 
+        let deps =List.filter (fun mn->List.mem mn nm_deps) (Fwc_with_modular_infrastructure.dep_ordered_modules fw) in 
         let _= prepare_pretty_printers_for_ocamldebug fw deps in 
         deps;;
 
      let list_of_commands_for_shaft_part_of_dbg fw (opt_modulenames,opt_rootless_path)=
        let l=dependencies_inside_shaft_of_dbg fw (opt_modulenames,opt_rootless_path) in 
       let temp1=Image.image (fun mn->
-      let eless=Fwc_with_dependencies.endingless_at_module fw mn 
-      and pr_ending = Fwc_with_dependencies.principal_ending_for_module fw mn in 
+      let eless=Fwc_with_modular_infrastructure.endingless_at_module fw mn 
+      and pr_ending = Fwc_with_modular_infrastructure.principal_ending_for_module fw mn in 
       let cmds=Command.module_separate_compilation_in_dbg fw eless pr_ending in 
-     Image.image (fun cmd->(mn,Fwc_with_dependencies.endingless_at_module fw mn,cmd) ) cmds ) l in 
+     Image.image (fun cmd->(mn,Fwc_with_modular_infrastructure.endingless_at_module fw mn,cmd) ) cmds ) l in 
      List.flatten temp1;;
 
      let list_of_commands_for_connecting_part_of_dbg fw (_,opt_rootless_path)=
@@ -349,7 +349,7 @@ module Private = struct
 let start_debugging fw=
    let  _=clean_debug_dir fw in
    let ppodbg_path = ocamldebug_printersfile_path 
-          (Fwc_with_dependencies.Inherited.root fw) in 
+          (Fwc_with_modular_infrastructure.Inherited.root fw) in 
    let _= Io.overwrite_with (Absolute_path.of_string ppodbg_path) "" in   
    let cmds=Ocaml_target_making.list_of_commands_for_dbg
      fw debugged_file_path in 

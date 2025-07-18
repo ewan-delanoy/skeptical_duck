@@ -8,7 +8,7 @@ type t = Fwg_with_githubbing.t ;;
 
 module Inherited = struct
 
-  module Parent = Fwc_with_dependencies ;;
+  module Parent = Fwc_with_modular_infrastructure ;;
 
   let parent fw = Fwg_with_githubbing.parent fw ;;
 
@@ -119,14 +119,14 @@ module Crobj = struct
   let of_concrete_object ccrt_obj = 
     let g=Concrete_object.get_record ccrt_obj in 
     Fwg_with_githubbing.make 
-     (Fwc_with_dependencies.Crobj.of_concrete_object (g label_for_parent))
+     (Fwc_with_modular_infrastructure.Crobj.of_concrete_object (g label_for_parent))
      (Fwc_github_configuration.Crobj.of_concrete_object (g label_for_github_config))
     ;;
   
   let to_concrete_object fw = 
    let items =  
    [
-     label_for_parent, Fwc_with_dependencies.Crobj.to_concrete_object ( Fwg_with_githubbing.parent fw ) ;
+     label_for_parent, Fwc_with_modular_infrastructure.Crobj.to_concrete_object ( Fwg_with_githubbing.parent fw ) ;
      label_for_github_config, Fwc_github_configuration.Crobj.to_concrete_object ( Fwg_with_githubbing.github_configuration fw ) ;
    ] in 
    Concrete_object_t.Record items ;;
@@ -146,7 +146,7 @@ let make = Fwg_with_githubbing.make;;
 
 
   let plunge_fw_config_with_github_config fw_config github_config= 
-   Inherited.make (Fwc_with_dependencies.plunge_fw_configuration fw_config)
+   Inherited.make (Fwc_with_modular_infrastructure.plunge_fw_configuration fw_config)
    github_config ;;
   
     
@@ -163,7 +163,7 @@ let forget_modules fw mods =
   then raise(Forget_modules_exn(check))
   else
   let (new_fw_deps,removed_files) = 
-  Fwc_with_dependencies.forget_modules old_fw_deps mods in 
+  Fwc_with_modular_infrastructure.forget_modules old_fw_deps mods in 
   let descr = String.concat " , " (Image.image Dfa_module.to_line mods) in 
   let msg="delete "^descr in 
   let diff = Dircopy_diff.destroy Dircopy_diff.empty_one removed_files  in  
@@ -172,7 +172,7 @@ let forget_modules fw mods =
 
 let forget_nonmodular_rootlesses fw rootless_paths = 
   let old_fw_deps = Inherited.parent fw in 
-  let (new_fw_deps,_) = Fwc_with_dependencies.remove_files 
+  let (new_fw_deps,_) = Fwc_with_modular_infrastructure.remove_files 
          old_fw_deps rootless_paths in 
   let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
   let msg="delete "^descr in 
@@ -183,7 +183,7 @@ let forget_nonmodular_rootlesses fw rootless_paths =
 let inspect_and_update fw opt_comment = 
   let old_fw_deps = Inherited.parent fw in
   let (new_fw_deps,(_,_,changed_files))
-                   =Fwc_with_dependencies.inspect_and_update old_fw_deps in 
+                   =Fwc_with_modular_infrastructure.inspect_and_update old_fw_deps in 
   let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one changed_files in 
   let _ = backup fw diff opt_comment in 
   Inherited.make new_fw_deps (github_configuration fw) ;;  
@@ -196,13 +196,13 @@ let refresh fw =
   let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
         Fw_constant.minimal_set_of_needed_dirs 
             (Fw_constant.conventional_files_with_minimal_content proj_name)) in 
-  let fw_with_deps = Fwc_with_dependencies.of_configuration fw_config in 
+  let fw_with_deps = Fwc_with_modular_infrastructure.of_configuration fw_config in 
   Inherited.make fw_with_deps github_config  ;;
 
 let register_rootless_paths fw rootless_paths = 
   let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,_)=
-             Fwc_with_dependencies.register_rootless_paths old_fw_deps rootless_paths in 
+             Fwc_with_modular_infrastructure.register_rootless_paths old_fw_deps rootless_paths in 
   let descr = String.concat " , " (Image.image Dfn_rootless.to_line rootless_paths) in 
   let msg="register "^descr in 
   let diff = Dircopy_diff.create Dircopy_diff.empty_one rootless_paths  in  
@@ -213,7 +213,7 @@ let register_rootless_paths fw rootless_paths =
 let relocate_module_to fw mod_name new_subdir = 
   let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,(_,replacements))=
-  Fwc_with_dependencies.relocate_module_to old_fw_deps 
+  Fwc_with_modular_infrastructure.relocate_module_to old_fw_deps 
   (mod_name,new_subdir) in
   let msg="move "^(Dfa_module.to_line mod_name)^" to "^
   (Dfa_subdirectory.connectable_to_subpath new_subdir) in 
@@ -228,15 +228,15 @@ let rename_module fw old_middle_name new_nonslashed_name =
   let old_fw_deps = Inherited.parent fw in 
   let separated_acolytes_below=List.filter_map(
     fun mn->
-    if List.mem old_nm (Fwc_with_dependencies.ancestors_for_module 
+    if List.mem old_nm (Fwc_with_modular_infrastructure.ancestors_for_module 
                 old_fw_deps mn)
     then Some(Image.image (Dfn_full.to_rootless) 
-             (Fwc_with_dependencies.acolytes_at_module old_fw_deps mn))
+             (Fwc_with_modular_infrastructure.acolytes_at_module old_fw_deps mn))
     else None) 
-    (Fwc_with_dependencies.dep_ordered_modules old_fw_deps) in
+    (Fwc_with_modular_infrastructure.dep_ordered_modules old_fw_deps) in
   let all_acolytes_below=List.flatten separated_acolytes_below in
   let (new_fw_deps,changes) = 
-    Fwc_with_dependencies.rename_module_on_filename_level_and_in_files 
+    Fwc_with_modular_infrastructure.rename_module_on_filename_level_and_in_files 
             old_fw_deps (old_nm,new_nm,all_acolytes_below) in 
   let (_,(file_renamings,changed_files)) = changes in 
   let msg="rename "^(Dfa_module.to_line
@@ -249,7 +249,7 @@ let rename_module fw old_middle_name new_nonslashed_name =
 
 let rename_subdirectory_as fw (old_subdir,new_subdir) = 
   let old_fw_deps = Inherited.parent fw in
-  let (new_fw_deps,extra)=Fwc_with_dependencies.rename_subdirectory_as 
+  let (new_fw_deps,extra)=Fwc_with_modular_infrastructure.rename_subdirectory_as 
            old_fw_deps (old_subdir,new_subdir) in   
   let (_,original_reps) = extra in 
   let msg="rename "^(Dfa_subdirectory.connectable_to_subpath old_subdir)
@@ -261,7 +261,7 @@ let rename_subdirectory_as fw (old_subdir,new_subdir) =
 let replace_string fw old_s new_s = 
   let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,(_,all_changed_files)) = 
-        Fwc_with_dependencies.replace_string old_fw_deps (old_s,new_s) in 
+        Fwc_with_modular_infrastructure.replace_string old_fw_deps (old_s,new_s) in 
   let msg="rename "^old_s^" as "^new_s in 
   let diff = Dircopy_diff.add_changes Dircopy_diff.empty_one 
       all_changed_files in 
@@ -273,7 +273,7 @@ let replace_value fw
       ((preceding_files,path),(old_v,new_v)) = 
       let old_fw_deps = Inherited.parent fw in 
       let (new_fw_deps,(_u_changes,all_changes)) = 
-        Fwc_with_dependencies.replace_value old_fw_deps 
+        Fwc_with_modular_infrastructure.replace_value old_fw_deps 
          ((preceding_files,path),(old_v,new_v)) in 
       let msg="rename "^old_v^" as "^new_v in 
       let diff = Dircopy_diff.add_changes 

@@ -8,7 +8,7 @@ module Private = struct
 
    module Data_summary = struct 
       let compute_all_needed_elesses fw needed_modules needed_subdirs =
-         let all_elesses = Fwc_with_dependencies.all_endinglesses fw in 
+         let all_elesses = Fwc_with_modular_infrastructure.all_endinglesses fw in 
          let step1_modules = List.filter_map 
          (fun eless->
             if List.mem (Dfn_endingless.to_subdirectory eless) 
@@ -17,7 +17,7 @@ module Private = struct
             else None) all_elesses in
          let step2_modules = needed_modules@step1_modules in 
          let modules_above=List.flatten (Image.image (fun nm->
-               Fwc_with_dependencies.ancestors_for_module fw nm
+               Fwc_with_modular_infrastructure.ancestors_for_module fw nm
          ) step2_modules)  in 
          let list_of_modules_with_nonstandard_ordering = 
                    Ordered.sort Total_ordering.standard 
@@ -32,7 +32,7 @@ module Private = struct
       let expand fw summary =
          let all_needed_elesses =
          (match summary with 
-            None -> Fwc_with_dependencies.all_endinglesses fw
+            None -> Fwc_with_modular_infrastructure.all_endinglesses fw
           |Some(needed_modules,needed_subdirs)-> 
             compute_all_needed_elesses fw needed_modules needed_subdirs
          ) in 
@@ -41,7 +41,7 @@ module Private = struct
                   (Image.image Dfn_endingless.to_subdirectory all_needed_elesses) 
          and all_needed_modules = 
                   Image.image Dfn_endingless.to_module all_needed_elesses in      
-         let original_noncompilables = Fwc_with_dependencies.Inherited.noncompilable_files fw in
+         let original_noncompilables = Fwc_with_modular_infrastructure.Inherited.noncompilable_files fw in
          (*
             we do not know a priori if the noncompilables in other subdirectories
             are needed, so we include them all by default 
@@ -55,7 +55,7 @@ module Private = struct
                      ) original_noncompilables) in        
          let compilables= List.filter (
             fun rless->List.mem (Dfn_rootless.to_module rless) all_needed_modules 
-         ) (Fwc_with_dependencies.Inherited.usual_compilable_files fw) in
+         ) (Fwc_with_modular_infrastructure.Inherited.usual_compilable_files fw) in
          (all_needed_modules,compilables,noncompilables);;
 
    end ;;   
@@ -144,7 +144,7 @@ module Private = struct
        destination needed_dirs conv_files) in 
        let (_modules_in_good_order,compilables,noncompilables) = 
            Data_summary.expand fw summary in 
-       let old_root = Fwc_with_dependencies.Inherited.root fw in
+       let old_root = Fwc_with_modular_infrastructure.Inherited.root fw in
        let _=Image.image Unix_command.uc 
         (commands_for_copying old_root (compilables@noncompilables) destination destbackupdir) in
         let parameters_ap = Absolute_path.of_string 

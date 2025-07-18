@@ -9,33 +9,33 @@ exception Absent_method of string ;;
 
 
 
-let all_endinglesses = Fwc_with_dependencies.all_endinglesses ;;
+let all_endinglesses = Fwc_with_modular_infrastructure.all_endinglesses ;;
   
-let all_moduled_mlx_files = Fwc_with_dependencies.all_moduled_mlx_files ;;
+let all_moduled_mlx_files = Fwc_with_modular_infrastructure.all_moduled_mlx_files ;;
 
-let all_subdirectories =  Fwc_with_dependencies.all_subdirectories ;;
+let all_subdirectories =  Fwc_with_modular_infrastructure.all_subdirectories ;;
 
-let ancestors_for_module = Fwc_with_dependencies.ancestors_for_module  ;;
+let ancestors_for_module = Fwc_with_modular_infrastructure.ancestors_for_module  ;;
 
-let below = Fwc_with_dependencies.below  ;;
+let below = Fwc_with_modular_infrastructure.below  ;;
 
 let check_that_no_change_has_occurred = Fwc_with_archives.check_that_no_change_has_occurred  ;;
 
-let decipher_module = Fwc_with_dependencies.decipher_module  ;;
+let decipher_module = Fwc_with_modular_infrastructure.decipher_module  ;;
 
-let decipher_path =  Fwc_with_dependencies.decipher_path ;;
+let decipher_path =  Fwc_with_modular_infrastructure.decipher_path ;;
 
-let dep_ordered_modules =  Fwc_with_dependencies.dep_ordered_modules  ;;
+let dep_ordered_modules =  Fwc_with_modular_infrastructure.dep_ordered_modules  ;;
 
-let directly_below = Fwc_with_dependencies.directly_below  ;;
+let directly_below = Fwc_with_modular_infrastructure.directly_below  ;;
 
-let direct_fathers_for_module = Fwc_with_dependencies.direct_fathers_for_module  ;;
+let direct_fathers_for_module = Fwc_with_modular_infrastructure.direct_fathers_for_module  ;;
 
-let duplicate_module = Fwc_with_dependencies.duplicate_module  ;;
+let duplicate_module = Fwc_with_modular_infrastructure.duplicate_module  ;;
 
-let endingless_at_module = Fwc_with_dependencies.endingless_at_module  ;;
+let endingless_at_module = Fwc_with_modular_infrastructure.endingless_at_module  ;;
 
-let find_subdir_from_suffix = Fwc_with_dependencies.find_subdir_from_suffix  ;;
+let find_subdir_from_suffix = Fwc_with_modular_infrastructure.find_subdir_from_suffix  ;;
 
 let forget_modules =  Fwc_with_githubbing.forget_modules ;;
 let forget_nonmodular_rootlesses = 
@@ -51,14 +51,14 @@ let ignored_subdirectories = Fwc_configuration.ignored_subdirectories ;;
 
 let latest_changes = Fwc_with_archives.latest_changes ;;
 
-let list_values_from_module = Fwc_with_dependencies.list_values_from_module  ;;
+let list_values_from_module = Fwc_with_modular_infrastructure.list_values_from_module  ;;
 
 
-let modules_using_value = Fwc_with_dependencies.modules_using_value ;;
+let modules_using_value = Fwc_with_modular_infrastructure.modules_using_value ;;
 
 let noncompilable_files = Fwc_with_archives.noncompilable_files ;;
 
-let number_of_modules =  Fwc_with_dependencies.number_of_modules ;;
+let number_of_modules =  Fwc_with_modular_infrastructure.number_of_modules ;;
 let of_concrete_object = Fwc_with_githubbing.Crobj.of_concrete_object ;;
 
 let plunge_fw_config_with_github_config fw_config github_config =  Fwc_with_githubbing.plunge_fw_config_with_github_config fw_config github_config ;;
@@ -77,7 +77,7 @@ let root= Fwc_configuration.root  ;;
 
 let set_gitpush_after_backup = Fwc_github_configuration.set_gitpush_after_backup ;;
 
-let show_value_occurrences = Fwc_with_dependencies.show_value_occurrences  ;;
+let show_value_occurrences = Fwc_with_modular_infrastructure.show_value_occurrences  ;;
 
 
 let test_for_admissibility = Fwc_configuration.test_for_admissibility  ;;

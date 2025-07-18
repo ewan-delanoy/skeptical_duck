@@ -84,12 +84,12 @@ let current_state ()=
 let duplicate_module old_t1 old_t2=
   let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fwc_with_dependencies.duplicate_module fw_deps old_t1 old_t2;;
+  Fwc_with_modular_infrastructure.duplicate_module fw_deps old_t1 old_t2;;
 
 let find_endingless modname = 
   let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fwc_with_dependencies.endingless_at_module
+  Fwc_with_modular_infrastructure.endingless_at_module
    fw_deps (Dfa_module.of_line (String.capitalize_ascii modname));;
 
 let forget_one modname=Fw_syntactic_sugar.forget Private.main_ref [modname];;
@@ -111,13 +111,13 @@ let latest_changes ()=
 let list_values_from_module_in_modulesystem module_name=
   let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fwc_with_dependencies.list_values_from_module fw_deps module_name;;
+  Fwc_with_modular_infrastructure.list_values_from_module fw_deps module_name;;
 
 
 let modules_using_value x=
   let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fwc_with_dependencies.modules_using_value fw_deps x;;
+  Fwc_with_modular_infrastructure.modules_using_value fw_deps x;;
 
 let officialize_foreign_changes () =
    let temp1 = changed_files_in_foreign_copy () in 
@@ -160,7 +160,7 @@ let set_internet_access bowl=Fw_act_on_reference.set_internet_access Private.mai
 let show_value_occurrences_in_modulesystem module_name=
   let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fwc_with_dependencies.show_value_occurrences fw_deps module_name;;
+  Fwc_with_modular_infrastructure.show_value_occurrences fw_deps module_name;;
 
 let start_debugging ()=
 let fw_git = (!(Private.main_ref)) in  
@@ -174,25 +174,25 @@ let sugared_above capitalized_or_not_module_name=
   let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
-  (Fwc_with_dependencies.ancestors_for_module fw_deps mn0);;
+  (Fwc_with_modular_infrastructure.ancestors_for_module fw_deps mn0);;
 
 let sugared_below capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
-  (Fwc_with_dependencies.below fw_deps mn0);;
+  (Fwc_with_modular_infrastructure.below fw_deps mn0);;
 
 let sugared_directly_above capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Image.image Dfa_module.to_line
-  (Fwc_with_dependencies.direct_fathers_for_module fw_deps mn0);;
+  (Fwc_with_modular_infrastructure.direct_fathers_for_module fw_deps mn0);;
  
 let sugared_directly_below capitalized_or_not_module_name=
   let mn0 = Dfa_module.of_line(String.uncapitalize_ascii capitalized_or_not_module_name) in
   let fw_git = (!(Private.main_ref)) in  
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in  
   Image.image Dfa_module.to_line
-  (Fwc_with_dependencies.directly_below fw_deps mn0);;
+  (Fwc_with_modular_infrastructure.directly_below fw_deps mn0);;
