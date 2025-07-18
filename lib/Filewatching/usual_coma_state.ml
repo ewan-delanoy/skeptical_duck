@@ -92,9 +92,9 @@ let find_endingless modname =
   Fwc_with_dependencies.endingless_at_module
    fw_deps (Dfa_module.of_line (String.capitalize_ascii modname));;
 
-let forget_one modname=Fw_syntactic_sugar.Syntactic_sugar.forget Private.main_ref [modname];;
+let forget_one modname=Fw_syntactic_sugar.forget Private.main_ref [modname];;
 
-let forget_several modnames=Fw_syntactic_sugar.Syntactic_sugar.forget Private.main_ref modnames;;
+let forget_several modnames=Fw_syntactic_sugar.forget Private.main_ref modnames;;
 
 let load_persisted_version ()=Fw_act_on_reference.load_persisted_version Private.main_ref ;; 
 
@@ -128,22 +128,22 @@ let officialize_foreign_changes () =
 
 let refresh ()=Fw_act_on_reference.refresh Private.main_ref;;
 
-let register_rootless_line x=Fw_syntactic_sugar.Syntactic_sugar.register_one Private.main_ref x;;
+let register_rootless_line x=Fw_syntactic_sugar.register_one Private.main_ref x;;
   
-let register_rootless_lines x=Fw_syntactic_sugar.Syntactic_sugar.register_several Private.main_ref x;;
+let register_rootless_lines x=Fw_syntactic_sugar.register_several Private.main_ref x;;
 
 let relocate_module_to old_module_name new_subdir=
-   Fw_syntactic_sugar.Syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
+   Fw_syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
 
 let rename_subdirectory old_subdirname new_subdirname=
-    Fw_syntactic_sugar.Syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
+    Fw_syntactic_sugar.rename_subdirectory Private.main_ref old_subdirname new_subdirname;;
 
 let rename_module old_name new_name=
-   Fw_syntactic_sugar.Syntactic_sugar.rename_module Private.main_ref old_name new_name;;
+   Fw_syntactic_sugar.rename_module Private.main_ref old_name new_name;;
 
 
 let rename_string_or_value old_name new_name=
-   Fw_syntactic_sugar.Syntactic_sugar.rename_string_or_value
+   Fw_syntactic_sugar.rename_string_or_value
    (Private.main_ref) old_name new_name;;
 
 let save_latest_changes opt=Fw_act_on_reference.save_latest_changes Private.main_ref opt;;

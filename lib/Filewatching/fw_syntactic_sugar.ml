@@ -6,8 +6,6 @@
 
 exception Rename_string_or_value_exn of string ;;
 
-
-module Syntactic_sugar = struct 
    
 module Private = struct 
    let display_number_of_modules fw_ref =
@@ -78,4 +76,3 @@ let rename_subdirectory fw_ref old_subdirname new_subdir_short_name=
    Fw_act_on_reference.rename_subdirectory fw_ref old_subdir new_subdir ;;
    
    
-end;;
