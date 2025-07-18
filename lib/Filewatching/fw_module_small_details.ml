@@ -103,24 +103,24 @@ let compute_details_from_acolytes_list_for_one_module l=
          if mli_subdir <> principal_subdir 
          then raise(Several_subdirectories_for_one_ending(principal_rless,mli_rless))    
    ) in
-   let principal_coatoms = Fw_file_small_details.used_modules principal_details in 
+   let principal_coatoms = Fw_file_details.used_modules principal_details in 
    let (all_coatoms,opt_mli_mt) = (
       match opt_mli_detailed_rless with 
       None -> (principal_coatoms,None)
       |Some(_,mli_details) ->
-         let mli_coatoms = Fw_file_small_details.used_modules mli_details in 
+         let mli_coatoms = Fw_file_details.used_modules mli_details in 
          (principal_coatoms @ mli_coatoms,
-         Some(Fw_file_small_details.modification_time mli_details))    
+         Some(Fw_file_details.modification_time mli_details))    
    ) in
    let all_coatoms_in_order = Ordered.sort lex_order all_coatoms in 
    {
       Fw_module_small_details_t.used_modules = all_coatoms_in_order ;
-      used_libraries = Fw_file_small_details.used_libraries principal_details ;
-      has_printer = Fw_file_small_details.has_printer principal_details ;
+      used_libraries = Fw_file_details.used_libraries principal_details ;
+      has_printer = Fw_file_details.has_printer principal_details ;
       subdirectory = principal_subdir ;
       principal_ending = Dfa_ocaml_ending.of_ending (Dfn_rootless.to_ending principal_rless) ;
       mli_present = (opt_mli_detailed_rless <> None) ;
-      principal_modification_time = Fw_file_small_details.modification_time principal_details ;
+      principal_modification_time = Fw_file_details.modification_time principal_details ;
       mli_modification_time = opt_mli_mt ;
    };;
 

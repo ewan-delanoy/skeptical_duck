@@ -62,7 +62,7 @@ module Crobj = struct
      let g=Concrete_object.get_record ccrt_obj in 
      Fwg_with_small_details.make 
      (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
-     (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_small_details.of_concrete_object (g label_for_small_details_in_files))
+     (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_details.of_concrete_object (g label_for_small_details_in_files))
      ;;
        
    let to_concrete_object fw = 
@@ -70,7 +70,7 @@ module Crobj = struct
      [
           label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
           label_for_small_details_in_files, 
-          Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_small_details.to_concrete_object
+          Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_details.to_concrete_object
            (Fwg_with_small_details.small_details_in_files fw ) ;
      ] in 
      Concrete_object_t.Record items ;;

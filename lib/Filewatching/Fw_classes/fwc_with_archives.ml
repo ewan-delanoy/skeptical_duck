@@ -134,7 +134,7 @@ module Private = struct
       let root = Inherited.root fw in 
       let s_ap = Dfn_common.recompose_potential_absolute_path root rl in 
       let ap = Absolute_path.of_string s_ap in 
-      Fw_file_small_details.compute ap ;;
+      Fw_file_details.compute ap ;;
 
    let compute_all_small_details fw =
       let c_files = compilable_files fw in 
