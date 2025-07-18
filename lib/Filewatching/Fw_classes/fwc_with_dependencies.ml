@@ -67,14 +67,14 @@ module Crobj = struct
     let g=Concrete_object.get_record ccrt_obj in 
     Fwg_with_dependencies.make 
     (Fwc_with_small_details.Crobj.of_concrete_object (g label_for_parent))
-    (Fw_dependencies.Crobj.of_concrete_object (g label_for_dependencies))
+    (Fw_modular_infrastructure.Crobj.of_concrete_object (g label_for_dependencies))
     ;;
 
     let to_concrete_object fw = 
       let items =  
       [
            label_for_parent, Fwc_with_small_details.Crobj.to_concrete_object ( Private.parent fw ) ;
-           label_for_dependencies, Fw_dependencies.Crobj.to_concrete_object (Fwg_with_dependencies.dependencies fw ) ;
+           label_for_dependencies, Fw_modular_infrastructure.Crobj.to_concrete_object (Fwg_with_dependencies.dependencies fw ) ;
       ] in 
       Concrete_object_t.Record items ;;
 
@@ -86,7 +86,7 @@ module Private = struct
   let parent fw = Fwg_with_dependencies.parent fw ;;
  let usual_extension fw_with_archives = 
     Fwg_with_dependencies.make 
-    fw_with_archives Fw_dependencies.starter;;
+    fw_with_archives Fw_modular_infrastructure.starter;;
 
 
 
@@ -104,88 +104,88 @@ let forget_modules old_fw mods_to_be_erased =
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.forget_modules old_fw_dets mods_to_be_erased in 
- let _ = Fw_dependencies.ReactOnReference.forget_modules  deps_ref mods_to_be_erased in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.forget_modules  deps_ref mods_to_be_erased in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let inspect_and_update old_fw  =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.inspect_and_update old_fw_dets  in 
- let _ = Fw_dependencies.ReactOnReference.inspect_and_update extra deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.inspect_and_update extra deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let of_configuration config =  
- let deps_ref = ref (Fw_dependencies.starter) in 
+ let deps_ref = ref (Fw_modular_infrastructure.starter) in 
  let new_fw_dets = Fwc_with_small_details.of_configuration config in 
- let _ = Fw_dependencies.ReactOnReference.of_configuration new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.of_configuration new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref));;
 
 let of_configuration_and_list (config,files) =  
- let deps_ref = ref (Fw_dependencies.starter) in 
+ let deps_ref = ref (Fw_modular_infrastructure.starter) in 
  let new_fw_dets = Fwc_with_small_details.of_configuration_and_list (config,files) in 
- let _ = Fw_dependencies.ReactOnReference.of_configuration_and_list new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.of_configuration_and_list new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref));;
 
 let overwrite_file_if_it_exists old_fw (rootless,new_content) =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.overwrite_file_if_it_exists old_fw_dets (rootless,new_content) in 
- let _ = Fw_dependencies.ReactOnReference.overwrite_file_if_it_exists extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.overwrite_file_if_it_exists extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let plunge_fw_configuration config =  
- let deps_ref = ref (Fw_dependencies.starter) in 
+ let deps_ref = ref (Fw_modular_infrastructure.starter) in 
  let new_fw_dets = Fwc_with_small_details.plunge_fw_configuration config in 
- let _ = Fw_dependencies.ReactOnReference.plunge_fw_configuration  deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.plunge_fw_configuration  deps_ref  in 
  (make new_fw_dets(!deps_ref));;
 
 let register_rootless_paths old_fw rootlesses =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.register_rootless_paths old_fw_dets rootlesses in 
- let _ = Fw_dependencies.ReactOnReference.register_rootless_paths extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.register_rootless_paths extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let relocate_module_to old_fw (mod_name,new_subdir) =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.relocate_module_to old_fw_dets (mod_name,new_subdir) in 
- let _ = Fw_dependencies.ReactOnReference.relocate_module_to extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.relocate_module_to extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let remove_files old_fw removed_rootless_paths =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.remove_files old_fw_dets removed_rootless_paths in 
- let _ = Fw_dependencies.ReactOnReference.remove_files extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.remove_files extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let rename_module_on_filename_level_and_in_files old_fw triple =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.rename_module_on_filename_level_and_in_files old_fw_dets triple in 
- let _ = Fw_dependencies.ReactOnReference.rename_module_on_filename_level_and_in_files extra new_fw_dets deps_ref triple in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.rename_module_on_filename_level_and_in_files extra new_fw_dets deps_ref triple in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let rename_subdirectory_as old_fw sdir_pair =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.rename_subdirectory_as old_fw_dets sdir_pair in 
- let _ = Fw_dependencies.ReactOnReference.rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let replace_string old_fw (replacee,replacer) =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.replace_string old_fw_dets (replacee,replacer) in 
- let _ = Fw_dependencies.ReactOnReference.replace_string extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.replace_string extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let replace_value old_fw (replacee,replacer) =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (dependencies old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_small_details.replace_value old_fw_dets (replacee,replacer) in 
- let _ = Fw_dependencies.ReactOnReference.replace_value extra new_fw_dets deps_ref  in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.replace_value extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 
