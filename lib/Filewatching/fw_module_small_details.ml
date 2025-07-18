@@ -29,7 +29,7 @@ module Crobj = struct
      and cl = Crobj_converter_combinator.to_list 
      and co = Crobj_converter_combinator.to_option in
     {
-      Fw_module_small_details_t.used_modules = cl Dfa_module.of_concrete_object   (g used_modules_label);
+      Fw_module_details_t.used_modules = cl Dfa_module.of_concrete_object   (g used_modules_label);
       used_libraries = cl Ocaml_library.of_concrete_object   (g used_libraries_label);
       has_printer = Crobj_converter.bool_of_concrete_object   (g has_printer_label);
       subdirectory = Dfa_subdirectory.of_concrete_object   (g subdirectory_label);
@@ -45,14 +45,14 @@ module Crobj = struct
      and co = Crobj_converter_combinator.of_option in 
      let items =
     [
-      used_modules_label,  cl Dfa_module.to_concrete_object   (msd.Fw_module_small_details_t.used_modules);
-      used_libraries_label,  cl Ocaml_library.to_concrete_object   (msd.Fw_module_small_details_t.used_libraries);
-      has_printer_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_small_details_t.has_printer);
-      subdirectory_label,  Dfa_subdirectory.to_concrete_object   (msd.Fw_module_small_details_t.subdirectory);
-      principal_ending_label,  Dfa_ocaml_ending.to_concrete_object   (msd.Fw_module_small_details_t.principal_ending);
-      mli_present_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_small_details_t.mli_present);
-      principal_modification_time_label,  Crobj_converter.string_to_concrete_object   (msd.Fw_module_small_details_t.principal_modification_time);
-      mli_modification_time_label,  co Crobj_converter.string_to_concrete_object   (msd.Fw_module_small_details_t.mli_modification_time);
+      used_modules_label,  cl Dfa_module.to_concrete_object   (msd.Fw_module_details_t.used_modules);
+      used_libraries_label,  cl Ocaml_library.to_concrete_object   (msd.Fw_module_details_t.used_libraries);
+      has_printer_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_details_t.has_printer);
+      subdirectory_label,  Dfa_subdirectory.to_concrete_object   (msd.Fw_module_details_t.subdirectory);
+      principal_ending_label,  Dfa_ocaml_ending.to_concrete_object   (msd.Fw_module_details_t.principal_ending);
+      mli_present_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_details_t.mli_present);
+      principal_modification_time_label,  Crobj_converter.string_to_concrete_object   (msd.Fw_module_details_t.principal_modification_time);
+      mli_modification_time_label,  co Crobj_converter.string_to_concrete_object   (msd.Fw_module_details_t.mli_modification_time);
     ] in 
    Concrete_object_t.Record items;;
    
@@ -114,7 +114,7 @@ let compute_details_from_acolytes_list_for_one_module l=
    ) in
    let all_coatoms_in_order = Ordered.sort lex_order all_coatoms in 
    {
-      Fw_module_small_details_t.used_modules = all_coatoms_in_order ;
+      Fw_module_details_t.used_modules = all_coatoms_in_order ;
       used_libraries = Fw_file_details.used_libraries principal_details ;
       has_printer = Fw_file_details.has_printer principal_details ;
       subdirectory = principal_subdir ;
@@ -152,7 +152,7 @@ let recompute_details_for_module small_details mod_name unfiltered_l =
 end ;;   
 
 
-let has_printer fw = fw.Fw_module_small_details_t.has_printer ;;  
+let has_printer fw = fw.Fw_module_details_t.has_printer ;;  
 
 
 let compute_details_from_acolytes_list_for_one_module = Private.compute_details_from_acolytes_list_for_one_module ;;
@@ -169,12 +169,12 @@ let modularize_from_compilable_files_and_small_details u_files small_details =
    let temp1=List.filter (fun (rl,_)->List.mem rl u_files) small_details in
    Private.compute_details_from_acolytes_list_for_several_modules temp1 ;;   
 
-let mli_present fw = fw.Fw_module_small_details_t.mli_present ;; 
-let opt_mli_modification_time fw = fw.Fw_module_small_details_t.mli_modification_time ;;      
-let principal_ending fw = fw.Fw_module_small_details_t.principal_ending ;; 
-let principal_modification_time fw = fw.Fw_module_small_details_t.principal_modification_time ;;     
+let mli_present fw = fw.Fw_module_details_t.mli_present ;; 
+let opt_mli_modification_time fw = fw.Fw_module_details_t.mli_modification_time ;;      
+let principal_ending fw = fw.Fw_module_details_t.principal_ending ;; 
+let principal_modification_time fw = fw.Fw_module_details_t.principal_modification_time ;;     
 let recompute_details_for_module = Private.recompute_details_for_module ;; 
-let subdirectory fw = fw.Fw_module_small_details_t.subdirectory ;;  
-let used_libraries fw = fw.Fw_module_small_details_t.used_libraries ;;  
-let used_modules fw = fw.Fw_module_small_details_t.used_modules ;;  
+let subdirectory fw = fw.Fw_module_details_t.subdirectory ;;  
+let used_libraries fw = fw.Fw_module_details_t.used_libraries ;;  
+let used_modules fw = fw.Fw_module_details_t.used_modules ;;  
 

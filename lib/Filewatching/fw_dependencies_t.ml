@@ -5,7 +5,7 @@
 *)
 
 type t = {
-   modularized_details :  (Dfa_module_t.t * Fw_module_small_details_t.t) list ;
+   modularized_details :  (Dfa_module_t.t * Fw_module_details_t.t) list ;
    order: (Dfa_module_t.t * (Dfa_module_t.t list * Dfa_module_t.t list)) list;
    needed_dirs :(Dfa_module_t.t * (Dfa_subdirectory_t.t list)) list;
    needed_libs : (Dfa_module_t.t * (Ocaml_library_t.t list)) list;
