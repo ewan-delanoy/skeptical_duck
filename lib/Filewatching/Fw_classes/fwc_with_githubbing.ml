@@ -188,6 +188,16 @@ let inspect_and_update fw opt_comment =
   let _ = backup fw diff opt_comment in 
   Inherited.make new_fw_deps (github_configuration fw) ;;  
 
+let refresh fw =
+  let fw_config = Inherited.to_fw_configuration fw
+  and github_config = github_configuration fw in 
+  let root = Fwc_configuration.root fw_config in 
+  let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash root) '/' in
+  let _=(Unix_again.create_subdirs_and_fill_files_if_necessary root
+        Fw_constant.minimal_set_of_needed_dirs 
+            (Fw_constant.conventional_files_with_minimal_content proj_name)) in 
+  let fw_with_deps = Fwc_with_dependencies.of_configuration fw_config in 
+  Inherited.make fw_with_deps github_config  ;;
 
 let register_rootless_paths fw rootless_paths = 
   let old_fw_deps = Inherited.parent fw in 
@@ -289,6 +299,7 @@ let github_configuration = Fwg_with_githubbing.github_configuration ;;
 let inspect_and_update = Private.inspect_and_update ;;
 
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
+let refresh = Private.refresh ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
 let relocate_module_to  = Private.relocate_module_to ;;         
 let rename_module = Private.rename_module ;;   
