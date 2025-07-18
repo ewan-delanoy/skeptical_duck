@@ -27,7 +27,7 @@ let rename_module fw old_middle_name new_nonslashed_name=
    let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
    Fwc_with_githubbing.rename_module fw old_middle_name new_nonslashed_name ;;  
 
-let rename_subdirectory fw old_subdir new_subdir=
+let rename_subdirectory_as fw old_subdir new_subdir=
    let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
    Fwc_with_githubbing.rename_subdirectory_as fw (old_subdir,new_subdir) ;;  
 
