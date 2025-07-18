@@ -194,15 +194,15 @@ let replace_value old_fw (replacee,replacer) =
 end ;;
 
   
-  let mod_details fw = (Fwg_with_dependencies.dependencies fw).Fw_dependencies_t.modularized_details ;;
+  let mod_details fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.modularized_details ;;
 
-  let mod_order fw = (Fwg_with_dependencies.dependencies fw).Fw_dependencies_t.order ;;
+  let mod_order fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.order ;;
 
-  let mod_libs fw = (Fwg_with_dependencies.dependencies fw).Fw_dependencies_t.needed_libs ;;
+  let mod_libs fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.needed_libs ;;
 
-  let mod_printables fw = (Fwg_with_dependencies.dependencies fw).Fw_dependencies_t.all_printables ;;
+  let mod_printables fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.all_printables ;;
 
-  let mod_subdirs fw = (Fwg_with_dependencies.dependencies fw).Fw_dependencies_t.all_subdirectories ;;
+  let mod_subdirs fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.all_subdirectories ;;
 
   let details_for_module  fw mn = try List.assoc mn (mod_details fw) with 
    Not_found -> raise(Module_not_found_exn(Dfa_module.to_line mn));;

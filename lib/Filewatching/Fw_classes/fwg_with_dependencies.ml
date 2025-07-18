@@ -34,7 +34,7 @@ let make fw_with_small_details deps = {
 
 type t = {
   _parent : Fwc_with_small_details.t;
-  dependencies : Fw_dependencies_t.t ;
+  dependencies : Fw_modular_infrastructure_t.t ;
 } ;;
 
 let parent fw = fw._parent ;; 

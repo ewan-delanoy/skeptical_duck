@@ -12,7 +12,7 @@ type t = {
    watched_files : (Dfn_rootless_t.t * string) list option;
    subdirs_for_archived_mlx_files : (Dfa_subdirectory_t.t list) option ;
    small_details_in_files : ((Dfn_rootless_t.t * Fw_file_details_t.t) list) option;
-   dependencies : Fw_dependencies_t.t option;
+   dependencies : Fw_modular_infrastructure_t.t option;
    last_compilation_result_for_module : ((Dfa_module_t.t * bool) list) option ;
    dir_for_backup : Dfa_root_t.t option;
    gitpush_after_backup : bool option;

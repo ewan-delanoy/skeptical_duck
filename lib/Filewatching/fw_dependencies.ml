@@ -35,7 +35,7 @@ let of_concrete_object ccrt_obj =
   let mlpair_of_crobj = Crobj_converter_combinator.to_pair
   mlist_of_crobj mlist_of_crobj in
  {
-   Fw_dependencies_t.modularized_details = 
+   Fw_modular_infrastructure_t.modularized_details = 
        h Fw_module_details.Crobj.of_concrete_object modularized_details_label;
    order = h mlpair_of_crobj order_label;
    needed_dirs = hl Dfa_subdirectory.of_concrete_object needed_dirs_label;
@@ -61,12 +61,12 @@ let to_concrete_object fwd =
   mlist_to_crobj mlist_to_crobj in
   let items=
  [
-   modularized_details_label, h Fw_module_details.Crobj.to_concrete_object   (fwd.Fw_dependencies_t.modularized_details);
-   order_label,  h mlpair_to_crobj   (fwd.Fw_dependencies_t.order);
-   needed_dirs_label,  hl Dfa_subdirectory.to_concrete_object   (fwd.Fw_dependencies_t.needed_dirs);
-   needed_libs_label,  hl Ocaml_library.to_concrete_object   (fwd.Fw_dependencies_t.needed_libs);
-   all_subdirectories_label, cl Dfa_subdirectory.to_concrete_object   (fwd.Fw_dependencies_t.all_subdirectories);
-   all_printables_label, cl Dfn_middle.to_concrete_object   (fwd.Fw_dependencies_t.all_printables);
+   modularized_details_label, h Fw_module_details.Crobj.to_concrete_object   (fwd.Fw_modular_infrastructure_t.modularized_details);
+   order_label,  h mlpair_to_crobj   (fwd.Fw_modular_infrastructure_t.order);
+   needed_dirs_label,  hl Dfa_subdirectory.to_concrete_object   (fwd.Fw_modular_infrastructure_t.needed_dirs);
+   needed_libs_label,  hl Ocaml_library.to_concrete_object   (fwd.Fw_modular_infrastructure_t.needed_libs);
+   all_subdirectories_label, cl Dfa_subdirectory.to_concrete_object   (fwd.Fw_modular_infrastructure_t.all_subdirectories);
+   all_printables_label, cl Dfn_middle.to_concrete_object   (fwd.Fw_modular_infrastructure_t.all_printables);
  ] in 
 Concrete_object_t.Record items;;
 
@@ -77,7 +77,7 @@ module Private = struct
 
   let starter = 
   {
-    Fw_dependencies_t.modularized_details = [] ;
+    Fw_modular_infrastructure_t.modularized_details = [] ;
     order = [];
     needed_dirs = [];
     needed_libs = [];
@@ -111,27 +111,27 @@ module Private = struct
 
   let modularized_details deps_ref new_details = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.modularized_details = new_details} );;
+    Fw_modular_infrastructure_t.modularized_details = new_details} );;
   let order deps_ref new_order = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.order = new_order} );;
+    Fw_modular_infrastructure_t.order = new_order} );;
 
   let needed_dirs deps_ref new_dirs = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.needed_dirs = new_dirs} );; 
+    Fw_modular_infrastructure_t.needed_dirs = new_dirs} );; 
 
   let needed_libs deps_ref new_libs = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.needed_libs = new_libs} );;
+    Fw_modular_infrastructure_t.needed_libs = new_libs} );;
 
 
   let all_subdirectories deps_ref new_subdirectories = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.all_subdirectories = new_subdirectories} );;
+    Fw_modular_infrastructure_t.all_subdirectories = new_subdirectories} );;
 
   let all_printables deps_ref new_printables = 
     (deps_ref:={(!deps_ref) with 
-    Fw_dependencies_t.all_printables = new_printables} );;
+    Fw_modular_infrastructure_t.all_printables = new_printables} );;
  
   end ;; 
 
@@ -148,13 +148,13 @@ let modularized_details fw_dets deps_ref=
 
 let order deps_ref= 
   let old_deps=(!deps_ref) in  
-  let new_order=Fw_determine_order.main old_deps.Fw_dependencies_t.modularized_details in 
+  let new_order=Fw_determine_order.main old_deps.Fw_modular_infrastructure_t.modularized_details in 
   Setter.order deps_ref new_order ;;
 
 
   let needed_dirs deps_ref= 
     let old_deps=(!deps_ref) in  
-    let details = old_deps.Fw_dependencies_t.modularized_details in 
+    let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
     let subdir_at_module = (fun mn->
       Fw_module_details.subdirectory(List.assoc mn details)
     ) in 
@@ -162,12 +162,12 @@ let order deps_ref=
       fun (mn,(_,ancestors)) ->
       let temp1 = Image.image subdir_at_module (mn::ancestors) in 
       (mn,Ordered.sort Total_ordering.standard temp1)
-    ) (old_deps.Fw_dependencies_t.order) in 
+    ) (old_deps.Fw_modular_infrastructure_t.order) in 
     Setter.needed_dirs deps_ref new_needed_dirs;;
 
   let needed_libs deps_ref= 
     let old_deps=(!deps_ref) in  
-    let details = old_deps.Fw_dependencies_t.modularized_details in 
+    let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
     let needed_libs_at_module = (fun mn->
       Fw_module_details.used_libraries(List.assoc mn details)
     ) in 
@@ -175,11 +175,11 @@ let order deps_ref=
      fun (mn,(_,ancestors)) ->
       let temp1 = List.flatten(Image.image needed_libs_at_module (mn::ancestors)) in 
       (mn,Ordered.sort Total_ordering.standard temp1)
-    ) (old_deps.Fw_dependencies_t.order)  in 
+    ) (old_deps.Fw_modular_infrastructure_t.order)  in 
     Setter.needed_libs deps_ref new_needed_libs;;
   let all_subdirectories deps_ref= 
     let old_deps=(!deps_ref) in  
-    let details = old_deps.Fw_dependencies_t.modularized_details in 
+    let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
     let new_subdirectories = Ordered.sort Total_ordering.standard (Image.image (
       fun (_,details_on_mn) ->
       Fw_module_details.subdirectory(details_on_mn)
@@ -188,7 +188,7 @@ let order deps_ref=
 
   let all_printables deps_ref= 
     let old_deps=(!deps_ref) in  
-    let details = old_deps.Fw_dependencies_t.modularized_details in 
+    let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
     let mods_without_subdirs = List.filter_map (
       fun (mn,details) ->
       if Fw_module_details.has_printer details
@@ -235,15 +235,15 @@ let order deps_ref=
   let tester = (fun mn->not(List.mem mn mods_to_be_erased)) in 
   let new_details = List.filter 
   (fun (mn,_)->not(List.mem mn mods_to_be_erased))
-  ((!deps_ref).Fw_dependencies_t.modularized_details)
+  ((!deps_ref).Fw_modular_infrastructure_t.modularized_details)
   and new_order = List.filter_map (fun (mn,(before,after))->
     if not(tester mn) then None else 
     Some(mn,(before,List.filter tester after))  
     ) 
-    ((!deps_ref).Fw_dependencies_t.order) 
+    ((!deps_ref).Fw_modular_infrastructure_t.order) 
   and new_printables = List.filter (fun middle->
     not(List.mem (Dfn_middle.to_module middle) mods_to_be_erased)) 
-    ((!deps_ref).Fw_dependencies_t.all_printables) in    
+    ((!deps_ref).Fw_modular_infrastructure_t.all_printables) in    
   (
     Setter.modularized_details deps_ref new_details;
     Setter.order deps_ref new_order;
@@ -254,7 +254,7 @@ let order deps_ref=
   );; 
 
  let inspect_and_update extra deps_ref = 
-  let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) 
+  let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) 
   and ((_,_),changed_u_files,_) = extra in 
  let tempf = (
    fun old_pair ->
@@ -267,7 +267,7 @@ let order deps_ref=
     else old_pair
  ) in 
   let  new_details = Image.image tempf old_details in 
-  let old_order = ((!deps_ref).Fw_dependencies_t.order) in 
+  let old_order = ((!deps_ref).Fw_modular_infrastructure_t.order) in 
   let new_order = compute_closest_order old_order new_details in 
   (
   Setter.modularized_details deps_ref new_details;
@@ -284,13 +284,13 @@ let order deps_ref=
    
    
  let overwrite_file_if_it_exists extra new_fw_dets deps_ref =
- let old_details =  ((!deps_ref).Fw_dependencies_t.modularized_details)  in 
+ let old_details =  ((!deps_ref).Fw_modular_infrastructure_t.modularized_details)  in 
  let new_details = ( match extra with 
       None -> old_details 
       |Some(change) ->
         compute_new_details_in_stable_case new_fw_dets old_details [change]
         ) in 
- let old_order = ((!deps_ref).Fw_dependencies_t.order) in 
+ let old_order = ((!deps_ref).Fw_modular_infrastructure_t.order) in 
  let new_order = compute_closest_order old_order new_details in 
   (
   Setter.modularized_details deps_ref new_details;
@@ -303,7 +303,7 @@ let order deps_ref=
   
  let plunge_fw_configuration deps_ref = (deps_ref:=starter) ;;
  let register_rootless_paths extra new_fw_dets deps_ref= 
-   let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+   let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
    let (_,novelties) = extra in 
    let old_mods = Image.image fst old_details in 
    let (overlapping,nonoverlapping) = List.partition (
@@ -324,14 +324,14 @@ let order deps_ref=
    let new_details = (Image.image tempf1 old_details)@
    (Fw_module_details.compute_details_from_acolytes_list_for_several_modules nonoverlapping) in 
    
- let old_order =  ((!deps_ref).Fw_dependencies_t.order) in 
+ let old_order =  ((!deps_ref).Fw_modular_infrastructure_t.order) in 
  let novel_details = List_again.long_tail (List.length old_order) new_details in
  let novel_modules_in_order = Image.image fst (Fw_determine_order.main novel_details) in 
  let novel_details_in_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
      novel_details novel_modules_in_order in 
  let new_order = Fw_determine_order.compute_coatoms_and_ancestors_in_small_extension
       old_order novel_details_in_order in 
-  let old_subdirectories = ((!deps_ref).Fw_dependencies_t.all_subdirectories) in 
+  let old_subdirectories = ((!deps_ref).Fw_modular_infrastructure_t.all_subdirectories) in 
  let (_,novelties) = extra in 
  let possibly_new = Ordered.sort Total_ordering.standard 
    (Image.image (fun (rl,_)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
@@ -347,7 +347,7 @@ let order deps_ref=
 
 
  let relocate_module_to extra new_fw_dets deps_ref= 
-  let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+  let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
   let new_details = compute_new_details_in_stable_case new_fw_dets old_details (fst extra) in 
   (
   Setter.modularized_details deps_ref new_details;
@@ -362,7 +362,7 @@ let order deps_ref=
    
  let remove_files extra new_fw_dets deps_ref
   = 
-  let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+  let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
   let new_details = compute_new_details_in_stable_case new_fw_dets old_details extra in 
   ( 
   Setter.modularized_details deps_ref new_details;
@@ -379,7 +379,7 @@ let order deps_ref=
   = 
   let (old_mname,new_mname,_) = triple in
   let rap = (fun mn->if mn = old_mname then new_mname else mn) in 
-  let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+  let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
   let tempf = (
    fun old_pair -> 
      let (pre_mn,_) = old_pair in 
@@ -392,15 +392,15 @@ let order deps_ref=
      else old_pair 
  ) in 
  let new_details = Image.image tempf old_details in 
-  let old_order = ((!deps_ref).Fw_dependencies_t.order) in 
+  let old_order = ((!deps_ref).Fw_modular_infrastructure_t.order) in 
   let new_order = Image.image (fun (mn2,(coat_mn2,ancestors_mn2)) ->
     (rap mn2,(Image.image rap coat_mn2,Image.image rap ancestors_mn2))
   ) old_order in 
-  let old_needed_dirs = ((!deps_ref).Fw_dependencies_t.needed_dirs) in 
+  let old_needed_dirs = ((!deps_ref).Fw_modular_infrastructure_t.needed_dirs) in 
   let new_needed_dirs = Image.image (fun (mn2,dirs) -> (rap mn2,dirs)) old_needed_dirs in 
-  let old_needed_libs = ((!deps_ref).Fw_dependencies_t.needed_libs) in 
+  let old_needed_libs = ((!deps_ref).Fw_modular_infrastructure_t.needed_libs) in 
   let new_needed_libs = Image.image (fun (mn2,libs) -> (rap mn2,libs)) old_needed_libs in 
-  let old_printables =  ((!deps_ref).Fw_dependencies_t.all_printables) in 
+  let old_printables =  ((!deps_ref).Fw_modular_infrastructure_t.all_printables) in 
   let rep = Dfn_middle.rename_module (old_mname,new_mname) in 
   let new_printables = Image.image rep old_printables in 
   
@@ -424,13 +424,13 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
     None -> sdir 
     |Some new_sdir -> new_sdir   
   ) in 
-  let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+  let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
   let new_details = compute_new_details_in_stable_case new_fw_dets old_details (fst extra) in 
-  let old_needed_dirs =  ((!deps_ref).Fw_dependencies_t.needed_dirs) in  
+  let old_needed_dirs =  ((!deps_ref).Fw_modular_infrastructure_t.needed_dirs) in  
   let new_needed_dirs = Image.image (fun (mn,sdirs)->(mn,Image.image rap sdirs) ) old_needed_dirs in 
-  let old_subdirectories =  ((!deps_ref).Fw_dependencies_t.all_subdirectories) in  
+  let old_subdirectories =  ((!deps_ref).Fw_modular_infrastructure_t.all_subdirectories) in  
   let new_subdirectories = Image.image rap old_subdirectories in 
-  let old_printables =  ((!deps_ref).Fw_dependencies_t.all_printables) in  
+  let old_printables =  ((!deps_ref).Fw_modular_infrastructure_t.all_printables) in  
   let new_printables = Image.image rep old_printables in 
   ( 
   Setter.modularized_details deps_ref new_details;
@@ -461,9 +461,9 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
 
  let replace_string extra new_fw_dets deps_ref
    = 
- let old_details = ((!deps_ref).Fw_dependencies_t.modularized_details) in 
+ let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
  let new_details = compute_new_details_in_stable_case new_fw_dets old_details (fst extra) in 
- let old_order = ((!deps_ref).Fw_dependencies_t.order) in 
+ let old_order = ((!deps_ref).Fw_modular_infrastructure_t.order) in 
  let new_order = compute_closest_order old_order new_details in 
  ( 
  Setter.modularized_details deps_ref new_details;
