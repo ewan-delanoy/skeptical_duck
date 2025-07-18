@@ -36,7 +36,7 @@ let of_concrete_object ccrt_obj =
   mlist_of_crobj mlist_of_crobj in
  {
    Fw_dependencies_t.modularized_details = 
-       h Fw_module_small_details.Crobj.of_concrete_object modularized_details_label;
+       h Fw_module_details.Crobj.of_concrete_object modularized_details_label;
    order = h mlpair_of_crobj order_label;
    needed_dirs = hl Dfa_subdirectory.of_concrete_object needed_dirs_label;
    needed_libs = hl Ocaml_library.of_concrete_object needed_libs_label;
@@ -61,7 +61,7 @@ let to_concrete_object fwd =
   mlist_to_crobj mlist_to_crobj in
   let items=
  [
-   modularized_details_label, h Fw_module_small_details.Crobj.to_concrete_object   (fwd.Fw_dependencies_t.modularized_details);
+   modularized_details_label, h Fw_module_details.Crobj.to_concrete_object   (fwd.Fw_dependencies_t.modularized_details);
    order_label,  h mlpair_to_crobj   (fwd.Fw_dependencies_t.order);
    needed_dirs_label,  hl Dfa_subdirectory.to_concrete_object   (fwd.Fw_dependencies_t.needed_dirs);
    needed_libs_label,  hl Ocaml_library.to_concrete_object   (fwd.Fw_dependencies_t.needed_libs);
@@ -100,7 +100,7 @@ module Private = struct
             ) data_on_changes in
           if temp1 <> []
           then 
-               (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets)
+               (mn, Fw_module_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets)
                     mn temp1)
           else old_pair 
       ) in 
@@ -142,7 +142,7 @@ module Private = struct
 let modularized_details fw_dets deps_ref= 
   let u_files=Fwc_with_small_details.usual_compilable_files fw_dets 
   and small_details = Fwc_with_small_details.small_details_in_files fw_dets in 
-  let new_details=Fw_module_small_details.modularize_from_compilable_files_and_small_details 
+  let new_details=Fw_module_details.modularize_from_compilable_files_and_small_details 
      u_files small_details in 
   Setter.modularized_details deps_ref new_details;;
 
@@ -156,7 +156,7 @@ let order deps_ref=
     let old_deps=(!deps_ref) in  
     let details = old_deps.Fw_dependencies_t.modularized_details in 
     let subdir_at_module = (fun mn->
-      Fw_module_small_details.subdirectory(List.assoc mn details)
+      Fw_module_details.subdirectory(List.assoc mn details)
     ) in 
     let new_needed_dirs = Image.image (
       fun (mn,(_,ancestors)) ->
@@ -169,7 +169,7 @@ let order deps_ref=
     let old_deps=(!deps_ref) in  
     let details = old_deps.Fw_dependencies_t.modularized_details in 
     let needed_libs_at_module = (fun mn->
-      Fw_module_small_details.used_libraries(List.assoc mn details)
+      Fw_module_details.used_libraries(List.assoc mn details)
     ) in 
     let new_needed_libs = Image.image (
      fun (mn,(_,ancestors)) ->
@@ -182,7 +182,7 @@ let order deps_ref=
     let details = old_deps.Fw_dependencies_t.modularized_details in 
     let new_subdirectories = Ordered.sort Total_ordering.standard (Image.image (
       fun (_,details_on_mn) ->
-      Fw_module_small_details.subdirectory(details_on_mn)
+      Fw_module_details.subdirectory(details_on_mn)
     ) details)  in 
     Setter.all_subdirectories deps_ref new_subdirectories;;
 
@@ -191,14 +191,14 @@ let order deps_ref=
     let details = old_deps.Fw_dependencies_t.modularized_details in 
     let mods_without_subdirs = List.filter_map (
       fun (mn,details) ->
-      if Fw_module_small_details.has_printer details
+      if Fw_module_details.has_printer details
       then Some mn
       else None
    ) details in 
    let new_printables = Image.image (
     fun mn ->
       let local_details = List.assoc mn details in 
-      let subdir = Fw_module_small_details.subdirectory local_details in 
+      let subdir = Fw_module_details.subdirectory local_details in 
       Dfn_join.subdirectory_to_module subdir mn
  ) mods_without_subdirs in 
  Setter.all_printables deps_ref new_printables;;
@@ -263,7 +263,7 @@ let order deps_ref=
        (Dfn_rootless.to_module rl)= mn
       ) changed_u_files in 
  if temp1 <> []
- then (mn, Fw_module_small_details.compute_details_from_acolytes_list_for_one_module temp1)
+ then (mn, Fw_module_details.compute_details_from_acolytes_list_for_one_module temp1)
     else old_pair
  ) in 
   let  new_details = Image.image tempf old_details in 
@@ -318,11 +318,11 @@ let order deps_ref=
           else None 
          ) overlapping in
        if temp1 <> []
-       then (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets) mn temp1)
+       then (mn, Fw_module_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets) mn temp1)
        else old_pair 
    ) in 
    let new_details = (Image.image tempf1 old_details)@
-   (Fw_module_small_details.compute_details_from_acolytes_list_for_several_modules nonoverlapping) in 
+   (Fw_module_details.compute_details_from_acolytes_list_for_several_modules nonoverlapping) in 
    
  let old_order =  ((!deps_ref).Fw_dependencies_t.order) in 
  let novel_details = List_again.long_tail (List.length old_order) new_details in
@@ -388,7 +388,7 @@ let order deps_ref=
        ) (fst extra) in
      if temp1 <> []
      then let mn = rap pre_mn in 
-          (mn, Fw_module_small_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets) mn temp1)
+          (mn, Fw_module_details.recompute_details_for_module (Fwc_with_small_details.small_details_in_files new_fw_dets) mn temp1)
      else old_pair 
  ) in 
  let new_details = Image.image tempf old_details in 

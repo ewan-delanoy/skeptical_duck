@@ -207,11 +207,11 @@ end ;;
   let details_for_module  fw mn = try List.assoc mn (mod_details fw) with 
    Not_found -> raise(Module_not_found_exn(Dfa_module.to_line mn));;
   let check_ending_on_module fw edg  mn=
-   if edg=Fw_module_small_details.principal_ending (details_for_module fw mn)
+   if edg=Fw_module_details.principal_ending (details_for_module fw mn)
    then true 
    else 
    if edg=Dfa_ocaml_ending_t.Mli
-   then Fw_module_small_details.mli_present (details_for_module fw mn) 
+   then Fw_module_details.mli_present (details_for_module fw mn) 
    else false;;
   let modules_with_their_ancestors fw l=
    let temp1=List.filter_map (
@@ -226,7 +226,7 @@ end ;;
   
   let root fw = Inherited.root  (fw) ;;
 
-  let subdir_for_module fw mn =Fw_module_small_details.subdirectory (details_for_module fw mn) ;;
+  let subdir_for_module fw mn =Fw_module_details.subdirectory (details_for_module fw mn) ;;
 
    let endingless_at_module cs mn=
    Dfn_endingless_t.J(
@@ -236,11 +236,11 @@ end ;;
     );;
 
   let check_ending_in_at_module edg fw mn=
-    if edg= Fw_module_small_details.principal_ending (details_for_module fw mn)
+    if edg= Fw_module_details.principal_ending (details_for_module fw mn)
     then true 
     else 
     if edg=Dfa_ocaml_ending_t.Mli
-    then Fw_module_small_details.mli_present (details_for_module fw mn)
+    then Fw_module_details.mli_present (details_for_module fw mn)
     else false;;
 
 
@@ -361,7 +361,7 @@ let decipher_module fw capitalized_or_not_x=
   let modules_using_value fw value_name =
     List.filter_map (fun (mn,_)->
       let eless=endingless_at_module fw mn
-      and pr_end=Fw_module_small_details.principal_ending (details_for_module fw mn) in
+      and pr_end=Fw_module_details.principal_ending (details_for_module fw mn) in
       let mlx=Dfn_join.to_ending eless (Dfa_ocaml_ending.to_ending pr_end) in
       let ap=Dfn_full.to_absolute_path mlx in
       if Substring.is_a_substring_of 
@@ -488,7 +488,7 @@ let of_configuration_and_list = Private.Core.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Core.overwrite_file_if_it_exists ;;
 let parent = Fwg_with_dependencies.parent ;;
 let plunge_fw_configuration = Private.Core.plunge_fw_configuration ;;
-let principal_ending_for_module fw mn = Fw_module_small_details.principal_ending (Private.details_for_module fw mn) ;;
+let principal_ending_for_module fw mn = Fw_module_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.mod_printables fw;;
 let register_rootless_paths = Private.Core.register_rootless_paths ;;
 let relocate_module_to = Private.Core.relocate_module_to ;;
@@ -498,5 +498,5 @@ let rename_subdirectory_as = Private.Core.rename_subdirectory_as ;;
 let replace_string = Private.Core.replace_string ;;
 let replace_value = Private.Core.replace_value ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
-let subdir_for_module fw mn = Fw_module_small_details.subdirectory (Private.details_for_module fw mn) ;;
+let subdir_for_module fw mn = Fw_module_details.subdirectory (Private.details_for_module fw mn) ;;
 let usual_compilable_files fw = Fwc_with_small_details.usual_compilable_files (Private.parent fw) ;;
