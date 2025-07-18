@@ -34,7 +34,7 @@ let make fw_with_deps sdf = {
 
 type t = {
   _parent : Fwc_with_archives.t;
-  small_details_in_files : ((Dfn_rootless_t.t * Fw_file_small_details_t.t) list);
+  small_details_in_files : ((Dfn_rootless_t.t * Fw_file_details_t.t) list);
 } ;;
 
 let parent fw = fw._parent ;; 

@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Filewatching/fw_file_small_details_t.ml";;
+#use"lib/Filewatching/fw_file_details_t.ml";;
 
 
 *)
