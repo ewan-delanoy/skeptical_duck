@@ -37,7 +37,7 @@ let g4=Replace_inside.replace_several_inside_text
 
 let s_watched_and_githubbed = 
     Dfa_subdirectory.connectable_to_subpath(
-    Coma_constant.watched_and_githubbed_subdir) ;;
+    Fw_constant.watched_and_githubbed_subdir) ;;
 
 let prologue=String.concat "\n"
 ["(*"; ""; "";

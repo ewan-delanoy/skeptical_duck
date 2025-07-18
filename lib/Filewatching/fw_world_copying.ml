@@ -130,10 +130,10 @@ module Private = struct
        let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destination) '/' in
        let (conv_files,needed_dirs) = (
          if summary = None
-         then (Coma_constant.conventional_files_with_full_content proj_name,
-               Coma_constant.full_set_of_needed_dirs)
-         else (Coma_constant.conventional_files_with_minimal_content proj_name,
-               Coma_constant.minimal_set_of_needed_dirs)
+         then (Fw_constant.conventional_files_with_full_content proj_name,
+               Fw_constant.full_set_of_needed_dirs)
+         else (Fw_constant.conventional_files_with_minimal_content proj_name,
+               Fw_constant.minimal_set_of_needed_dirs)
        ) in 
        let _=Unix_again.delete_directory destination in 
        let old_dir = Sys.getcwd () in 
@@ -149,7 +149,7 @@ module Private = struct
         (commands_for_copying old_root (compilables@noncompilables) destination destbackupdir) in
         let parameters_ap = Absolute_path.of_string 
         (Dfn_common.recompose_potential_absolute_path destination 
-         Coma_constant.rootless_path_for_parametersfile) 
+         Fw_constant.rootless_path_for_parametersfile) 
        and new_content = text_for_big_constants_file_in_other_world destination destbackupdir destgab in
        let _=Io.overwrite_with parameters_ap new_content in 
        ();;  

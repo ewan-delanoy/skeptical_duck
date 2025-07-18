@@ -82,7 +82,7 @@ module Private = struct
    (* Inherited constructors *)
 
    let constructor par opt_subdirs= 
-      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Coma_constant.watched_and_githubbed_subdir]) in    
+      let subdirs = (match opt_subdirs with (Some l)->l |None -> [Fw_constant.watched_and_githubbed_subdir]) in    
       Fwg_with_archives.make par subdirs ;;
       
    let plunge_fw_configuration config = constructor(Fwc_file_watcher.plunge_fw_configuration config) None ;;

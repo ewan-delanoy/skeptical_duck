@@ -41,7 +41,7 @@ end ;;
 let ignored_files fw = Fwg_configuration.ignored_files fw ;;
 let ignored_subdirectories fw = Fwg_configuration.ignored_subdirectories fw ;;
 
-let of_root root_dir = Fwg_configuration.make root_dir [] Coma_constant.git_ignored_subdirectories ;; 
+let of_root root_dir = Fwg_configuration.make root_dir [] Fw_constant.git_ignored_subdirectories ;; 
 
 
 let root = Fwg_configuration.root ;;

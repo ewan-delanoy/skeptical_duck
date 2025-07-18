@@ -217,7 +217,7 @@ module Private = struct
     let usual_path = 
         Absolute_path.of_string(
         Dfn_common.recompose_potential_absolute_path 
-          Fw_big_constant.This_World.root   Coma_constant.rootless_path_for_diary_file);;
+          Fw_big_constant.This_World.root   Fw_constant.rootless_path_for_diary_file);;
 
   let moodle_keyword = "m"^"odule" ;;
 let capitalized_snip = "Snip" ;; 

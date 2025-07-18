@@ -9,19 +9,19 @@ module Private = struct
 
   let name_element_for_debugged_file = "debugged" ;;
   let debugged_file_path = 
-   (Dfa_subdirectory.connectable_to_subpath(Coma_constant.debugging_subdir))
+   (Dfa_subdirectory.connectable_to_subpath(Fw_constant.debugging_subdir))
               ^ name_element_for_debugged_file ^ ".ml" ;;  
 
   let ocamldebug_printersfile_path root= 
             (Dfa_root.connectable_to_subpath root)^
             (Dfa_subdirectory.connectable_to_subpath
-              (Coma_constant.nongithubbed_nonml_files_subdir)) ^
+              (Fw_constant.nongithubbed_nonml_files_subdir)) ^
               "cmos_for_ocamldebug.txt";;
 
   let clean_debug_dir fw=
    let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.Inherited.root fw) in
    let s_debug_dir=s_root^(Dfa_subdirectory.connectable_to_subpath
-      (Coma_constant.debug_build_subdir)) in 
+      (Fw_constant.debug_build_subdir)) in 
    Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
 
    let preq_types_with_extra_info fw =
@@ -47,7 +47,7 @@ module Private = struct
   let needed_dirs_and_libs_in_dbg_command fw mn=
      let s_root=Dfa_root.connectable_to_subpath(Fwc_with_dependencies.Inherited.root fw) in
      let dirs=
-     "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir))
+     "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Fw_constant.debug_build_subdir))
     and prelibs = Fwc_with_dependencies.needed_libs_for_module fw mn in 
     let libs=line_for_libs prelibs in 
      String.concat " " ["";dirs;libs;""];;
@@ -58,7 +58,7 @@ module Private = struct
      let s_fhm=Dfn_endingless.to_line hm in
      let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli  nm in
      let ending=(if mli_reg then ".mli" else ".ml") in
-     let workdir = Dfa_subdirectory.connectable_to_subpath (Coma_constant.debug_build_subdir) in 
+     let workdir = Dfa_subdirectory.connectable_to_subpath (Fw_constant.debug_build_subdir) in 
      let central_cmd=
          "ocamlc -g"^
          (needed_dirs_and_libs_in_dbg_command fw nm)^
@@ -108,7 +108,7 @@ module Private = struct
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
          let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
-         let workdir = Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir in 
+         let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
          let central_cmds=
          [ 
@@ -127,7 +127,7 @@ module Private = struct
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
          let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
-         let workdir = Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir in 
+         let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let ml_in_workplace = s_root^workdir ^ (Dfa_module.to_line nm) ^ ".ml" in                   
          let central_cmds=
          [ 
@@ -148,7 +148,7 @@ module Private = struct
          let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
          let mli_reg=Fwc_with_dependencies.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
-         let workdir = Dfa_subdirectory.connectable_to_subpath Coma_constant.debug_build_subdir in 
+         let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
          let central_cmds=
          [ 
            "ocamlc -g "^dir_and_libs^" -c "^s_eless^".ml";
@@ -222,7 +222,7 @@ module Private = struct
             (subdir,nm)
         ) nm_deps in 
         let workdir=
-          (Dfa_subdirectory.connectable_to_subpath (Coma_constant.debug_build_subdir)) in
+          (Dfa_subdirectory.connectable_to_subpath (Fw_constant.debug_build_subdir)) in
         let unpointed_short_path = Cull_string.before_rightmost short_path '.' in 
         let libs_for_prow = 
           Set_of_polys.sort(
@@ -253,7 +253,7 @@ module Private = struct
         ) nm_deps in 
         let workdir=
          (Dfa_subdirectory.connectable_to_subpath 
-         Coma_constant.debug_build_subdir) 
+         Fw_constant.debug_build_subdir) 
         and ending=".cmo" 
         and last_ending=".cmo"
         and product_ending=".ocaml_debuggable "  in
@@ -354,7 +354,7 @@ let start_debugging fw=
    let cmds=Ocaml_target_making.list_of_commands_for_dbg
      fw debugged_file_path in 
    let answer=Unix_command.conditional_multiple_uc cmds in 
-   let dbgbuild_path =  Dfa_subdirectory.connectable_to_subpath(Coma_constant.debug_build_subdir) in 
+   let dbgbuild_path =  Dfa_subdirectory.connectable_to_subpath(Fw_constant.debug_build_subdir) in 
    let msg=(
      if answer
      then "\n\n The debugging-friendly executable has been created. \n"^

@@ -6,7 +6,7 @@
 
 module Private=struct
 
-  let building_site =  Coma_constant.usual_build_subdir ;;
+  let building_site =  Fw_constant.usual_build_subdir ;;
 
   let loadings (main_root,rootless_path_for_loadingsfile) (dirs,hms)=
       let path_for_loadingsfile = Dfn_rootless.to_line rootless_path_for_loadingsfile in 
@@ -105,15 +105,15 @@ module Private=struct
         in
        write_all 
       (
-        Coma_constant.rootless_path_for_targetfile,
-        Coma_constant.rootless_path_for_loadingsfile,
-        Coma_constant.rootless_path_for_printersfile
+        Fw_constant.rootless_path_for_targetfile,
+        Fw_constant.rootless_path_for_loadingsfile,
+        Fw_constant.rootless_path_for_printersfile
       )
 	      (root_dir,elesses,crobj_form,directories,printer_equipped_types)
       ;;
 
     let load_persisted_version fw=
-      let full_path=Dfn_join.root_to_rootless (Fwc_with_githubbing.Inherited.root fw)  Coma_constant.rootless_path_for_targetfile in
+      let full_path=Dfn_join.root_to_rootless (Fwc_with_githubbing.Inherited.root fw)  Fw_constant.rootless_path_for_targetfile in
       let ap= Dfn_full.to_absolute_path full_path in
       let the_archive=Io.read_whole_file ap in
       let archived_object = Crobj_parsing.parse the_archive in 

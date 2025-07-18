@@ -45,7 +45,7 @@ let changed_files_in_foreign_copy ()=
    let temp2=Explicit.filter (
       fun full_path->
          let rootless = Dfn_full.to_rootless full_path in 
-         if rootless = Coma_constant.rootless_path_for_parametersfile 
+         if rootless = Fw_constant.rootless_path_for_parametersfile 
          then false 
          else 
          let path = Dfn_rootless.to_line rootless in 
