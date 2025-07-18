@@ -383,7 +383,7 @@ Fw_poly by calls to the Fwg, add a Crobj submodule.
 
 (* Step 10 : Create a foreign copy *)
 
-let act2() = Usual_coma_state.create_foreign_copy None;;
+let act2() = Fw_usual_manager.create_foreign_copy None;;
 
 
 (* Step 11 : Copy the coming_soon file *)
@@ -414,7 +414,7 @@ let extract_wg g = g ;;
 (*function 
 (Fw_final_poly.With_githubbing g) -> g | _ -> failwith("hum") ;; *)
 
-let g1 = extract_wg (!(Usual_coma_state.Private.main_ref)) ;;
+let g1 = extract_wg (!(Fw_usual_manager.Private.main_ref)) ;;
 
 let cg1 = Fwc_with_githubbing.Crobj.to_concrete_object g1 ;;
 
@@ -443,9 +443,9 @@ let act5 () =
 
 (* Step 18 : Officialize changes *)
 
-let g1 = Usual_coma_state.changed_files_in_foreign_copy () ;;
+let g1 = Fw_usual_manager.changed_files_in_foreign_copy () ;;
 
-Usual_coma_state.officialize_foreign_changes () ;;
+Fw_usual_manager.officialize_foreign_changes () ;;
 
 save "use Fwg_with_dependencies in Fwc_with_dependencies";;
 
@@ -453,7 +453,7 @@ save "use Fwg_with_dependencies in Fwc_with_dependencies";;
 
 (* dune utop lib *)
 
-Usual_coma_state.refresh() ;;
+Fw_usual_manager.refresh() ;;
 
 (* dune utop lib *)
 
@@ -755,7 +755,7 @@ Snippet 166 : Delete all modules in a subdirectory
 ************************************************************************************************************************)
 module Snip166=struct
 
-  let ae = Usual_coma_state.all_endinglesses () ;;
+  let ae = Fw_usual_manager.all_endinglesses () ;;
 
   let sd1 = Dfa_subdirectory.of_line "lib/Mad_world" ;;
   
@@ -13043,7 +13043,7 @@ let z6 = List.filter (fun x->not(List.mem x kept_modules)) pre_z5 ;;
 
 let check_z6 = List.filter (fun x->bel(x)<>[]) z6 ;;
 
-let cs1 = Usual_coma_state.Private.main_ref ;;
+let cs1 = Fw_usual_manager.Private.main_ref ;;
 
 
 (************************************************************************************************************************
