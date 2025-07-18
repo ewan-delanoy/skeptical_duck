@@ -4,7 +4,7 @@
 
 *)
 
-type t = Fwg_with_dependencies.t ;; 
+type t = Fwg_with_modular_infrastructure.t ;; 
 
 exception Absent_module of string;;
 exception Duplicate_module_already_exists of string;;
@@ -14,7 +14,7 @@ exception Module_not_found_exn of string ;;
 module Inherited = struct 
 
   module Ancestry = Fwc_with_small_details.Inherited ;;
-  let parent = Fwg_with_dependencies.parent ;;
+  let parent = Fwg_with_modular_infrastructure.parent ;;
   
   let check_that_no_change_has_occurred fw = Ancestry.check_that_no_change_has_occurred(parent fw)  ;;  
 
@@ -36,7 +36,7 @@ module Inherited = struct
       List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
       [
         
-        "dependencies",((Fwg_with_dependencies.dependencies fw1)=(Fwg_with_dependencies.dependencies fw2))
+        "dependencies",((Fwg_with_modular_infrastructure.dependencies fw1)=(Fwg_with_modular_infrastructure.dependencies fw2))
         
       ]
     ) ;; 
@@ -54,7 +54,7 @@ module Crobj = struct
 
   module Private = struct 
 
-    let parent fw = Fwg_with_dependencies.parent fw ;;
+    let parent fw = Fwg_with_modular_infrastructure.parent fw ;;
 
   end ;;   
 
@@ -65,7 +65,7 @@ module Crobj = struct
 
   let of_concrete_object ccrt_obj = 
     let g=Concrete_object.get_record ccrt_obj in 
-    Fwg_with_dependencies.make 
+    Fwg_with_modular_infrastructure.make 
     (Fwc_with_small_details.Crobj.of_concrete_object (g label_for_parent))
     (Fw_modular_infrastructure.Crobj.of_concrete_object (g label_for_dependencies))
     ;;
@@ -74,7 +74,7 @@ module Crobj = struct
       let items =  
       [
            label_for_parent, Fwc_with_small_details.Crobj.to_concrete_object ( Private.parent fw ) ;
-           label_for_dependencies, Fw_modular_infrastructure.Crobj.to_concrete_object (Fwg_with_dependencies.dependencies fw ) ;
+           label_for_dependencies, Fw_modular_infrastructure.Crobj.to_concrete_object (Fwg_with_modular_infrastructure.dependencies fw ) ;
       ] in 
       Concrete_object_t.Record items ;;
 
@@ -83,9 +83,9 @@ end ;;
 
 module Private = struct
 
-  let parent fw = Fwg_with_dependencies.parent fw ;;
+  let parent fw = Fwg_with_modular_infrastructure.parent fw ;;
  let usual_extension fw_with_archives = 
-    Fwg_with_dependencies.make 
+    Fwg_with_modular_infrastructure.make 
     fw_with_archives Fw_modular_infrastructure.starter;;
 
 
@@ -95,9 +95,9 @@ module Private = struct
 
 module Core = struct 
 
-  let parent = Fwg_with_dependencies.parent ;;
-  let dependencies = Fwg_with_dependencies.dependencies ;;
-  let make fw_dets deps= Fwg_with_dependencies.make fw_dets  deps ;;
+  let parent = Fwg_with_modular_infrastructure.parent ;;
+  let dependencies = Fwg_with_modular_infrastructure.dependencies ;;
+  let make fw_dets deps= Fwg_with_modular_infrastructure.make fw_dets  deps ;;
 
 
 let forget_modules old_fw mods_to_be_erased =  
@@ -194,15 +194,15 @@ let replace_value old_fw (replacee,replacer) =
 end ;;
 
   
-  let mod_details fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.modularized_details ;;
+  let mod_details fw = (Fwg_with_modular_infrastructure.dependencies fw).Fw_modular_infrastructure_t.modularized_details ;;
 
-  let mod_order fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.order ;;
+  let mod_order fw = (Fwg_with_modular_infrastructure.dependencies fw).Fw_modular_infrastructure_t.order ;;
 
-  let mod_libs fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.needed_libs ;;
+  let mod_libs fw = (Fwg_with_modular_infrastructure.dependencies fw).Fw_modular_infrastructure_t.needed_libs ;;
 
-  let mod_printables fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.all_printables ;;
+  let mod_printables fw = (Fwg_with_modular_infrastructure.dependencies fw).Fw_modular_infrastructure_t.all_printables ;;
 
-  let mod_subdirs fw = (Fwg_with_dependencies.dependencies fw).Fw_modular_infrastructure_t.all_subdirectories ;;
+  let mod_subdirs fw = (Fwg_with_modular_infrastructure.dependencies fw).Fw_modular_infrastructure_t.all_subdirectories ;;
 
   let details_for_module  fw mn = try List.assoc mn (mod_details fw) with 
    Not_found -> raise(Module_not_found_exn(Dfa_module.to_line mn));;
@@ -486,7 +486,7 @@ let number_of_modules = Private.number_of_modules ;;
 let of_configuration = Private.Core.of_configuration ;;
 let of_configuration_and_list = Private.Core.of_configuration_and_list ;;
 let overwrite_file_if_it_exists = Private.Core.overwrite_file_if_it_exists ;;
-let parent = Fwg_with_dependencies.parent ;;
+let parent = Fwg_with_modular_infrastructure.parent ;;
 let plunge_fw_configuration = Private.Core.plunge_fw_configuration ;;
 let principal_ending_for_module fw mn = Fw_module_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.mod_printables fw;;
