@@ -19,7 +19,7 @@ Unix.putenv "CTL" "/Applications/mampstack-7.3.13-0/ctlscript.sh";;
 Unix.putenv "MYSQL" "/Applications/mampstack-7.3.13-0/mysql/bin/mysql";;
 
 let usual_dir = Dfa_root.without_trailing_slash 
-Coma_big_constant.This_World.root ;; 
+Fw_big_constant.This_World.root ;; 
 
 let main_dir = usual_dir ^ 
    "/nonml_files/nongithubbed_nonml_files/Mass_editing_of_phpbb_topic/";;

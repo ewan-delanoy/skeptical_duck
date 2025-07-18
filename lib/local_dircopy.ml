@@ -191,7 +191,7 @@ let transfer_to_remote ldc = Image.image Sys.command (transfer_commands ldc);;
         
 let persisted_file_listing_dir_content ldc = 
    let s_ap_for_persistence =  
-      (Dfa_root.connectable_to_subpath Coma_big_constant.This_World.root)^
+      (Dfa_root.connectable_to_subpath Fw_big_constant.This_World.root)^
       ldc.Local_dircopy_config_t.persisted_file_listing_dir_content in 
     Absolute_path.create_file_if_absent s_ap_for_persistence ;;
     

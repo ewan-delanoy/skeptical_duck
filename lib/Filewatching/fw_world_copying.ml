@@ -64,20 +64,20 @@ module Private = struct
      let ds = Particular_string.double_semicolon in 
      let proj_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destination) '/'
      and git_name = Cull_string.after_rightmost (Dfa_root.without_trailing_slash destbackupdir) '/' in
-     let proj_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Coma_big_constant.Third_World.root) '/'
-     and git_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Coma_big_constant.Third_World.backup_dir) '/' in
+     let proj_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Fw_big_constant.Third_World.root) '/'
+     and git_name2 = Cull_string.after_rightmost (Dfa_root.without_trailing_slash Fw_big_constant.Third_World.backup_dir) '/' in
      let passage_appearing_twice =
      [
        "let root=Dfa_root.of_line  (root_of_root^\""^proj_name2^"\") "^ds;
        "let backup_dir=Dfa_root.of_line (root_of_root^\""^git_name2^"\") "^ds;
-       "let githubbing="^(string_of_bool Coma_big_constant.Third_World.githubbing)^ds;
+       "let githubbing="^(string_of_bool Fw_big_constant.Third_World.githubbing)^ds;
        "let triple = (root,backup_dir,githubbing)"^ds^"\n"; 
      ] in        
      String.concat "\n" ([
        "\n(* "; 
        "#use\"Compilation_management/coma_big_constant.ml\""^ds;
       "*)\n"; 
-      "let github_url = \""^(Coma_big_constant.github_url)^"\""^ds;
+      "let github_url = \""^(Fw_big_constant.github_url)^"\""^ds;
       "let home = Sys.getenv \"HOME\" "^ds;
       "let root_of_root = home^\"/Teuliou/OCaml/\" "^ds^"\n";
       "module This_World=struct\n";
@@ -123,7 +123,7 @@ module Private = struct
    
      
    
-   let default_backup_dir=Coma_big_constant.Next_World.backup_dir;;
+   let default_backup_dir=Fw_big_constant.Next_World.backup_dir;;
  
  
    let frozen_copy fw ~destination ?(destbackupdir=default_backup_dir) ?(destgab=false)  summary =
@@ -137,7 +137,7 @@ module Private = struct
        ) in 
        let _=Unix_again.delete_directory destination in 
        let old_dir = Sys.getcwd () in 
-       let _ = Sys.chdir (Coma_big_constant.root_of_root) in 
+       let _ = Sys.chdir (Fw_big_constant.root_of_root) in 
        let _ = Unix_command.uc ("dune init proj "^proj_name) in 
        let _ = Sys.chdir old_dir in  
        let _=(Unix_again.create_subdirs_and_fill_files

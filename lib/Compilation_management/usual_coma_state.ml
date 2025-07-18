@@ -9,13 +9,13 @@ exception No_module_with_name of string;;
 module Private = struct 
 
 let main_ref=
-  let (root,backup_dir,githubbing)=Coma_big_constant.This_World.triple in 
+  let (root,backup_dir,githubbing)=Fw_big_constant.This_World.triple in 
   let fw_config = Fwc_configuration.of_root root 
   and github_config = Fwc_github_configuration.make 
   ~v_root:root
   ~v_dir_for_backup:backup_dir
   ~v_gitpush_after_backup:githubbing
-  ~v_github_url:Coma_big_constant.github_url
+  ~v_github_url:Fw_big_constant.github_url
   ~v_encoding_protected_files:[] in 
   let final_fw = Fwc_with_githubbing.plunge_fw_config_with_github_config  fw_config github_config in
   ref(final_fw);;
@@ -23,8 +23,8 @@ let main_ref=
   let ref_for_unofficial_changes = ref(None : (string list) option) ;; 
 
   let commands_for_change_officialization l=
-   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let this_root = Dfa_root.connectable_to_subpath (Fw_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Fw_big_constant.Next_World.root) in 
    Image.image (
       fun path->
          "cp "^next_root^path^" "^this_root^path 
@@ -40,8 +40,8 @@ let all_endinglesses ()=
 let changed_files_in_foreign_copy ()= 
    let fw_git = (!(Private.main_ref)) in 
    let temp1=Fwc_with_githubbing.Inherited.all_moduled_mlx_files fw_git in 
-   let this_root = Dfa_root.connectable_to_subpath (Coma_big_constant.This_World.root) 
-   and next_root = Dfa_root.connectable_to_subpath (Coma_big_constant.Next_World.root) in 
+   let this_root = Dfa_root.connectable_to_subpath (Fw_big_constant.This_World.root) 
+   and next_root = Dfa_root.connectable_to_subpath (Fw_big_constant.Next_World.root) in 
    let temp2=Explicit.filter (
       fun full_path->
          let rootless = Dfn_full.to_rootless full_path in 
@@ -71,7 +71,7 @@ let create_foreign_copy summary =
   let fw_git = (!(Private.main_ref)) in 
   let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   let _ = (Private.ref_for_unofficial_changes:=None) in
-  let (next_dest,next_backup,next_gab) = Coma_big_constant.Next_World.triple in 
+  let (next_dest,next_backup,next_gab) = Fw_big_constant.Next_World.triple in 
   Fw_world_copying.copy
   fw_deps summary
   ~destination:next_dest ~destbackupdir:next_backup ~destgab:next_gab ;; 
