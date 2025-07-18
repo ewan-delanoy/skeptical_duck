@@ -95,13 +95,13 @@ module Private=struct
 
       
     let save_all fw=
-      let root_dir = Fwc_with_dependencies.Inherited.root fw 
+      let root_dir = Fwc_with_githubbing.Inherited.root fw 
       and elesses = Image.image 
-      (Fwc_with_dependencies.endingless_at_module fw)
-      (Fwc_with_dependencies.dep_ordered_modules fw)
-      and crobj_form = Fwc_with_dependencies.Crobj.to_concrete_object fw 
-      and directories = Fwc_with_dependencies.all_subdirectories fw 
-      and printer_equipped_types = Fwc_with_dependencies.printer_equipped_types fw 
+      (Fwc_with_githubbing.Inherited.endingless_at_module fw)
+      (Fwc_with_githubbing.Inherited.dep_ordered_modules fw)
+      and crobj_form = Fwc_with_githubbing.Crobj.to_concrete_object fw 
+      and directories = Fwc_with_githubbing.Inherited.all_subdirectories fw 
+      and printer_equipped_types = Fwc_with_githubbing.Inherited.printer_equipped_types fw 
         in
        write_all 
       (
@@ -109,18 +109,18 @@ module Private=struct
         Coma_constant.rootless_path_for_loadingsfile,
         Coma_constant.rootless_path_for_printersfile
       )
-      
 	      (root_dir,elesses,crobj_form,directories,printer_equipped_types)
       ;;
 
     let load_persisted_version fw=
-      let full_path=Dfn_join.root_to_rootless (Fwc_with_dependencies.Inherited.root fw)  Coma_constant.rootless_path_for_targetfile in
+      let full_path=Dfn_join.root_to_rootless (Fwc_with_githubbing.Inherited.root fw)  Coma_constant.rootless_path_for_targetfile in
       let ap= Dfn_full.to_absolute_path full_path in
       let the_archive=Io.read_whole_file ap in
       let archived_object = Crobj_parsing.parse the_archive in 
-      Fwc_with_dependencies.Crobj.of_concrete_object archived_object;;   
+      Fwc_with_githubbing.Crobj.of_concrete_object archived_object;;   
 
 end;;  
+
 
 let load_persisted_version = Private.load_persisted_version ;;
 let persist = Private.save_all;;

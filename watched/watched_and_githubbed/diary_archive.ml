@@ -576,6 +576,7 @@ module Snip169=struct
     "Fw_with_githubbing" , "Fw_with_batch_compilation" ;
 ] ;;
 
+
   let f1 = Fwc_with_dependencies.all_endinglesses ;;
   let f2 = Fwc_with_dependencies.all_moduled_mlx_files ;;
   let f3 = Fwc_with_dependencies.all_subdirectories ;;
@@ -597,7 +598,6 @@ module Snip169=struct
   let f21 = Fwc_configuration.ignored_subdirectories ;;
   let f22 = Fwc_with_archives.latest_changes ;;
   let f23 = Fwc_with_dependencies.list_values_from_module ;;
-  let f24 = Fwc_with_batch_compilation.modern_recompile ;;
   let f25 = Fwc_with_dependencies.modules_using_value ;;
   let f26 = Fwc_with_archives.noncompilable_files ;;
   let f27 = Fwc_with_dependencies.number_of_modules ;;
@@ -611,7 +611,6 @@ module Snip169=struct
   let f38 = Fwc_with_githubbing.replace_value ;;
   let f39 = Fwc_configuration.root ;;
   let f40 = Fwc_with_githubbing.Inherited.set_gitpush_after_backup ;;
-  let f41 = Fwc_with_batch_compilation.Inherited.show_value_occurrences ;;
   let f44 = Fwc_configuration.test_for_admissibility ;;
   let f45 = Fwc_with_githubbing.Crobj.to_concrete_object ;;
   let f46 = Fwc_with_githubbing.Inherited.to_fw_configuration ;;

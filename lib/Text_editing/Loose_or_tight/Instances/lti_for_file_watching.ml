@@ -20,12 +20,12 @@ let the_list =
    "with_archives";
    "with_small_details";
    "with_dependencies";
-   "with_batch_compilation";
    "with_githubbing";
 ] 
   };;
 
 end ;;  
+
 
 
 let set = Loose_or_tight.set_in_file_list Private.the_list ;;

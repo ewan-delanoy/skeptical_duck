@@ -5,20 +5,7 @@
 *)
 
 
-   module FromAncestors = struct 
-      
-   let load_persisted_version old_fw_git =
-      let old_fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies old_fw_git in 
-      let new_fw_deps = Fw_persisting.load_persisted_version old_fw_deps in 
-      Fwc_with_githubbing.Inherited.set_fw_with_dependencies 
-       old_fw_git new_fw_deps
-   ;;    
-
-   let persist fw_git =
-      let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-      Fw_persisting.persist fw_deps ;;   
-      
-   end ;;   
+  
 
 
    module And_save = struct 
@@ -26,25 +13,24 @@
          let forget_modules fw mod_names=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2 = Fwc_with_githubbing.forget_modules fw mod_names in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;
    
          let forget_nonmodular_rootlesses fw rootless_paths=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2 = Fwc_with_githubbing.forget_nonmodular_rootlesses fw rootless_paths in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;
    
          let internet_access fw bowl=   
             let fw2=Fwc_with_githubbing.Inherited.set_gitpush_after_backup fw bowl in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;
          
          let save_latest_changes fw opt_comment=
             let fw2= Fwc_with_githubbing.inspect_and_update fw opt_comment in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;
-         
 
    let refresh fw =
      let fw_config = Fwc_with_githubbing.Inherited.to_fw_configuration fw
@@ -56,45 +42,45 @@
            (Coma_constant.conventional_files_with_minimal_content proj_name)) in 
      let fw_with_deps = Fwc_with_dependencies.of_configuration fw_config in 
      let fw2= Fwc_with_githubbing.Inherited.make fw_with_deps github_config  in 
-     let _=FromAncestors.persist fw2 in 
+     let _=Fw_persisting.persist fw2 in 
      fw2;;       
 
          let register_rootless_paths fw rootless_path=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2 = Fwc_with_githubbing.register_rootless_paths fw rootless_path in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;  
    
          let relocate_module_to fw old_module new_subdir=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2 = Fwc_with_githubbing.relocate_module_to fw old_module new_subdir in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;   
    
          let rename_module fw old_middle_name new_nonslashed_name=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2=Fwc_with_githubbing.rename_module fw old_middle_name new_nonslashed_name in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;  
 
          let rename_subdirectory fw old_subdir new_subdir=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2=Fwc_with_githubbing.rename_subdirectory_as fw (old_subdir,new_subdir) in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;  
 
 
          let replace_string fw old_s new_s=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2=Fwc_with_githubbing.replace_string fw old_s new_s in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;     
     
          
          let replace_value fw ((preceding_files,path),(old_v,new_v))=
             let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
             let fw2= Fwc_with_githubbing.replace_value fw ((preceding_files,path),(old_v,new_v)) in 
-            let _=FromAncestors.persist fw2 in 
+            let _=Fw_persisting.persist fw2 in 
             fw2;;        
    
    end ;;
@@ -110,7 +96,7 @@
             pfw:=new_fw;; 
    
          let initialize pfw =
-         let new_fw = FromAncestors.load_persisted_version (!pfw) in 
+         let new_fw = Fw_persisting.load_persisted_version (!pfw) in 
          pfw:=new_fw;;
 
          let initialize_if_empty pfw =
