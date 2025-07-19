@@ -104,16 +104,20 @@ module Private = struct
             ~printer:(fun s-> s) ~items:regs 
             ~separator: "\n" ;;
    
+  let lfs_order = Total_ordering.lex_for_strings ;;
+  
+  let lfs_setminus = Ordered.setminus lfs_order;;
+  let lfs_sort = Ordered.sort lfs_order ;;
 
   let announce_differences_in_registered_printers 
-    printers_before printers_after =
-    if printers_before = printers_after 
+    unordered_printers_before unordered_printers_after =
+    if unordered_printers_before = unordered_printers_after 
     then ()
     else
-    let deleted_regs = List.filter 
-       (fun x->not(List.mem x printers_after)) printers_before 
-    and created_regs = List.filter 
-    (fun x->not(List.mem x printers_before)) printers_after in 
+    let printers_before = lfs_sort unordered_printers_before 
+    and printers_after = lfs_sort unordered_printers_after in 
+    let deleted_regs = lfs_setminus printers_before printers_after 
+    and created_regs = lfs_setminus printers_after printers_after in 
     (announce_change_on_registered_printers deleted_regs "unregistered";
     announce_change_on_registered_printers created_regs "registered") ;;         
 
