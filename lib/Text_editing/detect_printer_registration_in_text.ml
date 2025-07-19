@@ -22,7 +22,8 @@ let printers_in_text text=
 let printers_in_file ap =
    let filename = Absolute_path.to_string ap in 
    let eless = Cull_string.before_rightmost_possibly_all filename '.' in
-   let pointed_mod = (String.capitalize_ascii eless)^"." in 
+   let mod_part = Cull_string.after_rightmost eless '/' in 
+   let pointed_mod = (String.capitalize_ascii mod_part)^"." in 
    let full_text = Io.read_whole_file ap in 
    let temp = printers_in_text full_text in 
    Image.image (fun (idx,short_printer_name) ->
