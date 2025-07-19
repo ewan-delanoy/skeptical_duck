@@ -45,6 +45,8 @@ let create_file_if_absent w=
            uc ("rm -f "^g1)) in 
     of_string w;;
     
+(* This is a registered printer : print_out *)
+
 let print_out (fmt:Format.formatter) ap=
    Format.fprintf fmt "@[%s@]" (to_string ap);;
 
