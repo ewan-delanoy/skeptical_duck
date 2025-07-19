@@ -528,6 +528,7 @@ let plunge_fw_configuration = Private.Core.plunge_fw_configuration ;;
 let principal_ending_for_module fw mn = Fw_module_details.principal_ending (Private.details_for_module fw mn) ;;
 let printer_equipped_types fw = Private.mod_printables fw;;
 let register_rootless_paths = Private.Core.register_rootless_paths ;;
+let registered_printers fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.registered_printers ;;
 let relocate_module_to = Private.Core.relocate_module_to ;;
 let remove_files = Private.Core.remove_files ;;
 let rename_module_on_filename_level_and_in_files = Private.Core.rename_module_on_filename_level_and_in_files ;;
