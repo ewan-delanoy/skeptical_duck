@@ -19,7 +19,7 @@ let the_list =
    "file_watcher";
    "with_archives";
    "with_small_details";
-   "with_dependencies";
+   "with_modular_infrastructure";
    "with_githubbing";
 ] 
   };;
