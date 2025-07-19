@@ -33,7 +33,6 @@ module Crobj = struct
    let salt = "Fw_module_small_details_t." ;;
    let used_modules_label                = salt ^ "used_modules" ;;
    let used_libraries_label              = salt ^ "used_libraries" ;;
-   let has_printer_label                 = salt ^ "has_printer" ;;
    let registered_printers_label         = salt ^ "registered_printers";;
    let subdirectory_label                = salt ^ "subdirectory" ;;
    let principal_ending_label            = salt ^ "principal_ending" ;;
@@ -48,7 +47,6 @@ module Crobj = struct
     {
       Fw_module_details_t.used_modules = cl Dfa_module.of_concrete_object   (g used_modules_label);
       used_libraries = cl Ocaml_library.of_concrete_object   (g used_libraries_label);
-      has_printer = Crobj_converter.bool_of_concrete_object   (g has_printer_label);
       registered_printers = istrl_of_concrete_object (g registered_printers_label); 
       subdirectory = Dfa_subdirectory.of_concrete_object   (g subdirectory_label);
       principal_ending = Dfa_ocaml_ending.of_concrete_object   (g principal_ending_label);
@@ -65,7 +63,6 @@ module Crobj = struct
     [
       used_modules_label,  cl Dfa_module.to_concrete_object   (msd.Fw_module_details_t.used_modules);
       used_libraries_label,  cl Ocaml_library.to_concrete_object   (msd.Fw_module_details_t.used_libraries);
-      has_printer_label,  Crobj_converter.bool_to_concrete_object   (msd.Fw_module_details_t.has_printer);
       registered_printers_label, istrl_to_concrete_object (msd.Fw_module_details_t.registered_printers);
       subdirectory_label,  Dfa_subdirectory.to_concrete_object   (msd.Fw_module_details_t.subdirectory);
       principal_ending_label,  Dfa_ocaml_ending.to_concrete_object   (msd.Fw_module_details_t.principal_ending);
@@ -135,7 +132,6 @@ let compute_details_from_acolytes_list_for_one_module l=
    {
       Fw_module_details_t.used_modules = all_coatoms_in_order ;
       used_libraries = Fw_file_details.used_libraries principal_details ;
-      has_printer = Fw_file_details.has_printer principal_details ;
       registered_printers = Fw_file_details.registered_printers principal_details ;
       subdirectory = principal_subdir ;
       principal_ending = Dfa_ocaml_ending.of_ending (Dfn_rootless.to_ending principal_rless) ;
@@ -172,7 +168,6 @@ let recompute_details_for_module small_details mod_name unfiltered_l =
 end ;;   
 
 
-let has_printer fw = fw.Fw_module_details_t.has_printer ;;  
 
 
 let compute_details_from_acolytes_list_for_one_module = Private.compute_details_from_acolytes_list_for_one_module ;;
