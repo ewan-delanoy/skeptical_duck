@@ -4,14 +4,14 @@
 
 *)
 
-type t = Fwg_with_small_details.t ;;
+type t = Fwg_with_file_details.t ;;
 
 module Inherited = struct 
 
    module Ancestry = Fwc_with_archives.Inherited ;;
 
    module Parent = Fwc_with_archives;;
-   let parent = Fwg_with_small_details.parent ;;
+   let parent = Fwg_with_file_details.parent ;;
 
 
    let archived_files fw = Parent.archived_files (parent fw) ;;
@@ -36,8 +36,8 @@ module Inherited = struct
         List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
         [
           "small_details_in_files",(
-            (Fwg_with_small_details.small_details_in_files fw1)=
-          (Fwg_with_small_details.small_details_in_files fw2))
+            (Fwg_with_file_details.small_details_in_files fw1)=
+          (Fwg_with_file_details.small_details_in_files fw2))
         ]
       ) ;;
 
@@ -60,7 +60,7 @@ module Crobj = struct
        
    let of_concrete_object ccrt_obj = 
      let g=Concrete_object.get_record ccrt_obj in 
-     Fwg_with_small_details.make 
+     Fwg_with_file_details.make 
      (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
      (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_details.of_concrete_object (g label_for_small_details_in_files))
      ;;
@@ -68,10 +68,10 @@ module Crobj = struct
    let to_concrete_object fw = 
      let items =  
      [
-          label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_small_details.parent fw ) ;
+          label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_file_details.parent fw ) ;
           label_for_small_details_in_files, 
           Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_details.to_concrete_object
-           (Fwg_with_small_details.small_details_in_files fw ) ;
+           (Fwg_with_file_details.small_details_in_files fw ) ;
      ] in 
      Concrete_object_t.Record items ;;
        
@@ -86,7 +86,7 @@ module Private = struct
 
 
    (* Start of level 2 *)
-   let parent fw = Fwg_with_small_details.parent fw ;;
+   let parent fw = Fwg_with_file_details.parent fw ;;
    (* End of level 2 *)
  
 
@@ -96,10 +96,10 @@ module Private = struct
  
    
    let constructor mother =
-      Fwg_with_small_details.make 
+      Fwg_with_file_details.make 
        mother  (Fwc_with_archives.compute_all_small_details mother) ;;
    let root fw     = Inherited.root fw ;;  
-   let small_details_in_files fw = Fwg_with_small_details.small_details_in_files fw ;;  
+   let small_details_in_files fw = Fwg_with_file_details.small_details_in_files fw ;;  
    
    (* End of level 1 *)
    
@@ -110,7 +110,7 @@ module Private = struct
       and old_details = small_details_in_files fw  in 
       let (new_parent,removed_files) = Fwc_with_archives.forget_modules old_parent mod_names in
       (
-         Fwg_with_small_details.make 
+         Fwg_with_file_details.make 
          new_parent 
          (List.filter (
             fun (rl,_)->not(List.mem (Dfn_rootless.to_module rl) mod_names)
@@ -130,7 +130,7 @@ module Private = struct
                new_pair 
           else old_pair  
        ) old_details in 
-      (Fwg_with_small_details.make 
+      (Fwg_with_file_details.make 
       new_parent 
       new_small_details,
       ((a_files,u_files),!changed_details_ref,changed_files));;
@@ -162,7 +162,7 @@ module Private = struct
                  new_pair
             else old_pair  
          ) old_details in 
-         Fwg_with_small_details.make 
+         Fwg_with_file_details.make 
          new_parent 
           new_small_details
       else fw ) in (new_fw,!accu);;           
@@ -176,7 +176,7 @@ module Private = struct
       let new_details =    (Image.image (fun rl->
          (rl,Fwc_with_archives.compute_small_details_on_one_file new_parent rl)) 
          rootless_paths) in 
-      ( Fwg_with_small_details.make 
+      ( Fwg_with_file_details.make 
       new_parent 
       (old_details @ new_details),
       (Fwc_with_archives.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
@@ -197,7 +197,7 @@ module Private = struct
               new_pair
          else old_pair        
       ) old_details in 
-      let new_fw = Fwg_with_small_details.make 
+      let new_fw = Fwg_with_file_details.make 
       new_parent 
       new_small_details  in 
       (new_fw,(!accu,replacements));;  
@@ -208,7 +208,7 @@ module Private = struct
       and old_details = small_details_in_files fw  in 
       let new_parent = Fwc_with_archives.remove_files 
          old_parent removed_rootless_paths in 
-      ( Fwg_with_small_details.make 
+      ( Fwg_with_file_details.make 
       new_parent 
        (List.filter (
             fun (rl,_)->not(List.mem rl removed_rootless_paths)
@@ -241,7 +241,7 @@ module Private = struct
               new_pair 
              | None -> old_pair  
           ) old_details in    
-         (Fwg_with_small_details.make 
+         (Fwg_with_file_details.make 
          new_parent 
          new_details,
          (List.rev(!accu),(file_renamings,changed_u_files@changed_a_files))) ;;  
@@ -262,7 +262,7 @@ module Private = struct
                 new_pair 
          | None -> old_pair        
       ) old_details in 
-      (Fwg_with_small_details.make 
+      (Fwg_with_file_details.make 
       new_parent 
       new_details,(List.rev(!accu),original_reps)) ;;   
    
@@ -280,7 +280,7 @@ module Private = struct
               new_pair 
          else old_pair  
       ) old_details in
-      (Fwg_with_small_details.make 
+      (Fwg_with_file_details.make 
       new_parent 
       new_details,(List.rev(!accu),changed_a_files@changed_u_files));;   
    
@@ -300,7 +300,7 @@ module Private = struct
                     new_pair 
             else old_pair  
          ) old_details in      
-      (Fwg_with_small_details.make 
+      (Fwg_with_file_details.make 
       new_parent 
       new_details,(List.rev(!accu),all_changes));;     
    
@@ -318,7 +318,7 @@ module Private = struct
    let of_configuration = Private.of_configuration ;;
    let of_configuration_and_list = Private.of_configuration_and_list ;;
    let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
-   let plunge_fw_configuration config= Fwg_with_small_details.make (Fwc_with_archives.plunge_fw_configuration config) [] ;; 
+   let plunge_fw_configuration config= Fwg_with_file_details.make (Fwc_with_archives.plunge_fw_configuration config) [] ;; 
    let register_rootless_paths = Private.register_rootless_paths;;
    let relocate_module_to = Private.relocate_module_to;;
    let remove_files = Private.remove_files;;

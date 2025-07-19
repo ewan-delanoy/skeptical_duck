@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Filewatching/Fw_classes/fwg_with_small_details.ml";;
+#use"lib/Filewatching/Fw_classes/fwg_with_file_details.ml";;
 
 *)
 
