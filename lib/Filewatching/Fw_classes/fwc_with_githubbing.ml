@@ -60,6 +60,7 @@ module Inherited = struct
   
   let printer_equipped_types fw = Parent.printer_equipped_types (parent fw) ;;
   
+  let registered_printers fw = Parent.registered_printers (parent fw) ;;
   let root fw = Ancestry.root (parent fw) ;;
   
   let set_fw_with_dependencies fw fw_deps = 

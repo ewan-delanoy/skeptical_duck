@@ -13,7 +13,7 @@ type t = Fw_flattened_poly_t.t ;;
 
 let parent fw = {
   fw with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" 
+  Fw_flattened_poly_t.type_name = Some "Fw_with_modular_infrastructure" 
  } ;; 
 let github_configuration fw = {
   fw with 
