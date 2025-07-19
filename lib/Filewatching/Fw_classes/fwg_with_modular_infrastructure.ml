@@ -21,7 +21,7 @@ let dependencies fw = match fw.Fw_flattened_poly_t.dependencies with Some x -> x
 
 let make fw_with_small_details deps = {
   fw_with_small_details with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_dependencies" ;
+  Fw_flattened_poly_t.type_name = Some "Fw_with_modular_infrastructure" ;
   dependencies = Some deps ;
 } ;;
 
@@ -34,17 +34,20 @@ let make fw_with_small_details deps = {
 
 type t = {
   _parent : Fwc_with_small_details.t;
-  dependencies : Fw_modular_infrastructure_t.t ;
+  infrastructure : Fw_modular_infrastructure_t.t ;
 } ;;
 
-let parent fw = fw._parent ;; 
-let dependencies fw = fw.dependencies ;; 
+
+let infrastructure fw = fw.infrastructure ;; 
 
 let make fw_small_details deps = {
   _parent = fw_small_details ;
-  dependencies = deps ;
+  infrastructure = deps ;
 } ;;
+
+let parent fw = fw._parent ;; 
 
 (* End of tight version of file watching *)
 
 
+ 
