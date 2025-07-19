@@ -88,8 +88,34 @@ module Private = struct
     Fwg_with_modular_infrastructure.make 
     fw_with_archives Fw_modular_infrastructure.starter;;
 
+  let registered_printers fw =
+     let infra = Fwg_with_modular_infrastructure.infrastructure fw in 
+     Image.image snd (infra.Fw_modular_infrastructure_t.registered_printers);;
 
+  let announce_change_on_registered_printers regs verb= 
+    if regs = [] then () else 
+    let conjugated = (
+       if List.length(regs)>1 
+       then "printers have"
+       else "printer has" 
+    ) in
+      Strung.announce 
+         ~trailer: ("The following "^conjugated^" "^verb^" :") 
+            ~printer:(fun s-> s) ~items:regs 
+            ~separator: "\n" ;;
+   
 
+  let announce_differences_in_registered_printers 
+    printers_before printers_after =
+    if printers_before = printers_after 
+    then ()
+    else
+    let deleted_regs = List.filter 
+       (fun x->not(List.mem x printers_after)) printers_before 
+    and created_regs = List.filter 
+    (fun x->not(List.mem x printers_before)) printers_after in 
+    (announce_change_on_registered_printers deleted_regs "unregistered";
+    announce_change_on_registered_printers created_regs "registered") ;;         
 
 
 
@@ -112,7 +138,10 @@ let inspect_and_update old_fw  =
  and deps_ref = ref (infrastructure old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_file_details.inspect_and_update old_fw_dets  in 
  let _ = Fw_modular_infrastructure.ReactOnReference.inspect_and_update extra deps_ref  in 
- (make new_fw_dets(!deps_ref),extra);;
+ let new_fw = make new_fw_dets(!deps_ref) in 
+ let _ = announce_differences_in_registered_printers
+   (registered_printers old_fw) (registered_printers new_fw) in 
+ (new_fw,extra);;
 
 let of_configuration config =  
  let deps_ref = ref (Fw_modular_infrastructure.starter) in 
