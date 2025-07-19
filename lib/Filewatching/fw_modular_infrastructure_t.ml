@@ -11,4 +11,6 @@ type t = {
    needed_libs : (Dfa_module_t.t * (Ocaml_library_t.t list)) list;
    all_subdirectories: Dfa_subdirectory_t.t list;
    all_printables : Dfn_middle_t.t list;
+   registered_printers : (int * string) list ;
 } ;;
+ 

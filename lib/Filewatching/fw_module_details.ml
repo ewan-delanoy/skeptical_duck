@@ -194,7 +194,9 @@ let opt_mli_modification_time fw = fw.Fw_module_details_t.mli_modification_time 
 let principal_ending fw = fw.Fw_module_details_t.principal_ending ;; 
 let principal_modification_time fw = fw.Fw_module_details_t.principal_modification_time ;;     
 let recompute_details_for_module = Private.recompute_details_for_module ;; 
+let registered_printers fw = fw.Fw_module_details_t.registered_printers;; 
 let subdirectory fw = fw.Fw_module_details_t.subdirectory ;;  
 let used_libraries fw = fw.Fw_module_details_t.used_libraries ;;  
 let used_modules fw = fw.Fw_module_details_t.used_modules ;;  
 
+ 

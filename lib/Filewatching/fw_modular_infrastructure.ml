@@ -4,15 +4,34 @@
 
 *)
 
+
 module Crobj = struct
   
-let salt = "Fw_dependencies_t." ;;
+  let istr_of_concrete_object =
+    Crobj_converter_combinator.to_pair 
+    Crobj_converter.int_of_concrete_object
+    Crobj_converter.string_of_concrete_object ;;
+
+let istr_to_concrete_object =
+    Crobj_converter_combinator.of_pair 
+    Crobj_converter.int_to_concrete_object
+    Crobj_converter.string_to_concrete_object ;;    
+
+let istrl_of_concrete_object =
+  Crobj_converter_combinator.to_list istr_of_concrete_object ;;
+
+let istrl_to_concrete_object =
+  Crobj_converter_combinator.of_list istr_to_concrete_object ;;  
+
+
+let salt = "Fw_modular_infrastructure_t." ;;
 let modularized_details_label = salt ^ "modularized_details" ;;
 let order_label               = salt ^ "order" ;;
 let needed_dirs_label         = salt ^ "needed_dirs" ;;
 let needed_libs_label         = salt ^ "needed_libs" ;;
 let all_subdirectories_label  = salt ^ "all_subdirectories" ;;
 let all_printables_label      = salt ^ "all_printables" ;;
+let registered_printers_label = salt ^ "registered_printers";;
 
 
 
@@ -42,6 +61,7 @@ let of_concrete_object ccrt_obj =
    needed_libs = hl Ocaml_library.of_concrete_object needed_libs_label;
    all_subdirectories = cl Dfa_subdirectory.of_concrete_object   (g all_subdirectories_label);
    all_printables =  cl Dfn_middle.of_concrete_object  (g all_printables_label);
+   registered_printers = istrl_of_concrete_object (g registered_printers_label); 
  } ;;
 
 
@@ -67,6 +87,7 @@ let to_concrete_object fwd =
    needed_libs_label,  hl Ocaml_library.to_concrete_object   (fwd.Fw_modular_infrastructure_t.needed_libs);
    all_subdirectories_label, cl Dfa_subdirectory.to_concrete_object   (fwd.Fw_modular_infrastructure_t.all_subdirectories);
    all_printables_label, cl Dfn_middle.to_concrete_object   (fwd.Fw_modular_infrastructure_t.all_printables);
+   registered_printers_label, istrl_to_concrete_object (fwd.Fw_modular_infrastructure_t.registered_printers);
  ] in 
 Concrete_object_t.Record items;;
 
@@ -83,6 +104,7 @@ module Private = struct
     needed_libs = [];
     all_subdirectories = [];
     all_printables = [];
+    registered_printers = [];
  } ;;
  
   let compute_closest_order old_order new_details= 
@@ -106,6 +128,34 @@ module Private = struct
       ) in 
     Image.image tempf old_details ;; 
 
+   let module_from_printer_path printer_path = 
+     let i = String.index printer_path '.' in 
+     Dfa_module.of_line (Cull_string.beginning i printer_path) ;; 
+
+   (*
+   
+    module_from_printer_path "Peggy.Lee.Is.Great" ;;
+
+   *)
+
+  let replace_module_in_printer_path (old_module,new_module) old_printer_path = 
+    let i = String.index old_printer_path '.' in 
+    let current_module = Dfa_module.of_line (Cull_string.beginning i old_printer_path) in 
+    if current_module = old_module 
+    then (Dfa_module.capitalized_form new_module) ^ (Cull_string.cobeginning i old_printer_path)  
+    else old_printer_path ;;   
+
+  (*
+  
+  replace_module_in_printer_path 
+   (Dfa_module.of_line "peggy",Dfa_module.of_line "debbie")
+   "Peggy.Lee.Is.Great" ;;
+
+  replace_module_in_printer_path 
+   (Dfa_module.of_line "amy",Dfa_module.of_line "debbie")
+   "Peggy.Lee.Is.Great" ;;
+
+  *)  
 
  module Setter = struct 
 
@@ -132,6 +182,10 @@ module Private = struct
   let all_printables deps_ref new_printables = 
     (deps_ref:={(!deps_ref) with 
     Fw_modular_infrastructure_t.all_printables = new_printables} );;
+
+  let registered_printers deps_ref new_printers = 
+      (deps_ref:={(!deps_ref) with 
+      Fw_modular_infrastructure_t.registered_printers = new_printers} );;  
  
   end ;; 
 
@@ -203,6 +257,14 @@ let order deps_ref=
  ) mods_without_subdirs in 
  Setter.all_printables deps_ref new_printables;;
 
+ let registered_printers deps_ref= 
+  let old_deps=(!deps_ref) in  
+  let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
+  let new_printers = List.flatten(Image.image (
+  fun (_mn,details) -> Fw_module_details.registered_printers details
+  ) details) in 
+  Setter.registered_printers deps_ref new_printers;;
+
  let all fw_dets deps_ref= (
   modularized_details fw_dets deps_ref;
   order deps_ref;
@@ -210,11 +272,13 @@ let order deps_ref=
   needed_libs deps_ref;
   all_subdirectories deps_ref;
   all_printables deps_ref;
+  registered_printers deps_ref;
  ) ;; 
 
  let generic deps_ref
  new_details new_order
-   new_needed_dirs new_needed_libs new_subdirectories new_printables
+   new_needed_dirs new_needed_libs new_subdirectories 
+   new_printables new_printers
   = (
   Setter.modularized_details deps_ref new_details;
   Setter.order deps_ref new_order;
@@ -222,6 +286,7 @@ let order deps_ref=
   Setter.needed_libs deps_ref new_needed_libs;
   Setter.all_subdirectories deps_ref new_subdirectories;
   Setter.all_printables deps_ref new_printables;
+  Setter.registered_printers deps_ref new_printers;
  ) ;; 
   
 
@@ -243,7 +308,10 @@ let order deps_ref=
     ((!deps_ref).Fw_modular_infrastructure_t.order) 
   and new_printables = List.filter (fun middle->
     not(List.mem (Dfn_middle.to_module middle) mods_to_be_erased)) 
-    ((!deps_ref).Fw_modular_infrastructure_t.all_printables) in    
+    ((!deps_ref).Fw_modular_infrastructure_t.all_printables) 
+  and new_printers = List.filter (fun (_idx,printer_path)->
+      not(List.mem (module_from_printer_path printer_path) mods_to_be_erased)) 
+  ((!deps_ref).Fw_modular_infrastructure_t.registered_printers) in      
   (
     Setter.modularized_details deps_ref new_details;
     Setter.order deps_ref new_order;
@@ -251,6 +319,7 @@ let order deps_ref=
     Default.needed_libs deps_ref;
     Default.all_subdirectories deps_ref;
     Setter.all_printables deps_ref new_printables;
+    Setter.registered_printers deps_ref new_printers;
   );; 
 
  let inspect_and_update extra deps_ref = 
@@ -276,6 +345,7 @@ let order deps_ref=
   Default.needed_libs deps_ref;
   Default.all_subdirectories deps_ref;
   Default.all_printables deps_ref;
+  Default.registered_printers deps_ref;
  ) ;; 
 
  let of_configuration = Default.all ;;
@@ -299,6 +369,7 @@ let order deps_ref=
   Default.needed_libs deps_ref;
   Default.all_subdirectories deps_ref;
   Default.all_printables deps_ref;
+  Default.registered_printers deps_ref;
  ) ;; 
   
  let plunge_fw_configuration deps_ref = (deps_ref:=starter) ;;
@@ -343,6 +414,7 @@ let order deps_ref=
   Default.needed_libs deps_ref;
   Setter.all_subdirectories deps_ref new_subdirectories;
   Default.all_printables deps_ref;
+  Default.registered_printers deps_ref;
  ) ;;  
 
 
@@ -356,6 +428,7 @@ let order deps_ref=
   (* field needed_libs does not need to be changed *)
   (* field all_subdirectories does not need to be changed *)
   (* field all_printables does not need to be changed *)
+  (* field registered_printers does not need to be changed *)
  ) ;; 
    
  
@@ -371,7 +444,7 @@ let order deps_ref=
   Default.needed_libs deps_ref;
   Default.all_subdirectories deps_ref;
   Default.all_printables deps_ref;
-  
+  Default.registered_printers deps_ref;
  ) ;; 
 
 
@@ -403,7 +476,10 @@ let order deps_ref=
   let old_printables =  ((!deps_ref).Fw_modular_infrastructure_t.all_printables) in 
   let rep = Dfn_middle.rename_module (old_mname,new_mname) in 
   let new_printables = Image.image rep old_printables in 
-  
+  let rup = (fun (idx,path)->
+    (idx,replace_module_in_printer_path (old_mname,new_mname) path)) in
+  let old_printers =  ((!deps_ref).Fw_modular_infrastructure_t.registered_printers) in 
+  let new_printers = Image.image rup old_printers in 
   (
   Setter.modularized_details deps_ref new_details;
   Setter.order deps_ref new_order;
@@ -411,6 +487,7 @@ let order deps_ref=
   Setter.needed_libs deps_ref new_needed_libs;
   (* field all_subdirectories does not need to be changed *)
   Setter.all_printables deps_ref new_printables;
+  Setter.registered_printers deps_ref new_printers;
  ) ;; 
 
 
@@ -439,11 +516,12 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
   (* field needed_libs does not need to be changed *)
   Setter.all_subdirectories deps_ref new_subdirectories;
   Setter.all_printables deps_ref new_printables;
+  (* field registered_printers does not need to be changed *)
  ) ;; 
 
  let template fw_dets deps_ref
  new_details new_order
-   new_needed_dirs new_needed_libs new_subdirectories new_printables
+   new_needed_dirs new_needed_libs new_subdirectories new_printables new_printers
   = (
   Default.modularized_details fw_dets deps_ref;  
   Setter.modularized_details deps_ref new_details;
@@ -457,6 +535,8 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
   Setter.all_subdirectories deps_ref new_subdirectories;
   Default.all_printables deps_ref;
   Setter.all_printables deps_ref new_printables;
+  Default.registered_printers deps_ref;
+  Setter.registered_printers deps_ref new_printers;
  ) ;; 
 
  let replace_string extra new_fw_dets deps_ref
@@ -472,6 +552,7 @@ let rename_subdirectory_as extra new_fw_dets deps_ref sdir_pair =
  Default.needed_libs deps_ref;
  Default.all_subdirectories deps_ref;
  Default.all_printables deps_ref;
+ Default.registered_printers deps_ref;
 ) ;; 
 
   let replace_value = replace_string ;;
@@ -485,3 +566,4 @@ module ReactOnReference = Private.ReactOnReference ;;
 
 let starter = Private.starter;;
 
+ 
