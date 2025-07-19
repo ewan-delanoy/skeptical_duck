@@ -4,6 +4,7 @@
 
 *)
 
+
 module Fw_mudolar_infrastructure_t = struct 
 
   type t = {
@@ -136,7 +137,7 @@ module Private = struct
             ) data_on_changes in
           if temp1 <> []
           then 
-               (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.small_details_in_files new_fw_dets)
+               (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.file_details new_fw_dets)
                     mn temp1)
           else old_pair 
       ) in 
@@ -209,7 +210,7 @@ module Private = struct
 
 let modularized_details fw_dets deps_ref= 
   let u_files=Fwc_with_file_details.usual_compilable_files fw_dets 
-  and small_details = Fwc_with_file_details.small_details_in_files fw_dets in 
+  and small_details = Fwc_with_file_details.file_details fw_dets in 
   let new_details=Fw_module_details.modularize_from_compilable_files_and_small_details 
      u_files small_details in 
   Setter.modularized_details deps_ref new_details;;
@@ -403,7 +404,7 @@ let order deps_ref=
           else None 
          ) overlapping in
        if temp1 <> []
-       then (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.small_details_in_files new_fw_dets) mn temp1)
+       then (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.file_details new_fw_dets) mn temp1)
        else old_pair 
    ) in 
    let new_details = (Image.image tempf1 old_details)@
@@ -475,7 +476,7 @@ let order deps_ref=
        ) (fst extra) in
      if temp1 <> []
      then let mn = rap pre_mn in 
-          (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.small_details_in_files new_fw_dets) mn temp1)
+          (mn, Fw_module_details.recompute_details_for_module (Fwc_with_file_details.file_details new_fw_dets) mn temp1)
      else old_pair 
  ) in 
  let new_details = Image.image tempf old_details in 
@@ -580,3 +581,4 @@ module ReactOnReference = Private.ReactOnReference ;;
 
 let starter = Private.starter;;
 
+ 

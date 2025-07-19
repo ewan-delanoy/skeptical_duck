@@ -35,9 +35,9 @@ module Inherited = struct
       (
         List.filter_map (fun (fld,is_ok)->if is_ok then None else Some fld)
         [
-          "small_details_in_files",(
-            (Fwg_with_file_details.small_details_in_files fw1)=
-          (Fwg_with_file_details.small_details_in_files fw2))
+          "file_details",(
+            (Fwg_with_file_details.file_details fw1)=
+          (Fwg_with_file_details.file_details fw2))
         ]
       ) ;;
 
@@ -55,23 +55,23 @@ end ;;
 module Crobj = struct 
    let salt = "Fwc_with_small_details." ;;
    let label_for_parent = salt ^ "parent" ;;
-   let label_for_small_details_in_files  = salt ^ "small_details_in_files" ;;
+   let label_for_file_details  = salt ^ "file_details" ;;
        
        
    let of_concrete_object ccrt_obj = 
      let g=Concrete_object.get_record ccrt_obj in 
      Fwg_with_file_details.make 
      (Fwc_with_archives.Crobj.of_concrete_object (g label_for_parent))
-     (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_details.of_concrete_object (g label_for_small_details_in_files))
+     (Crobj_converter_combinator.to_pair_list Dfn_rootless.of_concrete_object Fw_file_details.of_concrete_object (g label_for_file_details))
      ;;
        
    let to_concrete_object fw = 
      let items =  
      [
           label_for_parent, Fwc_with_archives.Crobj.to_concrete_object ( Fwg_with_file_details.parent fw ) ;
-          label_for_small_details_in_files, 
+          label_for_file_details, 
           Crobj_converter_combinator.of_pair_list Dfn_rootless.to_concrete_object Fw_file_details.to_concrete_object
-           (Fwg_with_file_details.small_details_in_files fw ) ;
+           (Fwg_with_file_details.file_details fw ) ;
      ] in 
      Concrete_object_t.Record items ;;
        
@@ -99,7 +99,7 @@ module Private = struct
       Fwg_with_file_details.make 
        mother  (Fwc_with_archives.compute_all_small_details mother) ;;
    let root fw     = Inherited.root fw ;;  
-   let small_details_in_files fw = Fwg_with_file_details.small_details_in_files fw ;;  
+   let file_details fw = Fwg_with_file_details.file_details fw ;;  
    
    (* End of level 1 *)
    
@@ -107,7 +107,7 @@ module Private = struct
  
    let forget_modules fw mod_names =
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,removed_files) = Fwc_with_archives.forget_modules old_parent mod_names in
       (
          Fwg_with_file_details.make 
@@ -118,7 +118,7 @@ module Private = struct
    
    let inspect_and_update fw  =
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,changed_files,(a_files,u_files)) = Fwc_with_archives.inspect_and_update old_parent in
       let changed_details_ref = ref [] in 
       let new_small_details = Image.image (
@@ -145,7 +145,7 @@ module Private = struct
    
    let overwrite_file_if_it_exists fw (rootless,new_content) = 
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,change_made) = 
          Fwc_with_archives.overwrite_file_if_it_exists 
            old_parent rootless new_content in 
@@ -170,7 +170,7 @@ module Private = struct
    
    let register_rootless_paths fw rootless_paths= 
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let new_parent = Fwc_with_archives.register_rootless_paths 
            old_parent rootless_paths in 
       let new_details =    (Image.image (fun rl->
@@ -183,7 +183,7 @@ module Private = struct
    
    let relocate_module_to fw (mod_name,new_subdir)=
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,replacements) = Fwc_with_archives.relocate_module_to 
            old_parent mod_name new_subdir in 
       let accu = ref [] in      
@@ -205,7 +205,7 @@ module Private = struct
 
       let remove_files fw removed_rootless_paths=   
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let new_parent = Fwc_with_archives.remove_files 
          old_parent removed_rootless_paths in 
       ( Fwg_with_file_details.make 
@@ -218,7 +218,7 @@ module Private = struct
    
       let rename_module_on_filename_level_and_in_files fw (old_module,new_module,files_to_be_rewritten) =
          let old_parent = parent fw 
-         and old_details = small_details_in_files fw  in 
+         and old_details = file_details fw  in 
          let (new_parent,file_renamings,changed_u_files,changed_a_files) = 
              Fwc_with_archives.rename_module_on_filename_level_and_in_files 
            old_parent (old_module,new_module,files_to_be_rewritten) in 
@@ -249,7 +249,7 @@ module Private = struct
    
    let rename_subdirectory_as fw (old_subdir,new_subdir)=   
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,original_reps) = Fwc_with_archives.rename_subdirectory_as old_parent (old_subdir,new_subdir) in 
       let accu = ref [] in
       let new_details = Image.image (
@@ -268,7 +268,7 @@ module Private = struct
    
    let replace_string fw (replacee,replacer)=
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,(changed_a_files,changed_u_files)) = Fwc_with_archives.replace_string old_parent (replacee,replacer) in
       let accu = ref [] in 
       let new_details = Image.image (
@@ -286,7 +286,7 @@ module Private = struct
    
    let replace_value fw ((preceding_files,path),(replacee,pre_replacer)) =
       let old_parent = parent fw 
-      and old_details = small_details_in_files fw  in 
+      and old_details = file_details fw  in 
       let (new_parent,(all_changes,changed_files)) = 
            Fwc_with_archives.replace_value 
             old_parent (preceding_files,path) (replacee,pre_replacer) in
@@ -326,6 +326,6 @@ module Private = struct
    let rename_subdirectory_as = Private.rename_subdirectory_as;;
    let replace_string = Private.replace_string;;
    let replace_value = Private.replace_value;;
-   let small_details_in_files = Private.small_details_in_files ;;
+   let file_details = Private.file_details ;;
    let usual_compilable_files fw = Fwc_with_archives.usual_compilable_files (Private.parent fw) ;;
-   
+    

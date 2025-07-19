@@ -16,13 +16,13 @@ let parent fw = {
   Fw_flattened_poly_t.type_name = Some "Fw_with_archives" 
  } ;; 
 
-let small_details_in_files fw = match fw.Fw_flattened_poly_t.small_details_in_files with Some x -> x | None -> raise(Get_exn "small_details_in_files")  ;;
+let file_details fw = match fw.Fw_flattened_poly_t.file_details with Some x -> x | None -> raise(Get_exn "file_details")  ;;
 
 
 let make fw_with_deps sdf = {
   fw_with_deps with 
-  Fw_flattened_poly_t.type_name = Some "Fw_with_small_details" ;
-  small_details_in_files = Some sdf ;
+  Fw_flattened_poly_t.type_name = Some "Fw_with_file_details" ;
+  file_details = Some sdf ;
 } ;;
 
 
@@ -34,17 +34,19 @@ let make fw_with_deps sdf = {
 
 type t = {
   _parent : Fwc_with_archives.t;
-  small_details_in_files : ((Dfn_rootless_t.t * Fw_file_details_t.t) list);
+  file_details : ((Dfn_rootless_t.t * Fw_file_details_t.t) list);
 } ;;
 
-let parent fw = fw._parent ;; 
-let small_details_in_files fw = fw.small_details_in_files ;; 
+let file_details fw = fw.file_details ;; 
 
 let make fw_with_deps sdf = {
   _parent = fw_with_deps ;
-  small_details_in_files = sdf ;
+  file_details = sdf ;
 } ;;
+
+let parent fw = fw._parent ;; 
 
 (* End of tight version of file watching *)
 
 
+ 

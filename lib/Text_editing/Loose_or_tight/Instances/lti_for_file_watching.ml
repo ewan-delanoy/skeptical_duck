@@ -18,7 +18,7 @@ let the_list =
    "github_configuration";
    "file_watcher";
    "with_archives";
-   "with_small_details";
+   "with_file_details";
    "with_modular_infrastructure";
    "with_githubbing";
 ] 
@@ -29,4 +29,4 @@ end ;;
 
 
 let set = Loose_or_tight.set_in_file_list Private.the_list ;;
-let toggle () = Loose_or_tight.toggle_in_file_list Private.the_list ;;
+let toggle () = Loose_or_tight.toggle_in_file_list Private.the_list ;; 
