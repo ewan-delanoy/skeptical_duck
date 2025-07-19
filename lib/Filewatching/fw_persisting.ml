@@ -38,18 +38,14 @@ module Private=struct
       let temp2=("B "^s_root^(Dfa_subdirectory.connectable_to_subpath building_site))::temp1 in
       "\n\n\n"^(String.concat "\n" temp2)^"\n\n\n";; 
 
-    let instructions_for_printersfile root printer_equipped_types=
-        let temp2=List.rev_map (
-          fun middle ->
-          let eless =  Dfn_join.root_to_middle root middle in
-          let modname=Dfn_endingless.to_module eless in 
-          "#install_printer "^(Dfa_module.capitalized_form modname)^
-          ".print_out;"^";"
-          
-        ) printer_equipped_types in
-        let temp3="\n\n\n"::(List.rev ("\n\n\n"::temp2)) in
-        let part2=String.concat "\n" temp3 in
-        part2;;  
+    let instructions_for_printersfile registered_printers=
+      let temp2=List.rev_map (
+        fun (_idx,printer_path) ->
+        "#install_printer "^printer_path^";"^";"
+      ) registered_printers in
+      let temp3="\n\n\n"::(List.rev ("\n\n\n"::temp2)) in
+      let part2=String.concat "\n" temp3 in
+      part2;;  
 
     let save_loadingsfile (root,rootless_path_for_loadingsfile) (dirs,hms)=
        let s=loadings (root,rootless_path_for_loadingsfile)
@@ -62,8 +58,8 @@ module Private=struct
         and lm=Dfn_join.root_to_rootless root rootless_path_for_merlinfile in
         Io.overwrite_with (Dfn_full.to_absolute_path lm) s;;
   
-    let save_printersfile (root,rootless_path_for_printersfile) printer_equipped_types=
-       let s=instructions_for_printersfile root printer_equipped_types
+    let save_printersfile (root,rootless_path_for_printersfile) registered_printers=
+       let s=instructions_for_printersfile registered_printers
        and lm=Dfn_join.root_to_rootless root rootless_path_for_printersfile in
        let beg_mark="(*Registered printers start here *)"
        and end_mark="(*Registered printers end here *)" in
@@ -86,11 +82,11 @@ module Private=struct
       rootless_path_for_loadingsfile,
       rootless_path_for_printersfile
       )
-      (root_dir,elesses,crobj_form,directories,printer_equipped_types) = 
+      (root_dir,elesses,crobj_form,directories,registered_printers) = 
        (
         save_loadingsfile (root_dir,rootless_path_for_loadingsfile) (directories,elesses);
         save_targetfile rootless_path_for_targetfile root_dir crobj_form;
-        save_printersfile (root_dir,rootless_path_for_printersfile) printer_equipped_types;
+        save_printersfile (root_dir,rootless_path_for_printersfile) registered_printers;
        );;
 
       
@@ -101,7 +97,7 @@ module Private=struct
       (Fwc_with_githubbing.Inherited.dep_ordered_modules fw)
       and crobj_form = Fwc_with_githubbing.Crobj.to_concrete_object fw 
       and directories = Fwc_with_githubbing.Inherited.all_subdirectories fw 
-      and printer_equipped_types = Fwc_with_githubbing.Inherited.printer_equipped_types fw 
+      and registered_printers = Fwc_with_githubbing.Inherited.registered_printers fw 
         in
        write_all 
       (
@@ -109,7 +105,7 @@ module Private=struct
         Fw_constant.rootless_path_for_loadingsfile,
         Fw_constant.rootless_path_for_printersfile
       )
-	      (root_dir,elesses,crobj_form,directories,printer_equipped_types)
+	      (root_dir,elesses,crobj_form,directories,registered_printers)
       ;;
 
     let load_persisted_version fw=
