@@ -100,7 +100,7 @@ module Private = struct
        else "printer has" 
     ) in
       Strung.announce 
-         ~trailer: ("The following "^conjugated^" "^verb^" :") 
+         ~trailer: ("The following "^conjugated^" been "^verb^" :") 
             ~printer:(fun s-> s) ~items:regs 
             ~separator: "\n" ;;
    
