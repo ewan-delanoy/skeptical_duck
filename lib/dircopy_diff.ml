@@ -116,6 +116,7 @@ let is_empty = Private.is_empty ;;
 
 let of_concrete_object = Private.of_concrete_object ;;
 
+(* Thus is a registered printer : print_out *)
 let print_out (fmt:Format.formatter) x=
    Format.fprintf fmt "@[%s@]" (Private.to_string x);;     
 
