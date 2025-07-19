@@ -409,8 +409,11 @@ let decipher_module fw capitalized_or_not_x=
         On a Mac, this was 
         Unix_command.uc ("open -a \"/Applications/Sublime Text.app\" "^s_ap2);; 
 
+        A possible Linux equivalent would be
+
+        Unix_command.uc ("xdg-open "^s_ap2)
         *)  
-        Unix_command.uc ("xdg-open "^s_ap2);;      
+        ();;      
 
     let all_moduled_ml_absolute_paths fw =  
         List.filter_map (fun (mn,_)->
