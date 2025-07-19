@@ -24,12 +24,7 @@ module Private = struct
       (Fw_constant.debug_build_subdir)) in 
    Unix_command.uc("rm -f "^s_debug_dir^"*.cm*"^" "^s_debug_dir^"*.ocaml_debuggable");;
 
-   let preq_types_with_extra_info fw =
-     let root = Fwc_with_modular_infrastructure.Inherited.root fw  in 
-     Image.image (fun middle->
-      (Dfn_join.root_to_middle root middle,true)
-     ) (Fwc_with_modular_infrastructure.printer_equipped_types fw) ;; 
-
+   
 
    module Command = struct 
       
@@ -294,15 +289,10 @@ module Private = struct
           let s= Dfa_module.to_line mname in 
           "load_printer "^s^".cmo"
         ) deps) 
-        and printer_equipped_types = preq_types_with_extra_info fw  in 
-        let printable_deps = List.filter (
-          fun mn -> let eless = Fwc_with_modular_infrastructure.endingless_at_module fw mn in 
-          List.mem (eless,true) printer_equipped_types
-        ) deps in 
-        let temp2 = Image.image (fun mname->
-          let s= Dfa_module.to_line mname in 
-          "install_printer "^(String.capitalize_ascii s)^".print_out"
-        ) printable_deps in 
+        and registered_printers = Fwc_with_modular_infrastructure.registered_printers fw  in 
+        let temp2 = Image.image (fun (_idx,printer_path)->
+          "install_printer "^printer_path
+        ) registered_printers in 
         let full_text = String.concat "\n" (temp1@temp2) in 
         let ppodbg_path = ocamldebug_printersfile_path (Fwc_with_modular_infrastructure.Inherited.root fw) in 
         Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;

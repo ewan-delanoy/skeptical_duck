@@ -58,8 +58,6 @@ module Inherited = struct
   let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
   let number_of_modules fw = Parent.number_of_modules (parent fw) ;;
   
-  let printer_equipped_types fw = Parent.printer_equipped_types (parent fw) ;;
-  
   let registered_printers fw = Parent.registered_printers (parent fw) ;;
   let root fw = Ancestry.root (parent fw) ;;
   

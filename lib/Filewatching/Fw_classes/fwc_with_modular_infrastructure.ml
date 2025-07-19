@@ -233,8 +233,6 @@ end ;;
 
   let mod_libs fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.needed_libs ;;
 
-  let mod_printables fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.all_printables ;;
-
   let mod_subdirs fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.all_subdirectories ;;
 
   let details_for_module  fw mn = try List.assoc mn (mod_details fw) with 
@@ -526,7 +524,6 @@ let overwrite_file_if_it_exists = Private.Core.overwrite_file_if_it_exists ;;
 let parent = Fwg_with_modular_infrastructure.parent ;;
 let plunge_fw_configuration = Private.Core.plunge_fw_configuration ;;
 let principal_ending_for_module fw mn = Fw_module_details.principal_ending (Private.details_for_module fw mn) ;;
-let printer_equipped_types fw = Private.mod_printables fw;;
 let register_rootless_paths = Private.Core.register_rootless_paths ;;
 let registered_printers fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.registered_printers ;;
 let relocate_module_to = Private.Core.relocate_module_to ;;
