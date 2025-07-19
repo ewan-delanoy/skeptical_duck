@@ -33,7 +33,7 @@ let make fw_with_small_details deps = {
 (* Beginning of tight version of file watching *)
 
 type t = {
-  _parent : Fwc_with_small_details.t;
+  _parent : Fwc_with_file_details.t;
   infrastructure : Fw_modular_infrastructure_t.t ;
 } ;;
 
