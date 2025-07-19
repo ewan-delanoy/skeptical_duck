@@ -78,6 +78,7 @@ let compute ap =
 let has_printer fsd = fsd.Fw_file_details_t.has_printer ;;
 let modification_time fsd = fsd.Fw_file_details_t.modification_time ;;
 let of_concrete_object = Private.of_concrete_object ;;
+let registered_printers fsd = fsd.Fw_file_details_t.registered_printers ;;
 let to_concrete_object = Private.to_concrete_object ;;
 let used_libraries fsd = fsd.Fw_file_details_t.used_libraries ;;
 let used_modules fsd = fsd.Fw_file_details_t.used_modules ;;
