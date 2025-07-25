@@ -4,6 +4,7 @@
 
 *)
 
+exception Disconnected of (int * int) list ;;
 
 module Private = struct 
 
@@ -107,7 +108,84 @@ module Private = struct
      let s_ap = Absolute_path.to_string ap in 
      (Cull_string.before_rightmost s_ap '/')^"/" ;;
 
+
   end ;;  
+
+module Pqyz = struct
+  
+  let i_order = Total_ordering.for_integers ;;
+  let i_sort = Ordered.sort i_order ;;
+  
+  
+  let analize_first_char c =
+    let i = int_of_char c in 
+    if (i<112)||(i>122)
+    then None 
+    else Some(i-112);; 
+  
+  let analize_integer_string s =
+    match List.find_opt (fun c->
+      let i = int_of_char c in
+      (i<48)||(i>57)   
+    ) (Strung.explode s) with 
+    Some _ -> None 
+    | None -> Some(int_of_string s);; 
+  
+  
+  let analize_filename fn =
+    let i1_opt = String.index_opt  fn '.' in 
+    if i1_opt = None then None else 
+    let i1 = Option.get i1_opt in 
+    let weight_opt = analize_first_char (String.get fn 0) in 
+    if weight_opt = None then None else 
+    let weight = Option.get weight_opt in 
+    let middle_part = Cull_string.interval fn 2 i1 
+    and ending = Cull_string.cobeginning (i1+1) fn in 
+    let r_opt = analize_integer_string middle_part in 
+    if r_opt = None then None else 
+    let r = Option.get r_opt in 
+    let final_page_number = weight*100+r in
+    let normalized_form = "p"^(string_of_int(final_page_number))^".pdf" in 
+    if (not(List.mem ending ["png";"pdf"]))
+    then None 
+    else 
+    let cmd_opt = (
+      if ending = "png"
+      then Some("convert "^fn^" "^normalized_form) 
+      else 
+      if fn <> normalized_form   
+      then Some("mv "^fn^" "^normalized_form)  
+      else None 
+    )  in 
+    Some((fn,final_page_number,normalized_form,cmd_opt)) ;;
+  
+  (*  
+  pqyz_analize_filename "v56.png" ;;
+  *)
+
+  
+  let analize_dir ?(demand_connectivity=true) dir = 
+    let temp1 = Unix_again.beheaded_simple_ls dir in 
+    let temp2 = List.filter_map analize_filename temp1 in 
+    let cmds = List.filter_map (
+      fun (_fn,_final_page_number,_normalized_form,cmd_opt) -> cmd_opt
+    ) temp2
+    and unordered_page_numbers = Image.image (
+      fun (_fn,final_page_number,_normalized_form,_cmd_opt) -> final_page_number
+    ) temp2 in 
+    let page_numbers = i_sort unordered_page_numbers in 
+    let components = Arithmetic_list.decompose_into_connected_components
+    page_numbers  in 
+    let _ = (
+       if demand_connectivity && ((List.length components)>1)
+       then raise (Disconnected components) 
+    ) in
+    (components,cmds) ;;
+  
+
+
+end ;;
+
 
 module OnSiteCommand = struct 
 
@@ -295,11 +373,11 @@ end ;;
 let average_page_width_and_height = 
     Private.average_page_width_and_height ;;
 
-let command_for_naive_implosion ~prefix ~first ~last =
+(* let command_for_naive_implosion ~prefix ~first ~last =
   "cpdf "^
   (String.concat " " 
   (Int_range.scale (fun t->prefix^(string_of_int t)^".pdf") first last))^
-  " -o whole.pdf" ;; 
+  " -o whole.pdf" ;; *)
 
 let corep_cuttable_transform ap ~outputfile_name= 
     Unix_command.conditional_multiple_uc 
