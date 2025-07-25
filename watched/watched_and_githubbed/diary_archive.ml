@@ -1791,7 +1791,6 @@ ap3 ~outputfile_name:"banvollet"
 let see1 = Coherent_pdf.sizes_for_each_page ap1 ;;
 
 let fl_mean l = (List.fold_left (+.) 0. l) /. (float_of_int(List.length l)) ;;
-
 let act4 () = Coherent_pdf.force_same_size_for_all_pages
 ap1 ~outputfile_name:"herri"
     ~forced_width:595 ~forced_height:842

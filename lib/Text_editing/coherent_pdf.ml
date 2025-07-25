@@ -103,6 +103,10 @@ module Private = struct
       ) in   
       (take_average widths,take_average heights)    ;;
 
+  let containing_dir ap =
+     let s_ap = Absolute_path.to_string ap in 
+     (Cull_string.before_rightmost s_ap '/')^"/" ;;
+
   end ;;  
 
 module OnSiteCommand = struct 
@@ -130,7 +134,7 @@ module OnSiteCommand = struct
     "cpdf "^onsite_input^".pdf -pad-multiple "^(string_of_int m)^
     " -o "^output_name^".pdf";; 
 
-    let corep_cuttable_transform onsite_input outputfile_name padded_nbr= 
+  let corep_cuttable_transform onsite_input outputfile_name padded_nbr= 
     let q = (padded_nbr/8) in
     let corep_cuttable_order = List.flatten (Int_range.scale (fun j->
         Image.image (fun r->2*j+r) 
@@ -231,49 +235,58 @@ module Command = struct
   let corep_cuttable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
-    let current_dir = Sys.getcwd () in 
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Private.containing_dir ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.corep_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
-    ["cd "^current_dir];;
+    ["mv "^outputfile_name^" "^end_user_dir;
+     "cd "^current_dir];;
   let corep_foldable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
-    let current_dir = Sys.getcwd () in 
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Private.containing_dir ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.corep_foldable_transform "initial_copy" outputfile_name padded_nbr) @
-    ["cd "^current_dir];;
+    ["mv "^outputfile_name^" "^end_user_dir;
+     "cd "^current_dir];;
 
   let force_same_size_for_all_pages ap outputfile_name 
          ~forced_width ~forced_height=  
-    
-    let current_dir = Sys.getcwd () in 
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Private.containing_dir ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.force_same_size_for_all_pages "initial_copy" outputfile_name ~forced_width ~forced_height) @
-    ["cd "^current_dir];; 
+    ["mv "^outputfile_name^" "^end_user_dir;
+      "cd "^current_dir];; 
 
   let replace_inside 
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut outputfile_name = 
-   let current_dir = Sys.getcwd () in 
+   let current_dir = Sys.getcwd () 
+   and end_user_dir = Private.containing_dir patient_ap in 
    let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
    ("cp "^(Absolute_path.to_string replacer_ap)^" replacer_copy.pdf") ::
    (OnSiteCommand.replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
-    ["cd "^current_dir];; 
+    ["mv "^outputfile_name^" "^end_user_dir;
+     "cd "^current_dir];; 
 
   let remove_interval_inside 
     ~patient:patient_ap 
    ~first_in_cut ~last_in_cut outputfile_name = 
-   let current_dir = Sys.getcwd () in 
+   let current_dir = Sys.getcwd () 
+   and end_user_dir = Private.containing_dir patient_ap in 
    let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
    (OnSiteCommand.remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name) @
-    ["cd "^current_dir];; 
+    ["mv "^outputfile_name^" "^end_user_dir;
+      "cd "^current_dir];; 
 
 
 
