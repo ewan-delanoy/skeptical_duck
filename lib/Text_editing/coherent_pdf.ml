@@ -164,7 +164,7 @@ module Pqyz = struct
   *)
 
   
-  let analize_dir ?(demand_connectivity=true) dir = 
+  let analize_dir  dir = 
     let temp1 = Unix_again.beheaded_simple_ls dir in 
     let temp2 = List.filter_map analize_filename temp1 in 
     let cmds = List.filter_map (
@@ -172,15 +172,19 @@ module Pqyz = struct
     ) temp2
     and unordered_page_numbers = Image.image (
       fun (_fn,final_page_number,_normalized_form,_cmd_opt) -> final_page_number
+    ) temp2 
+    and found_files = Image.image (
+      fun (fn,_final_page_number,_normalized_form,_cmd_opt) -> fn
     ) temp2 in 
     let page_numbers = i_sort unordered_page_numbers in 
     let components = Arithmetic_list.decompose_into_connected_components
     page_numbers  in 
     let _ = (
-       if demand_connectivity && ((List.length components)>1)
+       if ((List.length components)>1)
        then raise (Disconnected components) 
-    ) in
-    (components,cmds) ;;
+    ) in 
+    let (a,b) = List.hd components in 
+    (a,b,cmds,found_files) ;;
   
 
 
@@ -203,7 +207,7 @@ module OnSiteCommand = struct
     "cpdf -split "^onsite_input^".pdf "^
     "-o "^output_prefix^"%%%.pdf -chunk 1" ;;
 
-  let implode prefix name_for_whole indices=
+  let generic_implode prefix name_for_whole indices=
     let all_pages=String.concat " " 
     (Image.image (fun idx->(Private.partial prefix idx)^".pdf") indices) in 
     " cpdf "^all_pages^" -o "^name_for_whole^".pdf";;
@@ -223,7 +227,7 @@ module OnSiteCommand = struct
     (explode  "padded" "page")::
     (
      [
-       (implode "page" "reaggregated" corep_cuttable_order);
+       (generic_implode "page" "reaggregated" corep_cuttable_order);
        ("cpdf -impose-xy \"2 2\" -impose-margin 15 reaggregated.pdf -o "^outputfile_name^".pdf");
        "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
@@ -239,7 +243,7 @@ module OnSiteCommand = struct
     (explode  "padded" "page")::
     (
      [
-       (implode "page" "reaggregated" corep_order);
+       (generic_implode "page" "reaggregated" corep_order);
        ("cpdf -impose-xy \"2 2\" -impose-margin 15 reaggregated.pdf -o "^outputfile_name^".pdf");
        "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
      ]
@@ -304,6 +308,18 @@ module OnSiteCommand = struct
   "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf"
   ] ;;
 
+  let many_pngs_one_pdf (a,b,older_cmds,found_files) outputfile_name = 
+    let all_pages=String.concat " " 
+    (Int_range.scale (fun idx->"p"^(string_of_int idx)^".pdf") a b) in 
+    older_cmds @
+    [
+      " cpdf "^all_pages^" -o "^outputfile_name^".pdf"
+    ] @
+    (Image.image (fun fn ->"rm "^fn) found_files) @
+    (Int_range.scale (fun idx->"rm -f p"^(string_of_int idx)^".pdf") a b)
+  ;;
+
+
 
 end ;;  
 
@@ -366,6 +382,19 @@ module Command = struct
     ["mv "^outputfile_name^" "^end_user_dir;
       "cd "^current_dir];; 
 
+  let many_pngs_one_pdf dir outputfile_name = 
+    let uple = Pqyz.analize_dir dir in 
+    let (_,_,found_files,_)  = uple in  
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Directory_name.connectable_to_subpath dir in 
+    ("cd "^ Private.work_path) :: 
+    (
+      Image.image (fun fn ->
+        "cp "^end_user_dir^fn^" "^(Private.work_path)
+      ) found_files) @
+    (OnSiteCommand.many_pngs_one_pdf uple outputfile_name) @
+    ["mv "^outputfile_name^" "^end_user_dir;
+     "cd "^current_dir];;    
 
 
 end ;;  
@@ -392,6 +421,10 @@ let force_same_size_for_all_pages ap ~outputfile_name
     (Command.force_same_size_for_all_pages ap outputfile_name
         ~forced_width ~forced_height) ;;
 
+let many_pngs_one_pdf dir ~outputfile_name = 
+       Unix_command.conditional_multiple_uc 
+        (Command.many_pngs_one_pdf dir outputfile_name) ;;
+    
 let number_of_pages_in_pdf = 
     Private.number_of_pages_in_pdf ;;
 
