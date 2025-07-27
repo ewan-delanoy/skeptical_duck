@@ -29,9 +29,9 @@ module Private = struct
    let number_of_pages_in_pdf ap = 
     let (temp_file,before,after) = 
       commands_for_number_of_pages_in_pdf ap in 
-    let _ = Unix_command.conditional_multiple_uc before in 
+    let _ = Unix_command.indexed_multiple_uc before in 
     let data = Io.read_whole_file (Absolute_path.of_string temp_file) in 
-    let _ = Unix_command.conditional_multiple_uc after in 
+    let _ = Unix_command.indexed_multiple_uc after in 
     let temp1 = Lines_in_text.lines data in 
     let prefix = "Pages:" in 
     let temp2 = List.find (String.starts_with ~prefix) temp1 in
@@ -59,9 +59,9 @@ module Private = struct
   let mediabox_in_pdf ap page_nbr = 
     let (temp_file,before,after) = 
       commands_for_mediabox_in_pdf ap page_nbr in 
-    let _ = Unix_command.conditional_multiple_uc before in 
+    let _ = Unix_command.indexed_multiple_uc before in 
     let data = Io.read_whole_file (Absolute_path.of_string temp_file) in 
-    let _ = Unix_command.conditional_multiple_uc after in 
+    let _ = Unix_command.indexed_multiple_uc after in 
     let temp1 = Lines_in_text.lines data in 
     let prefix = "MediaBox:" in 
     let temp2 = List.find (String.starts_with ~prefix) temp1 in
@@ -409,20 +409,20 @@ let average_page_width_and_height =
   " -o whole.pdf" ;; *)
 
 let corep_cuttable_transform ap ~outputfile_name= 
-    Unix_command.conditional_multiple_uc 
+    Unix_command.indexed_multiple_uc 
      (Command.corep_cuttable_transform ap outputfile_name) ;;    
 let corep_foldable_transform ap ~outputfile_name= 
-   Unix_command.conditional_multiple_uc 
+   Unix_command.indexed_multiple_uc 
     (Command.corep_foldable_transform ap outputfile_name) ;;
 
 let force_same_size_for_all_pages ap ~outputfile_name
     ~forced_width ~forced_height= 
-   Unix_command.conditional_multiple_uc 
+   Unix_command.indexed_multiple_uc 
     (Command.force_same_size_for_all_pages ap outputfile_name
         ~forced_width ~forced_height) ;;
 
 let many_pngs_one_pdf dir ~outputfile_name = 
-       Unix_command.conditional_multiple_uc 
+       Unix_command.indexed_multiple_uc 
         (Command.many_pngs_one_pdf dir outputfile_name) ;;
     
 let number_of_pages_in_pdf = 
@@ -431,7 +431,7 @@ let number_of_pages_in_pdf =
 let remove_interval_inside 
     ~patient:patient_ap 
     ~first_in_cut ~last_in_cut ~outputfile_name = 
-    Unix_command.conditional_multiple_uc  (
+    Unix_command.indexed_multiple_uc  (
      Command.remove_interval_inside 
      ~patient:patient_ap 
    ~first_in_cut ~last_in_cut outputfile_name 
@@ -440,7 +440,7 @@ let remove_interval_inside
 let replace_inside 
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut ~outputfile_name = 
-    Unix_command.conditional_multiple_uc  (
+    Unix_command.indexed_multiple_uc  (
      Command.replace_inside 
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut outputfile_name
