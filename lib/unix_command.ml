@@ -74,6 +74,21 @@ let rec helper_for_debug_multiple_uc (j,l)=
      let _ = debug_individual_uc (j,cmd) in 
      helper_for_debug_multiple_uc (j+1,other_cmds) ;; 
 
+let rec helper_for_indexed_multiple_uc sn indexed_commands=
+  match indexed_commands with
+ []->true
+|(idx1,cmd1)::other_commands ->
+   if (uc cmd1)=0
+   then let msg = "Finished command "^(string_of_int idx1)^" of "^sn^"\n\n" in 
+        let _ = (print_string msg;flush stdout) in 
+        helper_for_indexed_multiple_uc sn other_commands 
+   else false;;
+              
+let indexed_multiple_uc commands=
+  let sn = string_of_int(List.length commands) 
+  and indexed_commands= Int_range.index_everything commands in 
+  Chronometer.it (helper_for_indexed_multiple_uc sn) indexed_commands ;; 
+
 
 end;;
 
@@ -90,6 +105,7 @@ let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;
 
 let hardcore_uc = Private.hardcore_uc ;;
 
+let indexed_multiple_uc = Private.indexed_multiple_uc ;;
 let mv full_path new_location =
    let destination_equals_source=(
      if not(String.starts_with ~prefix:new_location full_path) then false else 

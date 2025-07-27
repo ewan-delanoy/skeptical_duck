@@ -334,7 +334,7 @@ module Command = struct
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.corep_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;
   let corep_foldable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
@@ -344,7 +344,7 @@ module Command = struct
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.corep_foldable_transform "initial_copy" outputfile_name padded_nbr) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;
 
   let force_same_size_for_all_pages ap outputfile_name 
@@ -354,7 +354,7 @@ module Command = struct
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (OnSiteCommand.force_same_size_for_all_pages "initial_copy" outputfile_name ~forced_width ~forced_height) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
       "cd "^current_dir];; 
 
   let replace_inside 
@@ -367,7 +367,7 @@ module Command = struct
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
    ("cp "^(Absolute_path.to_string replacer_ap)^" replacer_copy.pdf") ::
    (OnSiteCommand.replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];; 
 
   let remove_interval_inside 
@@ -379,12 +379,12 @@ module Command = struct
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
    (OnSiteCommand.remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
       "cd "^current_dir];; 
 
   let many_pngs_one_pdf dir outputfile_name = 
     let uple = Pqyz.analize_dir dir in 
-    let (_,_,found_files,_)  = uple in  
+    let (_,_,_,found_files)  = uple in  
     let current_dir = Sys.getcwd () 
     and end_user_dir = Directory_name.connectable_to_subpath dir in 
     ("cd "^ Private.work_path) :: 
@@ -393,7 +393,7 @@ module Command = struct
         "cp "^end_user_dir^fn^" "^(Private.work_path)
       ) found_files) @
     (OnSiteCommand.many_pngs_one_pdf uple outputfile_name) @
-    ["mv "^outputfile_name^" "^end_user_dir;
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;    
 
 
