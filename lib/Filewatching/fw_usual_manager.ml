@@ -132,6 +132,9 @@ let register_rootless_line x=Fw_syntactic_sugar.register_one Private.main_ref x;
   
 let register_rootless_lines x=Fw_syntactic_sugar.register_several Private.main_ref x;;
 
+let registered_printers () =
+  Fwc_with_githubbing.Inherited.registered_printers (!(Private.main_ref)) ;;
+  
 let relocate_module_to old_module_name new_subdir=
    Fw_syntactic_sugar.relocate_module_to Private.main_ref old_module_name new_subdir;;
 
