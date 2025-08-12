@@ -33,7 +33,7 @@ module type Z_TYPE =
     val sub : t -> t -> t
     val to_string : t -> string
     val to_zarith : t -> Zay.t 
-    val trinp_out : Format.formatter -> t -> unit
+    val print_out : Format.formatter -> t -> unit
     val zero : t
 end ;;
 
@@ -83,7 +83,8 @@ module Z = (struct
 
   let to_zarith (Wrap x) = x ;;
 
-  let trinp_out (fmt:Format.formatter) x=
+  (* This is a registered printer : Q.print_out *)
+  let print_out (fmt:Format.formatter) x=
    Format.fprintf fmt "@[%s@]" (to_string x);;   
   let zero = Wrap Zay.zero ;;  
 
@@ -101,6 +102,7 @@ module type Q_TYPE =
     val floor : t -> Z.t
     val fold_max : t list -> t
     val fold_min : t list -> t
+    val fold_sum : t list -> t
     val geq : t -> t -> bool
     val gt : t -> t -> bool
     val leq : t -> t -> bool
@@ -119,7 +121,7 @@ module type Q_TYPE =
     val sub : t -> t -> t
     val to_float : t -> float
     val to_string : t -> string
-    val trinp_out : Format.formatter -> t -> unit
+    val print_out : Format.formatter -> t -> unit
     val zero : t
   end
 
@@ -151,6 +153,8 @@ module Q = (struct
 
   let min (Wrap x) (Wrap y) = (Wrap(Quay.min x y)) ;;  
 
+  let zero = Wrap Quay.zero  ;;
+
   end ;;
 
   let abs (Wrap x) = (Wrap(Quay.abs x)) ;;
@@ -168,6 +172,7 @@ module Q = (struct
 
   let fold_min l = List.fold_left Private.min (List.hd l) (List.tl l)  ;;
  
+  let fold_sum l = List.fold_left add Private.zero l  ;;
   let geq (Wrap x) (Wrap y) = Quay.geq x y ;;
 
   let gt (Wrap x) (Wrap y) = Quay.gt x y ;;
@@ -199,7 +204,8 @@ module Q = (struct
   let to_float (Wrap x) = Quay.to_float x ;;
   let to_string (Wrap x) = Quay.to_string x ;;
 
-  let trinp_out (fmt:Format.formatter) x=
+  (* This is a registered printer : Q.print_out *)
+  let print_out (fmt:Format.formatter) x=
    Format.fprintf fmt "@[%s@]" (to_string x);;
   let zero = Wrap Quay.zero  ;;
 
