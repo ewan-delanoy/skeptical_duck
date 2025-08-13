@@ -83,7 +83,7 @@ module Z = (struct
 
   let to_zarith (Wrap x) = x ;;
 
-  (* This is a registered printer : Q.print_out *)
+(* This is a registered printer : Z.print_out *)
   let print_out (fmt:Format.formatter) x=
    Format.fprintf fmt "@[%s@]" (to_string x);;   
   let zero = Wrap Zay.zero ;;  
@@ -204,7 +204,7 @@ module Q = (struct
   let to_float (Wrap x) = Quay.to_float x ;;
   let to_string (Wrap x) = Quay.to_string x ;;
 
-  (* This is a registered printer : Q.print_out *)
+(* This is a registered printer : Q.print_out *)
   let print_out (fmt:Format.formatter) x=
    Format.fprintf fmt "@[%s@]" (to_string x);;
   let zero = Wrap Quay.zero  ;;
