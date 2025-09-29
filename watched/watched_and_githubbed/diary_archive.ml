@@ -1,14 +1,442 @@
 (************************************************************************************************************************
-Snippet 178 : 
+Snippet 181 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 177 : Miscellanea preparing a refactorization
+Snippet 180 : Musings on permutations, II
 ************************************************************************************************************************)
 
+module Snip180=struct
+
+  let i_order = Total_ordering.for_integers ;;
+
+  let i_intersect = Ordered.intersect i_order ;;
+  let i_merge = Ordered.merge i_order ;;
+  let i_setminus = Ordered.setminus i_order ;;
+  let i_sort = Ordered.sort i_order ;;
+  
+  let il_order = Total_ordering.silex_for_intlists ;;
+  
+  let il_merge = Ordered.merge il_order ;;
+  let il_setminus = Ordered.setminus il_order ;;
+  let il_sort = Ordered.sort il_order ;;
+  
+  let n = 8 ;;    
+  let pairs = List.filter (fun (x,y)->x<>y) 
+    (Cartesian.square(Int_range.range 1 n));;
+  
+  let (blue_pairs,red_pairs) = 
+  List.partition(fun (x,y)->(x-y)mod 2<>0) pairs;;  
+  
+  let preserves_blue_pairs perm =
+      let evp = (fun k->List.nth perm (k-1)) in 
+      (List.for_all (fun (x,y)->
+         List.mem (evp x,evp y) blue_pairs    
+      ) blue_pairs) ;;
+  
+  let all_permutations = Permutation.iii n ;;    
+  
+  let all_indices = Int_range.range 1 (List.length all_permutations) ;;
+  let indexed_all = List.combine all_indices all_permutations ;;
+  
+  let indexed_wreath = List.filter (fun
+   (idx,perm)->preserves_blue_pairs perm) indexed_all ;;
+  
+  let wreath = Image.image fst indexed_wreath;;
+  
+  let uncurried_prod = Memoized.make (fun (i,j)->
+      let pi = List.nth all_permutations (i-1)
+      and pj = List.nth all_permutations (j-1) in 
+      let pk = Permutation.product pi pj in 
+      List_again.find_index_of_in pk all_permutations
+  );;
+  
+  let prod i j = uncurried_prod (i,j) ;;
+  
+  let dot x l = i_sort(Image.image(prod x) l) ;;
+  
+  let tau_permutation = Int_range.scale 
+  (fun k->if k>2 then k else 3-k) 1 n ;;
+  
+  let tau_index = List_again.find_index_of_in 
+    tau_permutation all_permutations ;;
+  
+  let boar = dot tau_index wreath ;;  
+  
+  let boar_transform =Memoized.make(fun x -> dot x boar) ;;
+  
+  let unordered_transforms = Explicit.image boar_transform wreath;;
+  
+  let all_transforms = il_sort unordered_transforms ;;
+  let all_representative_indices = i_sort(Image.image(
+     fun bt ->
+        List.find (fun w->boar_transform w=bt) wreath 
+  ) all_transforms) ;;
+  let all_representatives = Image.image(
+     fun i ->
+        let perm = List.nth all_permutations (i-1) in 
+        let cycles = Permutation.decompose_into_disjoint_cycles perm in 
+        (perm,cycles) 
+  ) all_representative_indices ;;
+
+  let tau_permutation = Int_range.scale 
+(fun k->if k>2 then k else 3-k) 1 n ;;
+
+let p_index x = 0;;
+let tau_index = p_index tau_permutation ;;
+(* let thetaa_permutation = Int_range.scale 
+  (fun k->if k<n-1 then k else 2*n-1-k) 1 n ;; *)
+
+let thetaa_permutation = [3;5;2;4;1;7;6;8];;  
+let thetaa_index = p_index thetaa_permutation ;;  
+
+let inv x = 0;;
+
+let p_get x= [] ;;
+let main_computation = Explicit.image (
+   fun beta ->
+      let inv_tb = inv (prod tau_index beta) in 
+      let alf = prod thetaa_index inv_tb in 
+      (alf,(p_get alf,p_get beta)) 
+) wreath ;;
+
+
+
+let main_result = List.filter_map (
+   fun (alf,(perm1,perm2)) ->
+      if List.mem alf wreath 
+      then Some(perm1,perm2) 
+      else None   
+) main_computation ;;
+
+let preserves_parity x = false ;;
+
+let main_result2 = List.filter (
+   fun (x,y)->
+     (preserves_parity x) && 
+     (preserves_parity y)
+) main_result ;;
+
+
+let squash l = String.concat "" (Image.image string_of_int l);;
+let u1 = Image.image (fun (x,y)->
+   (squash x)^","^(squash y)
+   ) main_result2;;
+
+let u2 = "\n\n\n"^(String.concat "\n" u1)^"\n\n\n" ;;   
+
+print_string u2;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 179 : Musings on permutations
+************************************************************************************************************************)
+module Snip179=struct
+
+  let i_order = Total_ordering.for_integers ;;
+
+  let i_merge = Ordered.merge i_order ;;
+  let i_setminus = Ordered.setminus i_order ;;
+  let i_sort = Ordered.sort i_order ;;
+  
+  let il_order = Total_ordering.silex_for_intlists ;;
+  
+  let il_merge = Ordered.merge il_order ;;
+  let il_setminus = Ordered.setminus il_order ;;
+  let il_sort = Ordered.sort il_order ;;
+  
+  let pairs = List.filter (fun (x,y)->x<>y) 
+    (Cartesian.square(Int_range.range 1 6));;
+  
+  let (blue_pairs,red_pairs) = 
+  List.partition(fun (x,y)->(x-y)mod 2<>0) pairs;;  
+  
+  let preserves_blue_pairs perm =
+      let evp = (fun k->List.nth perm (k-1)) in 
+      (List.for_all (fun (x,y)->
+         List.mem (evp x,evp y) blue_pairs    
+      ) blue_pairs) ;;
+  
+  let s6_permutations = Permutation.iii 6 ;;    
+  
+  let s6 = Int_range.range 1 720 ;;
+  let indexed_s6 = Int_range.index_everything s6_permutations ;;
+  
+  let indexed_wreath = List.filter (fun
+   (idx,perm)->preserves_blue_pairs perm) indexed_s6 ;;
+  
+  let wreath = Image.image fst indexed_wreath;;
+  
+  let uncurried_s6_prod = Memoized.make (fun (i,j)->
+      let pi = List.nth s6_permutations (i-1)
+      and pj = List.nth s6_permutations (j-1) in 
+      let pk = Permutation.product pi pj in 
+      List_again.find_index_of_in pk s6_permutations
+  );;
+  
+  let rec helper_for_generated_subgroup (whole_so_far,not_treated_yet,seed) =
+      if not_treated_yet=[] then whole_so_far else
+      let temp1 = Cartesian.product not_treated_yet seed in 
+      let temp2 = Image.image uncurried_s6_prod temp1 in
+      let new_elements = i_sort temp2 in 
+      let new_whole = i_merge new_elements whole_so_far 
+      and really_new_elements = i_setminus new_elements whole_so_far  in 
+      helper_for_generated_subgroup (new_whole,really_new_elements,seed) ;;
+  
+  let hashtbl_for_generating_sets = ((Hashtbl.create 500):
+  (int list,int list) Hashtbl.t) ;;
+  
+  let generated_subgroup =Memoized.make(fun seed ->
+      let answer = helper_for_generated_subgroup ([1],[1],seed) in 
+      let _=match Hashtbl.find_opt hashtbl_for_generating_sets answer with 
+      (Some _)->()
+      |None ->Hashtbl.add hashtbl_for_generating_sets answer seed
+       in 
+      answer);;
+  
+  let rec helper_for_greedy_generating_set (sg,accu,generated_by_accu)=
+    let others=i_setminus sg generated_by_accu in 
+    match others with 
+    [] ->accu
+    |x:: _ ->
+     let new_accu = i_merge accu [x] in 
+     let new_subgroup = generated_subgroup new_accu in 
+     helper_for_greedy_generating_set (sg,new_accu,new_subgroup);;
+  
+  let greedy_generating_set sg = 
+      helper_for_greedy_generating_set (sg,[1],[1]);;
+  
+  let generating_set sg = 
+      match Hashtbl.find_opt hashtbl_for_generating_sets sg with 
+      (Some old_answer)->old_answer
+      |None -> greedy_generating_set sg ;;
+  
+  
+  let hashtbl_for_wenerating_sets = ((Hashtbl.create 500):
+      (int list,int list) Hashtbl.t) ;;
+      
+  let wenerated_subgroup =Memoized.make(fun seed ->
+     let total_seed = i_merge seed wreath in
+     let answer = generated_subgroup total_seed in 
+     let _=match Hashtbl.find_opt hashtbl_for_wenerating_sets answer with 
+      (Some _)->()
+      |None ->Hashtbl.add hashtbl_for_wenerating_sets answer seed
+     in 
+     answer);;
+  
+  let outside_wreath= i_setminus s6 wreath;;
+  
+  let u1 = Explicit.image (fun z->(z,wenerated_subgroup [z])) 
+  outside_wreath;;
+  
+  let u2 = il_sort (Image.image snd u1) ;;
+  
+  let u3 =Cartesian.square wreath ;;
+  
+  let s6_prod i j = uncurried_s6_prod (i,j);;
+  
+  let u4 = Explicit.image (fun (i,j)->
+     ((i,j),s6_prod i (s6_prod 121 j))
+  ) u3;;
+  
+  let realizers = Memoized.make(fun k->
+     List.filter_map (fun ((i,j),k2)->if k2=k then Some(i,j) else None) u4
+  ) ;;
+  
+  
+  
+  
+  let u5 = List.filter (fun (idx,perm)->
+     let get = (fun t->List.nth perm (t-1)) in 
+     (get 1,get 2)=(3,5)
+     )indexed_s6 ;;
+  
+  let u6 = Image.image (
+     fun (x,y)->(x,y,realizers x)
+  ) u5 ;;
+   
+  let u7 = Image.image (
+     fun (x,y)->(x,y,realizers x)
+  ) u5 ;;
+  
+  let tau k = if k>2 then k else 3-k ;;
+  
+  let v1 = List.filter (fun (x,y)->List.mem (tau x,tau y) red_pairs) red_pairs ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 178 : Computing explicit successive minimal polynomials
+on a field extension whose Galois group is a wreath
+************************************************************************************************************************)
+module Snip178=struct
+
+
+  let completions l =
+    let admissibles = (match l with
+      [] -> Int_range.range 1 5
+      |a::_ ->Int_range.range 1 a
+    ) in 
+    Image.image(fun i->i::l) admissibles ;;
+  
+  let sphere = Memoized.recursive(
+      fun old_f k->
+      if k<1 then [[]] else 
+      let temp1=old_f(k-1) in
+      let temp2=Image.image completions temp1 in 
+      List.flatten temp2
+  );;
+  
+  let ball = Memoized.make(fun 
+     k->List.flatten (Int_range.scale sphere 0 k)
+  ) ;;
+  
+  let exponent uple k= List.length(List.filter(fun x->x=k) uple);;
+  
+  let is_good uple = List.for_all (fun k->
+    (exponent uple k)<=6-k    
+  ) (Int_range.range 1 5) ;;
+  
+  let u1 = ball 15;;
+  let u2 = List.filter is_good u1;;
+  
+  let sathenay_order l1 l2 =
+      (Total_ordering.lex_compare Total_ordering.for_integers)
+      (List.rev l1) (List.rev l2) ;;
+  
+  let sathenay_base = Ordered.sort sathenay_order u2;;    
+  
+  let indexed_sathenay_base= Int_range.index_everything sathenay_base;;
+  
+  let restricted1_base = List.filter (fun (i,l)->
+      (exponent l 2)<=2
+      ) indexed_sathenay_base ;;
+  
+  let restricted1_indices = Image.image fst restricted1_base ;;
+  
+  let restricted1_text = 
+      let core = String.concat "," 
+      (Image.image string_of_int restricted1_indices) in 
+      "\n\n\nrestricted1_indices=["^core^"];\n\n\n" ;;
+  
+  let restricted2_base = List.filter (fun (i,l)->
+      (exponent l 3)<=1
+  ) restricted1_base ;;
+  
+  let restricted2_indices = Image.image fst restricted2_base ;;
+  
+  let restricted2_text = 
+      let core = String.concat "," 
+      (Image.image string_of_int restricted2_indices) in 
+      "\n\n\nrestricted2_indices=["^core^"];\n\n\n" ;;
+  
+  let restricted3_base = List.filter (fun (i,l)->
+          (exponent l 4)<=1
+  ) restricted2_base ;;
+      
+  let restricted3_indices = Image.image fst restricted3_base ;;
+      
+  let restricted3_text = 
+      let core = String.concat "," 
+      (Image.image string_of_int restricted3_indices) in 
+      "\n\n\nrestricted3_indices=["^core^"];\n\n\n" ;;    
+  
+  let squash l=
+   if l=[] then "1" else
+   "g"^(String.concat "" (Image.image string_of_int l)) ;;
+  
+  let expression_for_squash = function 
+     [] -> "1"
+    |a::b ->if b=[] then squash[a] else
+      "w_nz("^(squash [a])^" * "^(squash b)^")" ;;
+  
+  let new_variable_definition_opt l = match l with  
+      [] -> ""
+    |a::b ->if b=[] then "" else
+    (squash l)^" = w_nz("^(squash [a])^" * "^(squash b)^");\n" ;;
+       
+  
+  let line_for_usual_computation (idx,l) = 
+     (new_variable_definition_opt l)^ 
+     "initial_base["^(string_of_int idx)^"] = "^(squash l)^" ;\n"^
+      "printf(\"Step "^(string_of_int idx)^" of 720 finished\\n\");\n" ;;
+  
+  let text_for_usual_computations =
+     let temp1 = Image.image line_for_usual_computation 
+     indexed_sathenay_base in
+     "\n\n\n"^
+     "initial_base=vector(720,k,\"\");\n"^
+     (String.concat "\n" temp1)^
+     "\n\n\n" ;; 
+  
+  let line_for_usual_retrieval (idx,l) = 
+      (squash l)^" = initial_base["^(string_of_int idx)^"] ;\n" ;;
+   
+  
+  let long_ones = List.filter (fun (_,l)->List.length l>1) 
+  indexed_sathenay_base ;;
+  
+  let text_for_usual_retrievals =
+      let temp1 = Image.image line_for_usual_retrieval 
+          long_ones in
+          "\n\n\n"^
+          (String.concat "\n" temp1)^
+          "\n\n\n" ;; 
+       
+  let restricted50_uples = 
+      Image.image (fun x->List.assoc x indexed_sathenay_base)
+      [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 13; 121; 122; 123; 124; 125; 126; 127; 241];;
+          
+  let restricted50_monomials = 
+      String.concat "," (Image.image squash restricted50_uples) ;;        
+  
+  
+  let ap2 = Absolute_path.of_string (home ^
+  "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp");;
+  
+  let ap3 = Absolute_path.of_string (home ^
+  "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn3.gp");; 
+  
+ (*
+  Lines_in_text.remove_interval_in_file ap3 9181 108943 ;;
+  
+  Lines_in_text.remove_interval_in_file ap2 236 3008 ;;
+  
+  Io.append_string_to_file text_for_usual_computations ap2 ;;
+  
+  Io.append_string_to_file text_for_usual_retrievals ap2 ;;
+  
+  Io.append_string_to_file restricted1_text ap2 ;;
+  
+  Io.append_string_to_file restricted2_text ap2 ;;
+  
+  Replace_inside.replace_several_inside_file 
+    ["g11111","g22222";"g1111","g2222";
+    "g111","g222";"g11","g22";"g1","g2"] ap3 ;;
+  
+  Replace_inside.replace_several_inside_file 
+    ["g11111","g33333";"g1111","g3333";
+    "g111","g333";"g11","g33";"g1","g3"] ap3 ;;  
+  
+  Replace_inside.replace_several_inside_file 
+    ["g11111","g44444";"g1111","g4444";
+    "g111","g444";"g11","g44";"g1","g4"] ap3 ;;   
+
+*)
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 177 : Miscellanea preparing a refactorization
+************************************************************************************************************************)
 module Snip177=struct
 
 

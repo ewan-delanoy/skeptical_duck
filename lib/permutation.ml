@@ -238,6 +238,24 @@ module Private = struct
       let id = i_fold_merge(Image.image i_sort l) in 
        iterator_for_generated_subgroup l ([id],[id]) ;; 
 
+   let nonnegative_power = 
+      Memoized.recursive(fun old_f (sigma,k) ->
+      if k=0 
+      then Int_range.range 1 (List.length sigma)
+      else product sigma (old_f(sigma,k-1))
+      ) ;;
+
+   let inverse sigma = 
+      let n = List.length sigma in 
+      Int_range.scale 
+      (fun y->List_again.find_index_of_in y sigma) 1 n ;;
+         
+
+   let power sigma k =
+      if k<0
+      then nonnegative_power (inverse sigma,-k)
+      else nonnegative_power (sigma,k) ;;
+
    end ;; 
    
 let alternating_group  = Memoized.make(fun n->
@@ -262,12 +280,11 @@ let product = Private.product ;;
    
 let product_of_cycles = Private.product_of_cycles ;;     
        
-let inverse sigma = 
-      let n = List.length sigma in 
-      Int_range.scale (fun y->List_again.find_index_of_in y sigma) 1 n ;;
+let inverse = Private.inverse ;;
    
 let order = Private.order ;;      
 
+let power = Private.power ;;
 let signature = Private.signature ;;   
          
    
