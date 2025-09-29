@@ -256,6 +256,11 @@ module Private = struct
       then nonnegative_power (inverse sigma,-k)
       else nonnegative_power (sigma,k) ;;
 
+   let fold_product = function 
+     [] -> failwith("identity depends on order")
+     |a::b-> List.fold_left product a b ;;
+  
+
    end ;; 
    
 let alternating_group  = Memoized.make(fun n->
@@ -266,6 +271,7 @@ let cyclic_subgroup = Private.cyclic_subgroup ;;
 
 let decompose_into_disjoint_cycles =  Private.decompose_into_disjoint_cycles ;;    
    
+let fold_product = Private.fold_product ;;
 let generated_subgroup = Private.generated_subgroup ;;
 
 let iii (* meaning, integer initial interval *) 
