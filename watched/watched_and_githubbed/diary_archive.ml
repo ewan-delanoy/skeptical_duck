@@ -1,14 +1,1235 @@
 (************************************************************************************************************************
-Snippet 181 : 
+Snippet 192 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 180 : Musings on permutations, II
+Snippet 191 : Enumerate all subgroups of a small group
 ************************************************************************************************************************)
 
+module Snip191=struct
+
+
+
+open Skeptical_duck_lib ;;
+open Needed_values ;;
+
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+  
+let is_in_wreath perm =
+  let measure = (fun k->((Permutation.eval perm k)mod 2)=(k mod 2)) in 
+  let choice = measure 1 in 
+  List.for_all (fun k->measure k=choice) (Int_range.range 2 6) ;; 
+let all_permutations = Permutation.iii 6 ;;    
+
+let wreath = List.filter is_in_wreath all_permutations ;;
+
+let indexed_wreath = Int_range.index_everything wreath ;;
+  
+let wreath_uncurried_prod =Memoized.make(fun (i,j) ->
+   let perm_i = List.nth wreath (i-1) 
+   and perm_j = List.nth wreath (j-1) in 
+   let perm = Permutation.product perm_i perm_j in 
+   List_again.find_index_of_in perm wreath);;
+
+let computation1  = Explicit.image (
+   wreath_uncurried_prod
+) (Cartesian.square(Int_range.range 1 72)) ;;
+
+let wreath_prod i j = wreath_uncurried_prod (i,j) ;;
+
+let wreath_inverse  =Memoized.make(fun i ->
+   let perm_i = List.nth wreath (i-1)  in 
+   let perm = Permutation.inverse perm_i  in 
+   List_again.find_index_of_in perm wreath);;
+
+let computation2  = Explicit.image (
+   wreath_uncurried_prod
+) (Cartesian.square(Int_range.range 1 72)) ;;   
+
+let rec helper_for_generated_subgroup (whole_so_far,not_treated_yet,seed) =
+  if not_treated_yet=[] then whole_so_far else
+  let temp1 = Cartesian.product not_treated_yet seed in 
+  let temp2 = Image.image wreath_uncurried_prod temp1 in
+  let new_elements = i_sort temp2 in 
+  let new_whole = i_merge new_elements whole_so_far 
+  and really_new_elements = i_setminus new_elements whole_so_far  in 
+  helper_for_generated_subgroup (new_whole,really_new_elements,seed) ;;
+  
+let hashtbl_for_generating_sets = ((Hashtbl.create 500):
+  (int list,int list) Hashtbl.t) ;;
+  
+let generated_subgroup =Memoized.make(fun seed ->
+  let answer = helper_for_generated_subgroup ([1],[1],seed) in 
+  let _=match Hashtbl.find_opt hashtbl_for_generating_sets answer with 
+      (Some _)->()
+      |None ->Hashtbl.add hashtbl_for_generating_sets answer seed
+  in 
+  answer);;
+  
+let sphere0=[[1]] ;;
+let ball0=[[1]] ;;
+
+let sphere0_with_generators = [[1],[]] ;;
+
+let towards_sphere1=
+  Int_range.scale (fun k->(k,generated_subgroup [k])) 2 72 ;;
+
+let sphere1 =
+   il_sort (Image.image snd towards_sphere1) ;;   
+let ball1 = il_merge ball0 sphere1 ;;   
+
+let distinguished_generator_for_sphere1 sg =
+  fst(List.find (fun (k,sg2)->sg2=sg) towards_sphere1) ;;
+
+let distinguished_families1 =
+  i_sort (Image.image distinguished_generator_for_sphere1 sphere1) ;;
+
+let sphere1_with_generators = 
+  Image.image (fun sg->(sg,[distinguished_generator_for_sphere1 sg])) sphere1 ;;
+
+let pre_distinguished_families2 =  
+  let temp = Cartesian.product distinguished_families1
+          distinguished_families1 in
+  il_sort(List.filter_map (
+   fun (x1,x2) ->
+    if not(
+      (List.mem x1 (generated_subgroup [x2])) ||
+      (List.mem x2 (generated_subgroup [x1]))
+    )
+    then Some (i_sort [x1;x2])
+    else None
+  )  temp );;       
+
+let towards_sphere2=
+  List.filter_map (fun l->
+    let sg = generated_subgroup  l in 
+    if il_mem sg ball1 
+    then None 
+    else Some(l,sg)) pre_distinguished_families2 ;;  
+
+let sphere2 =
+   il_sort (Image.image snd towards_sphere2) ;;   
+let ball2 = il_merge ball1 sphere2 ;;       
+
+let distinguished_generator_for_sphere2 sg =
+  fst(List.find (fun (l,sg2)->sg2=sg) towards_sphere2) ;;
+
+let distinguished_families2 =
+  il_sort (Image.image distinguished_generator_for_sphere2 sphere2) ;;
+
+let sphere2_with_generators = 
+  Image.image (fun sg->(sg,distinguished_generator_for_sphere2 sg)) sphere2 ;;
+
+
+let pre_distinguished_families3 =  
+  let temp = Cartesian.product distinguished_families2
+          distinguished_families1 in
+  il_sort(List.filter_map (
+   fun (old_l,y3) ->
+    if List.mem y3 old_l then None else
+    let l=i_sort(y3::old_l) in 
+    let x1 = List.nth l 0 
+    and x2 = List.nth l 1 
+    and x3 = List.nth l 2 in 
+    if not(
+      (List.mem x1 (generated_subgroup [x2;x3])) ||
+      (List.mem x2 (generated_subgroup [x1;x3])) ||
+      (List.mem x3 (generated_subgroup [x1;x2]))
+    )
+    then Some ([x1;x2;x3])
+    else None
+  )  temp );;       
+
+let towards_sphere3=
+  List.filter_map (fun l->
+    let sg = generated_subgroup  l in 
+    if il_mem sg ball2 
+    then None 
+    else Some(l,sg)) pre_distinguished_families3 ;;  
+
+let sphere3 =
+   il_sort (Image.image snd towards_sphere3) ;;   
+let ball3 = il_merge ball2 sphere3 ;;        
+
+let distinguished_generator_for_sphere3 sg =
+  fst(List.find (fun (l,sg2)->sg2=sg) towards_sphere3) ;;
+
+let distinguished_families3 =
+  il_sort (Image.image distinguished_generator_for_sphere3 sphere3) ;;
+
+let sphere3_with_generators = 
+  Image.image (fun sg->(sg,distinguished_generator_for_sphere3 sg)) sphere3 ;;
+
+
+let pre_distinguished_families4 =  
+  let temp = Cartesian.product distinguished_families3
+          distinguished_families1 in
+  il_sort(List.filter_map (
+   fun (old_l,y4) ->
+    if List.mem y4 old_l then None else
+    let l=i_sort(y4::old_l) in 
+    let x1 = List.nth l 0 
+    and x2 = List.nth l 1 
+    and x3 = List.nth l 2 
+    and x4 = List.nth l 3 in 
+    if not(
+      (List.mem x1 (generated_subgroup [x2;x3;x4])) ||
+      (List.mem x2 (generated_subgroup [x1;x3;x4])) ||
+      (List.mem x3 (generated_subgroup [x1;x2;x4])) ||
+      (List.mem x4 (generated_subgroup [x1;x2;x3]))
+      )
+    then Some ([x1;x2;x3;x4])
+    else None
+  )  temp );; 
+
+let towards_sphere4=
+  List.filter_map (fun l->
+    let sg = generated_subgroup  l in 
+    if il_mem sg ball3 
+    then None 
+    else Some(l,sg)) pre_distinguished_families4 ;;    
+
+let with_generators = List.flatten [
+   sphere0_with_generators;
+   sphere1_with_generators;
+   sphere2_with_generators;
+   sphere3_with_generators
+] ;;
+
+let standard_generating_set sg = List.assoc sg with_generators ;;
+
+let all_subgroups = ball3 ;;    
+
+let nonfull_subgroups = List.filter (fun l->List.length(l)<72) all_subgroups ;;
+
+let maximal_subgroups = 
+  Ordered_misc.maximal_elts_wrt_inclusion nonfull_subgroups ;;
+
+let half_subgroups = List.filter (fun l->List.length l=36) 
+  maximal_subgroups ;;  
+
+let u1 = Image.image (
+  fun sg -> (sg,standard_generating_set sg)
+)  half_subgroups ;; 
+
+let u2 = Ordered.fold_intersect i_order half_subgroups ;;
+
+let u3 = standard_generating_set u2 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 190 : Producing some PARi-GP code enumerating 
+some elementary symmetric polynomials
+************************************************************************************************************************)
+module Snip190=struct
+
+let u1 = List_again.power_set (Int_range.range 1 10) ;;
+
+let u2 = Ordered.sort 
+ (Total_ordering.silex_compare Total_ordering.for_integers)
+   u1 ;;
+
+let partial_power = Memoized.make(fun k->
+    List.filter (fun l->List.length l=k) u2
+) ;;   
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let compress l = String.concat "" (Image.image soi l);;
+
+
+let write_line l= 
+ match l with 
+ [] -> ""
+ |a::others ->
+   "h"^(compress l)^" = nz( h"^(soi a)^" * h"^(compress others)^" );";;
+
+let write_set ll =
+   let m = string_of_int(List.length(List.hd ll)) in 
+   let temp1 = String.concat "\n" 
+    (Image.image write_line ll) 
+   and temp2 = "f"^m^" = "^(String.concat "+" 
+    (Image.image (fun l->"h"^(compress l)) ll) )^" ;" in 
+   "\n\n\n"^temp1^"\n\n"^temp2^"\n\n\n";;   
+
+let write_level k = write_set(partial_power k) ;;
+
+let full_text = 
+    "\n\n\n"^(String.concat "\n" 
+    (Int_range.scale write_level 2 10))^"\n\n\n" ;;
+
+let ap1 = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"follenn1.gp") ;;
+    
+Io.append_string_to_file full_text ap1 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 189 : Code that reads PARI-GP arrays and writes PARI-GP functions
+************************************************************************************************************************)
+module Snip189=struct
+
+let main_index = 8 ;;
+
+let prelude_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"prelude1.gp") ;;
+
+
+(*
+let clean_prelude () = Lines_in_text.remove_interval_in_file
+  prelude_ap 32 74 ;;
+
+*)  
+
+let ap1 = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"brouilhed"^(string_of_int main_index)^".gp") ;;
+
+
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let i1 = (String.index text1 '[')+1 ;;
+let i2 = (String.index text1 ']')+1 ;;
+
+let text2 = Cull_string.interval text1 (i1+1) (i2-1) ;;
+
+let u1 = Str.split (Str.regexp ",") text2 ;;
+
+let u2 = Image.image Cull_string.trim_spaces u1 ;;
+
+let extract_from_u2 k =
+   let start = 720 * (k-1) in 
+   let temp = List_again.long_tail start u2 in 
+   List_again.long_head 720 temp ;;
+
+let u3 = Explicit.image extract_from_u2 
+  (Int_range.range 1 720) ;;   
+
+let check1 = ((List.flatten u3)=u2);;  
+let check2 = (List.for_all (fun x->List.length x=720) u3);;  
+
+let u4 = Ordered.sort Total_ordering.lex_for_strings u2 ;;
+
+let rewrite_leftmost j x = 
+  (if x="1" then "" else
+   if x="-1" then "-" else  
+   if String.contains x ' ' then "("^x^")*"
+  else x^"*")^"a["^(string_of_int j)^"]" ;;
+
+let rewrite_non_leftmost (j,x) = 
+  (if x="1" then "+" else 
+   if x="-1" then "-" else 
+   if String.contains x ' ' then "+("^x^")*" else
+   if String.starts_with x ~prefix:"-" 
+   then x^"*" 
+   else "+"^x^"*")^"a["^(string_of_int j)^"]" ;;
+
+let rewrite_line l =
+  let indexed_l = Int_range.index_everything l in 
+  let temp1 = List.filter (fun (j,x)->x<>"0") indexed_l in
+  match temp1 with 
+  []->"0"
+  |(j1,x1) :: others ->
+     String.concat ""
+     ((rewrite_leftmost j1 x1) :: 
+     (Image.image rewrite_non_leftmost others)) ;; 
+
+let u5 = Image.image rewrite_line u3 ;;     
+
+let u6 = String.concat "," u5 ;;
+
+let acronym = 
+  if main_index = 7 then "hh" else 
+  if main_index = 8 then "dh" else 
+  "g"^(string_of_int main_index);;    
+
+let u7 = "\n\n\ngomer_"^acronym^"_prod(a)=["^u6^"]\n\n\n" ;;
+
+let u8 () = 
+  let _ = Io.append_string_to_file u7 prelude_ap in 
+  print_string ("\n\n\nmain_index = "^(string_of_int main_index)^"\n\n\n");;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 188 : Enumerating orbits of monomials, II
+************************************************************************************************************************)
+module Snip188=struct
+
+
+type sixtuple = SU of int * int * int * int * int * int ;; 
+
+let su_order = ((
+    fun (SU(x1,x2,x3,x4,x5,x6)) (SU(y1,y2,y3,y4,y5,y6)) ->
+    let lx = [x6;x5;x4;x3;x2;x1]
+    and ly = [y6;y5;y4;y3;y2;y1] in
+    let trial1 = Total_ordering.for_integers 
+    (Basic.fold_sum lx) (Basic.fold_sum ly) in 
+    if trial1<>Total_ordering_result_t.Equal 
+    then trial1
+    else    
+     (Total_ordering.lex_compare Total_ordering.for_integers)
+     lx ly
+  ): sixtuple Total_ordering_t.t);;
+  
+let su_sort = Ordered.sort su_order ;;
+
+let positive_power_alone g k =
+    if k=1 then g else g^"^"^(string_of_int k);;
+  
+let positive_power_in_group more_than_one (g,k) =
+    if (k=1)||(not more_than_one) 
+    then positive_power_alone g k
+    else "("^(positive_power_alone g k)^")";; 
+
+let su_to_list (SU(x1,x2,x3,x4,x5,x6))=
+   [x1;x2;x3;x4;x5;x6] ;; 
+  
+   
+  
+  let g_list = Int_range.scale (fun k->
+    "g"^(string_of_int k)) 1 6 ;;
+  
+  let g_monomial_of_su su =
+    let temp1 = List.combine g_list (su_to_list su)  in 
+    let temp2 = List.filter (fun (g,k)->k>0) temp1 in 
+    if temp2=[] then "1" else
+    let more_than_one = (List.length(temp2)>1) in 
+    let temp3 = Image.image 
+      (positive_power_in_group more_than_one) temp2 in 
+    String.concat "*" temp3 ;;  
+  
+let g_monomial_list_of_su_list l =
+    let temp1 = Image.image g_monomial_of_su l in 
+    "["^(String.concat "," temp1)^"]";;
+let ir = Int_range.range 0 ;;
+let u1 = Cartesian.tproduct (ir 5) (ir 4) (ir 3) ;;
+let u2 = Cartesian.tproduct (ir 2) (ir 1) (ir 0) ;;
+let u3 = Cartesian.product u1 u2 ;;
+
+let u4 = Image.image (fun 
+  ((x1,x2,x3),(x4,x5,x6)) ->
+    SU(x1,x2,x3,x4,x5,x6)
+) u3 ;;
+
+let u5 = su_sort u4 ;;
+
+let u6 = g_monomial_list_of_su_list u5 ;;  
+
+let u7 = "\n\n\n"^u6^"\n\n\n" ;;
+
+let u8 () = print_string u7 ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 187 : Using Manage_diary.extract_at_index_and_append_to_file
+************************************************************************************************************************)
+module Snip187=struct
+
+let cloth_ap = Absolute_path.of_string 
+"watched/watched_not_githubbed/cloth.ml";;
+
+Manage_diary.extract_at_index_and_append_to_file
+  179 cloth_ap ;;
+
+let act () = Manage_diary.copy_file_content_as_new_snippet 
+  ~path_in_nongithubbed: "cloth";;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 186 : Musing over a functional equation
+************************************************************************************************************************)
+module Snip186=struct
+
+let i_order = Total_ordering.for_integers ;;
+
+let exhaustive_int_order = ((fun x y->
+    let trial1 = Total_ordering.for_integers (abs x) (abs y) in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else    
+    if x=y then Total_ordering_result_t.Equal else 
+    if x<0 
+    then Total_ordering_result_t.Greater
+    else Total_ordering_result_t.Lower    
+) : int Total_ordering_t.t) ;;
+
+let exhaustive_rat_order = 
+((fun (x1,x2) (y1,y2)->
+    let mx=max(abs x1)(abs x2)
+    and my=max(abs y1)(abs y2) in 
+    let trial1 = Total_ordering.for_integers mx my in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else    
+    let trial2 = Total_ordering.for_integers x2 y2 in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else    
+    exhaustive_int_order x1 y1   
+) : (int * int) Total_ordering_t.t) ;;
+
+let triple_rat_order = 
+((fun (x1,x2,x3) (y1,y2,y3)->
+    let mx=Ordered.max exhaustive_rat_order [x1;x2;x3]
+    and my=Ordered.max exhaustive_rat_order [y1;y2;y3] in 
+    let trial1 = exhaustive_rat_order mx my in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else    
+    let trial2 = exhaustive_rat_order x1 y1 in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else    
+    let trial3 = exhaustive_rat_order x2 y2 in 
+    if trial3<>Total_ordering_result_t.Equal then trial3 else        
+    exhaustive_rat_order x3 y3  
+) : ((int * int)*(int * int)*(int * int)) Total_ordering_t.t) ;;
+
+let fourtuple_int_order = 
+((fun (x1,x2,x3,x4) (y1,y2,y3,y4)->
+    let mx=Ordered.max i_order (Image.image abs [x1;x2;x3;x4])
+    and my=Ordered.max i_order (Image.image abs [y1;y2;y3;y4]) in 
+    let trial1 = i_order mx my in 
+    if trial1<>Total_ordering_result_t.Equal then trial1 else    
+    let trial2 = exhaustive_int_order x1 y1 in 
+    if trial2<>Total_ordering_result_t.Equal then trial2 else    
+    let trial3 = exhaustive_int_order x2 y2 in 
+    if trial3<>Total_ordering_result_t.Equal then trial3 else        
+    let trial4 = exhaustive_int_order x3 y3 in 
+    if trial4<>Total_ordering_result_t.Equal then trial4 else            
+    exhaustive_int_order x4 y4  
+) : ((int * int * int * int)) Total_ordering_t.t) ;;
+
+let bulky_order = Total_ordering.product 
+   triple_rat_order fourtuple_int_order ;;
+
+
+let reduce_fraction old_x old_y =
+  let (x1,y1)=
+     (if old_y<0 
+      then (-old_x,-old_y) 
+      else (old_x,old_y)) in 
+  let g=Gcd.gcd x1 y1 in 
+  (x1/g,y1/g) ;;
+
+let sgn x = if x<0 then (-1) else 1 ;;
+
+let reduce_mfraction old_x old_y =
+    let (x1,y1)=reduce_fraction old_x old_y in
+    if x1=0 then (x1,y1) else
+    if abs(x1)<abs(y1)
+    then let s=sgn(x1) in (s*y1,s*x1)
+    else (x1,y1) ;;   
+
+let main_map (x1,x2,y1,y2) =
+    (
+     reduce_mfraction (x1*y1) (x2*y2),
+     reduce_mfraction (x1*y1+x2*y2) (x2*y1),
+     reduce_mfraction (x1*y1+x2*y2) (x1*y2)
+    ) ;;
+
+let small_n = 3 ;;
+let u1 = (Int_range.range (-small_n) (-1))@
+(Int_range.range 1 small_n);;
+
+let v1 = Cartesian.square u1 ;;
+
+let v2 = List.filter (fun (x,y)->
+    ((Gcd.gcd x y)=1)&&(y>0)
+    ) v1;;
+
+let u2 = Uple.list_of_pairs v2 ;;
+let u3 = Image.image (fun ((a,b),(c,d))->(a,b,c,d)) u2 ;;
+
+let u4 = Image.image (fun x->(main_map x,x)) u3 ;;
+
+let u5 = Ordered.sort bulky_order u4 ;;
+
+let u6 = Ordered.sort triple_rat_order (Image.image fst u5) ;;
+
+let zrat_of_pair (x,y) = Zirath.Q.of_ints x y ;;
+
+let u7 = Explicit.image (
+   fun (a,b,c) ->
+    let (x1,x2,y1,y2) = List.assoc (a,b,c) u5 in 
+    ((zrat_of_pair a,zrat_of_pair b,zrat_of_pair c),
+     (zrat_of_pair (x1,x2),zrat_of_pair (y1,y2))
+    )
+) u6 ;;
+
+let domain1 = 
+    Ordered.sort exhaustive_rat_order
+    (Int_range.scale (fun x->(x,1)) (-3) 3)@[(-3,2);(3,2)] ;;
+
+
+let domain_ref = ref domain1 ;;
+
+let is_not_in_domain x= 
+  let dom = !domain_ref in 
+  let rat_dom = Image.image zrat_of_pair dom in 
+  not(List.exists 
+  (Zirath.Q.equals x) rat_dom );;
+
+let initial_u8=Explicit.filter (
+   fun ((a,b,c),_)->
+    List.exists is_not_in_domain [a;b;c]
+) u7;;
+
+let u8_ref = ref initial_u8 ;;
+
+let enlarge_domain_without_yielding_head p = 
+    let old_dom = !domain_ref 
+    and old_u8 = !u8_ref in  
+    let new_dom = Ordered.insert exhaustive_rat_order p old_dom in 
+    (domain_ref:=new_dom;
+     u8_ref:= Explicit.filter (
+   fun ((a,b,c),_)->
+    List.exists is_not_in_domain [a;b;c]
+) old_u8
+    ) ;;
+
+let enlarge_domain p = 
+    let _= enlarge_domain_without_yielding_head p in 
+    List.hd(!u8_ref);;
+
+(*
+enlarge_domain (4,1) ;;
+enlarge_domain (-4,1) ;;
+enlarge_domain (4,3) ;;
+enlarge_domain (-4,3) ;;
+enlarge_domain (5,2) ;;
+enlarge_domain (-5,1) ;;
+enlarge_domain (5,1) ;;
+enlarge_domain (-5,2) ;;
+enlarge_domain (5,3) ;;
+enlarge_domain (-5,3) ;;
+enlarge_domain (5,4) ;;
+enlarge_domain (-5,4) ;;
+enlarge_domain (6,1) ;;
+enlarge_domain (-6,1) ;;
+enlarge_domain (6,5) ;;
+enlarge_domain (-6,5) ;;
+*)
+
+
+let uu k = List.nth (!u8_ref) (k-1) ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 185 : Enumerating orbits of monomials
+************************************************************************************************************************)
+module Snip185=struct
+
+  type sixtuple = SU of int * int * int * int * int * int ;; 
+
+  let su_order = ((
+    fun (SU(x1,x2,x3,x4,x5,x6)) (SU(y1,y2,y3,y4,y5,y6)) ->
+     (Total_ordering.lex_compare Total_ordering.for_integers)
+     [x1;x2;x3;x4;x5;x6] [y1;y2;y3;y4;y5;y6]
+  ): sixtuple Total_ordering_t.t);;
+  
+  let su_sort = Ordered.sort su_order ;;
+  
+  let sul_order = (
+    fun l1 l2 ->
+      let trial1 = 
+        Total_ordering.for_integers 
+          (List.length l1) (List.length l2) in 
+      if trial1<>Total_ordering_result_t.Equal  
+      then trial1 
+      else
+      let trial2 = su_order (List.hd l1) (List.hd l2) in 
+      if trial2<>Total_ordering_result_t.Equal  
+      then trial2 
+      else Total_ordering.standard l1 l2 
+  ) ;;
+  
+  let sul_sort = Ordered.sort sul_order ;;
+  
+  let su_of_list l=
+   let p = (fun k->List.nth l (k-1)) in 
+   SU(p 1,p 2,p 3,p 4,p 5,p 6) ;;
+  
+  let su_to_list (SU(x1,x2,x3,x4,x5,x6))=
+   [x1;x2;x3;x4;x5;x6] ;; 
+  
+  let positive_power_alone g k =
+    if k=1 then g else g^"^"^(string_of_int k);;
+  
+  let positive_power_in_group more_than_one (g,k) =
+    if (k=1)||(not more_than_one) 
+    then positive_power_alone g k
+    else "("^(positive_power_alone g k)^")";;  
+  
+  let g_list = Int_range.scale (fun k->
+    "g"^(string_of_int k)) 1 6 ;;
+  
+  let g_monomial_of_su su =
+    let temp1 = List.combine g_list (su_to_list su)  in 
+    let temp2 = List.filter (fun (g,k)->k>0) temp1 in 
+    let more_than_one = (List.length(temp2)>1) in 
+    let temp3 = Image.image 
+      (positive_power_in_group more_than_one) temp2 in 
+    String.concat "*" temp3 ;;  
+  
+  let g_polynomial_of_su_list l =
+    let temp1 = Image.image g_monomial_of_su l in 
+    String.concat "+" temp1 ;;
+  
+  let g_list_of_su_list_list l = 
+    "["^(
+     String.concat ","  
+    (Image.image  g_polynomial_of_su_list l))^"]";;  
+  
+  
+  let tf6 k = [k] ;;
+  
+  let tf5 k = 
+    let temp = Int_range.scale (
+      fun j->Image.image (
+       fun t6->(j,t6)
+      )(tf6 (k-j))
+    ) 0 k in 
+    List.flatten temp;;
+  
+  let tf4 k = 
+    let temp = Int_range.scale (
+        fun j->Image.image (
+         fun (t5,t6)->(j,t5,t6)
+        )(tf5 (k-j))
+    ) 0 k in 
+    List.flatten temp;;  
+  
+  let tf3 k = 
+    let temp = Int_range.scale (
+          fun j->Image.image (
+           fun (t4,t5,t6)->(j,t4,t5,t6)
+          )(tf4 (k-j))
+      ) 0 k in 
+    List.flatten temp;;  
+    
+  let tf2 k = 
+    let temp = Int_range.scale (
+      fun j->Image.image (
+        fun (t3,t4,t5,t6)->(j,t3,t4,t5,t6)
+            )(tf3 (k-j))
+    ) 0 k in 
+    List.flatten temp;;  
+  
+  let tf1 k = 
+    let temp = Int_range.scale (
+        fun j->Image.image (
+          fun (t2,t3,t4,t5,t6)->SU(j,t2,t3,t4,t5,t6)
+              )(tf2 (k-j))
+      ) 0 k in 
+    List.flatten temp;;
+  
+  let all_perms=Permutation.iii 6 ;;
+  
+  let eq_mod_2 x y = ((abs(x-y)) mod 2=0) ;;
+  
+  let is_in_wreath perm = 
+    let p = (fun k->List.nth perm (k-1)) in 
+    let q = (fun k->(abs(p(k)-k) mod 2)) in 
+    List.for_all (fun i->q i=q 1) (Int_range.range 1 6);; 
+  
+  let wreath = List.filter is_in_wreath all_perms ;;  
+  
+  let perm_action su original_perm =
+    let perm = Permutation.inverse original_perm in 
+    let inv_perm = (fun k->List.nth perm (k-1)) in 
+    let old_l = su_to_list su in 
+    let new_l = Int_range.scale (fun k->
+      List.nth old_l ((inv_perm k)-1)  
+    ) 1 6 in 
+    su_of_list new_l ;; 
+  
+  let orbit su =
+     su_sort(Image.image (perm_action su) wreath);;   
+  
+  let all_orbits =Memoized.make(fun n ->
+    let all_monomials = tf1 n in 
+    let temp1 = Explicit.image orbit all_monomials in 
+    let all_heads = su_sort(Image.image List.hd temp1) in 
+    let temp2 = Explicit.image orbit all_heads in
+    sul_sort temp2);;
+     
+  let main n = 
+    let temp1 = all_orbits n in 
+    let msg = g_list_of_su_list_list temp1 in 
+    let wrapped_msg = "\n\n\n" ^ msg ^ "\n\n\n" in 
+    print_string wrapped_msg ;;
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 184 : Using Coherent_pdf.many_pngs_one_pdf 
+************************************************************************************************************************)
+module Snip184=struct
+
+  let ap1 = Absolute_path.of_string "~/Downloads/Arno" ;; 
+  
+  let s_dir1 =  Absolute_path.to_string ap1 ;;
+  let dir1 = Directory_name.of_string s_dir1 ;;  
+  
+  let u1 = Unix_again.beheaded_simple_ls dir1 ;;
+  
+  let u2 = Image.image (
+    fun x ->
+      let y = Cull_string.before_rightmost x '.' in 
+      "convert "^x^" "^y^".pdf"
+  ) u1 ;;
+  
+  let act0 () = Sys.chdir s_dir1 ;;
+  
+  let act1 () = Image.image Sys.command u2 ;;
+  
+  let act2 () = 
+    Coherent_pdf.many_pngs_one_pdf 
+    dir1 ~outputfile_name:"diglok" ;;
+    
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 183 : Musings on p-chains problem, II
+************************************************************************************************************************)
+module Snip183=struct
+
+  let i_order = Total_ordering.for_integers ;;
+
+  let i2_order = 
+    Total_ordering.product i_order i_order ;;
+  
+  let i2_insert = Ordered.insert i2_order ;;
+    
+  let u_order = ((fun x y ->
+  let (x1, x2, x3, x4, (x5, x6), (x7, x8, x9)) = x 
+  and (y1, y2, y3, y4, (y5, y6), (y7, y8, y9)) = y in  
+  let trial1 = Total_ordering.silex_for_strings x7 y7 in 
+  if trial1<>Total_ordering_result_t.Equal then trial1 else
+  let trial2 = Total_ordering.for_integers x8 y8 in 
+  if trial2<>Total_ordering_result_t.Equal then trial2 else 
+  let trial3 = Total_ordering.silex_for_strings x1 y1 in 
+  if trial3<>Total_ordering_result_t.Equal then trial3 else 
+      Total_ordering.standard x y   
+  ): (string * int * int * int * (string * int) * (string * int * int)) Total_ordering_t.t);;
+  
+  let u_fold_merge = Ordered.fold_merge u_order ;;
+  let u_sort = Ordered.sort u_order ;;
+  
+  exception Inconsistency_exn of (int * int * int *int) list ;;
+  exception Extract_from_partial_exn ;;
+  exception Data_overflow ;;
+  
+  type a_or_b = A | B ;; 
+  
+  type ab_system = {
+     depth : int ;
+     decided_values : (int * int) list;
+  } ;;
+  
+  type ab_result = 
+    Complete of int |Partial of  int*(a_or_b list) ;;
+  
+  let string_to_ab_list str=
+    List.rev_map (fun c->if c='A' then A else B) 
+    (Strung.explode str);;
+  let string_of_ab_list l=
+    String.concat ""
+    (List.rev_map (fun c->if c=A then "A" else "B") l);;
+  
+  
+  
+  let depth_of_int x = (x+3-(x mod 3))/3 ;;
+  let a_eval x = if (x mod 3)=0 then x-2 else x+1 ;;
+  let a_inverse x = if (x mod 3)=1 then x+2 else x-1 ;;
+  
+  let b_eval_opt syst x = List.assoc_opt x syst.decided_values ;;
+  
+  let rec extract_from_ab_list (x,l)= match l with  
+    []->(string_of_ab_list l,x)
+    |w::others ->
+      if w=B then (string_of_ab_list l,x) else
+        extract_from_ab_list (a_inverse x,others)   ;;
+  
+  let extract_from_partial ab= match ab with  
+    Partial(x,l)->((string_of_ab_list l,x),
+      extract_from_ab_list (x,l))
+    |Complete _ -> raise Extract_from_partial_exn ;;
+  
+  
+  let rec simplify_in_right_first_notation triple=
+    let (x,l,y) = triple in 
+    match l with 
+    [] -> triple 
+    |w::others -> 
+      if w=B then triple else 
+      simplify_in_right_first_notation (x,others,a_inverse y) ;;
+  
+  let simplify_in_left_first_notation (x,l,y) =
+    let (x2,l2,y2)=simplify_in_right_first_notation (x,List.rev l,y) in 
+    (x2,List.rev l2,y2) ;;
+   
+  
+  let sift_from_partial ab= match ab with  
+    Partial(x,l)->(x,l)
+    |Complete _ -> raise Extract_from_partial_exn ;;
+  
+  
+  let rec helper_for_eval syst x l=
+    match l with 
+    []-> Complete x 
+    |w::others -> 
+      (
+        match w with 
+        A ->  helper_for_eval syst (a_eval x) others 
+        |B ->
+        (
+          match b_eval_opt syst x with 
+           Some(y)-> helper_for_eval syst y others
+           |None -> Partial(x,l)
+        )   
+      ) ;;
+  
+  let eval_at_point syst str x = helper_for_eval syst x 
+    (string_to_ab_list str) ;;    
+  
+  let decided_pairs syst str=   
+    let n = 3 * syst.depth in 
+    let base = Int_range.range 1 n in 
+    List.filter_map (
+     fun x->match eval_at_point syst str x with 
+     Partial(_,_)->None 
+     |Complete y -> Some(x,y)
+    ) base ;;
+  
+  let new_deductions_from_actor syst str=   
+    let pairs = decided_pairs syst str in 
+    let temp2 = Cartesian.square pairs in 
+    let temp3 = List.filter_map(
+      fun ((x1,y1),(x2,y2))->
+        if x2=y1 then Some(x1,x2,y2) else None
+    ) temp2 in 
+    let temp4 = List.filter_map(
+      fun (x1,x2,x3)->
+        match List.assoc_opt x3 pairs with 
+        None -> None 
+        |Some(y1)-> if y1=x1 then None else Some(x1,x2,x3,y1)
+    ) temp3 in 
+    if temp4<>[]
+    then raise(Inconsistency_exn(temp4))
+    else
+      u_sort(
+      List.filter_map(
+        fun (x1,x2,x3)->
+          match List.assoc_opt x3 pairs with 
+          Some(y1)-> None
+          |None -> 
+            let (x4,l4)= sift_from_partial(eval_at_point syst str x3) in 
+            let (x5,l5,y5)=simplify_in_left_first_notation (x4,l4,x1) in  
+            Some(str,x1,x2,x3,
+              (string_of_ab_list l4,x4),(string_of_ab_list l5,x5,y5)
+            ) 
+         
+      ) temp3) 
+    ;;  
+  
+  let new_deductions_from_actors syst l_str=
+  u_fold_merge (Image.image (new_deductions_from_actor syst) l_str) ;;   
+  
+  
+  let impose_new_pair syst x y = 
+    let new_depth = Max.list 
+     [syst.depth;depth_of_int x;depth_of_int y] 
+    and new_pairs = i2_insert (x,y) syst.decided_values in 
+    {
+      depth=new_depth;
+      decided_values=new_pairs;
+    }  ;;
+  
+  let impose_standard syst x =
+    impose_new_pair syst x (3*syst.depth+1) ;;
+  
+  
+  
+  let triangle_analysis_for_actor_at_point syst actor k=
+    match eval_at_point syst actor k with 
+    (Partial(_,_)) -> Some[k]
+    |Complete k2 ->
+      (
+        match eval_at_point syst actor k2 with 
+        (Partial(_,_)) -> Some[k;k2]
+        |Complete _ -> None
+      ) ;; 
+  
+  let rec helper_in_triangle_analysis_for_actor syst actor k =
+    if k>(3*syst.depth)  
+    then raise Data_overflow (* we do not expect this to happen *)
+    else 
+    match triangle_analysis_for_actor_at_point syst actor k with 
+    Some l -> (k,l)
+    |None -> helper_in_triangle_analysis_for_actor syst actor (k+1);;
+  
+  let triangle_analysis_for_actor syst actor =
+      (actor,helper_in_triangle_analysis_for_actor syst actor 1);;
+      
+  let triangle_analysis_for_actors syst actors =
+    let temp1 = Image.image (triangle_analysis_for_actor syst) actors in  
+    fst(Min.minimize_it (function (_,(k,_))->k) temp1);;    
+  
+  let actors =  ["B"; "AB"; "BA"; "AAB"; "ABA"; "ABB"; "BAA"; "BAB"; "BBA"; "AABB";
+    "ABBA"; "BAAB"; "BBAA"; "AABAB"; "ABAAB"; "ABABA"; "ABABB"; "ABBAB";
+    "BAABA"; "BABAA"; "BABBA"; "BBABA"; "AABABB"; "AABBAB"; "ABAABB"; "ABABBA";
+    "ABBAAB"; "ABBABA"; "BAABBA"; "BABBAA"; "BBAABA"; "BBABAA"; "AABAABB";
+    "AABBAAB"; "AABBABB"; "ABAABBA"; "ABBAABA"; "ABBAABB"; "ABBABBA"; "BAABBAA";
+    "BBAABAA"; "BBAABBA"; "BBABBAA"] ;;      
+  
+  let origin_syst={
+    depth=2;
+    decided_values=[1,4];
+  }  ;;
+  
+  let main_ref = ref origin_syst ;;
+  
+  let deds () = new_deductions_from_actors (!main_ref) actors ;;
+  let see () = triangle_analysis_for_actors (!main_ref) actors ;;
+  
+  let eval str x= eval_at_point (!main_ref) str x ;;
+  let set x y = 
+    (main_ref:=impose_new_pair (!main_ref) x y);;
+  let usual x = 
+    (main_ref:=impose_standard (!main_ref) x );;
+  
+  usual 4 ;; (* to finish B: 1->4 *)
+  set 7 1 ;; (* deduced from B: 1->4->7 *)
+  usual 5 ;; (* to finish AB: 1->5 *)
+  set 11 3 ;; (* deduced from AB: 1->5->11 *)
+  usual 2 ;; (* to finish BA: 1 *)
+  set 14 9 ;; (* deduced from AB: 7->2->14 *)
+  set 15 12 ;; (* deduced from AAB: 11->2->15 *)
+  usual 6 ;; (* to finish AAB: 1 -> 6 *)
+  set 21 2 ;; (* deduced from AAB: 1->6->21 *)
+  set 13 21 ;; (* deduced from AAB: 21->2->13 *)
+  usual 8 ;; (* to finish ABB: 1 -> 8 *)
+  set 26 6 ;; (* deduced from AB: 4->8->26 *)
+  set 12 27 ;; (* deduced from AAB: 26->5->12 *)
+  set 19 26 ;; (* deduced from B: 26->6->19 *)
+  set 27 15 ;; (* deduced from B: 15->12->27 *)
+  usual 25 ;; (* to finish ABB: 1 -> 8 *)
+  set 31 8 ;; (* deduced from B: 8->25->31 *)
+  set 3 32 ;; (* deduced from AAB: 31->7->13 *)
+  set 32 11 ;; (* deduced from B: 11->3->32 *)
+  set 33 20 ;; (* deduced from AB: 21->3->33 *)
+  usual 10 ;; (* to finish BAB: 1 -> 10 *)
+  
+  
+  (*
+  
+  
+  let syst = (!main_ref) ;;
+  
+  let bad1 () = eval_at_point syst "AB" 5;;
+  
+  let bad1 () = helper_for_eval syst 5 [B] ;;
+  
+  let bad2 () = Image.image (new_deductions_from_actor syst) actors ;;
+  
+  let bad3 () = new_deductions_from_actor syst "B" ;;
+  
+  *)
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 182 : Computing spheres and balls of strings
+************************************************************************************************************************)
+module Snip182=struct
+
+  let s_order = Total_ordering.silex_for_strings ;;
+
+let s_fold_merge = Ordered.fold_merge s_order ;;
+let s_sort = Ordered.sort s_order ;;
+
+let a_list = ["";"A";"AA"] ;;
+let b_list = ["";"B";"BB"] ;;
+
+let alternating n =
+   Int_range.scale (fun
+    k->if k mod 2=1 then a_list else b_list 
+   ) 1 n ;;
+
+let alternating_product n=
+  Cartesian.general_product (alternating n) ;;   
+
+let sphere n = s_sort(
+   Image.image (String.concat "")
+   (alternating_product n)
+)  ;;
+
+let ball n =
+   let spheres= Int_range.scale sphere 1 n in 
+   s_fold_merge spheres ;;
+
+let is_a_square s =
+   let n = String.length s in 
+   if n mod 2 =1 then false else 
+   let m = (n/2) in 
+   (Cull_string.beginning m s)=(Cull_string.ending m s)   ;;
+
+let conjugation_relation s t =
+   ((String.starts_with s ~prefix:t)
+   &&(String.ends_with s ~suffix:(t^t))) ||
+   ((String.starts_with s ~prefix:(t^t))
+   &&(String.ends_with s ~suffix:t)) ;;
+
+let is_a_conjugate s =
+   if String.length(s)<3 then false else 
+   List.exists(conjugation_relation s)["A";"B"] ;;
+
+let u1 = ball 5 ;;   
+
+let u2 = List.filter (
+  fun x->(x<>"")
+  &&(not(Substring.is_a_substring_of "AAA" x))
+  &&(not(Substring.is_a_substring_of "BBB" x))
+) u1 ;;
+
+let u3 = List.filter (fun x->not(is_a_square x)) u2 ;;
+
+let u4 = List.filter (fun x->not(is_a_conjugate x)) u3 ;;
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 181 : Musings on p-chains problem
+************************************************************************************************************************)
+module Snip181=struct
+
+  let dec = Permutation.decompose_into_disjoint_cycles ;;
+  let p = Permutation.product ;;
+  
+  let fp = Permutation.fold_product ;;
+  
+  let pow = Permutation.power ;;
+  
+  let n1 = 25 ;;
+  let base = Int_range.range 1 n1 ;;
+  
+  let measure sigma =
+     if sigma = base 
+     then n1*1000 
+     else
+     if List.exists (fun x->List.nth sigma (x-1)=x) base
+     then 1 
+     else
+     let cycles = Permutation.decompose_into_disjoint_cycles sigma in 
+     snd(Min.minimize_it List.length cycles) ;;  
+  
+  
+  
+  
+  let u1 = Int_range.scale 
+     (fun k->Int_range.range (5*k-4) (5*k)) 1 5 ;;
+  
+  let alf = Permutation.product_of_cycles u1 ;;
+  
+  let u2 = Int_range.scale 
+  (fun k->
+    if k=2 then [2; 12; 7; 17; 22] else 
+    Int_range.scale (fun t->5*t-(5-k)) 1 5 ) 1 5 ;;
+  
+  let beth = Permutation.product_of_cycles u2 ;;
+  
+  let c2 = Cartesian.square(Int_range.range 0 4) ;;
+  
+  let pre_res2 = Explicit.image (
+     fun (i,j)->
+      let sigma = p (pow alf i) (pow beth j) in 
+      ((i,j),measure sigma)
+  ) c2 ;;
+  
+  let res2 = Min.minimize_it_with_care snd pre_res2 ;;
+  
+  let c3 = Cartesian.cube(Int_range.range 0 4) ;;
+  
+  let pre_res3 = Explicit.image (
+     fun (i1,i2,i3)->
+      let sigma = fp [pow alf i1; pow beth i2;pow alf i3] in 
+      ((i1,i2,i3),measure sigma)
+  ) c3 ;;
+  
+  let res3 = Min.minimize_it_with_care snd pre_res3;;
+  
+  let c4 = 
+    let temp=Cartesian.square c2 in 
+    Image.image (fun ((i1,i2),(i3,i4)) -> 
+      ((i1,i2,i3,i4))
+      ) temp;;
+  
+  let pre_res4 = Explicit.image (
+     fun (i1,i2,i3,i4)->
+      let sigma = fp 
+      [pow alf i1; pow beth i2;pow alf i3; pow beth i4] in 
+      ((i1,i2,i3,i4),measure sigma)
+  ) c4 ;;
+  
+  let res4 = Min.minimize_it_with_care snd pre_res4;;
+  
+  let res5 = List.filter (
+     fun (i1,i2,i3,i4)->
+      let sigma = fp 
+      [pow alf i1; pow beth i2;pow alf i3; pow beth i4] in 
+      (List.hd(sigma)=1)&&(sigma<>base)
+  ) c4 ;;
+  
+  let ialf= pow alf 4 ;;
+  
+  let ibeth= pow beth 4 ;;
+  
+  let gam = fp [alf;beth;ialf;ibeth] ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 180 : Musings on permutations, II
+************************************************************************************************************************)
 module Snip180=struct
 
   let i_order = Total_ordering.for_integers ;;

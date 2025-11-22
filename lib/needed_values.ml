@@ -6,8 +6,6 @@
 
 let abo = Fw_usual_manager.sugared_above;; 
 
-let afs = Manage_diary.append_fresh_snippet ;;
-
 let ae = Fw_usual_manager.all_endinglesses;;
 
 let bel = Fw_usual_manager.sugared_below;;

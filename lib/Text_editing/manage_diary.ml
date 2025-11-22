@@ -157,16 +157,19 @@ module Private = struct
     ) temp1 in 
     fix_indexation (D pairs2) true ;;
   
-  let append_fresh_snippet (_prologue,D older_snippets) = 
+  let append_new_snippet (_prologue,D older_snippets) new_content= 
      let n = List.length(older_snippets) + 1 in 
      let sn_descr = "Snippet "^(string_of_int n)^" : " 
      and snm_descr = "Snippet "^(string_of_int (n-1))^" : " 
-     and default_content = "\nm"^"odule Snip"^(string_of_int (n-1))^"=struct\n\n\n\n\nend ;;\n\n" in 
+     and wrapped_content = "\nm"^"odule Snip"^(string_of_int (n-1))^
+                           "=struct\n\n"^new_content^"\n\n\nend ;;\n\n" in 
      let older_snippets_but_the_last = List.rev(List.tl(List.rev older_snippets)) 
      and default_prologue = "open Skeptical_duck_lib ;; \nopen Needed_values ;;\n\n" in 
      D(older_snippets_but_the_last @ 
-       [snm_descr,default_content;
+       [snm_descr,wrapped_content;
         sn_descr,default_prologue]);; 
+
+ 
 
    let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
 
@@ -186,10 +189,16 @@ module Private = struct
   
     (* File versions of the functions *)
 
-    let append_fresh_snippet_in_file fn =
+    let append_new_snippet_to_file fn new_content=
       let (prologue,old_pairs) = read_and_parse fn in 
-      let new_pairs = append_fresh_snippet (prologue,old_pairs) in 
+      let new_pairs = append_new_snippet (prologue,old_pairs) new_content in 
       unparse_and_write_to new_pairs fn ;;   
+
+    let copy_file_content_as_new_snippet fn ~path_in_nongithubbed =
+      let ap = Absolute_path.of_string 
+       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
+      let new_content = Io.read_whole_file ap in 
+      append_new_snippet_to_file fn new_content ;;
 
     let extract_and_append_to_file dy k fn =
        let snippet = extract dy k in 
@@ -319,7 +328,9 @@ let numbered_module_analysis_at_index_opt correct_module_number text=
 
   end ;; 
   
-  let append_fresh_snippet () = Private.append_fresh_snippet_in_file Private.usual_path;;
+  let copy_file_content_as_new_snippet ~path_in_nongithubbed = 
+    Private.copy_file_content_as_new_snippet Private.usual_path ~path_in_nongithubbed
+    ;;
   let extract_at_index_and_append_to_file idx fn =
      let the_diary = snd(Private.read_and_parse Private.usual_path) in 
      Private.extract_and_append_to_file the_diary idx fn;;

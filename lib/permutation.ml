@@ -271,6 +271,8 @@ let cyclic_subgroup = Private.cyclic_subgroup ;;
 
 let decompose_into_disjoint_cycles =  Private.decompose_into_disjoint_cycles ;;    
    
+let eval perm k = List.nth perm (k-1) ;;
+
 let fold_product = Private.fold_product ;;
 let generated_subgroup = Private.generated_subgroup ;;
 
