@@ -173,6 +173,13 @@ module Private = struct
 
    let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
 
+   let replace_whole_at_index_in new_whole k (D snippets) =
+      let (old_title,_old_content) = List.nth snippets (k-1) in 
+      let n = List.length snippets in 
+      D(Int_range.scale (fun j->
+         if j=(k-1) then (old_title,new_whole) else List.nth snippets j) 0 (n-1)) ;;     
+
+
    let findreplace_at_index_in replacements k (D snippets) =
       let (old_title,old_content) = List.nth snippets (k-1) in 
       let new_content = 
@@ -200,11 +207,24 @@ module Private = struct
       let new_content = Io.read_whole_file ap in 
       append_new_snippet_to_file fn new_content ;;
 
-    let extract_and_append_to_file dy k fn =
+    let extract_and_append_to_file dy k ~path_in_nongithubbed = 
+       let fn = Absolute_path.of_string 
+       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
        let snippet = extract dy k in 
        let old_text = Io.read_whole_file fn in 
        let new_text = old_text ^ snippet in 
        Io.overwrite_with fn new_text ;;
+
+    let replace_whole_at_index_in_file new_whole k fn =   
+      let (_,old_pairs) = read_and_parse fn in 
+      let new_pairs = replace_whole_at_index_in new_whole k old_pairs in 
+      unparse_and_write_to new_pairs fn ;;
+
+    let replace_whole_at_index_with_file_content k fn ~path_in_nongithubbed= 
+      let ap = Absolute_path.of_string 
+       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in  
+      let new_whole = Io.read_whole_file ap in  
+      replace_whole_at_index_in_file new_whole k fn ;;  
 
     let findreplace_at_index_in_file replacements k fn =  
       let (_,old_pairs) = read_and_parse fn in 
@@ -331,9 +351,9 @@ let numbered_module_analysis_at_index_opt correct_module_number text=
   let copy_file_content_as_new_snippet ~path_in_nongithubbed = 
     Private.copy_file_content_as_new_snippet Private.usual_path ~path_in_nongithubbed
     ;;
-  let extract_at_index_and_append_to_file idx fn =
+  let extract_at_index_and_append_to_file idx ~path_in_nongithubbed =
      let the_diary = snd(Private.read_and_parse Private.usual_path) in 
-     Private.extract_and_append_to_file the_diary idx fn;;
+     Private.extract_and_append_to_file the_diary idx ~path_in_nongithubbed;;
 
   let findreplace_at_index replacements idx = Private.findreplace_at_index_in_file replacements idx Private.usual_path;;   
   let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
@@ -342,7 +362,9 @@ let numbered_module_analysis_at_index_opt correct_module_number text=
   
   let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
   
-
+  let replace_whole_at_index_with_file_content k ~path_in_nongithubbed=
+   Private.replace_whole_at_index_with_file_content 
+   k Private.usual_path ~path_in_nongithubbed  ;;
   
   (*    
   let z4 = 

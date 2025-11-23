@@ -1,14 +1,168 @@
 (************************************************************************************************************************
-Snippet 192 : 
+Snippet 193 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
-Snippet 191 : Enumerate all subgroups of a small group
+Snippet 192 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
 
+module Snip192=struct
+
+
+type sixtuple = SU of int * int * int * int * int * int ;;
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let first_sixtuple = SU(0,0,0,0,0,0) ;; 
+
+let next_sixtuple (SU(x1,x2,x3,x4,x5,x6)) =
+    if x1>0
+    then SU(x1-1,x2+1,x3,x4,x5,x6)
+    else
+    if x2>0
+    then SU(x2-1,0,x3+1,x4,x5,x6)
+    else 
+    if x3>0
+    then SU(x3-1,0,0,x4+1,x5,x6)
+    else      
+    if x4>0
+    then SU(x4-1,0,0,0,x5+1,x6)
+    else  
+    if x5>0
+    then SU(x5-1,0,0,0,0,x6+1)
+    else SU(x6+1,0,0,0,0,0)      ;; 
+
+let su_degree (SU(x1,x2,x3,x4,x5,x6)) = x1+x2+x3+x4+x5+x6 ;;
+
+ let su_of_list l=
+   let p = (fun k->List.nth l (k-1)) in 
+   SU(p 1,p 2,p 3,p 4,p 5,p 6) ;;
+  
+  let su_to_list (SU(x1,x2,x3,x4,x5,x6))=
+   [x1;x2;x3;x4;x5;x6] ;; 
+
+let su_order = ((
+    fun x y ->
+      let (SU(x1,x2,x3,x4,x5,x6))=x 
+      and (SU(y1,y2,y3,y4,y5,y6))=y in 
+      let dx=su_degree x and dy=su_degree y in 
+      let trial1 = Total_ordering.for_integers dx dy in 
+      if trial1<>Total_ordering_result_t.Equal then trial1 else 
+     (Total_ordering.lex_compare Total_ordering.for_integers)
+     [x6;x5;x4;x3;x2;x1] [y6;y5;y4;y3;y2;y1]
+  ): sixtuple Total_ordering_t.t);;
+  
+let su_sort = Ordered.sort su_order ;;
+
+let first_state = (first_sixtuple,[]) ;;    
+
+let next_state (u,l) = (next_sixtuple u,u::l) ;;
+
+let state_ref = ref first_state ;;
+
+let counter = ref 0 ;;
+
+let step () =
+   let _ = (
+      state_ref:=next_state(!state_ref);
+      counter:=(!counter)+1;
+   ) in
+   let msg=(string_of_int (!counter))^" treated\n" in 
+   print_string msg;flush stdout ;; 
+
+let act bound =
+   let _ = (state_ref:=first_state) in 
+   while (su_degree(fst(!state_ref))<=bound)
+   do step () done ;;
+
+Chronometer.it act 15 ;;   
+
+let ball15 = List.rev(snd(!state_ref)) ;;
+
+ let perm_action su original_perm =
+    let perm = Permutation.inverse original_perm in 
+    let inv_perm = (fun k->List.nth perm (k-1)) in 
+    let old_l = su_to_list su in 
+    let new_l = Int_range.scale (fun k->
+      List.nth old_l ((inv_perm k)-1)  
+    ) 1 6 in 
+    su_of_list new_l ;; 
+  
+let is_in_wreath perm =
+  let measure = (fun k->((Permutation.eval perm k)mod 2)=(k mod 2)) in 
+  let choice = measure 1 in 
+  List.for_all (fun k->measure k=choice) (Int_range.range 2 6) ;; 
+let all_permutations = Permutation.iii 6 ;;    
+
+let wreath = List.filter is_in_wreath all_permutations ;;
+
+let orbit su =
+     su_sort(Image.image (perm_action su) wreath);;   
+  
+let ball15_length =   List.length ball15 ;;   
+let array_for_orbit_representatives = Array.make (ball15_length) 0 ;; 
+
+let ivy_get k = List.nth ball15 (k-1) ;;
+let ivy_index su = List_again.find_index_of_in su ball15 ;;
+
+
+let ivy_orbit =Memoized.make(fun k -> 
+   let sixtuple = List.nth ball15 (k-1) in 
+   let su_orbit= orbit sixtuple in 
+   i_sort(Image.image ivy_index su_orbit)
+);;
+
+let rec helper_for_smallest_untreated_ivy_index k =
+   if k > ball15_length then None else 
+   if Array.get array_for_orbit_representatives (k-1)=0 
+   then Some k 
+   else helper_for_smallest_untreated_ivy_index (k+1) ;;   
+
+let smallest_untreated_ivy_index () =
+    helper_for_smallest_untreated_ivy_index 1 ;;
+
+let step_with_no_message k =
+   let orb = ivy_orbit k in 
+   let representative = List.hd(List.rev orb) in 
+   List.iter (fun t->Array.set 
+     array_for_orbit_representatives (t-1)  representative
+   ) orb ;; 
+   
+let step k =
+   let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^" treated \n" in 
+   (
+     step_with_no_message k;
+     print_string msg;
+     flush stdout
+   )  ;;
+
+let walker = ref (Some 1) ;;
+
+let act2 () = 
+   while (!walker)<>None 
+   do
+     step (Option.get(!walker));
+     walker:=smallest_untreated_ivy_index ()
+done ;;
+
+let u1 = i_sort(Array.to_list array_for_orbit_representatives) ;;
+
+let diff = ball15_length - (List.length u1) ;;
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 191 : Enumerate all subgroups of a small group
+************************************************************************************************************************)
 module Snip191=struct
 
 
@@ -455,14 +609,11 @@ Snippet 187 : Using Manage_diary.extract_at_index_and_append_to_file
 ************************************************************************************************************************)
 module Snip187=struct
 
-let cloth_ap = Absolute_path.of_string 
-"watched/watched_not_githubbed/cloth.ml";;
-
 Manage_diary.extract_at_index_and_append_to_file
-  179 cloth_ap ;;
+  192 ~path_in_nongithubbed: "cloth" ;;
 
 let act () = Manage_diary.copy_file_content_as_new_snippet 
-  ~path_in_nongithubbed: "cloth";;
+  ~path_in_nongithubbed: "pan";;
 
 
 
@@ -15233,8 +15384,6 @@ Lines_in_text.duplicate_interval_in_file (228,287) ap1 ;;
 
 let ap2 = Absolute_path.of_string "Fads/pan.ml";; 
 
-Manage_diary.extract_at_index_and_append_to_file 95 ap2 ;;
-
 
 (************************************************************************************************************************
 Snippet 89 : Sorting and comparing two overlapping list fo files
@@ -20436,8 +20585,6 @@ let g5 = Image.image fst g4 ;;
 let act1 () = Manage_diary.remove_snippets g5;;
 
 let ap1 = Absolute_path.of_string "Fads/cloth.ml" ;;
-let act1 () = Manage_diary.extract_at_index_and_append_to_file 
-   84 ap1 ;;
 
 
 let ap1 = Manage_diary.Private.usual_path ;;
