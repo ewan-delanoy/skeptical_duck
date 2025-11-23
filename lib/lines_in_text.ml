@@ -518,6 +518,19 @@ lines_inside_or_outside_cee_comments txt3 ;;
 
   let extract_ocaml_names_in_text = Private.extract_ocaml_names_in_text ;;
   
+  let findreplace_in_interval (x,y) s i j=
+      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
+      let new_part2 = Replace_inside.replace_inside_text (x,y) old_part2 in 
+      part1^new_part2^part3 ;; 
+
+let findreplace_in_interval_in_file (x,y) fn i j=
+      let old_text=Io.read_whole_file fn in
+      let new_text=findreplace_in_interval (x,y) old_text i j  in
+      Io.overwrite_with fn new_text;;     
+  
+
+(* findreplace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
+
   let impose_fixed_indentation_in_interval_in_file = Private.impose_fixed_indentation_in_interval_in_file ;;   
 
 
@@ -556,6 +569,17 @@ lines_inside_or_outside_cee_comments txt3 ;;
   
   let put_line_last_in_text = Private.put_line_last_in_text ;; 
 
+  let remove_lower_interval text i=
+    let old_indexed_lines=indexed_lines text in
+    let temp2=List.filter (fun (k,_)->(i>k)) old_indexed_lines  in
+    let new_indexed_lines=Image.image snd temp2 in
+    String.concat "\n" new_indexed_lines;; 
+
+  let remove_lower_interval_in_file fn i =
+      let old_text=Io.read_whole_file fn in
+      let new_text=remove_lower_interval old_text i   in
+     Io.overwrite_with fn new_text;;     
+
   let remove_interval text i j=
     let old_indexed_lines=indexed_lines text in
     let temp2=List.filter (fun (k,_)->(i>k)||(k>j)) old_indexed_lines  in
@@ -578,18 +602,7 @@ lines_inside_or_outside_cee_comments txt3 ;;
        let new_text=remove_lines_containing_substring_in_text pattern old_text  in
       Io.overwrite_with fn new_text;;   
   
-let findreplace_in_interval (x,y) s i j=
-      let (part1,old_part2,part3) = Private.tripartition_associated_to_interval s i j in 
-      let new_part2 = Replace_inside.replace_inside_text (x,y) old_part2 in 
-      part1^new_part2^part3 ;; 
 
-let findreplace_in_interval_in_file (x,y) fn i j=
-      let old_text=Io.read_whole_file fn in
-      let new_text=findreplace_in_interval (x,y) old_text i j  in
-      Io.overwrite_with fn new_text;;     
-  
-
-(* replace_in_interval ("\n"," ") "1\n2\n3\n4\n5\n6\n7\n" 2 5;; *)
 
 let shift_indentation_in_interval_in_file_with = Private.shift_indentation_in_interval_in_file_with ;;
 let shift_indentation_in_interval_in_text_with = Private.shift_indentation_in_interval_in_text_with ;;

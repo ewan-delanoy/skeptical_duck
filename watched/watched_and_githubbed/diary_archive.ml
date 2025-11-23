@@ -9,8 +9,6 @@ open Needed_values ;;
 Snippet 192 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
 
-module Snip192=struct
-
 
 type sixtuple = SU of int * int * int * int * int * int ;;
 
@@ -103,72 +101,195 @@ let all_permutations = Permutation.iii 6 ;;
 
 let wreath = List.filter is_in_wreath all_permutations ;;
 
-let orbit su =
+let nth_in_wreath idx = List.nth wreath (idx-1) ;; 
+
+let maxie = Image.image nth_in_wreath [1; 4; 6; 7; 9; 12; 13; 16; 18; 19; 21; 24; 26; 27; 29; 32; 34; 35; 38; 39; 41;
+ 44; 46; 47; 49; 52; 54; 55; 57; 60; 61; 64; 66; 67; 69; 72]
+;;
+
+let wreath_orbit su =
      su_sort(Image.image (perm_action su) wreath);;   
   
+let maxie_orbit su =
+     su_sort(Image.image (perm_action su) maxie);;      
 let ball15_length =   List.length ball15 ;;   
-let array_for_orbit_representatives = Array.make (ball15_length) 0 ;; 
+let array_for_wreath_orbit_representatives = Array.make (ball15_length) 0 ;; 
+
+let array_for_maxie_orbit_representatives = Array.make (ball15_length) 0 ;; 
+
 
 let ivy_get k = List.nth ball15 (k-1) ;;
 let ivy_index su = List_again.find_index_of_in su ball15 ;;
 
 
-let ivy_orbit =Memoized.make(fun k -> 
+let ivy_wreath_orbit =Memoized.make(fun k -> 
    let sixtuple = List.nth ball15 (k-1) in 
-   let su_orbit= orbit sixtuple in 
+   let su_orbit= wreath_orbit sixtuple in 
    i_sort(Image.image ivy_index su_orbit)
 );;
 
-let rec helper_for_smallest_untreated_ivy_index k =
+let ivy_maxie_orbit =Memoized.make(fun k -> 
+   let sixtuple = List.nth ball15 (k-1) in 
+   let su_orbit= maxie_orbit sixtuple in 
+   i_sort(Image.image ivy_index su_orbit)
+);;
+
+let rec helper_for_smallest_untreated_wreath_ivy_index k =
    if k > ball15_length then None else 
-   if Array.get array_for_orbit_representatives (k-1)=0 
+   if Array.get array_for_wreath_orbit_representatives (k-1)=0 
    then Some k 
-   else helper_for_smallest_untreated_ivy_index (k+1) ;;   
+   else helper_for_smallest_untreated_wreath_ivy_index (k+1) ;;   
 
-let smallest_untreated_ivy_index () =
-    helper_for_smallest_untreated_ivy_index 1 ;;
+let rec helper_for_smallest_untreated_maxie_ivy_index k =
+   if k > ball15_length then None else 
+   if Array.get array_for_maxie_orbit_representatives (k-1)=0 
+   then Some k 
+   else helper_for_smallest_untreated_maxie_ivy_index (k+1) ;;   
 
-let step_with_no_message k =
-   let orb = ivy_orbit k in 
+
+let smallest_untreated_wreath_ivy_index () =
+    helper_for_smallest_untreated_wreath_ivy_index 1 ;;
+
+let smallest_untreated_maxie_ivy_index () =
+    helper_for_smallest_untreated_maxie_ivy_index 1 ;;
+
+
+let wreath_step_with_no_message k =
+   let orb = ivy_wreath_orbit k in 
    let representative = List.hd(List.rev orb) in 
    List.iter (fun t->Array.set 
-     array_for_orbit_representatives (t-1)  representative
+     array_for_wreath_orbit_representatives (t-1)  representative
    ) orb ;; 
+
+let maxie_step_with_no_message k =
+   let orb = ivy_maxie_orbit k in 
+   let representative = List.hd(List.rev orb) in 
+   List.iter (fun t->Array.set 
+     array_for_maxie_orbit_representatives (t-1)  representative
+   ) orb ;;    
    
-let step k =
-   let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^" treated \n" in 
+let wreath_step k =
+   let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^
+       " treated [wreath] \n" in 
    (
-     step_with_no_message k;
+     wreath_step_with_no_message k;
      print_string msg;
      flush stdout
    )  ;;
 
+let maxie_step k =
+   let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^
+       " treated [maxie] \n" in 
+   (
+     maxie_step_with_no_message k;
+     print_string msg;
+     flush stdout
+   )  ;;
+
+
 let walker = ref (Some 1) ;;
 
-let act2 () = 
+let wreath_act () = 
+   let _ = (walker:=Some 1) in 
    while (!walker)<>None 
    do
-     step (Option.get(!walker));
-     walker:=smallest_untreated_ivy_index ()
+     wreath_step (Option.get(!walker));
+     walker:=smallest_untreated_wreath_ivy_index ()
 done ;;
 
-let u1 = i_sort(Array.to_list array_for_orbit_representatives) ;;
+let maxie_act () = 
+   let _ = (walker:=Some 1) in 
+   while (!walker)<>None 
+   do
+     maxie_step (Option.get(!walker));
+     walker:=smallest_untreated_maxie_ivy_index ()
+done ;;
+
+let wreath_representatives = 
+   i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
+
+let maxie_representatives = 
+   i_sort(Array.to_list array_for_maxie_orbit_representatives) ;;
+
+let specific_maxie_representatives = 
+   Explicit.filter 
+   (fun m->
+      (List.length(ivy_maxie_orbit m))<>(List.length(ivy_wreath_orbit m))
+      ) maxie_representatives ;;
+
+
+let adhoc_length l =
+   match List.length l with 
+   1 -> 1000 |k-> k ;;
+
+let maxie_minimizers =
+    let temp = Explicit.image ivy_maxie_orbit 
+    specific_maxie_representatives in 
+    snd(Min.minimize_it_with_care List.length temp);;
+
+let maxie_companion_in_index_form =
+    List.hd maxie_minimizers
+   (*[504; 518; 570; 591; 624; 629; 681; 716; 740; 754; 766; 782; 809; 818; 835;
+    849; 858; 860] *)  ;; 
+
+let maxie_companion_in_uple_form =
+    Image.image (fun k->List.nth ball15 (k-1))
+  maxie_companion_in_index_form  ;; 
+
+let u4 = Int_uple.list_of_pairs 6 ;;
+   
+let u5 =  Cartesian.square u4;;
+
+let u6 = List.filter_map (
+ fun ((x1,x2),(x3,x4)) ->
+   if List.length(i_sort([x1;x2;x3;x4]))=4
+   then Some(x1,x2,x3,x4)
+   else None    
+) u5 ;;
+
+let u7 = Image.image (
+   fun u->
+      let (x1,x2,x3,x4) =u in 
+      let li = Int_range.scale (fun t->
+         if List.mem t [x1;x2] then 2 else 
+         if List.mem t [x3;x4] then 1 else 0     
+         ) 1 6 in 
+      (u,li)   
+) u6 ;;
+
+let u8 = List.filter (fun (u,li)->
+   List.mem(su_of_list li) maxie_companion_in_uple_form 
+   ) u7 ;;
+
+let u9 = Image.image (fun 
+    ((x1,x2,x3,x4),_) -> ((x1,x2),(x3,x4))
+) u8 ;;
+
+let u10 = Ordered.sort 
+(Total_ordering.product i_order i_order)
+(Image.image fst u9) ;;
+
+let u11 = Ordered.sort 
+(Total_ordering.product i_order i_order)
+(Image.image snd u9) ;;
+
+let u12 = Image.image (fun x->
+   (x,List.filter (fun y->List.mem (x,y) u9) u11)) u10;;
+
+
+
+(*
+let wreath_representatives = i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
 
 let diff = ball15_length - (List.length u1) ;;
+*)
 
-
-end ;;
 
 
 (************************************************************************************************************************
 Snippet 191 : Enumerate all subgroups of a small group
 ************************************************************************************************************************)
 module Snip191=struct
-
-
-
-open Skeptical_duck_lib ;;
-open Needed_values ;;
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -612,9 +733,14 @@ module Snip187=struct
 Manage_diary.extract_at_index_and_append_to_file
   192 ~path_in_nongithubbed: "cloth" ;;
 
-let act () = Manage_diary.copy_file_content_as_new_snippet 
+let act1 () = Manage_diary.copy_file_content_as_new_snippet 
   ~path_in_nongithubbed: "pan";;
 
+let act2 () = Manage_diary.replace_whole_at_index_with_file_content 
+  191 ~path_in_nongithubbed: "cloth";;
+
+let act3 () = Manage_diary.replace_whole_at_index_with_file_content 
+  192 ~path_in_nongithubbed: "pan";;  
 
 
 end ;;
