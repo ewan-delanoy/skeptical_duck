@@ -169,9 +169,37 @@ module Private = struct
        [snm_descr,wrapped_content;
         sn_descr,default_prologue]);; 
 
+let remove_module_wrapper possibly_wrapped_snippet = 
+  let indexed_lines = Lines_in_text.indexed_lines possibly_wrapped_snippet in 
+  let first_nonblank_line_opt = List.find_opt (
+    fun  (_,line)->(Cull_string.trim_spaces line)<>""
+  ) indexed_lines
+  and last_nonblank_line_opt = List.find_opt (
+    fun   (_,line)->(Cull_string.trim_spaces line)<>""
+  ) indexed_lines in 
+  if (first_nonblank_line_opt=None)||(last_nonblank_line_opt=None)
+  then possibly_wrapped_snippet
+  else
+  let (idx1,line1) = Option.get first_nonblank_line_opt
+  and (idx2,line2) = Option.get first_nonblank_line_opt in 
+  if (not(String.starts_with line1 ~prefix:"module Snip"))
+     ||(line2<>"end ;;")
+  then possibly_wrapped_snippet
+  else 
+    let retained_lines = List.filter_map (
+      fun (idx,line) -> 
+        if List.mem idx [idx1;idx2]
+        then None 
+        else Some line   
+    ) indexed_lines in 
+    String.concat "\n" retained_lines ;;      
  
 
-   let extract (D snippets) k = snd (List.nth snippets (k-1) );;    
+   let extract (D snippets) k = 
+    let snippet1 = snd (List.nth snippets (k-1) ) in 
+    let snippet2 = remove_module_wrapper snippet1 in 
+    ("(* The first draft of this was initially extracted "^
+    "from snippet "^(string_of_int k)^"of diary *)")^snippet2;;    
 
    let replace_whole_at_index_in new_whole k (D snippets) =
       let (old_title,_old_content) = List.nth snippets (k-1) in 

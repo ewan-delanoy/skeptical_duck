@@ -1,14 +1,94 @@
 (************************************************************************************************************************
-Snippet 193 : 
+Snippet 194 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 
 
 (************************************************************************************************************************
+Snippet 193 : Code to read/write PARI-GP data between files
+************************************************************************************************************************)
+module Snip193=struct
+
+let pari_dir = home ^ 
+   "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/" ;;
+
+let thorgal_dir = pari_dir ^ "Thorgal/" ;;
+
+let prelude2_ap = Absolute_path.of_string (
+   pari_dir ^ "prelude2.gp"
+) ;;
+
+let follenn3_ap = Absolute_path.of_string (
+   pari_dir ^ "follenn3.gp"
+) ;;
+
+let brouilhed_ap = Absolute_path.of_string (
+   pari_dir ^ "brouilhed.gp"
+) ;;
+
+let clean_prelude2 () = Lines_in_text.remove_lower_interval_in_file 
+ prelude2_ap 18  ;;
+
+let act () = Lines_in_text.remove_interval_in_file 
+ follenn3_ap 12 12 ;; 
+
+let cleanup_sheet (prefix,idx) = 
+   let name = prefix ^ (string_of_int idx) in 
+   let ap_for_reading = Absolute_path.of_string (thorgal_dir ^ name ^ ".gp") in 
+   Io.overwrite_with ap_for_reading "" ;;
+
+let transfer_new_data (prefix,idx) = 
+   let name = prefix ^ (string_of_int idx) in 
+   let ap_for_reading = Absolute_path.of_string (thorgal_dir ^ name ^ ".gp") in 
+   let data = Io.read_whole_file ap_for_reading in 
+   let text = "\n\n\nraw_"^name^"={"^data^"};\n\n\n" in 
+   (Io.append_string_to_file text prelude2_ap;
+    (* Io.overwrite_with ap_for_reading ""*) ) ;;
+
+let tfd prefix idx = transfer_new_data (prefix,idx) ;;
+
+(* let refresh_and_transfer_new_data l= 
+  let _ = List.iter cleanup_sheet l in 
+  List.iter transfer_new_data l ;; *)
+  
+
+let main_list = ref [
+   "const",1;
+   "const",2;
+   "const",3;
+   "const",4;
+   "const",5;
+   "const",6;
+   "part",1;
+   "part",4;
+   "part",5;
+   "part",10;
+   "part",12;
+   "part",15;
+   "part",17;
+   "part",20;
+   "part",21;
+   "part",22;
+   "part",23;
+   "part",25;
+   "part",29;
+   "part",30;
+]  ;;
+
+let clean_all () = (clean_prelude2();
+List.iter cleanup_sheet (!main_list)) ;;
+
+let transfer_all () = List.iter transfer_new_data (!main_list) ;;   
+
+
+
+end ;;
+
+
+(************************************************************************************************************************
 Snippet 192 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
-
 
 type sixtuple = SU of int * int * int * int * int * int ;;
 
@@ -103,9 +183,19 @@ let wreath = List.filter is_in_wreath all_permutations ;;
 
 let nth_in_wreath idx = List.nth wreath (idx-1) ;; 
 
-let maxie = Image.image nth_in_wreath [1; 4; 6; 7; 9; 12; 13; 16; 18; 19; 21; 24; 26; 27; 29; 32; 34; 35; 38; 39; 41;
+let maxie = Image.image nth_in_wreath [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 25; 26; 27; 28; 29; 30; 31; 32; 33;
+   34; 35; 36; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60] ;;
+
+
+(*[1; 4; 6; 7; 9; 12; 14; 15; 17; 20; 22; 23; 26; 27; 29; 32; 34; 35; 37; 40;
+   42; 43; 45; 48; 49; 52; 54; 55; 57; 60; 62; 63; 65; 68; 70; 71] ;;
+*)   
+
+(*
+[1; 4; 6; 7; 9; 12; 13; 16; 18; 19; 21; 24; 26; 27; 29; 32; 34; 35; 38; 39; 41;
  44; 46; 47; 49; 52; 54; 55; 57; 60; 61; 64; 66; 67; 69; 72]
 ;;
+*)
 
 let wreath_orbit su =
      su_sort(Image.image (perm_action su) wreath);;   
@@ -205,6 +295,8 @@ let maxie_act () =
      walker:=smallest_untreated_maxie_ivy_index ()
 done ;;
 
+wreath_act ();;
+maxie_act () ;;
 let wreath_representatives = 
    i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
 
@@ -216,11 +308,6 @@ let specific_maxie_representatives =
    (fun m->
       (List.length(ivy_maxie_orbit m))<>(List.length(ivy_wreath_orbit m))
       ) maxie_representatives ;;
-
-
-let adhoc_length l =
-   match List.length l with 
-   1 -> 1000 |k-> k ;;
 
 let maxie_minimizers =
     let temp = Explicit.image ivy_maxie_orbit 
@@ -276,7 +363,29 @@ let u11 = Ordered.sort
 let u12 = Image.image (fun x->
    (x,List.filter (fun y->List.mem (x,y) u9) u11)) u10;;
 
+let v1 = Image.image ivy_get maxie_companion_in_index_form ;;
 
+let v_level v su=
+   let l =su_to_list su in 
+   List.filter_map (fun (i,v2)->if v2=v then Some i else None)
+     (Int_range.index_everything l) ;;
+
+let w_set k= if k mod 2=0 then [1;3;5] else [2;4;6] ;;
+
+let viz_v1 k =
+   let temp1 = List.filter (fun su ->
+      let l =su_to_list su in List.nth l (k-1)=3
+   ) v1 in 
+   Image.image (
+      fun k2 ->
+      let temp2 = List.filter (fun su ->
+      let l =su_to_list su in List.nth l (k2-1)=2
+      ) temp1 in 
+      Image.image (v_level 1) temp2
+   )(w_set k) ;;
+
+
+let v2 = List.filter (fun (SU(x1,x2,x3,x4,x5,x6)) ->x1=3) v1 ;;
 
 (*
 let wreath_representatives = i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
@@ -289,8 +398,6 @@ let diff = ball15_length - (List.length u1) ;;
 (************************************************************************************************************************
 Snippet 191 : Enumerate all subgroups of a small group
 ************************************************************************************************************************)
-module Snip191=struct
-
 
 let i_order = Total_ordering.for_integers ;;
 
@@ -506,10 +613,31 @@ let u2 = Ordered.fold_intersect i_order half_subgroups ;;
 
 let u3 = standard_generating_set u2 ;;
 
+let perm_in_wreath k=List.nth wreath (k-1) ;;
 
-end ;;
+let describe_permutation_in_wreath k=
+  let perm = List.nth wreath (k-1) in 
+  (perm,Permutation.decompose_into_disjoint_cycles perm) ;;
+   
+let maxie = Image.image perm_in_wreath (List.nth half_subgroups 1) ;;
 
+let minnie = Image.image perm_in_wreath (List.nth half_subgroups 2) ;;
 
+let normie = Image.image perm_in_wreath (List.nth half_subgroups 0) ;;
+
+let gpize_int_list l = "["^(String.concat "," 
+(Image.image string_of_int l))^"]" ;;
+
+let gpize_int_list_list l = "\n\n\n["^(String.concat "," 
+(Image.image gpize_int_list l))^"]\n\n\n" ;;
+
+print_string( gpize_int_list_list wreath);;
+
+print_string( gpize_int_list_list maxie);;
+
+print_string( gpize_int_list_list minnie);;
+
+print_string( gpize_int_list_list normie);;
 (************************************************************************************************************************
 Snippet 190 : Producing some PARi-GP code enumerating 
 some elementary symmetric polynomials
@@ -733,14 +861,17 @@ module Snip187=struct
 Manage_diary.extract_at_index_and_append_to_file
   192 ~path_in_nongithubbed: "cloth" ;;
 
+Manage_diary.extract_at_index_and_append_to_file
+  188 ~path_in_nongithubbed: "jug" ;;  
+
 let act1 () = Manage_diary.copy_file_content_as_new_snippet 
-  ~path_in_nongithubbed: "pan";;
+  ~path_in_nongithubbed: "cloth";;
 
 let act2 () = Manage_diary.replace_whole_at_index_with_file_content 
-  191 ~path_in_nongithubbed: "cloth";;
+  192 ~path_in_nongithubbed: "cloth";;
 
 let act3 () = Manage_diary.replace_whole_at_index_with_file_content 
-  192 ~path_in_nongithubbed: "pan";;  
+  191 ~path_in_nongithubbed: "pan";;  
 
 
 end ;;
