@@ -194,12 +194,69 @@ let remove_module_wrapper possibly_wrapped_snippet =
     ) indexed_lines in 
     String.concat "\n" retained_lines ;;      
  
+   let starter_for_snippet_origin_mention =
+     "(* The first draft of this was initially extracted "^
+    "from snippet " ;;
+
+    let rec first_nonblank_line_with_rest indexed_lines = 
+   match indexed_lines with 
+   [] -> None
+   |(idx1,line1) :: others ->
+      let culled1 = Cull_string.trim_spaces line1 in 
+      if culled1<>""
+      then Some((idx1,culled1),others)
+      else first_nonblank_line_with_rest others ;; 
+
+let last_index_in_header indexed_lines =
+   match first_nonblank_line_with_rest indexed_lines with 
+   None -> 0
+   |Some((_,culled1),indexed_lines2)->
+     if culled1<>"(*" then 0 else 
+   match first_nonblank_line_with_rest indexed_lines2 with 
+   None -> 0
+   |Some((_,culled2),indexed_lines3)->
+     if not(String.starts_with culled2 ~prefix:"#use\"") then 0 else  
+    match first_nonblank_line_with_rest indexed_lines3 with 
+   None -> 0
+   |Some((idx3,culled3),indexed_lines4)->
+     if culled3<>"*)" then 0 else     
+       match first_nonblank_line_with_rest indexed_lines4 with 
+   None -> idx3
+   |Some((idx4,culled4),indexed_lines5)->
+     if not(String.starts_with culled4 ~prefix:"open Skeptical_duck_lib ") then idx3 else
+    match indexed_lines5 with 
+    [] -> idx4 
+    |(idx5,line5) :: _ -> 
+       if not(String.starts_with line5 ~prefix:"open Needed_values ") 
+      then idx4 
+      else idx5 ;;
+
+
+let remove_header_and_mention_of_snippet_origin indexed_lines last_idx_in_header=
+  let retained_lines = List.filter_map (
+    fun (idx,line) ->
+      if (idx<=last_idx_in_header) || 
+        (String.starts_with line ~prefix:starter_for_snippet_origin_mention)
+      then None 
+      else Some line
+  ) indexed_lines in 
+  String.concat "\n" retained_lines ;;
+
+let extract_header indexed_lines last_idx_in_header=
+   let retained_lines = List.filter_map (
+    fun (idx,line) ->
+      if (idx>last_idx_in_header)
+      then None 
+      else Some line
+  ) indexed_lines in 
+  String.concat "\n" retained_lines ;;
+
+
 
    let extract (D snippets) k = 
     let snippet1 = snd (List.nth snippets (k-1) ) in 
     let snippet2 = remove_module_wrapper snippet1 in 
-    ("(* The first draft of this was initially extracted "^
-    "from snippet "^(string_of_int k)^"of diary *)")^snippet2;;    
+    ("\n"^starter_for_snippet_origin_mention^(string_of_int k)^" of diary *)")^snippet2;;    
 
    let replace_whole_at_index_in new_whole k (D snippets) =
       let (old_title,_old_content) = List.nth snippets (k-1) in 
@@ -232,8 +289,13 @@ let remove_module_wrapper possibly_wrapped_snippet =
     let copy_file_content_as_new_snippet fn ~path_in_nongithubbed =
       let ap = Absolute_path.of_string 
        ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
-      let new_content = Io.read_whole_file ap in 
-      append_new_snippet_to_file fn new_content ;;
+      let raw_file_content = Io.read_whole_file ap in 
+      let raw_indexed_lines = Lines_in_text.indexed_lines raw_file_content in 
+      let idx0 = last_index_in_header raw_indexed_lines in 
+      let cleaned_filecontent = remove_header_and_mention_of_snippet_origin raw_indexed_lines idx0 
+      and header = extract_header raw_indexed_lines idx0 in 
+      (append_new_snippet_to_file fn cleaned_filecontent;
+       Io.overwrite_with ap header) ;;
 
     let extract_and_append_to_file dy k ~path_in_nongithubbed = 
        let fn = Absolute_path.of_string 
@@ -251,8 +313,13 @@ let remove_module_wrapper possibly_wrapped_snippet =
     let replace_whole_at_index_with_file_content k fn ~path_in_nongithubbed= 
       let ap = Absolute_path.of_string 
        ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in  
-      let new_whole = Io.read_whole_file ap in  
-      replace_whole_at_index_in_file new_whole k fn ;;  
+      let raw_file_content = Io.read_whole_file ap in 
+      let raw_indexed_lines = Lines_in_text.indexed_lines raw_file_content in 
+      let idx0 = last_index_in_header raw_indexed_lines in 
+      let cleaned_filecontent = remove_header_and_mention_of_snippet_origin raw_indexed_lines idx0 
+      and header = extract_header raw_indexed_lines idx0 in 
+      (replace_whole_at_index_in_file cleaned_filecontent k fn;
+       Io.overwrite_with ap header) ;;  
 
     let findreplace_at_index_in_file replacements k fn =  
       let (_,old_pairs) = read_and_parse fn in 
