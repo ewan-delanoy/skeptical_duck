@@ -89,7 +89,6 @@ end ;;
 (************************************************************************************************************************
 Snippet 192 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
-
 type sixtuple = SU of int * int * int * int * int * int ;;
 
 let i_order = Total_ordering.for_integers ;;
@@ -398,7 +397,6 @@ let diff = ball15_length - (List.length u1) ;;
 (************************************************************************************************************************
 Snippet 191 : Enumerate all subgroups of a small group
 ************************************************************************************************************************)
-
 let i_order = Total_ordering.for_integers ;;
 
 let i_merge = Ordered.merge i_order ;;
@@ -642,6 +640,7 @@ print_string( gpize_int_list_list normie);;
 Snippet 190 : Producing some PARi-GP code enumerating 
 some elementary symmetric polynomials
 ************************************************************************************************************************)
+
 module Snip190=struct
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
