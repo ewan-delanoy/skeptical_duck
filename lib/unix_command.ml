@@ -79,7 +79,7 @@ let rec helper_for_indexed_multiple_uc sn indexed_commands=
  []->true
 |(idx1,cmd1)::other_commands ->
    if (uc cmd1)=0
-   then let msg = "Finished command "^(string_of_int idx1)^" of "^sn^"\n\n" in 
+   then let msg = cmd1^"\nFinished command "^(string_of_int idx1)^" of "^sn^"\n\n" in 
         let _ = (print_string msg;flush stdout) in 
         helper_for_indexed_multiple_uc sn other_commands 
    else false;;
