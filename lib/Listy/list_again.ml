@@ -19,6 +19,19 @@ let rec helper_for_common_initial_sublist (treated,to_be_treated1,to_be_treated2
           else helper_for_common_initial_sublist (a1::treated,others1,others2)   
     ) ;;
 
+let rec iterator_for_finding_and_remembering f (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> None 
+  |item :: next_items ->
+    if f item 
+    then Some(List.rev treated,item,next_items)
+    else iterator_for_finding_and_remembering f (item::treated,next_items) ;;
+
+let find_and_remember_opt f items = 
+    iterator_for_finding_and_remembering f ([],items) ;;
+  
+
+
 end ;;    
 
 let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([],l1,l2) ;;
@@ -27,7 +40,13 @@ let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([]
 common_initial_sublist [1;2;3;7;8] [1;2;3;9] ;; 
 *)
 
+let find_and_remember_opt = Private.find_and_remember_opt ;;
 
+(*
+
+find_and_remember_opt (fun x->x=7) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10] ;;
+
+*)
 
 let find_index_of_in x ll=
     let rec sub_f=(function (j,l)->match l with

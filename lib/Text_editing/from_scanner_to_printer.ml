@@ -4,7 +4,12 @@
 
 *)
 
+type corep_transform_type = Cuttable | Foldable ;;
+
 exception Disconnected of (int * int) list ;;
+
+exception Shifted_mediabox 
+    of string * string * string * string ;;  
 
 module Private = struct 
 
@@ -39,15 +44,49 @@ module Common = struct
     let m = earliest_nondigit_from s starting_idx in 
     Some(int_of_string(Cull_string.interval s starting_idx (m-1)));;
 
+  let commands_for_number_of_pages_in_pdf ap = 
+    let temp_file =  "temp.txt" in 
+    (
+      temp_file,  
+    [
+       "touch "^temp_file;
+       "cpdf -info "^(Absolute_path.to_string ap)^" > "^temp_file
+    ],
+     [
+       "rm "^temp_file  
+     ]);;      
+let number_of_pages_in_pdf ap = 
+    let (temp_file,before,after) = 
+      commands_for_number_of_pages_in_pdf ap in 
+    let _ = Unix_command.indexed_multiple_uc before in 
+    let data = Io.read_whole_file (Absolute_path.of_string temp_file) in 
+    let _ = Unix_command.indexed_multiple_uc after in 
+    let temp1 = Lines_in_text.lines data in 
+    let prefix = "Pages:" in 
+    let temp2 = List.find (String.starts_with ~prefix) temp1 in
+    let temp3 = Cull_string.two_sided_cutting (prefix,"") temp2 in
+    int_of_string (Cull_string.trim_spaces temp3)  ;;
 
-end ;;  
- 
+  let partial prefix idx = 
+         prefix^
+        (Strung.insert_repetitive_offset_on_the_left '0' 3 
+        (string_of_int idx)) ;; 
 
-let step4_dir = Directory_name.of_string 
-    (master_work_path^"Step_4_Same_sized_pages_book_pdfs/") ;; 
-    
-let step5_dir = Directory_name.of_string 
-    (master_work_path^"Step_5_Printable_pdfs/") ;;     
+
+ let explode onsite_input output_prefix= 
+    "cpdf -split "^onsite_input^".pdf "^
+    "-o "^output_prefix^"%%%.pdf -chunk 1" ;;
+
+  let generic_implode prefix name_for_whole indices=
+    let all_pages=String.concat " " 
+    (Image.image (fun idx->(partial prefix idx)^".pdf") indices) in 
+    " cpdf "^all_pages^" -o "^name_for_whole^".pdf";;
+
+  let pad_up_to_multiple onsite_input m output_name=
+    "cpdf "^onsite_input^".pdf -pad-multiple "^(string_of_int m)^
+    " -o "^output_name^".pdf";; 
+
+end ;;      
 
 module Step1 = struct 
 
@@ -215,7 +254,7 @@ let analize_files proj_name=
     List.filter_map (extract_files_with_prefix all_files) ["p";"i"] ;;
 
 let filelist_for_prefixed_range (prefix,(i,j)) =
-  String.concat " " (Int_range.scale (fun k->prefix^(string_of_int k)) 
+  String.concat " " (Int_range.scale (fun k->prefix^(string_of_int k)^".pdf") 
   i j) ;;
 
 let filelist_for_prefixed_ranges prefixed_ranges =
@@ -224,7 +263,7 @@ let filelist_for_prefixed_ranges prefixed_ranges =
 
 
 let commands proj_name =
-    let source = Step1.work_path ^ (String.capitalize_ascii proj_name) 
+    let source = Step2.work_path ^ (String.capitalize_ascii proj_name) 
     and destination = work_path ^ (String.capitalize_ascii proj_name)in 
     let prefixed_ranges = analize_files proj_name in 
     let ingredients = filelist_for_prefixed_ranges prefixed_ranges in 
@@ -232,7 +271,7 @@ let commands proj_name =
    [
       ("mkdir -p "^ destination);
        "cd "^ source;
-      "cpdf "^ingredients^" - o "^proj_name^".pdf";
+      "cpdf "^ingredients^" -o "^proj_name^".pdf";
       "mv "^proj_name^".pdf "^destination^"/";
       "cd "^current_dir 
    ] ;;  
@@ -244,9 +283,179 @@ let commands proj_name =
 
 end ;;  
 
+module Step4 = struct 
+
+let work_path =  master_work_path^"Step_4_Same_sized_pages_book_pdfs/" ;;
+
+
+let commands_for_mediabox_in_pdf ap page_nbr = 
+    let temp_file = work_path ^ "temp.txt" in 
+    
+    ([
+       "touch "^temp_file;
+       "cpdf "^(Absolute_path.to_string ap)^
+       " -page-info "^(string_of_int page_nbr)^" > "^temp_file
+    ],
+      temp_file,
+     [ 
+       "rm "^temp_file  
+     ]);;    
+
+let mediabox_in_pdf ap page_nbr = 
+    let (before,temp_file,after) = 
+      commands_for_mediabox_in_pdf ap page_nbr in 
+    let _ = Unix_command.indexed_multiple_uc before in 
+    let data = Io.read_whole_file (Absolute_path.of_string temp_file) in 
+    let _ = Unix_command.indexed_multiple_uc after in 
+    let temp1 = Lines_in_text.lines data in 
+    let prefix = "MediaBox:" in 
+    let temp2 = List.find (String.starts_with ~prefix) temp1 in
+    let temp3 = Cull_string.two_sided_cutting (prefix,"") temp2 in
+    Str.split (Str.regexp "[ \t\r]+") temp3  ;;
+
+let average_page_width_and_height ap =
+     let n = Common.number_of_pages_in_pdf ap in 
+     let data =  Int_range.scale (mediabox_in_pdf ap) 1 n in 
+     let zero = "0.000000" in
+     match List.find_opt (
+      fun l->(List.nth l 0,List.nth l 1)<>(zero,zero)
+     ) data with 
+     (Some l)->
+       let nt = List.nth l in  
+       raise(Shifted_mediabox(nt 0,nt 1,nt 2,nt 3))
+     |None ->
+      let widths=Image.image 
+        (fun l->float_of_string(List.nth l 2)) data  
+      and heights=Image.image 
+        (fun l->float_of_string(List.nth l 3)) data in 
+      let float_n=float_of_int n in 
+      let take_average = (fun l->
+        (List.fold_left (+.) 0. l)/.(float_n)
+      ) in   
+      (take_average widths,take_average heights)    ;;
+let round_with_integer fl =
+  let f =floor fl in 
+  let i = int_of_float f in 
+  if (fl-.f)<=0.5 
+  then i 
+  else i+1 ;; 
+
+let round_with_multiple_of_ten fl =
+   10*(round_with_integer (fl*.0.1)) ;;
+
+let compute_suitable_sizes proj_name  = 
+  let s_ap = Step3.work_path ^ (String.capitalize_ascii proj_name) ^ 
+   "/" ^ proj_name ^ ".pdf" in 
+  let ap = Absolute_path.of_string s_ap in 
+  let (fl_width,fl_height) = average_page_width_and_height ap in 
+  (round_with_multiple_of_ten fl_width,
+   round_with_multiple_of_ten fl_height) ;;
+
+let commands proj_name =
+    let source = Step3.work_path ^ (String.capitalize_ascii proj_name) 
+    and destination = work_path ^ (String.capitalize_ascii proj_name) in
+    let (forced_width,forced_height) = compute_suitable_sizes proj_name in  
+    let sizes = "\""^(string_of_int forced_width)^"pt " 
+                     ^(string_of_int forced_height)^"pt\"" in 
+    let current_dir = Sys.getcwd () in 
+   [
+      ("mkdir -p "^ destination);
+       "cd "^ source;
+       "cpdf -scale-to-fit "^sizes^" "^proj_name^".pdf -o uniformized_"^proj_name^".pdf";
+      "mv uniformized_"^proj_name^".pdf "^destination^"/";
+      "cd "^ destination;
+      "mv uniformized_"^proj_name^".pdf "^proj_name^".pdf ";
+      "cd "^current_dir 
+   ] ;;  
+   
+ let act proj_name = Unix_command.indexed_multiple_uc 
+     (commands proj_name) ;;   
+
+
+end ;;
+
+module Step5 = struct 
+
+let work_path =  master_work_path^"Step_5_Adbridged_pdfs/" ;;
+
+let commands proj_name i j=
+    let source = Step4.work_path ^ (String.capitalize_ascii proj_name) 
+    and destination = work_path ^ (String.capitalize_ascii proj_name) in
+    let range = (string_of_int i)^"-"^(string_of_int j) in 
+    let current_dir = Sys.getcwd () in 
+   [
+      ("mkdir -p "^ destination);
+       "cd "^ source;
+       "cpdf  "^proj_name^".pdf "^range^" -o adbridged_"^proj_name^".pdf";
+      "mv adbridged_"^proj_name^".pdf "^destination^"/";
+      "cd "^ destination;
+      "mv adbridged_"^proj_name^".pdf "^proj_name^".pdf ";
+      "cd "^current_dir 
+   ] ;;  
+   
+ let act proj_name i j= Unix_command.indexed_multiple_uc 
+     (commands proj_name i j) ;;
+
+end ;;
+
+module Step6 = struct 
+let work_path =  master_work_path^"Step_6_Printable_pdfs/" ;;
+
+let order_for_transform_type q = function 
+   Cuttable -> List.flatten (Int_range.scale (fun j->
+        Image.image (fun r->2*j+r) 
+        [2*q-1;-1;6*q-1;4*q-1;
+         0;2*q;4*q;6*q]
+      ) 1 q)
+   |Foldable -> List.flatten (Int_range.scale (fun j->
+        Image.image (fun r->8*j+r) [2;3;6;7;4;1;8;5]
+      ) 0 (q-1));; 
+
+let core_commands proj_name tr_type= 
+  let source = Step5.work_path ^ (String.capitalize_ascii proj_name)  in
+  let ap = Absolute_path.of_string (source^"/"^proj_name^".pdf") in 
+  let original_nbr = Common.number_of_pages_in_pdf ap in 
+  let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
+  let q = (padded_nbr/8) in
+  let order = order_for_transform_type q tr_type in 
+    (Common.pad_up_to_multiple proj_name  8 "padded")::
+    (Common.explode  "padded" "page")::
+    (
+     [
+       (Common.generic_implode "page" "pages_in_new_order" order);
+       ("cpdf -impose-xy \"2 2\" -impose-margin 15 pages_in_new_order.pdf -o printable_"^proj_name^".pdf");
+       "rm page*.pdf padded.pdf";
+     ]
+    );; 
+  
+
+
+let commands proj_name tr_type=
+    let source = Step5.work_path ^ (String.capitalize_ascii proj_name) 
+    and destination = work_path ^ (String.capitalize_ascii proj_name) in
+    
+    let current_dir = Sys.getcwd () in 
+   [
+      ("mkdir -p "^ destination);
+       "cd "^ source;
+   ]@
+       (core_commands proj_name tr_type)
+   @[   
+      "mv printable_"^proj_name^".pdf "^destination^"/";
+      "cd "^current_dir 
+   ] ;;  
+   
+ let act proj_name tr_type= Unix_command.indexed_multiple_uc 
+     (commands proj_name tr_type) ;;
+
+
+end ;;
 
 end ;;  
 
 let step1_receive_raw_data = Private.Step1.receive_raw_data ;;
 let step2_convert_to_pdf = Private.Step2.act ;;
 let step3_merge_into_book = Private.Step3.act ;;
+let step4_uniformize_page_sizes = Private.Step4.act ;;
+let step5_adbridge_book = Private.Step5.act ;;
+let step6_pepare_for_printing = Private.Step6.act ;;

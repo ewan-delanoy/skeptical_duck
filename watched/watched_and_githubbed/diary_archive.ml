@@ -1,8 +1,297 @@
 (************************************************************************************************************************
-Snippet 194 : 
+Snippet 196 : 
 ************************************************************************************************************************)
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+
+(************************************************************************************************************************
+Snippet 195 : Toying with Lorem Ipsum
+************************************************************************************************************************)
+
+module Snip195=struct
+
+
+type my_str_result = Delim of string |Text of string ;;
+
+(*
+let u1 = rf "temp.txt" ;;
+
+let u2 = Str.split (Str.regexp "[ \r\t\n]+") u1 ;;
+
+let u3 = Image.image (
+   fun s -> 
+    let temp = Replace_inside.replace_several_inside_text
+      [".","";",",""] s in 
+    String.uncapitalize_ascii temp  
+) u2 ;;
+
+let u4 = Ordered.sort Total_ordering.silex_for_strings u3 ;;
+
+let u5 = Ordered.sort Total_ordering.for_integers 
+ (Image.image String.length u4) ;;
+
+let u6 = Image.image (fun k->(k,List.filter (fun s->
+   String.length(s)=k  
+) u4)) u5;; *)
+
+let u6 =
+[(1, ["a"]); (2, ["ac"; "ad"; "at"; "et"; "eu"; "id"; "in"; "mi"; "ut"]);
+ (3,
+  ["dui"; "est"; "leo"; "nam"; "nec"; "non"; "per"; "sed"; "sem"; "sit"; "vel"]);
+ (4,
+  ["amet"; "ante"; "arcu"; "cras"; "diam"; "duis"; "eget"; "elit"; "enim";
+   "erat"; "eros"; "nibh"; "nisi"; "nisl"; "nunc"; "odio"; "orci"; "quam";
+   "quis"]);
+ (5,
+  ["augue"; "class"; "dolor"; "donec"; "etiam"; "felis"; "fusce"; "ipsum";
+   "justo"; "lacus"; "lorem"; "magna"; "massa"; "neque"; "nulla"; "porta";
+   "proin"; "purus"; "velit"; "vitae"]);
+ (6,
+  ["aenean"; "aptent"; "auctor"; "congue"; "curae;"; "cursus"; "dictum";
+   "ligula"; "litora"; "luctus"; "mattis"; "mauris"; "mollis"; "nostra";
+   "nullam"; "ornare"; "primis"; "rutrum"; "sapien"; "semper"; "taciti";
+   "tellus"; "tempor"; "tempus"; "tortor"; "turpis"; "varius"]);
+ (7,
+  ["aliquam"; "aliquet"; "conubia"; "cubilia"; "egestas"; "euismod"; "iaculis";
+   "integer"; "lacinia"; "laoreet"; "maximus"; "posuere"; "pretium"; "quisque";
+   "rhoncus"; "sodales"; "vivamus"; "viverra"]);
+ (8,
+  ["accumsan"; "bibendum"; "eleifend"; "facilisi"; "faucibus"; "inceptos";
+   "interdum"; "lobortis"; "maecenas"; "molestie"; "pharetra"; "placerat";
+   "praesent"; "pulvinar"; "sociosqu"; "suscipit"; "torquent"; "ultrices";
+   "vehicula"; "volutpat"]);
+ (9,
+  ["consequat"; "convallis"; "curabitur"; "dignissim"; "elementum";
+   "fermentum"; "fringilla"; "hendrerit"; "himenaeos"; "imperdiet";
+   "malesuada"; "porttitor"; "tincidunt"; "tristique"; "ultricies";
+   "venenatis"; "vulputate"]);
+ (10, ["adipiscing"; "vestibulum"]);
+ (11,
+  ["condimentum"; "consectetur"; "scelerisque"; "suspendisse"; "ullamcorper"]);
+ (12, ["pellentesque"; "sollicitudin"]);
+ (13,["interpulvinar"]);
+ (14,["intervenenatis"]);
+ (15, ["intervestibulum"]);
+ ] ;;
+
+let special_words = ["bf";"it";"newline";"small";"noindent"];;
+
+let is_a_lowercase_char c =
+   let i = int_of_char c in 
+   (97<=i)&&(i<=122) ;;
+
+let is_an_uppercase_char c =
+   let i = int_of_char c in 
+   (65<=i)&&(i<=90) ;;   
+
+let is_an_adhoc_char c =
+   let i = int_of_char c in 
+  List.mem  i [147;160;167;168;169;195;197];;   
+
+let is_a_digit c =
+   let i = int_of_char c in 
+   (48<=i)&&(i<=57) ;;   
+
+let is_an_alphanumeric_char c =
+  (is_a_lowercase_char c)|| (is_an_uppercase_char c)
+  || (is_an_adhoc_char c) || (is_a_digit c) ;;
+
+let is_not_an_alphanumeric_char c =
+  not (is_an_alphanumeric_char c) ;;
+
+
+let rec helper_for_next_char_with_property f
+  (total_length,s,next_to_be_tried) =
+  if next_to_be_tried>total_length
+  then None 
+  else
+  if f(String.get s (next_to_be_tried-1))
+  then Some next_to_be_tried 
+  else helper_for_next_char_with_property f
+  (total_length,s,next_to_be_tried+1) ;;      
+
+let next_char_with_property_opt s f starting_point=
+  helper_for_next_char_with_property f
+  (String.length s,s,starting_point) ;;
+
+let rec helper_for_str_full_split s (total_length,treated,last_treated_idx,expecting_alphanumeric) =
+   if last_treated_idx>=total_length 
+   then List.rev treated 
+   else
+   let next_test = (
+      if expecting_alphanumeric 
+      then is_not_an_alphanumeric_char 
+      else is_an_alphanumeric_char 
+   ) in 
+   let next_bound=(
+    match next_char_with_property_opt s next_test (last_treated_idx+1) with 
+    None -> String.length s 
+    |Some idx -> idx-1
+   ) in 
+   let content = Cull_string.interval s (last_treated_idx+1) next_bound in 
+   let res = (
+     if expecting_alphanumeric
+      then Text content
+      else Delim content
+   ) in 
+   helper_for_str_full_split s (total_length,res::treated,next_bound,not(expecting_alphanumeric));;
+
+let alternative_str_full_split s =
+  let n = String.length s in 
+  if n=0 then [] else 
+  helper_for_str_full_split s (n,[],0,is_an_alphanumeric_char(String.get s 0)) ;;  
+
+
+let initial_machine = Image.image (fun (k,l)->(k,List.flatten 
+(Int_range.scale (fun _->l) 1 20)  
+)) u6;;
+
+exception Assoc_fail of int * string ;;
+
+let helper1_for_loremization (original_word,old_machine) =
+  let n = String.length original_word in 
+  let proposals_opt = List.assoc_opt n old_machine in 
+  if proposals_opt = None then raise(Assoc_fail(n,original_word)) else 
+  let proposals = Option.get proposals_opt in   
+  let (unstyled_loremized_word,other_lorems) = List_again.head_with_tail proposals in 
+  let loremized_word = (
+    if  List.mem original_word special_words 
+    then original_word 
+    else  
+    if is_an_uppercase_char(String.get original_word 0) 
+    then String.capitalize_ascii unstyled_loremized_word
+   else unstyled_loremized_word 
+  ) in 
+  let new_machine = Image.image (
+    fun pair -> let (k,l) = pair in  
+      if k<>n then pair else 
+      (k,other_lorems)
+  ) old_machine in 
+  (loremized_word,new_machine) ;;
+
+exception Helper2_for_loremization_exn ;;
+
+let helper2_for_loremization (treated,to_be_treated,old_machine) = 
+  match to_be_treated with 
+  [] -> raise Helper2_for_loremization_exn
+  |result :: other_results ->
+    match result with 
+    (Delim delim) -> (delim::treated,other_results,old_machine)
+    |Text word ->
+   let (loremized_word,new_machine) = 
+   helper1_for_loremization (word,old_machine) in 
+  (loremized_word::treated,other_results,new_machine) ;;  
+
+let rec iterator_for_loremization triple =
+  let (treated,to_be_treated,old_machine) = triple in 
+  if to_be_treated=[]
+  then String.concat "" (List.rev treated) 
+  else iterator_for_loremization (helper2_for_loremization triple) ;;  
+  
+(* let useless_str_split = Str.full_split (Str.regexp "[ \r\t\n.,@-\\/(){}`']+") ;; *)
+
+let loremize text =
+    iterator_for_loremization 
+    ([],alternative_str_full_split text,initial_machine) ;;
+
+let lz=loremize ;;    
+
+let ex1 = lz "Concepteur-Développeur web" ;;
+
+let ex2 = lz "Ancien enseignant en reconversion dans le développement web, titulaire d'un doctorat. Je suis déterminé à mettre en œuvre mon expertise et ma passion pour créer des solutions web innovantes et efficaces." ;;
+
+
+let ex3 = lz "Java 17, Spring Boot 3, PHP 8. Rédaction de spécifications techniques. Maintenance d'une API REST avec Java 8." ;;
+
+let ex4 = lz " {\\bf Développeur Java} :  CGI (Stage) , Lyon - 11.2013/05.2024 \\newline\n{\\it\\small Maintenance d'application en Java 8, API REST, PostgreSQL}" ;;
+
+let ex5 = lz "{\\bf Cours particuliers à domicile} :  Cours Legendre, CDSSR Isocrate, Lyon - 2013/2023 \\newline";;
+
+let ex6 = lz "{\\bf Enseignant mathématiques Lyc\195\169e} Education Nationale, Besançon - sept. 2008 / juin 2012 \\newline";;
+
+let ex7 = lz "\\noindent {\\bf Titre professionnel ``Concepteur-développeur d'applications''}, Human Booster Lyon, avril 2024 \\newline\n \\ \\newline";;
+
+let ex8 = lz " {\\bf Certification Scrum}, Scrum.org Lyon, le 01/07/2023 \\newline" ;;
+
+let ex9 = lz " {\\bf Doctorat de mathématiques},  Université Lyon 1 La Doua, 2002-2005\\newline {\\it\\small Mathématiques pures, combinatoire. Utilisation et modification d'un programme écrit en C++} \\newline";;
+
+let ex10 = lz "  {\\bf Langages de programmation} PHP, Java, C, Ruby, Javascript, OCaml. \\newline ";;
+
+let ex11 = lz "   {\\bf Front-end} HTML 5, CSS 3, Bootstrap 5 \\newline ";;
+
+let ex12 = lz "  {\\bf Frameworks} Symfony, Spring Boot, Angular, Ruby on Rails \\newline ";;
+
+let ex13 = lz " {\\bf Anglais} Courant (technique \\& communication usuelle) \\newline ";;
+
+let ex14 = lz " {\\bf Portugais} Lu, parlé \\newline ";;
+
+let ex15 = lz "  Adaptabilit\195\169, patience, rigueur ";;
+
+let ex16 = lz " Résolution de problèmes mathématiques. Actif sur math.stackoverflow";;
+
+(*
+let ex17 = lz ;;
+
+let ex18 = lz ;;
+
+let ex19 = lz ;;
+
+let ex20 = lz ;;
+
+let ex21 = lz ;;
+
+let ex22 = lz ;;
+
+let ex23 = lz ;;
+
+let ex24 = lz ;;
+
+let ex25 = lz ;;
+
+let ex26 = lz ;;
+
+let ex27 = lz ;;
+
+let ex28 = lz ;;
+
+let ex29 = lz ;;
+
+#use"watched/watched_not_githubbed/nap.ml";;
+
+*)
+
+
+end ;;
+
+
+(************************************************************************************************************************
+Snippet 194 : Typical use of the From_scanner_to_printer module
+************************************************************************************************************************)
+module Snip194=struct
+
+
+let g1 = From_scanner_to_printer.step1_receive_raw_data
+   "cromwell";;  
+
+let g2 = From_scanner_to_printer.step2_convert_to_pdf
+   "cromwell";;  
+
+let g3 = From_scanner_to_printer.step3_merge_into_book   
+   "cromwell";;    
+
+let g4 = From_scanner_to_printer.step4_uniformize_page_sizes 
+   "cromwell";;       
+
+let g5 = From_scanner_to_printer.step5_adbridge_book 
+   "cromwell" 11 347;;  
+
+let g6 = From_scanner_to_printer.step6_pepare_for_printing 
+   "cromwell" Foldable;;     
+
+
+
+end ;;
 
 
 (************************************************************************************************************************
@@ -640,7 +929,6 @@ print_string( gpize_int_list_list normie);;
 Snippet 190 : Producing some PARi-GP code enumerating 
 some elementary symmetric polynomials
 ************************************************************************************************************************)
-
 module Snip190=struct
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
@@ -863,8 +1151,8 @@ Manage_diary.extract_at_index_and_append_to_file
 Manage_diary.extract_at_index_and_append_to_file
   188 ~path_in_nongithubbed: "jug" ;;  
 
-let act1 () = Manage_diary.copy_file_content_as_new_snippet 
-  ~path_in_nongithubbed: "cloth";;
+let act1 () = Manage_diary.transfer_file_content_to_fresh_snippet 
+  ~path_in_nongithubbed: "nap";;
 
 let act2 () = Manage_diary.replace_whole_at_index_with_file_content 
   192 ~path_in_nongithubbed: "cloth";;

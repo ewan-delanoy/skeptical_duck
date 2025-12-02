@@ -289,7 +289,7 @@ let extract_header indexed_lines last_idx_in_header=
       let new_pairs = append_new_snippet (prologue,old_pairs) new_content in 
       unparse_and_write_to new_pairs fn ;;   
 
-    let copy_file_content_as_new_snippet fn ~path_in_nongithubbed =
+    let transfer_file_content_to_fresh_snippet fn ~path_in_nongithubbed =
       let ap = Absolute_path.of_string 
        ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
       let raw_file_content = Io.read_whole_file ap in 
@@ -447,8 +447,8 @@ let numbered_module_analysis_at_index_opt correct_module_number text=
 
   end ;; 
   
-  let copy_file_content_as_new_snippet ~path_in_nongithubbed = 
-    Private.copy_file_content_as_new_snippet Private.usual_path ~path_in_nongithubbed
+  let transfer_file_content_to_fresh_snippet ~path_in_nongithubbed = 
+    Private.transfer_file_content_to_fresh_snippet Private.usual_path ~path_in_nongithubbed
     ;;
   let extract_at_index_and_append_to_file idx ~path_in_nongithubbed =
      let the_diary = snd(Private.read_and_parse Private.usual_path) in 
