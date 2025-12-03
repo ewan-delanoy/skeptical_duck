@@ -1148,19 +1148,19 @@ Snippet 187 : Using Manage_diary.extract_at_index_and_append_to_file
 module Snip187=struct
 
 Manage_diary.extract_at_index_and_append_to_file
-  192 ~path_in_nongithubbed: "cloth" ;;
+  192 ~nongithubbed_path: "cloth" ;;
 
 Manage_diary.extract_at_index_and_append_to_file
-  188 ~path_in_nongithubbed: "jug" ;;  
+  188 ~nongithubbed_path: "jug" ;;  
 
-let act1 () = Manage_diary.transfer_file_content_to_fresh_snippet 
-  ~path_in_nongithubbed: "nap";;
+let act1 () = Manage_diary.transfer_file_content_to_fresh_entry 
+  ~nongithubbed_path: "nap" ();;
 
-let act2 () = Manage_diary.replace_whole_at_index_with_file_content 
-  192 ~path_in_nongithubbed: "cloth";;
+let act2 () = Manage_diary.replace_at_index_with_file_content 
+  192 ~nongithubbed_path: "cloth";;
 
-let act3 () = Manage_diary.replace_whole_at_index_with_file_content 
-  191 ~path_in_nongithubbed: "pan";;  
+let act3 () = Manage_diary.replace_at_index_with_file_content 
+  191 ~nongithubbed_path: "pan";;  
 
 
 end ;;
@@ -21128,7 +21128,7 @@ let (g1,Manage_diary.Private.D g2) =  Manage_diary.Private.read_and_parse ap_for
 let g3 = Int_range.index_everything g2;;
 let g4 = List.filter (fun (j,(x,y))->Substring.is_a_substring_of "Vdw_" y) g3 ;;
 let g5 = Image.image fst g4 ;;
-let act1 () = Manage_diary.remove_snippets g5;;
+let act1 () = Manage_diary.remove_at_indices g5;;
 
 let ap1 = Absolute_path.of_string "Fads/cloth.ml" ;;
 
@@ -21217,9 +21217,9 @@ let h3 = List.iter (
 (************************************************************************************************************************
 Snippet 28 : Typical use of the Manage_diary module
 ************************************************************************************************************************)
-let act1 () = Manage_diary.fix_indexation ();;
+(* let act1 () = Manage_diary.fix_indexation ();; *)
 
-let act2 () = Manage_diary.remove_snippets [ (* put indices here *)];;
+let act2 () = Manage_diary.remove_at_indices [ (* put indices here *)];;
 
 
 let diary_text = Io.read_whole_file ap_for_diary ;;

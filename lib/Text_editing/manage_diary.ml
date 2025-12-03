@@ -2,204 +2,220 @@
 
 #use"lib/Text_editing/manage_diary.ml";;
 
-This module manages "diaries", i.e. files consisting of snippets 
+This module manages "diaries", i.e. files consisting of entries 
 of code indexed in increasing order.
-The format for each snippet is : 
-(**** ... Snippet idx : title ****) snippet_content
+The format for each entry is : 
+(**** ... Entry idx : title ****) entry_content
 
-Note that in the internal representation, the snippets are stored in reverse order.
+Note that in the internal representation, the entries are stored in reverse order.
 
 
 *)
 
 module Private = struct
 
-  (* Note that the first letter of the word <<snippet>> can be capitalized or uncapitalized. *)
-  let snippet_keyword = "nippet ";;
-  
-  let blanks =  [' ';'\n';'\r';'\t'] ;;
-  let digits = ['0';'1';'2';'3';'4';'5';'6';'7';'8';'9'];;
-  
-  let snippet_analysis_at_index text idx=
-    let i1 = idx + (String.length snippet_keyword) in 
-    let i2_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c blanks)) text i1 in 
-    if i2_opt = None then None else 
-    let i2 = Option.get i2_opt in    
-    if not(List.mem (Strung.get text i2) digits) then None else 
-    let extended_text = text ^ " " in   
-    let i3_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c digits)) extended_text i2 in 
-    let i4 = (match i3_opt with None -> (-1) | Some i3 -> i3 -1) in 
-    Some(i2,i4,int_of_string(Cull_string.interval text i2 i4)) ;;
-  
-  
-  let snippet_analysis text =
-     let temp1 = Substring.occurrences_of_in snippet_keyword text in 
-     List.filter_map (snippet_analysis_at_index text) temp1 ;;
-  
-  let apply_replacements_to_snippet replacements absolute_idx sn_descr sn_indices = 
-      if sn_indices = []  
-      then ("Snippet ")^(string_of_int absolute_idx)^" : "^sn_descr 
-      else
-        let changes_to_be_made = List.filter_map (
-           fun (i_start,i_end,snippet_idx) ->
-            match List.assoc_opt snippet_idx replacements with 
-            None -> None 
-            |Some new_idx -> 
-              Some((i_start,i_end),string_of_int(new_idx))
-        ) sn_indices in 
-        Strung.replace_ranges_in changes_to_be_made sn_descr ;;
-  
-  let message_to_describe_replacements = function 
-    [] -> "No replacement to be made."
-    | l -> 
-        let temp1 = Image.image (
-          fun (x,y) -> (string_of_int x) ^" -> "^(string_of_int y)
-        ) l in 
-        "The following replacements have been made : \n"^
-        (String.concat " , " temp1);;
-  
-  let announce_replacements replacements =
-      let msg = "\n\n"^(message_to_describe_replacements replacements)^"\n\n" in 
-      (print_string msg; flush stdout) ;;
-  
-  
-  let beginning_of_opener = "(*******";;
-  let beginning_of_closer = "********";;
-  
-  let long_opener = "("^(String.make 120 '*')^"\n" ;;
-  let long_closer = "\n"^(String.make 120 '*')^")" ;;
-  
-  type line_kind = Opener | Closer | Ordinary_line ;;
-  
-  let compute_kind line =
-    if String.starts_with ~prefix:beginning_of_opener line  then Opener else 
-    if String.starts_with ~prefix:beginning_of_closer line  then Closer else 
-    Ordinary_line ;;     
-  
-  let rec get_next_ordinary_lines (treated,to_be_treated) =
-      match to_be_treated with 
-      [] -> (treated,[])
-      | ((_linedex,line),lk) :: other_lines -> match lk with 
-      Ordinary_line -> let next_content = (if treated="" then line else treated^"\n"^line) in 
-                        get_next_ordinary_lines (next_content,other_lines)
-     |Opener | Closer ->  (treated,to_be_treated) ;; 
-  
-  exception Get_next_end_of_chunk_exn of int * string ;;
-  exception Empty_arg_in_get_next_end_of_chunk_exn ;;
-  
-  let get_next_end_of_chunk lines =
-         match lines with 
-         [] -> raise (Empty_arg_in_get_next_end_of_chunk_exn)
-         | ((linedex,line),lk) :: other_lines -> match lk with 
-         Closer -> get_next_ordinary_lines ("",other_lines) 
-        |Opener | Ordinary_line->  raise(Get_next_end_of_chunk_exn(linedex,line)) ;; 
-    
-  
-  exception Get_next_chunk_exn of int * string ;;
-  
-  let get_next_chunk lines =
-      match lines with 
-      [] -> None
-      | ((linedex,line),lk) :: other_lines -> match lk with 
-      Opener -> let (text1,other_lines2) = get_next_ordinary_lines ("",other_lines) in 
-                let (text2,other_lines3) = get_next_end_of_chunk other_lines2 in 
-                Some(text1,text2,other_lines3)
-     |Closer | Ordinary_line->  raise(Get_next_chunk_exn(linedex,line)) ;; 
-  
-     type diary = D of (string * string) list ;;
+type unindexed_entry = {
+   unindexed_summary : string ;
+   unindexed_content : string ;
+} ;; 
 
-  let rec get_all_chunks (treated_chunks,lines) =
-      match get_next_chunk lines with 
-       None -> D(treated_chunks) 
-      |Some(text1,text2,other_lines) -> get_all_chunks ((text1,text2)::treated_chunks,other_lines) ;; 
+type entry = {
+   index : int ;
+   summary : string ;
+   content : string ;
+} ;; 
+
+type diary = {
+   global_prologue : string option ;
+   entries : entry list ;
+} ;;
+
+module Common = struct 
+
+let long_opener = "("^(String.make 120 '*') ;;
+let long_closer = (String.make 120 '*')^")" ;;  
+
+let index_entries_naturally unindexed_entries = 
+  let temp = Int_range.index_everything unindexed_entries in 
+  List.rev_map (
+    fun (idx,uent)-> {
+   index =idx ;
+   summary = uent.unindexed_summary ;
+   content = uent.unindexed_content ;
+   } 
+  ) temp;;
+
+let usual_container = 
+  Absolute_path.of_string(
+   Dfn_common.recompose_potential_absolute_path 
+    Fw_big_constant.This_World.root   
+      Fw_constant.rootless_path_for_diary_file);;
+
+
+end ;;  
+
+module Modify = struct
+
+let modify_at_index dy f k =
+  let new_entries = Image.image (
+    fun ent ->
+      if ent.index = k 
+      then {ent with content = f(ent.content)}
+     else ent  
+  ) dy.entries in 
+  {
+    dy with entries = new_entries
+  } ;;
+
+let replace_at_index_with_content dy k new_content=
+  modify_at_index dy (fun _->new_content) k;;
+
+let unindexed_version ent = {
+   unindexed_summary = ent.summary;
+   unindexed_content = ent.content ;
+} ;; 
+
+let remove_at_indices dy indices= 
+  let unindexed_retained_ones = List.filter_map (
+    fun ent -> 
+       if List.mem ent.index indices 
+       then None 
+       else Some(unindexed_version ent) 
+  ) dy.entries in 
+  let retained_ones = Common.index_entries_naturally unindexed_retained_ones in 
+  { dy with entries=retained_ones} ;;  
+
+let diary_size dy = match dy.entries with 
+  [] -> 0 
+  | last_entry :: _ -> last_entry.index ;;
+
+let add_fresh_entry dy ~summary_ ~content_=
+   let new_entry = {
+    index = (diary_size dy)+1;
+    summary=summary_;
+    content=content_;
+   } in 
+   {
+     dy with 
+     entries = new_entry :: dy.entries 
+   } ;;  
+  
+end ;;
+
+module Parse = struct
+
   
 
-  let parse text =
-    let lines = Lines_in_text.indexed_lines text in 
-    let lines2 = Image.image (fun (linedex,line)->((linedex,line),compute_kind line)) lines in 
-    let (prologue,lines3) = get_next_ordinary_lines ("",lines2) in 
-    (prologue,get_all_chunks ([],lines3));;
-  
-  let unparse (D pairs) =
-      let chunks = List.rev_map (fun
-        (snippet_description,snippet_content)->
-        long_opener ^ snippet_description ^ long_closer ^ "\n" ^ 
-        snippet_content 
-      ) pairs in 
-      String.concat "\n" chunks ;;
-  
-  let fix_indexation (D pairs) display_reps=
-      let temp1 = Image.image (fun 
-      (sn_descr,sn_content)->
-        (sn_descr,sn_content,snippet_analysis sn_descr)
-      ) pairs in 
-      let temp2 = Int_range.index_everything temp1 in 
-      let replacements = List.filter_map (
-        fun (absolute_idx,(_sn_descr,_sn_content,sn_indices)) ->
-           match sn_indices with 
-           [] -> None 
-           | (_,_,idx) :: _ ->
-             if idx = absolute_idx then None else Some(idx,absolute_idx)
-      ) temp2 in 
-      let _ = (if display_reps then announce_replacements replacements) in 
-      D(Image.image (
-        fun (absolute_idx,(sn_descr,sn_content,sn_indices)) ->
-           let new_sn_descr = 
-            apply_replacements_to_snippet replacements absolute_idx sn_descr sn_indices in 
-            (new_sn_descr,sn_content)
-      ) temp2) ;;
-  
-  let remove_snippets (D pairs) indices=
-    let temp1 = Int_range.index_everything pairs in 
-    let pairs2 = List.filter_map (fun 
-       (idx,pair) -> 
-        if List.mem idx indices then None else Some pair
-    ) temp1 in 
-    fix_indexation (D pairs2) true ;;
-  
-  let apply_module_wrapper n not_wrapped_yet=
-     "\nm"^"odule Snip"^(string_of_int (n-1))^
-     "=struct\n\n"^not_wrapped_yet^"\n\n\nend ;;\n\n" ;; 
+let find_line_starting_with prefix lines =
+  List_again.find_and_remember_opt (String.starts_with ~prefix) lines ;; 
 
-  let append_new_snippet (_prologue,D older_snippets) new_content= 
-     let n = List.length(older_snippets) + 1 in 
-     let sn_descr = "Snippet "^(string_of_int n)^" : " 
-     and snm_descr = "Snippet "^(string_of_int (n-1))^" : " 
-     and wrapped_content =  apply_module_wrapper n new_content in 
-     let older_snippets_but_the_last = List.rev(List.tl(List.rev older_snippets)) 
-     and default_prologue = "open Skeptical_duck_lib ;; \nopen Needed_values ;;\n\n" in 
-     D(older_snippets_but_the_last @ 
-       [snm_descr,wrapped_content;
-        sn_descr,default_prologue]);; 
+let find_opener = find_line_starting_with Common.long_opener ;;
+let find_closer = find_line_starting_with Common.long_closer ;;
 
-let remove_module_wrapper possibly_wrapped_snippet = 
-  let indexed_lines = Lines_in_text.indexed_lines possibly_wrapped_snippet in 
+let enforce_nonempty short_text =
+    let culled_text = Cull_string.trim_spaces short_text in 
+    if culled_text = "" then None else Some culled_text ;;
+
+let parse_summary unparsed_summary = 
+  match String.index_opt unparsed_summary ':' with 
+  None -> unparsed_summary 
+  |Some j -> 
+    let k=(
+      if String.get unparsed_summary (j+1)=' '
+      then j+2
+      else j+1) in 
+    Cull_string.cobeginning k unparsed_summary;;
+
+let remove_module_wrapper possibly_wrapped_text = 
+  let indexed_lines = Lines_in_text.indexed_lines possibly_wrapped_text in 
   let first_nonblank_line_opt = List.find_opt (
     fun  (_,line)->(Cull_string.trim_spaces line)<>""
   ) indexed_lines
   and last_nonblank_line_opt = List.find_opt (
     fun   (_,line)->(Cull_string.trim_spaces line)<>""
-  ) indexed_lines in 
+  ) (List.rev indexed_lines) in 
   if (first_nonblank_line_opt=None)||(last_nonblank_line_opt=None)
-  then possibly_wrapped_snippet
+  then possibly_wrapped_text
   else
   let (idx1,line1) = Option.get first_nonblank_line_opt
-  and (idx2,line2) = Option.get first_nonblank_line_opt in 
-  if (not(String.starts_with line1 ~prefix:"module Snip"))
-     ||(line2<>"end ;;")
-  then possibly_wrapped_snippet
+  and (idx2,line2) = Option.get last_nonblank_line_opt in 
+  if (not(String.starts_with line1 ~prefix:"module "))
+     ||(not(List.mem (Cull_string.trim_spaces line2) ["end;;";"end ;;"]))
+  then possibly_wrapped_text
   else 
     let retained_lines = List.filter_map (
       fun (idx,line) -> 
-        if List.mem idx [idx1;idx2]
-        then None 
-        else Some line   
+        if (idx1<idx)&&(idx<idx2)
+        then Some line 
+        else None   
     ) indexed_lines in 
     String.concat "\n" retained_lines ;;      
  
+let rec helper_for_whole_diary_parsing (treated,lines_after_first_opener) =
+   match find_closer lines_after_first_opener with 
+   None -> 
+    {
+      unindexed_summary ="" ;
+      unindexed_content =remove_module_wrapper(String.concat "\n" lines_after_first_opener) ;
+    } :: treated 
+  |Some(before,_,after) ->
+    let smry = parse_summary (String.concat "\n" before) in 
+     match find_opener after with 
+   None -> 
+    {
+      unindexed_summary =smry ;
+      unindexed_content =remove_module_wrapper(String.concat "\n" after) ;
+    } :: treated
+  |Some(before2,_,after2) ->
+    let treated2 = {
+      unindexed_summary =smry ;
+      unindexed_content =remove_module_wrapper(String.concat "\n" before2) ;
+    } :: treated in 
+    helper_for_whole_diary_parsing (treated2,after2);;       
+
+
+let parse_whole_diary diary_text =
+   let lines = Lines_in_text.lines diary_text in 
+   match find_opener lines with 
+   None -> {
+              global_prologue = enforce_nonempty diary_text ;
+              entries = [] ;
+           }
+  |Some(before,_,after) ->
+    {
+        global_prologue = enforce_nonempty (String.concat "\n" before) ;
+        entries = Common.index_entries_naturally(
+          helper_for_whole_diary_parsing ([],after)) ;
+    } ;;       
+
+  end ;;
+
+module Write = struct 
+
+let write_prologue = function 
+  None -> ""
+  |Some prologue -> prologue^"\n" ;;
+
+let write_entry ent =
+  Common.long_opener ^ "\n" ^
+  " Entry "^(string_of_int ent.index)^" : "^ent.summary^
+  "\n" ^ Common.long_closer ^ 
+  "\nmodule Snip"^(string_of_int ent.index)^" = struct \n"^
+  ent.content^
+  "\nend;;\n" ;;
+
+let write_diary dy =
+  (write_prologue dy.global_prologue)^
+  (String.concat "\n" (Image.image write_entry dy.entries)) ;;  
+
+end ;;
+
+module Give_and_Receive = struct
+
+
    let starter_for_snippet_origin_mention =
      "(* The first draft of this was initially extracted "^
-    "from snippet " ;;
+    "from diary entry " ;;
 
     let rec first_nonblank_line_with_rest indexed_lines = 
    match indexed_lines with 
@@ -254,228 +270,170 @@ let extract_header indexed_lines last_idx_in_header=
   ) indexed_lines in 
   String.concat "\n" retained_lines ;;
 
+let extract_at_index_and_append_to_file dy k ap = 
+  let ent = List.find (fun ent->ent.index = k) dy.entries in 
+  let decorated_content =
+  "\n"^starter_for_snippet_origin_mention^(string_of_int k)^
+  " of diary *)"^ent.content in     
+  Io.append_string_to_file decorated_content ap ;;
 
-
-   let extract (D snippets) k = 
-    let snippet1 = snd (List.nth snippets (k-1) ) in 
-    let snippet2 = remove_module_wrapper snippet1 in 
-    ("\n"^starter_for_snippet_origin_mention^(string_of_int k)^" of diary *)")^snippet2;;    
-
-   let replace_whole_at_index_in new_whole k (D snippets) =
-      let (old_title,_old_content) = List.nth snippets (k-1) in 
-      let n = List.length snippets in 
-      D(Int_range.scale (fun j->
-         if j=(k-1) then (old_title,new_whole) else List.nth snippets j) 0 (n-1)) ;;     
-
-
-   let findreplace_at_index_in replacements k (D snippets) =
-      let (old_title,old_content) = List.nth snippets (k-1) in 
-      let new_content = 
-         Replace_inside.replace_several_inside_text 
-           replacements old_content in 
-      let n = List.length snippets in 
-      D(Int_range.scale (fun j->
-         if j=(k-1) then (old_title,new_content) else List.nth snippets j) 0 (n-1)) ;;     
-
-    (* Conversion to and from file functions *)
-  
-    let read_and_parse fn = parse (Io.read_whole_file fn) ;;
-    let unparse_and_write_to pairs fn = Io.overwrite_with fn (unparse pairs) ;;
-  
-    (* File versions of the functions *)
-
-    let append_new_snippet_to_file fn new_content=
-      let (prologue,old_pairs) = read_and_parse fn in 
-      let new_pairs = append_new_snippet (prologue,old_pairs) new_content in 
-      unparse_and_write_to new_pairs fn ;;   
-
-    let transfer_file_content_to_fresh_snippet fn ~path_in_nongithubbed =
-      let ap = Absolute_path.of_string 
-       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
-      let raw_file_content = Io.read_whole_file ap in 
-      let raw_indexed_lines = Lines_in_text.indexed_lines raw_file_content in 
-      let idx0 = last_index_in_header raw_indexed_lines in 
-      let cleaned_filecontent = remove_header_and_mention_of_snippet_origin raw_indexed_lines idx0 
+let clean_filecontent raw_file_content = 
+  let raw_indexed_lines = Lines_in_text.indexed_lines raw_file_content in 
+  let idx0 = last_index_in_header raw_indexed_lines in 
+  let cleaned_filecontent = remove_header_and_mention_of_snippet_origin raw_indexed_lines idx0 
       and header = extract_header raw_indexed_lines idx0 in 
-      (append_new_snippet_to_file fn cleaned_filecontent;
-       Io.overwrite_with ap header) ;;
+  (header,cleaned_filecontent) ;;    
 
-    let extract_and_append_to_file dy k ~path_in_nongithubbed = 
-       let fn = Absolute_path.of_string 
-       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in 
-       let snippet = extract dy k in 
-       let old_text = Io.read_whole_file fn in 
-       let new_text = old_text ^ snippet in 
-       Io.overwrite_with fn new_text ;;
+let transfer_file_content_to_fresh_entry dy ?(summary="") ap =
+  let raw_file_content = Io.read_whole_file ap in 
+  let (header,cleaned_content) = clean_filecontent raw_file_content in 
+  let _=(Io.overwrite_with ap header) in 
+  Modify.add_fresh_entry dy ~summary_:summary ~content_:cleaned_content;;
 
-    let replace_whole_at_index_in_file new_whole k fn =   
-      let (_,old_pairs) = read_and_parse fn in 
-      let new_pairs = replace_whole_at_index_in
-       (apply_module_wrapper k new_whole) k old_pairs in 
-      unparse_and_write_to new_pairs fn ;;
+ let replace_at_index_with_file_content dy k ap =   
+   let raw_file_content = Io.read_whole_file ap in 
+  let (header,cleaned_content) = clean_filecontent raw_file_content in 
+  let _=(Io.overwrite_with ap header) in 
+  Modify.replace_at_index_with_content dy k cleaned_content;;
 
-    let replace_whole_at_index_with_file_content k fn ~path_in_nongithubbed= 
-      let ap = Absolute_path.of_string 
-       ("watched/watched_not_githubbed/"^path_in_nongithubbed^".ml") in  
-      let raw_file_content = Io.read_whole_file ap in 
-      let raw_indexed_lines = Lines_in_text.indexed_lines raw_file_content in 
-      let idx0 = last_index_in_header raw_indexed_lines in 
-      let cleaned_filecontent = remove_header_and_mention_of_snippet_origin raw_indexed_lines idx0 
-      and header = extract_header raw_indexed_lines idx0 in 
-      (replace_whole_at_index_in_file cleaned_filecontent k fn;
-       Io.overwrite_with ap header) ;;  
 
-    let findreplace_at_index_in_file replacements k fn =  
-      let (_,old_pairs) = read_and_parse fn in 
-      let new_pairs = findreplace_at_index_in replacements k old_pairs in 
-      unparse_and_write_to new_pairs fn ;;
+end ;;
 
-    let fix_indexation_in_file fn =
-      let (_,old_pairs) = read_and_parse fn in 
-      let new_pairs = fix_indexation old_pairs true in 
-      unparse_and_write_to new_pairs fn ;;
-    
-    let remove_snippets_in_file fn indices = 
-      let (_,old_pairs) = read_and_parse fn in 
-      let new_pairs = remove_snippets old_pairs indices in 
-      unparse_and_write_to new_pairs fn ;;  
+module With_container = struct 
 
+let extract_at_index_and_append_to_file fn k ap = 
+  let dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
+  Give_and_Receive.extract_at_index_and_append_to_file dy k ap ;;
+
+let remove_at_indices fn indices= 
+  let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
+  let new_dy = Modify.remove_at_indices old_dy indices in 
+  Io.overwrite_with fn (Write.write_diary new_dy) ;;  
+
+let replace_at_index_with_file_content fn k ap =   
+   let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
+  let new_dy = Give_and_Receive.replace_at_index_with_file_content old_dy k ap in 
+  Io.overwrite_with fn (Write.write_diary new_dy) ;; 
   
+let transfer_file_content_to_fresh_entry fn ?(summary="") ap =    
+   let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
+  let new_dy = Give_and_Receive.transfer_file_content_to_fresh_entry old_dy ~summary ap in 
+  Io.overwrite_with fn (Write.write_diary new_dy) ;; 
 
-    let usual_path = 
-        Absolute_path.of_string(
-        Dfn_common.recompose_potential_absolute_path 
-          Fw_big_constant.This_World.root   Fw_constant.rootless_path_for_diary_file);;
 
-  let moodle_keyword = "m"^"odule" ;;
-let capitalized_snip = "Snip" ;; 
+end ;;  
 
-(* Returns a replacement text if one is needed *)
-let numbered_module_analysis_at_index_opt correct_module_number text=
-  let i1_opt = Strung.char_finder_from_inclusive_opt 
-    (fun c->not(List.mem c blanks)) text 1 in 
-  if i1_opt = None then None else 
-  let i1 = Option.get i1_opt in 
-  if not(Substring.is_a_substring_located_at moodle_keyword text i1)
-  then None 
-  else 
-  let i2 = i1 + (String.length moodle_keyword) in 
-  let i3_opt = Strung.char_finder_from_inclusive_opt 
-    (fun c->not(List.mem c blanks)) text i2 in 
-  if i3_opt = None then None else 
-  let i3 = Option.get i3_opt in  
-  if not(Substring.is_a_substring_located_at capitalized_snip text i3)
-  then None 
-  else 
-  let i4 = i3 + (String.length capitalized_snip) in 
-  if i4>(String.length text) then None else 
-  let c=Strung.get text i4 in  
-  if (not(List.mem c digits))||(c='0') then None else 
-  let i5_opt = Strung.char_finder_from_inclusive_opt 
-    (fun c->not(List.mem c digits)) text (i4+1) in 
-  if i5_opt = None then None else 
-  let i5 = Option.get i5_opt in    
-  let s_module_number=Cull_string.interval text i4 (i5-1) in 
-  let module_number = int_of_string s_module_number in 
-  if module_number = correct_module_number 
-  then None 
-  else   
-  let new_text = 
-     (Cull_string.beginning (i4-1) text) ^ 
-     (string_of_int correct_module_number)^
-     (Cull_string.cobeginning (i5-1) text) in 
-    Some(module_number,new_text) ;;
+module For_Nongithubbed_files = struct 
 
-  (*
+let prefix_for_nongithubbed_files =  "watched/watched_not_githubbed/";;
+
+let expand short_path = Absolute_path.of_string
+  (prefix_for_nongithubbed_files^ short_path ^ ".ml");;
+
+let extract_at_index_and_append_to_file fn k ~nongithubbed_path = 
+  With_container.extract_at_index_and_append_to_file fn k 
+    (expand nongithubbed_path) ;;
+
+let replace_at_index_with_file_content fn k ~nongithubbed_path =   
+  With_container.replace_at_index_with_file_content fn k 
+    (expand nongithubbed_path) ;; 
   
-  numbered_module_analysis_at_index_opt 53 "module Snip37=blablabla" ;;
-  numbered_module_analysis_at_index_opt 53 "module Snip53=blablabla" ;;
-
-  *)
-
-  let needed_fixes_for_module_numbers (D pairs) =
-    let temp1 = Int_range.index_everything pairs in 
-    List.filter_map (
-       fun (mod_number,(_snippet_description,snippet_content)) ->
-        match 
-        numbered_module_analysis_at_index_opt 
-          mod_number snippet_content with 
-       None -> None 
-       |Some (old_mod_number,new_content) -> 
-        Some((mod_number,old_mod_number),new_content)   
-    ) temp1 ;; 
-
-  let message_to_describe_module_number_fixes = function 
-    [] -> "No module number fixes to be made."
-    | l -> 
-        let temp1 = Image.image (
-          fun ((old_number,correct_number),_) -> 
-            (string_of_int old_number) ^" -> "^(string_of_int correct_number)
-        ) l in 
-        "The following module number fixes have been made : \n"^
-        (String.concat " , " temp1);;
+let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path fn =    
+  With_container.transfer_file_content_to_fresh_entry fn ~summary 
+    (expand nongithubbed_path) ;; 
   
-  let announce_module_number_fixes fixes =
-      let msg = "\n\n"^(message_to_describe_module_number_fixes fixes)^"\n\n" in 
-      (print_string msg; flush stdout) ;;
+end ;;  
 
-  let fix_module_numbers (D snippets) =
-    let fixes = needed_fixes_for_module_numbers (D snippets) in 
-    let _ = announce_module_number_fixes fixes in  
-    if fixes = []
-    then D snippets 
-    else 
-    let fixer = Image.image (
-      fun ((mod_number,_old_mod_number),new_content)->
-        (mod_number,new_content)
-    ) fixes 
-    and indexed_snippets = Int_range.index_everything snippets in   
-    D(Image.image (fun 
-      (mod_number,old_snippet) -> 
-        match List.assoc_opt mod_number fixer with 
-        None -> old_snippet 
-        |Some new_content -> 
-          let (snippet_description,_old_content) = old_snippet in 
-          (snippet_description,new_content) 
-    ) indexed_snippets);;    
-
-  let fix_module_numbers_in_file fn= 
-      let (_,old_pairs) = read_and_parse fn in 
-      let new_pairs = fix_module_numbers old_pairs in 
-      unparse_and_write_to new_pairs fn ;;  
+end ;;
 
 
-  end ;; 
-  
-  let transfer_file_content_to_fresh_snippet ~path_in_nongithubbed = 
-    Private.transfer_file_content_to_fresh_snippet Private.usual_path ~path_in_nongithubbed
-    ;;
-  let extract_at_index_and_append_to_file idx ~path_in_nongithubbed =
-     let the_diary = snd(Private.read_and_parse Private.usual_path) in 
-     Private.extract_and_append_to_file the_diary idx ~path_in_nongithubbed;;
+let extract_at_index_and_append_to_file k ~nongithubbed_path = 
+ Private.For_Nongithubbed_files.extract_at_index_and_append_to_file 
+  Private.Common.usual_container k ~nongithubbed_path ;;
 
-  let findreplace_at_index replacements idx = Private.findreplace_at_index_in_file replacements idx Private.usual_path;;   
-  let fix_indexation () = Private.fix_indexation_in_file Private.usual_path;;
+let remove_at_indices indices= 
+  Private.With_container.remove_at_indices Private.Common.usual_container indices ;;  
+
+let replace_at_index_with_file_content k ~nongithubbed_path =   
+   Private.For_Nongithubbed_files.replace_at_index_with_file_content 
+    Private.Common.usual_container k ~nongithubbed_path ;;
   
-  let fix_module_numbers_in_file () = Private.fix_module_numbers_in_file Private.usual_path ;;
-  
-  let remove_snippets indices = Private.remove_snippets_in_file Private.usual_path indices ;;
-  
-  let replace_whole_at_index_with_file_content k ~path_in_nongithubbed=
-   Private.replace_whole_at_index_with_file_content 
-   k Private.usual_path ~path_in_nongithubbed  ;;
-  
-  (*    
-  let z4 = 
-    [
-       "Snippet 2 : A ","aaa";
-       "Snippet 3 : B ","bbb";
-       "Snippet 4 : C from snippet 2 ","ccc";
-       "Snippet 5 : D from snippet 2 and snippet 3","ddd";
-       "Snippet 6 : E from snippet 3 and snippet 4 ","eee";
-    ];;
-  let z5 = fix_indexation z4 true;;
-  let z6 = unparse z5;;
-  let (z7,z8) = parse z6;;
-  let check_invariance = (z8=z5);;
-  *)
+let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path () =    
+  Private.For_Nongithubbed_files.transfer_file_content_to_fresh_entry
+    ~summary ~nongithubbed_path Private.Common.usual_container;; 
+
+
+
+
+(*
+let entry1 = {
+  index=1;
+  summary="abcdef";
+  content="abc\ndef"
+} ;;
+
+let entry2 = {
+  index=2;
+  summary="ghij";
+  content="\ngh\nij\n"
+} ;;
+
+let entry3 = {
+  index=3;
+  summary="klmno";
+  content="\nklmno"
+} ;;
+
+let entry4 = {
+  index=4;
+  summary="pqr";
+  content="pqr\n"
+} ;;
+
+let dy1 = {
+  global_prologue = Some "Here is my prologue";
+  entries = [entry4;entry3;entry2;entry1]
+} ;;
+
+let text1 = write_diary dy1 ;;
+
+let dy2 = parse_whole_diary text1 ;;
+
+*)
+
+
+(*
+
+let lines = Lines_in_text.lines text1 ;;
+
+let (before,_,after) = Option.get (find_opener lines);;
+
+let temp = helper_for_whole_diary_parsing ([],after) ;;
+
+let treated = []
+and lines_after_first_opener = after ;;
+
+let (before,_,after) = Option.get (find_closer lines_after_first_opener);;
+
+let (before2,_,after2) = Option.get (find_opener after);;
+
+let possibly_wrapped_text = String.concat "\n" before2 ;;
+
+let bad1 = remove_module_wrapper possibly_wrapped_text ;;
+
+let indexed_lines = Lines_in_text.indexed_lines possibly_wrapped_text ;;
+
+let first_nonblank_line_opt = List.find_opt (
+    fun  (_,line)->(Cull_string.trim_spaces line)<>""
+  ) indexed_lines
+and last_nonblank_line_opt = List.find_opt (
+    fun   (_,line)->(Cull_string.trim_spaces line)<>""
+  ) (List.rev indexed_lines) ;;
+
+let (idx1,line1) = Option.get first_nonblank_line_opt
+  and (idx2,line2) = Option.get first_nonblank_line_opt
+
+
+
+*)
+
