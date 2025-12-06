@@ -23,11 +23,11 @@ module Private = struct
 
   let intstr_sort = Ordered.sort intstr_order;;
 
-  let lines_inside_or_outside_cee_comments = 
-    Lines_in_text.lines_inside_or_outside_cee_comments ;;
+  let lines_inside_or_outside_cee_comments_or_dq_strings = 
+    Lines_in_text.lines_inside_or_outside_cee_comments_or_dq_strings ;;
 
-  let indexed_lines_inside_or_outside_cee_comments text = 
-     Int_range.index_everything (lines_inside_or_outside_cee_comments text) ;; 
+  let indexed_lines_inside_or_outside_cee_comments_or_dq_strings text = 
+     Int_range.index_everything (lines_inside_or_outside_cee_comments_or_dq_strings text) ;; 
 
 
    let sil_merge ox oy=
@@ -141,7 +141,7 @@ module Walker = struct
       gpi : guard_pattern_indicators_t ;
     } ;;  
   let make text = {
-    lines = indexed_lines_inside_or_outside_cee_comments text ;
+    lines = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text ;
     current_namespace = 0 ;
     preceding_namespaces = [] ;
     smallest_unused_namespace_index = 1;
@@ -483,7 +483,7 @@ let find_directive_from_list_opt line directives=
           ) directives ;;
 
 let text_has_ivy text =
-   let lines = lines_inside_or_outside_cee_comments text in 
+   let lines = lines_inside_or_outside_cee_comments_or_dq_strings text in 
    List.exists (
     fun (line,unfinished_comment) -> 
       (not unfinished_comment) &&
@@ -492,9 +492,9 @@ let text_has_ivy text =
 
 exception First_ivy_in_text_exn ;;   
 let first_ivy_in_text text =
-   let lines = indexed_lines_inside_or_outside_cee_comments text in 
-   match List.find_opt (fun (_line_idx,(line,unfinished_comment))->
-      (not unfinished_comment) && 
+   let lines = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
+   match List.find_opt (fun (_line_idx,(line,starts_with_unfinished_comment))->
+      (not starts_with_unfinished_comment) && 
       (find_directive_from_list_opt line ["if"])<>None
    ) lines with 
    None -> raise First_ivy_in_text_exn 
@@ -502,13 +502,13 @@ let first_ivy_in_text text =
    
 exception Last_endif_in_text_exn ;;   
 let last_endif_in_text text =
-      let lines = List.rev(indexed_lines_inside_or_outside_cee_comments text) in 
-      match List.find_opt (fun (_line_idx,(line,unfinished_comment))->
-          (not unfinished_comment) && 
+  let lines = List.rev(indexed_lines_inside_or_outside_cee_comments_or_dq_strings text) in 
+  match List.find_opt (fun (_line_idx,(line,starts_with_unfinished_comment))->
+          (not starts_with_unfinished_comment) && 
          (find_directive_from_list_opt line ["endif"])<>None
-      ) lines with 
-      None -> raise Last_endif_in_text_exn 
-      |Some(line_idx,_) -> line_idx ;;   
+  ) lines with 
+   None -> raise Last_endif_in_text_exn 
+  |Some(line_idx,_) -> line_idx ;;   
  
 let put_first_ivy_on_first_line text = 
   let line_idx = first_ivy_in_text text in 
@@ -517,7 +517,7 @@ let put_first_ivy_on_first_line text =
 let put_last_endif_on_last_line text = 
   let line_idx = last_endif_in_text text in 
   let temp_text = Lines_in_text.put_line_last_in_text line_idx text in 
-  let temp_lines = List.rev(lines_inside_or_outside_cee_comments temp_text) in 
+  let temp_lines = List.rev(lines_inside_or_outside_cee_comments_or_dq_strings temp_text) in 
   let ((temp_last_line,_),temp_tl) = List_again.head_with_tail temp_lines in 
   (* Any comments after the #endif must be moved before it *)
   let after= Cull_string.two_sided_cutting  ("#endif","") temp_last_line in 
@@ -701,7 +701,7 @@ let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
 
 
 let included_local_files_in_text text = 
-  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let temp2 = List.filter_map (
     fun (line_idx,(line,unfinished_comment)) ->
       if unfinished_comment then None else
@@ -712,7 +712,7 @@ let included_local_files_in_text text =
   intstr_sort temp2 ;;
 
 let included_nonlocal_files_in_text text = 
-  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let temp2 = List.filter_map (
       fun (line_idx,(line,unfinished_comment)) ->
         if unfinished_comment then None else
@@ -741,7 +741,7 @@ let add_extra_ending_in_inclusion_line ~extra line =
 *)
 
 let add_extra_ending_in_inclusions_inside_text ~extra text =
-  let lines_before = lines_inside_or_outside_cee_comments text 
+  let lines_before = lines_inside_or_outside_cee_comments_or_dq_strings text 
   and counter=ref 0 in 
   let lines_after = Image.image(
     fun (line,unfinished_comment) -> 
@@ -768,7 +768,7 @@ let compute_wardrobe
   ) copied_includable_files);;
 
 let highlight_inclusions_in_text text = 
-  let temp1 = indexed_lines_inside_or_outside_cee_comments text in 
+  let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let all_lines = Image.image (
     fun (line_idx,(line,unfinished_comment)) ->
       ((line_idx,line),

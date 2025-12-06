@@ -43,16 +43,6 @@ Replace_inside.overwrite_between_markers_inside_file
  ~overwriter:(string_of_fiftuple_list l) markers ap 
 ;;  
 
-let yamamoto_make_persistent l = 
-let ap = Absolute_path.of_string "watched/watched_not_githubbed/large_data.ml" 
-and markers = (
-"(* D"^"efinition of pre_wardrobe1 begins here *)",
-"(* D"^"efinition of pre_wardrobe1 ends here *)"
-)  in   
-Replace_inside.overwrite_between_markers_inside_file 
- ~overwriter:(string_of_fiftuple_list l) markers ap 
-;;  
-
 let shadow_to_pair = function 
  (Cee_shadow_t.Sh(n,Cee_prawn_t.P l2)) -> (n,l2) ;; 
 

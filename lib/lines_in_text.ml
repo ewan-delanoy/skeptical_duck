@@ -250,6 +250,7 @@ module Private = struct
 
   type situation = 
     Inside_a_single_quoted_string 
+   |After_backslash_in_double_quoted_string
    |Inside_a_double_quoted_string 
    |Inside_a_starry_comment
    |Inside_a_double_slash_comment 
@@ -299,7 +300,17 @@ module Private = struct
            { w with 
               next_idx = coming_idx
             }       
-   |Inside_a_double_quoted_string -> 
+     |After_backslash_in_double_quoted_string -> 
+       let coming_idx = (
+          if (Substring.is_a_substring_located_at "\\" w.text (old_idx+1))
+          then old_idx+2
+          else old_idx+1  ) in  
+          { w with 
+              answer_opt = (if c='\n' then Some (old_idx,true) else None);
+              next_idx = coming_idx;
+              current_state = Inside_a_double_quoted_string;
+            } 
+     |Inside_a_double_quoted_string -> 
        if c='\n' then raise(Unfinished_double_quoted_string) else
        if c = '"' 
        then { w with 
@@ -307,15 +318,15 @@ module Private = struct
               current_state = Outside_comments_or_strings;
             }
        else 
-       let coming_idx = (
-          if (Substring.is_a_substring_located_at "\\\\" w.text old_idx)
-            || (Substring.is_a_substring_located_at "\\\n" w.text old_idx)
-            || (Substring.is_a_substring_located_at "\\\"" w.text old_idx) 
-          then old_idx+2
-          else old_idx+1  ) in  
-          { w with 
-              next_idx = coming_idx
-            } 
+       let state= (
+          if Substring.is_a_substring_located_at "\\" w.text old_idx
+          then After_backslash_in_double_quoted_string 
+          else Inside_a_double_quoted_string
+       ) in 
+       { w with 
+              next_idx = old_idx +1 ;
+              current_state = state ;
+       } 
           
    |Inside_a_starry_comment -> 
       if c = '\n' then {w with answer_opt = Some (old_idx,true)} else    
@@ -383,27 +394,36 @@ let next_newline_inside_or_outside_cee_comments_opt
   let w = initial_walker txt idx unfinished_comment in 
   iterate w;;
 
-
-
-let rec helper_for_lines_inside_or_outside_cee_comments 
-  (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
+let pusher_for_lines_inside_or_outside_cee_comments_or_dq_strings (_,walker) =
+  let (whole_text,total_length,treated_lines,next_idx_to_be_treated,
+  unfinished_comment_or_dqs)=walker in  
   if next_idx_to_be_treated > total_length 
-  then List.rev treated_lines 
+  then (Some(List.rev treated_lines),walker) 
   else 
   match next_newline_inside_or_outside_cee_comments_opt  
-        whole_text next_idx_to_be_treated unfinished_comment with
+        whole_text next_idx_to_be_treated unfinished_comment_or_dqs with
   None -> 
       let rest_of_text = 
         Cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
-      List.rev ((rest_of_text,unfinished_comment) :: treated_lines) 
+      (Some(List.rev ((rest_of_text,unfinished_comment_or_dqs) 
+      :: treated_lines)),walker) 
   |Some(newline_idx,unfinished_comment2) ->
      let line= Cull_string.interval whole_text next_idx_to_be_treated (newline_idx-1) in 
-     helper_for_lines_inside_or_outside_cee_comments 
-  (whole_text,total_length,(line,unfinished_comment)::treated_lines,newline_idx+1,unfinished_comment2);; 
+     (None,
+  (whole_text,total_length,(line,unfinished_comment_or_dqs)::treated_lines,newline_idx+1,unfinished_comment2));; 
 
-let lines_inside_or_outside_cee_comments text = 
-  helper_for_lines_inside_or_outside_cee_comments 
-  (text,String.length text,[],1,false) ;;
+let rec iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings 
+  outer_walker =
+   let (end_result_opt,_inner_walker) = outer_walker in 
+   match end_result_opt with 
+   Some end_result -> end_result 
+   | None -> iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings 
+    (pusher_for_lines_inside_or_outside_cee_comments_or_dq_strings outer_walker);; 
+
+
+let lines_inside_or_outside_cee_comments_or_dq_strings text = 
+  iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings 
+  (None,(text,String.length text,[],1,false)) ;;
 
 (*  
 
@@ -412,19 +432,19 @@ let lines_inside_or_outside_cee_comments text =
    "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt1 ;; 
+lines_inside_or_outside_cee_comments_or_dq_strings txt1 ;; 
 
 let txt2 = String.concat "\n" [
    "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt2 ;;
+lines_inside_or_outside_cee_comments_or_dq_strings txt2 ;;
 
 let txt3 = String.concat "\n" [
    "1 When";"2 The "; "3 \"/*\" Saints"; "4 Go" ; "5 Marching \"*/\" In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt3 ;; 
+lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;; 
 
 *)
   
@@ -559,7 +579,7 @@ let findreplace_in_interval_in_file (x,y) fn i j=
 
   let lines text= Image.image snd (indexed_lines text);;
 
-  let lines_inside_or_outside_cee_comments = Private.lines_inside_or_outside_cee_comments ;; 
+  let lines_inside_or_outside_cee_comments_or_dq_strings = Private.lines_inside_or_outside_cee_comments_or_dq_strings ;; 
 
   let modify_interval_inside_file = Private.modify_interval_inside_file ;;
 
