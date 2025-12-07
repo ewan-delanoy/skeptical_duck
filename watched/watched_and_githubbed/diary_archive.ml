@@ -1,7 +1,49 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
- Entry 195 : 
+ Entry 196 : Computing left cosets in a permutation group
+************************************************************************************************************************)
+module Snip196 = struct 
+
+
+let i_order = Total_ordering.for_integers ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let is_in_wreath perm =
+  let measure = (fun k->((Permutation.eval perm k)mod 2)=(k mod 2)) in 
+  let choice = measure 1 in 
+  List.for_all (fun k->measure k=choice) (Int_range.range 2 6) ;; 
+let all_permutations = Permutation.iii 6 ;;    
+
+let wreath = List.filter is_in_wreath all_permutations ;;
+
+let left_coset perm =
+   il_sort(Image.image (Permutation.product perm) wreath) ;;
+
+let rec helper_for_hive_computation (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> List.rev(treated)
+  |perm::other_perms ->
+    let lc = left_coset perm in 
+    helper_for_hive_computation ((List.hd lc)::treated,
+     il_setminus to_be_treated lc) ;;
+
+let hive =  helper_for_hive_computation ([],all_permutations);;    
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 195 : Anonimizing a LaTeX file
 ************************************************************************************************************************)
 module Snip195 = struct 
 
@@ -778,8 +820,9 @@ end;;
  Entry 190 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
 module Snip190 = struct 
-type sixtuple = SU of int * int * int * int * int * int ;;
 
+
+type sixtuple = SU of int * int * int *  int * int * int ;; 
 let i_order = Total_ordering.for_integers ;;
 
 let i_merge = Ordered.merge i_order ;;
@@ -848,7 +891,7 @@ let act bound =
    while (su_degree(fst(!state_ref))<=bound)
    do step () done ;;
 
-Chronometer.it act 15 ;;   
+let computation1 = Chronometer.it act 15 ;;   
 
 let ball15 = List.rev(snd(!state_ref)) ;;
 
@@ -871,145 +914,160 @@ let wreath = List.filter is_in_wreath all_permutations ;;
 
 let nth_in_wreath idx = List.nth wreath (idx-1) ;; 
 
-let maxie = Image.image nth_in_wreath [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 25; 26; 27; 28; 29; 30; 31; 32; 33;
+
+
+let maxie = Image.image nth_in_wreath [1; 4; 6; 7; 9; 12; 14; 15; 17; 20; 22; 23; 26; 27; 29; 32; 34; 35; 37; 40;
+   42; 43; 45; 48; 49; 52; 54; 55; 57; 60; 62; 63; 65; 68; 70; 71] ;;
+let minnie = Image.image nth_in_wreath [1; 4; 6; 7; 9; 12; 13; 16; 18; 19; 21; 24; 26; 27; 29; 32; 34; 35; 38; 39; 41;
+ 44; 46; 47; 49; 52; 54; 55; 57; 60; 61; 64; 66; 67; 69; 72] ;;
+
+let normie = Image.image nth_in_wreath [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; 25; 26; 27; 28; 29; 30; 31; 32; 33;
    34; 35; 36; 49; 50; 51; 52; 53; 54; 55; 56; 57; 58; 59; 60] ;;
 
+type distinguished_subgroup =
+    Minnie 
+   |Maxie 
+   |Normie 
+   |Wreath;;
 
-(*[1; 4; 6; 7; 9; 12; 14; 15; 17; 20; 22; 23; 26; 27; 29; 32; 34; 35; 37; 40;
-   42; 43; 45; 48; 49; 52; 54; 55; 57; 60; 62; 63; 65; 68; 70; 71] ;;
-*)   
+let disu_to_string = function 
+    Minnie -> "minnie" 
+    |Maxie -> "maxie"
+    |Normie -> "normie" 
+    |Wreath -> "wreath";;  
 
-(*
-[1; 4; 6; 7; 9; 12; 13; 16; 18; 19; 21; 24; 26; 27; 29; 32; 34; 35; 38; 39; 41;
- 44; 46; 47; 49; 52; 54; 55; 57; 60; 61; 64; 66; 67; 69; 72]
-;;
-*)
+let disu_content = function 
+     Maxie -> maxie
+    |Minnie -> minnie 
+    |Normie -> normie 
+    |Wreath -> wreath;;   
 
-let wreath_orbit su =
-     su_sort(Image.image (perm_action su) wreath);;   
-  
-let maxie_orbit su =
-     su_sort(Image.image (perm_action su) maxie);;      
-let ball15_length =   List.length ball15 ;;   
-let array_for_wreath_orbit_representatives = Array.make (ball15_length) 0 ;; 
-
-let array_for_maxie_orbit_representatives = Array.make (ball15_length) 0 ;; 
-
+let disu_orbit disu su =
+     su_sort(Image.image (perm_action su) (disu_content disu));;   
+     
+let ball15_length =   List.length ball15 ;; 
 
 let ivy_get k = List.nth ball15 (k-1) ;;
 let ivy_index su = List_again.find_index_of_in su ball15 ;;
 
+let hashtbl_for_maxie_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;
+let hashtbl_for_minnie_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;
+let hashtbl_for_normie_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;
+let hashtbl_for_wreath_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;
 
-let ivy_wreath_orbit =Memoized.make(fun k -> 
-   let sixtuple = List.nth ball15 (k-1) in 
-   let su_orbit= wreath_orbit sixtuple in 
-   i_sort(Image.image ivy_index su_orbit)
-);;
+let disu_hashtbl_for_orbits = function 
+     Maxie -> hashtbl_for_maxie_orbits
+    |Minnie -> hashtbl_for_minnie_orbits
+    |Normie -> hashtbl_for_normie_orbits 
+    |Wreath -> hashtbl_for_wreath_orbits;;   
+ 
+let disu_ivy_orbit disu k=
+   let hshtbl = disu_hashtbl_for_orbits disu in 
+   match Hashtbl.find_opt hshtbl k with 
+   Some old_answer -> old_answer 
+   |None ->
+     let sixtuple = List.nth ball15 (k-1) in 
+   let su_orbit= disu_orbit disu sixtuple in 
+   let new_answer =i_sort(Image.image ivy_index su_orbit) in 
+   let _ = (Hashtbl.add hshtbl k new_answer) in 
+   new_answer ;;
 
-let ivy_maxie_orbit =Memoized.make(fun k -> 
-   let sixtuple = List.nth ball15 (k-1) in 
-   let su_orbit= maxie_orbit sixtuple in 
-   i_sort(Image.image ivy_index su_orbit)
-);;
+let array_for_maxie_orbit_representatives = Array.make (ball15_length) 0 ;; 
+let array_for_minnie_orbit_representatives = Array.make (ball15_length) 0 ;;
+let array_for_normie_orbit_representatives = Array.make (ball15_length) 0 ;;
+let array_for_wreath_orbit_representatives = Array.make (ball15_length) 0 ;;
 
-let rec helper_for_smallest_untreated_wreath_ivy_index k =
+let disu_array_for_orbit_representatives = function 
+     Maxie -> array_for_maxie_orbit_representatives
+    |Minnie -> array_for_minnie_orbit_representatives
+    |Normie -> array_for_normie_orbit_representatives
+    |Wreath -> array_for_wreath_orbit_representatives;;   
+
+let rec disu_helper_for_smallest_untreated_ivy_index disu k =
    if k > ball15_length then None else 
-   if Array.get array_for_wreath_orbit_representatives (k-1)=0 
+   let arr = disu_array_for_orbit_representatives disu in 
+   if Array.get arr (k-1)=0 
    then Some k 
-   else helper_for_smallest_untreated_wreath_ivy_index (k+1) ;;   
+   else disu_helper_for_smallest_untreated_ivy_index disu (k+1) ;; 
 
-let rec helper_for_smallest_untreated_maxie_ivy_index k =
-   if k > ball15_length then None else 
-   if Array.get array_for_maxie_orbit_representatives (k-1)=0 
-   then Some k 
-   else helper_for_smallest_untreated_maxie_ivy_index (k+1) ;;   
+let disu_smallest_untreated_ivy_index disu =
+    disu_helper_for_smallest_untreated_ivy_index disu 1 ;;
 
-
-let smallest_untreated_wreath_ivy_index () =
-    helper_for_smallest_untreated_wreath_ivy_index 1 ;;
-
-let smallest_untreated_maxie_ivy_index () =
-    helper_for_smallest_untreated_maxie_ivy_index 1 ;;
-
-
-let wreath_step_with_no_message k =
-   let orb = ivy_wreath_orbit k in 
+let disu_step_with_no_message disu k =
+   let orb = disu_ivy_orbit disu k in 
    let representative = List.hd(List.rev orb) in 
+   let arr = disu_array_for_orbit_representatives disu in 
    List.iter (fun t->Array.set 
-     array_for_wreath_orbit_representatives (t-1)  representative
+    arr (t-1)  representative
    ) orb ;; 
 
-let maxie_step_with_no_message k =
-   let orb = ivy_maxie_orbit k in 
-   let representative = List.hd(List.rev orb) in 
-   List.iter (fun t->Array.set 
-     array_for_maxie_orbit_representatives (t-1)  representative
-   ) orb ;;    
-   
-let wreath_step k =
+let disu_step disu k =
    let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^
-       " treated [wreath] \n" in 
+       " treated ["^(disu_to_string disu)^"] \n" in 
    (
-     wreath_step_with_no_message k;
+     disu_step_with_no_message disu k;
      print_string msg;
      flush stdout
    )  ;;
 
-let maxie_step k =
-   let msg = (string_of_int k)^" of "^(string_of_int(ball15_length))^
-       " treated [maxie] \n" in 
-   (
-     maxie_step_with_no_message k;
-     print_string msg;
-     flush stdout
-   )  ;;
+let walker = ref (Some 1) ;;   
 
-
-let walker = ref (Some 1) ;;
-
-let wreath_act () = 
+let disu_act disu = 
    let _ = (walker:=Some 1) in 
    while (!walker)<>None 
    do
-     wreath_step (Option.get(!walker));
-     walker:=smallest_untreated_wreath_ivy_index ()
+     disu_step disu (Option.get(!walker));
+     walker:=disu_smallest_untreated_ivy_index disu
 done ;;
 
-let maxie_act () = 
-   let _ = (walker:=Some 1) in 
-   while (!walker)<>None 
-   do
-     maxie_step (Option.get(!walker));
-     walker:=smallest_untreated_maxie_ivy_index ()
-done ;;
+let computation2 = Chronometer.it (List.iter disu_act) [Maxie;Minnie;Normie;Wreath] ;;
 
-wreath_act ();;
-maxie_act () ;;
-let wreath_representatives = 
-   i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
 
-let maxie_representatives = 
-   i_sort(Array.to_list array_for_maxie_orbit_representatives) ;;
+let disu_representatives = Memoized.make(fun 
+     disu ->
+   i_sort(Array.to_list (disu_array_for_orbit_representatives disu)   
+      ));;  
 
-let specific_maxie_representatives = 
-   Explicit.filter 
+let computation3 = Chronometer.it (Image.image disu_representatives) [Maxie;Minnie;Normie] ;;
+
+
+let disu_specific_representatives = Memoized.make(fun 
+     disu ->
+     Explicit.filter 
    (fun m->
-      (List.length(ivy_maxie_orbit m))<>(List.length(ivy_wreath_orbit m))
-      ) maxie_representatives ;;
+      (List.length(disu_ivy_orbit disu m))<>
+      (List.length(disu_ivy_orbit Wreath m))
+      ) (disu_representatives disu)  
+);;        
 
-let maxie_minimizers =
-    let temp = Explicit.image ivy_maxie_orbit 
-    specific_maxie_representatives in 
-    snd(Min.minimize_it_with_care List.length temp);;
+let computation4 = Chronometer.it (Image.image disu_specific_representatives) [Maxie;Minnie;Normie] ;;
 
-let maxie_companion_in_index_form =
-    List.hd maxie_minimizers
-   (*[504; 518; 570; 591; 624; 629; 681; 716; 740; 754; 766; 782; 809; 818; 835;
-    849; 858; 860] *)  ;; 
 
-let maxie_companion_in_uple_form =
-    Image.image (fun k->List.nth ball15 (k-1))
-  maxie_companion_in_index_form  ;; 
+let disu_minimizers = Memoized.make(fun 
+     disu ->
+    let temp = Explicit.image (disu_ivy_orbit disu) 
+    (disu_specific_representatives disu) in 
+    snd(Min.minimize_it_with_care List.length temp)
+);;     
+
+let computation5 = Chronometer.it (Image.image disu_minimizers) [Maxie;Minnie;Normie] ;;
+
+let disu_companion_in_index_form = Memoized.make(fun 
+     disu -> List.hd (disu_minimizers disu) 
+);;     
+
+let computation6 = Chronometer.it (Image.image disu_companion_in_index_form) [Maxie;Minnie;Normie] ;;
+
+let disu_companion_in_uple_form = Memoized.make(fun 
+     disu -> Image.image (fun k->List.nth ball15 (k-1))
+     (disu_companion_in_index_form disu)
+);;     
+
+let computation6 = Chronometer.it (Image.image disu_companion_in_uple_form) [Maxie;Minnie;Normie] ;;
+
+
+(*
+
 
 let u4 = Int_uple.list_of_pairs 6 ;;
    
@@ -1075,7 +1133,7 @@ let viz_v1 k =
 
 let v2 = List.filter (fun (SU(x1,x2,x3,x4,x5,x6)) ->x1=3) v1 ;;
 
-(*
+
 let wreath_representatives = i_sort(Array.to_list array_for_wreath_orbit_representatives) ;;
 
 let diff = ball15_length - (List.length u1) ;;
@@ -1548,12 +1606,13 @@ end;;
 module Snip185 = struct 
 
 Manage_diary.extract_at_index_and_append_to_file
-  192 ~nongithubbed_path: "cloth" ;;
+  176 ~nongithubbed_path: "cloth" ;;
 
 Manage_diary.extract_at_index_and_append_to_file
-  188 ~nongithubbed_path: "jug" ;;  
+  190 ~nongithubbed_path: "nap" ;;  
 
 let act1 () = Manage_diary.transfer_file_content_to_fresh_entry 
+~summary:"Computing left cosets in a permutation group"
   ~nongithubbed_path: "nap" ();;
 
 Manage_diary.transfer_file_content_to_fresh_entry 
@@ -1561,7 +1620,7 @@ Manage_diary.transfer_file_content_to_fresh_entry
 
 
 let act2 () = Manage_diary.replace_at_index_with_file_content 
-  192 ~nongithubbed_path: "cloth";;
+  190 ~nongithubbed_path: "nap";;
 
 let act3 () = Manage_diary.replace_at_index_with_file_content 
   191 ~nongithubbed_path: "pan";;  
@@ -6071,7 +6130,7 @@ open Pri;;
 
 (* let text1 = "			case '\'': fputs(\"'\", f); break;" ;; *)
 
-let bad1 () = Pri.lines_inside_or_outside_cee_comments text1;;
+let bad1 () = Pri.lines_inside_or_outside_cee_comments_or_dq_strings text1;;
 
 let steppe 
   (whole_text,total_length,treated_lines,next_idx_to_be_treated,unfinished_comment)= 
@@ -8081,19 +8140,19 @@ let txt1 = String.concat "\n" [
    "1 When";"2 The "; "3 /* Saints"; "4 Go" ; "5 Marching */ In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt1 ;; 
+lines_inside_or_outside_cee_comments_or_dq_strings txt1 ;; 
 
 let txt2 = String.concat "\n" [
    "1 When";"2 The "; "3 '\\' /* Saints */"; "4 Go" ; "5 Marching In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt2 ;;
+lines_inside_or_outside_cee_comments_or_dq_strings txt2 ;;
 
 let txt3 = String.concat "\n" [
    "1 When";"2 The "; "3 \"/*\" Saints"; "4 Go" ; "5 Marching \"*/\" In"; "6 Oh"
    ]  ;; 
 
-lines_inside_or_outside_cee_comments txt3 ;; 
+lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;; 
 
 let w0 = {
       answer_opt = None ;
@@ -8160,7 +8219,7 @@ let bad4 =
       Cee_text.tattoo_regions_between_conditional_directives 
       ~name_for_included_file old_text ;;
 
-let lines = Cee_text.Private.indexed_lines_inside_or_outside_cee_comments old_text ;;
+let lines = Cee_text.Private.indexed_lines_inside_or_outside_cee_comments_or_dq_strings old_text ;;
 
 let bad5 = Cee_text.Private.compute_small_spaces_in_text old_text ;; 
 

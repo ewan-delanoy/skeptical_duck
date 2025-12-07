@@ -215,7 +215,7 @@ module Give_and_Receive = struct
 
    let starter_for_snippet_origin_mention =
      "(* The first draft of this was initially extracted "^
-    "from diary entry " ;;
+    "from entry " ;;
 
     let rec first_nonblank_line_with_rest indexed_lines = 
    match indexed_lines with 
@@ -242,7 +242,9 @@ let last_index_in_header indexed_lines =
        match first_nonblank_line_with_rest indexed_lines4 with 
    None -> idx3
    |Some((idx4,culled4),indexed_lines5)->
-     if not(String.starts_with culled4 ~prefix:"open Skeptical_duck_lib ") then idx3 else
+     if not(String.starts_with culled4 ~prefix:"open Skeptical_duck_lib ") 
+     then idx3 
+     else
     match indexed_lines5 with 
     [] -> idx4 
     |(idx5,line5) :: _ -> 
@@ -290,10 +292,10 @@ let transfer_file_content_to_fresh_entry dy ?(summary="") ap =
   let _=(Io.overwrite_with ap header) in 
   Modify.add_fresh_entry dy ~summary_:summary ~content_:cleaned_content;;
 
- let replace_at_index_with_file_content dy k ap =   
+ let replace_at_index_with_file_content dy k ap ~erase_original=   
    let raw_file_content = Io.read_whole_file ap in 
   let (header,cleaned_content) = clean_filecontent raw_file_content in 
-  let _=(Io.overwrite_with ap header) in 
+  let _=(if erase_original then Io.overwrite_with ap header) in 
   Modify.replace_at_index_with_content dy k cleaned_content;;
 
 
@@ -310,9 +312,9 @@ let remove_at_indices fn indices=
   let new_dy = Modify.remove_at_indices old_dy indices in 
   Io.overwrite_with fn (Write.write_diary new_dy) ;;  
 
-let replace_at_index_with_file_content fn k ap =   
+let replace_at_index_with_file_content fn k ap ~erase_original=   
    let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
-  let new_dy = Give_and_Receive.replace_at_index_with_file_content old_dy k ap in 
+  let new_dy = Give_and_Receive.replace_at_index_with_file_content old_dy k ap ~erase_original in 
   Io.overwrite_with fn (Write.write_diary new_dy) ;; 
   
 let transfer_file_content_to_fresh_entry fn ?(summary="") ap =    
@@ -334,9 +336,9 @@ let extract_at_index_and_append_to_file fn k ~nongithubbed_path =
   With_container.extract_at_index_and_append_to_file fn k 
     (expand nongithubbed_path) ;;
 
-let replace_at_index_with_file_content fn k ~nongithubbed_path =   
+let replace_at_index_with_file_content fn k ~nongithubbed_path ~erase_original=   
   With_container.replace_at_index_with_file_content fn k 
-    (expand nongithubbed_path) ;; 
+    (expand nongithubbed_path) ~erase_original;; 
   
 let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path fn =    
   With_container.transfer_file_content_to_fresh_entry fn ~summary 
@@ -354,9 +356,9 @@ let extract_at_index_and_append_to_file k ~nongithubbed_path =
 let remove_at_indices indices= 
   Private.With_container.remove_at_indices Private.Common.usual_container indices ;;  
 
-let replace_at_index_with_file_content k ~nongithubbed_path =   
+let replace_at_index_with_file_content ?(erase_original=true) k  ~nongithubbed_path =   
    Private.For_Nongithubbed_files.replace_at_index_with_file_content 
-    Private.Common.usual_container k ~nongithubbed_path ;;
+    Private.Common.usual_container k ~nongithubbed_path ~erase_original ;;
   
 let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path () =    
   Private.For_Nongithubbed_files.transfer_file_content_to_fresh_entry
