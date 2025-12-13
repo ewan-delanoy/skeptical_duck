@@ -1,6 +1,244 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 197 : Applying a regexp transform to a very large string
+************************************************************************************************************************)
+module Snip197 = struct 
+
+open Skeptical_duck_lib;;
+open Needed_values ;; 
+
+let prelude1_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"prelude1.gp") ;;
+
+
+let original_prelude_text = Io.read_whole_file prelude1_ap ;;
+
+
+
+(* let original_prelude_text = "/*\n\nallocatemem(5120000000);\n\nread(\"/home"^
+"/bartsimpson/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/Levraoureg/"^
+"levraoureg.gp\");\n\nread(\"/home/bartsimpson/Teuliou/Bash_scripts/Pari_"^
+"Programming/my_pari_code/prelude1.gp\");\n\n\n*/\n\nh1_prod(a)=[(a1*e6*e4 "^
+"+ (4*a1*e5^2 + (3*a3 + (-3*a4 + (a5 - a6)))*e6";; *)
+
+let original_length=String.length(original_prelude_text);;
+
+let is_not_a_digit c =
+    let i = int_of_char c in (i<48)||(i>57) ;;
+
+exception Next_apple_exn ;;    
+
+
+(* module Old_Version = struct
+let first_apple=("",1) ;;
+
+let next_apple (treated,next_idx) = 
+  if next_idx> original_length
+  then raise Next_apple_exn 
+  else 
+  match Strung.char_finder_from_inclusive_opt (
+    fun c->List.mem c ['a';'b';'c']
+  ) original_prelude_text next_idx with 
+  None -> (treated^
+      (Cull_string.interval original_prelude_text next_idx original_length),
+      original_length+1)
+  |Some(i1)->
+    if is_not_a_digit(String.get original_prelude_text (i1))
+    then (treated^
+      (Cull_string.interval original_prelude_text next_idx i1),
+      i1+1) 
+    else         
+    let i2=(match Strung.char_finder_from_inclusive_opt 
+    is_not_a_digit
+    original_prelude_text (i1+1) with 
+      None -> original_length
+      |Some i->i-1
+    ) in     
+        (treated^(Cull_string.interval original_prelude_text next_idx (i1-1))^
+        "a["^(Cull_string.interval original_prelude_text (i1+1) i2)^"]",
+        i2+1) ;;
+    
+(* next_apple ("xyz","whenc25hum");; *)
+
+let fixed_length=string_of_int(original_length);;
+
+let apple_ref =ref first_apple ;;
+
+let step () =
+    let _ = (apple_ref:=next_apple(!apple_ref);) in 
+    let msg = (string_of_int (snd(!apple_ref)))^" of "^fixed_length^" done \n" in 
+    (print_string msg;flush stdout) ;;  
+
+let compute ()=
+  let _=while snd(!apple_ref)<=original_length do step() done in 
+  fst(!apple_ref);;
+  
+let answer=compute();;
+
+end ;; *)
+
+(* module Middle_version = struct
+
+let builder_ref = ref "" ;;
+
+let push str=(builder_ref:=(!builder_ref)^str) ;;
+
+let push_interval i j=push (Cull_string.interval original_prelude_text i j) ;;
+
+let push_left_paren ()= push "a[" ;;
+
+let push_right_paren ()= push "]" ;;
+
+let unveil_building () = (!builder_ref) ;;
+
+let first_apple=1 ;;
+
+let next_apple next_idx = 
+  if next_idx> original_length
+  then raise Next_apple_exn 
+  else 
+  match Strung.char_finder_from_inclusive_opt (
+    fun c->List.mem c ['a';'b';'c']
+  ) original_prelude_text next_idx with 
+  None -> 
+      let _ =(
+        push_interval next_idx original_length 
+      ) in 
+      original_length+1
+  |Some(i1)->
+    if is_not_a_digit(String.get original_prelude_text (i1))
+    then  let _ =(
+        push_interval next_idx i1
+      ) in  
+      i1+1
+    else         
+    let i2=(match Strung.char_finder_from_inclusive_opt 
+    is_not_a_digit
+    original_prelude_text (i1+1) with 
+      None -> original_length
+      |Some i->i-1
+    ) in     
+    let _ =(
+        push_interval next_idx (i1-1);
+        push_left_paren ();
+        push_interval (i1+1) i2;
+        push_right_paren (); 
+    ) in
+    i2+1 ;;
+
+let fixed_length=string_of_int(original_length);;
+
+let apple_ref =ref first_apple ;;
+
+let step () =
+    let _ = (apple_ref:=next_apple(!apple_ref);) in 
+    let msg = (string_of_int ((!apple_ref)-1))^" of "^fixed_length^" done \n" in 
+    (print_string msg;flush stdout) ;;  
+
+let compute ()=
+  let _=while (!apple_ref)<=original_length do step() done in 
+  unveil_building ();;
+  
+let answer=compute();;
+
+let check_answer = (answer=Old_Version.answer) ;;
+
+end ;; *)
+
+let builder = Bytes.create (original_length+400*720*720) ;;
+
+let largest_treated_index_ref = ref 0 ;;
+
+let push str=
+   let l = (!largest_treated_index_ref) 
+   and n = String.length str in 
+   (
+    for k=1 to n do 
+    Bytes.set builder (l-1+k) (String.get str (k-1))
+    done  ;
+    largest_treated_index_ref:=l+n;
+   ) ;;
+
+let push_interval i j=
+   let l = (!largest_treated_index_ref) 
+   and n = j-i+1 in 
+   (
+    for k=1 to n do 
+    Bytes.set builder (l-1+k) (String.get original_prelude_text (i-2+k))
+    done  ;
+    largest_treated_index_ref:=l+n;
+   ) ;;
+
+let push_left_paren ()= push "a[" ;;
+
+let push_right_paren ()= push "]" ;;
+
+let unveil_building () = Bytes.sub_string builder 0 (!largest_treated_index_ref) ;;
+
+let first_apple=1 ;;
+
+let next_apple next_idx = 
+  if next_idx> original_length
+  then raise Next_apple_exn 
+  else 
+  match Strung.char_finder_from_inclusive_opt (
+    fun c->List.mem c ['a';'b';'c']
+  ) original_prelude_text next_idx with 
+  None -> 
+      let _ =(
+        push_interval next_idx original_length 
+      ) in 
+      original_length+1
+  |Some(i1)->
+    if is_not_a_digit(String.get original_prelude_text (i1))
+    then  let _ =(
+        push_interval next_idx i1
+      ) in  
+      i1+1
+    else         
+    let i2=(match Strung.char_finder_from_inclusive_opt 
+    is_not_a_digit
+    original_prelude_text (i1+1) with 
+      None -> original_length
+      |Some i->i-1
+    ) in     
+    let _ =(
+        push_interval next_idx (i1-1);
+        push_left_paren ();
+        push_interval (i1+1) i2;
+        push_right_paren (); 
+    ) in
+    i2+1 ;;
+
+let fixed_length=string_of_int(original_length);;
+
+let apple_ref =ref first_apple ;;
+
+let step () =
+    let _ = (apple_ref:=next_apple(!apple_ref);) in 
+    let msg = (string_of_int ((!apple_ref)-1))^" of "^fixed_length^" done \n" in 
+    (print_string msg;flush stdout) ;;  
+
+let compute ()=
+  let _=while (!apple_ref)<=original_length do step() done in 
+  unveil_building ();;
+  
+let restart k = Lines_in_text.remove_lower_interval_in_file prelude1_ap k;;  
+
+
+let answer=compute();;
+
+(*
+started at 10:20, ended at 10:21
+*)
+let act () = Io.overwrite_with prelude1_ap answer ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 196 : Computing left cosets in a permutation group
 ************************************************************************************************************************)
 module Snip196 = struct 
@@ -1612,11 +1850,8 @@ Manage_diary.extract_at_index_and_append_to_file
   190 ~nongithubbed_path: "nap" ;;  
 
 let act1 () = Manage_diary.transfer_file_content_to_fresh_entry 
-~summary:"Computing left cosets in a permutation group"
-  ~nongithubbed_path: "nap" ();;
-
-Manage_diary.transfer_file_content_to_fresh_entry 
-  ~nongithubbed_path: "parametrized_tex_file" ();;
+~summary:"Applying a regexp transform to a very large string"
+  ~nongithubbed_path: "ham" ();;
 
 
 let act2 () = Manage_diary.replace_at_index_with_file_content 

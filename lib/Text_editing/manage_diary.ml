@@ -286,10 +286,10 @@ let clean_filecontent raw_file_content =
       and header = extract_header raw_indexed_lines idx0 in 
   (header,cleaned_filecontent) ;;    
 
-let transfer_file_content_to_fresh_entry dy ?(summary="") ap =
+let transfer_file_content_to_fresh_entry dy ?(summary="") ap ~erase_original=
   let raw_file_content = Io.read_whole_file ap in 
   let (header,cleaned_content) = clean_filecontent raw_file_content in 
-  let _=(Io.overwrite_with ap header) in 
+  let _=(if erase_original then Io.overwrite_with ap header) in 
   Modify.add_fresh_entry dy ~summary_:summary ~content_:cleaned_content;;
 
  let replace_at_index_with_file_content dy k ap ~erase_original=   
@@ -317,9 +317,9 @@ let replace_at_index_with_file_content fn k ap ~erase_original=
   let new_dy = Give_and_Receive.replace_at_index_with_file_content old_dy k ap ~erase_original in 
   Io.overwrite_with fn (Write.write_diary new_dy) ;; 
   
-let transfer_file_content_to_fresh_entry fn ?(summary="") ap =    
+let transfer_file_content_to_fresh_entry fn ?(summary="") ap ~erase_original=    
    let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
-  let new_dy = Give_and_Receive.transfer_file_content_to_fresh_entry old_dy ~summary ap in 
+  let new_dy = Give_and_Receive.transfer_file_content_to_fresh_entry old_dy ~summary ap ~erase_original in 
   Io.overwrite_with fn (Write.write_diary new_dy) ;; 
 
 
@@ -340,9 +340,9 @@ let replace_at_index_with_file_content fn k ~nongithubbed_path ~erase_original=
   With_container.replace_at_index_with_file_content fn k 
     (expand nongithubbed_path) ~erase_original;; 
   
-let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path fn =    
+let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path fn ~erase_original=    
   With_container.transfer_file_content_to_fresh_entry fn ~summary 
-    (expand nongithubbed_path) ;; 
+    (expand nongithubbed_path) ~erase_original;; 
   
 end ;;  
 
@@ -360,9 +360,9 @@ let replace_at_index_with_file_content ?(erase_original=true) k  ~nongithubbed_p
    Private.For_Nongithubbed_files.replace_at_index_with_file_content 
     Private.Common.usual_container k ~nongithubbed_path ~erase_original ;;
   
-let transfer_file_content_to_fresh_entry ?(summary="") ~nongithubbed_path () =    
+let transfer_file_content_to_fresh_entry ?(summary="") ?(erase_original=true) ~nongithubbed_path () =    
   Private.For_Nongithubbed_files.transfer_file_content_to_fresh_entry
-    ~summary ~nongithubbed_path Private.Common.usual_container;; 
+    ~summary ~nongithubbed_path Private.Common.usual_container ~erase_original;; 
 
 
 
