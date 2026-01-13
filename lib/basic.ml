@@ -40,3 +40,13 @@ let frac_ceiling a b=
 let power a b = Private.helper_for_power (a,b,1) ;;
 
 let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
+
+let rec smallest_in_range_satisfying_opt (a,b) f =
+   if a>b then None else 
+   if f a then Some a else 
+   smallest_in_range_satisfying_opt (a+1,b) f;;  
+
+let rec largest_in_range_satisfying_opt (a,b) f =
+   if a>b then None else 
+   if f b then Some b else 
+   largest_in_range_satisfying_opt (a,b-1) f;;     

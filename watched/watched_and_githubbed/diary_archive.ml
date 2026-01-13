@@ -1,6 +1,1464 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 205 : Musings on a self-referring sequence, III
+************************************************************************************************************************)
+module Snip205 = struct 
+
+type eye = E of int list ;;
+
+let extend_eye (E l) q=E(l@[q]);;
+
+exception Ratio_exn of eye ;;
+
+let ratio (E l) =
+  if List.length l < 2 then raise (Ratio_exn(E l)) else 
+  let p = List.nth l 1 in 
+  if List.length l < p then raise (Ratio_exn(E l)) else 
+  Basic.fold_sum (List_again.long_head p l) ;;   
+
+let tee_term e n = 
+  let (E l)=e
+  and r = ratio e in
+  (List.hd l)*(Basic.power r (n-1));;
+
+type analysis_result =
+   Self_resolving of eye * int
+  |Impossibity_reached of int * eye  
+  |Delayed of eye * int;;
+
+
+let compute_data1 e =
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l  
+  and n = List.length l in 
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  let past_total = Basic.fold_sum l 
+  and future_total = tee_term e i in 
+  let remaining = future_total - past_total 
+  and degrees_of_freedom = ai-n in 
+  let preceding_value = List.hd (List.rev l) in 
+  let complement = 2*preceding_value + degrees_of_freedom +1 in 
+  let minimal_sum = 
+    (degrees_of_freedom * complement)/2 in
+   (remaining,minimal_sum,preceding_value,degrees_of_freedom,complement,i,n)
+   ;; 
+
+let self_resolved_version e =
+  let (E l)=e in 
+  let data1=compute_data1 e in 
+  let (remaining,_,_,_,_,_,_)=data1 in 
+  E(l@[remaining]) ;;     
+
+let compute_data1_for_self_resolved_version e =
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l  
+  and n = List.length l in 
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  let past_total = Basic.fold_sum l 
+  and future_total = tee_term e i in 
+  let remaining = future_total - past_total  in
+  let new_n = n+1 in 
+  let new_ai=(if i<n then List.nth l i else remaining) in 
+  let new_remaining = (tee_term e (i+1)) - (tee_term e (i)) 
+  and new_degrees_of_freedom = new_ai-(n+1) in 
+  let new_complement = 2*remaining + new_degrees_of_freedom +1 in 
+  let new_minimal_sum = 
+    (new_degrees_of_freedom * new_complement)/2 in
+   (new_remaining,new_minimal_sum,remaining,new_degrees_of_freedom,new_complement,i+1,new_n)
+   ;;    
+
+exception Not_self_resolved of eye ;;
+
+let compute_data1_for_self_resolved_version e =
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l  
+  and n = List.length l in 
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  if ai<>n+1 then raise(Not_self_resolved e) else 
+  let ti = tee_term e i  
+  and tiu = tee_term e (i+1) in   
+  let past_total = Basic.fold_sum l  in 
+  let new_ai=(if i<n then List.nth l i else ti - past_total) in 
+  let new_degrees_of_freedom = new_ai-(n+1) in 
+  let new_complement = 2*(ti - past_total) + new_degrees_of_freedom +1 in 
+  let new_minimal_sum = 
+    (new_degrees_of_freedom * new_complement)/2 in
+   (tiu-ti,new_minimal_sum,ti - past_total,new_degrees_of_freedom,new_complement,i+1,n+1)
+   ;;    
+
+
+
+  let compute_data2 e =
+     compute_data1_for_self_resolved_version e ;;
+
+let tester_for_data2 e =
+  (compute_data1(self_resolved_version e)=compute_data2 e) ;;
+
+assert(tester_for_data2 (E [1; 3; 4])) ;;
+assert(tester_for_data2 (E [1; 3; 5; 6; 66])) ;;
+assert(tester_for_data2 (E [1; 3; 5; 7; 65; 578])) ;;
+
+
+let compute_data2_for_extension e q=
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n+1) temp1 in 
+  if ai<>n+2 then raise(Not_self_resolved (extend_eye e q)) else 
+  let ti = tee_term e i  
+  and tiu = tee_term e (i+1) in   
+  let new2_ai=(if i=n then q else List.nth l i) in 
+  let new2_degrees_of_freedom = new2_ai-(n+2) in 
+  let new2_hedge =  2*(ti - past_total ) + new2_degrees_of_freedom +1 in 
+  let new2_complement = new2_hedge - 2*q in 
+  let new2_minimal_sum = 
+    (new2_degrees_of_freedom * new2_complement)/2 in
+   (tiu-ti,new2_minimal_sum,ti - past_total -q,new2_degrees_of_freedom,new2_complement,i+1,n+2)
+   ;;    
+
+
+
+  let tester_for_data2_on_extension (e,q) =
+  (compute_data2(extend_eye e q)=compute_data2_for_extension e q) ;;
+
+assert(tester_for_data2_on_extension (E [1;3;5;7;65],66)  ) ;;   
+assert(tester_for_data2_on_extension (E [1;3;5;7;65],67)  ) ;; 
+assert(tester_for_data2_on_extension (E [1;2;3;4;7],8)  ) ;; 
+
+
+exception Fraction_for_inclusive_upper_bound_for_case2_on_extension_exn 
+   of int * eye ;;
+let fraction_for_inclusive_upper_bound_for_case2_on_extension e =
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n+1) temp1 in 
+  if ai<>n+2 then raise(Fraction_for_inclusive_upper_bound_for_case2_on_extension_exn(1,e)) else 
+  let ti = tee_term e i  
+  and tiu = tee_term e (i+1) in  
+  if i=n then raise(Fraction_for_inclusive_upper_bound_for_case2_on_extension_exn(2,e)) else  
+  let aiu=(List.nth l i) in 
+   ((aiu-(n+2))*(2*(ti - past_total ) + aiu-(n+1))-2*(tiu-ti)-1,2*(aiu-(n+2)))
+   ;;    
+
+assert(fraction_for_inclusive_upper_bound_for_case2_on_extension (E[1;3;5;7;65]) =
+ (66925,116));;
+
+let inclusive_upper_bound_for_case2_on_extension e =
+  let (numer,denom)=fraction_for_inclusive_upper_bound_for_case2_on_extension e in 
+  numer/denom ;;
+
+let compute_data1_for_extension e q=
+  let (E l)=e in
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n+1) temp1 in   
+  let ti = tee_term e i in 
+  let new_remaining = ti - (past_total+q) 
+  and new_degrees_of_freedom = ai-(n+1) in 
+  let new_complement = 2*q + new_degrees_of_freedom +1 in 
+  let new_minimal_sum = 
+    (new_degrees_of_freedom * new_complement)/2 in
+   (new_remaining,new_minimal_sum,q,new_degrees_of_freedom,new_complement,i,n+1)
+   ;; 
+
+  let tester_for_data1_on_extension (e,q) =
+  (compute_data1(extend_eye e q)=compute_data1_for_extension e q) ;;
+
+assert(tester_for_data1_on_extension (E [1;3;5;7;65],66)  ) ;;   
+assert(tester_for_data1_on_extension (E [1;3;5;7;65],67)  ) ;; 
+assert(tester_for_data1_on_extension (E [1;2;3;4;7],8)  ) ;; 
+
+let fraction_for_inclusive_lower_bound_for_case1_on_extension e=
+  let (E l)=e in
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n+1) temp1 in   
+  let ti = tee_term e i in 
+   (2*(ti-past_total)+1-(ai-(n+1))*(ai-n),2*(ai-n))
+   ;; 
+
+assert(fraction_for_inclusive_lower_bound_for_case1_on_extension (E[1;3;5;7;65]) =
+ (1295,4));;
+
+let inclusive_lower_bound_for_case1_on_extension e =
+  let (numer,denom)=fraction_for_inclusive_lower_bound_for_case1_on_extension e in 
+  Basic.frac_ceiling numer denom ;;
+
+exception Compute_data3_exn of eye ;;
+
+  let compute_data3 e =
+    (*
+    The formula computed here was obtained by comparing 
+    inclusive_upper_bound_for_case2_on_extension e=floor(A)
+    inclusive_lower_bound_for_case1_on_extension e=ceil(B)
+    We require A>=B+1
+    *)
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n+1) temp1 in 
+  if ai<>n+2 then raise(Compute_data3_exn(e)) else
+  let aiu = List.nth l i in 
+  let ti = tee_term e i  
+  and tiu = tee_term e (i+1) in  
+  let ai2=ai*ai 
+  and aiu2=aiu*aiu 
+  and n2=n*n 
+  and n3=n*n*n in
+  let rock=(ai-n)*(aiu2)+(ai2+2*(ti-2*n-3)*ai-2*(n+1)*ti+3*n2+6*n-1)*aiu
+  -(n+2)*(ai2)+(-2*tiu-2*(n+1)*ti+3*n2+10*n+7)*ai+2*n*tiu+2*(n2+2*n+2)*ti
+  -2*(n3+4*(n2)+3*n-1) in 
+  let main = rock - 2 * (((aiu-(n+2))*(ai-(n+1))))*past_total in 
+  (main,rock,ai-(n+1),aiu-(n+2),past_total) ;;    
+
+assert(compute_data3 (E[1;3;5;7;65])=(58508, 67904, 1, 58, 81)) ;;
+
+exception Self_resolved_data3_exn of eye ;;
+
+let compute_data3_on_self_resolved_version e=
+    (*
+    The formula computed here was obtaiuned by comparing 
+    inclusive_upper_bound_for_case2_on_extension e=floor(A)
+    inclusive_lower_bound_for_case1_on_extension e=ceil(B)
+    We require A>=B+1
+    *)
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  let aiu = List.nth l (n-1) in
+  if (ai<>n+1)||(aiu<>n+3) then raise(Self_resolved_data3_exn(e)) else
+  let ti = tee_term e i
+  and tiu = tee_term e (i+1)  
+  and tiuu = tee_term e (i+2) in  
+  let rock=2*n*n + (-4*ti + (4*past_total + (-2*tiu + 13)))*n + 
+  (2*ti*ti + (-4*past_total + (2*tiu - 13))*ti + (2*past_total*past_total + 
+  (-2*tiu + 13)*past_total + (-2*tiu + (-4*tiuu + 19)))) in 
+  let main = 2*past_total*past_total+(4*n-2*(ti+tiu)+13)*past_total
+  -4*tiuu+2*(ti-(n+1))*tiu-(2*n+7)*ti+(2*n*n+13*n+19) in 
+  (main,rock,1,ti-(n+3)-past_total,ti) ;;    
+
+let tester_for_data3_on_self_resolved_version e=
+     (compute_data3_on_self_resolved_version e)=
+       (compute_data3(self_resolved_version e) ) ;;
+
+assert(tester_for_data3_on_self_resolved_version (E[1;3;5;7])) ;;       
+
+exception Compute_data4_exn of eye ;;
+
+let compute_data4 e=
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l
+  and n = List.length l
+  and past_total = Basic.fold_sum l  in  
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  let aiu = List.nth l (n-1) in
+  if (ai<>n+1)||(aiu<>n+3) then raise(Compute_data4_exn(e)) else
+  let ti = tee_term e i
+  and tiu = tee_term e (i+1)  
+  and tiuu = tee_term e (i+2) in  
+  let cough1=(4*n-2*(ti+tiu)+13)
+  and cough0 =(-4*tiuu+2*(ti-(n+1))*tiu-(2*n+7)*ti+(2*n*n+13*n+19)) in
+  let main = 2*past_total*past_total+cough1*past_total+cough0 in 
+  (main,cough0,cough1,past_total,2*past_total*past_total) ;;    
+
+compute_data4 (E[1;3;5;7]) ;;
+
+  let test_for_case1 data1 e=
+    let (remaining,minimal_sum,_,_,_,_,_)=data1 in 
+     if remaining <minimal_sum   
+    then Some(Impossibity_reached(1,e))
+    else None ;;
+  
+  let test_for_case2 data2 e=
+    let (remaining,minimal_sum,_,_,_,_,_)=data2 in 
+     if remaining <minimal_sum   
+    then Some(Impossibity_reached(2,e))
+    else None ;;  
+  
+  let test_for_case3 e=
+    let (diff,_,_,_,_)=compute_data3 e in 
+     if diff>=0   
+    then Some(Impossibity_reached(3,e))
+    else None ;;    
+
+  let test_for_case4 e=
+    let (E l)=e in 
+    let temp1 = Int_range.index_everything l
+    and n = List.length l  in  
+    let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+    let aiu = List.nth l (n-1) in
+    if (ai<>n+1)||(aiu<>n+3) 
+    then None
+    else
+    let (diff,_,_,_,_) = compute_data4 e in 
+    if diff>=0    
+    then Some(Impossibity_reached(4,e))
+    else None ;;  
+
+
+  let analize_in_self_resolving_case e remaining i=
+   let (E l)=e in 
+   let case2_opt = test_for_case2 (compute_data2 e) e in 
+   if case2_opt<>None  
+   then Option.get case2_opt
+   else 
+   let case4_opt = test_for_case4 e in 
+   if case4_opt<>None  
+   then Option.get case4_opt
+   else 
+   Self_resolving(E(l@[remaining]),remaining) ;;
+
+  let analize e =
+    let (E l)=e in 
+    let data1 = compute_data1 e in 
+    let case1_opt = test_for_case1 data1 e in 
+    if case1_opt<>None  
+    then Option.get case1_opt
+    else
+    let (remaining,minimal_sum,preceding_value,degrees_of_freedom,_,i,n) = data1 in 
+    if degrees_of_freedom=1 
+    then analize_in_self_resolving_case e remaining i
+    else    
+    if degrees_of_freedom=2 
+    then  let case3_opt = test_for_case3 e in 
+          if case3_opt<>None  
+          then Option.get case3_opt
+          else Delayed(E(l@[preceding_value+1]),preceding_value+1)
+    else      
+    Delayed(E(l@[preceding_value+1]),preceding_value+1) ;;
+
+
+
+exception Pusher_finished_exn of eye * int *int * ((int *int) list);;  
+let pusher (e,older_choices) = match analize e with 
+   Self_resolving (e2,_) -> 
+      (Some(e2,older_choices),None)
+  |Impossibity_reached (j,e3) -> 
+    (None,Some(e3,older_choices,"Impossibility"^(string_of_int j)))
+  |Delayed(e4,v) -> 
+      let (E l)=e4 in
+      (Some(e4,(List.length l,v)::older_choices),None) ;;
+
+let rec inner_iterator pair =
+  let (unfinished_case,finished_case) = pusher pair in 
+  if unfinished_case=None 
+  then Option.get finished_case 
+  else inner_iterator(Option.get unfinished_case) ;;
+
+let iterate e = inner_iterator (e,[]) ;;  
+
+let rec apply_self_resolution e = match analize e with
+  Self_resolving (e2,_) -> apply_self_resolution e2
+  |Impossibity_reached (_,_)  
+  |Delayed(_,_) -> e ;;
+
+let view e = analize(apply_self_resolution e) ;;  
+
+
+(*
+
+view (E [1;3;4]) ;;
+
+view (E [1;3;5;6]) ;;
+
+view (E [1;3;5;7]) ;;
+
+iterate (E[1;3;5;8]) ;;
+
+*)  
+
+let ff q = analize(E[1;3;5;8;64;q]) ;;
+
+(*
+
+compute_data1(E[1;3;5;7]) ;;
+compute_data1(E[1;3;5;7;65]) ;;
+
+inclusive_lower_bound_for_case1_on_extension (E[1;3;5;7;65]) ;;
+
+compute_data1(E[1;3;5;7;65;323]) ;;
+compute_data1(E[1;3;5;7;65;324]) ;;
+
+compute_data3(E[1;3;5;7;65]) ;;
+*)
+
+end;;
+
+(************************************************************************************************************************
+ Entry 204 : Musings on a self-referring sequence, II
+************************************************************************************************************************)
+module Snip204 = struct 
+
+type eye = E of int list ;;
+
+exception Ratio_exn of eye ;;
+
+let ratio (E l) =
+  if List.length l < 2 then raise (Ratio_exn(E l)) else 
+  let p = List.nth l 1 in 
+  if List.length l < p then raise (Ratio_exn(E l)) else 
+  Basic.fold_sum (List_again.long_head p l) ;;   
+
+let tee_term e n = 
+  let (E l)=e
+  and r = ratio e in
+  (List.hd l)*(Basic.power r (n-1));;
+
+type analysis_result =
+   Self_resolving of eye * int
+  |Impossibity1_reached of eye * int * int 
+  |Impossibity2_reached of eye * int * int 
+  |Impossibity3_reached of eye * int * int 
+  |Impossibity4_reached of eye * int * int 
+  |Impossibity6_reached of eye * int * int 
+  |Delayed of eye * int;;
+
+let compute_data1 e =
+  let (E l)=e in 
+  let temp1 = Int_range.index_everything l  
+  and n = List.length l in 
+  let (i,ai)=List.find (fun (_,aa)->aa>n) temp1 in 
+  let past_total = Basic.fold_sum l 
+  and future_total = tee_term e i in 
+  let remaining = future_total - past_total 
+  and degrees_of_freedom = ai-n in 
+  let preceding_value = List.hd (List.rev l) in 
+  let complement = 2*preceding_value + degrees_of_freedom +1 in 
+  let minimal_sum = 
+    (degrees_of_freedom * complement)/2 in
+   (remaining,minimal_sum,preceding_value,degrees_of_freedom,complement,i)
+   ;;
+
+  let compute_data2_using_previous_data e i remaining=
+    let (E l)=e in 
+    let remaining2=(tee_term e (i+1)) - (tee_term e i) 
+    and degrees2=(List.nth l i)-(List.nth l (i-1))
+    and preceding_value2=Basic.frac_ceiling remaining 2 in 
+    let complement2 = 2*preceding_value2 + degrees2 +1 in 
+  let minimal_sum2 = 
+    (degrees2 * complement2)/2 in
+   (remaining2,minimal_sum2,preceding_value2,degrees2,complement2)
+   ;;
+
+  let compute_data2 e = 
+     let (remaining,_,_,_,_,i) =
+      compute_data1 e in
+    compute_data2_using_previous_data e i remaining ;;
+
+let inclusive_lower_bound_for_impending_case1_using_previous_data e remaining degrees_of_freedom=
+ let temp =  ((degrees_of_freedom*(degrees_of_freedom-1))/2)-1 in 
+    Basic.frac_ceiling (remaining-temp) degrees_of_freedom 
+   ;;
+
+   let inclusive_lower_bound_for_impending_case1 e = 
+     let (remaining,_,_,degrees_of_freedom,_,_) =
+      compute_data1 e in
+    inclusive_lower_bound_for_impending_case1_using_previous_data e remaining degrees_of_freedom ;;
+
+  let compute_data3_using_previous_data e remaining i= 
+    (* when ai-n=3 only *)
+    let (E l)=e in 
+    let lb=inclusive_lower_bound_for_impending_case1_using_previous_data e remaining 3 in
+    let remaining3=(tee_term e (i+1)) - (tee_term e i) 
+    and degrees3=(List.nth l i)-(List.nth l (i-1))  in 
+    let complement3 = remaining-lb + degrees3 +1 in 
+    let minimal_sum3 = (degrees3/2) * complement3 in
+   (remaining3,minimal_sum3,remaining,lb,degrees3,complement3) ;;
+
+
+  let compute_data3 e = 
+     let (remaining,_,_,_,_,i) =
+      compute_data1 e in
+    compute_data3_using_previous_data e remaining i ;;
+
+  let compute_data4_using_previous_data e remaining i= 
+    let (E l)=e in 
+    let (remaining,_,_,_,_,i) = compute_data1 e in
+    (* we need ai-n=1 *)
+    let new_l=l@[remaining] in   
+    let new_remaining = (tee_term e (i+1)) - (tee_term e i) in 
+    (* when List.assoc (i+1) temp1=n+4 only *)
+    let lb = Basic.frac_ceiling (new_remaining-2) 3 in
+    let remaining4=(tee_term e (i+2)) - (tee_term e (i+1)) 
+    and degrees4=(List.nth new_l (i+1))-(List.nth new_l i)  in 
+    let complement4 = new_remaining-lb + degrees4 +1 in 
+    let minimal_sum4 = (degrees4/2) * complement4 in
+    (remaining4,minimal_sum4,degrees4,new_remaining,lb,complement4) ;;
+
+  let compute_data4 e = 
+     let (remaining,_,_,_,_,i) = compute_data1 e in
+    compute_data4_using_previous_data e remaining i ;;
+
+  let compute_data5_using_previous_data e remaining i= 
+    (* when ai-n=4 only *)
+    let (E l)=e in 
+    let lb5=inclusive_lower_bound_for_impending_case1_using_previous_data e remaining 4 in
+    let remaining5=(tee_term e (i+1)) - (tee_term e i) 
+    and degrees5=(List.nth l i)-(List.nth l (i-1))  in 
+    let hard_frac5 = Basic.frac_ceiling (remaining+2*lb5+1) 3 in 
+    let complement5 = remaining-hard_frac5 + degrees5 in 
+    let minimal_sum5 = (degrees5/2) * complement5 in
+   (remaining5,minimal_sum5,remaining,lb5,degrees5,hard_frac5,complement5) ;;
+
+let new_compute_data5_using_previous_data new_e new_remaining new_i= 
+    (* when ai-n=4 only *)
+    let (E new_l)=new_e in 
+    let lb5=inclusive_lower_bound_for_impending_case1_using_previous_data new_e new_remaining 4 in
+    let remaining5=(tee_term new_e (new_i+1)) - (tee_term new_e new_i) 
+    and degrees5=(List.nth new_l new_i)-(List.nth new_l (new_i-1))  in 
+    let hard_frac5 = Basic.frac_ceiling (new_remaining+2*lb5+1) 3 in 
+    let complement5 = new_remaining-hard_frac5 + degrees5 in 
+    let minimal_sum5 = (degrees5/2) * complement5 in
+   (remaining5,minimal_sum5,new_remaining,lb5,degrees5,hard_frac5,complement5) ;;
+
+  let compute_data5 e = 
+     let (remaining,_,_,_,_,i) = compute_data1 e in
+    compute_data5_using_previous_data e remaining i ;;
+
+  let compute_data6_using_previous_data e remaining i= 
+    let (E l)=e in 
+    let (remaining,_,_,_,_,i) = compute_data1 e in
+    (* we need ai-n=1 *)
+    let new_l=l@[remaining] in   
+    let intermediary_remaining = (tee_term e (i+1)) - (tee_term e i) in 
+    (* when List.assoc (i+1) temp1=n+5 only *)
+    let lb6=inclusive_lower_bound_for_impending_case1_using_previous_data e intermediary_remaining 4 in
+    let remaining6=(tee_term e (i+2)) - (tee_term e (i+1)) 
+    and degrees6=(List.nth new_l (i+1))-(List.nth new_l i)  in 
+    let hard_frac6 = Basic.frac_ceiling (intermediary_remaining+2*lb6+1) 3 in 
+    let complement6 = intermediary_remaining-hard_frac6 + degrees6 in 
+    let minimal_sum6 = (degrees6/2) * complement6 in
+   (remaining6,minimal_sum6,intermediary_remaining,lb6,degrees6,hard_frac6,complement6) ;;
+
+  let compute_data6 e = 
+     let (remaining,_,_,_,_,i) = compute_data1 e in
+    compute_data6_using_previous_data e remaining i ;;
+
+  let analize_in_self_resolving_case e remaining i=
+    let (E l)=e in 
+    let n = List.length l in 
+         if (i>=n) then Self_resolving(E(l@[remaining]),remaining) else 
+         if (List.nth l (i-1),List.nth l i)=(n+1,n+4)
+         then let (remaining4,minimal_sum4,_,_,_,_)=
+              compute_data4 e in 
+              if remaining4 <minimal_sum4   
+              then Impossibity4_reached(e,remaining4,minimal_sum4)
+              else Self_resolving(E(l@[remaining]),remaining)
+         else 
+          if (List.nth l (i-1),List.nth l i)=(n+1,n+5)
+         then let (remaining6,minimal_sum6,_,_,_,_,_)=
+              compute_data6 e in 
+              if remaining6 <minimal_sum6   
+              then Impossibity6_reached(e,remaining6,minimal_sum6)
+              else Self_resolving(E(l@[remaining]),remaining)
+         else   
+        Self_resolving(E(l@[remaining]),remaining) 
+
+  let analize e =
+    let (E l)=e in 
+    let (remaining,minimal_sum,preceding_value,degrees_of_freedom,_,i) =
+      compute_data1 e in 
+    if remaining <minimal_sum   
+    then Impossibity1_reached(e,remaining,minimal_sum)
+    else
+    if degrees_of_freedom=1 
+    then analize_in_self_resolving_case e remaining i
+    else 
+    if degrees_of_freedom=2 
+    then 
+        let (remaining2,minimal_sum2,_,_,_)=
+        compute_data2 e in 
+        if remaining2 <minimal_sum2   
+        then Impossibity2_reached(e,remaining2,minimal_sum2)
+        else Delayed(E(l@[preceding_value+1]),preceding_value+1)
+    else   
+    if degrees_of_freedom=3 
+    then 
+        let (remaining3,minimal_sum3,_,_,_,_)=
+        compute_data3 e in 
+        if remaining3 <minimal_sum3   
+        then Impossibity3_reached(e,remaining3,minimal_sum3)
+        else Delayed(E(l@[preceding_value+1]),preceding_value+1)
+    else     
+    Delayed(E(l@[preceding_value+1]),preceding_value+1) ;;
+
+
+
+exception Pusher_finished_exn of eye * int *int * ((int *int) list);;  
+let pusher (e,older_choices) = match analize e with 
+   Self_resolving (e2,_) -> 
+      (Some(e2,older_choices),None)
+  |Impossibity1_reached (e3,c1,c2) -> 
+    (None,Some(e3,c1,c2,older_choices,"Impossibility1"))
+  |Impossibity2_reached (e3,c1,c2) -> 
+    (None,Some(e3,c1,c2,older_choices,"Impossibility2")) 
+  |Impossibity3_reached (e3,c1,c2) -> 
+    (None,Some(e3,c1,c2,older_choices,"Impossibility3"))
+  |Impossibity4_reached (e3,c1,c2) -> 
+    (None,Some(e3,c1,c2,older_choices,"Impossibility4"))
+  |Impossibity6_reached (e3,c1,c2) -> 
+    (None,Some(e3,c1,c2,older_choices,"Impossibility4"))        
+  |Delayed(e4,v) -> 
+      let (E l)=e4 in
+      (Some(e4,(List.length l,v)::older_choices),None) ;;
+
+let rec inner_iterator pair =
+  let (unfinished_case,finished_case) = pusher pair in 
+  if unfinished_case=None 
+  then Option.get finished_case 
+  else inner_iterator(Option.get unfinished_case) ;;
+
+let iterate e = inner_iterator (e,[]) ;;  
+
+let rec apply_self_resolution e = match analize e with
+  Self_resolving (e2,_) -> apply_self_resolution e2
+  |Impossibity1_reached (_,_,_)
+  |Impossibity2_reached (_,_,_)
+  |Impossibity3_reached (_,_,_)
+  |Impossibity4_reached (_,_,_)   
+  |Impossibity6_reached (_,_,_)   
+  |Delayed(_,_) -> e ;;
+
+let view e = analize(apply_self_resolution e) ;;  
+
+view (E [1;3;4]) ;;
+
+view (E [1;3;5;6]) ;;
+
+view (E [1;3;5;7]) ;;
+
+view (E [1;3;5;8]) ;;
+
+view (E [1;3;5;9]) ;;
+
+iterate (E [1;3;5;10]) ;;
+
+let ff q = analize (E[1; 3; 5; 10; 62; 63; q]) ;;
+
+let c = E[1; 3; 5; 10; 62; 63] ;;
+
+compute_data5 c ;;
+
+compute_data6 (E[1;3;5;9]) ;;
+
+analize (E[1;3;5;10;62;63]) ;;
+
+inclusive_lower_bound_for_impending_case1 c ;;
+
+
+(*
+
+let cd3 l = 
+  (* when ai-n=4 only *)
+  let new_l = l @ [q] in 
+  let new_temp1 = Int_range.index_everything new_l  
+  and new_n = List.length new_l (* new_n=n+1 *) in 
+  let (i,ai)=List.find (fun (_,aa)->aa>new_n) temp1 (* unchanged because of ai=n+4 *) in 
+  let new_past_total = Basic.fold_sum l (* = past_total +q *)
+  and future_total = tee_term (E l) i (* unchanged *) in 
+  let new_remaining = future_total - new_past_total (* = remaining-q *) in
+  let lb3=Basic.frac_ceiling (remaining-2)  3 (* = ceil((remaining-q-2)/3)*) in
+  let remaining3=(tee_term e (i+1)) - (tee_term e i) (* unchanged *)
+  and degrees3=(List.nth l i)-(List.nth l (i-1)) (* unchanged *) in 
+  let complement3 = new_remaining-lb3 + degrees3 +1 (* remaining-q-ceil((remaining-q-2)/3)+degrees3 *) in 
+  let minimal_sum3 = (degrees3/2) * complement3 in
+  (remaining3,minimal_sum3) ;;
+
+*)  
+end;;
+
+(************************************************************************************************************************
+ Entry 203 : Musings on a self-referring sequence 
+************************************************************************************************************************)
+module Snip203 = struct 
+
+type ayetee={
+  aye: int list;
+  tee: int list
+} ;;
+
+type step_result =
+   St_Nothing_to_do 
+  |St_Delayed of ayetee 
+  |St_Impossible1 
+  |St_Self_resolving of ayetee ;;
+
+type iteration_result =
+   Itr_Success of ayetee 
+  |Itr_Failure of ayetee  
+  |Itr_Impossible1 ;;
+
+
+exception Hard_case_exn of ayetee * ayetee ;;
+
+let check_for_tee_computation ayt =
+   let r = (List.length(ayt.tee))+1 in
+   if List.length(ayt.aye)<r 
+   then ayt 
+   else 
+   let s = List.nth ayt.aye (r-1) in 
+   if List.length(ayt.aye)<s 
+   then ayt 
+   else 
+   let t = Basic.fold_sum (List_again.long_head s ayt.aye) in 
+   {ayt with tee=(ayt.tee)@[t]} ;;
+   
+let extend_lazily ayt =
+  let n = List.hd(List.rev(ayt.aye)) + 1 in 
+  let ayt1 = {ayt with aye=(ayt.aye)@[n]} in
+  check_for_tee_computation ayt1 ;;
+
+
+
+let step ayt = 
+  let temp1 = Int_range.index_everything ayt.aye in 
+  let n = List.length ayt.aye in 
+  let (idx,a)=List.find (fun (_,aa)->aa>n) temp1 in 
+  if List.length(ayt.tee)<idx 
+  then St_Nothing_to_do 
+  else   
+  let total =   List.nth ayt.tee (idx-1) in 
+  let remaining = total - (Basic.fold_sum ayt.aye) 
+  and preceding_value = List.hd (List.rev ayt.aye) in 
+  let number_of_survivors = a-n in 
+  let minimal_sum = 
+    (number_of_survivors * 
+    (2*preceding_value + number_of_survivors +1))/2 in
+  
+  if remaining <minimal_sum   
+
+  then St_Impossible1 
+ 
+  else
+
+  if number_of_survivors > 1
+
+  then St_Delayed({ayt with aye=(ayt.aye)@[preceding_value+1];})
+
+  else St_Self_resolving({ayt with aye=(ayt.aye)@[remaining];}) 
+
+let rec inner_iterate original_ayt ayt =
+   match  step ayt with 
+   St_Nothing_to_do -> Itr_Success ayt
+  |St_Delayed ayt2 -> inner_iterate original_ayt ayt2  
+  |St_Impossible1 -> raise (Hard_case_exn(original_ayt,ayt))
+  |St_Self_resolving ayt4 -> Itr_Success ayt4;;
+
+let iterate ayt = 
+  match  step ayt with 
+   St_Nothing_to_do -> Itr_Success ayt
+  |St_Delayed ayt2 -> inner_iterate ayt ayt2  
+  |St_Impossible1 -> Itr_Impossible1
+  |St_Self_resolving ayt4 -> Itr_Success ayt4;;  
+
+exception Unknown_ratio_exn ;;  
+let ratio ayt =
+  if List.length ayt.tee < 2 
+  then raise Unknown_ratio_exn 
+  else 
+  (List.nth ayt.tee 1)/(List.nth ayt.tee 0) ;;    
+
+let tee_term ayt n = 
+  let r = ratio ayt in
+  (List.nth ayt.tee 0)*(Basic.power r (n-1));;
+
+
+let case1_test ayt n=
+  if List.length ayt.aye < n then (false,None) else 
+  let u = List.nth ayt.aye (n-2)
+  and v = List.nth ayt.aye (n-1) in 
+  if List.length ayt.aye < u then (false,None) else    
+  let uu = List.nth ayt.aye (u-1) in 
+  let big_t = tee_term ayt n 
+  and small_t = tee_term ayt (n-1) in 
+  let below_big_t=small_t+(v-u)*uu+(((v-u)*(v-u+1))/2) in 
+  (below_big_t>big_t,Some((big_t,below_big_t),[small_t,v-u,uu,v-u+1])) ;;
+  
+  
+
+let ayt0 = {aye=[1;3;4;56];tee=[1;8];} ;;
+let v1 = case1_test ayt0 4;; 
+
+let  ayt1 = {aye=[1;3;5];tee=[1;9;81;729;6561];} ;;
+
+let ayt2 = extend_lazily ayt1 ;;
+
+let (Itr_Success ayt3) = iterate ayt1 ;;
+
+let check1 = case1_test ayt3 5;;
+end;;
+
+(************************************************************************************************************************
+ Entry 202 : Write yet another PARI-GP template in OCaml 
+************************************************************************************************************************)
+module Snip202 = struct 
+
+open Needed_values ;;
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let herbert_size = 720 ;;
+
+let get arr j i= Array.get arr (j-1+herbert_size*(i-1)) ;;
+
+let coeffs_for_beetle arr j =
+  let temp = Int_range.scale (fun i->(get arr j i,string_of_int i)) 1 herbert_size in 
+  List.filter (fun (s,i)->s<>"0") temp ;;
+
+let beetle arr j =
+  let temp1 = coeffs_for_beetle arr j in 
+  let temp2 = Image.image (fun (s,si)->"("^s^")*harry["^si^"]") temp1 in 
+  "walker["^(string_of_int j)^"]="^(String.concat "+" temp2)^";" ;;
+
+let beetle_nest arr =
+  let temp = Int_range.scale (beetle arr) 1 herbert_size in 
+  String.concat "\n" temp ;;
+
+let beetle_nest_at_index =Memoized.make(fun i -> 
+  let shadow_ap = Absolute_path.of_string 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "Shadows/shadow"^(soi i)^".gp") in
+  let packet = Io.read_whole_file shadow_ap in
+  let left_bracket = (String.index packet '[')+1 in 
+  let right_bracket = (String.index packet ']')+1 in 
+  let payload = Cull_string.interval packet (left_bracket+1) (right_bracket-1) in 
+  let untrimmed_coeffs = Str.split (Str.regexp ",") payload in 
+  let coeffs = Image.image Cull_string.trim_spaces untrimmed_coeffs in 
+  let array_of_coeffs = Array.of_list coeffs in 
+  beetle_nest array_of_coeffs );;
+ 
+
+let write_beetle_nest i =
+  let bn = beetle_nest_at_index i in 
+  let instruction_ap = Absolute_path.create_file_if_absent 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "Instructions/instruction"^(soi i)^".gp") in
+  Io.overwrite_with instruction_ap bn ;;
+
+let computation1 () = 
+  Chronometer.it (Int_range.scale beetle_nest_at_index 1) 10 ;;
+
+let computation2 () = 
+  Chronometer.it (Int_range.scale write_beetle_nest) 1 10 ;;  
+
+(*  
+let i = 1 ;;
+
+let shadow_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"Shadows/shadow"^(soi i)^".gp") ;;
+
+let packet = Io.read_whole_file shadow_ap ;;
+
+let left_bracket = (String.index packet '[')+1;;
+let right_bracket = (String.index packet ']')+1;;
+
+let payload = Cull_string.interval packet (left_bracket+1) (right_bracket-1) ;;
+
+let untrimmed_coeffs = Str.split (Str.regexp ",") payload ;;
+
+let coeffs = Image.image Cull_string.trim_spaces untrimmed_coeffs ;;
+
+let array_of_coeffs = Array.of_list coeffs ;;
+
+let bn = beetle_nest array_of_coeffs ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 201 : Write PARI-GP template in OCaml 
+************************************************************************************************************************)
+module Snip201 = struct 
+
+let u1 = List_again.power_set (Int_range.range 1 10) ;;
+
+let u2 = Ordered.sort 
+ (Total_ordering.silex_compare Total_ordering.for_integers)
+   u1 ;;
+
+let partial_power = Memoized.make(fun k->
+    List.filter (fun l->List.length l=k) u2
+) ;;   
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let compress l = String.concat "" (Image.image soi l);;
+
+let text_for_final_check k =
+   let ll=partial_power k in 
+   let m = string_of_int(List.length(List.hd ll)) in 
+   let temp1 =[
+     "";"";
+     "abstract_f"^m^" = walker ;";
+    "f"^m^"=abstract_f"^m^"[1]";
+    "check_f"^m^"=(abstract_f"^m^"==f"^m^"*herbert_one)";
+    "";"";
+   ] in 
+   String.concat "\n" temp1;; 
+
+let sublines_for_individual=Memoized.make(fun h_index ->
+   let instruction_ap = Absolute_path.create_file_if_absent 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "Instructions/instruction"^(soi h_index)^".gp") in
+  Lines_in_text.lines (Io.read_whole_file instruction_ap)
+) ;;
+
+let text_for_individual (starter_idx,total) (k,l)= 
+ match l with 
+ [] -> ""
+ |a::others ->
+   let goal = "h"^(compress l) in 
+   let main_giver="\"Mountains/h"^(compress others)^".gp\""
+   and main_receiver="\"Mountains/"^goal^".gp\"" in
+   let sublines=sublines_for_individual a in 
+   let m = string_of_int(List.length sublines) in 
+   let temp1 = Int_range.index_everything sublines in  
+   let temp2 = Image.image (
+     fun (j,cmd)->
+      let sj =string_of_int j in 
+      [cmd;"printf(\"Substep "^sj^" of "^m^" in "^
+      (string_of_int (k+starter_idx-1))^" of "^total^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = String.concat "\n" (List.flatten temp2) in 
+   "read("^main_giver^");\n"^
+   temp3^"\n"^
+   "write("^main_receiver^",\"harry=vector(720,k,0);\\n\");\n"^
+   "{for(k=1,720,\n"^
+   "write("^main_receiver^",Str(\"harry[\",k,\"]={\\n\"));\n"^
+   "write("^main_receiver^",walker[k]);\n"^
+   "write("^main_receiver^",\"};\\n\");\n"^
+   ")}\n"
+  
+;;
+
+
+
+
+let text_for_set ll (starter_idx,total)=
+   let temp9 = Int_range.index_everything ll in 
+   let temp0 =(Image.image (text_for_individual (starter_idx,total)) temp9) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int (k+starter_idx-1) in 
+      [cmd;"printf(\""^sk^" of "^total^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = ("walker=vector(720,k,0);"::""::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+
+
+let text_for_partial_level k (i,j) = 
+   let whole = partial_power k in 
+   let extract = (if (i,j)=(0,0)
+      then whole
+      else let up_to_j = List_again.long_head j whole in 
+         snd(List_again.long_head_with_tail (i-1) up_to_j)) in 
+   text_for_set extract (i,string_of_int(List.length whole));;
+
+
+let text_for_individual_initial_sum l= 
+  let r = List.length l in 
+  if l = Int_range.range 1 r 
+  then
+   "read(\"Mountains/h"^(compress l)^".gp\");\n"^
+   "walker = harry;\n"
+  else
+   "read(\"Mountains/h"^(compress l)^".gp\");\n"^
+   "valker = walker;\n"^
+   "walker = herbert_sum(valker,harry);\n";;
+
+let text_for_individual_projected_initial_sum projection_index l= 
+  let s = string_of_int projection_index in 
+   "read(\"Mountains/h"^(compress l)^".gp\");\n"^
+   "walker += harry["^s^"];\n";;
+
+let text_for_successive_initial_sums ll =
+   let n = string_of_int(List.length ll) in 
+   let temp0 =(Image.image text_for_individual_initial_sum ll) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int k in 
+      [cmd;"printf(\""^sk^" of "^n^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = (""::""::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+let text_for_projected_successive_initial_sums ll ~projection_index =
+   let n = string_of_int(List.length ll) in 
+   let temp0 =(Image.image 
+     (text_for_individual_projected_initial_sum projection_index) ll) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int k in 
+      [cmd;"printf(\""^sk^" of "^n^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = (""::"walker=0;"::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+let text_for_all_initial_sums k = 
+   let main_receiver="\"Mountains/sum"^(string_of_int k)^".gp\"" in
+   (text_for_successive_initial_sums (partial_power k))^
+   "write("^main_receiver^",\"harry=vector(720,k,0);\\n\");\n"^
+   "{for(k=1,720,\n"^
+   "write("^main_receiver^",Str(\"harry[\",k,\"]={\\n\"));\n"^
+   "write("^main_receiver^",walker[k]);\n"^
+   "write("^main_receiver^",\"};\\n\");\n"^
+   ")}\n"^
+   (text_for_final_check k)
+ ;;
+
+let text_for_projected_initial_sums k ~projection_index = 
+   (text_for_projected_successive_initial_sums (partial_power k) ~projection_index)^
+   "\n"^
+   "res=walker;"
+ ;;
+
+let follenn2_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"follenn2.gp") ;;
+let clean_main_file () = 
+   let temp = Lines_in_text.indexed_lines (Io.read_whole_file follenn2_ap) in 
+   let (k0,_) = List.find (fun (_,untrimmed_line)->
+     let line = Cull_string.trim_spaces_on_the_left untrimmed_line in
+     String.starts_with line ~prefix:"*/"    
+   ) temp in 
+   Lines_in_text.remove_lower_interval_in_file follenn2_ap (k0+2) ;;
+
+
+let write_partial_level  k (i,j) = 
+    let _ =clean_main_file () in 
+   Io.append_string_to_file ("\n\n\n"^(text_for_partial_level k (i,j))) follenn2_ap ;;
+
+let write_all_initial_sums  k = 
+    let _ =clean_main_file () in 
+   Io.append_string_to_file ("\n\n\n"^(text_for_all_initial_sums k )) follenn2_ap ;;
+
+let write_projected_initial_sums k ~projection_index= 
+    let _ =clean_main_file () in 
+   Io.append_string_to_file 
+   ("\n\n\n"^(text_for_projected_initial_sums k ~projection_index)) follenn2_ap ;;
+
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 200 : Make PARI-GP on a 720x720 matrix inside OCaml 
+************************************************************************************************************************)
+module Snip200 = struct 
+
+open Needed_values ;;
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let herbert_size = 720 ;;
+
+let get arr j i= Array.get arr (j-1+herbert_size*(i-1)) ;;
+
+let coeffs_for_beetle arr j =
+  let temp = Int_range.scale (fun i->(get arr j i,string_of_int i)) 1 herbert_size in 
+  List.filter (fun (s,i)->s<>"0") temp ;;
+
+let beetle arr j =
+  let temp1 = coeffs_for_beetle arr j in 
+  let temp2 = Image.image (fun (s,si)->"("^s^")*harry["^si^"]") temp1 in 
+  "walker["^(string_of_int j)^"]="^(String.concat "+" temp2)^";" ;;
+
+let beetle_nest arr =
+  let temp = Int_range.scale (beetle arr) 1 herbert_size in 
+  String.concat "\n" temp ;;
+
+let beetle_nest_at_index =Memoized.make(fun i -> 
+  let shadow_ap = Absolute_path.of_string 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "Shadows/shadow"^(soi i)^".gp") in
+  let packet = Io.read_whole_file shadow_ap in
+  let left_bracket = (String.index packet '[')+1 in 
+  let right_bracket = (String.index packet ']')+1 in 
+  let payload = Cull_string.interval packet (left_bracket+1) (right_bracket-1) in 
+  let untrimmed_coeffs = Str.split (Str.regexp ",") payload in 
+  let coeffs = Image.image Cull_string.trim_spaces untrimmed_coeffs in 
+  let array_of_coeffs = Array.of_list coeffs in 
+  beetle_nest array_of_coeffs );;
+ 
+
+let write_beetle_nest i =
+  let bn = beetle_nest_at_index i in 
+  let instruction_ap = Absolute_path.create_file_if_absent 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "Instructions/instruction"^(soi i)^".gp") in
+  Io.overwrite_with instruction_ap bn ;;
+
+let computation1 () = 
+  Chronometer.it (Int_range.scale beetle_nest_at_index 1) 10 ;;
+
+let computation2 () = 
+  Chronometer.it (Int_range.scale write_beetle_nest) 1 10 ;;  
+
+(*  
+let i = 1 ;;
+
+let shadow_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"Shadows/shadow"^(soi i)^".gp") ;;
+
+let packet = Io.read_whole_file shadow_ap ;;
+
+let left_bracket = (String.index packet '[')+1;;
+let right_bracket = (String.index packet ']')+1;;
+
+let payload = Cull_string.interval packet (left_bracket+1) (right_bracket-1) ;;
+
+let untrimmed_coeffs = Str.split (Str.regexp ",") payload ;;
+
+let coeffs = Image.image Cull_string.trim_spaces untrimmed_coeffs ;;
+
+let array_of_coeffs = Array.of_list coeffs ;;
+
+let bn = beetle_nest array_of_coeffs ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 199 : Remember elementary symmetric polynomials in GP remembering all initial sums
+ (wastes space) 
+************************************************************************************************************************)
+module Snip199 = struct 
+
+let u1 = List_again.power_set (Int_range.range 1 10) ;;
+
+let u2 = Ordered.sort 
+ (Total_ordering.silex_compare Total_ordering.for_integers)
+   u1 ;;
+
+let partial_power = Memoized.make(fun k->
+    List.filter (fun l->List.length l=k) u2
+) ;;   
+
+let u3 = List_again.universal_delta_list u2 ;;
+let associator_for_preceding_uple_opt = 
+   List.filter_map (
+      fun (x,y)-> 
+      if List.length(x)<>List.length(y)
+      then None 
+      else Some(y,x)   
+   ) u3 ;;
+
+let preceding_uple_opt x = List.assoc_opt x associator_for_preceding_uple_opt ;;
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let compress l = String.concat "" (Image.image soi l);;
+
+let text_for_final_check k =
+   let ll=partial_power k in 
+   let m = string_of_int(List.length(List.hd ll)) in
+   let temp1 =[
+     "";"";
+     "abstract_f"^m^" = herbert_fold_sum ([ "^(String.concat "," 
+    (Image.image (fun l->"h"^(compress l)) ll) )^"]) ;";
+    "f"^m^"=abstract_f"^m^"[1]";
+    "check_f"^m^"=(abstract_f"^m^"==f"^m^"*herbert_one)";
+    "";"";
+   ] in 
+   String.concat "\n" temp1;; 
+
+
+let text_for_individual l= 
+ match l with 
+ [] -> ""
+ |a::others ->
+   let main_actor = "h"^(compress l) in 
+   let main_receiver="\"Mountains/"^main_actor^".gp\"" in
+   main_actor^" =  h"^(soi a)^"_prod( h"^(compress others)^" );\n"^
+   "write("^main_receiver^",\"harry=vector(720,k,0);\\n\");\n"^
+   "{for(k=1,720,\n"^
+   "write("^main_receiver^",Str(\"harry[\",k,\"]={\\n\"));\n"^
+   "write("^main_receiver^","^main_actor^"[k]);\n"^
+   "write("^main_receiver^",\"};\\n\");\n"^
+   ")}\n"
+   (*
+   ^"write("^main_receiver^",\""^main_actor^"=harry;\\n\");"
+   *)
+;;
+
+
+
+
+let text_for_set ll =
+   let n = string_of_int(List.length ll) in 
+   let temp0 =(Image.image text_for_individual ll) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int k in 
+      [cmd;"printf(\""^sk^" of "^n^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = (""::""::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+
+
+let text_for_partial_level k (i,j) = 
+   let whole = partial_power k in 
+   let extract = (if (i,j)=(0,0)
+      then whole
+      else let up_to_j = List_again.long_head j whole in 
+         snd(List_again.long_head_with_tail (i-1) up_to_j)) in 
+   text_for_set extract ;;
+
+let file_for_preceding_sum l pu_opt =
+   match pu_opt with 
+   None -> "h"^(compress(l))
+ |Some(preceding_l) ->"s"^(compress(preceding_l));;   
+
+let text_for_initialization_if_needed l pu_opt =
+   match pu_opt with 
+   None -> 
+   "read(\"Mountains/h"^(compress(l))^".gp\");\n"^
+   "walker=harry;\n"
+ |Some(preceding_l) ->"";; 
+
+let text_for_individual_initial_sum l= 
+  let pu_opt = preceding_uple_opt l in 
+  let goal = "s"^(compress l) in 
+  let main_receiver="\"Mountains/"^goal^".gp\"" in
+   (text_for_initialization_if_needed l pu_opt)^
+   "read(\"Mountains/h"^(compress l)^".gp\");\n"^
+   "walker = herbert_sum(walker,harry);\n"
+   ^"write("^main_receiver^",\"harry=vector(720,k,0);\\n\");\n"^
+   "{for(k=1,720,\n"^
+   "write("^main_receiver^",Str(\"harry[\",k,\"]={\\n\"));\n"^
+   "write("^main_receiver^",walker[k]);\n"^
+   "write("^main_receiver^",\"};\\n\");\n"^
+   ")}\n" ;;
+
+
+
+let text_for_successive_initial_sums ll =
+   let n = string_of_int(List.length ll) in 
+   let temp0 =(Image.image text_for_individual_initial_sum ll) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int k in 
+      [cmd;"printf(\""^sk^" of "^n^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = (""::""::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+let text_for_partial_sum k (i,j) = 
+   let whole = partial_power k in 
+   let extract = (if (i,j)=(0,0)
+      then whole
+      else let up_to_j = List_again.long_head j whole in 
+         snd(List_again.long_head_with_tail (i-1) up_to_j)) in 
+   text_for_successive_initial_sums extract ;;
+
+let follenn2_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"follenn2.gp") ;;
+let restart k = Lines_in_text.remove_lower_interval_in_file follenn2_ap k ;;
+
+let write_final_check  k = 
+  let _ =restart 19 in 
+   Io.append_string_to_file (text_for_final_check k) follenn2_ap ;;
+ ;;
+
+
+let write_partial_level  k (i,j) = 
+    let _ =restart 19 in 
+   Io.append_string_to_file (text_for_partial_level k (i,j)) follenn2_ap ;;
+
+let write_partial_sum  k (i,j) = 
+    let _ =restart 19 in 
+   Io.append_string_to_file (text_for_partial_sum k (i,j)) follenn2_ap ;;
+
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 198 : Remember elementary symmetric polynomials in GP using large chunks
+ (not very efficient) 
+************************************************************************************************************************)
+module Snip198 = struct 
+
+let u1 = List_again.power_set (Int_range.range 1 10) ;;
+
+let u2 = Ordered.sort 
+ (Total_ordering.silex_compare Total_ordering.for_integers)
+   u1 ;;
+
+let partial_power = Memoized.make(fun k->
+    List.filter (fun l->List.length l=k) u2
+) ;;   
+
+let soi k=if k=10 then "d" else string_of_int k ;;
+
+let compress l = String.concat "" (Image.image soi l);;
+
+
+let write_line suffix l= 
+ match l with 
+ [] -> ""
+ |a::others ->
+   let p = string_of_int(List.length l) in
+   let m = p^suffix in
+   let main_actor = "h"^(compress l) in 
+   let main_receiver="\"thorgal"^m^".gp\"" in
+   main_actor^" =  h"^(soi a)^"_prod( h"^(compress others)^" );\n"^
+   "{for(k=1,720,\n"^
+   "write("^main_receiver^",Str(\"harry[\",k,\"]={\\n\"));\n"^
+   "write("^main_receiver^","^main_actor^"[k]);\n"^
+   "write("^main_receiver^",\"};\\n\");\n"^
+   ")}\n"^
+   "write("^main_receiver^",\""^main_actor^"=harry;\\n\");";;
+
+let text_for_final_check k =
+   let ll=partial_power k in 
+   let m = string_of_int(List.length(List.hd ll)) in
+   let temp1 =[
+     "";"";
+     "abstract_f"^m^" = herbert_fold_sum ([ "^(String.concat "," 
+    (Image.image (fun l->"h"^(compress l)) ll) )^"]) ;";
+    "f"^m^"=abstract_f"^m^"[1]";
+    "check_f"^m^"=(abstract_f"^m^"==f"^m^"*herbert_one)";
+    "";"";
+   ] in 
+   String.concat "\n" temp1;; 
+
+
+let text_for_set suffix ll =
+   let n = string_of_int(List.length ll) in 
+   let p = string_of_int(List.length (List.hd ll)) in
+   let m = p^suffix in
+   let main_receiver="\"thorgal"^m^".gp\"" in
+   let temp0 =(Image.image (write_line suffix) ll) in 
+   let temp1 = Int_range.index_everything temp0 in  
+   let temp2 = Image.image (
+     fun (k,cmd)->
+      let sk =string_of_int k in 
+      [cmd;"printf(\""^sk^" of "^n^" done\\n\");\n"]
+   ) temp1 in
+   let temp3 = List.flatten temp2 in 
+   let temp4 = (""::""::
+   ("write("^main_receiver^",\"harry=vector(720,k,0);\\n\");\n") ::
+   temp3) @
+   [
+     "";""
+   ] in 
+   String.concat "\n" temp4;; 
+
+
+
+let text_for_partial_level k (i,j) suffix = 
+   let whole = partial_power k in 
+   let extract = (if (i,j)=(0,0)
+      then whole
+      else let up_to_j = List_again.long_head j whole in 
+         snd(List_again.long_head_with_tail (i-1) up_to_j)) in 
+   text_for_set suffix extract ;;
+
+
+let follenn2_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"follenn2.gp") ;;
+    
+(*
+
+let follenn3_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"follenn3.gp") ;;
+
+let  brouilhed_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"brouilhed.gp") ;;
+
+let thorgal4_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"thorgal4.gp") ;;
+
+let v1 = Io.read_whole_file thorgal4_ap ;;
+let v2 = Lines_in_text.lines v1 ;;
+
+let v3 = List.rev v2 ;;
+
+let v4 = List.nth v3 1;;
+
+let v5 = Int_range.index_everything v2 ;;
+
+let (v6,v8) = List_again.long_head_with_tail 150 v2 ;;
+
+let v7 = String.concat "\n" v8 ;;
+
+let thorgal42_ap = Absolute_path.of_string 
+(home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+"thorgal4_2.gp") ;;
+
+Io.overwrite_with thorgal42_ap v7 ;;
+
+*)
+
+let restart k = Lines_in_text.remove_lower_interval_in_file follenn2_ap k ;;
+
+let write_final_check  k = 
+ let ap = Absolute_path.of_string 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/"^
+  "thorgal"^(string_of_int k)^".gp") in 
+   Io.append_string_to_file (text_for_final_check k) ap ;;
+
+
+let write_partial_level  k (i,j) suffix= 
+   Io.append_string_to_file (text_for_partial_level k (i,j) suffix) follenn2_ap ;;
+
+
+(*
+write_partial_level 4 (1,50) "_1" ;;
+
+*)   
+end;;
+
+(************************************************************************************************************************
  Entry 197 : Applying a regexp transform to a very large string
 ************************************************************************************************************************)
 module Snip197 = struct 
