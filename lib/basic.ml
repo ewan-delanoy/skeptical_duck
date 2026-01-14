@@ -14,6 +14,12 @@ module Private = struct
        then (a/b)+1
        else -(( abs a)/b);;
     
+   let frac_floor_for_positive_denominator a b=
+  (*we assume that b is positive *)
+    if (a>=0) 
+    then (a/b)
+    else -((( abs a)/b)+1);;    
+
 let rec helper_for_power (a,b,accu) =
     if b<1 then accu else 
     if b=1 then a*accu else 
@@ -36,7 +42,13 @@ let frac_ceiling a b=
  else if (b>0)
       then Private.frac_ceiling_for_positive_denominator a b
       else Private.frac_ceiling_for_positive_denominator (-a) (-b);;
-  
+let frac_floor a b=
+ if (b=0) 
+ then failwith("division by zero in frac_floor")
+ else if (b>0)
+      then Private.frac_floor_for_positive_denominator a b
+      else Private.frac_floor_for_positive_denominator (-a) (-b);;  
+
 let power a b = Private.helper_for_power (a,b,1) ;;
 
 let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
