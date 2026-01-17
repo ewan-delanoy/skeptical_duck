@@ -17,6 +17,8 @@ module type Z_TYPE =
     val ediv : t -> t -> t
     val equals : t -> t -> bool
     val erem : t -> t -> t
+    val frac_floor : t -> t -> t
+    val frac_ceil : t -> t -> t
     val gcd : t -> t -> t
     val geq : t -> t -> bool
     val gt : t -> t -> bool
@@ -51,6 +53,9 @@ module Z = (struct
   let equals (Wrap x) (Wrap y) = Zay.equal x y ;;
 
   let erem (Wrap x) (Wrap y) = (Wrap(Zay.erem x y)) ;;
+
+  let frac_ceil (Wrap x) (Wrap y) = Wrap(Zay.cdiv x y) ;;
+  let frac_floor (Wrap x) (Wrap y) = Wrap(Zay.fdiv x y) ;;
 
   let gcd (Wrap x) (Wrap y) = (Wrap(Zay.gcd x y)) ;;
  

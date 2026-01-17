@@ -1,6 +1,416 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 206 : Musings on a self-referring sequence, IV
+************************************************************************************************************************)
+module Snip206 = struct 
+
+
+
+type walker =
+   {
+     core: int list;
+     length : int ;
+     sum : int ;
+     last_val : int ;
+     i : int  ;
+     ai : int ;
+     degrees_of_freedom : int ;
+     ratio : int ;
+   };;
+
+type lower_bound = Lb of int ;;
+type upper_bound = Ub of int ;;   
+
+let floor_sqrt n = int_of_float(floor(sqrt(float_of_int n))) ;;
+let ceil_sqrt n = int_of_float(ceil(sqrt(float_of_int n))) ;;
+
+exception Empty_negativity_range of int * int * int ;;
+let integer_negativity_range_for_trinomial (a,b,c) =
+  let delt=b*b-4*a*c in 
+  let sqdelt=ceil_sqrt(delt) in 
+  let tester=(fun x->c+x*(b+x*a)<=0) in 
+  let u1 = Basic.frac_floor (-b-sqdelt) (2*a)
+  and v1 = Basic.frac_floor (-b+sqdelt) (2*a) in 
+  let u_opt = Basic.smallest_in_range_satisfying_opt (u1,v1) tester
+  and v_opt = Basic.largest_in_range_satisfying_opt (u1,v1) tester in 
+  if (u_opt=None)||(v_opt=None)
+  then raise(Empty_negativity_range(a,b,c))
+  else (Option.get u_opt,Option.get v_opt);;
+
+
+let undefined = (-1) ;;
+let starter =
+   {
+     core=[1] ;
+     length = 1 ;
+     sum = 1 ;
+     last_val = 1 ;
+     i = undefined  ;
+     ai = undefined ;
+     degrees_of_freedom = undefined ;
+     ratio = undefined ;
+   };;
+
+let compute_ratio l =
+  if List.length l < 2 then undefined else 
+  let p = List.nth l 1 in 
+  if List.length l < p then undefined else 
+  Basic.fold_sum (List_again.long_head p l) ;;
+
+let compute_yad l =
+  let temp1 = Int_range.index_everything l  
+  and n = List.length l in 
+  match List.find_opt (fun (_,aa)->aa>n) temp1 with 
+  None -> (undefined,undefined,undefined)
+ |Some(i,ai) -> (i,ai,ai-n);;
+
+exception Tee_term_exn of walker ;;
+ 
+let tee_term w k = 
+  let r = w.ratio in
+  if r = undefined 
+  then raise(Tee_term_exn w)  
+  else (List.hd w.core)*(Basic.power r (k-1));; 
+
+exception Remainder_exn of walker ;;
+
+let compute_remainder w =
+  let (n,i,s) = (w.length,w.i,w.sum) in 
+  if (i=undefined) then raise(Remainder_exn(w)) else 
+  (tee_term w i)-s;;
+
+let extend_with w new_val = 
+   let new_core = w.core @ [new_val] in 
+   let (new_i,new_ai,new_d) = (
+      if (w.i = undefined)||(w.degrees_of_freedom = 1) 
+      then compute_yad new_core 
+      else (w.i,w.ai,w.degrees_of_freedom-1) 
+   )
+   and new_ratio = (
+      if w.ratio = undefined 
+      then compute_ratio new_core 
+      else w.ratio 
+   ) in 
+   {
+     core = new_core;
+     length = w.length + 1 ;
+     sum = w.sum + new_val ;
+     last_val = new_val ;
+     i = new_i  ;
+     ai = new_ai ;
+     degrees_of_freedom = new_d ;
+     ratio = new_ratio ;
+   };;   
+
+let extend_using_list w l = List.fold_left extend_with w l ;;
+
+let special_trinomial1 w=
+   let (i,ai,s)=(w.i,w.ai,w.sum) in 
+   let ti = tee_term w i 
+   and t= w.ratio in 
+  (3,4*ai-6*ti+6*s-1,(ai*ai)+(-4*ti+4*s-1)*ai+(3*ti*ti-(2*t+6*s-3)*ti+3*s*s-s)) ;;
+
+
+
+
+let lb1 w= Some(w.last_val + 1) ;; 
+
+let lb2 w = 
+  if (w.degrees_of_freedom <> 1) || (w.ratio = undefined) 
+  then None 
+  else Some((tee_term w w.i)-w.sum) ;;  
+
+let lb3 w = 
+  if (w.i = undefined) || (w.ratio = undefined) 
+  then None 
+  else  
+  let i =w.i and s=w.sum and t=w.ratio in  
+  if (w.length<>i) || (w.ai<>i+2)
+  then None 
+  else
+  let ti = tee_term w i in 
+  if 2*(t-1)*t*ti-((ti-s-2*i-6)*(ti-s-2*i-7))-2*(ti-s-2*i-6)*((t-1)*ti+1) < 0
+  then Some(i+4)
+  else None;;
+
+let fraction_for_lb4 w = 
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  if (i>=n)|| (i=undefined) || (t=undefined) then None else 
+  let aiu=List.nth w.core i and ti = tee_term w i in 
+  if (w.degrees_of_freedom<>2) || (aiu<n+4) 
+  then None  
+  else 
+  let numer = (aiu-n-2)*(aiu-n-2+ti-s)-2*(t-1)*ti 
+  and denom = aiu-n-2 in  
+  Some(numer,denom);;  
+  
+let lb4 w = 
+  Option.map (fun (numer,denom)->Basic.frac_ceiling numer denom)(fraction_for_lb4 w);;  
+
+let fraction_for_lb5 w = 
+  (* comes from comparing lb4 and u2 for a walker with degrees_of_freedom=2 *)
+   let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  if (i>=n)|| (i=undefined) || (t=undefined) then None else 
+  let ai=w.ai and aiu=List.nth w.core i and ti = tee_term w i in 
+  if (w.degrees_of_freedom<>3) || (aiu<n+5) 
+  then None  
+  else 
+  let numer = 2*(ai-n-1)*aiu*aiu+(aiu-n-3)*ai*ai-3*n*n*n+(5*aiu+4*ai+2*ti-2*s-20)*n*n+
+  (4*n + (-4*ai + 4))*ti*t + (((-2*n + (2*ai - 4))*aiu + ((-2*ai + 6)*n + (-2*ai + 8)))*ti + 
+  (((2*s + (-6*ai + 19))*n + ((-2*ai + 4)*s + (-15*ai + 14)))*aiu + (((2*ai - 10)*s + 
+  (21*ai - 41))*n + ((6*ai - 12)*s + (27*ai - 24)))))
+  and denom = 2*(aiu-n-3)*(ai-n-2) in 
+  Some(numer,denom);; 
+
+(* fraction_for_lb5(cons[3;5;8;64])=Some (38576, 112) *)  
+
+let lb5 w = 
+  Option.map (fun (numer,denom)->Basic.frac_ceiling numer denom)(fraction_for_lb5 w);;
+
+let adhoc_lb w =
+   List.assoc_opt w.core 
+   [
+    [1;3],5;   (* because delta2_1(cons [3;4;56])=(-4720) *)
+    [1;3;5],9; (* because delta4_2(cons [3;5;7;65])=(-42084) 
+                  and      isolated1(cons[3;5;8])=(-86976)
+                *)
+   ] ;;
+
+let ub1 = lb2 ;;  
+
+let fraction_for_ub2 w = 
+  if (w.degrees_of_freedom < 2) || (w.ratio = undefined) 
+  then None 
+  else 
+  let d = w.degrees_of_freedom in 
+  let numer = 2*((tee_term w w.i)-w.sum)-d*(d-1)
+  and denom = 2*d in 
+  Some(numer,denom);;  
+let ub2 w = 
+  Option.map (fun (numer,denom)->Basic.frac_floor numer denom)(fraction_for_ub2 w);;  
+
+let possible_lower_bounds = [
+    0,adhoc_lb;1,lb1;2,lb2;3,lb3;4,lb4;5,lb5;
+]  ;;
+
+let possible_upper_bounds = [
+    1,ub1;2,ub2;
+]  ;;
+
+exception Isolated_1_exn of walker ;;
+
+let isolated1 w = 
+  (* forced, and leads to a 4-2 obstruction *)
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  if (i<>n-1)  || (t=undefined) 
+  then raise(Isolated_1_exn(w)) 
+  else 
+  let aiu=List.nth w.core i and ti = tee_term w i in 
+  if (w.degrees_of_freedom<>1) || (aiu<>i+5) 
+  then raise(Isolated_1_exn(w)) 
+  else 
+  4*(5+s+i-ti)*aiu*aiu*aiu+(8*ti*t*t+(-4*ti*ti+(4*s+(4*i+12))*ti)*t+
+  ((4*s+(16*i+56))*ti+(-4*s*s+(-20*i-76)*s+(-16*i*i-136*i-280))))*aiu*aiu+
+  (((8*i+28)*aiu+(-4*i*i-28*i-48))*t+(-8*aiu+(8*i+24)))*ti*ti+
+  (((-16*i-40)*aiu+(8*i*i+40*i+48))*ti)*t*t+((8*i+20)*aiu+(-4*i*i-20*i-24))*s*s
+  -8*i*i*i*i+(4*ti*t+(8*ti+(20*aiu+(-12*s-116))))*i*i*i+((-8*aiu+(4*s+40))*ti*t
+  +((-20*aiu+(4*s+68))*ti+((28*s+232)*aiu+(-116*s-608))))*i*i+(((-8*i-28)*s+(-52*i-100))*aiu
+  +((28*i+48)*s+(148*i+192)))*ti*t+((((-8*i-12)*s+(-124*i-164))*aiu+(12*i*s+(164*i+96)))*ti
+  +(((192*i+304)*s+(864*i+1020))*aiu+((-352*i-336)*s+(-1356*i-1080)))) ;;
+ 
+(*
+
+isolated1(cons[3;5;8])=(-86976) ;;
+
+*)
+
+
+exception Delta_2_1_exn of walker ;;
+let delta2_1 w = 
+  if (w.degrees_of_freedom < 2) || (w.ratio = undefined) 
+  then raise(Delta_2_1_exn(w))
+  else 
+  let d = w.degrees_of_freedom in 
+  2*((tee_term w w.i)-w.sum)-d*(d+w.last_val);;  
+
+exception Delta_4_2_exn of walker ;;
+
+let delta4_2 w = 
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  if (i>=n)  || (i=undefined) || (t=undefined) 
+  then raise(Delta_4_2_exn(w)) 
+  else 
+  let ai=w.ai and aiu=List.nth w.core i and ti = tee_term w i in 
+  if (w.degrees_of_freedom<>2) || (aiu<n+4) 
+  then raise(Delta_4_2_exn(w)) 
+  else 
+  (2*(ti-s)-((ai-n)*((ai-n)-1)))*(aiu-n-2)-2*((aiu-n-2)*(aiu-n-2+ti-s)-2*(t-1)*ti)*(ai-n);;  
+ 
+(*
+delta4_2(extend_using_list starter [3;5;7;65])=(-42084);;
+delta4_2(extend_using_list starter [3;5;8;64;65])=(-31296);;
+*)  
+
+exception Delta_5_2_exn of walker ;;
+
+let delta5_2 w = 
+    let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  if (i>=n)|| (i=undefined) || (t=undefined) 
+  then raise(Delta_5_2_exn(w)) 
+  else 
+  let ai=w.ai and aiu=List.nth w.core i and ti = tee_term w i in 
+  if (w.degrees_of_freedom<>3) || (aiu<n+5) 
+  then raise(Delta_5_2_exn(w)) 
+  else 
+  2*(aiu-n-3)*(ai-n-2)*(2*(ti-s)-(ai-n)*(ai-n-1)) - 2*(ai-n)*(2*(ai-n-1)*aiu*aiu+(aiu-n-3)*ai*ai-3*n*n*n+(5*aiu+4*ai+2*ti-2*s-20)*n*n+
+(4*n+(-4*ai+4))*ti*t+(((-2*n+(2*ai-4))*aiu+((-2*ai+6)*n+(-2*ai+8)))*ti+
+(((2*s+(-6*ai+19))*n+((-2*ai+4)*s+(-15*ai+14)))*aiu+(((2*ai-10)*s+(21*ai-41))*n+
+((6*ai-12)*s+(27*ai-24)))))) ;; 
+
+
+(*
+delta5_2(cons[3;5;8;64])=(-86976) ;;
+*)  
+
+
+exception Determine_next_value_exn of int * int * walker ;;
+
+let data_for_next_value w =
+   let below1 = List.filter_map (
+    fun (idx,lb) -> 
+      Option.map (fun v->(idx,v)) (lb w)
+   ) possible_lower_bounds
+   and above1 = List.filter_map (
+    fun (idx,ub) -> 
+      Option.map (fun v->(idx,v)) (ub w)
+   ) possible_upper_bounds in 
+   let ((lb_idx,_),best_below) = Max.maximize_it snd below1 in 
+   let data_for_upper_bound =(
+   if above1=[]
+   then None
+   else 
+   let ((ub_idx,_),best_above) = Min.minimize_it snd above1 in   
+   Some(ub_idx,best_above)) in 
+   ((lb_idx,best_below),data_for_upper_bound) ;;
+
+let determine_next_value w =
+  let ((lb_idx,best_below),data_for_upper_bound) = data_for_next_value w in 
+  match data_for_upper_bound with 
+  None -> best_below
+  |Some(ub_idx,best_above) ->  
+   if best_below > best_above 
+   then raise(Determine_next_value_exn(lb_idx,ub_idx,w))
+   else best_below ;;  
+   
+let extend w = extend_with w (determine_next_value w) ;;
+
+let cons l= extend_using_list starter l;; 
+
+let walker_ref = ref (extend_with starter 3);;
+
+let push () = let _ =(walker_ref := extend (!walker_ref)) in !walker_ref ;;
+
+let w0 = (!walker_ref) ;;
+
+let data_for_anyone w = 
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let ai=List.nth w.core (i-1) and aiu=List.nth w.core i and ti = tee_term w i in 
+  (n,i,s,t,ai,aiu,ti) ;; 
+
+let data_for_anyone_v2 new_w = 
+  let new_n=new_w.length and new_i=new_w.i and new_s=new_w.sum and t=new_w.ratio in 
+  let new_ai=List.nth new_w.core (new_i-1) and new_aiu=List.nth new_w.core new_i and new_ti = tee_term new_w new_i in 
+  (new_n,new_i,new_s,t,new_ai,new_aiu,new_ti) ;; 
+
+let data_for_captive_predecessor w = 
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let aiu=List.nth w.core i and ti = tee_term w i in
+  let x = ti-s in 
+  let new_aiu=(if i+2<=n then List.nth w.core (i+1) else x) in 
+  (n+1,i+1,ti,t,aiu,new_aiu,t*ti) ;;
+
+let data_for_captive_predecessor_in_usual_case w = 
+  (* usual means : i<n-1 *)
+  let n=w.length and i=w.i and _s=w.sum and t=w.ratio in 
+  let aiu=List.nth w.core i and ti = tee_term w i in
+  (n+1,i+1,ti,t,aiu,List.nth w.core (i+1),t*ti) ;;
+
+let data_for_captive_predecessor_in_extreme_case w = 
+  (* extreme means : i=n-1 *)
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let aiu=List.nth w.core i and ti = tee_term w i in
+  (n+1,i+1,ti,t,aiu,ti-s,t*ti) ;;
+
+let data_for_free_predecessor w x= 
+   let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let ai=List.nth w.core (i-1) 
+  and aiu=(if i<n then List.nth w.core i else x)
+  and ti = tee_term w i in
+  (n+1,i,s+x,t,ai,aiu,ti) ;; 
+
+let data_for_free_predecessor_in_usual_case w x=
+   (* usual means i<n *) 
+   let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let ai=List.nth w.core (i-1) 
+  and aiu=List.nth w.core i 
+  and ti = tee_term w i in
+  (n+1,i,s+x,t,ai,aiu,ti) ;;
+
+let data_for_free_predecessor_in_extreme_case w x=
+   (* extreme means i=n *) 
+  let n=w.length and i=w.i and s=w.sum and t=w.ratio in 
+  let ai=List.nth w.core (i-1) 
+  and ti = tee_term w i in
+  (n+1,i,s+x,t,ai,x,ti) ;;  
+
+
+
+(*
+(data_for_free_predecessor_in_extreme_case cynthia 8)=(4, 3, 17, 9, 5, 8, 81) ;;
+(data_for_free_predecessor cynthia 8)=(4, 3, 17, 9, 5, 8, 81) ;;
+(data_for_anyone_v2 bernard)=(4, 3, 17, 9, 5, 8, 81) ;;
+(data_for_captive_predecessor_in_extreme_case bernard)=(5, 4, 81, 9, 8, 64, 729) ;;
+(data_for_anyone alice)=(5, 4, 81, 9, 8, 64, 729) ;;
+*)
+
+let alice = {core = [1; 3; 5; 9; 63; 64]; length = 6; sum = 145; last_val = 64; i = 4;
+ ai = 9; degrees_of_freedom = 3; ratio = 9} ;;
+
+let bernard = {core = [1; 3; 5; 9; 63]; length = 5; sum = 81; last_val = 63; i = 4; 
+ ai = 9; degrees_of_freedom = 4; ratio = 9} ;;
+
+let old_text = rf "watched/watched_not_githubbed/ham.ml";;
+
+let text1 = Replace_inside.replace_several_inside_text
+   [
+      "-n-","-new_n-";
+      "-n)","-new_n)";
+      "*n*n*n","*new_n*new_n*new_n";
+      ")*n*n",")*new_n*new_n";
+      "*n+","*new_n+";
+      "(n+","(new_n+";
+      ",n-",",new_n-";
+      "aiu","spring_boot";
+      "ai","kafka";
+   ] old_text ;;
+
+
+let new_text = Replace_inside.replace_several_inside_text
+   [
+      "spring_boot","new_aiu";
+      "kafka","new_ai";
+      "s","new_s";
+      "-i","-new_i";
+      "ti","new_ti";
+
+   ] text1 ;;
+
+print_string new_text ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 205 : Musings on a self-referring sequence, III
 ************************************************************************************************************************)
 module Snip205 = struct 
