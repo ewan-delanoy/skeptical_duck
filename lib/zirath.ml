@@ -33,6 +33,7 @@ module type Z_TYPE =
     val one : t
     val order : t Total_ordering_t.t
     val sub : t -> t -> t
+    val to_int : t -> int
     val to_string : t -> string
     val to_zarith : t -> Zay.t 
     val print_out : Format.formatter -> t -> unit
@@ -83,7 +84,7 @@ module Z = (struct
   ): t Total_ordering_t.t) ;;
 
   let sub (Wrap x) (Wrap y) = (Wrap(Zay.sub x y)) ;;
-
+  let to_int (Wrap x) = Zay.to_int x ;;
   let to_string (Wrap x) = Zay.to_string x ;;
 
   let to_zarith (Wrap x) = x ;;

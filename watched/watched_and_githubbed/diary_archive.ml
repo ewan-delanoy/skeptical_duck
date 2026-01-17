@@ -1,6 +1,298 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 207 : Musings on a self-referring sequence, V
+************************************************************************************************************************)
+module Snip207 = struct 
+
+type left_or_right = Left |Right ;;
+
+type volcanor_set = V of int * int * int * int ;;
+
+(*
+V(d,a,b,s) represents the set of all uples (x1,...,xd)
+with a<=x1<x2<...<xd<=b and x1+x2+...+xd=s.
+It is nonempty iff 
+  d*a+(d*(d-1)/2)<=s<=d*b-(d*(d-1)/2)
+*)
+
+type vlist_element =
+   I of int 
+   |VS of volcanor_set ;;
+
+type vlist = VL of int * (vlist_element list) ;;   
+
+let tee_term k = Basic.power 9 (k-1) ;;
+
+let show_size l_name l = 
+  let n = List.length l in 
+  let suffix = (if n=1 then "" else "s") in
+  let msg = "\n\n"^l_name ^" has "^(string_of_int n)^" element"^suffix^"\n" in 
+  print_string msg;flush stdout ;;
+
+
+module Volcanor_set = struct 
+
+  exception Constructor_exn of int * int *int * int ;;
+
+   let constructor_opt (d,a,b,s) =
+     let low_span = ((d-1)*(d-2))/2 
+     and high_span = (d*(d-1))/2 in 
+     (* those conditions ensure that the set is non-empty *)
+     if (s<d*a+high_span)||(s>d*b-high_span)||(a>b)
+     then None
+     else 
+     let optimal_a=max(a)(s-(d-1)*b+low_span)
+     and optimal_b=min(b)(s-(d-1)*a-low_span) in 
+     Some(V(d,optimal_a,optimal_b,s)) ;;   
+
+     let constructor fourtuple =
+        let (d,a,b,s) = fourtuple in 
+        match constructor_opt fourtuple with  
+        None -> raise(Constructor_exn(d,a,b,s))
+        |(Some vs)->vs ;;   
+
+  let length (V(d,a,b,s)) = d ;; 
+  
+  let sum (V(d,a,b,s)) = s ;; 
+
+  let upper_bound (V(d,a,b,s)) = b ;; 
+
+  let left_decomposition (V(d,a,b,s)) =
+     let low_span = ((d-1)*(d-2))/2 
+     and high_span = (d*(d-1))/2 in 
+     let xmin = max a (s-(d-1)*b-low_span) 
+     and xmax = Basic.frac_floor (s-high_span) d in 
+     Int_range.scale (fun x->(x,constructor (d-1,x+1,b,s-x))) xmin xmax ;;  
+
+  let right_decomposition (V(d,a,b,s)) =
+     let low_span = ((d-1)*(d-2))/2 
+     and high_span = (d*(d-1))/2 in 
+     let ymin = Basic.frac_ceiling (s+high_span) d 
+     and ymax = min b (s-(d-1)*a-low_span) in 
+     Int_range.scale (fun y->(constructor (d-1,a,y-1,s-y),y)) ymin ymax ;; 
+
+
+end ;;  
+
+module VList = struct 
+
+exception Get_exn of volcanor_set * int ;;
+
+exception Cumulative_sum_exn of volcanor_set * int ;;
+
+exception Index_out_of_bounds  ;;
+
+
+module Private = struct 
+  
+let rec helper_for_accession to_be_treated idx=
+  match to_be_treated with 
+  [] -> raise(Index_out_of_bounds)
+  |elt::others->
+    match elt with 
+    I(i) -> if idx=1 then i else 
+            helper_for_accession others (idx-1)
+    |VS(vs) ->  
+      let d=Volcanor_set.length vs in 
+       if idx<=d
+       then raise(Get_exn(vs,idx))
+       else helper_for_accession others (idx-d) ;;
+  
+let rec helper_for_cumulative_sum counter to_be_treated idx=
+  if idx=0 then counter else
+  match to_be_treated with 
+  [] -> raise(Index_out_of_bounds)
+  |elt::others->
+    match elt with 
+    I(i) -> if idx=1 then counter+i else 
+            helper_for_cumulative_sum (counter+i) others (idx-1)
+    |VS(vs) ->  
+      let d=Volcanor_set.length vs in 
+       if idx<d
+       then raise(Cumulative_sum_exn(vs,idx))
+       else helper_for_cumulative_sum (counter+(Volcanor_set.sum vs)) others (idx-d) ;;
+
+let cumulative_sum (VL (lvl,l)) idx = helper_for_cumulative_sum 0 l idx;;
+
+let rec helper_for_tripartition treated to_be_treated idx=
+  match to_be_treated with 
+  [] -> None
+  |elt::others->
+    match elt with 
+    I(i) -> if idx=1 then None else 
+            helper_for_tripartition (elt::treated) others (idx-1)
+    |VS(vs) ->  
+      let d=Volcanor_set.length vs in 
+      if idx<=d 
+      then let side = (if idx=d then Right else Left) in 
+           Some(List.rev treated,side,vs,others)  
+      else helper_for_tripartition (elt::treated) others (idx-d) ;;
+
+let tripartition_at_index (VL (lvl,l)) idx= helper_for_tripartition [] l idx ;;
+
+let middle_left_decomposition vs =
+   let d=Volcanor_set.length vs 
+   and temp1 = Volcanor_set.left_decomposition vs in 
+   if d>2
+   then Image.image (fun (x,v)->[I x;VS v]) temp1
+   else Image.image (fun (x,v)->[I x;I(Volcanor_set.sum v)]) temp1 ;; 
+
+let middle_right_decomposition vs =
+   let d=Volcanor_set.length vs 
+   and temp1 = Volcanor_set.right_decomposition vs in 
+   if d>2
+   then Image.image (fun (v,y)->[VS v;I y]) temp1
+   else Image.image (fun (v,y)->[I(Volcanor_set.sum v);I y]) temp1 ;; 
+
+let middle_decomposition side vs =
+   match side with 
+   Left -> middle_left_decomposition vs 
+   |Right -> middle_right_decomposition vs ;;
+
+let decompose_at_index vl idx =
+  let (VL(lvl,_)) = vl in
+   match tripartition_at_index vl idx with 
+   None -> [vl]
+   |Some(before,side,vs,after)->
+     let temp = middle_decomposition side vs in 
+     Image.image (fun between->VL(lvl,before@between@after)) temp   ;;
+
+let individual_length = function 
+  (I i) -> 1 
+  |VS(v) -> Volcanor_set.length v ;;
+
+let total_length (VL (_,l)) =
+   Basic.fold_sum (Image.image individual_length l) ;;
+
+exception Smallest_untreated_idx_exn of int;;
+
+let rec helper_for_smallest_untreated_idx counter to_be_treated n=
+  match to_be_treated with 
+  [] -> raise(Smallest_untreated_idx_exn(1))
+  |elt::others->
+    match elt with 
+    VS(s) -> raise(Smallest_untreated_idx_exn(2))
+    |I(j) -> if j>n then (counter,j) else 
+            helper_for_smallest_untreated_idx (counter+1) others n ;;
+let smallest_untreated_index vl =
+  let (VL (_,l))=vl and n=total_length vl in 
+  helper_for_smallest_untreated_idx 1 l n ;;
+
+let upper_bound (VL (_,l))=
+   match List.hd(List.rev l) with 
+   I i -> i 
+   |VS(vs) -> Volcanor_set.upper_bound vs ;;
+
+let get (VL (_,l)) idx = helper_for_accession l idx;;
+
+let extend_naturally_opt vl =
+  let (VL (lvl,l))=vl and n=total_length vl and m = upper_bound vl in 
+  let ai = get vl (lvl+1) in 
+  let d=ai-n and old_s=cumulative_sum vl n in 
+  let s = (tee_term (lvl+1))-old_s in 
+  if d=1 
+  then Some(VL(lvl+1,l@[I s]))
+  else Option.map(fun vs->VL(lvl+1,l@[VS(vs)]))
+  (Volcanor_set.constructor_opt(d,m+1,s,s)) ;;
+
+let extend_naturally lvl =
+    List.filter_map extend_naturally_opt lvl ;;  
+
+let expand_element_according_to_max vl = 
+   let n = total_length vl in 
+   decompose_at_index vl n ;;
+
+let expand_according_to_max lvl =
+    List.flatten (Image.image expand_element_according_to_max lvl) ;; 
+
+let expand_element_according_to_min vl = 
+  let (VL(lvl,_)) = vl in 
+  decompose_at_index vl (lvl+1);;
+
+let expand_according_to_min lvl =
+    List.flatten (Image.image expand_element_according_to_min lvl) ;; 
+
+let decompose_all_at_index lvl idx=
+    List.flatten (Image.image (fun vl->decompose_at_index vl idx) lvl) ;;
+
+
+end ;;  
+
+
+let decompose_all_at_index vl idx = Private.decompose_all_at_index vl idx ;;
+let decompose_at_index vl idx = Private.decompose_at_index vl idx ;;
+
+let expand_according_to_max lvl = Private.expand_according_to_max lvl ;;
+let expand_according_to_min lvl = Private.expand_according_to_min lvl ;;
+let extend_naturally = Private.extend_naturally ;;
+
+let extend_naturally_opt = Private.extend_naturally_opt ;;
+
+let get = Private.get;;
+
+let strong_cumulative_sum vl idx = Private.cumulative_sum vl (get vl idx) ;;
+
+let strong_cumulative_sums vl n = Int_range.scale (strong_cumulative_sum vl) 1 n;;
+
+let total_length = Private.total_length ;;
+
+end ;;  
+
+let smp_min vl = List.hd(VList.expand_according_to_min [vl]) ;;
+let smp_ext vl = Option.get(VList.Private.extend_naturally_opt vl) ;;
+let smp_max vl = List.hd(VList.expand_according_to_max [vl]) ;;
+
+module ZZ = Zirath.Z ;;
+
+let core = VL(4,[I 1;I 3;I 5;I 12;I 60]);;
+
+
+
+(*
+let u3 = VList.expand_according_to_max u2 ;;
+
+let starter = [core];;
+
+let u1 = VList.expand_according_to_min starter ;;
+
+show_size "u1" u1 ;;
+let u2 = VList.extend_naturally u1 ;;
+
+show_size "u2" u2 ;;
+let u3 = VList.expand_according_to_max u2 ;;
+
+show_size "u3" u3 ;;
+let u4 = VList.expand_according_to_min u3 ;;
+
+show_size "u4" u4 ;;
+let u5 = VList.extend_naturally u4 ;;
+
+show_size "u5" u5 ;;
+let u6 = VList.expand_according_to_max u5 ;;
+
+show_size "u6" u6 ;;
+
+let u7 = VList.expand_according_to_min u6 ;;
+
+show_size "u7" u7 ;;
+let u8 = VList.extend_naturally u7 ;;
+
+show_size "u8" u8 ;;
+let u9 = VList.expand_according_to_max u8 ;;
+
+show_size "u9" u9 ;;
+
+*)
+
+(*
+
+#use"watched/watched_not_githubbed/sirloin.ml";;
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 206 : Musings on a self-referring sequence, IV
 ************************************************************************************************************************)
 module Snip206 = struct 
