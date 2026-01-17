@@ -32,6 +32,7 @@ module type Z_TYPE =
     val of_zarith : Zay.t -> t
     val one : t
     val order : t Total_ordering_t.t
+    val power : t -> int -> t
     val sub : t -> t -> t
     val to_int : t -> int
     val to_string : t -> string
@@ -83,6 +84,7 @@ module Z = (struct
   Total_ordering_result_t.Greater     
   ): t Total_ordering_t.t) ;;
 
+  let power (Wrap x) n = Wrap(Zay.pow x n) ;;
   let sub (Wrap x) (Wrap y) = (Wrap(Zay.sub x y)) ;;
   let to_int (Wrap x) = Zay.to_int x ;;
   let to_string (Wrap x) = Zay.to_string x ;;
