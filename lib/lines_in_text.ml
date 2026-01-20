@@ -256,10 +256,6 @@ module Private = struct
    |Inside_a_double_slash_comment 
    |Outside_comments_or_strings ;;  
   
-  type situation_of_linebreak_inside_text = 
-    Lbit_inside_a_long_double_quoted_string  
-   |Lbit_inside_a_starry_comment
-   |Lbit_outside_comments_or_strings ;;
 
   (* Data type to compute whether 
   the next  linebreak is in a comment, a long string, or neither. 
@@ -269,7 +265,7 @@ module Private = struct
   *)
 
   type walker = {
-      answer_opt : (int * situation_of_linebreak_inside_text) option ;
+      answer_opt : (int * Situation_of_linebreak_inside_text_t.t) option ;
       next_idx : int ;
       current_state : situation_of_char_inside_line ;
       text : string ;
@@ -307,7 +303,7 @@ module Private = struct
      |After_backslash_in_double_quoted_string -> 
        let coming_idx = old_idx+1 in  
           { w with 
-              answer_opt = (if c='\n' then Some (old_idx,Lbit_inside_a_long_double_quoted_string) else None);
+              answer_opt = (if c='\n' then Some (old_idx,Situation_of_linebreak_inside_text_t.Lbit_inside_a_long_double_quoted_string) else None);
               next_idx = coming_idx;
               current_state = Inside_a_double_quoted_string;
             } 
@@ -330,7 +326,7 @@ module Private = struct
        } 
           
    |Inside_a_starry_comment -> 
-      if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_inside_a_starry_comment)} else    
+      if c = '\n' then {w with answer_opt = Some (old_idx,Situation_of_linebreak_inside_text_t.Lbit_inside_a_starry_comment)} else    
       (* here we use the fact that /* */-comments cannot be nested in C *)
       let (next_char_situation,coming_idx)=
        (if Substring.is_a_substring_located_at "*/" w.text old_idx 
@@ -341,10 +337,10 @@ module Private = struct
               current_state = next_char_situation;
             }  
    |Inside_a_double_slash_comment -> 
-      if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_outside_comments_or_strings)} else 
+      if c = '\n' then {w with answer_opt = Some (old_idx,Situation_of_linebreak_inside_text_t.Lbit_outside_comments_or_strings)} else 
       { w with next_idx = old_idx+1;}           
    |Outside_comments_or_strings ->
-       if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_outside_comments_or_strings)} else 
+       if c = '\n' then {w with answer_opt = Some (old_idx,Situation_of_linebreak_inside_text_t.Lbit_outside_comments_or_strings)} else 
        if c = '\'' 
        then { w with 
               next_idx = old_idx+1;
@@ -380,9 +376,9 @@ let rec iterate w =
 
  
 let char_state_of_linebreak_state = function
-    Lbit_inside_a_long_double_quoted_string -> Inside_a_double_quoted_string 
-   |Lbit_inside_a_starry_comment -> Inside_a_starry_comment
-   |Lbit_outside_comments_or_strings -> Outside_comments_or_strings ;;
+    Situation_of_linebreak_inside_text_t.Lbit_inside_a_long_double_quoted_string -> Inside_a_double_quoted_string 
+   |Situation_of_linebreak_inside_text_t.Lbit_inside_a_starry_comment -> Inside_a_starry_comment
+   |Situation_of_linebreak_inside_text_t.Lbit_outside_comments_or_strings -> Outside_comments_or_strings ;;
 
 let initial_walker txt idx linebreak_state=
    {
@@ -427,7 +423,7 @@ let rec iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings
 
 let lines_inside_or_outside_cee_comments_or_dq_strings text = 
   iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings 
-  (None,(text,String.length text,[],1,Lbit_outside_comments_or_strings)) ;;
+  (None,(text,String.length text,[],1,Situation_of_linebreak_inside_text_t.Lbit_outside_comments_or_strings)) ;;
 
 (*  
 
