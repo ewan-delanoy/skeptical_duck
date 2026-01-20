@@ -61,6 +61,7 @@ type line_beginning =
  |Lb_Usual ;; 
 
    
+
  module Line_beginning = struct 
 
   let data = [
@@ -130,7 +131,7 @@ module Walker = struct
    module Walker_Object = struct 
 
     type t = {
-      lines : (int *(string * bool)) list ;
+      lines : (int *(string * Lines_in_text.Private.situation_of_linebreak_inside_text)) list ;
       current_namespace : int ;
       preceding_namespaces : int list ;
       smallest_unused_namespace_index : int ;
@@ -329,11 +330,11 @@ module Walker = struct
     
 
   let step old_w = 
-    let (line_idx,(line,unfinished_comment)) = List.hd (Walker_Object.get_lines old_w) 
+    let (line_idx,(line,linebreak_state)) = List.hd (Walker_Object.get_lines old_w) 
     and w = Walker_Object.set_lines old_w  
           (List.tl(Walker_Object.get_lines old_w)) in 
     let line_beginning = Line_beginning.compute line in 
-    if unfinished_comment 
+    if linebreak_state <> Lines_in_text.Private.Lbit_outside_comments_or_strings 
     then usual_step w line_idx line
     else     
     match line_beginning with 
@@ -485,16 +486,16 @@ let find_directive_from_list_opt line directives=
 let text_has_ivy text =
    let lines = lines_inside_or_outside_cee_comments_or_dq_strings text in 
    List.exists (
-    fun (line,unfinished_comment) -> 
-      (not unfinished_comment) &&
+    fun (line,linebreak_state) -> 
+      (linebreak_state = Lines_in_text.Private.Lbit_outside_comments_or_strings) &&
       (find_directive_from_list_opt line ["if"])<>None
    ) lines ;;          
 
 exception First_ivy_in_text_exn ;;   
 let first_ivy_in_text text =
    let lines = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
-   match List.find_opt (fun (_line_idx,(line,starts_with_unfinished_comment))->
-      (not starts_with_unfinished_comment) && 
+   match List.find_opt (fun (_line_idx,(line,linebreak_state))->
+      (linebreak_state=Lines_in_text.Private.Lbit_outside_comments_or_strings) && 
       (find_directive_from_list_opt line ["if"])<>None
    ) lines with 
    None -> raise First_ivy_in_text_exn 
@@ -503,8 +504,8 @@ let first_ivy_in_text text =
 exception Last_endif_in_text_exn ;;   
 let last_endif_in_text text =
   let lines = List.rev(indexed_lines_inside_or_outside_cee_comments_or_dq_strings text) in 
-  match List.find_opt (fun (_line_idx,(line,starts_with_unfinished_comment))->
-          (not starts_with_unfinished_comment) && 
+  match List.find_opt (fun (_line_idx,(line,linebreak_state))->
+          (linebreak_state=Lines_in_text.Private.Lbit_outside_comments_or_strings) && 
          (find_directive_from_list_opt line ["endif"])<>None
   ) lines with 
    None -> raise Last_endif_in_text_exn 
@@ -703,8 +704,8 @@ let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
 let included_local_files_in_text text = 
   let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let temp2 = List.filter_map (
-    fun (line_idx,(line,unfinished_comment)) ->
-      if unfinished_comment then None else
+    fun (line_idx,(line,linebreak_state)) ->
+      if linebreak_state<>Lines_in_text.Private.Lbit_outside_comments_or_strings then None else
       Option.map (fun included_fn ->
           (line_idx,included_fn)
       ) (included_local_file_opt line)
@@ -714,8 +715,8 @@ let included_local_files_in_text text =
 let included_nonlocal_files_in_text text = 
   let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let temp2 = List.filter_map (
-      fun (line_idx,(line,unfinished_comment)) ->
-        if unfinished_comment then None else
+      fun (line_idx,(line,linebreak_state)) ->
+        if linebreak_state<>Lines_in_text.Private.Lbit_outside_comments_or_strings then None else
         Option.map (fun included_fn ->
             (line_idx,included_fn)
         ) (included_nonlocal_file_opt line)
@@ -744,8 +745,8 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
   let lines_before = lines_inside_or_outside_cee_comments_or_dq_strings text 
   and counter=ref 0 in 
   let lines_after = Image.image(
-    fun (line,unfinished_comment) -> 
-      if (not unfinished_comment)
+    fun (line,linebreak_state) -> 
+      if (linebreak_state=Lines_in_text.Private.Lbit_outside_comments_or_strings)
         &&
          ((included_local_file_opt line)<>None)
       then let _ =(counter:=(!counter)+1) in 
@@ -770,9 +771,9 @@ let compute_wardrobe
 let highlight_inclusions_in_text text = 
   let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let all_lines = Image.image (
-    fun (line_idx,(line,unfinished_comment)) ->
+    fun (line_idx,(line,linebreak_state)) ->
       ((line_idx,line),
-      (not unfinished_comment)
+      (linebreak_state=Lines_in_text.Private.Lbit_outside_comments_or_strings)
       &&
       ((included_local_file_opt line)<>None))
   ) temp1 in 

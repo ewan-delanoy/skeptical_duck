@@ -248,7 +248,7 @@ module Private = struct
     let new_text = put_line_last_in_text line_idx  old_text in 
     Io.overwrite_with src_file new_text ;; 
 
-  type situation = 
+  type situation_of_char_inside_line = 
     Inside_a_single_quoted_string 
    |After_backslash_in_double_quoted_string
    |Inside_a_double_quoted_string 
@@ -256,18 +256,22 @@ module Private = struct
    |Inside_a_double_slash_comment 
    |Outside_comments_or_strings ;;  
   
+  type situation_of_linebreak_inside_text = 
+    Lbit_inside_a_long_double_quoted_string  
+   |Lbit_inside_a_starry_comment
+   |Lbit_outside_comments_or_strings ;;
 
   (* Data type to compute whether 
-  the next  linebreak is in a comment or not. 
+  the next  linebreak is in a comment, a long string, or neither. 
   The computation returns a pair made of
-  the next linebreak's index, with a boolean
+  the next linebreak's index, with a situation_of_line_inside_text
       indicating if the linebreak is in a comment.
   *)
 
   type walker = {
-      answer_opt : (int * bool) option ;
+      answer_opt : (int * situation_of_linebreak_inside_text) option ;
       next_idx : int ;
-      current_state : situation ;
+      current_state : situation_of_char_inside_line ;
       text : string ;
       text_length : int;
   } ;;
@@ -301,12 +305,9 @@ module Private = struct
               next_idx = coming_idx
             }       
      |After_backslash_in_double_quoted_string -> 
-       let coming_idx = (
-          if (Substring.is_a_substring_located_at "\\" w.text (old_idx+1))
-          then old_idx+2
-          else old_idx+1  ) in  
+       let coming_idx = old_idx+1 in  
           { w with 
-              answer_opt = (if c='\n' then Some (old_idx,true) else None);
+              answer_opt = (if c='\n' then Some (old_idx,Lbit_inside_a_long_double_quoted_string) else None);
               next_idx = coming_idx;
               current_state = Inside_a_double_quoted_string;
             } 
@@ -329,21 +330,21 @@ module Private = struct
        } 
           
    |Inside_a_starry_comment -> 
-      if c = '\n' then {w with answer_opt = Some (old_idx,true)} else    
+      if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_inside_a_starry_comment)} else    
       (* here we use the fact that /* */-comments cannot be nested in C *)
-      let (next_situation,coming_idx)=
+      let (next_char_situation,coming_idx)=
        (if Substring.is_a_substring_located_at "*/" w.text old_idx 
       then (Outside_comments_or_strings,old_idx+2) 
       else (Inside_a_starry_comment,old_idx+1)) in   
           { w with 
               next_idx = coming_idx;
-              current_state = next_situation;
+              current_state = next_char_situation;
             }  
    |Inside_a_double_slash_comment -> 
-      if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
+      if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_outside_comments_or_strings)} else 
       { w with next_idx = old_idx+1;}           
    |Outside_comments_or_strings ->
-       if c = '\n' then {w with answer_opt = Some (old_idx,false)} else 
+       if c = '\n' then {w with answer_opt = Some (old_idx,Lbit_outside_comments_or_strings)} else 
        if c = '\'' 
        then { w with 
               next_idx = old_idx+1;
@@ -377,14 +378,17 @@ let rec iterate w =
     Some res -> res 
     | None -> iterate (step w) ;;
 
-let initial_walker txt idx unfinished_comment=
+ 
+let char_state_of_linebreak_state = function
+    Lbit_inside_a_long_double_quoted_string -> Inside_a_double_quoted_string 
+   |Lbit_inside_a_starry_comment -> Inside_a_starry_comment
+   |Lbit_outside_comments_or_strings -> Outside_comments_or_strings ;;
+
+let initial_walker txt idx linebreak_state=
    {
       answer_opt = None ;
       next_idx = idx ;
-      current_state = (
-        if unfinished_comment 
-        then Inside_a_starry_comment 
-        else Outside_comments_or_strings);
+      current_state = char_state_of_linebreak_state linebreak_state;
       text = txt ;
       text_length = String.length txt;
   } ;;
@@ -423,7 +427,7 @@ let rec iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings
 
 let lines_inside_or_outside_cee_comments_or_dq_strings text = 
   iterator_for_lines_inside_or_outside_cee_comments_or_dq_strings 
-  (None,(text,String.length text,[],1,false)) ;;
+  (None,(text,String.length text,[],1,Lbit_outside_comments_or_strings)) ;;
 
 (*  
 
