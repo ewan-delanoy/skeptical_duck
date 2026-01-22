@@ -754,21 +754,7 @@ let add_extra_ending_in_inclusions_inside_text ~extra text =
       else line    
   ) lines_before in 
   (String.concat "\n" lines_after,!counter);;
-   
-let compute_wardrobe 
-  ~preprocessed_includer_text 
-  copied_includable_files = 
-  Cee_wardrobe_t.Wr(Image.image (
-    fun (old_name,old_content,new_name,inclusion_index) ->
-      ((inclusion_index,old_name),compute_shadow 
-      old_content 
-       ~inclusion_index_opt:(Some inclusion_index)
-       ~name_for_included_file:new_name 
-        ~preprocessed_includer_text
-      ) 
-  ) copied_includable_files);;
-
-let highlight_inclusions_in_text text = 
+ let highlight_inclusions_in_text text = 
   let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
   let all_lines = Image.image (
     fun (line_idx,(line,linebreak_state)) ->
@@ -823,7 +809,6 @@ let highlight_and_add_extra_ending_in_inclusions_inside_text
 end ;;  
 
 let compute_shadow = Private.compute_shadow ;;
-let compute_wardrobe = Private.compute_wardrobe ;;
 let crop_using_prawn = Private.crop_using_prawn ;;
 let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
