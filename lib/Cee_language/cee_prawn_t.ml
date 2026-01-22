@@ -3,8 +3,11 @@
 #use"lib/Cee_language/cee_prawn_t.ml";;
 
 
-A prawn is set of zones without conditional directives
-in a C file.
+The prawn of a file is the set of "accepted" (after preprocessing the
+conditional directives) zones 
+without conditional directives in a C file.
+The integers in the int list parameter are the indices of the zones.
+
 
 *)
 
