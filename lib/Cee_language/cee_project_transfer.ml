@@ -404,11 +404,6 @@ module Private2 = struct
       ; directly_compiled_files_opt : string list option
       ; inclusions_in_dc_files_opt : (string * ((int * string) list)) list option
       ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
-      ; wardrobes_for_dc_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; directly_included_files_opt : string list option
-      ; inclusions_for_di_files : (string, (string * int) list) Hashtbl.t
-      ; wardrobes_for_di_files_opt : (string * Cee_wardrobe_t.t) list option
-      ; prawn_algebras_for_di_files_opt : ( (string * Cee_prawn_algebra_t.t) list) option
       } ;;
 
     type t = immutable_t ref
@@ -644,132 +639,10 @@ module Private2 = struct
         answer
     ;;
 
-let compute_wardrobes_for_dc_files_in_execution_order cpsl_ref =
-      let cmds = separate_commands cpsl_ref in
-      let indexed_cmds = Int_range.index_everything cmds
-      and s_num_of_cmds = string_of_int (List.length cmds) in
-      Image.image
-        (fun (idx, cmd) ->
-          ( Cee_compilation_command.short_name_from_separate cmd
-          , wardrobe_for_indexed_separate_command
-              (destination, read_file, create_file, inclusions_in_dc_files)
-              cpsl_ref
-              (idx, cmd)
-              s_num_of_cmds ))
-        indexed_cmds
-    ;;
-
-let compute_wardrobes_for_dc_files cpsl_ref = 
-  let dc_files = directly_compiled_files cpsl_ref 
-  and execution_order = compute_wardrobes_for_dc_files_in_execution_order cpsl_ref in 
-  Image.image (
-    fun dc_file ->(dc_file,List.assoc dc_file execution_order)
-  ) dc_files ;;
-
-   let wardrobes_for_dc_files cpsl_ref =
-      match !cpsl_ref.wardrobes_for_dc_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_wardrobes_for_dc_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with wardrobes_for_dc_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
-
-    let compute_directly_included_files cpsl_ref =
-      let temp1 = inclusions_in_dc_files cpsl_ref in
-      let temp2 = Image.image(fun (_,l)->Image.image snd l) temp1 in 
-      let temp3 = str_sort (List.flatten temp2) in
-      str_setminus temp3 (directly_compiled_files cpsl_ref)
-    ;;
-
-    let directly_included_files cpsl_ref =
-      match !cpsl_ref.directly_included_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_directly_included_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with directly_included_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
-
-    let inclusions_for_di_file cpsl_ref fn =
-      let cpsl = !cpsl_ref in
-      match Hashtbl.find_opt cpsl.inclusions_for_di_files fn with
-      | Some old_answer -> old_answer
-      | None ->
-        let temp1 = inclusions_in_dc_files cpsl_ref in
-        
-        
-        let temp2 = List.filter_map(fun (includer,l)->
-         List.find_map (fun (line_nbr,other_fn)->
-             if other_fn = fn then Some(includer,line_nbr) else None  
-          ) l ) temp1 in 
-      let temp3 = str_sort (Image.image fst temp2) in
-      let answer = Image.image (fun
-        includer ->(includer,List.assoc includer temp2)
-      ) temp3 in 
-        let _ = Hashtbl.add cpsl.inclusions_for_di_files fn answer in
-        answer
-    ;;
-
-    let symmetric_version included_one wardrobe_for_includers = 
-      let temp1 = List.filter_map (
-        fun (includer, (Cee_wardrobe_t.Wr data)) ->
-          let list_form = List.filter_map (
-            fun ((inclusion_idx,included_one2),shadow) ->
-              if included_one = included_one2
-              then Some((inclusion_idx,includer),shadow) 
-              else None 
-          ) data in 
-          if list_form = []
-          then None 
-          else Some list_form
-      ) wardrobe_for_includers in 
-      Cee_wardrobe_t.Wr (List.flatten temp1) ;;
-
-
-    let compute_wardrobes_for_di_files cpsl_ref =
-      let wardrobe_for_includers = wardrobes_for_dc_files cpsl_ref in
-      let di_files = directly_included_files cpsl_ref in
-      Image.image
-        (fun included_one ->
-          ( included_one
-          , symmetric_version included_one
-              wardrobe_for_includers ))
-        di_files
-    ;;
-
-    let wardrobes_for_di_files cpsl_ref =
-      match !cpsl_ref.wardrobes_for_di_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_wardrobes_for_di_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with wardrobes_for_di_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
 
   let connected_components l =
      let temp1 = Arithmetic_list.decompose_into_connected_components l in 
      Image.image (fun (i,j)->Int_range.range i j) temp1 ;; 
-
-    let compute_prawn_algebras_for_di_files cpsl_ref =
-      let wardrobes = wardrobes_for_di_files cpsl_ref in
-      Image.image 
-      (fun (included_one,wardrobe)->
-        (included_one,Cee_prawn_algebra.of_wardrobe wardrobe)  
-      ) wardrobes;;
-
-    let prawn_algebras_for_di_files cpsl_ref =
-      match !cpsl_ref.prawn_algebras_for_di_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_prawn_algebras_for_di_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with prawn_algebras_for_di_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
  
   let reinitialize_destination_directory cpsl =
     let src = Directory_name.connectable_to_subpath (source cpsl)
@@ -799,11 +672,6 @@ let compute_wardrobes_for_dc_files cpsl_ref =
         ; directly_compiled_files_opt = None
         ; inclusions_in_dc_files_opt = None
         ; shadows_for_dc_files_opt = None
-        ; wardrobes_for_dc_files_opt = None
-        ; directly_included_files_opt = None
-        ; inclusions_for_di_files = Hashtbl.create 600
-        ; wardrobes_for_di_files_opt = None
-        ; prawn_algebras_for_di_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
@@ -829,15 +697,6 @@ let compute_wardrobes_for_dc_files cpsl_ref =
     ((!cpsl).commands) 
    ;;
 
-    let unsafe_set_wardrobe_for_dc_files 
-       cpsl_ref precomputed_wardrobes_for_dc_files = 
-      let old_cpsl = (!cpsl_ref) in 
-      let new_cpsl = {
-        old_cpsl with 
-        wardrobes_for_dc_files_opt = Some precomputed_wardrobes_for_dc_files
-      } in  
-      ref new_cpsl;;
-
      let unsafe_unveil cpsl_ref = ref(!cpsl_ref) ;;   
 
   end ;;
@@ -857,11 +716,6 @@ module type CAPSULE_INTERFACE = sig
   val directly_compiled_files : t -> string list
   val inclusions_in_dc_files : t -> (string * ((int * string) list)) list
   val shadows_for_dc_files : t -> (string * Cee_shadow_t.t) list
-  val wardrobes_for_dc_files : t -> (string * Cee_wardrobe_t.t) list
-  val directly_included_files : t -> string list
-  val inclusions_for_di_file : t -> string -> (string * int) list
-  val wardrobes_for_di_files : t -> (string * Cee_wardrobe_t.t) list
-  val prawn_algebras_for_di_files : t -> (string * Cee_prawn_algebra_t.t) list
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
@@ -877,11 +731,6 @@ module type CAPSULE_INTERFACE = sig
     val replicate :
       ?reinitialize_destination:bool ->
       next_envname:string -> t -> t
-
-
-
-  val unsafe_set_wardrobe_for_dc_files :
-      t -> (string * Cee_wardrobe_t.t) list -> t
 
   val unsafe_unveil : t -> Private2.PreCapsule.immutable_t ref    
   val  reinitialize_destination_directory : t -> unit  
@@ -1136,26 +985,6 @@ module Private = struct
       files
   ;;
 
-  
-
-  let create_level_1_copies cpsl = 
-    let temp1 = Capsule.prawn_algebras_for_di_files cpsl in 
-    let temp2 = List.flatten(Image.image (
-     fun (fn,Cee_prawn_algebra_t.A(prawns)) ->
-        Image.image (fun (prawn_idx,Cee_prawn_t.P l)->
-          (fn,Cee_prawn_t.P l,
-           prawn_idx,List.length prawns)
-        ) prawns
-    ) temp1) in 
-    let temp4 = Int_range.index_everything temp2  in 
-    let s_total = string_of_int(List.length temp2) in 
-    List.iter 
-    (fun (global_idx,(fn,shadow,prawn_index,number_of_prawns))->
-       let idx_msg = " ("^(string_of_int global_idx)^" of "^s_total^")" in 
-      Capsule.create_shadowed_partial_copy 
-       cpsl fn shadow ~copy_level:1 ~prawn_index ~number_of_prawns idx_msg
-      ) temp4;; 
-
    let inclusion_instructions_for_prawn 
    included_file copy_level number_of_prawns prawn_index =
    let name = Private2.shadowed_partial_copy_name
@@ -1173,70 +1002,7 @@ module Private = struct
 
   exception Distinct_filenames of int * string * string ;;  
 
-   let data_for_inclusion_prawning cpsl = 
-    let inclusions_for_dcs = Capsule.inclusions_in_dc_files cpsl in 
-    let wardrobes_for_dcs = Capsule.wardrobes_for_dc_files cpsl in 
-    let algebras_for_dis = Capsule.prawn_algebras_for_di_files cpsl in 
-    let pairs1_for_dcs  = 
-      List.combine inclusions_for_dcs wardrobes_for_dcs in 
-    let pairs2_for_dcs  = 
-      Image.image (
-        fun ((includer_file1,li1),(includer_file2,Cee_wardrobe_t.Wr li2)) ->
-         if includer_file1<>includer_file2
-         then raise (Distinct_filenames(1,includer_file1,includer_file2))   
-         else 
-         let comb1 = List.combine li1 li2 in 
-         let comb2 = Image.image (
-         fun ((line_nbr,included_file1),
-         ((_inc_idx,included_file2),sha)) ->
-            if included_file1 <> included_file2 
-            then raise (Distinct_filenames(2,included_file1,included_file2))
-            else (line_nbr,included_file1,sha)  
-          ) comb1 in   
-          (includer_file1,comb2)
-      ) pairs1_for_dcs in
-      Image.image (
-      fun (includer_file,li1) ->
-      (includer_file,Image.image (
-         fun (line_nbr,included_file,sha) ->
-            let alg = List.assoc included_file algebras_for_dis in 
-            let (prawn_indices,total_nbr_of_prawns) =
-             Cee_prawn_algebra.decompose_shadow alg sha in 
-           (line_nbr,(included_file,prawn_indices,total_nbr_of_prawns))  
-      ) li1) 
-      ) pairs2_for_dcs ;; 
-
-     let prawn_inclusions_in_several_dc_files cpsl dc_files= 
-        let sn = string_of_int(List.length dc_files) 
-        and indexed_dc_files = Int_range.index_everything dc_files in  
-        List.iter (
-          fun (idx,(includer_file,data_for_includer_file)) ->
-            let filecontent = Capsule.read_file cpsl includer_file in 
-            let indexed_lines = Lines_in_text.indexed_lines filecontent in 
-            let modified_lines = Image.image (
-              fun (line_idx,old_line) ->
-             match List.assoc_opt line_idx data_for_includer_file with 
-             None -> old_line 
-             |Some(included_file,prawn_indices,total_nbr_of_prawns)->
-             inclusion_instructions_for_list_of_prawns 
-                included_file ~copy_level:1 prawn_indices total_nbr_of_prawns
-            ) indexed_lines in 
-            let new_filecontent = String.concat "\n" modified_lines in 
-            let _ = Capsule.modify_file cpsl includer_file new_filecontent in 
-            let msg= "Inclusions have been prawned in "^includer_file^
-            " ("^(string_of_int idx)^" of "^sn^")" in 
-            Private2.announce msg
-          ) indexed_dc_files ;;
-
-     let prawn_inclusions_in_directly_compiled_files cpsl =
-        prawn_inclusions_in_several_dc_files cpsl 
-         (data_for_inclusion_prawning cpsl) ;;
-
 end ;; 
-
-let create_level_1_copies = Private.create_level_1_copies ;;
-
-let prawn_inclusions_in_directly_compiled_files = Private.prawn_inclusions_in_directly_compiled_files ;;
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
 ;;
