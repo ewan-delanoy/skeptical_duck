@@ -722,12 +722,45 @@ module Private = struct
     Io.overwrite_with target_file new_text
   ;;
 
+  let fiamengize_file cpsl ~fiamengo_depth ~name_for_container_file separate_cmd =
+    let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in
+    let dest_last =
+      Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ^ "/"
+    in
+    let old_text =
+      Capsule.read_file
+        cpsl
+        (separate_cmd.Cee_compilation_command_t.short_path
+         ^ separate_cmd.Cee_compilation_command_t.ending)
+    in
+   
+    let new_text = Cee_text.fiamengize_text ~fiamengo_depth (Capsule.read_file cpsl) old_text in
+    let target_filename = dest_dir ^ name_for_container_file in
+    let target_file = Absolute_path.create_file_if_absent target_filename in
+    let _ =
+      Private2.announce_execution
+        ("(fiamengized  "
+         ^ name_for_container_file
+         ^ ") > "
+         ^ (dest_last ^ name_for_container_file)
+         ^ ")")
+    in
+    Io.overwrite_with target_file new_text
+  ;;
+
   let remove_cds_in_directly_compiled_file cpsl separate_cmd =
     let name_for_container_file =
       Cee_compilation_command.short_name_from_separate separate_cmd
     in
     remove_cds_in_file cpsl ~name_for_container_file separate_cmd
   ;;
+
+  let fiamengize_directly_compiled_file cpsl separate_cmd =
+    let name_for_container_file =
+      Cee_compilation_command.short_name_from_separate separate_cmd
+    in
+    fiamengize_file cpsl ~name_for_container_file separate_cmd
+  ;; 
 
   let ref_for_debugging_multiple_cd_removal = ref 0;;
 
@@ -757,9 +790,40 @@ module Private = struct
       temp1
   ;;
 
+  let fiamengize_directly_compiled_files cpsl ~fiamengo_depth separate_cmds =
+    let temp1 = Int_range.index_everything separate_cmds
+    and sn = string_of_int (List.length separate_cmds) in 
+    let _ = (ref_for_debugging_multiple_cd_removal:=0) in 
+    List.iter
+      (fun (idx, separate_cmd) ->
+        let msg1 =
+          " Step "
+          ^ string_of_int idx
+          ^ " of "
+          ^ sn
+          ^ " : "
+          ^ "Fiamengizing "
+          ^ separate_cmd.Cee_compilation_command_t.short_path
+          ^ separate_cmd.Cee_compilation_command_t.ending
+          ^ "\n\n"
+        and msg2 = " Finished step " ^ string_of_int idx ^ " of " ^ sn ^ ".\n" in
+        print_string msg1;
+        flush stdout;
+        fiamengize_directly_compiled_file cpsl ~fiamengo_depth separate_cmd;
+        ref_for_debugging_multiple_cd_removal:=idx;
+        print_string msg2;
+        flush stdout)
+      temp1
+  ;;
+ 
+
   let remove_cds_in_all_directly_compiled_files cpsl =
     remove_cds_in_directly_compiled_files cpsl (Capsule.separate_commands cpsl)
   ;;
+
+  let fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth= 
+    fiamengize_directly_compiled_files cpsl ~fiamengo_depth (Capsule.separate_commands cpsl)
+  ;;  
 
   let unusual_header_inclusion_formats_in_individual_includer cpsl includer_fn =
     let inc_source_dirs =
@@ -954,6 +1018,10 @@ module Private = struct
   exception Distinct_filenames of int * string * string ;;  
 
 end ;; 
+
+let fiamengize_all_directly_compiled_files = 
+    Private.fiamengize_all_directly_compiled_files ;;
+
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
 ;;
