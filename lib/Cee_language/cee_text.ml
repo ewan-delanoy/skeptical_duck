@@ -10,6 +10,7 @@ exception Lonely_Endif_exn of int ;;
 exception Double_Else_exn of int ;;
 exception Standardize_inclusion_line_exn of string ;;  
 exception Add_extra_inclusion_line_exn of string ;;
+exception Unfinished_fiamengo_inclusion of string ;; 
   
 module Private = struct 
 
@@ -805,14 +806,123 @@ let highlight_and_add_extra_ending_in_inclusions_inside_text
      (highlight_inclusions_in_text text)
     ;;
 
+let marker_for_beginning_fiamengo_inclusions = "xvxBLjSGtxSfWtCVHNDS" ;;
+let marker_for_ending_fiamengo_inclusions = "vQBknJWWtwvqDgSkVJms" ;;
+
+let fiamengo_ends_here = " ends here *)" ;;
+let fiamengo_beginner_prefix ~fiamengo_depth =
+  "(* "^marker_for_beginning_fiamengo_inclusions^" "^
+    "Depth-"^(string_of_int fiamengo_depth)^" inclusion of ";;
+
+let fiamengo_ender_prefix ~fiamengo_depth =
+  "(* "^marker_for_ending_fiamengo_inclusions^" "^
+    "Depth-"^(string_of_int fiamengo_depth)^" inclusion of ";;
+
+let fiamengize_individual_inclusion reader ~fiamengo_depth 
+   name_of_included_file =
+    (fiamengo_beginner_prefix ~fiamengo_depth)^
+    name_of_included_file^" starts here *)\n"^
+    (reader name_of_included_file)^
+    "\n"^
+    (fiamengo_ender_prefix ~fiamengo_depth)^
+    name_of_included_file^fiamengo_ends_here;;
+
+let rec helper_for_fiamengization reader ~fiamengo_depth= function
+(treated,remaining_lines) -> 
+  match remaining_lines with 
+  [] -> treated
+  |line :: other_lines ->
+   (
+     match included_local_file_opt  line  with 
+      None -> helper_for_fiamengization reader ~fiamengo_depth 
+            (treated^"\n"^line,other_lines)
+    |Some name_of_included_file ->
+      let fiamengized_line =  
+      fiamengize_individual_inclusion reader ~fiamengo_depth 
+   name_of_included_file in 
+      helper_for_fiamengization reader ~fiamengo_depth 
+            (treated^"\n"^fiamengized_line,other_lines)
+   ) ;;
+
+let fiamengize_whole_text  reader ~fiamengo_depth text= 
+  helper_for_fiamengization reader ~fiamengo_depth
+  ("",Lines_in_text.lines text) ;;
+
+let extract_fiamengo_included_filename end_prefix line =
+   Cull_string.two_sided_cutting (end_prefix,fiamengo_ends_here) line ;;
+  
+
+let pusher_for_fiamengo_parsing
+  (opt_answer,walker) =
+  match opt_answer with 
+  (Some _) -> failwith("This should never happen in pusher_for_fiamengo_parsing")
+  |None ->
+  let (beg_prefix,end_prefix,treated,inclusion_pending,subtext,remaining_lines) = walker in 
+    match remaining_lines with 
+    [] -> (Some(List.rev ((false,(subtext,""))::treated)),walker) 
+    |line :: other_lines ->
+    (*
+     simple two-state alternative : if an inclusion is currently
+     pending we look for the end prefix, otherwise for the beginning prefix
+    *)
+    if inclusion_pending
+   then (if String.starts_with line ~prefix:end_prefix 
+          then  let filename = extract_fiamengo_included_filename end_prefix line in 
+                 (None,(beg_prefix,end_prefix,(true,(filename,subtext))::treated,
+                false,"",other_lines))
+          else  (None,(beg_prefix,end_prefix,treated,
+                true,subtext^"\n"^line,other_lines))
+        )
+   else if String.starts_with line ~prefix:beg_prefix 
+          then  (*
+                extra care must be taken in case the included subtext is 
+                empty
+               *)
+               let treated2 = (false,(subtext,""))::treated in 
+               (
+                match other_lines with 
+                [] -> raise(Unfinished_fiamengo_inclusion line)
+                |line2 :: other_lines2 ->
+                  if String.starts_with line2 ~prefix:end_prefix 
+                  then let filename = extract_fiamengo_included_filename end_prefix line in 
+                      (None,(beg_prefix,end_prefix,(true,(filename,""))::treated2,
+                       false,"",other_lines2))
+                  else (None,(beg_prefix,end_prefix,treated2,
+                       true,line2,other_lines2))
+
+               )
+          else    
+                (None,(beg_prefix,end_prefix,treated,
+                false,subtext^"\n"^line,other_lines))  ;;    
+
+
+let rec iterator_for_fiamengo_parsing  pair =
+  match fst pair with 
+  (Some answer) -> answer 
+  | None -> 
+    iterator_for_fiamengo_parsing 
+    (pusher_for_fiamengo_parsing pair) ;;
+  
+
+let parse_fiamengized_text ~fiamengo_depth text = 
+   iterator_for_fiamengo_parsing  
+  (None,(fiamengo_beginner_prefix ~fiamengo_depth,
+   fiamengo_ender_prefix ~fiamengo_depth,
+   [],false,"",Lines_in_text.lines text)) ;;
+
+
+
 
 end ;;  
 
 let compute_shadow = Private.compute_shadow ;;
 let crop_using_prawn = Private.crop_using_prawn ;;
+
+let fiamengize_text ~fiamengo_depth reader text = Private.fiamengize_whole_text ~fiamengo_depth reader text;;
 let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
+let parse_fiamengized_text ~fiamengo_depth text = Private.fiamengize_whole_text ~fiamengo_depth text;;
 let standardize_guard_in_text_opt = Private.standardize_guard_in_text_opt ;;
 let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 

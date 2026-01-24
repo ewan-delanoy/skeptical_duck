@@ -331,55 +331,6 @@ module Private2 = struct
         fn, old_content, new_fn,inclusion_idx)
       indexed_inclusions
   ;;
-
-  let wardrobe_for_indexed_separate_command
-    (cpsl_destination, cpsl_read_file, cpsl_create_file, cpsl_inclusions_in_dc_files)
-    cpsl
-    (idx, separate_cmd)
-    s_num_of_cmds
-    =
-    let short_name = Cee_compilation_command.short_name_from_separate separate_cmd
-    and s_idx = string_of_int idx in
-    let indexed_name = short_name ^ " (" ^ s_idx ^ " of " ^ s_num_of_cmds ^ ")" in
-    let _ = announce ("Computing the wardrobe for " ^ indexed_name) in
-    let copied_includable_files =
-      create_copies_of_included_files_for_wardrobe
-        (cpsl_inclusions_in_dc_files, cpsl_read_file, cpsl_create_file)
-        cpsl
-        short_name
-    in
-    let dest_dir = Directory_name.connectable_to_subpath (cpsl_destination cpsl) in
-    let old_text = cpsl_read_file cpsl short_name in
-    let text_to_be_preprocessed, _nbr_of_inclusions =
-      Cee_text.highlight_and_add_extra_ending_in_inclusions_inside_text 
-        ~extra:"includable" old_text
-    in
-    let preprocessed_includer_text =
-      compute_preprocessing_output_for_separate_shadow
-        (cpsl_destination, cpsl_create_file)
-        cpsl
-        separate_cmd
-        text_to_be_preprocessed
-    in
-    let answer =
-      Cee_text.compute_wardrobe
-        ~preprocessed_includer_text
-        copied_includable_files
-    in
-    let _ =
-      if not !keep_temporary_files_mode
-      then (
-        let _ =
-          Image.image
-            (fun (_, _, fn,_) -> Unix_command.uc ("rm -f " ^ dest_dir ^ fn))
-            copied_includable_files
-        in
-        ())
-    in
-    let _ = announce ("Computation of wardrobe finished for " ^ indexed_name ^ ".") in
-    answer
-  ;;
-
   let marker_for_shadowed_partial_copies = "_QhzFTSnAQA_" ;; 
 
     let shadowed_partial_copy_name 
