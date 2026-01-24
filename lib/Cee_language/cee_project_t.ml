@@ -6,6 +6,5 @@
 
 type  t = {
   root : Directory_name_t.t ;
-  global_index : int ; 
   suffix_for_snapshots : string ;
 } ;; 
