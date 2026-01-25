@@ -331,7 +331,6 @@ module Private2 = struct
       ; separate_commands_opt : Cee_compilation_command_t.separate_t list option
       ; filecontents : (string, string) Hashtbl.t
       ; directly_compiled_files_opt : string list option
-      ; inclusions_in_dc_files_opt : (string * ((int * string) list)) list option
       } ;;
 
 
@@ -489,12 +488,17 @@ module Private2 = struct
     let included_files_in_several_files =
       included_files_in_several_files (separate_commands, all_h_or_c_files, read_file)
     ;;
+ 
+    let hashtbl_for_inclusions_for_dc_files = 
+      (Hashtbl.create 20: (t,(string * (int * string) list) list) Hashtbl.t) ;; 
 
-    let compute_inclusions_in_dc_files cpsl =
-      included_files_in_several_files cpsl (directly_compiled_files cpsl)
-    ;;
-
-    let inclusions_in_dc_files cpsl = compute_inclusions_in_dc_files cpsl ;;
+    let inclusions_in_dc_files cpsl = 
+       match Hashtbl.find_opt hashtbl_for_inclusions_for_dc_files cpsl with 
+      (Some old_answer) -> old_answer 
+      | None ->
+      let answer = included_files_in_several_files cpsl (directly_compiled_files cpsl) in 
+      let _ = Hashtbl.add hashtbl_for_inclusions_for_dc_files cpsl answer in 
+      answer ;; 
       
     let hashtbl_for_shadows_for_dc_files = 
       (Hashtbl.create 20: (t,(string * Cee_shadow_t.t) list) Hashtbl.t) ;;  
@@ -545,7 +549,6 @@ module Private2 = struct
         ; separate_commands_opt = None
         ; filecontents = Hashtbl.create 3000
         ; directly_compiled_files_opt = None
-        ; inclusions_in_dc_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
