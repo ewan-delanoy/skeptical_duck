@@ -318,37 +318,79 @@ module Private2 = struct
       "_prawn_"^(string_of_int prawn_index)^
       "_of_"^(string_of_int number_of_prawns)^"."^extension ;;
 
+   let conventional_snapshot_location root idx suffix=
+    let s_idx = Strung.insert_repetitive_offset_on_the_left
+      '0' 3 (string_of_int idx) in 
+     (Directory_name.connectable_to_subpath root)^
+     "snapshot-"^s_idx^"-"^suffix ;;
+
    module PreCapsule = struct
     type t =
       { 
         snapshot : Cee_snapshot_t.t
       ;  source_envname : string
       ; destination_envname : string
-      ; source_opt : Directory_name_t.t option
-      ; destination_opt : Directory_name_t.t option
-      ; commands : Cee_compilation_command_t.t list
       } ;;
 
 
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
+
+  
+    let root cpsl = (cpsl.snapshot.Cee_snapshot_t.project).Cee_project_t.root ;;
+    let suffix cpsl = (cpsl.snapshot.Cee_snapshot_t.project).Cee_project_t.suffix_for_snapshots ;;
+    
+    let index cpsl = cpsl.snapshot.Cee_snapshot_t.index ;;
+
     let source_envname cpsl = cpsl.source_envname
     let destination_envname cpsl = cpsl.destination_envname
-    let compute_source cpsl = Directory_name.of_string (Sys.getenv cpsl.source_envname)
-
-    let source old_cpsl = compute_source old_cpsl ;;
+    
+    let source cpsl = 
+       Directory_name.of_string(
+        conventional_snapshot_location (root cpsl) (index cpsl) (suffix cpsl)
+      );;
      
+    let destination cpsl = 
+      Directory_name.of_string(
+       conventional_snapshot_location (root cpsl) ((index cpsl)+1) (suffix cpsl)
+      ) ;;
+    
+     
+    let hashtbl_for_file_reading = 
+      (Hashtbl.create 4000: (t * string,string) Hashtbl.t) ;; 
 
-    let compute_destination cpsl =
-      Directory_name.of_string (Sys.getenv cpsl.destination_envname)
+    let read_file cpsl fn =
+      match Hashtbl.find_opt hashtbl_for_file_reading (cpsl,fn) with
+      | Some old_answer -> old_answer
+      | None ->
+        let src_dir = Directory_name.connectable_to_subpath (source cpsl) in
+        let ap = Absolute_path.of_string (src_dir ^ fn) in
+        let text = Io.read_whole_file ap in
+        let _ = Hashtbl.add hashtbl_for_file_reading (cpsl,fn) text in
+        text
     ;;
 
-    let destination old_cpsl = compute_destination old_cpsl ;;
-     
 
-    let commands cpsl = cpsl.commands
+    
+let hashtbl_for_commands = 
+  (Hashtbl.create 20: (t,Cee_compilation_command_t.t list) Hashtbl.t) ;; 
 
-    let hashtbl_for_all_h_or_c_files = 
+let commands cpsl = 
+    match Hashtbl.find_opt hashtbl_for_commands cpsl with 
+  (Some old_answer) -> old_answer 
+  | None ->
+   let temp1 = read_file cpsl "Makefile" in 
+   let mkf1 = Makefile.parse (Makefile_t.MT temp1) in 
+   let (_,cmds_and_echoes) = Makefile.prerequisites_and_commands_for_target 
+   (ref mkf1) "all" in
+   let cmds = List.filter (fun line->
+    not(String.starts_with line ~prefix:"@echo")) cmds_and_echoes in 
+   let answer = Image.image (Cee_compilation_command.parse (source cpsl)) cmds in 
+   let _ = Hashtbl.add hashtbl_for_commands cpsl answer in 
+      answer ;; 
+
+
+let hashtbl_for_all_h_or_c_files = 
   (Hashtbl.create 20: (t,string list) Hashtbl.t) ;; 
 
 let all_h_or_c_files cpsl = 
@@ -395,20 +437,7 @@ let separate_commands cpsl =
       let _ = Hashtbl.add hashtbl_for_directly_compiled_files cpsl answer in 
       answer ;; 
 
-    let hashtbl_for_file_reading = 
-      (Hashtbl.create 4000: (t * string,string) Hashtbl.t) ;; 
-
-    let read_file cpsl fn =
-      match Hashtbl.find_opt hashtbl_for_file_reading (cpsl,fn) with
-      | Some old_answer -> old_answer
-      | None ->
-        let src_dir = Directory_name.connectable_to_subpath (source cpsl) in
-        let ap = Absolute_path.of_string (src_dir ^ fn) in
-        let text = Io.read_whole_file ap in
-        let _ = Hashtbl.add hashtbl_for_file_reading (cpsl,fn) text in
-        text
-    ;;
-
+   
     let modify_file cpsl fn new_content =
       let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
       let ap = Absolute_path.of_string (dest_dir ^ fn) in
@@ -446,7 +475,7 @@ let separate_commands cpsl =
       create_file_in_a_list cpsl copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
-      let temp1 = Int_range.index_everything cpsl.commands in
+      let temp1 = Int_range.index_everything (commands cpsl) in
       let temp2 =
         Image.image
           (fun (cmd_idx, cmd) ->
@@ -546,16 +575,11 @@ let separate_commands cpsl =
     ;;
   
   let first_constructor ~snapshot:snap ~source_envname:src_envname ~destination_envname:dest_envname 
-    ~reinitialize_destination
-    processed_commands =
-      let dest = Directory_name.of_string (Sys.getenv dest_envname) in
+    ~reinitialize_destination =
       let new_cpsl = 
         {  snapshot =snap 
         ;  source_envname = src_envname
         ; destination_envname = dest_envname
-        ; commands = processed_commands
-        ; source_opt = None
-        ; destination_opt = Some dest
         } in 
       let _ = (
          if reinitialize_destination 
@@ -567,11 +591,8 @@ let separate_commands cpsl =
       new_cpsl
     ;;
 
-    let make ~snapshot ?(reinitialize_destination=false)  ~source_envname:src_envname ~destination_envname:dest_envname 
-        raw_commands =
-      let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
-      let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
-      first_constructor ~snapshot ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination processed_commands ;;
+    let make ~snapshot ?(reinitialize_destination=false)  ~source_envname:src_envname ~destination_envname:dest_envname =
+      first_constructor ~snapshot ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination ;;
 
   let replicate ?(reinitialize_destination=false) ~next_envname cpsl  =      
        first_constructor
@@ -579,7 +600,6 @@ let separate_commands cpsl =
    ~source_envname:(((cpsl).destination_envname))
    ~destination_envname:next_envname
    ~reinitialize_destination 
-    (cpsl.commands) 
    ;;
 
      let unsafe_unveil cpsl = cpsl ;;   
@@ -612,8 +632,7 @@ module type CAPSULE_INTERFACE = sig
       snapshot:Cee_snapshot_t.t ->
       ?reinitialize_destination:bool ->
       source_envname:string ->
-      destination_envname:string ->
-       string list -> t
+      destination_envname:string -> t
     val replicate :
       ?reinitialize_destination:bool ->
       next_envname:string -> t -> t
