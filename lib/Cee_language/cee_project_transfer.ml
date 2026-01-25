@@ -307,30 +307,6 @@ module Private2 = struct
       ~name_for_included_file
       ~preprocessed_includer_text
   ;;
-
-  let create_copies_of_included_files_for_wardrobe
-    (cpsl_inclusions_in_dc_files, cpsl_read_file, cpsl_create_file)
-    cpsl
-    short_filename
-    =
-    (* returns the list of the filenames created*)
-    let temp1 = cpsl_inclusions_in_dc_files cpsl in
-    let temp2 = List.assoc short_filename temp1 in
-    let indexed_inclusions = Int_range.index_everything temp2 in 
-    Image.image
-      (fun (inclusion_idx,(_,fn)) ->
-        let new_fn = Cee_common.add_extra_ending_in_filename ~extra:"includable" fn in
-        let old_content = cpsl_read_file cpsl fn in
-        let new_content =
-          Cee_text.tattoo_regions_between_conditional_directives ~name_for_included_file:new_fn old_content
-        in
-        let msg = "(tattoo_regions  " ^ fn ^ ")" in
-        let _ =
-          cpsl_create_file cpsl new_fn ?new_content_description:(Some msg) ~is_temporary:true new_content
-        in
-        fn, old_content, new_fn,inclusion_idx)
-      indexed_inclusions
-  ;;
   let marker_for_shadowed_partial_copies = "_QhzFTSnAQA_" ;; 
 
     let shadowed_partial_copy_name 

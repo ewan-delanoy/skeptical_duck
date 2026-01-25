@@ -922,7 +922,7 @@ let fiamengize_text ~fiamengo_depth reader text = Private.fiamengize_whole_text 
 let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
-let parse_fiamengized_text ~fiamengo_depth text = Private.fiamengize_whole_text ~fiamengo_depth text;;
+let parse_fiamengized_text ~fiamengo_depth text = Private.parse_fiamengized_text ~fiamengo_depth text;;
 let standardize_guard_in_text_opt = Private.standardize_guard_in_text_opt ;;
 let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 
