@@ -319,7 +319,7 @@ module Private2 = struct
       "_of_"^(string_of_int number_of_prawns)^"."^extension ;;
 
    module PreCapsule = struct
-    type immutable_t =
+    type t =
       { 
         snapshot : Cee_snapshot_t.t
       ;  source_envname : string
@@ -335,44 +335,27 @@ module Private2 = struct
       ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
       } ;;
 
-    type t = immutable_t ref ;;
 
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
-    let source_envname cpsl_ref = !cpsl_ref.source_envname
-    let destination_envname cpsl_ref = !cpsl_ref.destination_envname
+    let source_envname cpsl = cpsl.source_envname
+    let destination_envname cpsl = cpsl.destination_envname
     let compute_source cpsl = Directory_name.of_string (Sys.getenv cpsl.source_envname)
 
-    let source cpsl_ref =
-      let old_cpsl = !cpsl_ref in
-      match old_cpsl.source_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_source old_cpsl in
-        let new_cpsl = { old_cpsl with source_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let source old_cpsl = compute_source old_cpsl ;;
+     
 
     let compute_destination cpsl =
       Directory_name.of_string (Sys.getenv cpsl.destination_envname)
     ;;
 
-    let destination cpsl_ref =
-      let old_cpsl = !cpsl_ref in
-      match old_cpsl.destination_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_destination old_cpsl in
-        let new_cpsl = { old_cpsl with destination_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let destination old_cpsl = compute_destination old_cpsl ;;
+     
 
-    let commands cpsl = !cpsl.commands
+    let commands cpsl = cpsl.commands
 
-        let compute_all_h_or_c_files cpsl_ref =
-      let src = Directory_name.connectable_to_subpath (source cpsl_ref) in
+        let compute_all_h_or_c_files cpsl =
+      let src = Directory_name.connectable_to_subpath (source cpsl) in
       let temp1 = Unix_again.quick_beheaded_complete_ls src in
       str_sort
         (List.filter
@@ -383,16 +366,8 @@ module Private2 = struct
            temp1)
     ;;
 
-    let all_h_or_c_files cpsl_ref =
-      let old_cpsl = !cpsl_ref in
-      match old_cpsl.all_h_or_c_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_all_h_or_c_files cpsl_ref in
-        let new_cpsl = { old_cpsl with all_h_or_c_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let all_h_or_c_files cpsl = compute_all_h_or_c_files cpsl ;;
+      
 
     let compute_separate_commands cpsl =
       List.filter_map
@@ -402,55 +377,38 @@ module Private2 = struct
         cpsl.commands
     ;;
 
-    let separate_commands cpsl_ref =
-      let old_cpsl = !cpsl_ref in
-      match old_cpsl.separate_commands_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_separate_commands old_cpsl in
-        let new_cpsl = { old_cpsl with separate_commands_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let separate_commands cpsl = compute_separate_commands cpsl    ;;
 
-    let compute_directly_compiled_files cpsl_ref =
+    let compute_directly_compiled_files cpsl =
       str_sort
         (Image.image
            Cee_compilation_command.short_name_from_separate
-           (separate_commands cpsl_ref))
+           (separate_commands cpsl))
     ;;
 
-    let directly_compiled_files cpsl_ref =
-      match !cpsl_ref.directly_compiled_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_directly_compiled_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with directly_compiled_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let directly_compiled_files cpsl = compute_directly_compiled_files cpsl ;;
+     
 
-    let read_file cpsl_ref fn =
-      let cpsl = !cpsl_ref in
+    let read_file cpsl fn =
       match Hashtbl.find_opt cpsl.filecontents fn with
       | Some old_answer -> old_answer
       | None ->
-        let src_dir = Directory_name.connectable_to_subpath (source cpsl_ref) in
+        let src_dir = Directory_name.connectable_to_subpath (source cpsl) in
         let ap = Absolute_path.of_string (src_dir ^ fn) in
         let text = Io.read_whole_file ap in
         let _ = Hashtbl.add cpsl.filecontents fn text in
         text
     ;;
 
-    let modify_file cpsl_ref fn new_content =
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
+    let modify_file cpsl fn new_content =
+      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
       let ap = Absolute_path.of_string (dest_dir ^ fn) in
       Io.overwrite_with ap new_content
     ;;
 
-    let create_file_in_a_list cpsl_ref fn 
+    let create_file_in_a_list cpsl fn 
       ?new_content_description ~is_temporary new_content index_msg=
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
+      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
       let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
       let _ = Io.overwrite_with ap new_content in
       let end_of_msg =
@@ -463,20 +421,20 @@ module Private2 = struct
       announce ("Created "^durability^" file  " ^ fn ^ end_of_msg ^ index_msg)
     ;;
 
-    let create_file cpsl_ref fn ?new_content_description ~is_temporary new_content =
-     create_file_in_a_list cpsl_ref fn 
+    let create_file cpsl fn ?new_content_description ~is_temporary new_content =
+     create_file_in_a_list cpsl fn 
       ?new_content_description ~is_temporary new_content ""
     ;;
 
     let create_shadowed_partial_copy 
-      cpsl_ref fn prawn ~copy_level ~prawn_index ~number_of_prawns index_msg = 
+      cpsl fn prawn ~copy_level ~prawn_index ~number_of_prawns index_msg = 
       
       let copy_name = shadowed_partial_copy_name 
       ~filepath:fn ~copy_level ~prawn_index ~number_of_prawns in 
-      let old_content = read_file cpsl_ref fn in 
+      let old_content = read_file cpsl fn in 
       let new_content = 
          Cee_text.crop_using_prawn old_content prawn in   
-      create_file_in_a_list cpsl_ref copy_name ~is_temporary:false new_content index_msg;;
+      create_file_in_a_list cpsl copy_name ~is_temporary:false new_content index_msg;;
 
     let text_for_makefile cpsl =
       let temp1 = Int_range.index_everything cpsl.commands in
@@ -495,9 +453,8 @@ module Private2 = struct
       String.concat "\n" temp3
     ;;
 
-    let write_makefile cpsl_ref =
-      let cpsl = !cpsl_ref in
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
+    let write_makefile cpsl =
+      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
       let path_for_makefile = Absolute_path.create_file_if_absent (dest_dir ^ "Makefile") in
       Io.overwrite_with path_for_makefile (text_for_makefile cpsl)
     ;;
@@ -521,52 +478,38 @@ module Private2 = struct
         ]
     ;;
 
-    let write_to_upper_makefile cpsl_ref =
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl_ref) in
+    let write_to_upper_makefile cpsl =
+      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
       let upper_dir =
         Cull_string.before_rightmost (Cull_string.coending 1 dest_dir) '/'
       in
       let path_for_upper_makefile = Absolute_path.of_string (upper_dir ^ "/myMakefile") in
-      Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl_ref)
+      Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl)
     ;;
 
     let included_files_in_several_files =
       included_files_in_several_files (separate_commands, all_h_or_c_files, read_file)
     ;;
 
-    let compute_inclusions_in_dc_files cpsl_ref =
-      included_files_in_several_files cpsl_ref (directly_compiled_files cpsl_ref)
+    let compute_inclusions_in_dc_files cpsl =
+      included_files_in_several_files cpsl (directly_compiled_files cpsl)
     ;;
 
-    let inclusions_in_dc_files cpsl_ref =
-      match !cpsl_ref.inclusions_in_dc_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_inclusions_in_dc_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with inclusions_in_dc_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let inclusions_in_dc_files cpsl = compute_inclusions_in_dc_files cpsl ;;
+      
 
-    let compute_shadows_for_dc_files cpsl_ref =
-      let cmds = separate_commands cpsl_ref in
+    let compute_shadows_for_dc_files cpsl =
+      let cmds = separate_commands cpsl in
       Image.image
         (fun cmd ->
           ( Cee_compilation_command.short_name_from_separate cmd
-          , shadow_for_separate_command (destination, read_file, create_file) cpsl_ref cmd
+          , shadow_for_separate_command (destination, read_file, create_file) cpsl cmd
           ))
         cmds
     ;;
 
-    let shadows_for_dc_files cpsl_ref =
-      match !cpsl_ref.shadows_for_dc_files_opt with
-      | Some old_answer -> old_answer
-      | None ->
-        let answer = compute_shadows_for_dc_files cpsl_ref in
-        let new_cpsl = { !cpsl_ref with shadows_for_dc_files_opt = Some answer } in
-        let _ = cpsl_ref := new_cpsl in
-        answer
-    ;;
+    let shadows_for_dc_files cpsl = compute_shadows_for_dc_files cpsl ;;
+      
 
 
   let connected_components l =
@@ -589,7 +532,7 @@ module Private2 = struct
     ~reinitialize_destination
     processed_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in
-      let new_cpsl = ref
+      let new_cpsl = 
         {  snapshot =snap 
         ;  source_envname = src_envname
         ; destination_envname = dest_envname
@@ -621,14 +564,14 @@ module Private2 = struct
 
   let replicate ?(reinitialize_destination=false) ~next_envname cpsl  =      
        first_constructor
-   ~snapshot:(((!cpsl).snapshot))
-   ~source_envname:(((!cpsl).destination_envname))
+   ~snapshot:((cpsl).snapshot)
+   ~source_envname:(((cpsl).destination_envname))
    ~destination_envname:next_envname
    ~reinitialize_destination 
-    ((!cpsl).commands) 
+    (cpsl.commands) 
    ;;
 
-     let unsafe_unveil cpsl_ref = ref(!cpsl_ref) ;;   
+     let unsafe_unveil cpsl = cpsl ;;   
 
   end ;;
 end ;;
@@ -664,7 +607,7 @@ module type CAPSULE_INTERFACE = sig
       ?reinitialize_destination:bool ->
       next_envname:string -> t -> t
 
-  val unsafe_unveil : t -> Private2.PreCapsule.immutable_t ref    
+  val unsafe_unveil : t -> t   
   val  reinitialize_destination_directory : t -> unit  
   
 end ;;
