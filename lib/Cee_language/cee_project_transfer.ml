@@ -330,7 +330,6 @@ module Private2 = struct
       ; all_h_or_c_files_opt : string list option
       ; separate_commands_opt : Cee_compilation_command_t.separate_t list option
       ; filecontents : (string, string) Hashtbl.t
-      ; directly_compiled_files_opt : string list option
       } ;;
 
 
@@ -377,15 +376,19 @@ module Private2 = struct
 
     let separate_commands cpsl = compute_separate_commands cpsl    ;;
 
-    let compute_directly_compiled_files cpsl =
-      str_sort
+    let hashtbl_for_directly_compiled_files = 
+      (Hashtbl.create 20: (t,string list) Hashtbl.t) ;; 
+
+    let directly_compiled_files cpsl = 
+       match Hashtbl.find_opt hashtbl_for_directly_compiled_files cpsl with 
+      (Some old_answer) -> old_answer 
+      | None ->
+      let answer = str_sort
         (Image.image
            Cee_compilation_command.short_name_from_separate
-           (separate_commands cpsl))
-    ;;
-
-    let directly_compiled_files cpsl = compute_directly_compiled_files cpsl ;;
-     
+           (separate_commands cpsl)) in 
+      let _ = Hashtbl.add hashtbl_for_directly_compiled_files cpsl answer in 
+      answer ;; 
 
     let read_file cpsl fn =
       match Hashtbl.find_opt cpsl.filecontents fn with
@@ -548,7 +551,6 @@ module Private2 = struct
         ; all_h_or_c_files_opt = None
         ; separate_commands_opt = None
         ; filecontents = Hashtbl.create 3000
-        ; directly_compiled_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
