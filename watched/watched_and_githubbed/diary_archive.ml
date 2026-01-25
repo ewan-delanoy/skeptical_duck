@@ -1,9 +1,9 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
- Entry 204 : Musings on a self-referring sequence, VI
+ Entry 202 : Musings on a self-referring sequence, VI
 ************************************************************************************************************************)
-module Snip204 = struct 
+module Snip202 = struct 
 
 module Z = Zirath.Z ;;
 
@@ -339,9 +339,9 @@ let int_n = VList.total_length vl ;;
 end;;
 
 (************************************************************************************************************************
- Entry 203 : Musings on a self-referring sequence, V
+ Entry 201 : Musings on a self-referring sequence, V
 ************************************************************************************************************************)
-module Snip203 = struct 
+module Snip201 = struct 
 
 type left_or_right = Left |Right ;;
 
@@ -631,9 +631,9 @@ show_size "u9" u9 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 202 : Musings on a self-referring sequence, IV
+ Entry 200 : Musings on a self-referring sequence, IV
 ************************************************************************************************************************)
-module Snip202 = struct 
+module Snip200 = struct 
 
 
 
@@ -1041,9 +1041,9 @@ print_string new_text ;;
 end;;
 
 (************************************************************************************************************************
- Entry 201 : Musings on a self-referring sequence, III
+ Entry 199 : Musings on a self-referring sequence, III
 ************************************************************************************************************************)
-module Snip201 = struct 
+module Snip199 = struct 
 
 type eye = E of int list ;;
 
@@ -1434,9 +1434,9 @@ compute_data3(E[1;3;5;7;65]) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 200 : Musings on a self-referring sequence, II
+ Entry 198 : Musings on a self-referring sequence, II
 ************************************************************************************************************************)
-module Snip200 = struct 
+module Snip198 = struct 
 
 type eye = E of int list ;;
 
@@ -1717,9 +1717,9 @@ let cd3 l =
 end;;
 
 (************************************************************************************************************************
- Entry 199 : Musings on a self-referring sequence 
+ Entry 197 : Musings on a self-referring sequence 
 ************************************************************************************************************************)
-module Snip199 = struct 
+module Snip197 = struct 
 
 type ayetee={
   aye: int list;
@@ -1838,9 +1838,9 @@ let check1 = case1_test ayt3 5;;
 end;;
 
 (************************************************************************************************************************
- Entry 198 : Write yet another PARI-GP template in OCaml 
+ Entry 196 : Write yet another PARI-GP template in OCaml 
 ************************************************************************************************************************)
-module Snip198 = struct 
+module Snip196 = struct 
 
 open Needed_values ;;
 
@@ -1916,9 +1916,9 @@ let bn = beetle_nest array_of_coeffs ;;
 end;;
 
 (************************************************************************************************************************
- Entry 197 : Write PARI-GP template in OCaml 
+ Entry 195 : Write PARI-GP template in OCaml 
 ************************************************************************************************************************)
-module Snip197 = struct 
+module Snip195 = struct 
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
 
@@ -2111,9 +2111,9 @@ let write_projected_initial_sums k ~projection_index=
 end;;
 
 (************************************************************************************************************************
- Entry 196 : Make PARI-GP on a 720x720 matrix inside OCaml 
+ Entry 194 : Make PARI-GP on a 720x720 matrix inside OCaml 
 ************************************************************************************************************************)
-module Snip196 = struct 
+module Snip194 = struct 
 
 open Needed_values ;;
 
@@ -2189,10 +2189,10 @@ let bn = beetle_nest array_of_coeffs ;;
 end;;
 
 (************************************************************************************************************************
- Entry 195 : Remember elementary symmetric polynomials in GP remembering all initial sums
+ Entry 193 : Remember elementary symmetric polynomials in GP remembering all initial sums
  (wastes space) 
 ************************************************************************************************************************)
-module Snip195 = struct 
+module Snip193 = struct 
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
 
@@ -2358,10 +2358,10 @@ let write_partial_sum  k (i,j) =
 end;;
 
 (************************************************************************************************************************
- Entry 194 : Remember elementary symmetric polynomials in GP using large chunks
+ Entry 192 : Remember elementary symmetric polynomials in GP using large chunks
  (not very efficient) 
 ************************************************************************************************************************)
-module Snip194 = struct 
+module Snip192 = struct 
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
 
@@ -2499,9 +2499,9 @@ write_partial_level 4 (1,50) "_1" ;;
 end;;
 
 (************************************************************************************************************************
- Entry 193 : Applying a regexp transform to a very large string
+ Entry 191 : Applying a regexp transform to a very large string
 ************************************************************************************************************************)
-module Snip193 = struct 
+module Snip191 = struct 
 
 open Skeptical_duck_lib;;
 open Needed_values ;; 
@@ -2737,9 +2737,9 @@ let act () = Io.overwrite_with prelude1_ap answer ;;
 end;;
 
 (************************************************************************************************************************
- Entry 192 : Computing left cosets in a permutation group
+ Entry 190 : Computing left cosets in a permutation group
 ************************************************************************************************************************)
-module Snip192 = struct 
+module Snip190 = struct 
 
 
 let i_order = Total_ordering.for_integers ;;
@@ -2779,9 +2779,9 @@ let hive =  helper_for_hive_computation ([],all_permutations);;
 end;;
 
 (************************************************************************************************************************
- Entry 191 : Anonimizing a LaTeX file
+ Entry 189 : Anonimizing a LaTeX file
 ************************************************************************************************************************)
-module Snip191 = struct 
+module Snip189 = struct 
 
 open Skeptical_duck_lib
 open Needed_values
@@ -3178,18 +3178,18 @@ let usual () =
 end;;
 
 (************************************************************************************************************************
- Entry 190 : 
+ Entry 188 : 
 ************************************************************************************************************************)
-module Snip190 = struct 
+module Snip188 = struct 
 
 
 
 end;;
 
 (************************************************************************************************************************
- Entry 189 : Toying with Lorem Ipsum
+ Entry 187 : Toying with Lorem Ipsum
 ************************************************************************************************************************)
-module Snip189 = struct 
+module Snip187 = struct 
 
 
 type my_str_result = Delim of string |Text of string ;;
@@ -3445,9 +3445,9 @@ let ex29 = lz ;;
 end;;
 
 (************************************************************************************************************************
- Entry 188 : Typical use of the From_scanner_to_printer module
+ Entry 186 : Typical use of the From_scanner_to_printer module
 ************************************************************************************************************************)
-module Snip188 = struct 
+module Snip186 = struct 
 
 
 let g1 = From_scanner_to_printer.step1_receive_raw_data
@@ -3473,9 +3473,9 @@ let g6 = From_scanner_to_printer.step6_pepare_for_printing
 end;;
 
 (************************************************************************************************************************
- Entry 187 : Code to read/write PARI-GP data between files
+ Entry 185 : Code to read/write PARI-GP data between files
 ************************************************************************************************************************)
-module Snip187 = struct 
+module Snip185 = struct 
 
 let pari_dir = home ^ 
    "/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/" ;;
@@ -3553,9 +3553,9 @@ let transfer_all () = List.iter transfer_new_data (!main_list) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 186 : Enumerating orbit of monomials, III
+ Entry 184 : Enumerating orbit of monomials, III
 ************************************************************************************************************************)
-module Snip186 = struct 
+module Snip184 = struct 
 
 
 type sixtuple = SU of int * int * int *  int * int * int ;; 
@@ -3880,9 +3880,9 @@ let diff = ball15_length - (List.length u1) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 185 : Enumerate all subgroups of a small group
+ Entry 183 : Enumerate all subgroups of a small group
 ************************************************************************************************************************)
-module Snip185 = struct 
+module Snip183 = struct 
 let i_order = Total_ordering.for_integers ;;
 
 let i_merge = Ordered.merge i_order ;;
@@ -4125,10 +4125,10 @@ print_string( gpize_int_list_list normie);;
 end;;
 
 (************************************************************************************************************************
- Entry 184 : Producing some PARi-GP code enumerating 
+ Entry 182 : Producing some PARi-GP code enumerating 
 some elementary symmetric polynomials
 ************************************************************************************************************************)
-module Snip184 = struct 
+module Snip182 = struct 
 
 let u1 = List_again.power_set (Int_range.range 1 10) ;;
 
@@ -4175,9 +4175,9 @@ Io.append_string_to_file full_text ap1 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 183 : Code that reads PARI-GP arrays and writes PARI-GP functions
+ Entry 181 : Code that reads PARI-GP arrays and writes PARI-GP functions
 ************************************************************************************************************************)
-module Snip183 = struct 
+module Snip181 = struct 
 
 let main_index = 8 ;;
 
@@ -4265,9 +4265,9 @@ let u8 () =
 end;;
 
 (************************************************************************************************************************
- Entry 182 : Enumerating orbits of monomials, II
+ Entry 180 : Enumerating orbits of monomials, II
 ************************************************************************************************************************)
-module Snip182 = struct 
+module Snip180 = struct 
 
 
 type sixtuple = SU of int * int * int * int * int * int ;; 
@@ -4337,9 +4337,9 @@ let u8 () = print_string u7 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 181 : Using Manage_diary.extract_at_index_and_append_to_file
+ Entry 179 : Using Manage_diary.extract_at_index_and_append_to_file
 ************************************************************************************************************************)
-module Snip181 = struct 
+module Snip179 = struct 
 
 Manage_diary.extract_at_index_and_append_to_file
   176 ~nongithubbed_path: "cloth" ;;
@@ -4362,9 +4362,9 @@ let act3 () = Manage_diary.replace_at_index_with_file_content
 end;;
 
 (************************************************************************************************************************
- Entry 180 : Musing over a functional equation
+ Entry 178 : Musing over a functional equation
 ************************************************************************************************************************)
-module Snip180 = struct 
+module Snip178 = struct 
 
 let i_order = Total_ordering.for_integers ;;
 
@@ -4534,9 +4534,9 @@ let uu k = List.nth (!u8_ref) (k-1) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 179 : Enumerating orbits of monomials
+ Entry 177 : Enumerating orbits of monomials
 ************************************************************************************************************************)
-module Snip179 = struct 
+module Snip177 = struct 
 
   type sixtuple = SU of int * int * int * int * int * int ;; 
 
@@ -4681,9 +4681,9 @@ module Snip179 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 178 : Using Coherent_pdf.many_pngs_one_pdf 
+ Entry 176 : Using Coherent_pdf.many_pngs_one_pdf 
 ************************************************************************************************************************)
-module Snip178 = struct 
+module Snip176 = struct 
 
   let ap1 = Absolute_path.of_string "~/Downloads/Arno" ;; 
   
@@ -4711,9 +4711,9 @@ module Snip178 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 177 : Musings on p-chains problem, II
+ Entry 175 : Musings on p-chains problem, II
 ************************************************************************************************************************)
-module Snip177 = struct 
+module Snip175 = struct 
 
   let i_order = Total_ordering.for_integers ;;
 
@@ -4961,9 +4961,9 @@ module Snip177 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 176 : Computing spheres and balls of strings
+ Entry 174 : Computing spheres and balls of strings
 ************************************************************************************************************************)
-module Snip176 = struct 
+module Snip174 = struct 
 
   let s_order = Total_ordering.silex_for_strings ;;
 
@@ -5023,9 +5023,9 @@ let u4 = List.filter (fun x->not(is_a_conjugate x)) u3 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 175 : Musings on p-chains problem
+ Entry 173 : Musings on p-chains problem
 ************************************************************************************************************************)
-module Snip175 = struct 
+module Snip173 = struct 
 
   let dec = Permutation.decompose_into_disjoint_cycles ;;
   let p = Permutation.product ;;
@@ -5114,9 +5114,9 @@ module Snip175 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 174 : Musings on permutations, II
+ Entry 172 : Musings on permutations, II
 ************************************************************************************************************************)
-module Snip174 = struct 
+module Snip172 = struct 
 
   let i_order = Total_ordering.for_integers ;;
 
@@ -5241,9 +5241,9 @@ print_string u2;;
 end;;
 
 (************************************************************************************************************************
- Entry 173 : Musings on permutations
+ Entry 171 : Musings on permutations
 ************************************************************************************************************************)
-module Snip173 = struct 
+module Snip171 = struct 
 
   let i_order = Total_ordering.for_integers ;;
 
@@ -5379,10 +5379,10 @@ module Snip173 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 172 : Computing explicit successive minimal polynomials
+ Entry 170 : Computing explicit successive minimal polynomials
 on a field extension whose Galois group is a wreath
 ************************************************************************************************************************)
-module Snip172 = struct 
+module Snip170 = struct 
 
 
   let completions l =
@@ -5539,9 +5539,9 @@ module Snip172 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 171 : Miscellanea preparing a refactorization
+ Entry 169 : Miscellanea preparing a refactorization
 ************************************************************************************************************************)
-module Snip171 = struct 
+module Snip169 = struct 
 
 
 (*
@@ -5686,9 +5686,9 @@ let act3 () = Lines_in_text.remove_interval_in_file
 end;;
 
 (************************************************************************************************************************
- Entry 170 : Check that double crobj conversion leads back to original
+ Entry 168 : Check that double crobj conversion leads back to original
 ************************************************************************************************************************)
-module Snip170 = struct 
+module Snip168 = struct 
 
 (*
 
@@ -5724,9 +5724,9 @@ let check = (t1 = t2) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 169 : Using Crobj_conversion_boilerplate.write 
+ Entry 167 : Using Crobj_conversion_boilerplate.write 
 ************************************************************************************************************************)
-module Snip169 = struct 
+module Snip167 = struct 
 
   let ap1 = 
     Absolute_path.of_string 
@@ -5746,9 +5746,9 @@ module Snip169 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 168 : Musings on twin primes
+ Entry 166 : Musings on twin primes
 ************************************************************************************************************************)
-module Snip168 = struct 
+module Snip166 = struct 
 
   let i_order = Total_ordering.for_integers ;;
   let i_sort = Ordered.sort  i_order ;;
@@ -5828,9 +5828,9 @@ module Snip168 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 167 : Simple test
+ Entry 165 : Simple test
 ************************************************************************************************************************)
-module Snip167 = struct 
+module Snip165 = struct 
 
   let outside =   ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/") ;;
 
@@ -5849,9 +5849,9 @@ module Snip167 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 166 : Step in implementing a certain "Poor man's row polymorphism"
+ Entry 164 : Step in implementing a certain "Poor man's row polymorphism"
 ************************************************************************************************************************)
-module Snip166 = struct 
+module Snip164 = struct 
 
 (*
 
@@ -5990,9 +5990,9 @@ fg "coming_soon_fwc_with_dependencies" ;;
 end;;
 
 (************************************************************************************************************************
- Entry 165 : Combinatorial musings related to twin primes
+ Entry 163 : Combinatorial musings related to twin primes
 ************************************************************************************************************************)
-module Snip165 = struct 
+module Snip163 = struct 
 
   let destroys l x = List.exists(fun y->x mod y=0) l ;;
 
@@ -6043,9 +6043,9 @@ module Snip165 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 164 : Comparator for a record type
+ Entry 162 : Comparator for a record type
 ************************************************************************************************************************)
-module Snip164 = struct 
+module Snip162 = struct 
 
   let differences fw1 fw2 = 
     let temp =
@@ -6088,9 +6088,9 @@ module Snip164 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 163 : Bevy of values
+ Entry 161 : Bevy of values
 ************************************************************************************************************************)
-module Snip163 = struct 
+module Snip161 = struct 
 
   let designated_parents = [
     "Fw_with_archives" , "File_watcher" ;
@@ -6144,9 +6144,9 @@ module Snip163 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 162 : Extracting modules and values from an OCaml snippet
+ Entry 160 : Extracting modules and values from an OCaml snippet
 ************************************************************************************************************************)
-module Snip162 = struct 
+module Snip160 = struct 
 
 (* extract module names *)
 
@@ -6223,9 +6223,9 @@ ap1 ~line_number:11 ~inserted_snippet:u12 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 161 : Using the Coherent_pdf module
+ Entry 159 : Using the Coherent_pdf module
 ************************************************************************************************************************)
-module Snip161 = struct 
+module Snip159 = struct 
 
 
   let sipdf = "~/Teuliou/Heavy/Scanning/Single_Pdf/Colette/" ;;
@@ -6272,9 +6272,9 @@ module Snip161 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 160 : Delete all modules in a subdirectory
+ Entry 158 : Delete all modules in a subdirectory
 ************************************************************************************************************************)
-module Snip160 = struct 
+module Snip158 = struct 
 
   let ae = Fw_usual_manager.all_endinglesses () ;;
 
@@ -6305,9 +6305,9 @@ module Snip160 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 159 : Some old conversion code
+ Entry 157 : Some old conversion code
 ************************************************************************************************************************)
-module Snip159 = struct 
+module Snip157 = struct 
 
 (*
 
@@ -6386,9 +6386,9 @@ let act ()=
 end;;
 
 (************************************************************************************************************************
- Entry 158 : Combinatorics on Komal problem
+ Entry 156 : Combinatorics on Komal problem
 ************************************************************************************************************************)
-module Snip158 = struct 
+module Snip156 = struct 
 
   open Zirath ;;
 
@@ -6469,9 +6469,9 @@ module Snip158 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 157 : Miscellaneous copy-paste
+ Entry 155 : Miscellaneous copy-paste
 ************************************************************************************************************************)
-module Snip157 = struct 
+module Snip155 = struct 
 
   let ap1 = Absolute_path.of_string 
   ((Sys.getenv "HOME")^"/Teuliou/OCaml/idaho/lib/Filewatching/fw_final_poly.ml");;
@@ -6519,9 +6519,9 @@ module Snip157 = struct
 end;;
 
 (************************************************************************************************************************
- Entry 156 : Finish an OCR job, and use Coherent_pdf.corep_cuttable_transform
+ Entry 154 : Finish an OCR job, and use Coherent_pdf.corep_cuttable_transform
 ************************************************************************************************************************)
-module Snip156 = struct 
+module Snip154 = struct 
 
   let dir2 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Text" ;;
 
@@ -7076,9 +7076,9 @@ Lines_in_text.remove_interval_in_file part3_ap 15 10583;;
 end;;
 
 (************************************************************************************************************************
- Entry 155 : Use the tesseract command on many files
+ Entry 153 : Use the tesseract command on many files
 ************************************************************************************************************************)
-module Snip155 = struct 
+module Snip153 = struct 
 
 let dir1 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Action" ;;
 
@@ -7109,17 +7109,17 @@ let execute_commands () =
 end;;
 
 (************************************************************************************************************************
- Entry 154 : Last use of Cee modules
+ Entry 152 : Last use of Cee modules
 ************************************************************************************************************************)
-module Snip154 = struct 
+module Snip152 = struct 
 
 
 end;;
 
 (************************************************************************************************************************
- Entry 153 : Using the Coherent_pdf module
+ Entry 151 : Using the Coherent_pdf module
 ************************************************************************************************************************)
-module Snip153 = struct 
+module Snip151 = struct 
 
 let special_soi j = 
    let s = string_of_int j in 
@@ -7213,9 +7213,9 @@ ap2 ~outputfile_name:"printable_remasterised_bonvallet"
 end;;
 
 (************************************************************************************************************************
- Entry 152 : Function commuting with dynamical system, version 3
+ Entry 150 : Function commuting with dynamical system, version 3
 ************************************************************************************************************************)
-module Snip152 = struct 
+module Snip150 = struct 
 
 module ZZ = Zirath.Z ;;
 module ZQ = Zirath.Q ;;
@@ -7577,9 +7577,9 @@ let z3 = ZQ.div almost_one z2 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 151 : Function commuting with dynamical system, version 2
+ Entry 149 : Function commuting with dynamical system, version 2
 ************************************************************************************************************************)
-module Snip151 = struct 
+module Snip149 = struct 
 
 module ZZ = Zirath.Z ;;
 module ZQ = Zirath.Q ;;
@@ -7725,9 +7725,9 @@ affine_interpolation (xx 0) (yy 0) ;;
 end;;
 
 (************************************************************************************************************************
- Entry 150 : Function commuting with dynamical system
+ Entry 148 : Function commuting with dynamical system
 ************************************************************************************************************************)
-module Snip150 = struct 
+module Snip148 = struct 
 
 module ZZ = Zirath.Z ;;
 module ZQ = Zirath.Q ;;
@@ -7943,9 +7943,9 @@ let measure =Memoized.make(fun d -> minimize_zrational_with_care
 end;;
 
 (************************************************************************************************************************
- Entry 149 : Unfinished work on functional equation f(xyf(x+y))=f(x)+f(y)
+ Entry 147 : Unfinished work on functional equation f(xyf(x+y))=f(x)+f(y)
 ************************************************************************************************************************)
-module Snip149 = struct 
+module Snip147 = struct 
 
 
 module ZZ = Zirath.Z ;;
@@ -8026,9 +8026,9 @@ generic_tt2 (!starter_ref) 21 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 148 : Construct a 3-cover of A7
+ Entry 146 : Construct a 3-cover of A7
 ************************************************************************************************************************)
-module Snip148 = struct 
+module Snip146 = struct 
 
 
 let a_perm = [2;1;4;3;5;6] ;;
@@ -8778,9 +8778,9 @@ let bad_pairs = List.filter (
 end;;
 
 (************************************************************************************************************************
- Entry 147 : Create assistance file on the fly on another computer
+ Entry 145 : Create assistance file on the fly on another computer
 ************************************************************************************************************************)
-module Snip147 = struct 
+module Snip145 = struct 
 
 let g1=(Needed_values.abo "unix_again")@
 ["unix_again"];;
@@ -8802,9 +8802,9 @@ Io.overwrite_with ap1 g3 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 146 : Debug Lines_in_text.Private.lines_outside_cee_comments
+ Entry 144 : Debug Lines_in_text.Private.lines_outside_cee_comments
 ************************************************************************************************************************)
-module Snip146 = struct 
+module Snip144 = struct 
 
 open Lines_in_text.Private ;;
 
@@ -8839,9 +8839,9 @@ let ff = Memoized.small step w0;;
 end;;
 
 (************************************************************************************************************************
- Entry 145 : Testing Cee_text.Private.emphatize_first_ivy_and_last_endif
+ Entry 143 : Testing Cee_text.Private.emphatize_first_ivy_and_last_endif
 ************************************************************************************************************************)
-module Snip145 = struct 
+module Snip143 = struct 
 
 module Pri = Cee_text.Private ;;
 
@@ -8859,9 +8859,9 @@ let act () = print_string text2 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 144 : Finite sets stable by (x,y)->|x-y|
+ Entry 142 : Finite sets stable by (x,y)->|x-y|
 ************************************************************************************************************************)
-module Snip144 = struct 
+module Snip142 = struct 
 
 let i_order = Total_ordering.for_integers ;; 
 
@@ -8915,9 +8915,9 @@ let hh t =
 end;;
 
 (************************************************************************************************************************
- Entry 143 : Preliminary actions before using the Coherent pdf module
+ Entry 141 : Preliminary actions before using the Coherent pdf module
 ************************************************************************************************************************)
-module Snip143 = struct 
+module Snip141 = struct 
 let s_dir1 = home ^ "/Downloads/Pages" ;;
 
 let dir1= Directory_name.of_string s_dir1 ;;
@@ -8974,9 +8974,9 @@ let act4 () = Sys.command u7 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 142 : Fix error in an indexed list of files
+ Entry 140 : Fix error in an indexed list of files
 ************************************************************************************************************************)
-module Snip142 = struct 
+module Snip140 = struct 
 
 module Pri = Olavo_s_local_dircopy.Private ;;
 
@@ -9014,9 +9014,9 @@ let act1 () = Image.image Sys.command u4 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 141 : Code to prepare a phpBB upgrade
+ Entry 139 : Code to prepare a phpBB upgrade
 ************************************************************************************************************************)
-module Snip141 = struct 
+module Snip139 = struct 
 
 let dir1 = Directory_name.of_string 
 "~/Downloads//phpBB-3.3.14-files/phpBB-3.3.10_to_3.3.14" ;;
@@ -9062,9 +9062,9 @@ let u6 = List.filter (fun (j,x,y)->x<>y) l_12 ;;
 end;;
 
 (************************************************************************************************************************
- Entry 140 : Using the Zarith module
+ Entry 138 : Using the Zarith module
 ************************************************************************************************************************)
-module Snip140 = struct 
+module Snip138 = struct 
 
 module Z= Zirath.Zay ;;
 module Q = Zirath.Quay ;;
@@ -9074,9 +9074,9 @@ module Q = Zirath.Quay ;;
 end;;
 
 (************************************************************************************************************************
- Entry 139 : Check a successor function
+ Entry 137 : Check a successor function
 ************************************************************************************************************************)
-module Snip139 = struct 
+module Snip137 = struct 
 
 let order1 x y =
    let trial1= Total_ordering.standard (abs x) (abs y) in 
@@ -9157,9 +9157,9 @@ let check_successors = List.filter (
 end;;
 
 (************************************************************************************************************************
- Entry 138 : Using the Coherent_pdf module
+ Entry 136 : Using the Coherent_pdf module
 ************************************************************************************************************************)
-module Snip138 = struct 
+module Snip136 = struct 
 
 let ap1 = Absolute_path.of_string (
    "~/Teuliou/Printable/numbers.pdf") ;;
@@ -9211,222 +9211,6 @@ let act1 () = Coherent_pdf.replace_inside
 
 
 ;;
-
-end;;
-
-(************************************************************************************************************************
- Entry 137 : Another debugging session on Cee_project_transfer
-************************************************************************************************************************)
-module Snip137 = struct 
-
-  module Cap = Cee_project_transfer.Capsule
-
-let list28, wardrobe1 = [],[] ;;
-let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
-let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
-
-let cpsl0 =
-  Cap.make ~source_envname:"SHPSRC" ~destination_envname:"HAHPSRC" list28
-
-let change1 () =
-  Chronometer.it
-    Cee_project_transfer
-    .remove_conditional_directives_in_directly_compiled_files cpsl0
-
-    
-let cpsl1 =
-   Cap.replicate ~next_envname:"ST01PHPSRC" cpsl0 
-   (* ~refill_files:true *) ;; 
-
-let change2 =
-  Cee_project_transfer.standardize_inclusions_in_files cpsl1
-    (Cap.directly_compiled_files cpsl1) ;;
-
-(* (* DEBUGDEBUGDEBUG BEGIN *)
-
-module Pri = Cee_project_transfer.Private ;;
-module Pri2 = Cee_project_transfer.Private2 ;;
-module Prec = Pri2.PreCapsule ;;
-
-
-let u1 = Cap.directly_compiled_files cpsl1 ;;
-let fn1 = List.nth u1 382 ;; 
-
-(* let bad1 = 
-Cee_project_transfer.standardize_inclusions_in_files cpsl1
-    [fn1] ~dry_run:true ;; *)
-
-
-let bad2 =
-    Pri.nonstandard_inclusion_formats_in_individual_includer 
-    cpsl1 fn1 ;; 
-
-let includer_fn = fn1 ;;    
-
-let inc_source_dirs =
-      Pri2.included_source_dirs_for_file 
-      Cap.separate_commands cpsl1 includer_fn ;;
-
-let text = Cap.read_file cpsl1 includer_fn ;;
-
-let old_temp1 = Cee_text.included_local_files_in_text text ;;
-
-let temp1 = [List.nth old_temp1 16] ;;
-let lines = Lines_in_text.indexed_lines text ;; 
-
-let bad3 =
-      Image.image
-        (fun (line_nbr, vague_included_fn) ->
-          let iar =
-            Pri2.parse_cee_inclusion_line
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              vague_included_fn
-              inc_source_dirs
-          in
-          ( includer_fn
-          , vague_included_fn
-          , List.assoc line_nbr lines
-          , Pri2.Individual_inclusion_analysis.read iar ))
-        temp1 ;;
-
-let (line_nbr, vague_included_fn) = List.nth old_temp1 16 ;;     
-
-let bad4 =
-            Pri2.parse_cee_inclusion_line
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              vague_included_fn
-              inc_source_dirs ;;
- 
-let included_fn = vague_included_fn ;;              
-
-let bad5 =
-            Pri2.analize_slashed_included_filename
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              vague_included_fn
-              inc_source_dirs ;;
-
-let bad6 =
-            Pri2.analize_slashed_nonpointed_included_filename
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              vague_included_fn
-              inc_source_dirs ;;
-
-
-(* DEBUGDEBUGDEBUG END *) *)
-
-end;;
-
-(************************************************************************************************************************
- Entry 136 : Debugging session on Cee_project_transfer
-************************************************************************************************************************)
-module Snip136 = struct 
-
-module Cap = Cee_project_transfer.Capsule
-
-let list28, wardrobe1 = [],[](* Large_data.data *) ;;
-let simplified_dir = Sys.getenv "SHPSRC" ^ "/" ;; 
-let half_preprocessed_dir = Sys.getenv "HAHPSRC" ^ "/" ;;
-
-let cpsl0 =
-  Cap.make ~source_envname:"SHPSRC" ~destination_envname:"HAHPSRC" list28
-
-let change1 () =
-  Chronometer.it
-    Cee_project_transfer
-    .remove_conditional_directives_in_directly_compiled_files cpsl0
-
-    
-let cpsl1 =
-   Cap.replicate ~next_envname:"ST01PHPSRC" cpsl0 
-   (* ~refill_files:true *) ;; 
-
-let change2 =
-  Cee_project_transfer.standardize_inclusions_in_files cpsl1
-    (Cap.directly_compiled_files cpsl1) ;;
-
-(* (* DEBUGDEBUGDEBUG BEGIN *)
-
-module Pri = Cee_project_transfer.Private ;;
-module Pri2 = Cee_project_transfer.Private2 ;;
-module Prec = Pri2.PreCapsule ;;
-
-
-let u1 = Cap.directly_compiled_files cpsl1 ;;
-let fn1 = List.nth u1 382 ;; 
-
-(* let bad1 = 
-Cee_project_transfer.standardize_inclusions_in_files cpsl1
-    [fn1] ~dry_run:true ;; *)
-
-
-let bad2 =
-    Pri.nonstandard_inclusion_formats_in_individual_includer 
-    cpsl1 fn1 ;;
-
-let includer_fn = fn1 ;;    
-
-let inc_source_dirs =
-      Pri2.included_source_dirs_for_file 
-      Cap.separate_commands cpsl1 includer_fn ;;
-
-let text = Cap.read_file cpsl1 includer_fn ;;
-
-let lines = Lines_in_text.indexed_lines text ;; 
-
-let temp5 = Cee_text.included_nonlocal_files_in_text text ;;
-
-(* let bad3 =
-      List.filter_map
-        (fun (line_nbr, included_fn) ->
-          let iar =
-            Pri2.parse_cee_inclusion_line
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              included_fn
-              inc_source_dirs
-          in
-          match Pri2.Individual_inclusion_analysis.read iar with
-          | None -> None
-          | Some answer -> Some (List.assoc line_nbr lines, "#include \"" ^ answer ^ "\""))
-        temp5 ;; *)
-
-let (line_nbr, included_fn) = List.nth temp5 12 ;; 
-
-(* let bad4 =
-            Pri2.parse_cee_inclusion_line
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              included_fn
-              inc_source_dirs ;; *)
-
-let bad5 =
-            Pri2.analize_nonslashed_included_filename
-              Cap.all_h_or_c_files
-              cpsl1
-              includer_fn
-              included_fn
-              inc_source_dirs ;; 
-
-let current_dir = Cull_string.before_rightmost includer_fn '/' ;;
-
-let all_files = Cap.all_h_or_c_files cpsl1 ;; 
-
-
-
-(* DEBUGDEBUGDEBUG END *) *)
-
-
-
 
 end;;
 

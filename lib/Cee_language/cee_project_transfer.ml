@@ -320,7 +320,9 @@ module Private2 = struct
 
    module PreCapsule = struct
     type immutable_t =
-      { source_envname : string
+      { 
+        snapshot : Cee_snapshot_t.t
+      ;  source_envname : string
       ; destination_envname : string
       ; source_opt : Directory_name_t.t option
       ; destination_opt : Directory_name_t.t option
@@ -333,7 +335,7 @@ module Private2 = struct
       ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
       } ;;
 
-    type t = immutable_t ref
+    type t = immutable_t ref ;;
 
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
@@ -583,12 +585,13 @@ module Private2 = struct
     ()
     ;;
   
-  let first_constructor ~source_envname:src_envname ~destination_envname:dest_envname 
+  let first_constructor ~snapshot:snap ~source_envname:src_envname ~destination_envname:dest_envname 
     ~reinitialize_destination
     processed_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in
       let new_cpsl = ref
-        { source_envname = src_envname
+        {  snapshot =snap 
+        ;  source_envname = src_envname
         ; destination_envname = dest_envname
         ; commands = processed_commands
         ; source_opt = None
@@ -610,14 +613,15 @@ module Private2 = struct
       new_cpsl
     ;;
 
-    let make ?(reinitialize_destination=false) ~source_envname:src_envname ~destination_envname:dest_envname 
+    let make ~snapshot ?(reinitialize_destination=false)  ~source_envname:src_envname ~destination_envname:dest_envname 
         raw_commands =
       let dest = Directory_name.of_string (Sys.getenv dest_envname) in 
       let processed_commands = Image.image (Cee_compilation_command.parse dest) raw_commands in 
-      first_constructor ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination processed_commands ;;
+      first_constructor ~snapshot ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination processed_commands ;;
 
   let replicate ?(reinitialize_destination=false) ~next_envname cpsl  =      
        first_constructor
+   ~snapshot:(((!cpsl).snapshot))
    ~source_envname:(((!cpsl).destination_envname))
    ~destination_envname:next_envname
    ~reinitialize_destination 
@@ -651,6 +655,7 @@ module type CAPSULE_INTERFACE = sig
       string -> Cee_prawn_t.t -> copy_level:int -> prawn_index:int -> number_of_prawns:int -> string -> unit
 
    val make :
+      snapshot:Cee_snapshot_t.t ->
       ?reinitialize_destination:bool ->
       source_envname:string ->
       destination_envname:string ->
