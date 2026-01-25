@@ -327,7 +327,6 @@ module Private2 = struct
       ; source_opt : Directory_name_t.t option
       ; destination_opt : Directory_name_t.t option
       ; commands : Cee_compilation_command_t.t list
-      ; all_h_or_c_files_opt : string list option
       } ;;
 
 
@@ -349,22 +348,24 @@ module Private2 = struct
 
     let commands cpsl = cpsl.commands
 
-        let compute_all_h_or_c_files cpsl =
-      let src = Directory_name.connectable_to_subpath (source cpsl) in
+    let hashtbl_for_all_h_or_c_files = 
+  (Hashtbl.create 20: (t,string list) Hashtbl.t) ;; 
+
+let all_h_or_c_files cpsl = 
+    match Hashtbl.find_opt hashtbl_for_all_h_or_c_files cpsl with 
+  (Some old_answer) -> old_answer 
+  | None ->
+    let src = Directory_name.connectable_to_subpath (source cpsl) in
       let temp1 = Unix_again.quick_beheaded_complete_ls src in
-      str_sort
+      let answer =  str_sort
         (List.filter
            (fun fn ->
              List.exists
                (fun edg -> String.ends_with fn ~suffix:edg)
                [ ".h"; ".c"; ".macros" ])
-           temp1)
-    ;;
-
-    let all_h_or_c_files cpsl = compute_all_h_or_c_files cpsl ;;
-      
-
- 
+           temp1) in 
+    let _ = Hashtbl.add hashtbl_for_all_h_or_c_files cpsl answer in 
+      answer ;; 
 let hashtbl_for_separate_commands = 
   (Hashtbl.create 20: (t,Cee_compilation_command_t.separate_t list) Hashtbl.t) ;; 
 
@@ -555,7 +556,6 @@ let separate_commands cpsl =
         ; commands = processed_commands
         ; source_opt = None
         ; destination_opt = Some dest
-        ; all_h_or_c_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
