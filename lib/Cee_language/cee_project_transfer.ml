@@ -328,8 +328,6 @@ module Private2 = struct
     type t =
       { 
         snapshot : Cee_snapshot_t.t
-      ;  source_envname : string
-      ; destination_envname : string
       } ;;
 
 
@@ -341,9 +339,6 @@ module Private2 = struct
     let suffix cpsl = (cpsl.snapshot.Cee_snapshot_t.project).Cee_project_t.suffix_for_snapshots ;;
     
     let index cpsl = cpsl.snapshot.Cee_snapshot_t.index ;;
-
-    let source_envname cpsl = cpsl.source_envname
-    let destination_envname cpsl = cpsl.destination_envname
     
     let source cpsl = 
        Directory_name.of_string(
@@ -492,37 +487,9 @@ let separate_commands cpsl =
     ;;
 
     let write_makefile cpsl =
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
-      let path_for_makefile = Absolute_path.create_file_if_absent (dest_dir ^ "Makefile") in
+      let source_dir = Directory_name.connectable_to_subpath (source cpsl) in
+      let path_for_makefile = Absolute_path.create_file_if_absent (source_dir ^ "Makefile") in
       Io.overwrite_with path_for_makefile (text_for_makefile cpsl)
-    ;;
-
-    let text_for_upper_makefile cpsl =
-      let dest = destination_envname cpsl in
-      String.concat
-        "\n"
-        [ "diverka:"
-        ; "\tcat /dev/null > ${EXPHP}/what_make_did.txt "
-        ; "\trm -rf ${PHPSRC}/* "
-        ; "\tcp -R ${" ^ dest ^ "}/* ${PHPSRC}/ "
-        ; "\tcp ${" ^ dest ^ "}/.gdbinit ${PHPSRC}/"
-        ; "\tcp ${EXPHP}/copiableMakefile ${PHPSRC}/Makefile "
-        ; ""
-        ; "adober:"
-        ; "\tmake -C ${PHPSRC} -f ${PHPSRC}/Makefile all -j4 | "
-          ^ "tee ${EXPHP}/what_make_did.txt"
-        ; "#\tmake -C ${PHPSRC} -f ${PHPSRC}/Makefile install -j4 | "
-          ^ "tee ${EXPHP}/what_make_install_did.txt "
-        ]
-    ;;
-
-    let write_to_upper_makefile cpsl =
-      let dest_dir = Directory_name.connectable_to_subpath (destination cpsl) in
-      let upper_dir =
-        Cull_string.before_rightmost (Cull_string.coending 1 dest_dir) '/'
-      in
-      let path_for_upper_makefile = Absolute_path.of_string (upper_dir ^ "/myMakefile") in
-      Io.overwrite_with path_for_upper_makefile (text_for_upper_makefile cpsl)
     ;;
 
     let included_files_in_several_files =
@@ -574,35 +541,30 @@ let separate_commands cpsl =
     ()
     ;;
   
-  let first_constructor ~snapshot:snap ~source_envname:src_envname ~destination_envname:dest_envname 
+  let first_constructor ~snapshot:snap  
     ~reinitialize_destination =
       let new_cpsl = 
         {  snapshot =snap 
-        ;  source_envname = src_envname
-        ; destination_envname = dest_envname
         } in 
       let _ = (
          if reinitialize_destination 
          then  
-          (write_makefile new_cpsl;
-     write_to_upper_makefile new_cpsl;
-     reinitialize_destination_directory new_cpsl;)
+          (
+         reinitialize_destination_directory new_cpsl;)
       )  in  
       new_cpsl
     ;;
 
-    let make ~snapshot ?(reinitialize_destination=false)  ~source_envname:src_envname ~destination_envname:dest_envname =
-      first_constructor ~snapshot ~source_envname:src_envname ~destination_envname:dest_envname ~reinitialize_destination ;;
+    let make ~snapshot ?(reinitialize_destination=false)  =
+      first_constructor ~snapshot  ~reinitialize_destination ;;
 
-  let replicate ?(reinitialize_destination=false) ~next_envname cpsl  =      
+  let replicate ?(reinitialize_destination=false) cpsl  =      
        first_constructor
    ~snapshot:((cpsl).snapshot)
-   ~source_envname:(((cpsl).destination_envname))
-   ~destination_envname:next_envname
    ~reinitialize_destination 
    ;;
 
-     let unsafe_unveil cpsl = cpsl ;;   
+     let unsafe_unveil cpsl = (cpsl:t) ;;   
 
   end ;;
 end ;;
@@ -610,8 +572,6 @@ end ;;
 module type CAPSULE_INTERFACE = sig
   type t
 
-  val source_envname : t -> string
-  val destination_envname : t -> string
   val source : t -> Directory_name_t.t
   val destination : t -> Directory_name_t.t
   val commands : t -> Cee_compilation_command_t.t list
@@ -630,15 +590,14 @@ module type CAPSULE_INTERFACE = sig
 
    val make :
       snapshot:Cee_snapshot_t.t ->
-      ?reinitialize_destination:bool ->
-      source_envname:string ->
-      destination_envname:string -> t
+      ?reinitialize_destination:bool -> t
     val replicate :
-      ?reinitialize_destination:bool ->
-      next_envname:string -> t -> t
+      ?reinitialize_destination:bool -> t -> t
 
   val unsafe_unveil : t -> t   
   val  reinitialize_destination_directory : t -> unit  
+
+  val write_makefile : t -> unit
   
 end ;;
 
