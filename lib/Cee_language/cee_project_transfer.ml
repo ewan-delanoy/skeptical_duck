@@ -328,8 +328,6 @@ module Private2 = struct
       ; destination_opt : Directory_name_t.t option
       ; commands : Cee_compilation_command_t.t list
       ; all_h_or_c_files_opt : string list option
-      ; separate_commands_opt : Cee_compilation_command_t.separate_t list option
-      ; filecontents : (string, string) Hashtbl.t
       } ;;
 
 
@@ -366,15 +364,21 @@ module Private2 = struct
     let all_h_or_c_files cpsl = compute_all_h_or_c_files cpsl ;;
       
 
-    let compute_separate_commands cpsl =
-      List.filter_map
+ 
+let hashtbl_for_separate_commands = 
+  (Hashtbl.create 20: (t,Cee_compilation_command_t.separate_t list) Hashtbl.t) ;; 
+
+let separate_commands cpsl = 
+    match Hashtbl.find_opt hashtbl_for_separate_commands cpsl with 
+  (Some old_answer) -> old_answer 
+  | None ->
+    let answer =  List.filter_map
         (function
           | Cee_compilation_command_t.Batch _ -> None
           | Cee_compilation_command_t.Separate s -> Some s)
-        cpsl.commands
-    ;;
-
-    let separate_commands cpsl = compute_separate_commands cpsl    ;;
+    (commands cpsl) in 
+    let _ = Hashtbl.add hashtbl_for_separate_commands cpsl answer in 
+    answer ;; 
 
     let hashtbl_for_directly_compiled_files = 
       (Hashtbl.create 20: (t,string list) Hashtbl.t) ;; 
@@ -390,14 +394,17 @@ module Private2 = struct
       let _ = Hashtbl.add hashtbl_for_directly_compiled_files cpsl answer in 
       answer ;; 
 
+    let hashtbl_for_file_reading = 
+      (Hashtbl.create 4000: (t * string,string) Hashtbl.t) ;; 
+
     let read_file cpsl fn =
-      match Hashtbl.find_opt cpsl.filecontents fn with
+      match Hashtbl.find_opt hashtbl_for_file_reading (cpsl,fn) with
       | Some old_answer -> old_answer
       | None ->
         let src_dir = Directory_name.connectable_to_subpath (source cpsl) in
         let ap = Absolute_path.of_string (src_dir ^ fn) in
         let text = Io.read_whole_file ap in
-        let _ = Hashtbl.add cpsl.filecontents fn text in
+        let _ = Hashtbl.add hashtbl_for_file_reading (cpsl,fn) text in
         text
     ;;
 
@@ -549,8 +556,6 @@ module Private2 = struct
         ; source_opt = None
         ; destination_opt = Some dest
         ; all_h_or_c_files_opt = None
-        ; separate_commands_opt = None
-        ; filecontents = Hashtbl.create 3000
         } in 
       let _ = (
          if reinitialize_destination 
