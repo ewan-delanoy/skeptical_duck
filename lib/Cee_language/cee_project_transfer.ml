@@ -332,7 +332,6 @@ module Private2 = struct
       ; filecontents : (string, string) Hashtbl.t
       ; directly_compiled_files_opt : string list option
       ; inclusions_in_dc_files_opt : (string * ((int * string) list)) list option
-      ; shadows_for_dc_files_opt : (string * Cee_shadow_t.t) list option
       } ;;
 
 
@@ -497,19 +496,22 @@ module Private2 = struct
 
     let inclusions_in_dc_files cpsl = compute_inclusions_in_dc_files cpsl ;;
       
+    let hashtbl_for_shadows_for_dc_files = 
+      (Hashtbl.create 20: (t,(string * Cee_shadow_t.t) list) Hashtbl.t) ;;  
 
-    let compute_shadows_for_dc_files cpsl =
+    let shadows_for_dc_files cpsl = 
+      match Hashtbl.find_opt hashtbl_for_shadows_for_dc_files cpsl with 
+      (Some old_answer) -> old_answer 
+      | None ->
       let cmds = separate_commands cpsl in
-      Image.image
+      let answer = Image.image
         (fun cmd ->
           ( Cee_compilation_command.short_name_from_separate cmd
           , shadow_for_separate_command (destination, read_file, create_file) cpsl cmd
           ))
-        cmds
-    ;;
-
-    let shadows_for_dc_files cpsl = compute_shadows_for_dc_files cpsl ;;
-      
+        cmds in 
+      let _ = Hashtbl.add hashtbl_for_shadows_for_dc_files cpsl answer in 
+      answer ;; 
 
 
   let connected_components l =
@@ -544,7 +546,6 @@ module Private2 = struct
         ; filecontents = Hashtbl.create 3000
         ; directly_compiled_files_opt = None
         ; inclusions_in_dc_files_opt = None
-        ; shadows_for_dc_files_opt = None
         } in 
       let _ = (
          if reinitialize_destination 
