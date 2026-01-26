@@ -38,8 +38,11 @@ module Private2 = struct
       );;
      
     let destination cpsl = 
+      let s_dir = conventional_snapshot_location (root cpsl) ((index cpsl)+1) (suffix cpsl) in 
+      let _ = (if not(Sys.file_exists s_dir)
+      then   Sys.command ("mkdir -p "^s_dir) else 0) in 
       Directory_name.of_string(
-       conventional_snapshot_location (root cpsl) ((index cpsl)+1) (suffix cpsl)
+       s_dir
       ) ;;
     
      
@@ -820,13 +823,18 @@ module Private = struct
       files
   ;;
 
- 
-  exception Distinct_filenames of int * string * string ;;  
+  let reinit_and_fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth= 
+    let _ = Capsule.reinitialize_destination_directory cpsl in 
+    fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth;;
+  
+  let reinit_and_remove_cds_in_all_directly_compiled_files cpsl = 
+    let _ = Capsule.reinitialize_destination_directory cpsl in 
+    remove_cds_in_all_directly_compiled_files cpsl ;;
 
 end ;; 
 
-let fiamengize_all_directly_compiled_files = 
-    Private.fiamengize_all_directly_compiled_files ;;
+let fiamengize_all_directly_compiled_files =
+    Private.reinit_and_fiamengize_all_directly_compiled_files ;;
 
 let remove_conditional_directives_in_directly_compiled_files =
   Private.remove_cds_in_all_directly_compiled_files
