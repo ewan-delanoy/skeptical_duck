@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Cee_language/cee_snapshot_t.ml";;
+#use"lib/Cee_language/cee_snapshot_parameters.ml";;
 
 *)
 
