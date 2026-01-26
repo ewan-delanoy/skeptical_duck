@@ -14,9 +14,8 @@ module Private2 = struct
 
    
 
-   module PreCapsule = struct
-    type t = Cee_snapshot_parameters_t.t ;;
-
+   module PreSnapshot = struct
+    type t = Sn of Cee_snapshot_parameters_t.t ;;
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
 
@@ -26,10 +25,9 @@ module Private2 = struct
      (Directory_name.connectable_to_subpath root)^
      "snapshot-"^s_idx^"-"^suffix ;;
 
-    let root cpsl = cpsl.Cee_snapshot_parameters_t.root ;;
-    let suffix cpsl = cpsl.Cee_snapshot_parameters_t.suffix_for_snapshots ;;
-    
-    let index cpsl = cpsl.Cee_snapshot_parameters_t.index ;;
+    let root (Sn cpsl) = cpsl.Cee_snapshot_parameters_t.root ;;
+    let suffix (Sn cpsl) = cpsl.Cee_snapshot_parameters_t.suffix_for_snapshots ;;
+    let index (Sn cpsl) = cpsl.Cee_snapshot_parameters_t.index ;;
     
     let source cpsl = 
        Directory_name.of_string(
@@ -173,31 +171,34 @@ let separate_commands cpsl =
     ;;
   
   
-  
+  let parameters (Sn params) = params ;;
 
-
+  let take_possession params = Sn params ;;
 
   end ;;
 end ;;
 
-module type CAPSULE_INTERFACE = sig
-  type t = Cee_snapshot_parameters_t.t
+module type SNAPSHOT_INTERFACE = sig
+  type t 
 
-  val source : t -> Directory_name_t.t
-  val destination : t -> Directory_name_t.t
   val commands : t -> Cee_compilation_command_t.t list
-  
+  val destination : t -> Directory_name_t.t
+  val parameters : t -> Cee_snapshot_parameters_t.t 
+  val source : t -> Directory_name_t.t
+  val take_possession : Cee_snapshot_parameters_t.t -> t  
+
   val all_h_or_c_files : t -> string list
-  val separate_commands : t -> Cee_compilation_command_t.separate_t list
   val directly_compiled_files : t -> string list
+  val separate_commands : t -> Cee_compilation_command_t.separate_t list
+  
+  val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
-  val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
-  val  reinitialize_destination_directory : t -> unit  
+  val reinitialize_destination_directory : t -> unit  
 
 end ;;
 
-module Capsule : CAPSULE_INTERFACE = Private2.PreCapsule
+module Snapshot : SNAPSHOT_INTERFACE = Private2.PreSnapshot
 
 module Private = struct
   let str_order = Total_ordering.lex_for_strings
@@ -231,7 +232,7 @@ module Private = struct
     let includer_dir = Cull_string.before_rightmost includer_fn '/' in
     let included_fn = parse_double_points_in_filename includer_dir original_included_fn in
     let final_result, l =
-      if str_mem included_fn (Capsule.all_h_or_c_files cpsl)
+      if str_mem included_fn (Snapshot.all_h_or_c_files cpsl)
       then Some included_fn, [ included_fn ]
       else None, []
     in
@@ -272,7 +273,7 @@ module Private = struct
         source_dir -> (String.starts_with 
         ~prefix:source_dir  fn)
       ) (current_dir::inc_source_dirs)
-    )(Capsule.all_h_or_c_files cpsl) in  
+    )(Snapshot.all_h_or_c_files cpsl) in  
     let l =
       List.filter
         (fun nfn -> String.ends_with nfn ~suffix:included_fn)
@@ -312,7 +313,7 @@ module Private = struct
         source_dir -> String.starts_with 
         ~prefix:source_dir  fn
       ) (current_dir::inc_source_dirs)
-    )(Capsule.all_h_or_c_files cpsl) in  
+    )(Snapshot.all_h_or_c_files cpsl) in  
     let l =
       List.filter
         (fun nfn -> String.ends_with nfn ~suffix:("/" ^ included_fn))
@@ -347,7 +348,7 @@ module Private = struct
   ;;
 
     let included_source_dirs_for_file cpsl includer_fn =
-    let cmds =Capsule.separate_commands cpsl in
+    let cmds =Snapshot.separate_commands cpsl in
     match
       List.find_opt
         (fun cmd -> Cee_compilation_command.short_name_from_separate cmd = 
@@ -370,7 +371,7 @@ module Private = struct
     let inc_source_files =
       included_source_dirs_for_file cpsl includer_fn
     in
-    let temp1 = Cee_text.included_local_files_in_text (Capsule.read_file cpsl includer_fn) in
+    let temp1 = Cee_text.included_local_files_in_text (Snapshot.read_file cpsl includer_fn) in
     Image.image
       (fun (line_nbr, included_fn) ->
         let iar =
@@ -406,7 +407,7 @@ module Private = struct
     =
     let dest_cmd =
       { old_separate_cmd with 
-      Cee_compilation_command_t.root = Capsule.destination cpsl }
+      Cee_compilation_command_t.root = Snapshot.destination cpsl }
     in
     Cee_compilation_command.preprocess_only_version dest_cmd
   ;;
@@ -419,7 +420,7 @@ module Private = struct
     separate_cmd
     text_to_be_preprocessed
     =
-    let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in
+    let dest_dir = Directory_name.connectable_to_subpath (Snapshot.destination cpsl) in
     let short_separate = Cee_compilation_command.short_name_from_separate separate_cmd in
     let short_name_for_preprocessable_file =
       Cee_common.add_extra_ending_in_filename ~extra:"preprocessable" short_separate
@@ -430,7 +431,7 @@ module Private = struct
     and name_for_preprocessed_file = dest_dir ^ short_name_for_preprocessed_file in
     let msg = "(watermark  " ^ short_separate ^ ")" in
     let _ =
-      Capsule.create_file
+      Snapshot.create_file
         cpsl
         short_name_for_preprocessable_file
         ?new_content_description:(Some msg)
@@ -463,7 +464,7 @@ module Private = struct
     let name_for_included_file =
       Cee_compilation_command.short_name_from_separate separate_cmd
     in
-    let old_text = Capsule.read_file cpsl name_for_included_file in
+    let old_text = Snapshot.read_file cpsl name_for_included_file in
     let text_to_be_preprocessed =
       Cee_text.tattoo_regions_between_conditional_directives 
       ~name_for_included_file old_text
@@ -488,28 +489,32 @@ module Private = struct
 
 
     let inclusions_in_dc_files cpsl = 
-       match Hashtbl.find_opt hashtbl_for_inclusions_in_dc_files cpsl with 
+       match Hashtbl.find_opt hashtbl_for_inclusions_in_dc_files 
+        (Snapshot.parameters cpsl) with 
       (Some old_answer) -> old_answer 
       | None ->
-      let answer = included_files_in_several_files cpsl (Capsule.directly_compiled_files cpsl) in 
-      let _ = Hashtbl.add hashtbl_for_inclusions_in_dc_files cpsl answer in 
+      let answer = included_files_in_several_files cpsl (Snapshot.directly_compiled_files cpsl) in 
+      let _ = Hashtbl.add hashtbl_for_inclusions_in_dc_files 
+        (Snapshot.parameters cpsl) answer in 
       answer ;; 
 
      let hashtbl_for_shadows_for_dc_files = 
       (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,(string * Cee_shadow_t.t) list) Hashtbl.t) ;;  
 
     let shadows_for_dc_files cpsl = 
-      match Hashtbl.find_opt hashtbl_for_shadows_for_dc_files cpsl with 
+      match Hashtbl.find_opt hashtbl_for_shadows_for_dc_files 
+       (Snapshot.parameters cpsl) with 
       (Some old_answer) -> old_answer 
       | None ->
-      let cmds = Capsule.separate_commands cpsl in
+      let cmds = Snapshot.separate_commands cpsl in
       let answer = Image.image
         (fun cmd ->
           ( Cee_compilation_command.short_name_from_separate cmd
           , shadow_for_separate_command cpsl cmd
           ))
         cmds in 
-      let _ = Hashtbl.add hashtbl_for_shadows_for_dc_files cpsl answer in 
+      let _ = Hashtbl.add hashtbl_for_shadows_for_dc_files 
+       (Snapshot.parameters cpsl) answer in 
       answer ;; 
         
 
@@ -519,12 +524,12 @@ module Private = struct
  
 
   let remove_cds_in_file cpsl ~name_for_container_file separate_cmd =
-    let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in
+    let dest_dir = Directory_name.connectable_to_subpath (Snapshot.destination cpsl) in
     let dest_last =
       Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ^ "/"
     in
     let old_text =
-      Capsule.read_file
+      Snapshot.read_file
         cpsl
         (separate_cmd.Cee_compilation_command_t.short_path
          ^ separate_cmd.Cee_compilation_command_t.ending)
@@ -546,18 +551,18 @@ module Private = struct
   ;;
 
   let fiamengize_file cpsl ~fiamengo_depth ~name_for_container_file separate_cmd =
-    let dest_dir = Directory_name.connectable_to_subpath (Capsule.destination cpsl) in
+    let dest_dir = Directory_name.connectable_to_subpath (Snapshot.destination cpsl) in
     let dest_last =
       Cull_string.after_rightmost (Cull_string.coending 1 dest_dir) '/' ^ "/"
     in
     let old_text =
-      Capsule.read_file
+      Snapshot.read_file
         cpsl
         (separate_cmd.Cee_compilation_command_t.short_path
          ^ separate_cmd.Cee_compilation_command_t.ending)
     in
    
-    let new_text = Cee_text.fiamengize_text ~fiamengo_depth (Capsule.read_file cpsl) old_text in
+    let new_text = Cee_text.fiamengize_text ~fiamengo_depth (Snapshot.read_file cpsl) old_text in
     let target_filename = dest_dir ^ name_for_container_file in
     let target_file = Absolute_path.create_file_if_absent target_filename in
     let _ =
@@ -641,11 +646,11 @@ module Private = struct
  
 
   let remove_cds_in_all_directly_compiled_files cpsl =
-    remove_cds_in_directly_compiled_files cpsl (Capsule.separate_commands cpsl)
+    remove_cds_in_directly_compiled_files cpsl (Snapshot.separate_commands cpsl)
   ;;
 
   let fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth= 
-    fiamengize_directly_compiled_files cpsl ~fiamengo_depth (Capsule.separate_commands cpsl)
+    fiamengize_directly_compiled_files cpsl ~fiamengo_depth (Snapshot.separate_commands cpsl)
   ;;  
 
   
@@ -663,9 +668,9 @@ module Private = struct
 
   let ambiguous_nonstandard_inclusions_in_individual_includer 
       cpsl includer_fn = 
-     let text = Capsule.read_file cpsl includer_fn in
+     let text = Snapshot.read_file cpsl includer_fn in
      let temp1 = Cee_text.included_nonlocal_files_in_text text 
-     and all_files = Capsule.all_h_or_c_files cpsl in 
+     and all_files = Snapshot.all_h_or_c_files cpsl in 
      List.filter (
        fun (_line_nbr, included_fn) -> 
          let c=String.get included_fn 0 in
@@ -680,7 +685,7 @@ module Private = struct
     let inc_source_dirs =
       included_source_dirs_for_file cpsl includer_fn
     in
-    let text = Capsule.read_file cpsl includer_fn in
+    let text = Snapshot.read_file cpsl includer_fn in
     let lines = Lines_in_text.indexed_lines text in
     let temp5 = Cee_text.included_nonlocal_files_in_text text in
     let temp6 =
@@ -724,7 +729,7 @@ module Private = struct
     let inc_source_dirs =
       included_source_dirs_for_file cpsl includer_fn
     in
-    let text = Capsule.read_file cpsl includer_fn in
+    let text = Snapshot.read_file cpsl includer_fn in
     let temp1 = Cee_text.included_local_files_in_text text
     and lines = Lines_in_text.indexed_lines text in
     let temp2 =
@@ -797,14 +802,14 @@ module Private = struct
       then
         List.iter
           (fun (fn, replacements) ->
-            let old_text = Capsule.read_file cpsl fn in
+            let old_text = Snapshot.read_file cpsl fn in
             let new_text =
               Replace_inside.replace_several_inside_text
                 ~display_number_of_matches:true
                 replacements
                 old_text
             in
-            Capsule.modify_file cpsl fn new_text)
+            Snapshot.modify_file cpsl fn new_text)
           replacements_to_be_made;
     in
     replacements_to_be_made
@@ -813,21 +818,21 @@ module Private = struct
   let standardize_guards_in_files cpsl files ~dry_run =
     List.filter_map
       (fun fn ->
-        let old_text = Capsule.read_file cpsl fn in
+        let old_text = Snapshot.read_file cpsl fn in
         match Cee_text.standardize_guard_in_text_opt old_text with
         | None -> None
         | Some new_text ->
-          let _ = if not dry_run then Capsule.modify_file cpsl fn new_text in
+          let _ = if not dry_run then Snapshot.modify_file cpsl fn new_text in
           Some fn)
       files
   ;;
 
   let reinit_and_fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth= 
-    let _ = Capsule.reinitialize_destination_directory cpsl in 
+    let _ = Snapshot.reinitialize_destination_directory cpsl in 
     fiamengize_all_directly_compiled_files cpsl ~fiamengo_depth;;
   
   let reinit_and_remove_cds_in_all_directly_compiled_files cpsl = 
-    let _ = Capsule.reinitialize_destination_directory cpsl in 
+    let _ = Snapshot.reinitialize_destination_directory cpsl in 
     remove_cds_in_all_directly_compiled_files cpsl ;;
 
 end ;; 
