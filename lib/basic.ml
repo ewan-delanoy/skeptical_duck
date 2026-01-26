@@ -28,6 +28,13 @@ let rec helper_for_power (a,b,accu) =
 
 end ;;  
 
+let announce cmd =
+    print_string (cmd ^ " ...\n\n");
+    flush stdout
+  ;;
+
+
+let announce_execution cmd = announce ("Executing " ^ cmd) ;;
 let fold_prod=function
 []->1
 |a::b->List.fold_left( * )(a)(b);;

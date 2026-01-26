@@ -5,6 +5,7 @@
 *)
 
 type  t = {
-  project : Cee_project_t.t ;
+  root : Directory_name_t.t ;
+  suffix_for_snapshots : string ;
   index : int ;
 } ;; 
