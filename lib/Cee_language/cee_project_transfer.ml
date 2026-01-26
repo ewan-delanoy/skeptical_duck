@@ -17,7 +17,6 @@ module Private2 = struct
    module PreCapsule = struct
     type t = Cee_snapshot_parameters.t ;;
 
-
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
 
