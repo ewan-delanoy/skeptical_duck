@@ -307,16 +307,6 @@ module Private2 = struct
       ~name_for_included_file
       ~preprocessed_includer_text
   ;;
-  let marker_for_shadowed_partial_copies = "_QhzFTSnAQA_" ;; 
-
-    let shadowed_partial_copy_name 
-      ~filepath ~copy_level ~prawn_index ~number_of_prawns = 
-      let (basename,extension) =
-          Cull_string.split_wrt_rightmost filepath '.' in 
-      basename ^ marker_for_shadowed_partial_copies ^
-      "level_"^(string_of_int copy_level)^
-      "_prawn_"^(string_of_int prawn_index)^
-      "_of_"^(string_of_int number_of_prawns)^"."^extension ;;
 
    let conventional_snapshot_location root idx suffix=
     let s_idx = Strung.insert_repetitive_offset_on_the_left
@@ -458,40 +448,9 @@ let separate_commands cpsl =
      create_file_in_a_list cpsl fn 
       ?new_content_description ~is_temporary new_content ""
     ;;
+   
 
-    let create_shadowed_partial_copy 
-      cpsl fn prawn ~copy_level ~prawn_index ~number_of_prawns index_msg = 
-      
-      let copy_name = shadowed_partial_copy_name 
-      ~filepath:fn ~copy_level ~prawn_index ~number_of_prawns in 
-      let old_content = read_file cpsl fn in 
-      let new_content = 
-         Cee_text.crop_using_prawn old_content prawn in   
-      create_file_in_a_list cpsl copy_name ~is_temporary:false new_content index_msg;;
-
-    let text_for_makefile cpsl =
-      let temp1 = Int_range.index_everything (commands cpsl) in
-      let temp2 =
-        Image.image
-          (fun (cmd_idx, cmd) ->
-            let s_idx = string_of_int cmd_idx in
-            [ "\t@echo \"************************************************ Step "
-              ^ s_idx
-              ^ ":\""
-            ; "\t" ^ Cee_compilation_command.write cmd
-            ])
-          temp1
-      in
-      let temp3 = "make all:" :: List.flatten temp2 in
-      String.concat "\n" temp3
-    ;;
-
-    let write_makefile cpsl =
-      let source_dir = Directory_name.connectable_to_subpath (source cpsl) in
-      let path_for_makefile = Absolute_path.create_file_if_absent (source_dir ^ "Makefile") in
-      Io.overwrite_with path_for_makefile (text_for_makefile cpsl)
-    ;;
-
+    
     let included_files_in_several_files =
       included_files_in_several_files (separate_commands, all_h_or_c_files, read_file)
     ;;
@@ -523,11 +482,6 @@ let separate_commands cpsl =
         cmds in 
       let _ = Hashtbl.add hashtbl_for_shadows_for_dc_files cpsl answer in 
       answer ;; 
-
-
-  let connected_components l =
-     let temp1 = Arithmetic_list.decompose_into_connected_components l in 
-     Image.image (fun (i,j)->Int_range.range i j) temp1 ;; 
  
   let reinitialize_destination_directory cpsl =
     let src = Directory_name.connectable_to_subpath (source cpsl)
@@ -541,30 +495,10 @@ let separate_commands cpsl =
     ()
     ;;
   
-  let first_constructor ~snapshot:snap  
-    ~reinitialize_destination =
-      let new_cpsl = 
-        {  snapshot =snap 
-        } in 
-      let _ = (
-         if reinitialize_destination 
-         then  
-          (
-         reinitialize_destination_directory new_cpsl;)
-      )  in  
-      new_cpsl
-    ;;
+  
+  
 
-    let make ~snapshot ?(reinitialize_destination=false)  =
-      first_constructor ~snapshot  ~reinitialize_destination ;;
 
-  let replicate ?(reinitialize_destination=false) cpsl  =      
-       first_constructor
-   ~snapshot:((cpsl).snapshot)
-   ~reinitialize_destination 
-   ;;
-
-     let unsafe_unveil cpsl = (cpsl:t) ;;   
 
   end ;;
 end ;;
@@ -584,20 +518,8 @@ module type CAPSULE_INTERFACE = sig
   val read_file : t -> string -> string
   val modify_file : t -> string -> string -> unit
   val create_file : t -> string -> ?new_content_description:string -> is_temporary:bool -> string -> unit
-  val create_shadowed_partial_copy :
-      t ->
-      string -> Cee_prawn_t.t -> copy_level:int -> prawn_index:int -> number_of_prawns:int -> string -> unit
-
-   val make :
-      snapshot:Cee_snapshot_t.t ->
-      ?reinitialize_destination:bool -> t
-    val replicate :
-      ?reinitialize_destination:bool -> t -> t
-
-  val unsafe_unveil : t -> t   
   val  reinitialize_destination_directory : t -> unit  
 
-  val write_makefile : t -> unit
   
 end ;;
 
@@ -913,21 +835,7 @@ module Private = struct
       files
   ;;
 
-   let inclusion_instructions_for_prawn 
-   included_file copy_level number_of_prawns prawn_index =
-   let name = Private2.shadowed_partial_copy_name
-     ~filepath:included_file ~copy_level ~prawn_index ~number_of_prawns in 
-   "#include\""^name^"\"" ;;  
-
-  let inclusion_instructions_for_list_of_prawns 
-    included_file ~copy_level prawn_indices total_nbr_of_prawns =
-   let temp1 = Image.image (
-      inclusion_instructions_for_prawn 
-      included_file copy_level total_nbr_of_prawns
-   ) prawn_indices 
-  in 
-  String.concat "\n" temp1 ;;   
-
+ 
   exception Distinct_filenames of int * string * string ;;  
 
 end ;; 
