@@ -15,7 +15,7 @@ module Private2 = struct
    
 
    module PreCapsule = struct
-    type t = Cee_snapshot_parameters.t ;;
+    type t = Cee_snapshot_parameters_t.t ;;
 
     let str_sort = Ordered.sort str_order
     let str_setminus = Ordered.setminus str_order
@@ -26,10 +26,10 @@ module Private2 = struct
      (Directory_name.connectable_to_subpath root)^
      "snapshot-"^s_idx^"-"^suffix ;;
 
-    let root cpsl = cpsl.Cee_snapshot_parameters.root ;;
-    let suffix cpsl = cpsl.Cee_snapshot_parameters.suffix_for_snapshots ;;
+    let root cpsl = cpsl.Cee_snapshot_parameters_t.root ;;
+    let suffix cpsl = cpsl.Cee_snapshot_parameters_t.suffix_for_snapshots ;;
     
-    let index cpsl = cpsl.Cee_snapshot_parameters.index ;;
+    let index cpsl = cpsl.Cee_snapshot_parameters_t.index ;;
     
     let source cpsl = 
        Directory_name.of_string(
@@ -181,7 +181,7 @@ let separate_commands cpsl =
 end ;;
 
 module type CAPSULE_INTERFACE = sig
-  type t = Cee_snapshot_parameters.t
+  type t = Cee_snapshot_parameters_t.t
 
   val source : t -> Directory_name_t.t
   val destination : t -> Directory_name_t.t
@@ -484,7 +484,7 @@ module Private = struct
   module Memoized = struct 
 
   let hashtbl_for_inclusions_in_dc_files = 
-      (Hashtbl.create 20: (Cee_snapshot_parameters.t,(string * (int * string) list) list) Hashtbl.t) ;; 
+      (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,(string * (int * string) list) list) Hashtbl.t) ;; 
 
 
     let inclusions_in_dc_files cpsl = 
@@ -496,7 +496,7 @@ module Private = struct
       answer ;; 
 
      let hashtbl_for_shadows_for_dc_files = 
-      (Hashtbl.create 20: (Cee_snapshot_parameters.t,(string * Cee_shadow_t.t) list) Hashtbl.t) ;;  
+      (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,(string * Cee_shadow_t.t) list) Hashtbl.t) ;;  
 
     let shadows_for_dc_files cpsl = 
       match Hashtbl.find_opt hashtbl_for_shadows_for_dc_files cpsl with 
