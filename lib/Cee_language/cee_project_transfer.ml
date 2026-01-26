@@ -859,11 +859,14 @@ module Private = struct
 
 end ;; 
 
+let compute_zones_between_conditional_directives_in_cd_files =
+    Private.Memoized.shadows_for_dc_files ;;
+
 let fiamengize_all_directly_compiled_files =
     Private.reinit_and_fiamengize_all_directly_compiled_files ;;
 
 let remove_conditional_directives_in_directly_compiled_files =
-  Private.remove_cds_in_all_directly_compiled_files
+  Private.reinit_and_remove_cds_in_all_directly_compiled_files
 ;;
 
 let standardize_guards_in_directly_compiled_files = 
