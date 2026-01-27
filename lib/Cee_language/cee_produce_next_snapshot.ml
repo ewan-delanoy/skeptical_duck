@@ -133,8 +133,12 @@ let separate_commands snap =
 
     let create_file_in_a_list snap fn 
       ?new_content_description ~is_temporary new_content index_msg=
-      let dest_dir = Directory_name.connectable_to_subpath (destination snap) in
-      let ap = Absolute_path.create_file_if_absent (dest_dir ^ fn) in
+      let containing_dir = ( 
+         if is_temporary 
+         then Directory_name.connectable_to_subpath (source snap) 
+         else Directory_name.connectable_to_subpath (destination snap) 
+      ) in
+      let ap = Absolute_path.create_file_if_absent (containing_dir ^ fn) in
       let _ = Io.overwrite_with ap new_content in
       let end_of_msg =
         match new_content_description with
@@ -407,7 +411,7 @@ module Private = struct
     =
     let dest_cmd =
       { old_separate_cmd with 
-      Cee_compilation_command_t.root = Snapshot.destination snap }
+      Cee_compilation_command_t.root = Snapshot.source snap }
     in
     Cee_compilation_command.preprocess_only_version dest_cmd
   ;;
@@ -420,15 +424,15 @@ module Private = struct
     separate_cmd
     text_to_be_preprocessed
     =
-    let dest_dir = Directory_name.connectable_to_subpath (Snapshot.destination snap) in
+    let source_dir = Directory_name.connectable_to_subpath (Snapshot.source snap) in
     let short_separate = Cee_compilation_command.short_name_from_separate separate_cmd in
     let short_name_for_preprocessable_file =
       Cee_common.add_extra_ending_in_filename ~extra:"preprocessable" short_separate
     and short_name_for_preprocessed_file =
       Cee_common.add_extra_ending_in_filename ~extra:"preprocessed" short_separate
     in
-    let name_for_preprocessable_file = dest_dir ^ short_name_for_preprocessable_file
-    and name_for_preprocessed_file = dest_dir ^ short_name_for_preprocessed_file in
+    let name_for_preprocessable_file = source_dir ^ short_name_for_preprocessable_file
+    and name_for_preprocessed_file = source_dir ^ short_name_for_preprocessed_file in
     let msg = "(watermark  " ^ short_separate ^ ")" in
     let _ =
       Snapshot.create_file
