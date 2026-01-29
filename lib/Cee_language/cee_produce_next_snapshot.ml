@@ -4,18 +4,25 @@
 
 
 module Private = struct
-     let keep_temporary_files_mode = ref false ;;
 
-  let main_preprocessing_command_for_separate_shadow
+  module Common = struct 
+
+  let main_preprocessing_command
     snap
     old_separate_cmd
     =
-    let dest_cmd =
+    let source_cmd =
       { old_separate_cmd with 
       Cee_compilation_command_t.root = Cee_snapshot.source snap }
     in
-    Cee_compilation_command.preprocess_only_version dest_cmd
+    Cee_compilation_command.preprocess_only_version source_cmd
   ;;
+
+  end ;;  
+
+     let keep_temporary_files_mode = ref false ;;
+
+  
 
  
   
@@ -44,7 +51,7 @@ module Private = struct
         text_to_be_preprocessed
     in
     let cmd2 =
-      main_preprocessing_command_for_separate_shadow snap separate_cmd
+      Common.main_preprocessing_command snap separate_cmd
     in
     let _ = Basic.announce_execution cmd2 in
     let _ = Unix_command.uc cmd2 in

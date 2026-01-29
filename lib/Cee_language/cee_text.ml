@@ -11,6 +11,7 @@ exception Double_Else_exn of int ;;
 exception Standardize_inclusion_line_exn of string ;;  
 exception Add_extra_inclusion_line_exn of string ;;
 exception Unfinished_fiamengo_inclusion of string ;; 
+exception Helper_for_computing_exact_locations_exn ;;
   
 module Private = struct 
 
@@ -674,8 +675,8 @@ let is_an_inclusion_line line
 let marker_for_inclusion_highlighting = "cgmvgtkcxvvxckt" ;;  
 let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
    let s_idx = string_of_int inclusion_idx in 
-   "/* "^marker_for_inclusion_highlighting^" Inclusion number "^s_idx^
-   " "^verb^"s here */";;
+   "const char unused_"^s_idx^"_"^verb^"s []=\""^marker_for_inclusion_highlighting^" Inclusion number "^s_idx^
+   " "^verb^"s here \";";;
     ;;
  
  let markers_for_inclusion_highlighting inclusion_idx =  
@@ -683,6 +684,39 @@ let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
      parametrized_marker_for_inclusion_highlighting inclusion_idx "start",
      parametrized_marker_for_inclusion_highlighting inclusion_idx "end"
    );;
+
+ 
+
+ let rec helper_for_computing_exact_locations 
+     (treated,counter,marker,to_be_treated) = 
+       match to_be_treated with 
+       [] -> List.rev treated
+       |line::other_lines ->
+        if line<>marker
+        then  helper_for_computing_exact_locations 
+             (treated,counter,marker,other_lines)
+        else match other_lines with 
+          [] -> List.rev treated
+       |line2::other_lines2 ->
+         let new_data = (
+          if not(String.starts_with line2 ~prefix:"# 1 \"")    
+          then None 
+          else  
+          match Strung.char_finder_from_inclusive_opt (fun c->c='\"') line2 6 with 
+            None -> raise(Helper_for_computing_exact_locations_exn)
+         |Some idx1 -> 
+           Some(Cull_string.interval line2 6 (idx1-1)) 
+         ) in 
+         let new_marker = parametrized_marker_for_inclusion_highlighting 
+         (counter+1) "start" in 
+         helper_for_computing_exact_locations 
+         ((counter,new_data)::treated,counter+1,new_marker,other_lines2)
+
+let compute_exact_locations ~preprocessed_includer_text = 
+  let first_marker = parametrized_marker_for_inclusion_highlighting 
+         1 "start" in 
+ helper_for_computing_exact_locations 
+     ([],1,first_marker,Lines_in_text.lines preprocessed_includer_text);;
 
   let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
   ~preprocessed_includer_text =   
@@ -932,7 +966,7 @@ end ;;
 
 let compute_shadow = Private.compute_shadow ;;
 let crop_using_prawn = Private.crop_using_prawn ;;
-
+let exact_locations_of_included_files = Private.compute_exact_locations ;;
 let fiamengize_text ~fiamengo_depth reader text = Private.fiamengize_whole_text ~fiamengo_depth reader text;;
 let highlight_inclusions_inside_text = Private.highlight_inclusion_lines ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
