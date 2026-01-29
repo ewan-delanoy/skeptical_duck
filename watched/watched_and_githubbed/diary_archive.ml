@@ -1,6 +1,369 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 203 : Code to clean up Cuestiones Místicas OCR
+************************************************************************************************************************)
+module Snip203 = struct 
+
+let building_site = home ^ "/Teuliou/html_files/Translations/Building_site/"
+let emptiable_ap = Absolute_path.of_string (building_site ^ "emptiable_cmist.txt")
+let polished_ap = Absolute_path.of_string (building_site ^ "polished_cmist.txt")
+let walker_ap = Absolute_path.of_string (building_site ^ "walker_cmist.txt")
+let ref_for_expected_action = ref None 
+
+let put_first_page_on_walker () =
+  if !ref_for_expected_action = Some "officialize"
+  then
+    failwith
+      "You just pushed a page. You need to officialize it before putting another page"
+  else (
+    let first_page, new_text1 =
+      Percent_pagination.extract_first_page_in_file emptiable_ap
+    in
+    Io.overwrite_with emptiable_ap new_text1;
+    Io.overwrite_with walker_ap first_page;
+    ref_for_expected_action := Some "officialize")
+;;
+
+let officialize () =
+  if !ref_for_expected_action = Some "push page"
+  then failwith "You just officialized a page. No need to officialize it a second time"
+  else (
+    let walker_text = Io.read_whole_file walker_ap in
+    let _ = Check_ocr.check_phpbb_footnotes_on_page walker_text in
+    let new_polished_text = Io.read_whole_file polished_ap ^ "\n\n" ^ walker_text in
+    Io.overwrite_with polished_ap new_polished_text;
+    ref_for_expected_action := Some "push page")
+;;
+
+let compress_paragraph_in_walker_interval i j =
+  Lines_in_text.findreplace_in_interval_in_file ("\n", " ") walker_ap i j
+;;
+
+let this_ap =
+  Absolute_path.of_string
+    (home ^ "/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/gonzalez_arintero.ml")
+;;
+
+Incremental_replace_on_a_set_of_files.set_replacements_datafile this_ap
+
+let beginning_marker = "(" ^ "* Replacements begin here *)"
+let end_marker = "(" ^ "* Replacements end here *)";;
+
+Incremental_replace_on_a_set_of_files.set_markers beginning_marker end_marker;;
+Incremental_replace_on_a_set_of_files.set_receiving_files [ emptiable_ap; walker_ap ]
+
+let check_pages_and_footnotes () =
+  Check_ocr.check_phpbb_footnotes_on_all_pages (Io.read_whole_file polished_ap)
+;;
+
+(* Replacements begin here *)
+
+
+let replacements = [
+   ("\012","");
+   ("(0","(o");
+   ("=.","\194\187.");
+   ("cx","ex");
+   ("qn","qu");
+   (" +E"," \194\171E");
+   (" /n"," In");
+   (" 0 "," o ");
+   (" <e"," se");
+   (" ct"," et");
+   (" v "," y ");
+   (",0 ",",o ");
+   (">.\n","\194\187.\n");
+   ("a-.","a\194\187.");
+   ("bcr","ber");
+   ("ccn","cen");
+   ("cff","eff");
+   ("cnm","cum");
+   ("cxi","exi");
+   ("dc ","de ");
+   ("dct","det");
+   ("dnc","duc");
+   ("dnr","dur");
+   ("Dco","Deo");
+   ("Dcu","Deu");
+   ("fc ","fe ");
+   ("gnn","gun");
+   ("i-.","i\194\187.");
+   ("i\195\173","i");
+   ("mcd","med");
+   ("n-.","n\194\187.");
+   ("ncg","neg");
+   ("ncm","nem");
+   ("ncs","nes");
+   ("pcd","ped");
+   ("pcr","per");
+   ("pct","pet");
+   ("qna","qua");
+   ("qni","qui");
+   ("rct","ret");
+   ("rnm","rum");
+   ("rnz","ruz");
+   ("scd","sed");
+   ("tnd","tud");
+   ("tnr","tur");
+   ("unm","um");
+   ("\226\128\156","\"");
+   (" 1. "," l. ");
+   (" 1s"," Is");
+   (" cl "," el ");
+   (" cll"," ell");
+   (" cn "," en ");
+   (" cs "," es ");
+   (" csa"," esa");
+   (" cse"," ese");
+   (" cso"," eso");
+   (" cst"," est");
+   (" ct "," et ");
+   (" cx "," ex ");
+   (" Dci"," Dei");
+   (" Ja "," la ");
+   (" Juz"," luz");
+   (" mni"," uni");
+   (" mo "," no ");
+   (" nt "," ut ");
+   (" sc "," se ");
+   (" scr"," ser");
+   (" vcr"," ver");
+   ("blc ","ble ");
+   ("d,, ","d\" ");
+   ("enc ","ene ");
+   ("erc ","ere ");
+   ("esc ","ese ");
+   ("icrt","iert");
+   ("ilc ","ile ");
+   ("itc ","ite ");
+   ("nucv","nuev");
+   ("o..,","o\",");
+   ("pcll","pell");
+   ("quc ","que ");
+   ("scnr","scur");
+   ("sc\195\177","se\195\177");
+   ("tcll","tell");
+   ("tcri","teri");
+   ("tiim","tum");
+   ("ueha","ucha");
+   ("utn ","um ");
+   ("vcri","veri");
+   ("xccl","xcel");
+   (" bcat"," beat");
+   (" cdad"," edad");
+   (" clla"," ella");
+   (" cra "," era ");
+   (" crgo"," ergo");
+   (" csos"," esos");
+   (" csse"," esse");
+   (" csta"," esta");
+   (" Cf, "," Cf. ");
+   (" e. "," c. ");
+   (" dcbe"," debe");
+   (" eapa"," capa");
+   (" elc."," etc.");
+   (" ficl"," fiel");
+   (" imte"," inte");
+   (" Jas "," las ");
+   (" Jos "," los ");
+   (" lgle"," Igle");
+   (" mcri"," meri");
+   (" pcr "," per ");
+   (" pucb"," pueb");
+   (" pucd"," pued");
+   (" quc "," que ");
+   (" sca "," sea ");
+   (" veee"," vece");
+   (" vomo"," como");
+   (" von "," con ");
+   (" vosa"," cosa");
+   (" vual"," cual");
+   (" \226\130\172."," c.");
+   ("(1s. ","(Is. ");
+   ("adic ","adie ");
+   ("aliva","ativa");
+   ("bicn ","bien ");
+   ("Bucna","Buena");
+   ("cnerg","energ");
+   ("coute","conte");
+   ("D\195\173os","Dios");
+   ("eccss","ecess");
+   ("entc ","ente ");
+   ("ertc ","erte ");
+   ("essc ","esse ");
+   ("hacc ","hace ");
+   ("icndo","iendo");
+   ("incbr","inebr");
+   ("mcdio","medio");
+   ("mcter","meter");
+   ("Mvst.","Myst.");
+   ("rarc ","rare ");
+   ("tcolo","teolo");
+   ("voraz","coraz");
+   (" ahade"," a\195\177ade");
+   (" cfect"," efect");
+   (" clla "," ella ");
+   (" cllas"," ellas");
+   (" cllos"," ellos");
+   (" cnim "," enim ");
+   (" cntre"," entre");
+   (" cstas"," estas");
+   (" C\195\173. "," Cf. ");
+   (" erist"," crist");
+   (" idemt"," ident");
+   (" incfa"," inefa");
+   (" Mer. "," Mgr. ");
+   (" posce"," posee");
+   (" sinc "," sine ");
+   ("anguam","anquam");
+   ("cterna","eterna");
+   ("cucrpo","cuerpo");
+   ("dicsen","diesen");
+   ("eselar","esclar");
+   ("icron,","ieron,");
+   ("poscsi","posesi");
+   ("posec ","posee ");
+   ("quetc ","quete ");
+   ("Sc\195\177or","Se\195\177or");
+   ("teinpl","templ");
+   ("tentpl","templ");
+   ("vuclve","vuelve");
+   (" alina "," alma ");
+   (" clerna"," eterna");
+   (" cllos "," ellos ");
+   (" cxiste"," existe");
+   (" desco "," deseo ");
+   (" elerna"," eterna");
+   (" eloria"," gloria");
+   (" elorio"," glorio");
+   (" eriatu"," criatu");
+   (" fuertc"," fuerte");
+   (" miscri"," miseri");
+   (" mucve "," mueve ");
+   (" muehos"," muchos");
+   (" nucstr"," nuestr");
+   (" nunea "," nunca ");
+   (" sicte "," siete ");
+   (" Samto "," Santo ");
+   (" ticne "," tiene ");
+   (" tinicb"," tinieb");
+   (" vuanto"," cuanto");
+   ("/nstitu","Institu");
+   ("anduin ","andum ");
+   ("hiumano","humano");
+   ("inanera","manera");
+   ("lelesia","Iglesia");
+   ("picrden","pierden");
+   ("quictud","quietud");
+   ("S, TH.,","S. TH.,");
+   ("S. Ti.,","S. TH.,");
+   ("tiencn ","tienen ");
+   ("virlude","virtude");
+   (" anmento"," aumento");
+   (" comocer"," conocer");
+   (" descos "," deseos ");
+   (" eloria "," gloria ");
+   (" elorifi"," glorifi");
+   (" Ielesia"," Iglesia");
+   (" macstro"," maestro");
+   (" misino "," mismo ");
+   (" muehas "," muchas ");
+   (" prucba "," prueba ");
+   (" vontemp"," contemp");
+   (" vuesira"," vuestra");
+   ("Acust\195\173n","Agust\195\173n");
+   ("consuclo","consuelo");
+   ("entre El","entre \195\137l");
+   ("Jesueris","Jesucris");
+   ("mencster","menester");
+   ("nucstros","nuestros");
+   ("S, Tit.,","S. TH.,");
+   ("tuvicsen","tuviesen");
+   ("vnestro ","vuestro ");
+   (" descar\194\187"," desear\194\187");
+   (" eristian"," cristian");
+   (" misinas "," mismas ");
+   (" quicres "," quieres ");
+   ("cuanto El","cuanto \195\137l");
+   ("maturales","naturales");
+   ("siendo El","siendo \195\137l");
+   (" eriaturas"," criaturas");
+   ("Jesueristo","Jesucristo");
+   (" eristianos"," cristianos");
+   (" estc "," este ");
+   (" fu\195\169 "," fue ");
+   (" To. "," Io. ");
+   (" ul "," ut ");
+   ("$","\\$");
+   ("$","\194\167");
+   ("(1 lo. ","(1 Io. ");
+   ("(1o. ","(Io. ");
+   ("(lo. ","(Io. ");
+   ("(Lo. ","(Io. ");
+   ("(To. ","(Io. ");
+   ("/nstitu","Institu");
+   ("1%","1\194\176");
+   ("2%","2\194\176");
+   ("3%","3\194\176");
+   ("4%","4\194\176");
+   ("a El","a \195\137l");
+   ("como El","como \195\137l");
+   ("con El","con \195\137l");
+   ("C\194\163. ","Cf.");
+   ("de El","de \195\137l");
+   ("en El","en \195\137l");
+   ("inficles","infieles");
+   ("In loan.","In Ioan.");
+   ("mosotros","nostros");
+   ("o\\ve","owe");
+   ("para El","para \195\137l");
+   ("peeadores","pecadores");
+   ("por El","por \195\137l");
+   ("que El","que \195\137l");
+   ("sin El","sin \195\137l");
+   ("S. Ac.","S. AG.");
+   ("S. Tit.,","S. TH.,");
+   ("y El","y \195\137l");
+   ("\194\176","\\textdegree");
+   ("ingredictur","ingredietur");
+   ("totalinente","totalmente");
+   ("Theol, myst","Theol. myst");
+];;
+
+
+(* Replacements end here *)
+
+Incremental_replace_on_a_set_of_files.initialize_replacements replacements
+
+(*
+   On startup, you can make a few clean-up initializations as follows :
+*)
+
+let act1 () =
+  Chronometer.it
+    (Percent_pagination.modify_file_pagewise (fun text ->
+       Remove_hyphens.in_text (Make_paragraphs_one_lined.in_text text)))
+    emptiable_ap
+;;
+
+let act2 () = Chronometer.it Incremental_replace_on_a_set_of_files.apply_all ()
+let act3 () = Chronometer.it Shorten_long_blank_intervals.in_file emptiable_ap
+let p = put_first_page_on_walker
+let o = officialize
+
+let op () =
+  o ();
+  p ()
+;;
+
+let c = compress_paragraph_in_walker_interval
+let r (a, b) = Incremental_replace_on_a_set_of_files.add_new_replacement (a, b)
+let f = check_pages_and_footnotes ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 202 : Musings on a self-referring sequence, VI
 ************************************************************************************************************************)
 module Snip202 = struct 
@@ -7080,15 +7443,11 @@ end;;
 ************************************************************************************************************************)
 module Snip153 = struct 
 
-let dir1 = home ^ "/Teuliou/Heavy/Workshop/Tesserable/Action" ;;
 
-let active_mode = ref false ;;
+let dir1 = home ^ "/Downloads/Tess/" ;;
 
-let u1 = 
-  if !active_mode 
-  then Unix_again.quick_beheaded_complete_ls dir1 
-   else [];; 
 
+let u1 = Unix_again.quick_beheaded_complete_ls dir1 ;;
 
 let u2 = List.filter (fun fn->String.ends_with ~suffix:".png" fn ) u1 ;; 
 
@@ -7096,7 +7455,7 @@ let commands = Image.image (
   fun fn ->
     let base = Cull_string.coending 4 fn in 
     "tesseract "^fn^" "^base^" "^
-    "-l fra --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
+    "-l spa --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
 ) u2 ;; 
 
 let go_to_dir1 () = Sys.chdir dir1 ;;
@@ -7104,7 +7463,19 @@ let go_to_dir1 () = Sys.chdir dir1 ;;
 let execute_commands () = 
    Explicit.image Sys.command commands ;; 
 
+let u3 = Int_range.scale (fun k->
+  let s_ap = home ^ "/Downloads/Tess/q" ^(string_of_int k)^".txt" in 
+  let ap = Absolute_path.of_string s_ap in 
+  Io.read_whole_file ap
+  ) 0 23 ;;   
 
+let u4 = String.concat "\n\n\n" u3 ;;  
+
+let s_last_ap = home ^ "/Downloads/Tess/full_index.txt" ;;
+
+let last_ap = Absolute_path.create_file_if_absent s_last_ap ;;
+
+Io.overwrite_with last_ap u4 ;;
 
 end;;
 

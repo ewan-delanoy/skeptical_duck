@@ -560,42 +560,7 @@ let standardize_guard_in_text_opt text =
  let is_in_interval_union x intervals =
     List.exists (is_in_interval x) intervals ;;
  
-let marker_for_inclusion_highlighting = "cgmvgtkcxvvxckt" ;;  
-let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
-   let s_idx = string_of_int inclusion_idx in 
-   "char* unused_string_for_inclusion_highlighting"^s_idx^"_"^verb^
-   "=\""^marker_for_inclusion_highlighting^" Inclusion number "^s_idx^
-   " "^verb^"s here \";";;
-    ;;
- 
- let markers_for_inclusion_highlighting inclusion_idx =  
-   (
-     parametrized_marker_for_inclusion_highlighting inclusion_idx "start",
-     parametrized_marker_for_inclusion_highlighting inclusion_idx "end"
-   );;
 
-
-let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
-  ~preprocessed_includer_text =   
-   let ssps = compute_small_spaces_in_text old_text  in 
-   let indexed_ssps = Int_range.index_everything ssps in 
-   let subtext = (
-      match inclusion_index_opt with 
-      None -> preprocessed_includer_text 
-      |Some inclusion_idx -> 
-        let markers = 
-          markers_for_inclusion_highlighting inclusion_idx in 
-        Cull_string.between_markers 
-         markers preprocessed_includer_text
-   ) in 
-   let accepted_ssps = List.filter(
-         fun (ssp_idx,ssp) ->
-          if ssp.namespace = 0 then true else 
-          Substring.is_a_substring_of 
-          (parametrized_marker_for_cd_defined_region name_for_included_file ssp_idx) subtext 
-   ) indexed_ssps in 
-   Cee_shadow_t.Sh(List.length indexed_ssps,
-   Cee_prawn_t.P(Image.image fst accepted_ssps)) ;;
 
  let crop_using_prawn old_text (Cee_prawn_t.P(accepted_indices)) =
    let lines = Lines_in_text.indexed_lines old_text 
@@ -701,6 +666,61 @@ let generic_included_file_opt (opening_char,closing_char) line =
 let included_local_file_opt = generic_included_file_opt ('"','"');;
 let included_nonlocal_file_opt = generic_included_file_opt ('<','>');;
 
+let is_an_inclusion_line line 
+= ((included_local_file_opt line)<>None)||
+  ((included_nonlocal_file_opt line)<>None) ;;
+
+
+let marker_for_inclusion_highlighting = "cgmvgtkcxvvxckt" ;;  
+let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
+   let s_idx = string_of_int inclusion_idx in 
+   "/* "^marker_for_inclusion_highlighting^" Inclusion number "^s_idx^
+   " "^verb^"s here */";;
+    ;;
+ 
+ let markers_for_inclusion_highlighting inclusion_idx =  
+   (
+     parametrized_marker_for_inclusion_highlighting inclusion_idx "start",
+     parametrized_marker_for_inclusion_highlighting inclusion_idx "end"
+   );;
+
+  let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
+  ~preprocessed_includer_text =   
+   let ssps = compute_small_spaces_in_text old_text  in 
+   let indexed_ssps = Int_range.index_everything ssps in 
+   let subtext = (
+      match inclusion_index_opt with 
+      None -> preprocessed_includer_text 
+      |Some inclusion_idx -> 
+        let markers = 
+          markers_for_inclusion_highlighting inclusion_idx in 
+        Cull_string.between_markers 
+         markers preprocessed_includer_text
+   ) in 
+   let accepted_ssps = List.filter(
+         fun (ssp_idx,ssp) ->
+          if ssp.namespace = 0 then true else 
+          Substring.is_a_substring_of 
+          (parametrized_marker_for_cd_defined_region name_for_included_file ssp_idx) subtext 
+   ) indexed_ssps in 
+   Cee_shadow_t.Sh(List.length indexed_ssps,
+   Cee_prawn_t.P(Image.image fst accepted_ssps)) ;;
+ 
+
+  let rec helper_for_inclusion_highlighting (treated,counter,to_be_treated) =
+    match to_be_treated with 
+    [] -> String.concat "\n" (List.rev treated) 
+    |line :: other_lines ->
+      if is_an_inclusion_line line 
+      then let (before,after) = markers_for_inclusion_highlighting (counter+1) in 
+           let highlighted_line=before^"\n"^line^"\n"^after in 
+           helper_for_inclusion_highlighting (highlighted_line::treated,counter+1,other_lines)
+      else helper_for_inclusion_highlighting (treated,counter,other_lines) ;;         
+
+
+  let highlight_inclusion_lines old_text = 
+    helper_for_inclusion_highlighting ([],0,Lines_in_text.lines old_text) ;;  
+
 
 let included_local_files_in_text text = 
   let temp1 = indexed_lines_inside_or_outside_cee_comments_or_dq_strings text in 
@@ -800,11 +820,6 @@ print_string text2 ;;
 
 *)
 
-let highlight_and_add_extra_ending_in_inclusions_inside_text 
-   ~extra text =
-    add_extra_ending_in_inclusions_inside_text ~extra 
-     (highlight_inclusions_in_text text)
-    ;;
 
 let marker_for_beginning_fiamengo_inclusions = "xvxBLjSGtxSfWtCVHNDS" ;;
 let marker_for_ending_fiamengo_inclusions = "vQBknJWWtwvqDgSkVJms" ;;
@@ -919,7 +934,7 @@ let compute_shadow = Private.compute_shadow ;;
 let crop_using_prawn = Private.crop_using_prawn ;;
 
 let fiamengize_text ~fiamengo_depth reader text = Private.fiamengize_whole_text ~fiamengo_depth reader text;;
-let highlight_and_add_extra_ending_in_inclusions_inside_text = Private.highlight_and_add_extra_ending_in_inclusions_inside_text ;;
+let highlight_inclusions_inside_text = Private.highlight_inclusion_lines ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let parse_fiamengized_text ~fiamengo_depth text = Private.parse_fiamengized_text ~fiamengo_depth text;;
