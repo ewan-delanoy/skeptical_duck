@@ -433,6 +433,7 @@ let hashtbl_for_used_header_files =
       files
   ;;
 
+  
   let next snap = 
       let old_params = Cee_snapshot.parameters snap in 
       let new_params = {
@@ -441,6 +442,8 @@ let hashtbl_for_used_header_files =
           ((old_params.Cee_snapshot_parameters_t.index)+1) ;
       } in 
       Cee_snapshot.take_possession new_params ;;
+
+  
 
   let create_header_directories snap = 
      let needed_header_dirs = Memoized.needed_header_dirs snap in 
@@ -468,23 +471,19 @@ let hashtbl_for_used_header_files =
     Basic.announce final_msg;; 
   
 
-  let reinit_and_fiamengize_all_directly_compiled_files snap ~fiamengo_depth= 
-    let _ = (Cee_snapshot.reinitialize_destination_directory snap;
-    fiamengize_all_directly_compiled_files snap ~fiamengo_depth) in 
+  let fiamengize_all_directly_compiled_files_and_go_to_next snap ~fiamengo_depth= 
+    let _=(fiamengize_all_directly_compiled_files snap ~fiamengo_depth) in 
     next snap;;
   
-  let reinit_and_remove_cds_in_all_directly_compiled_files snap = 
-    let _ = (Cee_snapshot.reinitialize_destination_directory snap;  
-    remove_cds_in_all_directly_compiled_files snap) in 
+  let remove_cds_in_all_directly_compiled_files_and_go_to_next snap = 
+    let _ = ( remove_cds_in_all_directly_compiled_files snap) in 
     next snap;;
 
-  let reinit_and_standardize_guards_in_directly_compiled_files snap ~dry_run= 
-    let _ = (if not dry_run then Cee_snapshot.reinitialize_destination_directory snap) in 
+  let standardize_guards_in_directly_compiled_files_and_go_to_next snap ~dry_run= 
     let data = standardize_guards_in_files snap (Cee_snapshot.directly_compiled_files snap) ~dry_run in 
     (data,next snap);;
 
-  let reinit_and_standardize_inclusions_in_directly_compiled_files snap ~dry_run= 
-    let _ = (if not dry_run then Cee_snapshot.reinitialize_destination_directory snap) in 
+  let standardize_inclusions_in_directly_compiled_files_and_go_to_next snap ~dry_run= 
     let data = standardize_inclusions_in_files snap (Cee_snapshot.directly_compiled_files snap) ~dry_run in 
     (data,next snap);;
 
@@ -497,14 +496,13 @@ let compute_zones_between_conditional_directives_in_cd_files =
     Private.Memoized.shadows_for_dc_files ;;
 
 let fiamengize_all_directly_compiled_files =
-    Private.reinit_and_fiamengize_all_directly_compiled_files ;;
+    Private.fiamengize_all_directly_compiled_files_and_go_to_next ;;
 
 let remove_conditional_directives_in_directly_compiled_files =
-  Private.reinit_and_remove_cds_in_all_directly_compiled_files
-;;
+  Private.remove_cds_in_all_directly_compiled_files_and_go_to_next ;;
 
 let standardize_guards_in_directly_compiled_files = 
-  Private.reinit_and_standardize_guards_in_directly_compiled_files ;;
+  Private.standardize_guards_in_directly_compiled_files_and_go_to_next ;;
 let standardize_inclusions_in_files = 
-   Private.reinit_and_standardize_guards_in_directly_compiled_files ;;
+   Private.standardize_inclusions_in_directly_compiled_files_and_go_to_next ;;
 
