@@ -977,8 +977,50 @@ let parse_fiamengized_text ~fiamengo_depth text =
    fiamengo_ender_prefix ~fiamengo_depth,
    [],false,"",Lines_in_text.lines text)) ;;
 
+exception Helper_for_inclusion_standardization_exn ;;
+let rec helper_for_inclusion_standardization 
+  (root_dir,counter,treated,current_incl_item,other_incl_items,to_be_treated) =
+   match to_be_treated with 
+   [] -> raise(Helper_for_inclusion_standardization_exn) 
+   |(line_nbr,line) :: other_lines ->
+     if line_nbr<>current_incl_item.Cee_inclusion_item_t.line_number 
+     then helper_for_inclusion_standardization 
+          (root_dir,counter,line::treated,current_incl_item,other_incl_items,other_lines)
+     else 
+     let standard_incl_line = (
+      match current_incl_item.Cee_inclusion_item_t.included_file_opt with 
+      None -> ""
+      |Some fn ->
+        let path = (
+         if String.starts_with fn ~prefix:root_dir 
+         then Cull_string.two_sided_cutting (root_dir,"") fn 
+         else "header_files"^fn 
+        )  in   
+        "#include \""^path^"\""
+     ) in 
+     let treated2 = standard_incl_line :: treated 
+     and counter2 = (
+      if standard_incl_line = line 
+      then counter 
+      else counter+1  
+     )in 
+     match other_incl_items with 
+     [] -> (counter2,String.concat "\n"
+         (List.rev_append treated2 (Image.image snd other_lines)))
+     |next_incl_item :: other_incl_items2 ->
+        helper_for_inclusion_standardization 
+          (root_dir,counter2,treated2,next_incl_item,other_incl_items2,other_lines)  
+    ;; 
 
-
+let standardize_inclusions_in_text_opt 
+  root_dir incl_items old_text =
+  match incl_items with 
+  [] -> None 
+  |incl_item::other_incl_items ->
+  let s_root_dir = Directory_name.connectable_to_subpath root_dir 
+  and indexed_lines = Lines_in_text.indexed_lines old_text in
+  Some(helper_for_inclusion_standardization 
+  (s_root_dir,0,[],incl_item,other_incl_items,indexed_lines)) ;;
 
 end ;;  
 
@@ -991,6 +1033,8 @@ let included_local_files_in_text = Private.included_local_files_in_text ;;
 let included_nonlocal_files_in_text = Private.included_nonlocal_files_in_text ;;
 let parse_fiamengized_text ~fiamengo_depth text = Private.parse_fiamengized_text ~fiamengo_depth text;;
 let standardize_guard_in_text_opt = Private.standardize_guard_in_text_opt ;;
+
+let standardize_inclusions_in_text_opt = Private.standardize_inclusions_in_text_opt ;;
 let tattoo_regions_between_conditional_directives= Private.tattoo_regions_between_conditional_directives;;
 
 
