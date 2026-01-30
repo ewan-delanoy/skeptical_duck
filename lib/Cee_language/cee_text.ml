@@ -712,11 +712,22 @@ let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
          helper_for_computing_exact_locations 
          ((counter,new_data)::treated,counter+1,new_marker,other_lines2)
 
-let compute_exact_locations ~preprocessed_includer_text = 
+let exact_locations_without_line_numbers ~preprocessed_includer_text = 
   let first_marker = parametrized_marker_for_inclusion_highlighting 
          1 "start" in 
  helper_for_computing_exact_locations 
      ([],1,first_marker,Lines_in_text.lines preprocessed_includer_text);;
+
+let exact_locations old_text ~preprocessed_includer_text = 
+  let indexed_lines = Lines_in_text.indexed_lines old_text in 
+  let line_numbers_for_incls = List.filter_map (
+   fun (line_idx,line) ->
+    if is_an_inclusion_line line 
+    then Some line_idx 
+    else None
+  ) indexed_lines in
+  let temp =exact_locations_without_line_numbers ~preprocessed_includer_text in 
+  List.combine line_numbers_for_incls temp ;; 
 
   let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
   ~preprocessed_includer_text =   
@@ -749,7 +760,7 @@ let compute_exact_locations ~preprocessed_includer_text =
       then let (before,after) = markers_for_inclusion_highlighting (counter+1) in 
            let highlighted_line=before^"\n"^line^"\n"^after in 
            helper_for_inclusion_highlighting (highlighted_line::treated,counter+1,other_lines)
-      else helper_for_inclusion_highlighting (treated,counter,other_lines) ;;         
+      else helper_for_inclusion_highlighting (line::treated,counter,other_lines) ;;         
 
 
   let highlight_inclusion_lines old_text = 
@@ -966,7 +977,7 @@ end ;;
 
 let compute_shadow = Private.compute_shadow ;;
 let crop_using_prawn = Private.crop_using_prawn ;;
-let exact_locations_of_included_files = Private.compute_exact_locations ;;
+let exact_locations_of_included_files = Private.exact_locations ;;
 let fiamengize_text ~fiamengo_depth reader text = Private.fiamengize_whole_text ~fiamengo_depth reader text;;
 let highlight_inclusions_inside_text = Private.highlight_inclusion_lines ;;
 let included_local_files_in_text = Private.included_local_files_in_text ;;

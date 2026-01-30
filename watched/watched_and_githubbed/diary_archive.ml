@@ -1,6 +1,90 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 204 : Preparation of Cee_produce_next_snapshot.compute_exact_locations_for_inclusions_in_cd_files
+************************************************************************************************************************)
+module Snip204 = struct 
+
+open Cee_produce_next_snapshot.Private ;;
+
+
+
+
+        
+let generic_snapshot k = Cee_snapshot.take_possession( {
+  Cee_snapshot_parameters_t.root = Directory_name.of_string (home^"/Teuliou/Experimenting_with_php") ;
+  suffix_for_snapshots ="php-src" ;
+  index =  k ;
+}) ;;
+
+let snap2 = generic_snapshot 2 ;;
+    
+let u1 = Cee_snapshot.separate_commands snap2 ;;     
+
+let indexed_u1 = Int_range.index_everything u1 ;;
+
+let u2 = List.filter (fun (j,cmd)->cmd.Cee_compilation_command_t. short_path =
+  "ext/date/lib/parse_tz"  
+  ) indexed_u1 ;;
+
+
+
+let separate_cmd = List.nth u1 32 ;;
+
+let name_for_treated_file =
+  Cee_compilation_command.short_name_from_separate separate_cmd ;;
+
+let old_text = Cee_snapshot.read_file snap2 name_for_treated_file ;;
+
+let text_to_be_preprocessed =
+      Cee_text.highlight_inclusions_inside_text old_text ;;
+
+let source_dir = Directory_name.connectable_to_subpath 
+  (Cee_snapshot.source snap2) ;;
+
+let short_separate = 
+  Cee_compilation_command.short_name_from_separate separate_cmd ;;
+
+let short_name_for_preprocessable_file =
+      Cee_common.add_extra_ending_in_filename 
+      ~extra:"preprocessable" short_separate ;;
+
+let short_name_for_preprocessed_file =
+      Cee_common.add_extra_ending_in_filename 
+      ~extra:"preprocessed" short_separate ;;
+  
+let name_for_preprocessable_file = source_dir ^ short_name_for_preprocessable_file
+and name_for_preprocessed_file = source_dir ^ short_name_for_preprocessed_file ;;
+
+let act1 () =
+      Cee_snapshot.create_file
+        snap2
+        short_name_for_preprocessable_file
+        ?new_content_description:None
+        ~is_temporary:true
+        text_to_be_preprocessed
+;;
+
+let cmd2 =
+      Common.main_preprocessing_command snap2 separate_cmd ;;
+
+let act2 () = Unix_command.uc cmd2 ;;      
+
+(*
+
+act1();;
+act2();;
+
+let preprocessed_includer_text = rf name_for_preprocessed_file ;; 
+
+
+let see1 = Cee_text.exact_locations_of_included_files 
+  old_text ~preprocessed_includer_text;;
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 203 : Code to clean up Cuestiones Místicas OCR
 ************************************************************************************************************************)
 module Snip203 = struct 

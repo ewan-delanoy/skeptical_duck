@@ -5,6 +5,11 @@
 
 module Private = struct
 
+  let str_order = Total_ordering.lex_for_strings ;;
+
+  let str_fold_merge = Ordered.fold_merge str_order ;;
+  let str_sort = Ordered.sort str_order ;;
+
   module Common = struct 
 
   let main_preprocessing_command
@@ -94,6 +99,93 @@ module Private = struct
       ~preprocessed_includer_text
   ;;
 
+
+   let compute_preprocessing_output_for_exact_incl_locations
+    snap
+    separate_cmd
+    text_to_be_preprocessed
+    =
+    let source_dir = Directory_name.connectable_to_subpath (Cee_snapshot.source snap) in
+    let short_separate = Cee_compilation_command.short_name_from_separate separate_cmd in
+    let short_name_for_preprocessable_file =
+      Cee_common.add_extra_ending_in_filename ~extra:"preprocessable" short_separate
+    and short_name_for_preprocessed_file =
+      Cee_common.add_extra_ending_in_filename ~extra:"preprocessed" short_separate
+    in
+    let name_for_preprocessable_file = source_dir ^ short_name_for_preprocessable_file
+    and name_for_preprocessed_file = source_dir ^ short_name_for_preprocessed_file in
+    let msg = "(watermark  " ^ short_separate ^ ")" in
+    let _ =
+      Cee_snapshot.create_file
+        snap
+        short_name_for_preprocessable_file
+        ?new_content_description:(Some msg)
+        ~is_temporary:true
+        text_to_be_preprocessed
+    in
+    let cmd2 =
+      Common.main_preprocessing_command snap separate_cmd
+    in
+    let _ = Basic.announce_execution cmd2 in
+    let _ = Unix_command.uc cmd2 in
+    let preprocessed_file = Absolute_path.of_string name_for_preprocessed_file in
+    let answer = Io.read_whole_file preprocessed_file in
+    let _ =
+      if not !keep_temporary_files_mode
+      then (
+        let _ =
+          Unix_command.conditional_multiple_uc
+            [ "rm -f " ^ name_for_preprocessable_file
+            ; "rm -f " ^ name_for_preprocessed_file
+            ]
+        in
+        ())
+    in
+    answer
+  ;;
+
+
+
+ let exact_incl_locations_for_separate_command snap separate_cmd =
+    let name_for_treated_file =
+      Cee_compilation_command.short_name_from_separate separate_cmd
+    in
+    let old_text = Cee_snapshot.read_file snap name_for_treated_file in
+    let text_to_be_preprocessed =
+      Cee_text.highlight_inclusions_inside_text old_text
+    in
+    let preprocessed_includer_text =
+      compute_preprocessing_output_for_exact_incl_locations
+        snap
+        separate_cmd
+        text_to_be_preprocessed
+    in
+    Cee_text.exact_locations_of_included_files
+      old_text
+      ~preprocessed_includer_text
+  ;;
+
+  
+
+let extract_header_files_from_individual_includer_data snap (_,l) = 
+   let s_source_dir = Directory_name.connectable_to_subpath 
+     (Cee_snapshot.source snap) in 
+   str_sort(List.filter_map (
+      fun (_i,(_j,fn_opt)) -> 
+        match fn_opt with 
+        None -> None 
+        |(Some fn) ->
+        if String.starts_with fn ~prefix:s_source_dir 
+        then None 
+        else Some fn    
+   ) l );;
+
+let extract_header_files_from_several_includer_data snap l =
+   str_fold_merge(Image.image 
+   (extract_header_files_from_individual_includer_data snap) l);; 
+
+
+
   module Memoized = struct 
 
 
@@ -116,6 +208,61 @@ module Private = struct
        (Cee_snapshot.parameters snap) answer in 
       answer ;; 
         
+    let hashtbl_for_exact_inclusion_locations = 
+      (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,
+        (string * ((int * (int * string option)) list)) list) Hashtbl.t) ;;  
+
+let exact_inclusion_locations snap = 
+      match Hashtbl.find_opt hashtbl_for_exact_inclusion_locations 
+       (Cee_snapshot.parameters snap) with 
+  (Some old_answer) -> old_answer 
+  | None ->
+    let cmds = Cee_snapshot.separate_commands snap in
+    let answer = Image.image
+        (fun cmd ->
+          ( Cee_compilation_command.short_name_from_separate cmd
+          , exact_incl_locations_for_separate_command snap cmd
+          ))
+        cmds in 
+    let _ = Hashtbl.add hashtbl_for_exact_inclusion_locations 
+       (Cee_snapshot.parameters snap) answer in 
+    answer ;; 
+   
+
+let hashtbl_for_used_header_files = 
+      (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,string list) Hashtbl.t) ;;  
+
+    let used_header_files snap = 
+      match Hashtbl.find_opt hashtbl_for_used_header_files 
+       (Cee_snapshot.parameters snap) with 
+      (Some old_answer) -> old_answer 
+      | None ->
+      let exact_incl_locations = exact_inclusion_locations snap in
+      let answer = extract_header_files_from_several_includer_data snap
+          exact_incl_locations in 
+      let _ = Hashtbl.add hashtbl_for_used_header_files 
+       (Cee_snapshot.parameters snap) answer in 
+      answer ;; 
+
+    let hashtbl_for_needed_header_dirs = 
+      (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,string list) Hashtbl.t) ;;  
+
+    let needed_header_dirs snap = 
+      match Hashtbl.find_opt hashtbl_for_needed_header_dirs 
+       (Cee_snapshot.parameters snap) with 
+      (Some old_answer) -> old_answer 
+      | None ->
+      let s_dest_dir = 
+        Directory_name.connectable_to_subpath (Cee_snapshot.destination snap) in
+
+      let needed_header_files = used_header_files snap in 
+      let answer = str_sort(Image.image (
+        fun fn -> s_dest_dir^"header_files"^(Cull_string.before_rightmost fn '/')
+     ) needed_header_files) in 
+
+      let _ = Hashtbl.add hashtbl_for_needed_header_dirs 
+       (Cee_snapshot.parameters snap) answer in 
+      answer ;; 
 
   end ;;  
 
@@ -295,6 +442,31 @@ module Private = struct
       } in 
       Cee_snapshot.take_possession new_params ;;
 
+  let create_header_directories snap = 
+     let needed_header_dirs = Memoized.needed_header_dirs snap in 
+    let cmds_for_directory_creation = 
+    Image.image (
+      fun s_dir -> "mkdir -p "^s_dir
+    ) needed_header_dirs in
+    let final_msg = (string_of_int(List.length needed_header_dirs))^" directories created." in 
+    let _ = Basic.announce "Creating local copies of header directories ..." in 
+    let _ = Image.image Sys.command cmds_for_directory_creation in 
+    Basic.announce final_msg;; 
+    
+
+  let make_local_copies_of_header_files snap =
+    let needed_header_files = Memoized.used_header_files snap in 
+    let s_dest_dir = Directory_name.connectable_to_subpath 
+       (Cee_snapshot.destination snap) in 
+    let cmds_for_local_copies = 
+    Image.image (
+      fun fn -> "cp "^fn^" "^s_dest_dir^"header_files"^(Cull_string.before_rightmost fn '/')^"/"
+    ) needed_header_files in 
+    let final_msg = (string_of_int(List.length needed_header_files))^" files copied." in 
+    let _ = Basic.announce "Making local copies of header files ..." in 
+    let _ = Image.image Sys.command cmds_for_local_copies in 
+    Basic.announce final_msg;; 
+  
 
   let reinit_and_fiamengize_all_directly_compiled_files snap ~fiamengo_depth= 
     let _ = (Cee_snapshot.reinitialize_destination_directory snap;
@@ -317,6 +489,9 @@ module Private = struct
     (data,next snap);;
 
 end ;; 
+
+let compute_exact_locations_for_inclusions_in_cd_files =
+    Private.Memoized.exact_inclusion_locations ;;
 
 let compute_zones_between_conditional_directives_in_cd_files =
     Private.Memoized.shadows_for_dc_files ;;
