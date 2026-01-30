@@ -171,8 +171,8 @@ let extract_header_files_from_individual_includer_data snap (_,l) =
    let s_source_dir = Directory_name.connectable_to_subpath 
      (Cee_snapshot.source snap) in 
    str_sort(List.filter_map (
-      fun (_i,(_j,fn_opt)) -> 
-        match fn_opt with 
+      fun incl_data -> 
+        match incl_data.Cee_inclusion_item_t.included_file_opt with 
         None -> None 
         |(Some fn) ->
         if String.starts_with fn ~prefix:s_source_dir 
@@ -210,7 +210,7 @@ let extract_header_files_from_several_includer_data snap l =
         
     let hashtbl_for_exact_inclusion_locations = 
       (Hashtbl.create 20: (Cee_snapshot_parameters_t.t,
-        (string * ((int * (int * string option)) list)) list) Hashtbl.t) ;;  
+        (string * (Cee_inclusion_item_t.t list)) list) Hashtbl.t) ;;  
 
 let exact_inclusion_locations snap = 
       match Hashtbl.find_opt hashtbl_for_exact_inclusion_locations 

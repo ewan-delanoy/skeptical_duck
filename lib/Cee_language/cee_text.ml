@@ -727,7 +727,14 @@ let exact_locations old_text ~preprocessed_includer_text =
     else None
   ) indexed_lines in
   let temp =exact_locations_without_line_numbers ~preprocessed_includer_text in 
-  List.combine line_numbers_for_incls temp ;; 
+  let temp2 = List.combine line_numbers_for_incls temp in 
+  Image.image (
+    fun (line_nbr,(incl_idx,fn_opt)) -> {
+     Cee_inclusion_item_t.line_number = line_nbr ;
+      inclusion_index = incl_idx ;
+      included_file_opt = fn_opt; 
+    } 
+  ) temp2;; 
 
   let compute_shadow old_text ~inclusion_index_opt ~name_for_included_file 
   ~preprocessed_includer_text =   
@@ -869,19 +876,19 @@ print_string text2 ;;
 let marker_for_beginning_fiamengo_inclusions = "xvxBLjSGtxSfWtCVHNDS" ;;
 let marker_for_ending_fiamengo_inclusions = "vQBknJWWtwvqDgSkVJms" ;;
 
-let fiamengo_ends_here = " ends here *)" ;;
+let fiamengo_ends_here = " ends here */" ;;
 let fiamengo_beginner_prefix ~fiamengo_depth =
-  "(* "^marker_for_beginning_fiamengo_inclusions^" "^
+  "/* "^marker_for_beginning_fiamengo_inclusions^" "^
     "Depth-"^(string_of_int fiamengo_depth)^" inclusion of ";;
 
 let fiamengo_ender_prefix ~fiamengo_depth =
-  "(* "^marker_for_ending_fiamengo_inclusions^" "^
+  "/* "^marker_for_ending_fiamengo_inclusions^" "^
     "Depth-"^(string_of_int fiamengo_depth)^" inclusion of ";;
 
 let fiamengize_individual_inclusion reader ~fiamengo_depth 
    name_of_included_file =
     (fiamengo_beginner_prefix ~fiamengo_depth)^
-    name_of_included_file^" starts here *)\n"^
+    name_of_included_file^" starts here */\n"^
     (reader name_of_included_file)^
     "\n"^
     (fiamengo_ender_prefix ~fiamengo_depth)^
