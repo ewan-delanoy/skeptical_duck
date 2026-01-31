@@ -1019,8 +1019,11 @@ let standardize_inclusions_in_text_opt
   |incl_item::other_incl_items ->
   let s_root_dir = Directory_name.connectable_to_subpath root_dir 
   and indexed_lines = Lines_in_text.indexed_lines old_text in
-  Some(helper_for_inclusion_standardization 
-  (s_root_dir,0,[],incl_item,other_incl_items,indexed_lines)) ;;
+  let (count,new_text) = helper_for_inclusion_standardization 
+  (s_root_dir,0,[],incl_item,other_incl_items,indexed_lines) in 
+  if count = 0 
+  then None  
+  else Some(count,new_text) ;;
 
 end ;;  
 

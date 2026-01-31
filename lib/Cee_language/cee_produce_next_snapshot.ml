@@ -399,28 +399,6 @@ let hashtbl_for_used_header_files =
     fiamengize_directly_compiled_files snap ~fiamengo_depth (Cee_snapshot.separate_commands snap)
   ;;  
 
-  let standardize_inclusions_in_files snap includers ~dry_run =
-    let replacements_to_be_made =
-      Cee_standardize_inclusions.nonstandard_inclusion_formats_in_includers snap includers
-    in
-    let _ =
-      if not dry_run
-      then
-        List.iter
-          (fun (fn, replacements) ->
-            let old_text = Cee_snapshot.read_file snap fn in
-            let new_text =
-              Replace_inside.replace_several_inside_text
-                ~display_number_of_matches:true
-                replacements
-                old_text
-            in
-            Cee_snapshot.modify_file snap fn new_text)
-          replacements_to_be_made;
-    in
-    replacements_to_be_made
-  ;;
-
   let standardize_guards_in_files snap files ~dry_run =
     List.filter_map
       (fun fn ->
@@ -470,22 +448,101 @@ let hashtbl_for_used_header_files =
     let _ = Image.image Sys.command cmds_for_local_copies in 
     Basic.announce final_msg;; 
   
+  
+let standardize_inclusions_in_file snap short_filename =
+    let source_dir = Cee_snapshot.source snap 
+    and dest_dir = Cee_snapshot.destination snap in
+    let s_dest_dir = Directory_name.connectable_to_subpath dest_dir in
+    let dest_last =
+      Cull_string.after_rightmost (Cull_string.coending 1 s_dest_dir) '/' ^ "/"
+    in
+    let old_text = Cee_snapshot.read_file snap short_filename in
+    let all_incl_data = Memoized.exact_inclusion_locations snap in 
+    let incl_data = List.assoc short_filename all_incl_data in 
+    
+    match Cee_text.standardize_inclusions_in_text_opt 
+       source_dir incl_data old_text with 
+    None ->  Basic.announce_execution
+        ("(No standardization needed for  "
+         ^ short_filename
+         ^ ") ")
+    |(Some (count,new_text)) ->     
+    let target_filename = s_dest_dir ^ short_filename in
+    let target_file = Absolute_path.create_file_if_absent target_filename in
+    let _ =
+      Basic.announce_execution
+        ("(standardized  "
+         ^ (string_of_int count)
+         ^ " inclusions in "
+         ^ short_filename
+         ^ ") > "
+         ^ (dest_last ^ short_filename)
+         ^ ")")
+    in
+    Io.overwrite_with target_file new_text
+  ;;
+
+
+let standardize_inclusions_in_directly_compiled_file snap separate_cmd =
+    let name_for_container_file =
+      Cee_compilation_command.short_name_from_separate separate_cmd
+    in
+    standardize_inclusions_in_file snap name_for_container_file 
+  ;;
+
+let standardize_inclusions_in_directly_compiled_files snap separate_cmds =
+    let temp1 = Int_range.index_everything separate_cmds
+    and sn = string_of_int (List.length separate_cmds) in 
+    List.iter
+      (fun (idx, separate_cmd) ->
+        let msg1 =
+          " Step "
+          ^ string_of_int idx
+          ^ " of "
+          ^ sn
+          ^ " : "
+          ^ "standardizing inclusions in "
+          ^ separate_cmd.Cee_compilation_command_t.short_path
+          ^ separate_cmd.Cee_compilation_command_t.ending
+          ^ "\n\n"
+        and msg2 = " Finished step " ^ string_of_int idx ^ " of " ^ sn ^ ".\n" in
+        print_string msg1;
+        flush stdout;
+        standardize_inclusions_in_directly_compiled_file snap separate_cmd;
+        print_string msg2;
+        flush stdout)
+      temp1
+  ;;
+
+
+let standardize_inclusions_in_all_directly_compiled_files snap =
+    standardize_inclusions_in_directly_compiled_files snap (Cee_snapshot.separate_commands snap)
+  ;;
+  
 
   let fiamengize_all_directly_compiled_files_and_go_to_next snap ~fiamengo_depth= 
+    let _=Cee_snapshot.reinitialize_destination_directory snap in 
     let _=(fiamengize_all_directly_compiled_files snap ~fiamengo_depth) in 
     next snap;;
   
   let remove_cds_in_all_directly_compiled_files_and_go_to_next snap = 
-    let _ = ( remove_cds_in_all_directly_compiled_files snap) in 
+    let _ = ( 
+     Cee_snapshot.reinitialize_destination_directory snap; 
+     remove_cds_in_all_directly_compiled_files snap) in 
     next snap;;
 
   let standardize_guards_in_directly_compiled_files_and_go_to_next snap ~dry_run= 
-    let data = standardize_guards_in_files snap (Cee_snapshot.directly_compiled_files snap) ~dry_run in 
+   let _=Cee_snapshot.reinitialize_destination_directory snap in 
+   let data = standardize_guards_in_files snap (Cee_snapshot.directly_compiled_files snap) ~dry_run in 
     (data,next snap);;
 
-  let standardize_inclusions_in_directly_compiled_files_and_go_to_next snap ~dry_run= 
-    let data = standardize_inclusions_in_files snap (Cee_snapshot.directly_compiled_files snap) ~dry_run in 
-    (data,next snap);;
+  let standardize_inclusions_in_directly_compiled_files_and_go_to_next snap = 
+    let _=(Cee_snapshot.reinitialize_destination_directory snap;
+     create_header_directories snap;
+     make_local_copies_of_header_files snap;
+     standardize_inclusions_in_all_directly_compiled_files snap
+    ) in 
+    next snap;;
 
 end ;; 
 
