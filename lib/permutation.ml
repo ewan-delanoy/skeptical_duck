@@ -261,6 +261,10 @@ module Private = struct
      |a::b-> List.fold_left product a b ;;
   
 
+   let support perm =
+       let temp = Int_range.index_everything perm in 
+       List.filter_map (fun (x,y)->if x=y then None else Some x) temp;;
+
    end ;; 
    
 let alternating_group  = Memoized.make(fun n->
@@ -280,20 +284,23 @@ let iii (* meaning, integer initial interval *)
    = Memoized.make(fun n->
       Private.integer_initial_interval n);;
    
-let permutations l =
-      let initial_item = Ordered.sort Total_ordering.standard l in 
-      Private.helper_for_enumeration (initial_item,[]);;   
    
-let product = Private.product ;;
-   
-let product_of_cycles = Private.product_of_cycles ;;     
        
 let inverse = Private.inverse ;;
    
 let order = Private.order ;;      
 
-let power = Private.power ;;
+let permutations l =
+      let initial_item = Ordered.sort Total_ordering.standard l in 
+      Private.helper_for_enumeration (initial_item,[]);;   
+   
+let power = Private.power ;;      
+let product = Private.product ;;
+   
+let product_of_cycles = Private.product_of_cycles ;;  
+
 let signature = Private.signature ;;   
          
+let support = Private.support ;;
    
    
