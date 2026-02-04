@@ -1,6 +1,104 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+(************************************************************************************************************************
+ Entry 206 : Write a PARI-GP loop that puts each item of an array in a different file
+************************************************************************************************************************)
+module Snip206 = struct 
 
+let total = 5112 ;;
+let write_one k = 
+   let sk = string_of_int k 
+   and s_total = string_of_int total in 
+   "write(\"Tags/tag"^sk^".gp\",flattened_powers["^sk^"]);\n"^
+   "printf(\" "^sk^" of "^s_total^" done\\n\");";;
+
+let write_all () =
+    let temp = Int_range.scale write_one 1 total in 
+    "\n\n\n" ^
+    (String.concat "\n\n" temp)
+    ^ "\n\n\n" ;; 
+
+let text1 = write_all () ;;    
+
+let ap1 = Absolute_path.create_file_if_absent 
+  (home^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/bigg.gp");;
+
+Io.overwrite_with ap1 text1 ;; 
+end;;
+
+(************************************************************************************************************************
+ Entry 205 : Showing two subgroups are conjugate, find a nice pair of generators for wreath permutation subgroup
+************************************************************************************************************************)
+module Snip205 = struct 
+open Skeptical_duck_lib;;
+
+open Needed_values ;;
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+  
+let is_in_wreath perm =
+  let measure = (fun k->((Permutation.eval perm k)mod 2)=(k mod 2)) in 
+  let choice = measure 1 in 
+  List.for_all (fun k->measure k=choice) (Int_range.range 2 6) ;; 
+let all_permutations = Permutation.iii 6 ;;    
+
+let wreath = List.filter is_in_wreath all_permutations ;;
+
+let sg1 =  il_sort [[1; 3; 2; 6; 5; 4]; [1; 2; 3; 6; 5; 4]; [1; 3; 2; 5; 6; 4]; [1; 2; 3; 5; 6; 4]; [1; 3; 2; 6; 4; 5]; [1; 2; 3; 6; 4; 5]; [1; 3; 2; 4; 6; 5]; [1; 2; 3; 4; 6; 5]; [1; 3; 2; 5; 4; 6]; [1; 2; 3; 5; 4; 6]; [1; 3; 2; 4; 5; 6]; [1; 2; 3; 4; 5; 6]; [2; 3; 1; 6; 5; 4]; [2; 1; 3; 6; 5; 4]; [2; 3; 1; 5; 6; 4]; [2; 1; 3; 5; 6; 4]; [2; 3; 1; 6; 4; 5]; [2; 1; 3; 6; 4; 5]; [2; 3; 1; 4; 6; 5]; [2; 1; 3; 4; 6; 5]; [2; 3; 1; 5; 4; 6]; [2; 1; 3; 5; 4; 6]; [2; 3; 1; 4; 5; 6]; [2; 1; 3; 4; 5; 6]; [3; 2; 1; 6; 5; 4]; [3; 1; 2; 6; 5; 4]; [3; 2; 1; 5; 6; 4]; [3; 1; 2; 5; 6; 4]; [3; 2; 1; 6; 4; 5]; [3; 1; 2; 6; 4; 5]; [3; 2; 1; 4; 6; 5]; [3; 1; 2; 4; 6; 5]; [3; 2; 1; 5; 4; 6]; [3; 1; 2; 5; 4; 6]; [3; 2; 1; 4; 5; 6]; [3; 1; 2; 4; 5; 6]; [4; 6; 5; 3; 2; 1]; [4; 5; 6; 3; 2; 1]; [4; 6; 5; 2; 3; 1]; [4; 5; 6; 2; 3; 1]; [4; 6; 5; 3; 1; 2]; [4; 5; 6; 3; 1; 2]; [4; 6; 5; 1; 3; 2]; [4; 5; 6; 1; 3; 2]; [4; 6; 5; 2; 1; 3]; [4; 5; 6; 2; 1; 3]; [4; 6; 5; 1; 2; 3]; [4; 5; 6; 1; 2; 3]; [5; 6; 4; 3; 2; 1]; [5; 4; 6; 3; 2; 1]; [5; 6; 4; 2; 3; 1]; [5; 4; 6; 2; 3; 1]; [5; 6; 4; 3; 1; 2]; [5; 4; 6; 3; 1; 2]; [5; 6; 4; 1; 3; 2]; [5; 4; 6; 1; 3; 2]; [5; 6; 4; 2; 1; 3]; [5; 4; 6; 2; 1; 3]; [5; 6; 4; 1; 2; 3]; [5; 4; 6; 1; 2; 3]; [6; 5; 4; 3; 2; 1]; [6; 4; 5; 3; 2; 1]; [6; 5; 4; 2; 3; 1]; [6; 4; 5; 2; 3; 1]; [6; 5; 4; 3; 1; 2]; [6; 4; 5; 3; 1; 2]; [6; 5; 4; 1; 3; 2]; [6; 4; 5; 1; 3; 2]; [6; 5; 4; 2; 1; 3]; [6; 4; 5; 2; 1; 3]; [6; 5; 4; 1; 2; 3]; [6; 4; 5; 1; 2; 3]] ;;
+
+let check_sg1 = 
+    ((Permutation.generated_subgroup sg1)=sg1) ;;
+
+let conjugate_subgroup p =
+    let pi = Permutation.inverse  p in 
+    let temp1 = Image.image (fun s->
+      Permutation.fold_product [pi;s;p]    
+    )  sg1 in 
+    il_sort temp1 ;;
+    
+let sols = Explicit.filter (fun p->
+  conjugate_subgroup(p)=wreath     
+) all_permutations ;;    
+
+let optimal_sols = snd(Min.minimize_it_with_care (
+    fun p->List.length(Permutation.support p)
+) sols);;
+
+let the_sol = List.hd optimal_sols ;;
+
+let dec_sol = Permutation.decompose_into_disjoint_cycles the_sol ;;
+
+let  u1 = Uple.list_of_pairs wreath ;;
+
+let u2 = List.filter (
+  fun (x,y) -> Permutation.generated_subgroup [x;y] = wreath
+) u1 ;;
+
+let u3 = snd(Min.minimize_it_with_care (
+    fun (p1,p2)->List.length(Permutation.support p1)+List.length(Permutation.support p2)
+) u2);;
+
+let (x1,y1) = List.hd u3 ;;
+
+let dec_x1 = Permutation.decompose_into_disjoint_cycles x1 ;;
+let dec_y1 = Permutation.decompose_into_disjoint_cycles y1 ;;
+
+let x2 = [1;2;3;5;6;4] ;;
+let y2 = [2;3;4;6;1;5] ;;
+
+let lg x y = List.length (Permutation.generated_subgroup [x;y]) ;;
+end;;
 
 (************************************************************************************************************************
  Entry 204 : Preparation of Cee_produce_next_snapshot.compute_exact_locations_for_inclusions_in_cd_files

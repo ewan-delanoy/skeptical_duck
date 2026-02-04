@@ -265,6 +265,16 @@ module Private = struct
        let temp = Int_range.index_everything perm in 
        List.filter_map (fun (x,y)->if x=y then None else Some x) temp;;
 
+   
+   let representatives_for_left_cosets ~whole_group ~subgroup = 
+      let indexed_whole = Int_range.index_everything whole_group in 
+      Image.image (
+         fun (idx,p) ->
+          let temp = il_sort(Image.image (product p) subgroup) in
+      (idx,(p,temp)) 
+   ) indexed_whole;;
+
+
    end ;; 
    
 let alternating_group  = Memoized.make(fun n->
@@ -299,6 +309,7 @@ let product = Private.product ;;
    
 let product_of_cycles = Private.product_of_cycles ;;  
 
+let representatives_for_left_cosets = Private.representatives_for_left_cosets ;;
 let signature = Private.signature ;;   
          
 let support = Private.support ;;
