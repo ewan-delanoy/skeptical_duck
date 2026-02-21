@@ -463,10 +463,20 @@ lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;;
       let new_itv = itv^"\n"^inserted_snippet in 
       before ^ new_itv ^ after ;;
  
+  let insert_before_line_inside_text text ~line_number ~inserted_snippet=
+      let (before,itv,after) = tripartition_associated_to_interval text line_number line_number in 
+      let new_itv = inserted_snippet^"\n"^itv in 
+      before ^ new_itv ^ after ;;
+
   let insert_after_line_inside_file src_file ~line_number ~inserted_snippet=
      let old_text = Io.read_whole_file src_file  in 
      let new_text = insert_after_line_inside_text old_text ~line_number ~inserted_snippet in 
      Io.overwrite_with src_file new_text ;;   
+
+  let insert_before_line_inside_file src_file ~line_number ~inserted_snippet=
+     let old_text = Io.read_whole_file src_file  in 
+     let new_text = insert_before_line_inside_text old_text ~line_number ~inserted_snippet in 
+     Io.overwrite_with src_file new_text ;;  
 
   let extract_ocaml_names_in_text full_text i j =
     let subtext = interval full_text i j in 
@@ -571,6 +581,10 @@ let findreplace_in_interval_in_file (x,y) fn i j=
 
   let insert_after_line_inside_file = Private.insert_after_line_inside_file ;;
   let insert_after_line_inside_text = Private.insert_after_line_inside_text ;;
+
+  let insert_before_line_inside_file = Private.insert_before_line_inside_file ;;
+  let insert_before_line_inside_text = Private.insert_before_line_inside_text ;;
+
 
   let interval = Private.interval ;;
 

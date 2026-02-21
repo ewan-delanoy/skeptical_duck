@@ -1,6 +1,474 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 211 : Put miscellaneous lists in a PARI-GP file
+************************************************************************************************************************)
+module Snip211 = struct 
+
+
+
+
+let i_order = Total_ordering.for_integers ;;
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let is_in_wreath perm =
+  let measure = (fun k->((Permutation.eval perm k)mod 2)=(k mod 2)) in 
+  let choice = measure 1 in 
+  List.for_all (fun k->measure k=choice) (Int_range.range 2 6) ;; 
+let all_permutations = Permutation.iii 6 ;;    
+
+let wreath = List.filter is_in_wreath all_permutations ;;
+
+let indexed_wreath = Int_range.index_everything wreath ;;
+
+let partial_indexed_wreath indices =
+  List.filter (fun (idx,perm)->
+    List.mem idx indices
+  ) indexed_wreath ;;
+let original_r_list = 
+  Int_range.scale (fun k->"r"^(string_of_int k)) 1 6;;
+
+let original_z_list = 
+  Int_range.scale (fun k->"z"^(string_of_int k)) 1 6;;  
+
+let r_to_z = List.combine original_r_list original_z_list ;;  
+let z_to_r = List.combine original_z_list original_r_list ;;  
+
+let modified_z_list perm = 
+    Int_range.scale (fun k->"z"^
+    (string_of_int (Permutation.eval perm k))) 1 6;; 
+
+let apply_perm_to_text perm text =
+     let first_reps = List.combine  original_r_list
+        (modified_z_list perm) in 
+     let temp = Replace_inside.replace_several_inside_text 
+        first_reps text in 
+     Replace_inside.replace_several_inside_text 
+        z_to_r temp ;;
+        
+let apply_perm_to_name perm name =
+   let perm_descr = String.concat ","
+    (Image.image string_of_int perm) in 
+  "r_action(["^perm_descr^"],"^name^")";;
+
+let item_for_perm name (idx,perm) = 
+    "["^(string_of_int idx)^","^
+    (apply_perm_to_name perm name)^"]"        ;;
+
+let item_for_verification name (idx,perm) = 
+  let idx_in_name = Cull_string.cobeginning 3 name in 
+  "ztbc(\""^idx_in_name^"_"^(string_of_int idx)^"\","^
+  (apply_perm_to_name perm name)^")"      ;;
+
+let complement_in_full_text = 
+   String.concat "\n\n"    
+ ["arr2=vector(length(arr1),k,arr1[k][2])";
+  "unordered_leftmost_indices=vector(length(arr2),k,find_index(arr2[k],arr2))";
+  "leftmost_indices=vecssort(unordered_leftmost_indices)"
+ ] ;; 
+
+let long_text name =
+  let temp1 = Image.image (item_for_perm name) indexed_wreath in 
+  "\n\n\narr1={[\n\n"^
+  (String.concat ",\n" temp1)^
+  "\n\n]};\n\n\n"^
+  complement_in_full_text^"\n\n\n" ;;
+
+let extract_integers_from_pari_gp_intlist text =
+  let temp1 = Replace_inside.replace_several_inside_text 
+    ["[","";"]","";" ",""] text in 
+  let temp2 = Str.split (Str.regexp_string ",") temp1 in 
+  Image.image (int_of_string) temp2 ;; 
+   
+
+let short_text name pari_gp_intlist =
+  let indices=extract_integers_from_pari_gp_intlist pari_gp_intlist in 
+  let names = Image.image (fun k->List.nth wreath (k-1)) indices in 
+  let shorter_list = Int_range.index_everything names in
+  let temp1 = Image.image (item_for_perm name) shorter_list in 
+  "\n\n\narr3={[\n\n"^
+  (String.concat ",\n" temp1)^
+  "\n\n]};\n\n\n" ;;  
+  
+let verification_text name pari_gp_intlist =
+  let indices=extract_integers_from_pari_gp_intlist pari_gp_intlist in 
+  let names = Image.image (fun k->List.nth wreath (k-1)) indices in 
+  let shorter_list = Int_range.index_everything names in
+  let temp1 = Image.image (item_for_verification name) shorter_list in 
+  "\n\n\n"^
+  (String.concat "\n" temp1)^
+  "\n\n\n" ;;  
+
+let follenn2 = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp"
+) ;;
+
+let brouilhed_ap = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/brouilhed.gp"
+) ;;
+
+let include_again () =
+   let new_included_text = 
+    "\n\n\nnonsingleton_reductions="^(Io.read_whole_file brouilhed_ap)^"\n\n\n" in 
+   (Replace_inside.overwrite_between_markers_inside_file
+    ~overwriter:new_included_text 
+    ("/* Code for monomial reduction update starts here */",
+    "/* Code for monomial reduction update ends here */") follenn2;
+   Io.overwrite_with brouilhed_ap "") ;;  
+
+
+(*
+
+Replace_inside.replace_several_inside_file 
+  ["r1","s1";"r2","s2";"r3","s3";"r4","s4"] brouilhed_ap ;;
+
+Replace_inside.replace_several_inside_file 
+  ["s1","r2";"s2","r1";"s3","r4";"s4","r3"] brouilhed_ap ;;
+
+Replace_inside.replace_several_inside_file 
+  ["f4","(f2*g4)";"f5","(f2*g5)";"f6","(f2*g6)"] follenn2 ;;
+
+Replace_inside.replace_several_inside_file 
+  ["g4","f4";"f5","g5";"g6","f6"] follenn2 ;;
+
+write_verification "zer8" "[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 27, 31, 35, 39, 43, 47]" ;;
+
+
+*)
+
+let write_verification name indices
+  =Io.append_string_to_file (verification_text name indices) brouilhed_ap  ;; 
+
+let write_short_list name indices
+  =Io.append_string_to_file (short_text name indices) brouilhed_ap  ;;    
+
+let write_long_list name 
+  =Io.overwrite_with brouilhed_ap (long_text name) ;;  
+  
+end;;
+
+(************************************************************************************************************************
+ Entry 210 : Enumerate a finite set of monomials in in PARI-GP
+************************************************************************************************************************)
+module Snip210 = struct 
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+
+
+let extend_by_one ll =
+  List.filter_map (fun (x,l)->
+    if l=[] then Some[x] else
+    if x<=List.hd(l) 
+    then Some(x::l)
+    else None
+  ) (Cartesian.product (Int_range.range 1 5) ll) ;;
+
+let level_0 = [[]] ;; 
+
+let level_1 = extend_by_one level_0 ;; 
+
+let multiplicity l x = List.length(List.filter (fun y->y=x) l) ;; 
+
+let dominates l1 l2 =
+  List.for_all (fun k->
+   (multiplicity l1 k)>=(multiplicity l2 k)  
+  ) (Int_range.range 1 6) ;;
+  
+let revlex_order x y =
+   Total_ordering.lex_compare Total_ordering.for_integers 
+   (List.rev x) (List.rev y) ;;
+
+let rlx_sort = Ordered.sort revlex_order ;;
+
+let select_those_avoiding_obstructions obstr l =
+   List.filter (fun u->
+    List.for_all (fun o->not(dominates u o)) obstr
+    ) l ;;   
+
+
+let obstructions_up_to_length_2=[[6];[3;5];[4;5];[5;5]] ;;
+
+let initial_whole_in_length_2 = extend_by_one level_1 ;;
+  
+let level_2 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_2 
+     initial_whole_in_length_2);;
+
+let obstructions_up_to_length_3=
+  obstructions_up_to_length_2 @ 
+  [[3;3;3];[3;4;4];[4;4;4];[1;1;5];[2;2;5]] ;;
+
+let initial_whole_in_length_3 = extend_by_one level_2 ;;
+  
+let level_3 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_3 
+     initial_whole_in_length_3);;
+
+let initial_whole_in_length_4 = extend_by_one level_3 ;;
+  
+let obstructions_up_to_length_4=
+  obstructions_up_to_length_3 @ 
+  [[1;1;1;1];[2;2;2;2];[1;1;3;3];[2;2;3;3];[1;1;4;4];[2;2;4;4]] ;;
+
+let level_4 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_4 
+     initial_whole_in_length_4);;
+
+
+let initial_whole_in_length_5 = extend_by_one level_4 ;;
+  
+let obstructions_up_to_length_5=
+  obstructions_up_to_length_4 @ 
+  [[1;1;2;2;2]] ;;
+
+let level_5 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_5 
+     initial_whole_in_length_5);;     
+
+let initial_whole_in_length_6 = extend_by_one level_5 ;;
+  
+let obstructions_up_to_length_6=
+  obstructions_up_to_length_5 @ 
+  [] ;;
+
+let level_6 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_6 
+     initial_whole_in_length_6);;   
+
+let initial_whole_in_length_7 = extend_by_one level_6 ;;
+  
+let obstructions_up_to_length_7=
+  obstructions_up_to_length_6 @ 
+  [] ;;
+
+let level_7 = 
+  rlx_sort
+  (select_those_avoiding_obstructions 
+   obstructions_up_to_length_7 
+     initial_whole_in_length_7);; 
+
+let glue l = String.concat "" (Image.image string_of_int l) ;;
+
+let text_for_individual_listified_uple l =
+   let (h,t) = List_again.head_with_tail l in 
+   "r"^(glue l)^"=r"^(glue [h])^"*r"^(glue t)^";\n"^
+   "act_on_molecular_reduction(r"^(glue l)^",\"r"^(glue l)^"\")";;
+
+let text_for_listified_uples ll =   
+  let temp = Image.image text_for_individual_listified_uple ll in
+  "\n\n\n" ^ (String.concat "\n\n" temp) ^ "\n\n\n" ;;
+
+
+let levels=[level_0;level_1;level_2;level_3;level_4;level_5;level_6;level_7];;
+
+let intstring_to_intlist str = 
+  Image.image (fun c->(int_of_char c)-48) (Strung.explode str) ;;
+
+let decompress_r_product str =
+  if str="" then "1" else 
+  String.concat "*" (
+    Image.image (fun c->"r"^(String.make 1 c)) (Strung.explode str)) ;;  
+
+let decompress_all_r_products_in text = 
+  let occs = Substring.occurrences_of_in "\"" text in 
+  let m = (List.length occs)/2 in 
+  let occ = (fun k->List.nth occs (k-1)) in 
+  let ranges = Int_range.scale (fun j->(occ (2*j-1),occ(2*j))) 1 m in
+  let replacements = Image.image (fun (i,j)->
+    let compressed =Cull_string.interval text (i+2) (j-1) in 
+    ((i,j),decompress_r_product compressed) 
+  ) ranges in
+  let core=Strung.replace_ranges_in replacements text in 
+ "lift(sum_of_products("^core^"))" ;;
+
+let brouilhed_ap = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/brouilhed.gp"
+) ;;
+
+let decompress () =
+   let old_text = Io.read_whole_file brouilhed_ap in 
+   let new_text = decompress_all_r_products_in old_text in 
+   Io.append_string_to_file new_text brouilhed_ap ;;
+
+let act ll =Io.overwrite_with brouilhed_ap (text_for_listified_uples ll) ;;
+
+let ball = List.flatten levels ;;
+
+let majors= [[1; 2; 5]; [1; 2; 4; 4];[1; 2; 3; 3; 4];[1; 2; 2; 2; 3; 4];[1; 1; 1; 2; 2; 3; 4]];;
+
+let has_a_major x=List.exists (fun y->dominates y x) majors ;;
+
+let check_ball = List.filter (fun x->not(has_a_major x)) ball ;;
+
+(*
+let v1 = ["1112"; "1122"; "1222"; "1113"; "1123"; "1223"; "2223"; "1233"; "2233";
+ "1114"; "1124"; "1224"; "2224"; "1134"; "1234"; "2234"; "1334"; "2334";
+ "1144"; "1244"] ;;
+
+
+let v2 = ["1112"; "1113"; "1223"; "1233"; "2233"; "1114"; "1124"; "1224"; "2224"; "1134"; "1234"; "2234"; "1334"; "2334"; "1144"; "1244"] ;;
+
+let s_to_l s = Image.image (fun c->(int_of_char c)-48) (Strung.explode s) ;;
+let revlex_on_strings =((fun s1 s2->
+   Total_ordering.lex_compare Total_ordering.for_integers 
+   (List.rev (s_to_l s1)) (List.rev (s_to_l s2))
+): string Total_ordering_t.t );;
+
+let check_v1=((Ordered.sort revlex_on_strings v1)=v1);;
+let check_v2=((Ordered.sort revlex_on_strings v2)=v2);;
+
+let v3 = Ordered.setminus revlex_on_strings v1 v2 ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 209 : Periodic inclusion of a PARI-GP file in another
+************************************************************************************************************************)
+module Snip209 = struct 
+
+
+let follenn2 = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/follenn2.gp"
+) ;;
+
+let updater = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/update_reductions_for_monomials.gp"
+) ;;
+
+let include_again () =
+   let new_included_text = Io.read_whole_file updater in 
+   Replace_inside.overwrite_between_markers_inside_file
+    ~overwriter:new_included_text 
+    ("/* Code for monomial reduction update starts here */",
+    "/* Code for monomial reduction update ends here */") follenn2 ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 208 : Global reindexation of variables in PARI-GP
+************************************************************************************************************************)
+module Snip208 = struct 
+
+let brouilhed_ap = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/brouilhed.gp"
+) ;;
+
+let old_text = Io.read_whole_file brouilhed_ap ;;
+
+let triples =[
+    "f1","h1","f1";
+    "g3","h2","f2";
+    "f4","h3","f3";
+    "f5","h4","f4";
+    "f6","h5","f5";
+    "f7","h6","f6";
+    "g8","h7","f7";
+  ] ;;
+
+let from_1_to_2 = Image.image (fun (a,b,c) -> (a,b)) triples ;;  
+let from_2_to_3 = Image.image (fun (a,b,c) -> (b,c)) triples ;;
+
+let text1 = Replace_inside.replace_several_inside_text 
+  from_1_to_2 old_text ;; 
+
+let text2 = Replace_inside.replace_several_inside_text 
+  from_2_to_3 text1 ;;   
+
+let act () = Io.overwrite_with brouilhed_ap text2 ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 207 : Write a PARI-GP loop that enumerates monomials
+************************************************************************************************************************)
+module Snip207 = struct 
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_is_included_in = Ordered.is_included_in i_order ;;
+let i_merge = Ordered.merge i_order ;;
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+  
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let u1 = Cartesian.cube (Int_range.range 1 5) ;;
+
+let pre_u2 = List.filter (
+  fun (x1,x2,x3) ->
+    if (x1>x2)||(x2>x3) then false else 
+    let ox = i_sort [x1;x2;x3] in 
+    if List.exists (fun forb->
+      i_is_included_in forb ox
+      ) [[3;5]] then false else 
+    if List.length(List.filter(fun t->t=5) [x1;x2;x3])>1 then false else   
+    true
+) u1 ;;
+
+let triple_order (x1,x2,x3) (y1,y2,y3) =
+   Total_ordering.lex_compare Total_ordering.for_integers [x3;x2;x1] [y3;y2;y1] ;;
+
+let u2 = Ordered.sort triple_order pre_u2 ;;
+
+let text_for_triple (x1,x2,x3) =
+   let s1 = string_of_int x1
+   and s2 = string_of_int x2
+   and s3 = string_of_int x3 in 
+   let full_r = "r"^s1^s2^s3 in
+   full_r^"=r"^s1^"*r"^s2^s3^";\n"^
+   "act_on_molecular_reduction("^full_r^",\""^full_r^"\")";;
+
+let u3 = Image.image text_for_triple u2 ;;
+
+let final_text = "\n\n\n" ^ (String.concat "\n\n" u3) ^ "\n\n\n" ;;
+
+let brouilhed_ap = Absolute_path.of_string (
+  home ^"/Teuliou/Bash_scripts/Pari_Programming/my_pari_code/brouilhed.gp"
+) ;;
+
+Io.overwrite_with brouilhed_ap final_text ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 206 : Write a PARI-GP loop that puts each item of an array in a different file
 ************************************************************************************************************************)
 module Snip206 = struct 
