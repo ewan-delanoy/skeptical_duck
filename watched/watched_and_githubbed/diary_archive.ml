@@ -1,6 +1,796 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 213 : Find/replaces for a deep copy of a website 
+************************************************************************************************************************)
+module Snip213 = struct 
+
+let data_for_replacements = ref [] ;;
+
+let short_paths = ref [] ;;
+
+let added_replacements () = 
+    (Image.image (
+     fun (old_name,new_name,vimeo_number)->
+       ("<a href=\"/axc/fb453dnp/5c833i/"^old_name^"\">","<a href=\""^new_name^".html\">")
+    ) (!data_for_replacements)) 
+   @(
+Image.image (
+     fun (old_name,new_name,vimeo_number)->
+       ("https://player.vimeo.com/video/"^vimeo_number^"?",new_name^".mp4?")
+    ) (!data_for_replacements)
+   ) ;; 
+
+
+
+let replacements ()=
+[
+   "<ul><li><a href=\"/account\"><span class=\"fa fa-mb\"></span>Mon profil         Ewan</a></li><li><a href=\"/logout\"><span class=\"fa fa-lock\"></span>Me déconnecter</a></li></ul>","";
+   "<li><a href=\"/products\">Mes guides pratiques</a></li>","";
+   "<li><a href=\"/axc/fb453dnp/5c833i/avis\">Votre témoignage</a></li>","";
+   "<img src=\"//www.kooneo.com/ico/modpage.png\">","<img src=\"modpage.png\">";
+   "<a href=\"/axc/fb453dnp/5c833i/\">","<a href=\"intro.html\">"
+]@
+(
+   added_replacements()
+)   
+    ;;
+
+let short_paths ()= "intro" :: (
+   Image.image (
+     fun (old_name,new_name,vimeo_number)->
+       new_name
+    ) (!data_for_replacements)
+) ;;
+
+let files () = 
+    Image.image (
+     fun fn->Absolute_path.of_string 
+    ("~/Teuliou/html_files/Preserver_son_dos/"^fn^".html")
+    ) (short_paths()) ;; 
+
+let act () = List.iter (
+   Replace_inside.replace_several_inside_file (replacements())
+) (files ()) ;;
+
+
+data_for_replacements:=
+[
+     ("mad-intro","presentation","1095809492");
+     ("mad-m1","sec1_cinq_erreurs_les_plus_courantes","1095816767");
+     ("mad-m21","sec2_1_travail_du_sol","1095874844");
+     ("mad-m22","sec2_2_preparation_de_la_terre","1095882219");
+     ("mad-m23","sec2_3_semis_plantations_et_recoltes","1095994670");
+     ("mad-m24","sec2_4_le_desherbage","1096009855");
+     ("mad-m25","sec2_5_l_arrosage","1096019268");
+     ("mad-m26","sec2_6_porter_des_charges","1096145597");
+     ("mad-m27","sec2_7_la_brouette","1096171129");
+     ("mad-m3","sec3_preparation_avant_de_jardiner","1096193174");
+     ("mad-concl","conclusion","1096196887");
+ 
+] ;;
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 212 : First attempt to make dependencies visible in a Java project
+************************************************************************************************************************)
+module Snip212 = struct 
+
+let is_a_lowercase_letter c = 
+  let i=int_of_char c in 
+  (97<=i)&&(i<=122) ;;
+
+let is_an_uppercase_letter c = 
+  let i=int_of_char c in 
+  (65<=i)&&(i<=90) ;;  
+
+let char_is_a_letter c = (is_a_lowercase_letter c) || (is_an_uppercase_letter c) ;;
+
+let no_letters_at_endpoints s =
+   let n = String.length s in 
+   let first_char = String.get s 0 in 
+   let last_char = String.get s (n-1) in 
+   not( (char_is_a_letter first_char) || (char_is_a_letter last_char) ) ;;
+
+
+let app_root = home ^ "/Teuliou/Java_Hub/spring-short-app/";;
+
+let java_content_root = app_root ^ "src/main/java/" ;;
+
+let root_for_visible_libs = java_content_root ^ "visible/";;
+
+let compute_currently_registered_library_directories () = 
+  let vili_dir = Directory_name.of_string root_for_visible_libs in 
+  let temp1= Unix_again.complete_ls vili_dir in 
+  let temp2 = List.filter Unix_again.is_a_directory temp1 in 
+  let temp3 = Image.image Absolute_path.to_string temp2 in 
+  let temp4 = List.filter (fun s_ap->s_ap<>root_for_visible_libs) temp3 in 
+  let temp5 = Image.image (fun s_ap->
+    try Cull_string.two_sided_cutting (root_for_visible_libs,"/") s_ap with 
+    _ -> "...."^s_ap^"...."
+  ) temp4 in 
+  Ordered.sort Total_ordering.lex_for_strings temp5;;
+
+let ref_for_currently_registered_library_directories = ref
+  (compute_currently_registered_library_directories ()) ;;
+
+let currently_registered_library_directories () =   
+   (!ref_for_currently_registered_library_directories) ;; 
+
+let register_subdir_in_pointed_form pointed_form = 
+  let slashed_form = Replace_inside.replace_inside_text (".","/") pointed_form in 
+  let old_list = (!ref_for_currently_registered_library_directories) in 
+  if List.mem slashed_form old_list 
+  then "Subdir "^slashed_form^" is already registered"
+  else
+  let _ = Sys.command ("mkdir -p "^root_for_visible_libs ^ slashed_form)  in 
+  let new_list =  Ordered.insert Total_ordering.lex_for_strings slashed_form old_list in 
+  let _ = (ref_for_currently_registered_library_directories:=new_list) in 
+  "Subdir "^slashed_form^" has been registered." ;;
+
+let common_replacements = 
+[
+  (" SpringApplication\n", " AutumnApplication\n");
+   (" SpringApplication ", " AutumnApplication ");
+   (" SpringApplication\"", " AutumnApplication\"");
+   (" SpringApplication#", " AutumnApplication#");
+   (" SpringApplication(", " AutumnApplication(");
+   (" SpringApplication.", " AutumnApplication.");
+   (" SpringApplication}", " AutumnApplication}");
+   ("#SpringApplication(", "#AutumnApplication(");
+   ("(SpringApplication ", "(AutumnApplication ");
+   ("(SpringApplication.", "(AutumnApplication.")
+] ;;
+
+let gitc = "git -C "^app_root^" ";;
+
+let backup_to_remote_git commit_msg = 
+  let core_git_command = 
+    gitc^" add . && "^
+    gitc^" commit -m \""^(commit_msg)^"\" && "^
+    gitc^" push" in 
+  let git_commands = 
+  [
+    "cd "^app_root;
+    core_git_command;
+    "cd "^home^"/Teuliou/OCaml/skeptical_duck";
+  ] in 
+  Unix_command.conditional_multiple_uc git_commands ;;
+
+
+exception Compatible_holders_exn of (string*string) list ;;
+
+let treat_packaged_rookie_without_commiting_to_git (rookie,packaged_rookie) = 
+  let temp1 = Image.image (
+    fun holder ->
+    (holder,home ^ "/Teuliou/Java_Hub/sources/"^holder^"/"^rookie ^ ".java")
+  ) (currently_registered_library_directories ()) in
+  let compatible_holders = List.filter (
+    fun (holder,full_path) -> 
+      (Sys.file_exists full_path)&&
+      (String.ends_with full_path ~suffix:packaged_rookie)
+  ) temp1 in 
+  if List.length(compatible_holders)<>1
+  then raise(Compatible_holders_exn(compatible_holders))  
+  else
+  let (holder,rookie_location_in_jar) = List.hd compatible_holders  in 
+  let new_container_for_rookie = 
+  root_for_visible_libs^holder^"/" in 
+  let command_for_rookie_copy = "cp "^rookie_location_in_jar^" "^new_container_for_rookie in 
+  let _ = (
+    if Sys.file_exists(new_container_for_rookie^rookie^".java")
+    then 0  
+    else Sys.command command_for_rookie_copy) in 
+  let copied_rookie_ap = Absolute_path.of_string (new_container_for_rookie^rookie ^ ".java") in  
+  let pointed_holder = Replace_inside.replace_inside_text ("/",".") holder in 
+  let replacements  =
+   ("package "^pointed_holder^";",
+    "package visible."^pointed_holder^";") ::
+    common_replacements in 
+  let _ =
+   Replace_inside.replace_several_inside_file 
+   replacements copied_rookie_ap in 
+  () ;;
+
+let treat_packaged_rookie (rookie,packaged_rookie) = 
+  let _ = treat_packaged_rookie_without_commiting_to_git (rookie,packaged_rookie) in 
+  backup_to_remote_git ("add "^rookie) ;;
+
+let treat_rookie ?(packaged_opt) rookie =
+  let packaged=(match packaged_opt with 
+   None -> rookie^".java"
+   |Some user_data -> user_data
+  ) in 
+    treat_packaged_rookie (rookie,packaged) ;;
+
+let currently_registered_library_files () = 
+  let temp1= Image.image (fun holder ->
+    let s_dir = root_for_visible_libs ^holder in 
+    let dir = Directory_name.of_string s_dir in 
+    Unix_again.simple_ls dir
+  ) (currently_registered_library_directories ()) in 
+  List.flatten temp1 ;;
+
+
+exception Find_exact_location_for_registered_lib_file_exn of string ;;
+
+let find_exact_location_for_registered_lib_file fn =
+  let files = currently_registered_library_files () in
+  match List.find_opt (fun ap->
+    let s_ap = Absolute_path.to_string ap in 
+    String.ends_with s_ap ~suffix:fn  
+  ) files with 
+  None -> raise (Find_exact_location_for_registered_lib_file_exn(fn))
+  |Some ap -> ap ;;
+
+let last_component_is_capitalized package_or_classpath = 
+  let last_component = (
+    if not (String.contains package_or_classpath '.')
+    then package_or_classpath
+    else Cull_string.after_rightmost package_or_classpath '.'
+  ) in 
+  is_an_uppercase_letter(String.get last_component 0) ;;  
+ 
+
+let extract_static_value_if_present classpath_or_valuepath = 
+  if not (String.contains classpath_or_valuepath '.')
+  then (classpath_or_valuepath,"")
+  else
+  let package_or_classpath = Cull_string.before_rightmost classpath_or_valuepath '.'
+  and last_component = Cull_string.after_rightmost classpath_or_valuepath '.' in 
+  if last_component_is_capitalized package_or_classpath 
+  then (package_or_classpath,"."^last_component)
+  else (classpath_or_valuepath,"") ;; 
+
+let static_import_prefix = "import static " ;;
+
+
+let parse_import_line line =
+  let import_prefix = (
+    if String.starts_with line ~prefix:static_import_prefix
+    then static_import_prefix
+    else "import "
+  ) in  
+  let possibly_visibilized_package = Cull_string.two_sided_cutting (import_prefix,";") line in 
+  let classpath_or_valuepath = (
+  if String.starts_with possibly_visibilized_package ~prefix:"visible."
+  then Cull_string.two_sided_cutting ("visible.","") possibly_visibilized_package 
+  else possibly_visibilized_package 
+ ) in 
+  let (classpath,static_value)=extract_static_value_if_present classpath_or_valuepath in  
+  let (package,classname) = 
+     ( Cull_string.before_rightmost classpath '.', 
+       Cull_string.after_rightmost classpath '.' ) in 
+  (import_prefix,package,classname,static_value) ;;
+
+let make_import_visible old_line =
+  if not(
+    (String.starts_with old_line ~prefix:"import ")
+   &&(String.ends_with old_line ~suffix:";")
+  )
+  then old_line 
+  else   
+  let (import_prefix,package,classname,static_value) = parse_import_line old_line in 
+  import_prefix^"visible."^package^"."^classname^static_value^";" ;;
+
+
+let make_imports_visible_in_line_interval_from_file ap i j = 
+ let old_text = Io.read_whole_file ap in 
+ let old_indexed_lines = Lines_in_text.indexed_lines old_text in 
+  let new_text_lines = Image.image (fun (idx,line)->
+  if (i<=idx)&&(idx<=j) then make_import_visible line else line) old_indexed_lines  in
+ let new_text = String.concat "\n" new_text_lines in 
+ Io.overwrite_with ap new_text ;;
+
+let make_imports_visible_in_line_interval classname i j = 
+  let ap = find_exact_location_for_registered_lib_file (classname^".java") in 
+  make_imports_visible_in_line_interval_from_file ap i j ;;
+
+
+let fix_import_line_in_file_without_commiting_to_git offending_file line_number =
+ let ap = find_exact_location_for_registered_lib_file ("/"^offending_file) in 
+ let old_text = Io.read_whole_file ap in 
+ let old_indexed_lines = Lines_in_text.indexed_lines old_text in 
+ let offending_line = List.assoc line_number old_indexed_lines in 
+ if not(
+   (String.starts_with offending_line ~prefix:"import ")
+ )
+ then let _= print_string("\n\n\nLine "^(string_of_int line_number)^" is not an import line.\n\n\n") in 
+      false
+ else
+ let (import_prefix,package,classname,static_value) = parse_import_line offending_line in 
+ let _precaution = print_string("\n\n\n"^(register_subdir_in_pointed_form package)^"\n\n\n") in 
+ let location = (Replace_inside.replace_inside_text (".","/") package)^"/"^classname^".java" in 
+ let _second_action = treat_packaged_rookie_without_commiting_to_git (classname,location) in
+ let _third_action = make_imports_visible_in_line_interval_from_file ap line_number line_number in 
+ import_prefix = static_import_prefix;;
+
+let fix_interval_of_import_lines_in_file classname (line_number1,line_number2) = 
+  let static_or_not = ref false in 
+  let _=(for k=line_number1 to line_number2 do 
+  static_or_not:=(fix_import_line_in_file_without_commiting_to_git (classname^".java") k)
+  done) in  
+  let extra_in_msg=(if !static_or_not then "static " else "") in 
+  backup_to_remote_git ("fix some "^extra_in_msg^"imports in "^classname)
+  ;;
+
+let fix_interval_of_2import_lines_in_file classname 
+  (line_number1,line_number2) (line_number3,line_number4)= 
+  let static_or_not = ref false in 
+  let _=(for k=line_number1 to line_number2 do 
+  static_or_not:=(fix_import_line_in_file_without_commiting_to_git (classname^".java") k)
+  done) in  
+  let _=(for k=line_number3 to line_number4 do 
+  static_or_not:=(fix_import_line_in_file_without_commiting_to_git (classname^".java") k)
+  done) in  
+  let extra_in_msg=(if !static_or_not then "static " else "") in 
+  backup_to_remote_git ("fix some "^extra_in_msg^"imports in "^classname)
+  ;;  
+
+(*  
+
+treat_rookie "GroovyClassVisitor" ;;
+
+treat_rookie "NodeMetaDataHandler" ;;
+
+treat_rookie "MixinNode" ;;
+
+fix_interval_of_import_lines_in_file "ASTTransformation" (21,22);; 
+
+fix_interval_of_import_lines_in_file "AbstractASTTransformation" (21,41);; 
+
+fix_interval_of_import_lines_in_file "AbstractASTTransformation" (51,54);; 
+
+fix_interval_of_import_lines_in_file "CodeVisitorSupport" (21,75);; 
+
+fix_interval_of_import_lines_in_file "ClassCodeVisitorSupport" (21,43);; 
+
+fix_interval_of_import_lines_in_file "Traits" (21,36);; 
+
+fix_interval_of_import_lines_in_file "Traits" (48,54);; 
+
+fix_interval_of_import_lines_in_file "StringGroovyMethods" (21,33);; 
+
+fix_interval_of_import_lines_in_file "StringGroovyMethods" (60,63);; 
+
+fix_interval_of_import_lines_in_file "DefaultGroovyMethodsSupport" (21,25);; 
+
+fix_interval_of_import_lines_in_file "DefaultGroovyMethods" (21,102);; 
+
+fix_interval_of_import_lines_in_file "DefaultGroovyMethods" (163,163);; 
+
+fix_interval_of_import_lines_in_file "WideningCategories" (21,22);;  
+
+fix_interval_of_import_lines_in_file "WideningCategories" (36,62);;  
+
+fix_interval_of_import_lines_in_file "ParameterUtils" (21,24);;  
+
+fix_interval_of_import_lines_in_file "ClosureUtils" (21,24);;  
+
+fix_interval_of_import_lines_in_file "ArrayGroovyMethods" (21,62);; 
+
+fix_interval_of_import_lines_in_file "PrimitiveHelper" (21,32);;  
+
+fix_interval_of_import_lines_in_file "GeneralUtils" (21,77);;  
+
+fix_interval_of_import_lines_in_file "GeneralUtils" (92,92);;  
+
+fix_interval_of_import_lines_in_file "GroovyCodeVisitor" (21,77);; 
+
+fix_interval_of_import_lines_in_file "Variable" (21,28);; 
+
+fix_interval_of_import_lines_in_file "AnnotatedNode" (21,22);; 
+
+fix_interval_of_import_lines_in_file "Parameter" (21,21);;  
+fix_interval_of_import_lines_in_file "Parameter" (23,23);;    
+
+fix_interval_of_import_lines_in_file "NodeMetaDataHandler" (21,22);;    
+
+fix_interval_of_import_lines_in_file "Statement" (21,22);;    
+
+fix_interval_of_import_lines_in_file "CatchStatement" (21,23);;    
+
+fix_interval_of_import_lines_in_file "StaticTypeCheckingVisitor" (21,120);;
+fix_interval_of_import_lines_in_file "StaticTypeCheckingVisitor" (149,340);;
+
+fix_interval_of_import_lines_in_file "ExpressionUtils" (21,33);;  
+fix_interval_of_import_lines_in_file "ExpressionUtils" (39,50);;  
+
+fix_interval_of_import_lines_in_file "GenericsType" (21,22);;  
+fix_interval_of_import_lines_in_file "GenericsType" (31,32);; 
+
+fix_interval_of_import_lines_in_file "StaticTypeCheckingSupport" (21,26);;
+fix_interval_of_import_lines_in_file "StaticTypeCheckingSupport" (28,56);;
+fix_interval_of_import_lines_in_file "StaticTypeCheckingSupport" (78,179);;
+fix_interval_of_import_lines_in_file "CSTNode" (21,22);;
+
+*)
+
+(*
+
+let bad1 = fix_import_line_in_file_without_commiting_to_git 
+   "StaticTypeCheckingSupport.java" 28 ;;
+
+let (offending_file,line_number) = ("Statement.java",21) ;;
+
+let ap = find_exact_location_for_registered_lib_file ("/"^offending_file) ;;
+let old_text = Io.read_whole_file ap ;;
+let old_indexed_lines = Lines_in_text.indexed_lines old_text ;; 
+let offending_line = List.assoc line_number old_indexed_lines ;; 
+
+let (import_prefix,package,classname,static_value) = parse_import_line offending_line ;;
+
+let fix_import_line_in_file_without_commiting_to_git offending_file line_number =
+ let ap = find_exact_location_for_registered_lib_file offending_file in 
+ let old_text = Io.read_whole_file ap in 
+ let old_indexed_lines = Lines_in_text.indexed_lines old_text in 
+ let offending_line = List.assoc line_number old_indexed_lines in 
+ let (import_prefix,package,classname,static_value) = parse_import_line offending_line in 
+ let _precaution = print_string("\n\n\n"^(register_subdir_in_pointed_form package)^"\n\n\n") in 
+ let location = (Replace_inside.replace_inside_text (".","/") package)^"/"^classname^".java" in 
+ let _second_action = treat_packaged_rookie_without_commiting_to_git (classname,location) in
+ let _third_action = make_imports_visible_in_line_interval_from_file ap line_number line_number in 
+ import_prefix = static_import_prefix;;
+
+*)
+
+(*
+
+let deal_with_missing_file_in_registered_package (offending_file,line_number) =
+ let ap = find_exact_location_for_registered_lib_file offending_file in 
+ let old_text = Io.read_whole_file ap in 
+ let old_indexed_lines = Lines_in_text.indexed_lines old_text in 
+ let offending_line = List.assoc line_number old_indexed_lines in 
+ let (import_prefix,package,classname,static_value) = parse_import_line offending_line in 
+ let _precaution = print_string("\n\n\n"^(register_subdir_in_pointed_form package)^"\n\n\n") in 
+ let _second_action = treat_packaged_rookie_without_commiting_to_git classname in
+ let _third_action = make_imports_visible_in_line_interval_from_file ap line_number line_number in 
+ let _fourth_action=backup_to_remote_git ("add "^classname) in 
+ ();;
+
+let deal_with_missing_files_in_registered_package (offending_file,line_number1,line_number2) =
+for k=line_number1 to line_number2 do 
+  deal_with_missing_file_in_registered_package (offending_file,k) 
+done ;;
+
+
+
+
+treat_packaged_rookie "ApplicationProperties" ;;
+treat_packaged_rookie "SpringApplicationRunListeners" ;;
+treat_packaged_rookie "ApplicationArguments" ;;
+treat_packaged_rookie "BeanDefinitionLoader" ;;
+treat_packaged_rookie "Closure" ;;
+treat_packaged_rookie "UncheckedThrow" ;;
+treat_packaged_rookie "StringBuilderWriter" ;;
+treat_packaged_rookie "Maps" ;;
+deal_with_missing_file_in_registered_package ("Closure.java",24) ;;
+deal_with_missing_file_in_registered_package ("Closure.java",25) ;;
+deal_with_missing_file_in_registered_package ("Closure.java",26) ;;
+
+for k=29 to 35 do deal_with_missing_file_in_registered_package ("Closure.java",k) done ;;
+
+deal_with_missing_file_in_registered_package ("InvokerHelper.java",21) ;;
+
+treat_packaged_rookie "GroovyObjectSupport" ;;
+
+deal_with_missing_file_in_registered_package ("ConcurrentCommonCache.java",21) ;;
+
+treat_packaged_rookie "FlexibleCache" ;;
+treat_packaged_rookie "ValueConvertable" ;;
+treat_packaged_rookie "EvictableCache" ;;
+treat_packaged_rookie "MemoizeCache" ;;
+treat_packaged_rookie "GroovyCallable" ;;
+treat_packaged_rookie "Writable" ;;
+treat_packaged_rookie "CommonCache" ;;
+treat_packaged_rookie "MetaClass" ;;
+treat_packaged_rookie "GroovyRuntimeException" ;;
+treat_packaged_rookie "GroovyObject" ;;
+
+deal_with_missing_file_in_registered_package ("CommonCache.java",22) ;;
+
+treat_packaged_rookie "ConcurrentLinkedHashMap" ;;
+treat_packaged_rookie "Internal" ;;
+treat_packaged_rookie "BooleanReturningMethodInvoker" ;;
+
+treat_packaged_rookie "CallSiteArray" ;;
+
+deal_with_missing_file_in_registered_package ("CallSiteArray.java",21) ;;
+deal_with_missing_files_in_registered_package ("CallSiteArray.java",24,26) ;;
+
+deal_with_missing_files_in_registered_package ("MetaClass.java",21,21) ;;
+
+treat_packaged_rookie "GroovyCategorySupport" ;;
+treat_packaged_rookie "MetaObjectProtocol" ;;
+treat_packaged_rookie "MetaProperty" ;;
+treat_packaged_rookie "MetaMethod" ;;
+treat_packaged_rookie "MetaMember" ;;
+treat_packaged_rookie "BeanUtils" ;;
+
+deal_with_missing_files_in_registered_package ("MetaMethod.java",21,25) ;;
+deal_with_missing_files_in_registered_package ("ParameterTypes.java",21,21) ;;
+
+deal_with_missing_file_in_registered_package ("ParameterTypes.java",22) ;;
+
+deal_with_missing_files_in_registered_package ("ParameterTypes.java",24,25) ;;
+
+deal_with_missing_files_in_registered_package ("ClassNode.java",21,36) ;;
+
+deal_with_missing_files_in_registered_package ("ClassNode.java",55,66) ;;
+
+deal_with_missing_files_in_registered_package ("MethodNodeUtils.java",21,27) ;;
+
+deal_with_missing_files_in_registered_package ("MethodNodeUtils.java",34,35) ;;
+
+deal_with_missing_files_in_registered_package ("ClassHelper.java",21,57) ;;
+
+deal_with_missing_files_in_registered_package ("ClassHelper.java",79,79) ;;
+
+deal_with_missing_files_in_registered_package ("RecordTypeASTTransformation.java",21,58) ;;
+
+deal_with_missing_files_in_registered_package ("RecordTypeASTTransformation.java",73,125) ;;
+
+deal_with_missing_files_in_registered_package ("ClassNodeUtils.java",21,34) ;;
+
+deal_with_missing_files_in_registered_package ("ClassNodeUtils.java",50,56) ;;
+
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+treat_packaged_rookie "" ;;
+
+*)
+
+(*
+let s_dir = home^"/Teuliou/Java_Hub/pre_sources/groovy" ;;
+
+let u1 = Unix_again.quick_beheaded_complete_ls s_dir ;;
+
+let u2 = List.filter (fun s->String.ends_with s ~suffix:".java") u1 ;;
+
+let u3 = Explicit.image (fun s->(s,rf (s_dir^"/"^s))) u2 ;;
+
+let u4 = Explicit.filter (fun (fn,text)->Substring.is_a_substring_of "CSTNode " text) u3 ;;
+
+let u5 = Image.image (fun (fn,text)->fn) u4 ;;
+
+let u2 = List.filter (Substring.is_a_substring_of "objectweb") u1 ;;
+
+
+
+let (offending_file,line_number) = ("ParameterTypes.java",22) ;;
+
+let ap = find_exact_location_for_registered_lib_file offending_file ;;
+let old_text = Io.read_whole_file ap ;;
+let old_indexed_lines = Lines_in_text.indexed_lines old_text ;;
+let offending_line = List.assoc line_number old_indexed_lines ;;
+
+ let offending_classpath = Cull_string.two_sided_cutting ("import ",";") offending_line ;;
+ let context = Cull_string.before_rightmost offending_classpath '.' 
+ and classname = Cull_string.after_rightmost offending_classpath '.' ;;
+
+let _precaution = print_string("\n\n\n"^(register_subdir_in_pointed_form context)^"\n\n\n") ;;
+
+let bad1 = treat_packaged_rookie_without_commiting_to_git "TypeUtil" ;;
+
+let rookie = "TypeUtil" ;;
+
+let temp1 = Image.image (
+    fun holder ->
+    (holder,home ^ "/Teuliou/Java_Hub/sources/"^holder^"/"^rookie ^ ".java")
+  ) (currently_registered_library_directories ()) ;;
+
+  *)
+
+(*
+
+let (offending_file,line_number) = ("Closure.java",24) ;;
+
+let ap = find_exact_location_for_registered_lib_file offending_file ;;
+
+let old_text = Io.read_whole_file ap ;;
+
+let old_indexed_lines = Lines_in_text.indexed_lines old_text ;;
+
+let offending_line = List.assoc line_number old_indexed_lines ;;
+
+let offending_package = Cull_string.two_sided_cutting ("import ",";") offending_line ;;
+
+let context = Cull_string.before_rightmost offending_package '.';; 
+
+let classname = Cull_string.after_rightmost offending_package '.';; 
+
+let precaution = print_string("\n\n\n"^(register_subdir_if_necessary context)^"\n\n\n") ;;
+
+let holder = Replace_inside.replace_inside_text (".","/") context ;;
+
+let new_candidate_holders = Ordered.insert Total_ordering.lex_for_strings 
+ holder (currently_registered_library_directories ()) ;;
+
+let first_action = (candidate_holders_ref:=new_candidate_holders) ;;
+
+let second_action = treat_packaged_rookie classname ;;
+
+let fixed_line = "import visible."^offending_package^";";;
+
+let new_text_lines = Image.image (fun (idx,line)->
+  if idx=line_number then fixed_line else line) old_indexed_lines ;;
+
+let new_text = String.concat "\n" new_text_lines ;;
+
+let third_action = Io.overwrite_with ap new_text ;;
+
+
+register_subdir_if_necessary "org.apache.groovy.util";;
+
+
+let pointed_and_problematic = "org.apache.groovy.util";;
+let s_dir1 = root_for_visible_libs ^ (Replace_inside.replace_inside_text (".","/") pointed_and_problematic) ;;
+
+
+let z1 = currently_registered_files () ;;
+
+let z2 = Image.image (fun subdir->
+  "mkdir -p "^java_content_root^"visible/"^subdir
+) (currently_registered_library_directories ()) ;;
+
+let act_on_z2 () = Image.image Sys.command z2 ;;
+
+let z3 = Image.image (
+  fun ap ->
+    let s_ap = Absolute_path.to_string ap in 
+    let t = Cull_string.cobeginning 94 s_ap in 
+    "mv "^s_ap^" "^java_content_root^"visible/"^(Cull_string.before_rightmost t '/')^"/"
+) z1 ;;
+
+let act_on_z3 () = Image.image Sys.command z3 ;;
+
+let reps = Image.image (fun holder->
+   let pointed_holder = Replace_inside.replace_inside_text ("/",".") holder in 
+   ("import com.pearly.spring_short_app."^pointed_holder,
+    "import visible."^pointed_holder) 
+) (currently_registered_library_directories ()) ;;
+
+
+let rename_in_files () = List.iter (
+  Replace_inside.replace_several_inside_file reps
+) z1 ;;
+
+
+
+
+let act0 () = Replace_inside.replace_several_inside_file
+  [("org.crac.management.CRaCMXBean", 
+    "com.pearly.spring_short_app.jdk.crac.management.CRaCMXBean")] ap1 ;;   
+ 
+
+
+
+
+let dir1 = Directory_name.of_string "~/Teuliou/Java_Hub/pre_sources/groovy" ;;
+
+let s_dir1 = Directory_name.connectable_to_subpath dir1 ;;
+
+let u1 = Chronometer.it Unix_again.quick_beheaded_complete_ls s_dir1 ;;
+
+let u2 = List.filter (
+  fun s->String.ends_with s ~suffix:"Closure.java"
+) u1 ;;
+
+let u3 = List.filter (
+  fun s->Substring.is_a_substring_of "CRaCMXBean" s
+) u1 ;;
+
+let dir2 = Directory_name.of_string "~/Teuliou/Java_Hub/spring-short-app/src/main/java/com/pearly/" ;;
+
+let s_dir2 = Directory_name.connectable_to_subpath dir2 ;;
+
+let ap1 = Absolute_path.of_string (s_dir2^"spring_short_app/org/springframework/boot/SpringApplicationRunListener.java") ;;
+
+
+Replace_inside.replace_several_inside_file
+  [(" SpringApplication\n", " AutumnApplication\n");
+   (" SpringApplication ", " AutumnApplication ");
+   (" SpringApplication\"", " AutumnApplication\"");
+   (" SpringApplication#", " AutumnApplication#");
+   (" SpringApplication(", " AutumnApplication(");
+   (" SpringApplication.", " AutumnApplication.");
+   (" SpringApplication}", " AutumnApplication}");
+   ("#SpringApplication(", "#AutumnApplication(");
+   ("(SpringApplication ", "(AutumnApplication ");
+   ("(SpringApplication.", "(AutumnApplication.")] ap1 ;;
+
+let ap1_content = Io.read_whole_file ap1 ;;
+let u4 = Substring.ranges_for_occurrences_of_in "SpringApplication" ap1_content ;;
+
+let u5 = Image.image (fun (i,j)->Cull_string.interval ap1_content (i-1) (j+1)) u4 ;;
+
+let u6 = Ordered.sort Total_ordering.lex_for_strings u5 ;;
+
+let (u7,u8) = List.partition no_letters_at_endpoints u6 ;;
+
+let u9 = Image.image (fun s->(s,
+  Replace_inside.replace_inside_text ("SpringApplication","AutumnApplication") s)
+) u7 ;;
+
+let dir3 = Directory_name.of_string "~/Teuliou/Java_Hub/crac" ;;
+
+let s_dir3 = Directory_name.connectable_to_subpath dir3 ;;
+
+let u10 = Chronometer.it Unix_again.quick_beheaded_complete_ls s_dir3 ;;
+
+let u11 = List.filter (
+  fun s->Substring.is_a_substring_of "RestoreException" s
+) u10 ;;
+
+let dir4 = Directory_name.of_string "~/Teuliou/Java_Hub/spring-short-app" ;;
+
+let s_dir4 = Directory_name.connectable_to_subpath dir4 ;;
+
+let u12 = Chronometer.it Unix_again.quick_beheaded_complete_ls s_dir4 ;;
+
+let u13 = List.filter (fun s->String.ends_with s ~suffix:".iml") u12 ;;
+
+
+
+let temp1 = Image.image (
+  fun holder ->
+    (holder,home ^ "/Teuliou/Java_Hub/sources/"^holder^"/"^rookie ^ ".java")
+) candidate_holders ;;
+
+let compatible_holders = List.filter (
+  fun (holder,full_path) -> Sys.file_exists full_path
+) temp1 ;;
+
+let (holder,rookie_location_in_jar) = List.hd compatible_holders ;;
+let new_container_for_rookie = 
+  app_root ^ "src/main/java/com/pearly/spring_short_app/"^holder^"/" ;;
+
+
+let command_for_rookie_copy = "cp "^rookie_location_in_jar^" "^new_container_for_rookie ;;
+
+let act1 () = Sys.command command_for_rookie_copy ;;
+
+let copied_rookie_ap = Absolute_path.of_string (new_container_for_rookie^rookie ^ ".java") ;; 
+
+let pointed_holder = Replace_inside.replace_inside_text ("/",".") holder ;;
+
+let replacements  =
+   ("package "^pointed_holder^";",
+    "package com.pearly.spring_short_app."^pointed_holder^";") ::
+    common_replacements;;
+
+let act2 () =
+   Replace_inside.replace_several_inside_file 
+   replacements copied_rookie_ap ;;
+
+
+
+let core_git_command = gitc^" add . && "^gitc^" commit -m \"add "^rookie^"\" && "^gitc^" push" ;;
+
+let git_commands = 
+  [
+    "cd "^app_root;
+    core_git_command;
+    "cd "^home^"/Teuliou/OCaml/skeptical_duck";
+  ] ;;
+
+
+
+let act3 () =
+   Unix_command.conditional_multiple_uc git_commands ;;   
+
+*)   
+end;;
+
+(************************************************************************************************************************
  Entry 211 : Put miscellaneous lists in a PARI-GP file
 ************************************************************************************************************************)
 module Snip211 = struct 
