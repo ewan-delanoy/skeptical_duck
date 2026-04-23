@@ -13,29 +13,30 @@ let enclose s=
   let encloser="\"" in
   encloser^(String.escaped s)^encloser;;
 
-let sophisticated_enclose original_txt =
-  let txt = "a"^original_txt^"b" in  
-  let temp1 = Str.split (Str.regexp_string "\n") txt in 
+let sophisticated_enclose txt =
+  let temp1 = Str.split_delim (Str.regexp_string "\n") txt in 
   let indexed_temp1 = Int_range.index_everything temp1 
   and m=List.length temp1 in 
   let encloser="\"" in
   let temp2 = Image.image (fun (idx,line)->
-   let p = String.length line in 
-   let core = (
-     if idx=1 then String.sub line 1 (p-1) else 
-     if idx=m then String.sub line 0 (p-1) else line
-   ) in 
-   let connector1_if_not_finished=(if idx=m then "" else "\\n")
-   and connector2_if_not_finished=(if idx=m then "" else "^") in
-    encloser^(String.escaped core)^connector1_if_not_finished^
-    encloser^connector2_if_not_finished
+   let connector1_if_not_finished=(if idx=m then "" else "\\n") in
+   (idx,encloser^(String.escaped line)^connector1_if_not_finished^
+   encloser) 
   ) indexed_temp1 in
-  print_string("\n\n\n"^(String.concat "\n" temp2)^"\n\n\n");;
+  let cleaned_temp2=List.filter (
+    fun pair-> pair<>(m,"\"\"") 
+  ) temp2 in 
+  let cleaned_m=List.length cleaned_temp2 in 
+  let temp3 = Image.image (fun (idx,line)->
+   let connector2_if_not_finished=(if idx=cleaned_m then "" else "^") in
+   line^connector2_if_not_finished 
+  ) cleaned_temp2 in
+  String.concat "\n" temp3;;
   
 (*
 
-sophisticated_enclose "123\n45\n678\n912" ;;
-sophisticated_enclose "\n123\n45\n678\n912\n" ;;
+print_string("\n\n\n"^(sophisticated_enclose "123\n45\n678\n912")^"\n\n\n") ;;
+print_string("\n\n\n"^(sophisticated_enclose "\n123\n45\n678\n912\n")^"\n\n\n") ;;
 
 *)
 
