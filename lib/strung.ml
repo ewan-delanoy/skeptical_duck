@@ -35,6 +35,7 @@ let sophisticated_enclose txt =
   
 (*
 
+print_string("\n\n\n"^(sophisticated_enclose "12\n\n56")^"\n\n\n") ;;
 print_string("\n\n\n"^(sophisticated_enclose "123\n45\n678\n912")^"\n\n\n") ;;
 print_string("\n\n\n"^(sophisticated_enclose "\n123\n45\n678\n912\n")^"\n\n\n") ;;
 
