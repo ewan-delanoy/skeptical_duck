@@ -1,6 +1,1011 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 215 : Second attempt to make dependencies visible in a Java project
+************************************************************************************************************************)
+module Snip215 = struct 
+
+let java_hub =  home ^ "/Teuliou/Java_Hub/" ;;
+let dir_for_unused_files_in_app = java_hub ^ "unused_in_spring_short_app/";;
+let app_root = java_hub ^ "spring-short-app/";;
+let java_content_root = app_root ^ "src/main/java/" ;;
+let unslashed_visible_libs_root = java_content_root ^ "visible";;
+let visible_libs_root = unslashed_visible_libs_root ^ "/";;
+
+let gitc = "git -C "^app_root^" ";;
+
+let backup_to_remote_git commit_msg = 
+  let core_git_command = 
+    gitc^" add . && "^
+    gitc^" commit -m \""^(commit_msg)^"\" && "^
+    gitc^" push" in 
+  let git_commands = 
+  [
+    "cd "^app_root;
+    core_git_command;
+    "cd "^home^"/Teuliou/OCaml/skeptical_duck";
+  ] in 
+  Unix_command.conditional_multiple_uc git_commands ;; 
+
+
+let ref_for_visibility = ref true ;;  
+
+let remove_visible_subdir ()= 
+  let answer = Unix_command.conditional_multiple_uc 
+  [ "rm -rf ~/Downloads/visible";
+    "mv "^unslashed_visible_libs_root^" ~/Downloads/"] in 
+  let _=(ref_for_visibility:=answer) in 
+  answer;;
+
+let reintroduce_visible_subdir ()= 
+   let answer = Sys.command ("mv ~/Downloads/visible "^java_content_root) in 
+   let _=(ref_for_visibility:=true) in 
+  answer;;
+
+
+
+
+
+
+let copied_packages = [
+   ("org/springframework/boot/spring-boot/4.0.5/spring-boot-4.0.5-sources.jar","org.springframework.boot");
+   ("org/springframework/spring-context/7.0.6/spring-context-7.0.6-sources.jar","org.springframework.context");
+] ;;
+
+let replacements_for_package (_,pkg) =
+   [
+  
+  ("\t"^pkg,"\tvisible."^pkg);
+  ("("^pkg,"(visible."^pkg);
+  ("<"^pkg,"<visible."^pkg);
+  ("final "^pkg,"final visible."^pkg);
+  ("import "^pkg,"import visible."^pkg);
+  ("static "^pkg,"static visible."^pkg); 
+] ;;
+
+let commands_for_population_of_visible_subdir (jar_path,pointed_path)=
+  let last_name =  Cull_string.after_rightmost pointed_path '.' in 
+  [
+    "unzip "^home^"/.m2/repository/"^jar_path;
+    "mv META-INF/MANIFEST.MF META-INF/MANIFEST.MF_FROM_"^(String.uppercase_ascii last_name)^"  2>/dev/null";
+    "mv META-INF/spring/aot.factories META-INF/spring/aot.factories_from_"^(String.lowercase_ascii last_name)^"  2>/dev/null"; 
+  ] ;;
+
+let commands_for_population_of_visible_dir = 
+  let old_dir = Sys.getcwd() in 
+  let unflattened_unzippings = Image.image commands_for_population_of_visible_subdir copied_packages in
+  let unzippings= List.flatten unflattened_unzippings in 
+   ([
+     "mkdir -p "^visible_libs_root;
+     "cd "^visible_libs_root
+   ] 
+   @
+   unzippings
+   @
+    [ 
+     "cd "^old_dir;
+   ]) ;;
+
+(* Call this function only after act2_rename_main_file() below has been executed *)   
+let compute_list_of_visibilized_files () = 
+  let temp = Unix_again.quick_beheaded_complete_ls visible_libs_root in 
+  let unordered = List.filter_map (
+    fun fn -> if String.ends_with fn ~suffix:".java"
+        then Some (Cull_string.two_sided_cutting ("",".java") fn)
+        else None
+  ) temp in 
+  Ordered.sort Total_ordering.lex_for_strings unordered;;
+
+let ref_for_visibilized_files = ref [] ;;
+
+let list_of_visibilized_files () = 
+  if (!ref_for_visibilized_files)<>[]
+  then !ref_for_visibilized_files
+  else 
+  let answer = compute_list_of_visibilized_files () in 
+  let _ = (ref_for_visibilized_files:=answer) in 
+  answer;;
+
+let move_file_from_visible_to_unused  filepath = 
+  let _=(if not(!ref_for_visibility) then let _=reintroduce_visible_subdir() in ()) in 
+  let to_be_moved = visible_libs_root^filepath^".java" in
+  if not(Sys.file_exists to_be_moved)
+  then false
+  else  
+  let dirpath = Cull_string.before_rightmost filepath '/' in 
+  let involved_dir = dir_for_unused_files_in_app^dirpath^"/" in  
+  let cmds = [
+   "mkdir -p "^involved_dir;
+   "mv "^to_be_moved^" "^involved_dir
+  ] in 
+  let res = Unix_command.conditional_multiple_uc cmds in
+  let _ =(if res then 
+    let old_visible_files = (!ref_for_visibilized_files) in   
+    ref_for_visibilized_files:=Ordered.outsert Total_ordering.lex_for_strings 
+       filepath old_visible_files
+  ) in 
+  res ;;  
+
+let move_directory_from_visible_to_unused  possibly_endslashed_dirpath = 
+  let _=(if not(!ref_for_visibility) then let _=reintroduce_visible_subdir() in ()) in 
+  let dirpath = (
+    if not(String.ends_with possibly_endslashed_dirpath ~suffix:"/")
+    then possibly_endslashed_dirpath 
+    else Cull_string.two_sided_cutting ("","/") possibly_endslashed_dirpath   
+  ) in
+  let to_be_moved = visible_libs_root^dirpath in
+  if not(Sys.file_exists to_be_moved)
+  then false
+  else  
+  let isolated_container_path = (Cull_string.before_rightmost_possibly_all dirpath '/')^"/" in
+  let container_path = dir_for_unused_files_in_app ^ isolated_container_path in 
+  let cmd1 = "mkdir -p "^container_path 
+  and cmd2=  "rm -rf "^dirpath
+  and cmd3 = "mv "^to_be_moved^" "^container_path in  
+  let res = Unix_command.conditional_multiple_uc [cmd1;cmd2;cmd3] in
+  let _ =(if res then 
+    let old_visible_files = (!ref_for_visibilized_files) in   
+    ref_for_visibilized_files:=List.filter (
+     fun fn ->not(String.starts_with fn ~prefix:dirpath)
+    ) old_visible_files
+  ) in 
+  res ;;  
+
+let apply_replacements_to_all_visible_files replacements = 
+  let temp1 = list_of_visibilized_files () in 
+  let all_files = Image.image (
+    fun short_path -> Absolute_path.of_string 
+    (visible_libs_root^short_path^".java")
+  ) temp1 in 
+  Explicit.image (
+   Replace_inside.replace_several_inside_file replacements 
+  ) all_files ;;
+
+let apply_replacements_to_visible_file replacements short_path= 
+  let ap = Absolute_path.of_string (visible_libs_root^short_path^".java") in 
+  Replace_inside.replace_several_inside_file replacements ap ;;
+
+let apply_replacements_to_visible_files l= 
+  Explicit.image (fun (short_path,replacements)->
+      apply_replacements_to_visible_file replacements short_path
+  ) l ;;
+
+
+let command_for_renaming_the_main_file = 
+  let dirpath = "org/springframework/boot/" in 
+  "mv "^visible_libs_root^dirpath^"SpringApplication.java "^
+        visible_libs_root^dirpath^"AutumnApplication.java";;
+
+let left_offset_on_parenthesed_replacement_pair = String.make 1 ' ';; 
+
+let lines_in_unparenthesed_replacement_pair text (i,j) =
+  let original_text = Lines_in_text.interval text i j in 
+  let old_descr = Strung.sophisticated_enclose original_text in
+  let lines_in_descr = Str.split_delim (Str.regexp "\n") old_descr in 
+  "("::
+  (Image.image (fun line->left_offset_on_parenthesed_replacement_pair^line) lines_in_descr)
+  @(
+    ","::
+   (Image.image (fun line->left_offset_on_parenthesed_replacement_pair^line) lines_in_descr) 
+  @[")"]) ;;
+
+let left_offset_on_unbracketed_list = String.make 1 ' ';; 
+
+let lines_in_bracketed_list text ranges =
+  let lines1 = List.flatten(Image.image (lines_in_unparenthesed_replacement_pair text) ranges) in 
+  let indexed_lines1 = Int_range.index_everything lines1 
+  and m=List.length(lines1) in 
+  let lines2=Image.image (fun (idx,line)->
+    if (idx=m)||(Cull_string.trim_spaces(line)<>")") then line else line^";") indexed_lines1 in 
+  "["::((Image.image (fun line->left_offset_on_unbracketed_list^line) lines2)@["]"]) ;;
+
+let left_offset_on_unparenthesed_top_pair = String.make 1 ' ';; 
+
+let lines_in_parenthesed_top_pair short_path ranges = 
+  let ap = Absolute_path.of_string (visible_libs_root^short_path^".java") in 
+  let text = Io.read_whole_file ap in 
+  let lines = lines_in_bracketed_list text ranges in 
+  "("::
+  (left_offset_on_unparenthesed_top_pair^"\""^short_path^"\",")::
+  (
+    Image.image (fun line->left_offset_on_unparenthesed_top_pair^line) lines
+  )@
+  [")"];;
+
+let left_offset_on_replacements_description = String.make 3 ' ';; 
+
+let description_for_replacements text ranges =
+  let lines = lines_in_parenthesed_top_pair text ranges in  
+  let enhanced_lines = Image.image (fun line->left_offset_on_replacements_description^line) lines in 
+  String.concat "\n" enhanced_lines ;; 
+
+
+let describe_replacements short_path ranges =
+  print_string("\n\n\n"^(description_for_replacements short_path ranges)^"\n\n\n") ;;
+
+
+
+
+let auxiliary1=
+"\n"^
+"\n\t\tprivate final StandardStartup fallback = new StandardStartup();\n"^
+"\n"^
+"\t\t@Override\n"^
+"\t\tprotected @Nullable Long processUptime() {\n"^
+"\t\t\tLong uptime = CRaCMXBean.getCRaCMXBean().getUptimeSinceRestore();\n"^
+"\t\t\treturn (uptime >= 0) ? uptime : this.fallback.processUptime();\n"^
+"\t\t}\n"^
+"\n"^
+"\t\t@Override\n"^
+"\t\tprotected String action() {\n"^
+"\t\t\treturn (restoreTime() >= 0) ? \"Restored\" : this.fallback.action();\n"^
+"\t\t}\n"^
+"\n"^
+"\t\tprivate long restoreTime() {\n"^
+"\t\t\treturn CRaCMXBean.getCRaCMXBean().getRestoreTime();\n"^
+"\t\t}\n"^
+"\n"^
+"\t\t@Override\n"^
+"\t\tprotected long startTime() {\n"^
+"\t\t\tlong restoreTime = restoreTime();\n"^
+"\t\t\treturn (restoreTime >= 0) ? restoreTime : this.fallback.startTime();\n"^
+"\t\t}\n"^
+"\n";;
+
+let auxiliary2=
+"\t\tEnvironment environment = instantiator.getArg(Environment.class);\n"^
+      "\t\tStackTracePrinter stackTracePrinter = instantiator.getArg(StackTracePrinter.class);\n"^
+      "\t\tContextPairs contextPairs = instantiator.getArg(ContextPairs.class);\n"^
+      "\t\tThrowableProxyConverter throwableProxyConverter = instantiator.getArg(ThrowableProxyConverter.class);\n"^
+      "\t\tStructuredLoggingJsonMembersCustomizer.Builder<?> jsonMembersCustomizerBuilder = instantiator\n"^
+      "\t\t\t.getArg(StructuredLoggingJsonMembersCustomizer.Builder.class);\n"^
+      "\t\tAssert.state(environment != null, \"'environment' must not be null\");\n"^
+      "\t\tAssert.state(contextPairs != null, \"'contextPairs' must not be null\");\n"^
+      "\t\tAssert.state(throwableProxyConverter != null, \"'throwableProxyConverter' must not be null\");\n"^
+      "\t\tAssert.state(jsonMembersCustomizerBuilder != null, \"'jsonMembersCustomizerBuilder' must not be null\");\n"^
+      "\t\treturn new ElasticCommonSchemaStructuredLogFormatter(environment, stackTracePrinter, contextPairs,\n"^
+      "\t\t\t\tthrowableProxyConverter, jsonMembersCustomizerBuilder);\n" ;;
+
+let auxiliary3=
+"\n"^
+      "\t\tprivate static final Annotation[] ANNOTATION_ARRAY = new Annotation[0];\n"^
+      "\n"^
+      "\t\tprivate final List<ConstructorParameter> constructorParameters;\n"^
+      "\n"^
+      "\t\tprivate KotlinValueObject(Constructor<T> primaryConstructor, KFunction<T> kotlinConstructor,\n"^
+      "\t\t\t\tResolvableType type) {\n"^
+      "\t\t\tsuper(primaryConstructor);\n"^
+      "\t\t\tthis.constructorParameters = parseConstructorParameters(kotlinConstructor, type);\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t\tprivate List<ConstructorParameter> parseConstructorParameters(KFunction<T> kotlinConstructor,\n"^
+      "\t\t\t\tResolvableType type) {\n"^
+      "\t\t\tList<KParameter> parameters = kotlinConstructor.getParameters();\n"^
+      "\t\t\tList<ConstructorParameter> result = new ArrayList<>(parameters.size());\n"^
+      "\t\t\tfor (KParameter parameter : parameters) {\n"^
+      "\t\t\t\tString name = getParameterName(parameter);\n"^
+      "\t\t\t\tResolvableType parameterType = ResolvableType\n"^
+      "\t\t\t\t\t.forType(ReflectJvmMapping.getJavaType(parameter.getType()), type);\n"^
+      "\t\t\t\tAnnotation[] annotations = parameter.getAnnotations().toArray(ANNOTATION_ARRAY);\n"^
+      "\t\t\t\tAssert.state(name != null, \"'name' must not be null\");\n"^
+      "\t\t\t\tresult.add(new ConstructorParameter(name, parameterType, annotations));\n"^
+      "\t\t\t}\n"^
+      "\t\t\treturn Collections.unmodifiableList(result);\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t\tprivate @Nullable String getParameterName(KParameter parameter) {\n"^
+      "\t\t\treturn MergedAnnotations.from(parameter, parameter.getAnnotations().toArray(ANNOTATION_ARRAY))\n"^
+      "\t\t\t\t.get(Name.class)\n"^
+      "\t\t\t\t.getValue(MergedAnnotation.VALUE, String.class)\n"^
+      "\t\t\t\t.orElseGet(parameter::getName);\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t\t@Override\n"^
+      "\t\tList<ConstructorParameter> getConstructorParameters() {\n"^
+      "\t\t\treturn this.constructorParameters;\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t\tstatic <T> @Nullable ValueObject<T> get(Constructor<T> bindConstructor, ResolvableType type,\n"^
+      "\t\t\t\tParameterNameDiscoverer parameterNameDiscoverer) {\n"^
+      "\t\t\tKFunction<T> kotlinConstructor = ReflectJvmMapping.getKotlinFunction(bindConstructor);\n"^
+      "\t\t\tif (kotlinConstructor != null) {\n"^
+      "\t\t\t\treturn new KotlinValueObject<>(bindConstructor, kotlinConstructor, type);\n"^
+      "\t\t\t}\n"^
+      "\t\t\treturn DefaultValueObject.get(bindConstructor, type, parameterNameDiscoverer);\n"^
+      "\t\t}\n"^
+      "\n";;
+
+let act1_populate_visible_dir () = 
+  Unix_command.conditional_multiple_uc 
+    commands_for_population_of_visible_dir ;;
+
+
+let act2_rename_main_file () = Sys.command command_for_renaming_the_main_file ;;
+
+let act3_exclude_some_directories () =
+    Image.image move_directory_from_visible_to_unused 
+    [
+      "org/springframework/boot/logging/log4j2/";
+      "org/springframework/resilience/retry/";
+      "org/springframework/scheduling/concurrent";
+      "org/springframework/scripting/bsh";
+      "org/springframework/validation/beanvalidation";
+    ] ;;
+
+
+
+let act4_exclude_some_java_files () =
+    Image.image move_file_from_visible_to_unused 
+    [
+      "org/springframework/boot/context/properties/ConfigurationPropertiesJsr303Validator";
+      "org/springframework/boot/diagnostics/analyzer/ValidationExceptionFailureAnalyzer";
+      "org/springframework/boot/json/GsonJsonParser";
+      "org/springframework/boot/logging/logback/CorrelationIdConverter";
+      "org/springframework/boot/logging/logback/ElasticCommonSchemaStructuredLogFormatter";
+      "org/springframework/boot/validation/MessageInterpolatorFactory";
+      "org/springframework/boot/validation/MessageSourceMessageInterpolator";
+      "org/springframework/boot/web/servlet/support/SpringBootServletInitializer";
+
+      "org/springframework/cache/interceptor/CacheAspectSupport";
+      "org/springframework/cache/interceptor/CacheInterceptor";
+      "org/springframework/cache/interceptor/CacheProxyFactoryBean";
+
+      "org/springframework/context/annotation/EnableLoadTimeWeaving";
+      "org/springframework/context/annotation/LoadTimeWeavingConfigurer";
+      "org/springframework/context/event/ApplicationListenerMethodAdapter";
+      "org/springframework/context/event/DefaultEventListenerFactory";
+      "org/springframework/context/weaving/AspectJWeavingEnabler";
+      "org/springframework/context/weaving/DefaultContextLoadTimeWeaver";
+
+      "org/springframework/format/number/money/CurrencyUnitFormatter"; 
+
+      "org/springframework/validation/beanvalidation/BeanValidationPostProcessor";
+      "org/springframework/validation/beanvalidation/BeanValidationBeanRegistrationAotProcessor";
+    ] ;;
+
+
+
+
+let list_of_kotlin_files () =
+   let all_files = Unix_again.quick_beheaded_complete_ls visible_libs_root in
+   List.filter (
+    fun fn ->  String.ends_with fn ~suffix:".kt"
+  ) all_files ;;
+
+let commands_for_excluding_kotlin_files () =
+   List.flatten(Image.image (
+    fun fn -> let dirpath = (Cull_string.before_rightmost fn '/')^"/" in 
+    [
+      "mkdir -p "^dir_for_unused_files_in_app^dirpath;
+       "mv "^visible_libs_root^fn^" "^dir_for_unused_files_in_app^dirpath
+    ]
+   ) (list_of_kotlin_files()) );; 
+
+let act5_exclude_kotlin_files () = Unix_command.conditional_multiple_uc 
+  (commands_for_excluding_kotlin_files());;
+
+let list_for_renaming_main_class_in_the_code = 
+  [("\tSpringApplication ", "\tAutumnApplication ");
+   ("\tSpringApplication.", "\tAutumnApplication.");
+   (" SpringApplication\n", " AutumnApplication\n");
+   (" SpringApplication ", " AutumnApplication ");
+   (" SpringApplication\"", " AutumnApplication\"");
+   (" SpringApplication#", " AutumnApplication#");
+   (" SpringApplication(", " AutumnApplication(");
+   (" SpringApplication.", " AutumnApplication.");
+   (" SpringApplication}", " AutumnApplication}");
+   ("#SpringApplication(", "#AutumnApplication(");
+   ("(SpringApplication ", "(AutumnApplication ");
+   ("(SpringApplication)", "(AutumnApplication)");
+   ("(SpringApplication.", "(AutumnApplication.");
+   (".SpringApplication ", ".AutumnApplication ");
+   (".SpringApplication;", ".AutumnApplication;");
+   (".SpringApplication.", ".AutumnApplication.")
+   ]
+ ;;
+
+let act6_rename_main_class_in_the_code () = apply_replacements_to_all_visible_files
+  list_for_renaming_main_class_in_the_code ;;
+
+let data_for_renaming_main_package_in_the_code =
+   let factorizable_part = List.flatten (
+     Image.image replacements_for_package copied_packages
+   ) in 
+    ("package org","package visible.org") :: factorizable_part ;;
+
+let act7_rename_packages_in_the_code () = apply_replacements_to_all_visible_files
+  data_for_renaming_main_package_in_the_code;;
+
+
+let data_for_commenting_out_unused_parts_in_code = ref [] ;;
+
+data_for_commenting_out_unused_parts_in_code:=[
+    "org/springframework/boot/AutumnApplication",
+    [
+      (
+        "import org.crac.management.CRaCMXBean;",
+        "// jmport org.crac.management.CRaCMXBean;"
+      );
+      (
+        "\t\t\tClassLoader classLoader = Startup.class.getClassLoader();\n"^
+        "\t\t\treturn (ClassUtils.isPresent(\"jdk.crac.management.CRaCMXBean\", classLoader)\n"^
+        "\t\t\t\t\t&& ClassUtils.isPresent(\"org.crac.management.CRaCMXBean\", classLoader))\n"^
+        "\t\t\t\t\t\t\t? new CoordinatedRestoreAtCheckpointStartup() : new StandardStartup();",
+        
+        "return(new StandardStartup()); /* \t\t\tDlassLoader classLoader = Startup.class.getClassLoader();\n"^
+        "\t\t\treturn (ClassUtils.isPresent(\"jdk.crac.management.CRaCMXBean\", classLoader)\n"^
+        "\t\t\t\t\t&& ClassUtils.isPresent(\"org.crac.management.CRaCMXBean\", classLoader))\n"^
+        "\t\t\t\t\t\t\t? new CoordinatedRestoreAtCheckpointStartup() : new StandardStartup(); */"
+      );
+      (
+        "\tprivate static final class CoordinatedRestoreAtCheckpointStartup extends Startup {"^
+        auxiliary1^
+        "\t}",
+        "\t/* qrivate static final class CoordinatedRestoreAtCheckpointStartup extends Startup {"^
+        auxiliary1^
+        "\t} */"
+      );
+    ];
+    (
+    "org/springframework/boot/BeanDefinitionLoader",
+    [
+     (
+      "import groovy.lang.Closure;"
+     ,
+      "// jmport groovy.lang.Closure;"
+     );
+     (
+      "\t\tif (this.groovyReader != null && GroovyBeanDefinitionSource.class.isAssignableFrom(source)) {\n"^
+      "\t\t\t// Any GroovyLoaders added in beans{} DSL can contribute beans here\n"^
+      "\t\t\tGroovyBeanDefinitionSource loader = BeanUtils.instantiateClass(source, GroovyBeanDefinitionSource.class);\n"^
+      "\t\t\t((GroovyBeanDefinitionReader) this.groovyReader).beans(loader.getBeans());\n"^
+      "\t\t}"
+     ,
+      "\t\t/* jf (this.groovyReader != null && GroovyBeanDefinitionSource.class.isAssignableFrom(source)) {\n"^
+      "\t\t\t// Any GroovyLoaders added in beans{} DSL can contribute beans here\n"^
+      "\t\t\tGroovyBeanDefinitionSource loader = BeanUtils.instantiateClass(source, GroovyBeanDefinitionSource.class);\n"^
+      "\t\t\t((GroovyBeanDefinitionReader) this.groovyReader).beans(loader.getBeans());\n"^
+      "\t\t} */"
+     );
+     (
+      "\t@FunctionalInterface\n"^
+      "\tprotected interface GroovyBeanDefinitionSource {\n"^
+      "\n"^
+      "\t\tClosure<?> getBeans();\n"^
+      "\n"^
+      "\t}"
+     ,
+      "\t/* @GunctionalInterface\n"^
+      "\tprotected interface GroovyBeanDefinitionSource {\n"^
+      "\n"^
+      "\t\tClosure<?> getBeans();\n"^
+      "\n"^
+      "\t} */"
+     )
+    ]
+   );
+   (
+    "org/springframework/boot/context/properties/bind/BindableRuntimeHintsRegistrar",
+    [
+     (
+      "import kotlin.jvm.JvmClassMappingKt;\n"^
+      "import kotlin.reflect.KClass;"
+     ,
+      "// import jotlin.jvm.JvmClassMappingKt;\n"^
+      "// import jotlin.reflect.KClass;"
+     );
+     (
+      "\t\t\t\tif (KotlinDetector.isKotlinType(this.bindConstructor.getDeclaringClass())) {\n"^
+      "\t\t\t\t\tKotlinDelegate.handleConstructor(hints, this.bindConstructor);\n"^
+      "\t\t\t\t}\n"^
+      "\t\t\t\telse {\n"^
+      "\t\t\t\t\thints.registerConstructor(this.bindConstructor, ExecutableMode.INVOKE);\n"^
+      "\t\t\t\t}"
+     ,
+      "\t\t\t\thints.registerConstructor(this.bindConstructor, ExecutableMode.INVOKE); /* jf (KotlinDetector.isKotlinType(this.bindConstructor.getDeclaringClass())) {\n"^
+      "\t\t\t\t\tKotlinDelegate.handleConstructor(hints, this.bindConstructor);\n"^
+      "\t\t\t\t}\n"^
+      "\t\t\t\telse {\n"^
+      "\t\t\t\t\thints.registerConstructor(this.bindConstructor, ExecutableMode.INVOKE);\n"^
+      "\t\t\t\t} */"
+     );
+     (
+      "\tprivate static final class KotlinDelegate {\n"^
+      "\n"^
+      "\t\tstatic void handleConstructor(ReflectionHints hints, Constructor<?> constructor) {\n"^
+      "\t\t\tKClass<?> kClass = JvmClassMappingKt.getKotlinClass(constructor.getDeclaringClass());\n"^
+      "\t\t\tif (kClass.isData()) {\n"^
+      "\t\t\t\thints.registerType(constructor.getDeclaringClass(), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);\n"^
+      "\t\t\t}\n"^
+      "\t\t\telse {\n"^
+      "\t\t\t\thints.registerConstructor(constructor, ExecutableMode.INVOKE);\n"^
+      "\t\t\t}\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t}"
+     ,
+      "\t/* qrivate static final class KotlinDelegate {\n"^
+      "\n"^
+      "\t\tstatic void handleConstructor(ReflectionHints hints, Constructor<?> constructor) {\n"^
+      "\t\t\tKClass<?> kClass = JvmClassMappingKt.getKotlinClass(constructor.getDeclaringClass());\n"^
+      "\t\t\tif (kClass.isData()) {\n"^
+      "\t\t\t\thints.registerType(constructor.getDeclaringClass(), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);\n"^
+      "\t\t\t}\n"^
+      "\t\t\telse {\n"^
+      "\t\t\t\thints.registerConstructor(constructor, ExecutableMode.INVOKE);\n"^
+      "\t\t\t}\n"^
+      "\t\t}\n"^
+      "\n"^
+      "\t} */"
+     )
+    ]
+   );
+    (
+    "org/springframework/boot/context/properties/ConfigurationPropertiesBinder",
+    [
+     (
+      "\t\tthis.jsr303Present = ConfigurationPropertiesJsr303Validator.isJsr303Present(applicationContext);"
+     ,
+      "\t\tthis.jsr303Present = false; // DonfigurationPropertiesJsr303Validator.isJsr303Present(applicationContext);"
+     );
+     (
+      "\t\tif (this.jsr303Present && target.getAnnotation(Validated.class) != null) {\n"^
+      "\t\t\tClass<?> resolved = target.getType().resolve();\n"^
+      "\t\t\tAssert.state(resolved != null, \"'resolved' must not be null\");\n"^
+      "\t\t\tvalidators.add(getJsr303Validator(resolved));\n"^
+      "\t\t}"
+     ,
+      "\t\t/* jf (this.jsr303Present && target.getAnnotation(Validated.class) != null) {\n"^
+      "\t\t\tClass<?> resolved = target.getType().resolve();\n"^
+      "\t\t\tAssert.state(resolved != null, \"'resolved' must not be null\");\n"^
+      "\t\t\tvalidators.add(getJsr303Validator(resolved));\n"^
+      "\t\t} */"
+     );
+     (
+      "\tprivate Validator getJsr303Validator(Class<?> type) {\n"^
+      "\t\treturn new ConfigurationPropertiesJsr303Validator(this.applicationContext, type);\n"^
+      "\t}"
+     ,
+      "\t/* qrivate Validator getJsr303Validator(Class<?> type) {\n"^
+      "\t\treturn new ConfigurationPropertiesJsr303Validator(this.applicationContext, type);\n"^
+      "\t} */"
+     )
+    ]
+   );
+   (
+    "org/springframework/boot/logging/logback/DefaultLogbackConfiguration",
+    [
+     (
+      "\t\tconfig.conversionRule(\"correlationId\", CorrelationIdConverter.class, CorrelationIdConverter::new);"
+     ,
+      "\t\t// donfig.conversionRule(\"correlationId\", CorrelationIdConverter.class, CorrelationIdConverter::new);"
+     )
+    ]
+   );
+    (
+    "org/springframework/boot/json/JsonParserFactory",
+    [
+     (
+      "\t\tif (ClassUtils.isPresent(\"com.google.gson.Gson\", null)) {\n"^
+      "\t\t\treturn new GsonJsonParser();\n"^
+      "\t\t}"
+     ,
+      "\t\t/* jf (ClassUtils.isPresent(\"com.google.gson.Gson\", null)) {\n"^
+      "\t\t\treturn new GsonJsonParser();\n"^
+      "\t\t} */"
+     )
+    ]
+   );
+   (
+    "org/springframework/boot/logging/logback/LogbackRuntimeHints",
+    [
+     (
+      "\t\t\t\tWhitespaceThrowableProxyConverter.class, CorrelationIdConverter.class);"
+     ,
+      "\t\t\t\tWhitespaceThrowableProxyConverter.class); // , DorrelationIdConverter.class);"
+     )
+    ]
+   );
+   (
+    "org/springframework/boot/logging/logback/StructuredLogEncoder",
+    [
+     (
+      "\t\tcommonFormatters.add(CommonStructuredLogFormat.ELASTIC_COMMON_SCHEMA, this::createEcsFormatter);"
+     ,
+      "\t\t// dommonFormatters.add(CommonStructuredLogFormat.ELASTIC_COMMON_SCHEMA, this::createEcsFormatter);"
+     );
+     (
+      "\tprivate StructuredLogFormatter<ILoggingEvent> createEcsFormatter(Instantiator<?> instantiator) {\n"^
+      auxiliary2^
+      "\t}"
+     ,
+      "\t/* qrivate StructuredLogFormatter<ILoggingEvent> createEcsFormatter(Instantiator<?> instantiator) {\n"^
+      auxiliary2^
+      "\t} */"
+     )
+    ]
+   );
+    (
+    "org/springframework/boot/context/properties/bind/ValueObjectBinder",
+    [
+     (
+      "import kotlin.reflect.KFunction;\n"^
+      "import kotlin.reflect.KParameter;\n"^
+      "import kotlin.reflect.jvm.ReflectJvmMapping;"
+     ,
+      "// jmport kotlin.reflect.KFunction;\n"^
+      "// jmport kotlin.reflect.KParameter;\n"^
+      "// jmport kotlin.reflect.jvm.ReflectJvmMapping;"
+     );
+     (
+      "\t\t\tif (KotlinDetector.isKotlinType(resolvedType)) {\n"^
+      "\t\t\t\treturn KotlinValueObject.get((Constructor<T>) bindConstructor, bindable.getType(),\n"^
+      "\t\t\t\t\t\tparameterNameDiscoverer);\n"^
+      "\t\t\t}"
+     ,
+      "\t\t\t/* jf (KotlinDetector.isKotlinType(resolvedType)) {\n"^
+      "\t\t\t\treturn KotlinValueObject.get((Constructor<T>) bindConstructor, bindable.getType(),\n"^
+      "\t\t\t\t\t\tparameterNameDiscoverer);\n"^
+      "\t\t\t}*/"
+     );
+      (
+      "\tprivate static final class KotlinValueObject<T> extends ValueObject<T> {\n"^
+      auxiliary3^
+      "\t}"
+     ,
+      "\t/* qrivate static final class KotlinValueObject<T> extends ValueObject<T> {\n"^
+      auxiliary3^
+      "\t} */"
+     )
+
+     
+    ]
+   )
+
+
+
+
+
+
+
+
+] ;;
+
+
+
+let act8_comment_out_unused_parts_in_code () = 
+   apply_replacements_to_visible_files 
+    (!data_for_commenting_out_unused_parts_in_code) ;; 
+
+
+let restart_from_sratch() =
+  (
+      let _ = remove_visible_subdir() in 
+      let _ = Sys.command ("rm -rf "^dir_for_unused_files_in_app^"*") in  
+      let _ = act1_populate_visible_dir() in 
+      let _ = act2_rename_main_file() in 
+      let _ = act3_exclude_some_directories() in 
+      let _ = act4_exclude_some_java_files() in 
+      let _ = act5_exclude_kotlin_files() in 
+      let _ = act6_rename_main_class_in_the_code() in 
+      let _ = act7_rename_packages_in_the_code() in 
+      let _ = act8_comment_out_unused_parts_in_code() in 
+      ()
+  ) ;;
+
+let mf = move_file_from_visible_to_unused ;;
+let md = move_directory_from_visible_to_unused ;;  
+
+let vsb () = reintroduce_visible_subdir () ;;
+let ivsb () = remove_visible_subdir () ;; 
+
+
+
+
+
+(*
+
+~/.m2/repository/org/springframework/boot/spring-boot/4.0.5/spring-boot-4.0.5-sources.jar!/org/springframework/boot/context/properties/source/ConfigurationPropertySources.java
+
+~/.m2/repository/org/springframework/spring-context/7.0.6/spring-context-7.0.6-sources.jar!/org/springframework/context/support/AbstractApplicationContext.java
+
+BeanValidationBeanRegistrationAotProcessor
+
+describe_replacements "org/springframework/boot/BeanDefinitionLoader" 
+   [(25,25);(156,160);(329,334)] ;;
+
+describe_replacements "org/springframework/boot/context/properties/bind/BindableRuntimeHintsRegistrar" 
+   [(30,31);(199,204);(339,351)] ;;
+
+describe_replacements "org/springframework/boot/context/properties/ConfigurationPropertiesBinder" 
+   [(89,89);(157,161);(181,183);] ;;   
+
+describe_replacements "org/springframework/boot/logging/logback/DefaultLogbackConfiguration" 
+   [(105,105)] ;;   
+
+describe_replacements "org/springframework/boot/json/JsonParserFactory" 
+   [(41,43)] ;;   
+   
+describe_replacements "org/springframework/boot/logging/logback/LogbackRuntimeHints" 
+   [(65,65)] ;;      
+
+describe_replacements "org/springframework/boot/logging/logback/StructuredLogEncoder" 
+   [(87,87);(92,105)] ;;    
+
+describe_replacements "org/springframework/boot/context/properties/bind/ValueObjectBinder" 
+   [(35,37);(238,241);(265,313)] ;;   
+
+describe_replacements "org/springframework/boot/context/properties/bind/ValueObjectBinder" 
+   [(35,37);(238,241);(271,275);(277,290);(292,297);(304,311)] ;;   
+
+describe_replacements "org/springframework/boot/context/properties/bind/ValueObjectBinder" 
+   [(265,313)] ;;     
+
+describe_replacements "org/springframework/boot/context/properties/bind/ValueObjectBinder" 
+   [(265,313)] ;;     
+
+describe_replacements "org/springframework/context/support/AbstractApplicationContext" 
+   [;(756,760);(799,803)] ;;      
+
+visible/org/springframework/context/support/AbstractApplicationContext.java
+
+~/.m2/repository/org/springframework/spring-context/7.0.6/spring-context-7.0.6-sources.jar!/org/springframework/context/weaving/LoadTimeWeaverAware.java
+
+#use"watched/watched_not_githubbed/pan.ml";;
+
+act8_comment_out_unused_parts_in_code();;
+
+let z0 = "org/springframework/boot/logging/logback/DefaultLogbackConfiguration" ;;
+  
+
+let z1 = commands_for_population_of_visible_subdir (List.nth copied_packages 0);;
+Unix_command.uc ("cd "^visible_libs_root);;
+Unix_command.conditional_multiple_uc z1;;
+let z2 = commands_for_population_of_visible_subdir (List.nth copied_packages 1);;
+
+
+
+let ap1 = Absolute_path.of_string (visible_libs_root^z0^".java") ;;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let itv1 = Lines_in_text.interval text1 64 64 ;;
+
+let z1 = List.assoc z0
+   (!data_for_commenting_out_unused_parts_in_code);;
+
+let (z2,z3) = List.nth z1 1 ;;   
+
+let see1 = Strung.leftmost_difference z2 itv1 ;;
+
+let u2 = List.filter (fun s->String.ends_with s ~suffix:".kt") u1 ;;
+
+let sc  possibly_endslashed_dirpath = 
+  let dirpath = (
+    if not(String.ends_with possibly_endslashed_dirpath ~suffix:"/")
+    then possibly_endslashed_dirpath 
+    else Cull_string.two_sided_cutting ("","/") possibly_endslashed_dirpath   
+  ) in
+  let to_be_moved = visible_libs_root^dirpath in
+  if not(Sys.file_exists to_be_moved)
+  then []
+  else  
+  let isolated_container_path = (Cull_string.before_rightmost_possibly_all dirpath '/')^"/" in
+  let container_path = dir_for_unused_files_in_app ^ isolated_container_path in 
+  let cmd1 = "mkdir -p "^container_path 
+  and cmd2=  "rm -rf "^dirpath
+  and cmd3 = "mv "^to_be_moved^" "^container_path in  
+  [cmd1;cmd2;cmd3] ;;
+
+sc "org/springframework/context/support";;
+
+let u1 = Unix_again.quick_beheaded_complete_ls "~/Downloads/spring-boot" ;;
+
+let u2 = List.filter (fun s->String.ends_with s ~suffix:"AnnotationTypeMapping.java") u1 ;;
+
+*)
+
+end;;
+
+(************************************************************************************************************************
+ Entry 214 : Notes from walking a Java debug path in IntellIJ 
+************************************************************************************************************************)
+module Snip214 = struct 
+
+
+
+let walks= [
+  ("org/springframework/boot/SpringApplication","run[1353]",1354);
+  ("org/springframework/boot/SpringApplication","run[1364]",1365);
+  ("org/springframework/boot/SpringApplication","SpringApplication[259]",260);
+  ("org/springframework/boot/SpringApplication","run[304]",305);
+  ("org/springframework/boot/SpringApplication","Startup.create[1771]",1772);
+  ("org/springframework/util/ClassUtils","isPresent[371]",373);
+  ("org/springframework/util/ClassUtils","forName[227]",280);
+  ("org/springframework/util/ClassUtils","resolvePrimitiveClassName[481]",489);
+  ("org/springframework/util/ClassUtils","forName[227]",317);
+  ("org/springframework/util/ClassUtils","isPresent[371]",382);
+  ("org/springframework/boot/SpringApplication","Startup.create[1771]",1775);
+  ("org/springframework/boot/SpringApplication","StandardStartup[1783]",1785);
+  ("org/springframework/boot/SpringApplication","run[304]",306);
+  ("org/springframework/boot/ApplicationProperties","isRegisterShutdownHook[142]",143);
+  ("org/springframework/boot/SpringApplication","run[304]",307);
+  ("org/springframework/boot/SpringApplicationShutdownHook","enableShutdownHookAddition[74]",75);
+  ("org/springframework/boot/SpringApplication","run[304]",309);
+  ("org/springframework/boot/SpringApplication","createBootstrapContext[344]",345);
+  ("org/springframework/boot/bootstrap/DefaultBootstrapContext","DefaultBootstrapContext[0]",40);
+  ("org/springframework/boot/bootstrap/ConfigurableBootstrapContext","",0);
+  ("org/springframework/boot/bootstrap/BootstrapRegistry","",0);
+  ("org/springframework/boot/bootstrap/BootstrapContext","",0);
+  ("org/springframework/boot/bootstrap/DefaultBootstrapContext","DefaultBootstrapContext[0]",44);
+  ("org/springframework/boot/bootstrap/BootstrapRegistryInitializer","",0);
+  ("org/springframework/boot/SpringApplication","createBootstrapContext[344]",347);
+  ("org/springframework/context/ConfigurableApplicationContext","",0);
+  ("org/springframework/context/ApplicationContext","",0);
+  ("org/springframework/context/Lifecycle","",0);
+  ("org/springframework/core/EnvironmentCapable","",0);
+  ("org/springframework/beans/factory/ListableBeanFactory","",0);
+  ("org/springframework/beans/factory/HierarchicalBeanFactory","",0);
+  ("org/springframework/context/MessageSource","",0);
+  ("org/springframework/context/ApplicationEventPublisher","",0);
+  ("org/springframework/core/io/support/ResourcePatternResolver","",0);
+  ("org/springframework/beans/factory/BeanFactory","",0);
+  ("org/springframework/beans/factory/ObjectProvider","",0);
+  ("org/springframework/core/ResolvableType","",0);
+  ("org/springframework/beans/BeansException","",0);
+  ("org/springframework/beans/factory/NoSuchBeanDefinitionException","",0);
+  ("org/springframework/context/ApplicationEvent","",0);
+  ("org/springframework/core/io/ResourceLoader","",0);
+  ("org/springframework/core/io/Resource","",0);
+  ("org/springframework/core/ParameterTypeReference","",0);
+  ("org/springframework/beans/factory/ObjectFactory","",0);
+  ("org/springframework/beans/factory/NoUniqueBeanDefinitionException","",0);
+  ("org/springframework/core/SerializableTypeWrapper","",0);
+  ("org/springframework/core/ResolvableTypeProvider","",0);
+  ("org/springframework/core/MethodParameter","",0);
+  ("org/springframework/core/io/InputStreamSource","",0);
+  ("org/springframework/boot/SpringApplication","createBootstrapContext[344]",311);
+  ("org/springframework/boot/SpringApplication","configureHeadlessProperty[448]",449);
+  ("org/springframework/boot/SpringApplication","createBootstrapContext[344]",312);
+  ("org/springframework/boot/SpringApplicationRunListeners","",0);
+  ("org/springframework/boot/SpringApplicationRunListener","",0);
+  ("org/springframework/core/metrics/ApplicationStartup","",0);
+  ("org/springframework/core/env/ApplicationStartup","",0);
+  ("org/springframework/core/metrics/DefaultApplicationStartup","",0);
+  ("org/springframework/core/metrics/StartupStep","",0);
+  ("org/springframework/core/env/Environment","",0);
+  ("org/springframework/core/env/ConfigurablePropertyResolver","",0);
+  ("org/springframework/core/env/MutablePropertySources","",0);
+  ("org/springframework/core/env/PropertyResolver","",0);
+  ("org/springframework/core/env/Profiles","",0);
+  ("org/springframework/core/convert/support/ConfigurableConversionService","",0);
+  ("org/springframework/core/env/MissingRequiredPropertiesException","",0);
+  ("org/springframework/core/env/PropertySources","",0);
+  ("org/springframework/core/env/ProfilesParser","",0);
+  ("org/springframework/core/convert/ConversionService","",0);
+  ("org/springframework/core/convert/converter/ConverterRegistry","",0);
+  ("org/springframework/core/env/PropertySource","",0);
+  ("org/springframework/core/convert/TypeDescriptor","",0);
+  ("org/springframework/core/convert/converter/Converter","",0);
+  ("org/springframework/core/convert/converter/GenericConverter","",0);
+  ("org/springframework/core/convert/converter/ConverterFactory","",0);
+  ("org/springframework/core/annotation/AnnotatedElementAdapter","",0);
+  ("org/springframework/core/convert/Property","",0);
+  ("org/springframework/boot/SpringApplication","getRunListeners[453]",454);
+  ("org/springframework/core/io/SpringFactoriesLoader","",0);
+  ("org/springframework/core/io/UrlResource","",0);
+  ("org/springframework/core/log/LogMessage","",0);
+  ("org/springframework/core/DecoratingProxy","",0);
+  ("org/springframework/core/OrderComparator","",0);
+  ("org/springframework/core/annotation/MergedAnnotations","",0);
+  ("org/springframework/core/io/AbstractFileResolvingResource","",0);
+  ("org/springframework/core/annotation/MergedAnnotation","",0);
+  ("org/springframework/core/annotation/MergedAnnotationSelector","",0);
+  ("org/springframework/core/annotation/RepeatableContainers","",0);
+  ("org/springframework/core/annotation/AnnotationFilter","",0);
+  ("org/springframework/core/io/AbstractResource","",0);
+  ("org/springframework/core/annotation/AnnotationAttributes","",0);
+  ("org/springframework/core/annotation/TypeMappedAnnotation","",0);
+  ("org/springframework/core/annotation/AnnotationConfigurationException","",0);
+  ("org/springframework/core/annotation/AbstractMergedAnnotation","",0);
+  ("org/springframework/core/annotation/AnnotationTypeMapping","",0);
+  ("org/springframework/core/annotation/ValueExtractor","",0);
+  ("org/springframework/core/annotation/NestedRuntimeException","",0);
+  ("org/springframework/boot/AttributeMethods","",0);
+  ("org/springframework/core/annotation/AliasFor","",0);
+  ("org/springframework/core/NestedExceptionUtils","",0);
+  ("org/springframework/core/annotation/IntrospectionFailureLogger","",0);
+  ("org/springframework/core/annotation/AnnotationUtils","",0);
+  ("org/springframework/core/BridgeMethodResolver","",0);
+  ("org/springframework/core/annotation/AnnotationsScanner","",0);
+  ("org/springframework/core/annotation/MergedAnnotationPredicates","",0);
+  ("org/springframework/core/Ordered","",0);
+  ("org/springframework/core/annotation/AnnotationsProcessor","",0);
+  ("org/springframework/core/io/SpringFactoriesLoader","of[557]",558);
+  ("org/springframework/core/io/SpringFactoriesLoader","ofSupplied[569]",570);
+  ("org/springframework/core/io/SpringFactoriesLoader","from[580]",585);
+  ("org/springframework/core/io/SpringFactoriesLoader","and[533]",536);
+  ("org/springframework/core/io/SpringFactoriesLoader","resolveArgs[381]",384);
+  ("org/springframework/core/io/SpringFactoriesLoader","instantiate[373]",378);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","EventPublishingRunListener[63]",66);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","SimpleApplicationEventMulticaster[64]",64);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","[67]",70);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","DefaultListenerRetriever[496]",497);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","EventPublishingRunListener[63]",66);
+  ("org/springframework/core/io/SpringFactoriesLoader","instantiateFactory[214]",222);
+  ("org/springframework/core/io/SpringFactoriesLoader","load[192]",207);
+  ("org/springframework/core/io/SpringFactoriesLoader","load[156]",157);
+  ("org/springframework/boot/SpringApplication","getSpringFactoriesInstances[471]",472);
+  ("org/springframework/boot/SpringApplication","getRunListeners[453]",464);
+  ("org/springframework/boot/SpringApplicationRunListeners","SpringApplicationRunListeners[48]",52);
+  ("org/springframework/boot/SpringApplication","run[304]",313);
+  ("org/springframework/boot/SpringApplicationRunListeners","starting[56]",56);
+  ("org/springframework/boot/SpringApplicationRunListeners","doWithListeners[120]",122);
+  ("org/springframework/core/metrics/DefaultApplicationStartup","start[37]",38);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","starting[75]",76);
+  ("org/springframework/boot/context/event/ApplicationStartingEvent","[47]",48);
+  ("org/springframework/context/ApplicationListener","",0);
+  ("org/springframework/boot/context/event/SpringApplicationEvent","SpringApplicationEvent[33]",34);
+  ("org/springframework/context/ApplicationEvent","ApplicationEvent[47]",49);
+  ("org/springframework/boot/context/event/SpringApplicationEvent","SpringApplicationEvent[33]",35);
+  ("org/springframework/boot/context/event/ApplicationStartingEvent","[47]",50);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","starting[75]",76);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","multicastInitialEvent[135]",136);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","refreshApplicationListeners[140]",141);
+  ("org/springframework/boot/context/event/EventPublishingRunListener","multicastInitialEvent[135]",137);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","multicastEvent[132]",133);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","multicastEvent[137]",138);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","getTaskExecutor[100]",101);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","getApplicationListeners[188]",193);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","ListenerCacheKey[411]",414);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","getApplicationListeners[188]",196);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","hashCode[425]",426);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","getApplicationListeners[188]",205);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","CachedListenerRetriever[456]",458);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","hashCode[425]",426);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","getApplicationListeners[188]",222);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","retrieveApplicationListeners[233]",236);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","supportsEvent[393]",396);
+  ("org/springframework/boot/context/event/GenericApplicationListener","",0);
+  ("org/springframework/boot/context/event/GenericApplicationListenerDelegate","",0);
+  ("org/springframework/boot/context/event/SmartApplicationListener","",0);
+  ("org/springframework/boot/context/event/GenericApplicationListenerAdapter","GenericApplicationListenerAdapter[55]",58);
+  ("org/springframework/boot/context/event/GenericApplicationListenerAdapter","supportsEventType[69]",75);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","retrieveApplicationListeners[233]",260);
+  ("org/springframework/core/annotation/AnnotationAwareOrderComparator","sort[107]",108);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","retrieveApplicationListeners[233]",322);
+  ("org/springframework/boot/context/event/AbstractApplicationEventMulticaster","getApplicationListeners[188]",222);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","multicastEvent[137]",151);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","invokeListener[162]",173);
+  ("org/springframework/boot/context/event/SimpleApplicationEventMulticaster","doInvokeListener[178]",180);
+  ("org/springframework/beans/factory/config/ConfigurableListableBeanFactory","",0);
+  ("org/springframework/context/SmartLifecycle","",0);
+  ("org/springframework/context/event/ContextClosedEvent","",0);
+  ("org/springframework/beans/factory/ListableBeanFactory","",0);
+  ("org/springframework/beans/factory/config/AutowireCapableBeanFactory","",0);
+  ("org/springframework/beans/factory/config/ConfigurableCapableBeanFactory","",0);
+  ("org/springframework/context/Lifecycle","",0);
+  ("org/springframework/context/Phased","",0);
+  ("org/springframework/context/event/ApplicationContextEvent","",0);
+  ("org/springframework/beans/factory/BeanFactory","",0);
+  ("org/springframework/beans/TypeConverter","",0);
+  ("org/springframework/beans/BeansException","",0);
+  ("org/springframework/beans/PropertyEditorRegistrar","",0);
+  ("org/springframework/beans/PropertyEditorRegistry","",0);
+  ("org/springframework/beans/factory/BeanDefinitionStoreException","",0);
+  ("org/springframework/beans/factory/HierarchicalBeanFactory","",0);
+  ("org/springframework/beans/factory/config/SingletonBeanRegistry","",0);
+  ("org/springframework/core/ParameterizedTypeReference","",0);
+  ("org/springframework/beans/FatalBeansException","",0);
+  ("org/springframework/boot/context/logging/LoggingApplicationListener","onApplicationEvent[220]",222);
+  ("org/springframework/boot/context/logging/LoggingApplicationListener","onApplicationStartingEvent[238]",240);
+  ("org/springframework/boot/logging/logback/LogbackLoggingSystem","",0);
+] ;;
+
+"LogbackLoggingSystem"
+end;;
+
+(************************************************************************************************************************
  Entry 213 : Find/replaces for a deep copy of a website 
 ************************************************************************************************************************)
 module Snip213 = struct 
