@@ -10,7 +10,7 @@ type ident = { id : string; pos : int } ;;
 type op = string ;; 
 
 type token =
-  IDENTIFIER of ident
+  IDENTIFIER of string
 | LITERAL of op
 | PRIMITIVE_TYPE of op
 (* Separators *)
