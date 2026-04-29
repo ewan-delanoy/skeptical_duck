@@ -59,4 +59,9 @@ type token =
 |NATIVE |NEW |PACKAGE |PRIVATE |PROTECTED |PUBLIC |RETURN
 |SHORT |STATIC |STRICTFP |SUPER |SWITCH |SYNCHRONIZED
 |THIS |THROW |THROWS |TRANSIENT |TRY |VOID |VOLATILE |WHILE
-|EOF ;;
+|EOF 
+(* Tokens not used during parsing *)
+|COMMENT of string 
+|WHITESPACE of string ;;
+
+type positioned_token = { tok:token; start:int; endd:int;} ;;
