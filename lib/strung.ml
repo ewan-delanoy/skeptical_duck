@@ -64,6 +64,12 @@ let char_finder_from_inclusive_opt f s w0=
    ) in
    tempf(w0);;
 
+(*
+
+char_finder_from_inclusive_opt (fun c->c='3') "123456789" 1 ;;
+
+*)   
+
 let backwards_char_finder f s =
     let rec tempf=(fun j->
       if j<0 then 0 else
@@ -459,3 +465,5 @@ let announce ~trailer ~printer ~items ~separator=
    let temp1 = Image.image printer items in
    let msg = "\n\n"^trailer^"\n\n"^(String.concat separator temp1)^"\n\n" in 
    (print_string msg;flush stdout) ;;    
+
+   

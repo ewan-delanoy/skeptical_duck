@@ -100,8 +100,8 @@ let list_values_from_module_in_file module_name file=
      (Cull_string.interval s i j=(String.capitalize_ascii module_name))
    ) temp1 in
    let temp3=Image.image(fun (_t,(_i,j,_line_nbr))->
-    let opt=After.after_star 
-     Charset.ocaml_modulename_nonfirst_letters
+    let opt=Strung.char_finder_from_inclusive_opt
+     (fun c->not(List.mem c Charset.ocaml_modulename_nonfirst_letters ))
      s (j+2) in
     let end_idx=(match opt with Some(k)->k-1 |None->String.length s) in
      Cull_string.interval s (j+2) end_idx
