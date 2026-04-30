@@ -4,6 +4,12 @@
 
 *)
 
+let complement_of_union_of_ranges text ranges =
+  (* the ranges are assumed to be in increasing order *) 
+  let n = String.length(text) in 
+  let compl = Arithmetic_list.complement_union_of_ranges ranges n in 
+  Image.image (fun (i,j)->Cull_string.interval text i j) compl ;;
+
 let range_for_next_occurrence_of_in_from_opt patt text start_idx =
  match Substring.leftmost_index_of_in_from_opt patt text start_idx with 
  None -> None 
@@ -20,17 +26,19 @@ let ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts original_text s
       helper (text,other_patts,(i1,i2)::treated,i2+1)) in 
    helper (original_text,patts,[],start_idx);;
 
-let complement_of_union_of_ranges text ranges =
-  (* the ranges are assumed to be in increasing order *) 
-  let n = String.length(text) in 
-  let compl = Arithmetic_list.complement_union_of_ranges ranges n in 
-  Image.image (fun (i,j)->Cull_string.interval text i j) compl ;;
+let remove_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx =
+   match ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx with
+   None -> ([],1) 
+   |Some ranges ->
+      let next_idx = snd(List.hd(List.rev ranges))+1 in 
+      (complement_of_union_of_ranges text ranges,next_idx) ;;
 
 (*
 
 let txt = "abcdefghijklmnop" ;;
 let ranges = Option.get(ranges_for_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt 1);;
 let compl = complement_of_union_of_ranges txt ranges ;;
+let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt 1;;
 
 *)
 
