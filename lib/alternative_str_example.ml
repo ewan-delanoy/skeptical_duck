@@ -64,7 +64,7 @@ let decorated_moodle_cases=
 
 (*
 
-let f case s=let (i,j)=Option.unpack(Alternative_str.centered_regexp_match case s 1) in 
+let f case s=let (i,j)=Option.get(Alternative_str.centered_regexp_match case s 1) in 
 (i,j,Cull_string.interval s i j);;
 
 f include_case " include Peggy;; ";;
