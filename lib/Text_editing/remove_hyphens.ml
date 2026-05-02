@@ -31,7 +31,7 @@ let in_text text =
           (Private.is_a_lowercase_letter(getchar(j+2)))
     ) (Int_range.range 2 (n-2)) in 
     let replacements =Image.image (fun j->((j,j+1),"")) dashes in 
-    Strung.replace_ranges_in replacements text;;
+    String_ranges.replace_ranges_in replacements text;;
 
 let in_file fn=
     let old_text=Io.read_whole_file fn in

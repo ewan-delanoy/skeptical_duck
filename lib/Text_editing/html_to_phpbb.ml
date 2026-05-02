@@ -55,7 +55,7 @@ let main text =
       (range,phpbbized_content)
 
     ) temp5 in 
-    let temp7 = Strung.replace_ranges_in temp6 text in 
+    let temp7 = String_ranges.replace_ranges_in temp6 text in 
     translate_usual_tags temp7;; 
 
 

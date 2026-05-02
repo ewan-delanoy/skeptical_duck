@@ -63,7 +63,7 @@ let change_module_name_in_ml_ocamlcode
    then old_code
    else
    let temp3 = Image.image (fun (_j,(a,b,_))->((a,b),new_name) ) temp2 in  
-   Strung.replace_ranges_in temp3 old_code;;
+   String_ranges.replace_ranges_in temp3 old_code;;
  
   
 

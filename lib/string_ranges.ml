@@ -48,5 +48,24 @@ let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"]
 
 *)
 
+let replace_ranges_in l s=
+    if l=[] then s else
+    let n=String.length s in
+    let ranges=Image.image fst l in
+    let partition= Partition_list.from_set_of_ranges ranges n in 
+    let temp1=Image.image (
+      fun (i,j,will_be_replaced)->
+        if will_be_replaced 
+        then List.assoc (i,j) l
+        else String.sub s (i-1) (j-i+1)
+    ) partition in
+    String.concat "" temp1;;
+
+(*
+
+replace_ranges_in [((3,5),"A");((8,12),"B")] "12345678901234567890";;
+
+*)
+
 
    

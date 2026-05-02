@@ -31,7 +31,7 @@ module Private = struct
     let sk = string_of_int(k+preceding_count) in 
     let msg = "<span id=\""^"ln"^sk^"\"><a href=\"#n"^sk^"\">("^sk^")</a></span>" in 
       ((i,j),msg) ) temp1 in 
-  Strung.replace_ranges_in temp2 page ;;      
+  String_ranges.replace_ranges_in temp2 page ;;      
 
   let deal_with_footnotes_in_page preceding_count page ranges=
     let temp1 = Int_range.index_everything ranges in 
@@ -42,7 +42,7 @@ module Private = struct
       let msg = left^right in
         ((i,j),msg) ) temp1 in 
     let far_right = (if ranges=[] then "" else "\n</div>\n") in     
-    (Strung.replace_ranges_in temp2 page)^far_right;;     
+    (String_ranges.replace_ranges_in temp2 page)^far_right;;     
 
 let error_handling_ref = ref None ;;
 
