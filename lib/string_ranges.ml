@@ -104,5 +104,14 @@ replace_ranges_in [((3,5),"A");((8,12),"B")] "12345678901234567890";;
 
 *)
 
-
+let split_wrt_separator text separator =
+    let (parts,remainder) = remove_all_ordered_occurrences_of_uple_in [separator] text in 
+    let complement=(if remainder="" then [] else [remainder]) in 
+    (List.flatten parts)@complement ;;
    
+(*
+
+split_wrt_separator "1abc23abc456abc78" "abc" ;;
+split_wrt_separator "abc23abc456abc78abc" "abc" ;;
+
+*)    
