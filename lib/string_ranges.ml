@@ -26,12 +26,13 @@ let ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts original_text s
       helper (text,other_patts,(i1,i2)::treated,i2+1)) in 
    helper (original_text,patts,[],start_idx);;
 
-let remove_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx =
-   match ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx with
+let remove_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx = 
+   let subtext = Cull_string.cobeginning (start_idx-1) text in 
+   match ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts subtext 1 with
    None -> ([],1) 
    |Some ranges ->
       let next_idx = snd(List.hd(List.rev ranges))+1 in 
-      (complement_of_union_of_ranges text ranges,next_idx) ;;
+      (complement_of_union_of_ranges subtext ranges,(start_idx-1)+next_idx) ;;
 
 (*
 
@@ -39,6 +40,11 @@ let txt = "abcdefghijklmnop" ;;
 let ranges = Option.get(ranges_for_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt 1);;
 let compl = complement_of_union_of_ranges txt ranges ;;
 let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt 1;;
+
+let txt2 = "123" ^ txt ;;
+let ranges = Option.get(ranges_for_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt2 4);;
+let compl = complement_of_union_of_ranges txt2 ranges ;;
+let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt2 4;;
 
 *)
 
