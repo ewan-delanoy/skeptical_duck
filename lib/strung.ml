@@ -53,30 +53,6 @@ let implode l=
 let explode s=
     let n=String.length s in
     Int_range.scale (String.get s) 0 (n-1);;
-    
- 
-let char_finder_from_inclusive_opt f s w0=
-   let n=(String.length s) in
-   let rec tempf=(fun j->
-     if j>n then None else
-     if f(String.get s  (j-1)) then Some j else
-     tempf(j+1)
-   ) in
-   tempf(w0);;
-
-(*
-
-char_finder_from_inclusive_opt (fun c->c='3') "123456789" 1 ;;
-
-*)   
-
-let backwards_char_finder f s =
-    let rec tempf=(fun j->
-      if j<0 then 0 else
-      if f(String.get s  j) then j+1 else
-      tempf(j-1)
-    ) in
-    tempf((String.length s)-1);;   
  
 let show_indices s=
   let n=String.length s in
@@ -180,36 +156,6 @@ decomposition_according_to_occurrences_from_several
 let remove_newlines s=
    let temp1=List.filter (fun c->c<>'\n') (explode s) in 
    implode temp1;;
-
-exception Not_found_during_succession;;
-
-let find_successively_in_from patterns_in_order s start_idx=
-  let rec tempf=(fun 
-     (treated,to_be_treated,idx,line_idx)->
-       match to_be_treated with 
-       []->List.rev treated
-       |patt::other_patts->
-         match  find_one_of_several_in_from_idx patt s idx with 
-         None->raise(Not_found_during_succession)
-         |Some(idx2,candidate)->
-          let temp1=List.filter(fun k->(get s k)='\n')(Int_range.range idx (idx2-1)) in 
-          let line_idx_for_idx2=line_idx+List.length(temp1) in 
-          let msg="Found "^(remove_newlines candidate)^" at line number "^(string_of_int line_idx_for_idx2)^"\n" in 
-          let _=(print_string msg;flush stdout) in 
-          let idx3=idx2+(String.length candidate) in  
-          let temp2=List.filter(fun k->(get s k)='\n')(Int_range.range idx2 (idx3-1)) in 
-          let line_idx_for_idx3=line_idx_for_idx2+List.length(temp2) in 
-          tempf((idx2,idx3-1)::treated,other_patts,idx3,line_idx_for_idx3)    
-  ) in 
-  let temp3=List.filter(fun k->(get s k)='\n')(Int_range.range 1 (start_idx-1)) in 
-  let start_line_idx = 1+(List.length(temp3)) in 
-  tempf([],patterns_in_order,start_idx,start_line_idx);;
-
-(*
-
-find_successively_in [["ba";"ab"];["cde";"edc"]] "12\n\n\n\n\n8ab123\n\n67cde12";;
-
-*)
 
 
 
