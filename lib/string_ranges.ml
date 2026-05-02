@@ -8,7 +8,7 @@ let complement_of_union_of_ranges text ranges =
   (* the ranges are assumed to be in increasing order *) 
   let n = String.length(text) in 
   let compl = Arithmetic_list.complement_union_of_ranges ranges n in 
-  Image.image (fun (i,j)->Cull_string.interval text i j) compl ;;
+  Image.image (fun (i,j)->String.sub text (i-1) (j-i+1)) compl ;;
 
 let range_for_next_occurrence_of_in_from_opt patt text start_idx =
  match Substring.leftmost_index_of_in_from_opt patt text start_idx with 
@@ -27,7 +27,7 @@ let ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts original_text s
    helper (original_text,patts,[],start_idx);;
 
 let remove_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx = 
-   let subtext = Cull_string.cobeginning (start_idx-1) text in 
+   let subtext = String.sub text (start_idx-1) (String.length(text)-start_idx+1) in 
    match ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts subtext 1 with
    None -> ([],1) 
    |Some ranges ->
