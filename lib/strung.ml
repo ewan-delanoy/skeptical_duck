@@ -370,7 +370,7 @@ parse_nested_parentheses ("(",",",")") "g(1,f(ab,cde,gh)ijk,2,h(k(u(6,7),v)),3)"
 let to_intlist enclosed_s =
    let n=String.length enclosed_s in 
    let s=Cull_string.interval enclosed_s 2 (n-1) in 
-   let temp1=Cull_string.extract_intervals_in_wrt_separator s ";" in 
+   let temp1=String_ranges.split_wrt_separator s ";" in 
    Image.image int_of_string temp1;;
 
 let of_intlist l=
