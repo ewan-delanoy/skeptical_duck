@@ -30,7 +30,7 @@ let seek_positive_integer_at_index text idx =
     if (idx<0)||(idx > (String.length text)) then None else 
     let c = String.get text (idx-1) in 
     if is_not_a_digit c then None else  
-    let j_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit text idx in 
+    let j_opt = String_find_char.from_inclusive_opt is_not_a_digit text idx in 
     let next_idx = (match j_opt with None -> (String.length text)+1 | Some j -> j) in 
     let written_integer = int_of_string(Cull_string.interval text idx (next_idx-1)) in 
     Some(written_integer,next_idx) ;;   

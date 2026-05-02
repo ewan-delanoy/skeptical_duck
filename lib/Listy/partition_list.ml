@@ -61,12 +61,19 @@ let according_to_fst ?(assume_connectedness=false) l =
 
 let according_to_map = Private.according_to_map ;;
 
+exception From_set_of_ranges_exn of string * ((int * int)*(int *int)) ;;
 
 let from_set_of_ranges l n=
     if l=[] then [1,n,false] else 
     let (last_i,last_j)=List.hd(List.rev l) 
     and (first_i,_)=List.hd l in
     let temp2=List_again.universal_delta_list l in  
+    let mistake_opt=List.find_opt(
+      fun ((_i1,j1),(i2,_j2)) -> j1>=i2
+    ) temp2 in 
+    if mistake_opt<>None 
+    then raise(From_set_of_ranges_exn("Ranges are not well ordered",Option.get mistake_opt)) 
+    else    
     let temp3=Image.image (fun ((i1,j1),(i2,_j2))->
       [(i1,j1,true);(j1+1,i2-1,false)]
     ) temp2 in 
@@ -79,6 +86,8 @@ let from_set_of_ranges l n=
 
 from_set_of_ranges [(3,7);(41,52)] 100;;
 from_set_of_ranges [(1,7);(41,52)] 100;;
+
+[(3, 7); (619, 665); (680, 691)] 700 ;; 
 
 *)
 

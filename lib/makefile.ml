@@ -145,7 +145,7 @@ let parse_next_instruction first_eline next_elines =
    then   let (incl,remaining_lines) = parse_next_inclusion first_eline next_elines  in 
          (Inclusion incl,remaining_lines)      
    else     
-   match Strung.char_finder_from_inclusive_opt  (fun c->
+   match String_find_char.from_inclusive_opt  (fun c->
           List.mem c [':';'=']) line1 1 with 
     None -> raise (Parse_next_instruction_exn(l_idx))
    |Some sep_idx ->

@@ -507,7 +507,7 @@ lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;;
           if not (is_a_lowercase_letter(String.get line 0)) 
           then None 
           else
-          match Strung.char_finder_from_inclusive_opt
+          match String_find_char.from_inclusive_opt
           (fun c->List.mem c [' ';':']) line 1 with 
           None -> None
           |Some i->

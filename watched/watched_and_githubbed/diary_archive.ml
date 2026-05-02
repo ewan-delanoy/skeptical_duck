@@ -2106,7 +2106,7 @@ let decompress_all_r_products_in text =
     let compressed =Cull_string.interval text (i+2) (j-1) in 
     ((i,j),decompress_r_product compressed) 
   ) ranges in
-  let core=Strung.replace_ranges_in replacements text in 
+  let core=String_ranges.replace_ranges_in replacements text in 
  "lift(sum_of_products("^core^"))" ;;
 
 let brouilhed_ap = Absolute_path.of_string (
@@ -5346,7 +5346,7 @@ let next_apple (treated,next_idx) =
   if next_idx> original_length
   then raise Next_apple_exn 
   else 
-  match Strung.char_finder_from_inclusive_opt (
+  match String_find_char.from_inclusive_opt (
     fun c->List.mem c ['a';'b';'c']
   ) original_prelude_text next_idx with 
   None -> (treated^
@@ -5358,7 +5358,7 @@ let next_apple (treated,next_idx) =
       (Cull_string.interval original_prelude_text next_idx i1),
       i1+1) 
     else         
-    let i2=(match Strung.char_finder_from_inclusive_opt 
+    let i2=(match String_find_char.from_inclusive_opt 
     is_not_a_digit
     original_prelude_text (i1+1) with 
       None -> original_length
@@ -5407,7 +5407,7 @@ let next_apple next_idx =
   if next_idx> original_length
   then raise Next_apple_exn 
   else 
-  match Strung.char_finder_from_inclusive_opt (
+  match String_find_char.from_inclusive_opt (
     fun c->List.mem c ['a';'b';'c']
   ) original_prelude_text next_idx with 
   None -> 
@@ -5422,7 +5422,7 @@ let next_apple next_idx =
       ) in  
       i1+1
     else         
-    let i2=(match Strung.char_finder_from_inclusive_opt 
+    let i2=(match String_find_char.from_inclusive_opt 
     is_not_a_digit
     original_prelude_text (i1+1) with 
       None -> original_length
@@ -5491,7 +5491,7 @@ let next_apple next_idx =
   if next_idx> original_length
   then raise Next_apple_exn 
   else 
-  match Strung.char_finder_from_inclusive_opt (
+  match String_find_char.from_inclusive_opt (
     fun c->List.mem c ['a';'b';'c']
   ) original_prelude_text next_idx with 
   None -> 
@@ -5506,7 +5506,7 @@ let next_apple next_idx =
       ) in  
       i1+1
     else         
-    let i2=(match Strung.char_finder_from_inclusive_opt 
+    let i2=(match String_find_char.from_inclusive_opt 
     is_not_a_digit
     original_prelude_text (i1+1) with 
       None -> original_length
@@ -9555,7 +9555,7 @@ let seek_positive_integer_at_index text idx =
     if (idx<0)||(idx > (String.length text)) then None else 
     let c = String.get text (idx-1) in 
     if is_not_a_digit c then None else  
-    let j_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit text idx in 
+    let j_opt = String_find_char.from_inclusive_opt is_not_a_digit text idx in 
     let next_idx = (match j_opt with None -> (String.length text)+1 | Some j -> j) in 
     let written_integer = int_of_string(Cull_string.interval text idx (next_idx-1)) in 
     Some(written_integer,next_idx) ;;   
@@ -14062,7 +14062,7 @@ module Snip119 = struct
      if not(String.starts_with ~prefix:"v" filename )
      then (None,"",filename)
      else 
-     let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
+     let i1_opt = String_find_char.from_inclusive_opt is_not_a_digit filename 2 in 
      if i1_opt = None
      then (None,"",filename)
      else 
@@ -14094,7 +14094,7 @@ module Snip119 = struct
      if not(String.starts_with ~prefix:"v" filename)
      then Some(add_next_index_in_filename next_idx_opt filename)
      else 
-     let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
+     let i1_opt = String_find_char.from_inclusive_opt is_not_a_digit filename 2 in 
      if i1_opt = None
      then Some(add_next_index_in_filename next_idx_opt filename)
      else 
@@ -14103,7 +14103,7 @@ module Snip119 = struct
      let v_number = int_of_string v_string in
      let standardized_v_string = Strung.insert_repetitive_offset_on_the_left '0' allowed_number_of_digits (string_of_int v_number) in 
      let standardized_start = "v"^standardized_v_string^"_" in 
-     let i2_opt = Strung.char_finder_from_inclusive_opt is_not_a_filler filename (i1+1) in 
+     let i2_opt = String_find_char.from_inclusive_opt is_not_a_filler filename (i1+1) in 
      if i2_opt = None
      then raise(Empty_subpath(filename))
      else 
@@ -14200,7 +14200,7 @@ let indentation = 8;;
 let indenter = String.make indentation ' ';;
 
 let extract1 (length_before,line_index,line) =
-  let i1_opt = Strung.char_finder_from_inclusive_opt (fun c->
+  let i1_opt = String_find_char.from_inclusive_opt (fun c->
     not(List.mem c [' ';'\t';'\r'])
   ) line 1 in 
   if i1_opt = None then None else
@@ -24322,7 +24322,7 @@ let z9  = print_string z8 ;;
 let z6 = Image.image (Cull_string.cobeginning 6) z6;;
 
 let g1 = Image.image (fun s->
-   let j_opt = Strung.char_finder_from_inclusive_opt (fun c->c='/') s 1 in 
+   let j_opt = String_find_char.from_inclusive_opt (fun c->c='/') s 1 in 
    let j = Option.get j_opt in 
    Cull_string.beginning j s  ) z6;;
 let g2 = Ordered.sort Total_ordering.lex_for_strings g1 ;;
@@ -25172,7 +25172,7 @@ let write_link opt = match opt with
 
 let u7 = Image.image ( fun (pair,opt)->(pair,write_link opt) ) u6;;
 
-let new_text = Strung.replace_ranges_in u7 old_text ;;
+let new_text = String_ranges.replace_ranges_in u7 old_text ;;
 
 Io.overwrite_with ap1 new_text ;;
 
@@ -25195,7 +25195,7 @@ let write_reindexed_version ((i_start,i_end),(footnote_idx,html_content),opt_idx
    ) in 
    ((i_start,i_end),new_text);;
 let v3 = Image.image write_reindexed_version v2;;
-let new_text = Strung.replace_ranges_in v3 old_text ;;
+let new_text = String_ranges.replace_ranges_in v3 old_text ;;
 Io.overwrite_with ap1 new_text ;;
 
 
@@ -25293,7 +25293,7 @@ let prepare_computation pattern=
    )      ;;
 
 let left_n_decomposition pattern =
-     let j1_opt = Strung.char_finder_from_inclusive_opt (fun c->c<>'N') pattern 1 in 
+     let j1_opt = String_find_char.from_inclusive_opt (fun c->c<>'N') pattern 1 in 
      if j1_opt=None 
      then (String.length pattern,"") 
      else 

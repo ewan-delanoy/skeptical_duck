@@ -79,7 +79,7 @@ let compute line =
   if not(String.starts_with line ~prefix:"#")
   then Lb_Usual  
   else  
-  match Strung.char_finder_from_inclusive_opt (fun c->
+  match String_find_char.from_inclusive_opt (fun c->
           not(List.mem c [' ';'\t';'\r'])
         ) line 2 with 
   None -> Lb_Usual
@@ -476,7 +476,7 @@ let find_directive_from_list_opt line directives=
       if not(String.starts_with line ~prefix:"#")
       then None
       else  
-      match Strung.char_finder_from_inclusive_opt (fun c->
+      match String_find_char.from_inclusive_opt (fun c->
               not(List.mem c [' ';'\t';'\r'])
             ) line 2 with 
       None -> None
@@ -526,7 +526,7 @@ let put_last_endif_on_last_line text =
   let after= Cull_string.two_sided_cutting  ("#endif","") temp_last_line in 
   let all_lines_except_last = Image.image fst temp_tl in 
   let almost_all_lines=(
-     match Strung.char_finder_from_inclusive_opt (fun c->
+     match String_find_char.from_inclusive_opt (fun c->
               not(List.mem c [' ';'\t';'\r'])
             ) after 1 with 
       None -> all_lines_except_last
@@ -640,7 +640,7 @@ let generic_included_file_opt (opening_char,closing_char) line =
   if not(String.starts_with line ~prefix:"#")
   then None  
   else  
-  match Strung.char_finder_from_inclusive_opt (fun c->
+  match String_find_char.from_inclusive_opt (fun c->
           not(List.mem c [' ';'\t';'\r'])
         ) line 2 with 
   None -> None
@@ -648,7 +648,7 @@ let generic_included_file_opt (opening_char,closing_char) line =
   if not(Substring.is_a_substring_located_at "include" line idx1)
   then None
   else   
-  match Strung.char_finder_from_inclusive_opt (fun c->
+  match String_find_char.from_inclusive_opt (fun c->
         not(List.mem c [' ';'\t';'\r'])
   ) line (idx1+7) with 
   None -> None
@@ -656,7 +656,7 @@ let generic_included_file_opt (opening_char,closing_char) line =
   if (Strung.get line idx2)<>opening_char
   then None
   else    
-  match Strung.char_finder_from_inclusive_opt (fun c->
+  match String_find_char.from_inclusive_opt (fun c->
            c = closing_char
   ) line (idx2+1) with 
   None -> None
@@ -702,7 +702,7 @@ let parametrized_marker_for_inclusion_highlighting inclusion_idx verb =
           if not(String.starts_with line2 ~prefix:"# 1 \"")    
           then None 
           else  
-          match Strung.char_finder_from_inclusive_opt (fun c->c='\"') line2 6 with 
+          match String_find_char.from_inclusive_opt (fun c->c='\"') line2 6 with 
             None -> raise(Helper_for_computing_exact_locations_exn)
          |Some idx1 -> 
            Some(Cull_string.interval line2 6 (idx1-1)) 

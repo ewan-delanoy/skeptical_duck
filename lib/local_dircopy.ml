@@ -47,7 +47,7 @@ let standardized_name_opt ldc next_idx_opt filename =
    if not(String.starts_with ~prefix:"v" filename)
    then Some(add_next_index_in_filename ldc next_idx_opt filename)
    else 
-   let i1_opt = Strung.char_finder_from_inclusive_opt is_not_a_digit filename 2 in 
+   let i1_opt = String_find_char.from_inclusive_opt is_not_a_digit filename 2 in 
    if i1_opt = None
    then Some(add_next_index_in_filename ldc next_idx_opt filename)
    else 
@@ -56,7 +56,7 @@ let standardized_name_opt ldc next_idx_opt filename =
    let v_number = int_of_string v_string in
    let standardized_v_string = Strung.insert_repetitive_offset_on_the_left '0' ldc.Local_dircopy_config_t.allowed_number_of_digits (string_of_int v_number) in 
    let standardized_start = "v"^standardized_v_string^"_" in 
-   let i2_opt = Strung.char_finder_from_inclusive_opt is_not_a_filler filename (i1+1) in 
+   let i2_opt = String_find_char.from_inclusive_opt is_not_a_filler filename (i1+1) in 
    if i2_opt = None
    then raise(Empty_subpath(filename))
    else 

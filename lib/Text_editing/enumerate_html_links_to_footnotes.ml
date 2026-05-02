@@ -21,7 +21,7 @@ let seek_html_link_to_footnote_at_index text i0=
   then None 
   else  
   let i1 = i0 + (String.length part1) in 
-  let i2_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c blanks)) text i1 in 
+  let i2_opt = String_find_char.from_inclusive_opt (fun c->not(List.mem c blanks)) text i1 in 
   if i2_opt = None 
   then raise(Unterminated_div(i0))
   else
@@ -31,7 +31,7 @@ let seek_html_link_to_footnote_at_index text i0=
   then None 
   else  
   let i3 = i2 + (String.length part2) in      
-  let i4_opt = Strung.char_finder_from_inclusive_opt (fun c->not(List.mem c digits)) text i3 in 
+  let i4_opt = String_find_char.from_inclusive_opt (fun c->not(List.mem c digits)) text i3 in 
   if i4_opt = None 
   then None
   else
