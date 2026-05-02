@@ -4,6 +4,8 @@
 
 *)
 
+module Private = struct 
+
 let complement_of_union_of_ranges text ranges =
   (* the ranges are assumed to be in increasing order *) 
   let n = String.length(text) in 
@@ -27,11 +29,24 @@ let ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts original_text s
    helper (original_text,patts,[],start_idx);;
 
 let remove_next_ordered_occurrence_of_uple_in_from_opt patts text start_idx = 
+   (*
+   The convention is that in the returned result,
+   we include the leftmost leftover but not the rightmost,
+   so that we can iterate this function consistently later.
+   For example, 
+   remove_next_ordered_occurrence_of_uple_in_from_opt ["a";"b"] "1a2b3" 1
+   returns  (["1"; "2"], 5) not (["1"; "2"; "3"], 5)
+
+   *)
    let subtext = String.sub text (start_idx-1) (String.length(text)-start_idx+1) in 
    match ranges_for_next_ordered_occurrence_of_uple_in_from_opt patts subtext 1 with
-   None -> ([],1) 
-   |Some ranges ->
-      let next_idx = snd(List.hd(List.rev ranges))+1 in 
+   None -> ([],start_idx) 
+   |Some ranges1 ->
+      let rev_ranges1 = List.rev ranges1 in 
+      let (a1,b1) = List.hd(rev_ranges1) in 
+      let modified_revranges1= (a1,String.length text) :: (List.tl rev_ranges1) in 
+      let ranges = List.rev modified_revranges1 
+      and next_idx = b1+1 in 
       (complement_of_union_of_ranges subtext ranges,(start_idx-1)+next_idx) ;;
 
 (*
@@ -47,6 +62,28 @@ let compl = complement_of_union_of_ranges txt2 ranges ;;
 let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"] txt2 4;;
 
 *)
+
+let rec helper_for_removing_all_occurrences patts (txt,treated,current_idx) =
+  let (data,next_idx)= remove_next_ordered_occurrence_of_uple_in_from_opt patts txt current_idx in 
+  if next_idx = current_idx 
+  then let remainder = Cull_string.cobeginning (current_idx-1) txt in 
+       (List.rev(treated),remainder)
+  else helper_for_removing_all_occurrences patts (txt,data::treated,next_idx) ;;
+    
+end ;;
+
+let remove_all_ordered_occurrences_of_uple_in patts txt = 
+    Private.helper_for_removing_all_occurrences patts (txt,[],1) ;;
+
+(*
+
+remove_all_ordered_occurrences_of_uple_in ["bc";"f";"jk"] "123" ;;
+remove_all_ordered_occurrences_of_uple_in ["bc";"f";"jk"] "abcdefghijklmnop" ;;
+remove_all_ordered_occurrences_of_uple_in ["bc";"f";"jk"] "abcdefghijklmnop1bc23f456jk78" ;;
+
+*)    
+
+let remove_next_ordered_occurrence_of_uple_in_from_opt = Private.remove_next_ordered_occurrence_of_uple_in_from_opt ;; 
 
 let replace_ranges_in l s=
     if l=[] then s else
