@@ -52,6 +52,7 @@ type token =
 |SRS		(* >> *)
 |URS		(* >>> *)
 |OPERATOR_EQ of op	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
+|ANNOTATOR of string
 (* Keywords*)
 |ABSTRACT |BOOLEAN |BREAK |BYTE |CASE |CATCH |CHAR |CLASS |CONST |CONTINUE
 |DEFAULT |DO |DOUBLE |ELSE |EXTENDS |FINAL |FINALLY |FLOAT |FOR |GOTO
