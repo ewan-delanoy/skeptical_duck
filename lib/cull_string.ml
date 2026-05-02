@@ -66,24 +66,6 @@ let before_and_after w x=
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
-let complement_union_of_ranges ranges s=
-   let n=String.length s in 
-   let temp1=Arithmetic_list.complement_union_of_ranges ranges n in 
-   Image.image (fun (u,v)->interval s u v) temp1;;
-
-let extract_intervals_in_wrt_separator s sep =
-  let d=String.length(sep)-1 in 
-  let occurrences = Substring.occurrences_of_in sep s in 
-  let ranges = Image.image ( fun start ->(start,start + d)) occurrences in 
-  complement_union_of_ranges ranges s;;    
-
-(*
-extract_intervals_in_wrt_separator "123+ab+++c+d+45+678+" "+" ;;
-
-extract_intervals_in_wrt_separator "123a4ab56ab789ab" "ab" ;;
-
-*)
-
 let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
       match List.find_opt(fun j->
