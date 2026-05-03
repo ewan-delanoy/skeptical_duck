@@ -1,6 +1,248 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 218 : Template for pattern matching on a type with many variants, version 2
+************************************************************************************************************************)
+module Snip218 = struct 
+
+let template = [
+("IDENTIFIER","");
+("LITERAL","");
+("PRIMITIVE_TYPE","");
+("LP","(");
+("RP",")");
+("LC","{");
+("RC","}");
+("LB","[");
+("RB","]");
+("SM",";");
+("CM",",");
+("DOT",".");
+("EQ","=");
+("GT",">");
+("LT","<");
+("NOT","!");
+("COMPL","~");
+("COND","?");
+("COLON",":");
+("EQ_EQ","==");
+("LE","<=");
+("GE",">=");
+("NOT_EQ","!=");
+("AND_AND","&&");
+("OR_OR","||");
+("INCR","++");
+("DECR","--");
+("PLUS","+");
+("MINUS","-");
+("TIMES","*");
+("DIV","/");
+("AND","&");
+("OR","|");
+("XOR","^");
+("MOD","%");
+("LS","<<");
+("SRS",">>");
+("URS",">>>");
+("OPERATOR_EQ","");
+("ANNOTATOR","");
+("ABSTRACT","abstract");
+("BOOLEAN","boolean");
+("BREAK","break");
+("BYTE","byte");
+("CASE","case");
+("CATCH","catch");
+("CHAR","char");
+("CLASS","class");
+("CONST","const");
+("CONTINUE","continue");
+("DEFAULT","default");
+("DO","do");
+("DOUBLE","double");
+("ELSE","else");
+("EXTENDS","extends");
+("FINAL","final");
+("FINALLY","finally");
+("FLOAT","float");
+("FOR","for");
+("GOTO","goto");
+("IF","if");
+("IMPLEMENTS","implements");
+("IMPORT","import");
+("INSTANCEOF","instanceof");
+("INT","int");
+("INTERFACE","interface");
+("LONG","long");
+("NATIVE","native");
+("NEW","new");
+("PACKAGE","package");
+("PRIVATE","private");
+("PROTECTED","protected");
+("PUBLIC","public");
+("RETURN","return");
+("SHORT","short");
+("STATIC","static");
+("STRICTFP","strictfp");
+("SUPER","super");
+("SWITCH","switch");
+("SYNCHRONIZED","synchronized");
+("THIS","this");
+("THROW","throw");
+("THROWS","throws");
+("TRANSIENT","transient");
+("TRY","try");
+("VOID","void");
+("VOLATILE","volatile");
+("WHILE","while");
+("EOF","eof");
+("COMMENT","");
+("WHITESPACE","");
+
+] ;;
+
+let u1 = Image.image (
+  fun (s,_)->
+    let full_s = s^"_T" in
+    "|"^full_s^" -> \""^full_s^"\""
+) template;;
+
+let u2 = "\n\n\n" ^ (String.concat "\n" u1)^ "\n\n\n" ;;
+
+end;;
+
+(************************************************************************************************************************
+ Entry 217 : Code to automatize a to_string map for a type with many variants, version 2
+************************************************************************************************************************)
+module Snip217 = struct 
+
+let v1 = Absolute_path.of_string "lib/Java_analysis/jvsp_types.ml" ;;
+let tv1 = Io.read_whole_file v1 ;;
+
+let pre_part1 = Lines_in_text.interval tv1 13 15 ;;
+
+let pre_part2 = (List.nth (Lines_in_text.lines tv1) 15,Lines_in_text.interval tv1 17 25) ;;
+let pre_part3 = (List.nth (Lines_in_text.lines tv1) 26,Lines_in_text.interval tv1 28 53) ;;
+let pre_part4 = (Lines_in_text.interval tv1 54 55) ;;
+let pre_part5 = (List.nth (Lines_in_text.lines tv1) 55,Lines_in_text.interval tv1 57 63) ;;
+let pre_part6 = (List.nth (Lines_in_text.lines tv1) 64,Lines_in_text.interval tv1 65 66) ;;
+
+let temp1 = Str.split (Str.regexp_string "\n|") pre_part1 ;;
+let temp2 = Image.image (Str.split (Str.regexp "[ ]+")) temp1 ;;
+let temp3 = Image.image (List.hd) temp2 ;;
+let part1 = Image.image (fun v->"(\""^v^"\",\"\");") temp3 ;;
+
+let temp4 = Str.split (Str.regexp_string "\n|") (Cull_string.cobeginning 1 (snd pre_part2)) ;;
+let temp5 = Image.image (Str.split (Str.regexp "[\t]+")) temp4 ;;
+let temp6 = Image.image (fun l->(List.nth l 0,
+ Cull_string.two_sided_cutting ("(* "," *)") (List.nth l 1) )) temp5 ;;
+let part2 = Image.image (fun (a,b)->"(\""^a^"\",\""^b^"\");") temp6 ;;
+
+let temp7 = Str.split (Str.regexp_string "\n|") (Cull_string.cobeginning 1 (snd pre_part3)) ;;
+let temp8 = Image.image (Str.split (Str.regexp "[\t]+[ ]*")) temp7 ;;
+let temp9 = Image.image (fun l->(List.nth l 0,
+ Cull_string.two_sided_cutting ("(* "," *)") (List.nth l 1) )) temp8 ;;
+let part3 = Image.image (fun (a,b)->"(\""^a^"\",\""^b^"\");") temp9 ;;
+
+let temp10 = Str.split (Str.regexp_string "\n|") (Cull_string.cobeginning 1 pre_part4) ;;
+let temp11 = Image.image (Str.split (Str.regexp "[ ]+")) temp10 ;;
+let temp12 = Image.image (List.hd) temp11 ;;
+let part4 = Image.image (fun v->"(\""^v^"\",\"\");") temp12 ;;
+
+let temp13 = Replace_inside.replace_inside_text ("\n"," ") (Cull_string.cobeginning 1 (snd pre_part5)) ;;
+let temp14 = Str.split (Str.regexp_string " |") temp13 ;;
+let temp15 = Image.image (Cull_string.trim_spaces) temp14 ;;
+let part5 = Image.image (fun v->"(\""^v^"\",\""^(String.lowercase_ascii v)^"\");") temp15 ;;
+
+let temp16 = Str.split (Str.regexp_string "\n|") (Cull_string.cobeginning 1 (snd pre_part6)) ;;
+let temp17 = Image.image (Str.split (Str.regexp "[ ]+")) temp16 ;;
+let temp18 = Image.image (List.hd) temp17 ;;
+let part6 = Image.image (fun v->"(\""^v^"\",\"\");") temp18 ;;
+
+let whole = List.flatten [part1;part2;part3;part4;part5;part6] ;; 
+
+let w1 = "\n\n\n" ^(String.concat "\n" whole)^"\n\n\n" ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 216 : Code to automatize a to_string map for a type with many variants 
+************************************************************************************************************************)
+module Snip216 = struct 
+
+let v1 = Absolute_path.of_string "watched/watched_not_githubbed/jug.ml" ;;
+let tv1 = Io.read_whole_file v1 ;;
+
+let tv2 = Lines_in_text.interval tv1 10 62 ;;
+
+let v2 = Substring.occurrences_of_in "|" tv2 ;;
+
+let v3 = Image.image (
+  fun j->
+    let i_opt = String_find_char.backwards_from_inclusive_opt 
+      (fun c->let ic=int_of_char c in (65<=ic)&&(ic<=90)) tv2 j in 
+    (Option.get i_opt,j)  
+ ) v2;;
+
+let replacements = Image.image (
+  fun (i,j)->
+    ((i,j),(Cull_string.interval tv2 i i)^"_T"^(Cull_string.interval tv2 (i+1) j))
+)  v3 ;; 
+
+
+let tv3 = String_ranges.replace_ranges_in replacements tv2 ;;
+
+let tv4 = "\n\n\n" ^ tv3 ^ "\n\n\n" ;;
+
+let act () = Io.append_string_to_file tv4 v1 ;;
+
+
+let tv5 = 
+   (Lines_in_text.interval tv1 72 80) ^ "\n" ^ 
+   (Lines_in_text.interval tv1 83 108) ;;
+
+let tv6 = Replace_inside.replace_inside_text ("|","") tv5 ;; 
+
+let v4 = Str.split(Str.regexp_string "\n") tv6 ;;
+
+let v5 = Image.image (fun s->
+  String_ranges.remove_all_ordered_occurrences_of_uple_in 
+    ["\t";"(* ";" *)"] s
+) v4 ;;
+
+let v6 = Image.image (fun (l,s)->
+  let temp1 = (List.hd l)@[s] in 
+  let temp2 = Image.image Cull_string.trim_spaces temp1 in 
+  List.filter (fun x->x<>"") temp2
+) v5 ;;
+
+let corrected_v6 = Image.image (fun x->
+  if x=["OR_T"] then ["OR_T";"|"] else 
+  if x=["OR_OR_T"] then ["OR_OR_T";"||"] else 
+  x) v6;;
+
+List.filter (fun l->List.length(l)<2) corrected_v6 ;;
+
+let part1 = Image.image (fun l->
+  "("^(Strung.enclose (List.nth l 1))^","^(List.nth l 0)^")"  
+) corrected_v6 ;;
+
+let tv7 = (Lines_in_text.interval tv1 112 117) ;;
+
+let tv8 = Replace_inside.replace_inside_text ("|","") tv7 ;; 
+
+let v7 = Str.split(Str.regexp "[ \r\t\n]+") tv8 ;;
+
+let part2 = Image.image (
+   fun b -> 
+     let temp1 = Cull_string.coending 2 b in 
+     let a = String.lowercase_ascii temp1 in 
+     "("^(Strung.enclose (a))^","^(b)^")" 
+) v7 ;;
+
+let v9="\n\n\n"^(String.concat ";\n" (part1@part2))^"\n\n\n" ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 215 : Second attempt to make dependencies visible in a Java project
 ************************************************************************************************************************)
 module Snip215 = struct 

@@ -61,7 +61,7 @@ type token =
 |SHORT |STATIC |STRICTFP |SUPER |SWITCH |SYNCHRONIZED
 |THIS |THROW |THROWS |TRANSIENT |TRY |VOID |VOLATILE |WHILE
 |EOF 
-(* Tokens not used during parsing *)
+(* Inactive tokens during parsing *)
 |COMMENT of string 
 |WHITESPACE of string ;;
 
