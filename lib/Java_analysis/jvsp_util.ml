@@ -47,14 +47,15 @@ type token_type = Jvsp_types.token_type =
 |SRS_T		(* >> *)
 |URS_T		(* >>> *)
 |OPERATOR_EQ_T 	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
-|ANNOTATOR_T 
+|AMPERSAND_T 
 (* Keywords*)
-|ABSTRACT_T |BOOLEAN_T |BREAK_T |BYTE_T |CASE_T |CATCH_T |CHAR_T |CLASS_T |CONST_T |CONTINUE_T
-|DEFAULT_T |DO_T |DOUBLE_T |ELSE_T |EXTENDS_T |FINAL_T |FINALLY_T |FLOAT_T |FOR_T |GOTO_T
-|IF_T |IMPLEMENTS_T |IMPORT_T |INSTANCEOF_T |INT_T |INTERFACE_T |LONG_T
-|NATIVE_T |NEW_T |PACKAGE_T |PRIVATE_T |PROTECTED_T |PUBLIC_T |RETURN_T
-|SHORT_T |STATIC_T |STRICTFP_T |SUPER_T |SWITCH_T |SYNCHRONIZED_T
-|THIS_T |THROW_T |THROWS_T |TRANSIENT_T |TRY_T |VOID_T |VOLATILE_T |WHILE_T
+|ABSTRACT_T |ASSERT_T |BOOLEAN_T |BREAK_T |BYTE_T |CASE_T |CATCH_T |CHAR_T |CLASS_T |CONST_T |CONTINUE_T
+|DEFAULT_T |DO_T |DOUBLE_T |ELSE_T |ENUM_T |EXPORTS_T |EXTENDS_T |FINAL_T |FINALLY_T |FLOAT_T |FOR_T |GOTO_T
+|IF_T |IMPLEMENTS_T |IMPORT_T |INSTANCEOF_T |INT_T |INTERFACE_T |LONG_T |MODULE_T
+|NATIVE_T |NEW_T |NONSEALED_T |OPEN_T |OPENS_T |PACKAGE_T |PERMITS_T |PRIVATE_T |PROTECTED_T |PROVIDES_T |PUBLIC_T 
+|RECORD_T |REQUIRES_T |RETURN_T |SEALED_T |SHORT_T |STATIC_T |STRICTFP_T |SUPER_T |SWITCH_T |SYNCHRONIZED_T
+|THIS_T |THROW_T |THROWS_T |TRANSIENT_T |TRANSITIVE_T |TRY_T |TO_T |USES_T 
+|VAR_T |VOID_T |VOLATILE_T |WHILE_T |WITH_T |YIELD_T
 |EOF_T  ;;
 
 let table_for_reading_token_types = [
@@ -95,8 +96,10 @@ let table_for_reading_token_types = [
 ("<<",LS_T);
 (">>",SRS_T);
 (">>>",URS_T);
+("@",AMPERSAND_T);
 (* Keywords *)
 ("abstract",ABSTRACT_T);
+("assert",ASSERT_T);
 ("boolean",BOOLEAN_T);
 ("break",BREAK_T);
 ("byte",BYTE_T);
@@ -110,6 +113,8 @@ let table_for_reading_token_types = [
 ("do",DO_T);
 ("double",DOUBLE_T);
 ("else",ELSE_T);
+("enum",ENUM_T);
+("exports",EXPORTS_T);
 ("extends",EXTENDS_T);
 ("final",FINAL_T);
 ("finally",FINALLY_T);
@@ -123,13 +128,22 @@ let table_for_reading_token_types = [
 ("int",INT_T);
 ("interface",INTERFACE_T);
 ("long",LONG_T);
+("module",MODULE_T);
 ("native",NATIVE_T);
 ("new",NEW_T);
+("non-sealed",NONSEALED_T);
+("open",OPEN_T);
+("opens",OPENS_T);
 ("package",PACKAGE_T);
+("permits",PERMITS_T);
 ("private",PRIVATE_T);
 ("protected",PROTECTED_T);
+("provides",PROVIDES_T);
 ("public",PUBLIC_T);
+("record",RECORD_T);
+("requires",REQUIRES_T);
 ("return",RETURN_T);
+("sealed",SEALED_T);
 ("short",SHORT_T);
 ("static",STATIC_T);
 ("strictfp",STRICTFP_T);
@@ -139,11 +153,17 @@ let table_for_reading_token_types = [
 ("this",THIS_T);
 ("throw",THROW_T);
 ("throws",THROWS_T);
+("to",TO_T);
 ("transient",TRANSIENT_T);
+("transitive",TRANSITIVE_T);
 ("try",TRY_T);
+("uses",USES_T);
+("var",VAR_T);
 ("void",VOID_T);
 ("volatile",VOLATILE_T);
-("while",WHILE_T)
+("while",WHILE_T);
+("with",WITH_T);
+("yield",YIELD_T);
 ] ;;
 
 
@@ -187,8 +207,9 @@ let ocaml_name_for_token_type = function
 |SRS_T -> "SRS_T"
 |URS_T -> "URS_T"
 |OPERATOR_EQ_T -> "OPERATOR_EQ_T"
-|ANNOTATOR_T -> "ANNOTATOR_T"
+|AMPERSAND_T -> "AMPERSAND_T"
 |ABSTRACT_T -> "ABSTRACT_T"
+|ASSERT_T -> "ASSERT_T"
 |BOOLEAN_T -> "BOOLEAN_T"
 |BREAK_T -> "BREAK_T"
 |BYTE_T -> "BYTE_T"
@@ -202,6 +223,8 @@ let ocaml_name_for_token_type = function
 |DO_T -> "DO_T"
 |DOUBLE_T -> "DOUBLE_T"
 |ELSE_T -> "ELSE_T"
+|ENUM_T -> "ENUM_T"
+|EXPORTS_T -> "EXPORTS_T"
 |EXTENDS_T -> "EXTENDS_T"
 |FINAL_T -> "FINAL_T"
 |FINALLY_T -> "FINALLY_T"
@@ -215,13 +238,22 @@ let ocaml_name_for_token_type = function
 |INT_T -> "INT_T"
 |INTERFACE_T -> "INTERFACE_T"
 |LONG_T -> "LONG_T"
+|MODULE_T -> "MODULE_T"
 |NATIVE_T -> "NATIVE_T"
 |NEW_T -> "NEW_T"
+|NONSEALED_T -> "NONSEALED_T"
+|OPEN_T -> "OPEN_T"
+|OPENS_T -> "OPENS_T"
 |PACKAGE_T -> "PACKAGE_T"
+|PERMITS_T -> "PERMITS_T"
 |PRIVATE_T -> "PRIVATE_T"
 |PROTECTED_T -> "PROTECTED_T"
+|PROVIDES_T -> "PROVIDES_T"
 |PUBLIC_T -> "PUBLIC_T"
+|RECORD_T -> "RECORD_T"
+|REQUIRES_T -> "REQUIRES_T"
 |RETURN_T -> "RETURN_T"
+|SEALED_T -> "SEALED_T"
 |SHORT_T -> "SHORT_T"
 |STATIC_T -> "STATIC_T"
 |STRICTFP_T -> "STRICTFP_T"
@@ -232,9 +264,15 @@ let ocaml_name_for_token_type = function
 |THROW_T -> "THROW_T"
 |THROWS_T -> "THROWS_T"
 |TRANSIENT_T -> "TRANSIENT_T"
+|TRANSITIVE_T -> "TRANSITIVE_T"
 |TRY_T -> "TRY_T"
+|TO_T -> "TO_T"
+|USES_T -> "USES_T"
+|VAR_T -> "VAR_T"
 |VOID_T -> "VOID_T"
 |VOLATILE_T -> "VOLATILE_T"
 |WHILE_T -> "WHILE_T"
+|WITH_T -> "WITH_T"
+|YIELD_T -> "YIELD_T"
 |EOF_T -> "EOF_T" ;;
 
