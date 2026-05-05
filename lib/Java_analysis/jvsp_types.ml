@@ -6,8 +6,15 @@
 
 type token =
   IDENTIFIER of string
-| LITERAL of string
-| PRIMITIVE_TYPE of string
+(* Literals *)
+|BOOLEAN_LITERAL of bool
+|CHARACTER_LITERAL of string
+|FLOATING_POINT_LITERAL of string
+|INTEGER_LITERAL of string
+|NULL_LITERAL
+|STRING_LITERAL of string
+|TEXT_BLOCK of string
+|LOWLEVEL_TYPE of string
 (* Separators *)
 |LP		(* ( *)
 |RP		(* ) *)
@@ -66,8 +73,14 @@ type positioned_token = { tok:token; start:int; endd:int;} ;;
 
 type token_type =
   IDENTIFIER_T 
-| LITERAL_T  
-| PRIMITIVE_TYPE_T 
+|BOOLEAN_LITERAL_T
+|CHARACTER_LITERAL_T
+|FLOATING_POINT_LITERAL_T
+|INTEGER_LITERAL_T
+|NULL_LITERAL_T
+|STRING_LITERAL_T
+|TEXT_BLOCK_T
+|LOWLEVEL_TYPE_T
 (* Separators *)
 |LP_T		(* ( *)
 |RP_T		(* ) *)
