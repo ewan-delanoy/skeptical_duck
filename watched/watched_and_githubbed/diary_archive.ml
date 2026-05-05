@@ -189,16 +189,21 @@ let code_for_to_string_map =
   "\n\n\n let token_to_string = function\n" ^ 
   (String.concat "\n" pairs_for_to_string_map)^ " ;;\n\n\n" ;;
  
+let pairs_for_ttt_map = Image.image (
+  fun (name,attribute)->
+    let (arg,img) = (
+    if attribute = ""
+    then ("("^name^" _)","")  
+    else (name,"")
+    ) in 
+    "|"^arg^" -> "^name^"_T"
+) template;;
+
+let code_for_ttt_map = 
+  "\n\n\n let get_token_type = function\n" ^ 
+  (String.concat "\n" pairs_for_ttt_map)^ " ;;\n\n\n" ;;  
 
 
-  
-
-let u1 = Image.image (
-  fun (x,y)->
-    "  \""^y^"\", "^x^";"
-) template2;;
-
-let u2 = "\n\n\n" ^ (String.concat "\n" u1)^ "\n\n\n" ;;
 
 
 end;;
