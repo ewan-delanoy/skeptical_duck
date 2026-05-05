@@ -1,11 +1,108 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 220 : Code to automatize a to_string map for a type with many variants, version 2, version 3
+************************************************************************************************************************)
+module Snip220 = struct 
+
+let ap1 = Absolute_path.of_string "lib/Java_analysis/jvsp_types.ml" ;;
+let text1 = Io.read_whole_file ap1 ;;
+
+let u1 = Lines_in_text.interval text1 8 70 ;;
+
+let pre_u2 = Replace_inside.replace_several_inside_text 
+   [("(* | *)","(* VERTICALBAR *)");
+    ("(* || *)","(* VERTICALBARVERTICALBAR *)")] u1;;
+
+let u2 = " |"^(Cull_string.coending 2 pre_u2);;
+
+let u3 = Lines_in_text.lines u2 ;;
+
+let u4 = List.filter (fun s->not(String.starts_with s ~prefix:"(*")) u3 ;;
+let u5 = String.concat "" u4 ;;
+
+let u6 = List.tl(String_ranges.split_wrt_separator u5 "|");;
+
+let pre_u7 = Image.image (Replace_inside.replace_inside_text ("VERTICALBAR","|")) u6;;
+let u7 = Image.image (Str.split (Str.regexp "[ \t]+")) pre_u7 ;;
+let is_an_uppercase_letter c = 
+   let i = int_of_char c in 
+   (65<=i)&&(i<=90) ;;
+
+let u8 = List.filter (fun l->is_an_uppercase_letter(String.get (List.hd l) 0)) u7 ;;   
+
+let main_transformer l =
+   let name = List.nth l 0 in 
+   if List.length(l)<2 
+   then (name,
+    (if name="NULL_LITERAL" then "null" else String.lowercase_ascii name)) 
+   else
+   if (List.nth l) 1 = "(*" 
+  then (name,List.nth l 2)
+  else (name,"") ;;   
+
+let u9 = Image.image main_transformer u8 ;;
+
+let u10 = (Image.image (
+  fun (a,b)->"(\""^a^"\",\""^b^"\");"
+) u9 );;
+
+let u11 = "\n\n\n[\n" ^(String.concat "\n" u10)^"\n];;\n\n\n" ;;
+end;;
+
+(************************************************************************************************************************
  Entry 219 : Template for pattern matching on a type with many variants, version 3
 ************************************************************************************************************************)
 module Snip219 = struct 
 
-let template = [
+let template = 
+[
+("IDENTIFIER","");
+("BOOLEAN_LITERAL","");
+("CHARACTER_LITERAL","");
+("FLOATING_POINT_LITERAL","");
+("INTEGER_LITERAL","");
+("NULL_LITERAL","null");
+("STRING_LITERAL","");
+("TEXT_BLOCK","");
+("LOWLEVEL_TYPE","");
+("LP","(");
+("RP",")");
+("LC","{");
+("RC","}");
+("LB","[");
+("RB","]");
+("SM",";");
+("CM",",");
+("DOT",".");
+("EQ","=");
+("GT",">");
+("LT","<");
+("NOT","!");
+("COMPL","~");
+("COND","?");
+("COLON",":");
+("EQ_EQ","==");
+("LE","<=");
+("GE",">=");
+("NOT_EQ","!=");
+("AND_AND","&&");
+("OR_OR","||");
+("INCR","++");
+("DECR","--");
+("PLUS","+");
+("MINUS","-");
+("TIMES","*");
+("DIV","/");
+("AND","&");
+("OR","|");
+("XOR","^");
+("MOD","%");
+("LS","<<");
+("SRS",">>");
+("URS",">>>");
+("OPERATOR_EQ","");
+("SNAIL","@");
 ("ABSTRACT","abstract");
 ("ASSERT","assert");
 ("BOOLEAN","boolean");
@@ -72,15 +169,26 @@ let template = [
 ("WHILE","while");
 ("WITH","with");
 ("YIELD","yield");
+("EOF","eof");
+("COMMENT","");
+("WHITESPACE","");
+];;
 
 
-] ;;
+let pairs_for_to_string_map = Image.image (
+  fun (name,attribute)->
+    let (arg,img) = (
+    if attribute = ""
+    then ("("^name^" txt)","txt")  
+    else (name,"\""^attribute^"\"")
+    ) in 
+    "|"^arg^" -> "^img
+) template;;
 
-let template2 = List.filter (
-   fun (x,y) -> not(List.mem y 
-   ["boolean";"byte";"char";"double";"float";"int";"long";"short"]
-   )
-) template ;; 
+let code_for_to_string_map = 
+  "\n\n\n let token_to_string = function\n" ^ 
+  (String.concat "\n" pairs_for_to_string_map)^ " ;;\n\n\n" ;;
+ 
 
 
   

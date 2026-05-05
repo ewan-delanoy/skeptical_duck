@@ -389,7 +389,7 @@ rule token = parse
 | ">>"  { Store.usual SRS lexbuf }
 | ">>>"  { Store.usual URS lexbuf }
 | AssignmentOperator  { Store.usual (assign_op lexbuf) lexbuf }
-| "@"  { Store.usual AMPERSAND lexbuf }
+| "@"  { Store.usual SNAIL lexbuf }
 
 | SUB? eof { EOF }
 | _ as c { raise(Unknown_char(c,(Lexing.lexeme_start lexbuf)+1))}

@@ -54,7 +54,7 @@ type token = Jvsp_types.token =
 |SRS		(* >> *)
 |URS		(* >>> *)
 |OPERATOR_EQ of string	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
-|AMPERSAND
+|SNAIL
 (* Keywords*)
 |ABSTRACT |ASSERT |BOOLEAN |BREAK |BYTE |CASE |CATCH |CHAR |CLASS 
 |CONST |CONTINUE |DEFAULT |DO |DOUBLE |ELSE |ENUM |EXPORTS |EXTENDS 
@@ -119,7 +119,7 @@ type token_type = Jvsp_types.token_type =
 |SRS_T		(* >> *)
 |URS_T		(* >>> *)
 |OPERATOR_EQ_T 	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
-|AMPERSAND_T 
+|SNAIL_T 
 (* Keywords*)
 |ABSTRACT_T |ASSERT_T |BOOLEAN_T |BREAK_T |BYTE_T |CASE_T |CATCH_T |CHAR_T |CLASS_T 
 |CONST_T |CONTINUE_T |DEFAULT_T |DO_T |DOUBLE_T |ELSE_T |ENUM_T |EXPORTS_T |EXTENDS_T 
@@ -131,3 +131,119 @@ type token_type = Jvsp_types.token_type =
 |VAR_T |VOID_T |VOLATILE_T |WHILE_T |WITH_T |YIELD_T
 |EOF_T  ;;
 
+let token_to_string = function
+|(IDENTIFIER txt) -> txt
+|(BOOLEAN_LITERAL b) -> string_of_bool b
+|(CHARACTER_LITERAL txt) -> txt
+|(FLOATING_POINT_LITERAL txt) -> txt
+|(INTEGER_LITERAL txt) -> txt
+|NULL_LITERAL -> "null"
+|(STRING_LITERAL txt) -> txt
+|(TEXT_BLOCK txt) -> txt
+|(LOWLEVEL_TYPE txt) -> txt
+|LP -> "("
+|RP -> ")"
+|LC -> "{"
+|RC -> "}"
+|LB -> "["
+|RB -> "]"
+|SM -> ";"
+|CM -> ","
+|DOT -> "."
+|EQ -> "="
+|GT -> ">"
+|LT -> "<"
+|NOT -> "!"
+|COMPL -> "~"
+|COND -> "?"
+|COLON -> ":"
+|EQ_EQ -> "=="
+|LE -> "<="
+|GE -> ">="
+|NOT_EQ -> "!="
+|AND_AND -> "&&"
+|OR_OR -> "||"
+|INCR -> "++"
+|DECR -> "--"
+|PLUS -> "+"
+|MINUS -> "-"
+|TIMES -> "*"
+|DIV -> "/"
+|AND -> "&"
+|OR -> "|"
+|XOR -> "^"
+|MOD -> "%"
+|LS -> "<<"
+|SRS -> ">>"
+|URS -> ">>>"
+|(OPERATOR_EQ txt) -> txt
+|SNAIL -> "@"
+|ABSTRACT -> "abstract"
+|ASSERT -> "assert"
+|BOOLEAN -> "boolean"
+|BREAK -> "break"
+|BYTE -> "byte"
+|CASE -> "case"
+|CATCH -> "catch"
+|CHAR -> "char"
+|CLASS -> "class"
+|CONST -> "const"
+|CONTINUE -> "continue"
+|DEFAULT -> "default"
+|DO -> "do"
+|DOUBLE -> "double"
+|ELSE -> "else"
+|ENUM -> "enum"
+|EXPORTS -> "exports"
+|EXTENDS -> "extends"
+|FINAL -> "final"
+|FINALLY -> "finally"
+|FLOAT -> "float"
+|FOR -> "for"
+|GOTO -> "goto"
+|IF -> "if"
+|IMPLEMENTS -> "implements"
+|IMPORT -> "import"
+|INSTANCEOF -> "instanceof"
+|INT -> "int"
+|INTERFACE -> "interface"
+|LONG -> "long"
+|MODULE -> "module"
+|NATIVE -> "native"
+|NEW -> "new"
+|NONSEALED -> "nonsealed"
+|OPEN -> "open"
+|OPENS -> "opens"
+|PACKAGE -> "package"
+|PERMITS -> "permits"
+|PRIVATE -> "private"
+|PROTECTED -> "protected"
+|PROVIDES -> "provides"
+|PUBLIC -> "public"
+|RECORD -> "record"
+|REQUIRES -> "requires"
+|RETURN -> "return"
+|SEALED -> "sealed"
+|SHORT -> "short"
+|STATIC -> "static"
+|STRICTFP -> "strictfp"
+|SUPER -> "super"
+|SWITCH -> "switch"
+|SYNCHRONIZED -> "synchronized"
+|THIS -> "this"
+|THROW -> "throw"
+|THROWS -> "throws"
+|TRANSIENT -> "transient"
+|TRANSITIVE -> "transitive"
+|TRY -> "try"
+|TO -> "to"
+|USES -> "uses"
+|VAR -> "var"
+|VOID -> "void"
+|VOLATILE -> "volatile"
+|WHILE -> "while"
+|WITH -> "with"
+|YIELD -> "yield"
+|EOF -> "eof"
+|(COMMENT txt) -> txt
+|(WHITESPACE txt) -> txt ;;

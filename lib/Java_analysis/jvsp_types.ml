@@ -54,7 +54,7 @@ type token =
 |SRS		(* >> *)
 |URS		(* >>> *)
 |OPERATOR_EQ of string	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
-|AMPERSAND
+|SNAIL (* @ *)
 (* Keywords*)
 |ABSTRACT |ASSERT |BOOLEAN |BREAK |BYTE |CASE |CATCH |CHAR |CLASS 
 |CONST |CONTINUE |DEFAULT |DO |DOUBLE |ELSE |ENUM |EXPORTS |EXTENDS 
@@ -120,7 +120,7 @@ type token_type =
 |SRS_T		(* >> *)
 |URS_T		(* >>> *)
 |OPERATOR_EQ_T 	(* += -= *= /= &= |= ^= %= <<= >>= >>>= *)
-|AMPERSAND_T 
+|SNAIL_T 
 (* Keywords*)
 |ABSTRACT_T |ASSERT_T |BOOLEAN_T |BREAK_T |BYTE_T |CASE_T |CATCH_T |CHAR_T |CLASS_T 
 |CONST_T |CONTINUE_T |DEFAULT_T |DO_T |DOUBLE_T |ELSE_T |ENUM_T |EXPORTS_T |EXTENDS_T 
