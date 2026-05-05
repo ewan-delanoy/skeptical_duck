@@ -1,6 +1,101 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 219 : Template for pattern matching on a type with many variants, version 3
+************************************************************************************************************************)
+module Snip219 = struct 
+
+let template = [
+("ABSTRACT","abstract");
+("ASSERT","assert");
+("BOOLEAN","boolean");
+("BREAK","break");
+("BYTE","byte");
+("CASE","case");
+("CATCH","catch");
+("CHAR","char");
+("CLASS","class");
+("CONST","const");
+("CONTINUE","continue");
+("DEFAULT","default");
+("DO","do");
+("DOUBLE","double");
+("ELSE","else");
+("ENUM","enum");
+("EXPORTS","exports");
+("EXTENDS","extends");
+("FINAL","final");
+("FINALLY","finally");
+("FLOAT","float");
+("FOR","for");
+("GOTO","goto");
+("IF","if");
+("IMPLEMENTS","implements");
+("IMPORT","import");
+("INSTANCEOF","instanceof");
+("INT","int");
+("INTERFACE","interface");
+("LONG","long");
+("MODULE","module");
+("NATIVE","native");
+("NEW","new");
+("NONSEALED","nonsealed");
+("OPEN","open");
+("OPENS","opens");
+("PACKAGE","package");
+("PERMITS","permits");
+("PRIVATE","private");
+("PROTECTED","protected");
+("PROVIDES","provides");
+("PUBLIC","public");
+("RECORD","record");
+("REQUIRES","requires");
+("RETURN","return");
+("SEALED","sealed");
+("SHORT","short");
+("STATIC","static");
+("STRICTFP","strictfp");
+("SUPER","super");
+("SWITCH","switch");
+("SYNCHRONIZED","synchronized");
+("THIS","this");
+("THROW","throw");
+("THROWS","throws");
+("TRANSIENT","transient");
+("TRANSITIVE","transitive");
+("TRY","try");
+("TO","to");
+("USES","uses");
+("VAR","var");
+("VOID","void");
+("VOLATILE","volatile");
+("WHILE","while");
+("WITH","with");
+("YIELD","yield");
+
+
+] ;;
+
+let template2 = List.filter (
+   fun (x,y) -> not(List.mem y 
+   ["boolean";"byte";"char";"double";"float";"int";"long";"short"]
+   )
+) template ;; 
+
+
+  
+
+let u1 = Image.image (
+  fun (x,y)->
+    "  \""^y^"\", "^x^";"
+) template2;;
+
+let u2 = "\n\n\n" ^ (String.concat "\n" u1)^ "\n\n\n" ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 218 : Template for pattern matching on a type with many variants, version 2
 ************************************************************************************************************************)
 module Snip218 = struct 
