@@ -58,7 +58,25 @@ let inner_disjunction nps text idx =
 
 let disjunction nps = Naive_parser_t.NP(inner_disjunction nps);;
 
+let inner_concat_star_with_nonstar_then_backtrack np_in_star np_after_star text idx = 
+  let rec helper = (
+    fun (treated,current_idx) -> 
+     match try_parse_at_index np_after_star text current_idx with 
+     Some (_,_) ->  if treated=[] then None else Some(List.rev treated,current_idx)
+     |None ->  
+      match try_parse_at_index np_in_star text current_idx with 
+       None -> if treated=[] then None else Some(List.rev treated,current_idx) 
+       |Some(part,new_idx) -> helper (part::treated,new_idx)
+   ) in 
+   helper ([],idx);;
+
+let concat_star_with_nonstar_then_backtrack np1 np2 = Naive_parser_t.NP(inner_concat_star_with_nonstar_then_backtrack np1 np2);;
+
+
+
 end ;;  
+
+let concat_star_with_nonstar_then_backtrack = Private.concat_star_with_nonstar_then_backtrack ;;
 
 let concat_two_then_backtrack = Private.concat_two_then_backtrack ;;
 
