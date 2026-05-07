@@ -15,10 +15,12 @@ let try_parse_after_index np text initial_idx=
   then None  
   else 
   match try_parse_at_index np text current_idx with 
-  (Some success) -> Some(current_idx,success)
+  (Some (data,new_idx)) -> Some((current_idx,data),new_idx)
   |None ->  helper (current_idx+1)
   ) in 
   helper initial_idx ;;
+
+let postpone np = Naive_parser_t.NP (fun text idx ->try_parse_after_index np text idx) ;;
 
 let inner_concat nps text idx = 
    let rec helper = (
@@ -84,7 +86,7 @@ let concat = Private.concat ;;
 
 let disjunction = Private.disjunction ;; 
 
-let try_parse_after_index = Private.try_parse_after_index ;;
+let postpone = Private.postpone ;;
 
 let try_parse_at_index = Private.try_parse_at_index ;;
    
