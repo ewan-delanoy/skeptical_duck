@@ -85,7 +85,20 @@ let inner_star np text idx =
 
 let star np = Naive_parser_t.NP(inner_star np);;
 
+let inner_concat_mandatory_with_optional np_mandatory np_optional text idx = 
+     match try_parse_at_index np_mandatory  text idx with 
+     None -> None
+     |Some (part1,idx1) ->  
+      match try_parse_at_index np_optional text idx1 with 
+       None -> Some((part1,None),idx1) 
+       |Some(part2,idx2) ->Some((part1,Some part2),idx2);;
+
+let concat_mandatory_with_optional np1 np2 = Naive_parser_t.NP(inner_concat_mandatory_with_optional np1 np2);;
+
+
 end ;;  
+
+let concat_mandatory_with_optional = Private.concat_mandatory_with_optional ;;
 
 let concat_star_with_nonstar_then_backtrack = Private.concat_star_with_nonstar_then_backtrack ;;
 
