@@ -112,6 +112,10 @@ let map f np  = Naive_parser_t.NP(fun text idx ->
   None -> None 
   |Some (x,next_idx) ->Some(f x,next_idx));;
 
+let heavy_map f np  = Naive_parser_t.NP(fun text idx ->
+  match try_parse_at_index np text idx with 
+  None -> None 
+  |Some (x,next_idx) ->Some(f text x,next_idx));;  
 
 
 end ;;  
@@ -126,6 +130,7 @@ let concat2 = Private.concat2 ;;
 
 let disjunction = Private.disjunction ;; 
 
+let heavy_map = Private.heavy_map ;;
 let homogeneous_concat = Private.concat ;;
 let map = Private.map ;;
 let postpone = Private.postpone ;;
