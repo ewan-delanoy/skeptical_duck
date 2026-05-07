@@ -60,10 +60,10 @@ let inner_disjunction nps text idx =
 
 let disjunction nps = Naive_parser_t.NP(inner_disjunction nps);;
 
-let inner_concat_star_with_nonstar_then_backtrack np_in_star np_after_star text idx = 
+let inner_concat_star_with_stopper np_in_star np_stopper text idx = 
   let rec helper = (
     fun (treated,current_idx) -> 
-     match try_parse_at_index np_after_star text current_idx with 
+     match try_parse_at_index np_stopper text current_idx with 
      Some (_,_) ->  if treated=[] then None else Some(List.rev treated,current_idx)
      |None ->  
       match try_parse_at_index np_in_star text current_idx with 
@@ -72,7 +72,7 @@ let inner_concat_star_with_nonstar_then_backtrack np_in_star np_after_star text 
    ) in 
    helper ([],idx);;
 
-let concat_star_with_nonstar_then_backtrack np1 np2 = Naive_parser_t.NP(inner_concat_star_with_nonstar_then_backtrack np1 np2);;
+let concat_star_with_stopper np1 np2 = Naive_parser_t.NP(inner_concat_star_with_stopper np1 np2);;
 
 let inner_star np text idx = 
    let rec helper = (
@@ -115,14 +115,34 @@ let map f np  = Naive_parser_t.NP(fun text idx ->
 let heavy_map f np  = Naive_parser_t.NP(fun text idx ->
   match try_parse_at_index np text idx with 
   None -> None 
-  |Some (x,next_idx) ->Some(f text x,next_idx));;  
+  |Some (x,next_idx) ->Some(f text idx x,next_idx));;  
+
+let inner_concat_star_of_postponed_with_stopper np_in_star np_stopper text idx = 
+  let rec helper = (
+    fun (treated,current_idx,n) -> 
+     if idx > n 
+     then if treated=[] then None else Some(List.rev treated,current_idx)
+     else   
+     match try_parse_at_index np_stopper text current_idx with 
+     Some (_,_) ->  if treated=[] then None else Some(List.rev treated,current_idx)
+     |None ->  
+      match try_parse_at_index np_in_star text current_idx with 
+       None -> helper (treated,idx+1,n)
+       |Some(part,new_idx) -> helper (part::treated,new_idx,n)
+   ) in 
+   helper ([],idx,String.length text);;
+
+let concat_star_of_postponed_with_stopper np1 np2 = Naive_parser_t.NP(inner_concat_star_of_postponed_with_stopper np1 np2);;
+
+
 
 
 end ;;  
 
 let concat_mandatory_with_optional = Private.concat_mandatory_with_optional ;;
 
-let concat_star_with_nonstar_then_backtrack = Private.concat_star_with_nonstar_then_backtrack ;;
+let concat_star_of_postponed_with_stopper = Private.concat_star_of_postponed_with_stopper ;;
+let concat_star_with_stopper = Private.concat_star_with_stopper ;;
 
 let concat_two_then_backtrack = Private.concat_two_then_backtrack ;;
 

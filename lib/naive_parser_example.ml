@@ -11,7 +11,7 @@ let condition_on_character f = Naive_parser_t.NP(fun text idx ->
     then None 
     else let c=String.get text (idx-1) in 
          if f c 
-         then Some('c',idx+1)
+         then Some(c,idx+1)
          else None   
     ) ;;
 
