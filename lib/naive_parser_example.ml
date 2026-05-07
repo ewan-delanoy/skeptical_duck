@@ -4,6 +4,26 @@
 
 *)
 
+module Private = struct 
+
+let condition_on_character f = Naive_parser_t.NP(fun text idx ->
+    if idx > (String.length text)
+    then None 
+    else let c=String.get text (idx-1) in 
+         if f c 
+         then Some('c',idx+1)
+         else None   
+    ) ;;
+
+let uppercase_character = condition_on_character (
+  fun c->
+    let i=int_of_char c in 
+    (66<=i)&&(i<=90)
+) ;;
+
+
+
+end ;;  
 
 let digit =
    Naive_parser_t.NP(
@@ -24,3 +44,5 @@ let fixed_string substr =
       then Some((),idx+(String.length substr)) 
       else None 
    ) ;;
+
+let uppercase_character = Private.uppercase_character ;;   

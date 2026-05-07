@@ -113,6 +113,7 @@ let map f np  = Naive_parser_t.NP(fun text idx ->
   |Some (x,next_idx) ->Some(f x,next_idx));;
 
 
+
 end ;;  
 
 let concat_mandatory_with_optional = Private.concat_mandatory_with_optional ;;
@@ -130,6 +131,6 @@ let map = Private.map ;;
 let postpone = Private.postpone ;;
 
 let star = Private.star ;; 
-
 let try_parse_at_index = Private.try_parse_at_index ;;
+
    
