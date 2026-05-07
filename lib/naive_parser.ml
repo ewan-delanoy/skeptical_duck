@@ -95,6 +95,17 @@ let inner_concat_mandatory_with_optional np_mandatory np_optional text idx =
 
 let concat_mandatory_with_optional np1 np2 = Naive_parser_t.NP(inner_concat_mandatory_with_optional np1 np2);;
 
+let inner_concat2 np1 np2 text idx = 
+  match try_parse_at_index np1 text idx with 
+  None -> None 
+  |Some (part1,idx1) ->
+   (
+     match try_parse_at_index np2 text idx1 with 
+      None -> None 
+     |Some (part2,idx2) -> Some((part1,part2),idx2)
+   );;
+
+let concat2 np1 np2 = Naive_parser_t.NP(inner_concat2 np1 np2);;
 
 end ;;  
 
@@ -104,10 +115,11 @@ let concat_star_with_nonstar_then_backtrack = Private.concat_star_with_nonstar_t
 
 let concat_two_then_backtrack = Private.concat_two_then_backtrack ;;
 
-let concat = Private.concat ;;
+let concat2 = Private.concat2 ;;
 
 let disjunction = Private.disjunction ;; 
 
+let homogeneous_concat = Private.concat ;;
 let postpone = Private.postpone ;;
 
 let star = Private.star ;; 

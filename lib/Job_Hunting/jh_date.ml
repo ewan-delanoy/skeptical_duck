@@ -53,6 +53,27 @@ let number_of_days_between date1 date2 =
    end_of_first_month + end_of_first_year + year_diff + beginning_of_last_year + beginning_of_last_month ;;
 
 
+let one_or_two_digits = Naive_parser_t.NP(fun
+  text idx  ->
+  let d= Naive_parser_example.digit in
+  let prsr = Naive_parser.concat_mandatory_with_optional d d in 
+  match Naive_parser.try_parse_at_index prsr text idx with 
+  None -> None 
+  |Some((c1,opt),new_idx)->
+     let i1 = int_of_char(c1)-48 in 
+     let res =(match opt with 
+     None -> i1
+     |Some(c2)->10*i1+(int_of_char(c2)-48)
+     ) in 
+     Some(res,new_idx)) ;;
+
+Naive_parser.try_parse_at_index one_or_two_digits "78abc" 1 ;;
+Naive_parser.try_parse_at_index one_or_two_digits "9abc" 1 ;;
+
+
+   
+
+
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
