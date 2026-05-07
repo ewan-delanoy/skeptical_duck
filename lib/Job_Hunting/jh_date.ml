@@ -137,9 +137,21 @@ let today () =
    let gm = Unix.localtime (Unix.time()) in 
    {Jh_date_t.day=gm.Unix.tm_mday; month=gm.Unix.tm_mon+1; year=gm.Unix.tm_year+1900} ;;
 
+let to_triple d = (d.Jh_date_t.year,d.Jh_date_t.month,d.Jh_date_t.day) ;;
+let i_order = Total_ordering.for_integers ;;
+
+let order_on_triples = Total_ordering.triple_product i_order i_order i_order ;;
+    
+
+let order =((fun date1 date2 ->
+  order_on_triples (to_triple date1) (to_triple date2)
+) : Jh_date_t.t Total_ordering_t.t);;  
+
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
+
+let order = Private.order ;;
 let parser = Private.parser ;;
 
 let today = Private.today ;;

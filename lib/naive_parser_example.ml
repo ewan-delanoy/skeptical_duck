@@ -18,7 +18,7 @@ let condition_on_character f = Naive_parser_t.NP(fun text idx ->
 let uppercase_character = condition_on_character (
   fun c->
     let i=int_of_char c in 
-    (66<=i)&&(i<=90)
+    (65<=i)&&(i<=90)
 ) ;;
 
 
