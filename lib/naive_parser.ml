@@ -74,7 +74,16 @@ let inner_concat_star_with_nonstar_then_backtrack np_in_star np_after_star text 
 
 let concat_star_with_nonstar_then_backtrack np1 np2 = Naive_parser_t.NP(inner_concat_star_with_nonstar_then_backtrack np1 np2);;
 
+let inner_star np text idx = 
+   let rec helper = (
+     fun (treated,current_idx) -> 
+       match try_parse_at_index np text current_idx with 
+       None -> if treated=[] then None else Some(List.rev treated,current_idx)
+       |Some (part,new_idx) -> helper (part::treated,new_idx)
+   ) in 
+   helper ([],idx) ;;
 
+let star np = Naive_parser_t.NP(inner_star np);;
 
 end ;;  
 
@@ -87,6 +96,8 @@ let concat = Private.concat ;;
 let disjunction = Private.disjunction ;; 
 
 let postpone = Private.postpone ;;
+
+let star = Private.star ;; 
 
 let try_parse_at_index = Private.try_parse_at_index ;;
    
