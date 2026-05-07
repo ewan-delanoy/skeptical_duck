@@ -133,7 +133,13 @@ Naive_parser.try_parse_at_index parser "2/3/14abc" 1 ;;
 Naive_parser.try_parse_at_index parser "781/abc" 1 ;;
 *)
 
+let today () =
+   let gm = Unix.localtime (Unix.time()) in 
+   {Jh_date_t.day=gm.Unix.tm_mday; month=gm.Unix.tm_mon+1; year=gm.Unix.tm_year+1900} ;;
+
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
 let parser = Private.parser ;;
+
+let today = Private.today ;;

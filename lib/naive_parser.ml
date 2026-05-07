@@ -76,12 +76,15 @@ let concat_star_with_stopper np1 np2 = Naive_parser_t.NP(inner_concat_star_with_
 
 let inner_star np text idx = 
    let rec helper = (
-     fun (treated,current_idx) -> 
+     fun (treated,current_idx,n) ->
+       if current_idx > n 
+       then if treated=[] then None else Some(List.rev treated,current_idx)
+       else    
        match try_parse_at_index np text current_idx with 
        None -> if treated=[] then None else Some(List.rev treated,current_idx)
-       |Some (part,new_idx) -> helper (part::treated,new_idx)
+       |Some (part,new_idx) -> helper (part::treated,new_idx,n)
    ) in 
-   helper ([],idx) ;;
+   helper ([],idx,String.length text) ;;
 
 let star np = Naive_parser_t.NP(inner_star np);;
 
@@ -120,14 +123,14 @@ let heavy_map f np  = Naive_parser_t.NP(fun text idx ->
 let inner_concat_star_of_postponed_with_stopper np_in_star np_stopper text idx = 
   let rec helper = (
     fun (treated,current_idx,n) -> 
-     if idx > n 
+     if current_idx > n 
      then if treated=[] then None else Some(List.rev treated,current_idx)
      else   
      match try_parse_at_index np_stopper text current_idx with 
      Some (_,_) ->  if treated=[] then None else Some(List.rev treated,current_idx)
      |None ->  
       match try_parse_at_index np_in_star text current_idx with 
-       None -> helper (treated,idx+1,n)
+       None -> helper (treated,current_idx+1,n)
        |Some(part,new_idx) -> helper (part::treated,new_idx,n)
    ) in 
    helper ([],idx,String.length text);;
