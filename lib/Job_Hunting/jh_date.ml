@@ -52,28 +52,88 @@ let number_of_days_between date1 date2 =
    and beginning_of_last_month = last_day  in 
    end_of_first_month + end_of_first_year + year_diff + beginning_of_last_year + beginning_of_last_month ;;
 
-
-let one_or_two_digits = Naive_parser_t.NP(fun
-  text idx  ->
+let digit_followed_by_optional_digit = 
   let d= Naive_parser_example.digit in
-  let prsr = Naive_parser.concat_mandatory_with_optional d d in 
-  match Naive_parser.try_parse_at_index prsr text idx with 
-  None -> None 
-  |Some((c1,opt),new_idx)->
-     let i1 = int_of_char(c1)-48 in 
-     let res =(match opt with 
+  Naive_parser.concat_mandatory_with_optional d d ;;
+
+let one_or_two_digits = 
+  Naive_parser.map (
+    fun (c1,opt) -> 
+      let i1 = int_of_char(c1)-48 in 
+      match opt with 
      None -> i1
      |Some(c2)->10*i1+(int_of_char(c2)-48)
-     ) in 
-     Some(res,new_idx)) ;;
+  ) digit_followed_by_optional_digit ;;
 
+(*     
 Naive_parser.try_parse_at_index one_or_two_digits "78abc" 1 ;;
 Naive_parser.try_parse_at_index one_or_two_digits "9abc" 1 ;;
+*)
+
+let slash= Naive_parser_example.fixed_string "/" ;;
+
+let one_or_two_digits_followed_by_slash = 
+  Naive_parser.map fst (Naive_parser.concat2 one_or_two_digits slash) ;;
+
+(*     
+Naive_parser.try_parse_at_index one_or_two_digits_followed_by_slash "78/abc" 1 ;;
+Naive_parser.try_parse_at_index one_or_two_digits_followed_by_slash "9/abc" 1 ;;
+*)   
+
+let doubled_digit =  Naive_parser.concat2 Naive_parser_example.digit Naive_parser_example.digit ;;
+
+let number_with_two_digits = Naive_parser.map (
+   fun (c1,c2) ->  10*(int_of_char(c1)-48)+(int_of_char(c2)-48)
+) doubled_digit ;;
 
 
-   
+(*     
+Naive_parser.try_parse_at_index number_with_two_digits "543/abc" 1 ;;
+Naive_parser.try_parse_at_index number_with_two_digits "78/abc" 1 ;;
+Naive_parser.try_parse_at_index number_with_two_digits "9/abc" 1 ;;
+*)   
 
+let number_with_two_digits_possibly_doubled = 
+   Naive_parser.concat_mandatory_with_optional
+     number_with_two_digits number_with_two_digits ;;
+
+(*     
+Naive_parser.try_parse_at_index number_with_two_digits_possibly_doubled "5432/abc" 1 ;;
+Naive_parser.try_parse_at_index number_with_two_digits_possibly_doubled "781/abc" 1 ;;
+*)
+
+let date_beginning = 
+   Naive_parser.concat2 one_or_two_digits_followed_by_slash one_or_two_digits_followed_by_slash ;;
+let date_ending = Naive_parser.map 
+ (
+   fun (i1,opt) ->
+     match opt with 
+     None -> 2000+i1
+     |Some(i2)->100*i1+i2
+ ) number_with_two_digits_possibly_doubled ;;
+ 
+
+
+exception Unfinished_date of int * (int * int) * int ;;
+
+let parser = Naive_parser_t.NP(fun
+  text idx  ->
+  match Naive_parser.try_parse_at_index date_beginning text idx with 
+  None -> None 
+  |Some((d,m),idx1)->
+    match Naive_parser.try_parse_at_index date_ending text idx1 with 
+  None -> raise(Unfinished_date(idx,(d,m),idx1))
+  |Some(y,final_idx)->
+    Some({Jh_date_t.day=d; month=m; year=y},final_idx)
+   ) ;;
+
+(*     
+Naive_parser.try_parse_at_index parser "54/3/3006abc" 1 ;;
+Naive_parser.try_parse_at_index parser "2/3/14abc" 1 ;;
+Naive_parser.try_parse_at_index parser "781/abc" 1 ;;
+*)
 
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
+let parser = Private.parser ;;
