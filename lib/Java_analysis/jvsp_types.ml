@@ -4,6 +4,7 @@
 
 *)
 
+
 type token =
   IDENTIFIER of string
 (* Literals *)
@@ -67,7 +68,8 @@ type token =
 |EOF 
 (* Inactive tokens during parsing *)
 |COMMENT of string 
-|WHITESPACE of string ;;
+|WHITESPACE of string 
+|LINEBREAK of string;;
 
 type positioned_token = { tok:token; start:int; endd:int;} ;;
 
@@ -132,7 +134,8 @@ type token_type =
 |VAR_T |VOID_T |VOLATILE_T |WHILE_T |WITH_T |YIELD_T
 |EOF_T  
 |COMMENT_T 
-|WHITESPACE_T ;;
+|WHITESPACE_T 
+|LINEBREAK_T ;;
 
 
 

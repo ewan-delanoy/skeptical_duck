@@ -1,6 +1,616 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 221 : Translating Java 17 syntax specification into an OCaml type
+************************************************************************************************************************)
+module Snip221 = struct 
+
+open Jvsp_types ;;
+
+
+let table_for_reading_token_types = [
+  (* Separators *)
+("(",LP_T);
+(")",RP_T);
+("{",LC_T);
+("}",RC_T);
+("[",LB_T);
+("]",RB_T);
+(";",SM_T);
+(",",CM_T);
+(".",DOT_T);
+(* Operators *)
+("=",EQ_T);
+(">",GT_T);
+("<",LT_T);
+("!",NOT_T);
+("~",COMPL_T);
+("?",COND_T);
+(":",COLON_T);
+("==",EQ_EQ_T);
+("<=",LE_T);
+(">=",GE_T);
+("!=",NOT_EQ_T);
+("&&",AND_AND_T);
+("||",OR_OR_T);
+("++",INCR_T);
+("--",DECR_T);
+("+",PLUS_T);
+("-",MINUS_T);
+("*",TIMES_T);
+("/",DIV_T);
+("&",AND_T);
+("|",OR_T);
+("^",XOR_T);
+("%",MOD_T);
+("<<",LS_T);
+(">>",SRS_T);
+(">>>",URS_T);
+("@",SNAIL_T);
+(* Keywords *)
+("abstract",ABSTRACT_T);
+("assert",ASSERT_T);
+("boolean",BOOLEAN_T);
+("break",BREAK_T);
+("byte",BYTE_T);
+("case",CASE_T);
+("catch",CATCH_T);
+("char",CHAR_T);
+("class",CLASS_T);
+("const",CONST_T);
+("continue",CONTINUE_T);
+("default",DEFAULT_T);
+("do",DO_T);
+("double",DOUBLE_T);
+("else",ELSE_T);
+("enum",ENUM_T);
+("exports",EXPORTS_T);
+("extends",EXTENDS_T);
+("final",FINAL_T);
+("finally",FINALLY_T);
+("float",FLOAT_T);
+("for",FOR_T);
+("goto",GOTO_T);
+("if",IF_T);
+("implements",IMPLEMENTS_T);
+("import",IMPORT_T);
+("instanceof",INSTANCEOF_T);
+("int",INT_T);
+("interface",INTERFACE_T);
+("long",LONG_T);
+("module",MODULE_T);
+("native",NATIVE_T);
+("new",NEW_T);
+("non-sealed",NONSEALED_T);
+("open",OPEN_T);
+("opens",OPENS_T);
+("package",PACKAGE_T);
+("permits",PERMITS_T);
+("private",PRIVATE_T);
+("protected",PROTECTED_T);
+("provides",PROVIDES_T);
+("public",PUBLIC_T);
+("record",RECORD_T);
+("requires",REQUIRES_T);
+("return",RETURN_T);
+("sealed",SEALED_T);
+("short",SHORT_T);
+("static",STATIC_T);
+("strictfp",STRICTFP_T);
+("super",SUPER_T);
+("switch",SWITCH_T);
+("synchronized",SYNCHRONIZED_T);
+("this",THIS_T);
+("throw",THROW_T);
+("throws",THROWS_T);
+("to",TO_T);
+("transient",TRANSIENT_T);
+("transitive",TRANSITIVE_T);
+("try",TRY_T);
+("uses",USES_T);
+("var",VAR_T);
+("void",VOID_T);
+("volatile",VOLATILE_T);
+("while",WHILE_T);
+("with",WITH_T);
+("yield",YIELD_T);
+] ;;
+
+
+
+let ocaml_name_for_token_type = function 
+|IDENTIFIER_T -> "IDENTIFIER_T"
+|BOOLEAN_LITERAL_T -> "BOOLEAN_LITERAL_T"
+|CHARACTER_LITERAL_T -> "CHARACTER_LITERAL_T"
+|FLOATING_POINT_LITERAL_T -> "FLOATING_POINT_LITERAL_T"
+|INTEGER_LITERAL_T  -> "INTEGER_LITERAL_T"
+|NULL_LITERAL_T  -> "NULL_LITERAL_T"
+|STRING_LITERAL_T  -> "STRING_LITERAL_T"
+|TEXT_BLOCK_T  -> "TEXT_BLOCK_T"
+|LOWLEVEL_TYPE_T  -> "LOWLEVEL_TYPE_T"
+|LP_T -> "LP_T"
+|RP_T -> "RP_T"
+|LC_T -> "LC_T"
+|RC_T -> "RC_T"
+|LB_T -> "LB_T"
+|RB_T -> "RB_T"
+|SM_T -> "SM_T"
+|CM_T -> "CM_T"
+|DOT_T -> "DOT_T"
+|EQ_T -> "EQ_T"
+|GT_T -> "GT_T"
+|LT_T -> "LT_T"
+|NOT_T -> "NOT_T"
+|COMPL_T -> "COMPL_T"
+|COND_T -> "COND_T"
+|COLON_T -> "COLON_T"
+|EQ_EQ_T -> "EQ_EQ_T"
+|LE_T -> "LE_T"
+|GE_T -> "GE_T"
+|NOT_EQ_T -> "NOT_EQ_T"
+|AND_AND_T -> "AND_AND_T"
+|OR_OR_T -> "OR_OR_T"
+|INCR_T -> "INCR_T"
+|DECR_T -> "DECR_T"
+|PLUS_T -> "PLUS_T"
+|MINUS_T -> "MINUS_T"
+|TIMES_T -> "TIMES_T"
+|DIV_T -> "DIV_T"
+|AND_T -> "AND_T"
+|OR_T -> "OR_T"
+|XOR_T -> "XOR_T"
+|MOD_T -> "MOD_T"
+|LS_T -> "LS_T"
+|SRS_T -> "SRS_T"
+|URS_T -> "URS_T"
+|OPERATOR_EQ_T -> "OPERATOR_EQ_T"
+|SNAIL_T -> "SNAIL_T"
+|ABSTRACT_T -> "ABSTRACT_T"
+|ASSERT_T -> "ASSERT_T"
+|BOOLEAN_T -> "BOOLEAN_T"
+|BREAK_T -> "BREAK_T"
+|BYTE_T -> "BYTE_T"
+|CASE_T -> "CASE_T"
+|CATCH_T -> "CATCH_T"
+|CHAR_T -> "CHAR_T"
+|CLASS_T -> "CLASS_T"
+|CONST_T -> "CONST_T"
+|CONTINUE_T -> "CONTINUE_T"
+|DEFAULT_T -> "DEFAULT_T"
+|DO_T -> "DO_T"
+|DOUBLE_T -> "DOUBLE_T"
+|ELSE_T -> "ELSE_T"
+|ENUM_T -> "ENUM_T"
+|EXPORTS_T -> "EXPORTS_T"
+|EXTENDS_T -> "EXTENDS_T"
+|FINAL_T -> "FINAL_T"
+|FINALLY_T -> "FINALLY_T"
+|FLOAT_T -> "FLOAT_T"
+|FOR_T -> "FOR_T"
+|GOTO_T -> "GOTO_T"
+|IF_T -> "IF_T"
+|IMPLEMENTS_T -> "IMPLEMENTS_T"
+|IMPORT_T -> "IMPORT_T"
+|INSTANCEOF_T -> "INSTANCEOF_T"
+|INT_T -> "INT_T"
+|INTERFACE_T -> "INTERFACE_T"
+|LONG_T -> "LONG_T"
+|MODULE_T -> "MODULE_T"
+|NATIVE_T -> "NATIVE_T"
+|NEW_T -> "NEW_T"
+|NONSEALED_T -> "NONSEALED_T"
+|OPEN_T -> "OPEN_T"
+|OPENS_T -> "OPENS_T"
+|PACKAGE_T -> "PACKAGE_T"
+|PERMITS_T -> "PERMITS_T"
+|PRIVATE_T -> "PRIVATE_T"
+|PROTECTED_T -> "PROTECTED_T"
+|PROVIDES_T -> "PROVIDES_T"
+|PUBLIC_T -> "PUBLIC_T"
+|RECORD_T -> "RECORD_T"
+|REQUIRES_T -> "REQUIRES_T"
+|RETURN_T -> "RETURN_T"
+|SEALED_T -> "SEALED_T"
+|SHORT_T -> "SHORT_T"
+|STATIC_T -> "STATIC_T"
+|STRICTFP_T -> "STRICTFP_T"
+|SUPER_T -> "SUPER_T"
+|SWITCH_T -> "SWITCH_T"
+|SYNCHRONIZED_T -> "SYNCHRONIZED_T"
+|THIS_T -> "THIS_T"
+|THROW_T -> "THROW_T"
+|THROWS_T -> "THROWS_T"
+|TRANSIENT_T -> "TRANSIENT_T"
+|TRANSITIVE_T -> "TRANSITIVE_T"
+|TRY_T -> "TRY_T"
+|TO_T -> "TO_T"
+|USES_T -> "USES_T"
+|VAR_T -> "VAR_T"
+|VOID_T -> "VOID_T"
+|VOLATILE_T -> "VOLATILE_T"
+|WHILE_T -> "WHILE_T"
+|WITH_T -> "WITH_T"
+|YIELD_T -> "YIELD_T"
+|EOF_T -> "EOF_T"
+|COMMENT_T -> "COMMENT_T"
+|WHITESPACE_T -> "WHITESPACE_T"
+|LINEBREAK_T -> "LINEBREAK_T" ;;
+
+
+
+let extract_opt txt start_idx =
+   let (l,arrival_idx)=String_ranges.remove_next_ordered_occurrence_of_uple_in_from_opt 
+   ["<div class=\"productionrecap\">";"<div class=\"production\">";
+   "<div class=\"lhs\">";"</div>";"<div class=\"rhs\">";"</div>";
+   "</div>";"</div>"] txt start_idx in 
+   if (l=[]) then None else
+   Some((List.nth l 3,List.nth l 5),arrival_idx);;
+
+let rec helper_for_extracting_several (txt,treated,current_idx) =
+  match extract_opt txt current_idx with 
+  None -> (List.rev(treated),current_idx)
+  |Some(pair,next_idx) ->
+    helper_for_extracting_several (txt,pair::treated,next_idx) ;;
+
+let extract_several txt start_idx = 
+    helper_for_extracting_several (txt,[],start_idx) ;;
+
+
+let remove_spades (spade1,spade2,spade3) txt = 
+  let (lists,last_term) = String_ranges.remove_all_ordered_occurrences_of_uple_in 
+    [spade1;spade2;spade3] txt in 
+  let cleaned_lists = Image.image (
+    fun l-> 
+      if List.length(l)<3 
+      then [List.nth l 0]
+      else [List.nth l 0;List.nth l 2]
+  )  lists in  
+  String.concat "" ((List.flatten(cleaned_lists)) @ [last_term]) ;; 
+
+let remove_links txt = remove_spades ("<a ",">","</a>") txt ;;
+
+let remove_codes txt = remove_spades ("<code ",">","</code>") txt;;
+
+let remove_links_and_codes txt = remove_links(remove_codes(remove_links txt)) ;;
+
+let ap1 = Absolute_path.of_string "~//Teuliou/html_files/Java17_syntax/big_list.html";;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let nbr_of_lines1 = List.length(Lines_in_text.lines text1) ;;
+let prologue = (Lines_in_text.interval text1 1 20)^"\n"
+let core = (Lines_in_text.interval text1 21 3744)^"\n"
+let epilogue = Lines_in_text.interval text1 3745 nbr_of_lines1 ;;
+
+let check1 = (text1 = prologue ^ core ^ epilogue) ;;
+
+let (res1,i1) = extract_several core 1 ;;
+
+let rres1 = List.rev res1 ;;
+
+let u1 = Image.image fst res1 ;;
+
+let u2 = Int_range.index_everything u1 ;;
+
+let u3 = Image.image (fun (idx,name)->(idx,name,"<b>"^(string_of_int idx)^".</b>"^name)) u2 ;;
+
+let englose name = "<div class=\"lhs\">"^name^"</div>" ;;
+let u4 = Image.image (fun (idx,name1,name2)->(englose name1,englose name2)) u3 ;;
+
+let ap2 = Absolute_path.of_string "~//Teuliou/html_files/Java17_syntax/indexed_list.html";;
+
+let act1 () = Replace_inside.replace_several_inside_file u4 ap2 ;;
+
+let u5 = Image.image (fun (idx,name)->
+  (idx,Cull_string.coending 1 name)  
+) u2 ;;
+
+let ir i j = Int_range.range i j ;;
+
+let list_for_concat = [2;17;19;23;24;25;27;38;39;42; 43;44;45;47;51;53;54;55;56;57;
+            58;59;62;64;65;66;76;80;81;82;  84;86;87;91;92;94;96;98;99;
+    100;101;103;104;105;106;108;110;112;116; 117;118;120;122;124;125;127;129;131;132;
+    133;135;136;137;138;139;140;141;142;145; 146;152;153;154;156;157;158;160;163;166;
+    167;168;171;172;175;176;177;178;179;180; 181;182;183;185;186;187;188;189;190;191;
+    192;200;201;206;209;210;212;219;235;236; 239;240;242;244
+
+    
+    ] ;;
+let list_for_disjunction = 
+      [7;8;10;11;12;13;14;16;21;26; 36;40;41;46;49;50;52;60;61;63;
+      67;68;69;70;71;73;74;77;79;85;88;          89;90;93;95;102;109;111;113;115;119;
+    121;123;126;128;130;134;143;144;147;148;149; 150;151;155;165;169;170;173;174;193;194;
+    195;196;197;198;199;202;211;216;217;218; 220;221;238;243
+  ] ;;
+let list_for_discat = [9;15;18;20;22]@(ir 28 35)@[37;48;72;75;78;83;97;
+    107;114;159;161;162;164;184;203;204;205; 207;208;213;214;215;222;223;224;225;226;
+    227;228;229;230;231;232;233;234;237;241;
+     ] ;;
+let list_for_setminus_prods = [1] ;; 
+let list_for_setminus_words = [5;6] ;; 
+let list_for_special = [3;4] ;; 
+
+let list_of_particulars = 
+  Ordered.fold_merge Total_ordering.for_integers 
+  [list_for_setminus_prods;list_for_setminus_words;list_for_special];;
+
+let named_lists = [
+  "concat",list_for_concat;
+  "disjunction",list_for_disjunction;
+  "discat",list_for_discat;
+  "setminus_prods",list_for_setminus_prods;
+  "setminus_wors",list_for_setminus_words;
+  "special",list_for_special] ;;
+
+let lists = Image.image snd named_lists ;;
+
+let whole = Ordered.fold_merge Total_ordering.for_integers 
+ lists ;;
+
+let remains = Ordered.setminus Total_ordering.for_integers (Int_range.range 1 243) whole ;; 
+
+let pairs_of_lists = Uple.list_of_pairs lists ;;
+
+let shadow k = List.filter_map (fun (name,l)->
+  if List.mem k l then Some name else None
+  ) named_lists ;;
+
+let bad_shadows = List.filter_map (fun k->
+  let sh = shadow k in 
+  if List.length(sh)>1
+  then Some(k,sh)   
+  else None
+  )  (Int_range.range 1 243) ;;
+
+let u6 = Int_range.index_everything res1 ;;  
+
+let u6_usual = List.filter (fun (idx,_)->
+  (not(List.mem idx list_of_particulars))&&(not(List.mem idx [2;221]))
+  ) u6 ;;
+
+let indices_using_oneof_keyword = [11; 12; 49; 52; 63; 77; 93; 115; 121; 123; 128] ;;
+
+let list_for_pbc_extra_productions = [
+ "CaseConstant";
+ "ElementValue";
+ "ElementValuePair";
+ "EnumConstant";
+ "ExceptionType";
+ "Expression";
+ "FormalParameter";
+ "Identifier";
+ "InterfaceType";
+ "LambdaParameter";
+ "ModuleName";
+ "RecordComponent"; 
+ "Resource"; 
+ "StatementExpression";
+ "TypeArgument"; 
+ "TypeName";
+ "TypeParameter";
+ "VariableDeclarator";
+ "VariableInitializer";
+] ;;
+  
+
+let list_for_extra_productions = 
+[
+  ("AnnotatedIdentifierrPrecededByDot",". {Annotation} Identifier");
+  ("ClassTypePrecededByVerticalBar","| ClassType");
+  ("DimsElement","{Annotation} LB RB");
+  ("EqualsVariableInitializer","= VariableInitializer");
+  ("IdentifierFollowedByDot","Identifier .");
+  ("IdentifierPrecededByDot",". Identifier");
+  ("OpenSquare","LB RB");
+  ("ParenthesedArgumentList","( [ArgumentList] )");
+  ("ToModuleList","to ModuleName {ModuleNamePrecededByComma}");
+  ("ReceiverParameterFollowedByComma","ReceiverParameter ,");
+  ("ResourcePrecededBySemiColon","; Resource");
+  ("SwitchLabelFollowedByColon","SwitchLabel :");
+] @ (
+    Image.image (fun n ->
+        (n^"PrecededByComma",", "^n)
+    ) list_for_pbc_extra_productions
+);;
+
+let intermediaries_in_extra_productions = List.filter_map (
+  fun (n,_)->
+    if List.exists (fun (_,m)->Substring.is_a_substring_of n m) list_for_extra_productions 
+    then Some n 
+    else None  
+) list_for_extra_productions ;; 
+
+
+let replacements_from_extra_productions = 
+  let (li_interm,li_not_interm) = List.partition 
+  (fun (n,m)->List.mem n intermediaries_in_extra_productions) list_for_extra_productions in 
+  let li2 = Image.image (fun (x,y)->(x,
+  Replace_inside.replace_several_inside_text li_interm y)) li_not_interm in 
+  Image.image (fun (x,y)->(y,x)) li2 ;;
+
+
+let main_transform idx data = 
+  let temp1 = remove_links_and_codes data in 
+  let temp2 = Replace_inside.replace_several_inside_text 
+      [
+        "[]","LB RB";
+        "[ ","LB ";
+        " ]"," RB";
+        "{}","LC RC";
+        "{ ","LC ";
+        "{\n","LC ";
+        " }"," RC";
+        "(one of)","";
+        "&amp;","&";
+        "&lt;","<";
+        "&gt;",">";
+        "->","- >";
+        "<>","< >";
+        "::",": :";
+      ] temp1 in 
+  let temp3 = Replace_inside.replace_several_inside_text 
+      [
+        "\n","";
+        "\t","";
+        "\r",""
+      ] temp2 in  
+  (* when the "one of" keyword is used, mere spaces express disjunction, just like newlines *)     
+  let reduction_for_whitespace = (if List.mem idx indices_using_oneof_keyword 
+               then "<br>" else " " ) in  
+  let temp4 = Str.global_replace (Str.regexp "[ ]+") reduction_for_whitespace temp3 in  
+  let temp5 = Replace_inside.replace_several_inside_text replacements_from_extra_productions temp4 in 
+  let temp6 = Replace_inside.replace_several_inside_text  [
+    ("..IdentifierPrecededByDot"," . . . Identifier");
+  ] temp5 in 
+  let temp7 = Str.split (Str.regexp_string "<br>") temp6 in 
+  let temp8 = Image.image Cull_string.trim_spaces temp7 in 
+  let temp9 = List.filter (fun s->s<>"") temp8 in 
+  temp9 ;;
+
+let u7 = Image.image (fun (idx,(name,data))->
+  (idx,(Cull_string.coending 1 name,main_transform idx data))  
+) u6_usual ;;
+
+
+let corrected_u7 = (
+  Image.image (fun t->
+   let (idx,(name,data)) = t in 
+   if idx=174
+   then (174,(("ForUpdate", ["StatementExpressionList"])))
+   else 
+
+   t 
+  ) u7
+)@(
+  Image.image (fun (idx,pair)->(idx+243,pair))
+  (Int_range.index_everything (Image.image (fun (n,m)->(n,[m])) list_for_extra_productions))
+) ;;
+
+let part_of_u7 = List.filter (fun (idx,(name,data))->
+  List.mem idx list_for_discat
+  ) corrected_u7 ;;
+
+
+
+let table = 
+  ("AssignmentOperator","OPERATOR_EQ_T") ::
+  (
+  Image.image (fun (name,tt)->(name,
+    ocaml_name_for_token_type tt
+  ))
+ table_for_reading_token_types
+);;
+
+let is_an_uppercase_char c = 
+   let i = int_of_char c in 
+   (65<=i)&&(i<=90) ;;
+
+let find_blocks_with_more_than_one_part_in_text (left,right) txt =
+   let indices1 = Substring.occurrences_of_in left txt 
+   and indices2 = Substring.occurrences_of_in right txt in 
+   let indices = List.combine indices1 indices2 in 
+   let temp = List.filter_map (
+     fun (i,j) ->
+      let subtext = Cull_string.interval txt (i+1) (j-1) in 
+      if String.contains subtext ' '
+      then Some subtext 
+      else None   
+   ) indices in 
+   if temp=[]
+   then None 
+   else Some(temp) ;; 
+
+let find_blocks_with_more_than_one_part_in_list1 (left,right) l=
+  let temp = List.filter_map (
+    find_blocks_with_more_than_one_part_in_text (left,right)
+   ) l in 
+   if temp=[]
+   then None 
+   else Some(temp) ;; 
+
+let find_blocks_with_more_than_one_part_in_list1 (left,right) l2=
+  List.filter_map (
+    fun (idx,(name,data)) ->
+    match find_blocks_with_more_than_one_part_in_list1 (left,right) data with 
+    None -> None 
+    |Some results -> Some(idx,(name,data),results)
+   ) l2 ;;    
+
+(* let ref_for_untreated_elements = ref [] ;; *)
+
+exception Analize_element_exn of string;;
+let analize_element elt = 
+   match List.assoc_opt elt table with 
+   (Some answer) -> "Atomic("^answer^")" 
+   |None ->
+    if is_an_uppercase_char(String.get elt 0)
+    then "Ref(\""^elt^"\")"
+    else  
+    raise (Analize_element_exn(elt)) ;;
+
+let analize_possibly_wrapped_element elt =
+  if Substring.is_a_substring_located_at "{" elt 1
+  then let cairo = Cull_string.two_sided_cutting ("{","}") elt in 
+      ["Star(\""^(cairo)^"\")"]
+  else
+  if Substring.is_a_substring_located_at "[" elt 1
+  then let cairo = Cull_string.two_sided_cutting ("{","}") elt in 
+       let txt = analize_element cairo in 
+      [txt;"Star(\""^cairo^"\")"]
+  else
+  [analize_element elt] ;;     
+
+
+let analize_concat_outside_disjunction line =
+   let temp1 = Str.split (Str.regexp "[ \r\t\n]+") line in
+   let temp2 = Image.image analize_possibly_wrapped_element temp1 in 
+   let temp3 = List.flatten temp2 in
+   if List.length(temp3)=1
+  then "repeat(\""^(List.hd temp1)^"\")"
+  else "concat(["^(String.concat ";" temp3)^"])" ;;
+
+let analize_concat_in_disjunction line =
+   let temp1 = Str.split (Str.regexp "[ \r\t\n]+") line in
+   let temp2 = Image.image analize_possibly_wrapped_element temp1 in 
+   let temp3 = List.flatten temp2 in
+   if List.length(temp3)=1
+  then Replace_inside.replace_several_inside_text 
+       ["Ref","ref_in_dis";"Atomic","atom_in_dis"]
+       (List.hd temp3)
+  else "Concat(["^(String.concat ";" temp3)^"])" ;;  
+
+let analize_discat_before_replacing l = 
+  if List.length(l)=1
+  then analize_concat_outside_disjunction (List.hd l)
+  else "Disjunction(["^(String.concat ";" (Image.image analize_concat_in_disjunction l))^"])" ;;
+
+let analize_discat l =
+  Replace_inside.replace_several_inside_text 
+       ["LB","[";"RB","]";"LC","{";"RC","}"]
+  (analize_discat_before_replacing l) ;;     
+
+let analize_pair  (idx,(name,data)) = 
+"Array.set harry "^(string_of_int idx)^
+" (\""^name^"\","^(analize_discat data)^");;" ;;
+
+let u8 = Explicit.image analize_pair corrected_u7 ;;
+let u9 = "\n\n\n" ^ (String.concat "\n" u8) ^ "\n\n\n" ;;
+
+(*
+
+let g1 = List.nth corrected_u7 9;;
+
+let line = List.hd(snd(snd g1)) ;;
+let temp1 = Str.split (Str.regexp "[ \r\t\n]+") line ;;
+
+
+   let temp2 = Image.image analize_possibly_wrapped_element temp1 in 
+   let temp3 = List.flatten temp2 in
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 220 : Code to automatize a to_string map for a type with many variants, version 2, version 3
 ************************************************************************************************************************)
 module Snip220 = struct 

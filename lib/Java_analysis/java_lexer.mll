@@ -33,6 +33,8 @@ let usual tokn buf =
   }) in 
   tokn;;
 
+let linebreak buf = usual (LINEBREAK(Lexing.lexeme buf)) buf ;;  
+
 let whitespace buf = usual (WHITESPACE(Lexing.lexeme buf)) buf ;;
 
 end ;;
@@ -61,8 +63,7 @@ let store_current () =
 
 let continue_traditional_comment buf =
   let c = Lexing.lexeme_char buf 0 in
-  let normalized_newline = if c = '\r' then '\n' else c in
-  current.buffer <- current.buffer ^ (String.make 1 normalized_newline);;
+  current.buffer <- current.buffer ^ (String.make 1 c);;
 
 let finish_and_store_traditional_comment buf =
   let _ = current.buffer <- current.buffer ^ (Lexing.lexeme buf) in 
@@ -99,8 +100,7 @@ let store_current () =
 
 let continue buf =
   let c = Lexing.lexeme_char buf 0 in
-  let normalized_newline = if c = '\r' then '\n' else c in
-  current.tb_buffer <- current.tb_buffer ^ (String.make 1 normalized_newline);;
+  current.tb_buffer <- current.tb_buffer ^ (String.make 1 c);;
 
 let finish_and_store buf =
   let _ = current.tb_buffer <- current.tb_buffer ^ (Lexing.lexeme buf) in 
@@ -331,7 +331,7 @@ rule token = parse
 | WhiteSpace
     { let _ =Store.whitespace lexbuf in token lexbuf }
 | LineTerminator
-    { token lexbuf }
+    { let _ =Store.linebreak lexbuf in token lexbuf }
 | "/*"
     { Comment.start_traditional_comment lexbuf; traditional_comment lexbuf; token lexbuf }
 | Text_blockOpener
@@ -348,6 +348,7 @@ rule token = parse
     { Store.usual (INTEGER_LITERAL(Lexing.lexeme lexbuf)) lexbuf }  
 | StringLiteral
     { Store.usual (STRING_LITERAL(Lexing.lexeme lexbuf)) lexbuf }         
+
 
 
 (* 3.11 Separators *)

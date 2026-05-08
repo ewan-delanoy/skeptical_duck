@@ -67,7 +67,8 @@ type token = Jvsp_types.token =
 |EOF 
 (* Inactive tokens during parsing *)
 |COMMENT of string 
-|WHITESPACE of string ;;
+|WHITESPACE of string 
+|LINEBREAK of string;;
 
 
 type token_type = Jvsp_types.token_type =
@@ -131,7 +132,8 @@ type token_type = Jvsp_types.token_type =
 |VAR_T |VOID_T |VOLATILE_T |WHILE_T |WITH_T |YIELD_T
 |EOF_T  
 |COMMENT_T 
-|WHITESPACE_T ;;
+|WHITESPACE_T 
+|LINEBREAK_T;;
 
  let get_token_type = function
 |(IDENTIFIER _) -> IDENTIFIER_T
@@ -248,8 +250,8 @@ type token_type = Jvsp_types.token_type =
 |YIELD -> YIELD_T
 |EOF -> EOF_T
 |(COMMENT _) -> COMMENT_T
-|(WHITESPACE _) -> WHITESPACE_T ;;
-
+|(WHITESPACE _) -> WHITESPACE_T 
+|(LINEBREAK _) -> LINEBREAK_T ;;
 
 let token_to_string = function
 |(IDENTIFIER txt) -> txt
@@ -366,4 +368,5 @@ let token_to_string = function
 |YIELD -> "yield"
 |EOF -> "eof"
 |(COMMENT txt) -> txt
-|(WHITESPACE txt) -> txt ;;
+|(WHITESPACE txt) -> txt 
+|(LINEBREAK txt) -> txt;;
