@@ -21,15 +21,16 @@ let number_of_days_in_month year m =
   if m<>2 then default else 
   default+(if is_a_leap_year  year then 1 else 0) ;;  
 
-let number_of_days_in_month_initial_range year month_max =
+let number_of_days_in_month_range year month_min month_max =
     let accu = ref 0 in 
-    for month = 1 to month_max do accu:=(!accu) +  (number_of_days_in_month year month) done;
+    for month = month_min to month_max do accu:=(!accu) +  (number_of_days_in_month year month) done;
     !accu ;;  
 
-let number_of_days_in_month_final_range year month_min =
-    let accu = ref 0 in 
-    for month = month_min to 12 do accu:=(!accu) +  (number_of_days_in_month year month) done;
-    !accu ;;  
+let number_of_days_in_month_initial_range year month_max = 
+   number_of_days_in_month_range year 1 month_max ;;
+   
+let number_of_days_in_month_final_range year month_min = 
+   number_of_days_in_month_range year month_min 12;;  
 
 let number_of_days_in_year year = if is_a_leap_year  year then 365 else 366 ;;
    
@@ -50,6 +51,14 @@ let number_of_days_between date1 date2 =
    and year_diff = number_of_days_in_year_range (first_year+1) (last_year-1)
    and beginning_of_last_year = number_of_days_in_month_initial_range last_year (last_month-1)
    and beginning_of_last_month = last_day  in 
+   if first_year = last_year
+   then (
+          if first_month=last_month 
+          then last_day-first_day 
+          else let month_diff = number_of_days_in_month_range first_year (first_month+1) (last_month-1) in 
+               end_of_first_month + month_diff + beginning_of_last_month   
+        ) 
+   else  
    end_of_first_month + end_of_first_year + year_diff + beginning_of_last_year + beginning_of_last_month ;;
 
 let digit_followed_by_optional_digit = 
