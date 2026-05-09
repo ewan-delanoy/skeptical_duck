@@ -489,3 +489,4 @@ let ocaml_name_for_token_type = function
 |WHITESPACE_T -> "WHITESPACE_T"
 |LINEBREAK_T -> "LINEBREAK_T" ;;
 
+let passive_token_types = [COMMENT_T;WHITESPACE_T;LINEBREAK_T] ;;
