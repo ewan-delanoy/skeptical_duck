@@ -1,6 +1,128 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 224 : Write repetitive boilerplate to implement parser concatenators and disjunctors of varying arity
+************************************************************************************************************************)
+module Snip224 = struct 
+
+let ap1 = Absolute_path.of_string "lib/Java_analysis/jvsp_parser.ml" ;;
+let text1 = Io.read_whole_file ap1 ;;
+
+let original_helper2 = Lines_in_text.interval text1 50 57 ;;
+
+let original_dis2 = Lines_in_text.interval text1 59 59 ;;
+
+let original_concatenator2 = Lines_in_text.interval text1 441 448 ;;
+
+let lines_in_helper2 = Lines_in_text.lines original_helper2 ;;
+
+let lines_in_concatenator2 = Lines_in_text.lines original_concatenator2 ;;
+
+let itv a b= String.concat "\n" (Int_range.scale (fun k->List.nth lines_in_helper2 (k-1)) a b) ;;
+
+let itv a b= String.concat "\n" (Int_range.scale (fun k->List.nth lines_in_concatenator2 (k-1)) a b) ;;
+
+let iid_sequence name n = 
+   String.concat " " (Int_range.scale (fun k->name^(string_of_int k)) 1 n) ;; 
+
+let first_line_in_helper n =
+   let sn = string_of_int n in 
+   "let helper_for_dis"^sn^" "^(iid_sequence "prsr" n)^" tokens idx=" ;;
+
+let uple_element_in_helper j k = if j=k then ("Some res")^(string_of_int j) else "None" ;;
+
+let uple_in_helper n j = String.concat "," (Int_range.scale (uple_element_in_helper j) 1 n);;
+
+let matcher_in_helper n j =
+   let sj = string_of_int j in 
+   "    match apply prsr"^sj^" tokens idx with \n"^
+   "     (Some (res"^sj^",new_idx)) -> Some(("^(uple_in_helper n j)^"),new_idx)\n"^
+   "     |None ->";; 
+
+let helper n = 
+   String.concat "\n" 
+   ((first_line_in_helper n)::
+   (
+      Int_range.scale (matcher_in_helper n) 1 n
+   )
+   @["    None ;;"]) ;;
+
+let dis n = 
+   let sn = string_of_int n in
+  let prsrs = iid_sequence "prsr" n in 
+   "let dis"^sn^" "^prsrs^" = Jvsp_types.Parser (fun tokens idx ->helper_for_dis"^
+   sn^" "^prsrs^" tokens idx) ;;" ;;
+
+let dis_item n = (helper n)^"\n\n"^(dis n) ;;
+
+let text_for_dis_items = "\n\n\n"^(String.concat "\n\n\n" (Int_range.scale dis_item 3 14))^"\n\n\n" ;;
+
+let act1 () = Io.append_string_to_file text_for_dis_items ap1 ;;
+
+let dis_transmitter n = 
+   let sn = string_of_int n in
+   "let dis"^sn^" = Private.dis"^sn^" ;;" ;;
+
+let text_for_dis_transmitters = "\n\n\n"^(String.concat "\n" (Int_range.scale dis_transmitter 3 14))^"\n\n\n" ;;   
+
+let first_line_in_concatenator n =
+   let sn = string_of_int n in 
+   "let helper_for_concat"^sn^" "^(iid_sequence "prsr" n)^" tokens idx1 = " ;;
+
+let matcher_in_concatenator j =
+   let sj = string_of_int j  
+   and sju = string_of_int(j+1) in 
+    "    match apply prsr"^sj^" tokens idx"^sj^" with \n"^ 
+    "      None -> None\n"^
+    "     |(Some (res"^sj^",idx"^sju^")) ->";; 
+
+let uple_in_concatenator n = 
+   String.concat "," (Int_range.scale (fun k->"res"^(string_of_int k)) 1 n) ;; 
+
+
+let concatenator n = 
+   let snu = string_of_int(n+1) in
+   String.concat "\n" 
+   ((first_line_in_concatenator n)::
+   (
+      Int_range.scale matcher_in_concatenator  1 n
+   )
+   @["    Some(("^(uple_in_concatenator n)^"),idx"^snu^");;"]) ;;
+
+
+let conc n = 
+   let sn = string_of_int n in
+  let prsrs = iid_sequence "prsr" n in 
+   "let concat"^sn^" "^prsrs^" = Jvsp_types.Parser (fun tokens idx ->helper_for_concat"^
+   sn^" "^prsrs^" tokens idx) ;;" ;;
+
+let conc_item n = (concatenator n)^"\n\n"^(conc n) ;;
+
+let text_for_conc_items = "\n\n\n"^(String.concat "\n\n\n" (Int_range.scale conc_item 3 14))^"\n\n\n" ;;
+
+let act2 () = Io.append_string_to_file text_for_conc_items ap1 ;;
+
+let concat_transmitter n = 
+   let sn = string_of_int n in
+   "let concat"^sn^" = Private.concat"^sn^" ;;" ;;
+
+let text_for_concat_transmitters = "\n\n\n"^(String.concat "\n" (Int_range.scale concat_transmitter 2 14))^"\n\n\n" ;;
+
+let luna =    first_line_in_helper 2 ;;
+let check1 = (itv 1 1)=(first_line_in_helper 2) ;;  
+
+let luna =    matcher_in_helper 2 1;;
+let check2 = (itv 2 4)=(matcher_in_helper 2 1) ;;  
+let check3 = (itv 5 7)=(matcher_in_helper 2 2) ;;  
+
+let check4 = (original_helper2=(helper 2)) ;;  
+
+let check5 = (original_dis2=(dis 2)) ;;  
+
+let check6 = (original_concatenator2=(concatenator 2)) ;;  
+end;;
+
+(************************************************************************************************************************
  Entry 223 :   Determine lengthiest concatenations and disjunctions
 ************************************************************************************************************************)
 module Snip223 = struct 
@@ -1107,6 +1229,7 @@ let template =
 ("EOF","eof");
 ("COMMENT","");
 ("WHITESPACE","");
+("LINEBREAK","");
 ];;
 
 
