@@ -138,4 +138,4 @@ type token_type =
 |LINEBREAK_T ;;
 
 
-type 'a parser = Parser of ((positioned_token list) * int -> ('a * int) option) ;;
+type 'a parser = Parser of ((positioned_token list) -> int -> ('a * int) option) ;;
