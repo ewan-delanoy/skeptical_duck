@@ -29,23 +29,29 @@ let map f prsr = Jvsp_types.Parser (fun tokens idx ->
 
 
 let helper_for_molecular tokens n =
-  let rec helper =(fun (remaining_expectations,idx) ->
+  let rec helper =(fun (remaining_expectations,treated,idx) ->
     match remaining_expectations with 
-  [] -> Some((),idx)
+  [] -> Some(List.rev treated,idx)
   |tok_type :: other_expectations -> 
       if idx>n then None else 
       let postok = List.nth tokens (idx-1) in 
-      let tok_type2 = Jvsp_util.get_token_type(postok.Jvsp_types.tok) in  
+      let tok = postok.Jvsp_types.tok in 
+      let tok_type2 = Jvsp_util.get_token_type(tok) in  
       if List.mem tok_type2 Jvsp_util.passive_token_types 
-      then  helper (remaining_expectations,idx+1)
+      then  helper (remaining_expectations,treated,idx+1)
       else
       if tok_type2 <> tok_type 
       then None 
-      else helper (other_expectations,idx+1)) in
+      else let new_treated = (
+            if Jvsp_util.has_variable_content tok_type 
+            then (Jvsp_util.token_to_string tok) :: treated
+            else treated    
+           ) in 
+           helper (other_expectations,new_treated,idx+1)) in
    helper ;;
       
 let molecular molecule = Jvsp_types.Parser (fun tokens idx ->
-  helper_for_molecular tokens (List.length tokens) (molecule,idx)) ;;     
+  helper_for_molecular tokens (List.length tokens) (molecule,[],idx)) ;;     
 
 let helper_for_dis2 prsr1 prsr2 tokens idx=
     match apply prsr1 tokens idx with 
