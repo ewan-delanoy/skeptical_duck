@@ -19,7 +19,7 @@ module Private = struct
 
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")"
-  |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
+  |(Atomic tok) -> "Atomic("^(Jvsp_util.summary_of_token_type tok)^")"
   |(Star nm) -> "Star(\""^nm^"\")"  ;;
 
 let ocaml_name_of_element_in_disjunction (Concat l) =
@@ -51,7 +51,12 @@ let form_to_string (Disjunction l) =
    "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^(element_in_disjunction_to_string elt)) l))^"\n" ;;
 
+let print_out_form (fmt:Format.formatter) form=
+   Format.fprintf fmt "@[%s@]" (form_to_string form);;
+
 end ;; 
 
 let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
+
+let print_out_form = Private.print_out_form ;;
