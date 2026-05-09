@@ -20,7 +20,7 @@ module Private = struct
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")"
   |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
-  |(Star nm) -> "Ref(\""^nm^"\")"  ;;
+  |(Star nm) -> "Star(\""^nm^"\")"  ;;
 
 let ocaml_name_of_element_in_disjunction (Concat l) =
    "Concat(["^(String.concat ";" (Image.image ocaml_name_of_element_in_concat l))^"])";;
@@ -33,7 +33,7 @@ let ocaml_name_of_sf (name,frm) =
 
 let ocaml_name (AL l)=
   let lines = Image.image (fun sf->(String.make 3 ' ')^(ocaml_name_of_sf sf)^";") l in 
-"AL ([\\n"^
+"AL ([\n\n"^
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 

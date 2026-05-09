@@ -89,12 +89,15 @@ let diary_size dy = match dy.entries with
   [] -> 0 
   | last_entry :: _ -> last_entry.index ;;
 
-let add_fresh_entry dy ~summary_ ~content_=
+let add_fresh_entry dy ~summary_ ~content_= 
+   let n = (diary_size dy)+1 in 
    let new_entry = {
     index = (diary_size dy)+1;
     summary=summary_;
     content=content_;
    } in 
+   let msg = "\nEntry number "^(string_of_int n)^" has just been created.\n" in 
+   let _ = (print_string msg;flush stdout) in 
    {
      dy with 
      entries = new_entry :: dy.entries 
@@ -272,6 +275,9 @@ let extract_header indexed_lines last_idx_in_header=
   ) indexed_lines in 
   String.concat "\n" retained_lines ;;
 
+let add_empty_entry dy =
+  Modify.add_fresh_entry dy ~summary_:"   " ~content_:"   ";;
+
 let extract_at_index_and_append_to_file dy k ap = 
   let ent = List.find (fun ent->ent.index = k) dy.entries in 
   let decorated_content =
@@ -302,6 +308,11 @@ let transfer_file_content_to_fresh_entry dy ?(summary="") ap ~erase_original=
 end ;;
 
 module With_container = struct 
+
+let add_empty_entry fn = 
+  let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
+  let new_dy = Give_and_Receive.add_empty_entry old_dy in 
+  Io.overwrite_with fn (Write.write_diary new_dy) ;;  
 
 let extract_at_index_and_append_to_file fn k ap = 
   let dy = Parse.parse_whole_diary(Io.read_whole_file fn) in 
@@ -348,6 +359,8 @@ end ;;
 
 end ;;
 
+let add_empty_entry () = 
+  Private.With_container.add_empty_entry Private.Common.usual_container;;  
 
 let extract_at_index_and_append_to_file k ~nongithubbed_path = 
  Private.For_Nongithubbed_files.extract_at_index_and_append_to_file 
