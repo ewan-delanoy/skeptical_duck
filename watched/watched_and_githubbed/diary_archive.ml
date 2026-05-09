@@ -1,6 +1,25 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 223 :   Determine lengthiest concatenations and disjunctions
+************************************************************************************************************************)
+module Snip223 = struct 
+   
+open Jvsp_abstract_language_t ;;
+
+let dis_length (Disjunction l) = List.length l ;; 
+
+let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_specification ;;
+
+let res1 = Max.maximize_it_with_care (fun (x,y)->dis_length y) li1 ;;
+
+let li2 = List.flatten (Image.image (fun (x,Disjunction l)->l) li1) ;;
+
+let res2 = Max.maximize_it_with_care (fun (Concat x)->List.length x) li2 ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 222 : Intermediary storage of Java 17 syntax specification
 ************************************************************************************************************************)
 module Snip222 = struct 
