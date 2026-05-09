@@ -37,6 +37,21 @@ let ocaml_name (AL l)=
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 
+let get (AL l) name = List.assoc name l ;;
+
+let element_in_concat_to_string = function
+   (Ref nm) -> nm
+  |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
+  |(Star nm) -> "("^nm^")*"  ;;
+
+let element_in_disjunction_to_string (Concat l) =
+   String.concat " " (Image.image element_in_concat_to_string l) ;;
+
+let form_to_string (Disjunction l) =
+   "\n"^(String.concat "\n" (Image.image (fun elt->
+      "|"^(element_in_disjunction_to_string elt)) l))^"\n" ;;
+
 end ;; 
 
+let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
