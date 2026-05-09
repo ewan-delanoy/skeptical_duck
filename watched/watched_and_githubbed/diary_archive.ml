@@ -1261,6 +1261,48 @@ let code_for_ttt_map =
   "\n\n\n let get_token_type = function\n" ^ 
   (String.concat "\n" pairs_for_ttt_map)^ " ;;\n\n\n" ;;  
 
+let (template1,template2) = List.partition (fun (x,y)->y="") template ;;
+
+let list_from_template1=
+ (String.concat "\n" (Image.image (fun (x,y)->"|"^x^"_T") template1)) ^ " -> true" ;;
+ 
+let list_from_template2=
+ (String.concat "\n" (Image.image (fun (x,y)->"|"^x^"_T") template2)) ^ " -> false" ;; 
+
+let full_list = "\n\n\n" ^ (list_from_template1^"\n"^list_from_template2) ^ "\n\n\n" ;;  
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_util.ml" ;;
+
+let act () = Io.append_string_to_file full_list ap ;;
+
+let enhanced_template1 = 
+   [
+ ("IDENTIFIER", "ident"); 
+ ("BOOLEAN_LITERAL", "bool"); 
+ ("CHARACTER_LITERAL", "charlit");
+ ("FLOATING_POINT_LITERAL", "float"); 
+ ("INTEGER_LITERAL", "int");
+ ("STRING_LITERAL", "str"); 
+ ("TEXT_BLOCK", "text"); 
+ ("LOWLEVEL_TYPE", "typ");
+ ("OPERATOR_EQ", "opeq"); 
+ ("COMMENT", "comment"); 
+ ("WHITESPACE", "white"); 
+ ("LINEBREAK", "linebreak")] ;;
+
+let new_template = enhanced_template1 @ template2 ;; 
+
+let pairs_for_to_summary_map = Image.image (
+  fun (name,attribute)->
+    let (arg,img) = (name^"_T","\""^attribute^"\"") in 
+    "|"^arg^" -> "^img
+) new_template;;
+
+let code_for_to_summary_map = 
+  "\n\n\n let summary_of_token_type = function\n" ^ 
+  (String.concat "\n" pairs_for_to_summary_map)^ " ;;\n\n\n" ;;
+
+let act2 () = Io.append_string_to_file code_for_to_summary_map ap ;;   
 
 
 

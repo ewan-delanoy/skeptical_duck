@@ -59,4 +59,5 @@ end ;;
 let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
 
+(* This is a registered printer : print_out_form *)
 let print_out_form = Private.print_out_form ;;
