@@ -14,13 +14,15 @@ type form =  Jvsp_abstract_language_t.form = Disjunction of element_in_disjuncti
 
 type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;; 
 
-(*
+
+module Private = struct 
+
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")"
-  |(Atomic tok) -> 
-   "Concat(["^(String.concat ";" (Image.image ocaml_name_of_element_in_concat l))^"])";;
+  |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
+  |(Star nm) -> "Ref(\""^nm^"\")"  ;;
 
-let ocaml_name_of_element_in_disjunction (Disjunction l) =
+let ocaml_name_of_element_in_disjunction (Concat l) =
    "Concat(["^(String.concat ";" (Image.image ocaml_name_of_element_in_concat l))^"])";;
 
 let ocaml_name_of_form (Disjunction l) =
@@ -35,4 +37,6 @@ let ocaml_name (AL l)=
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 
-*)
+end ;; 
+
+let ocaml_name = Private.ocaml_name ;;
