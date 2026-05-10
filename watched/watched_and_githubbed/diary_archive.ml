@@ -1,11 +1,79 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 227 : Create specific grammar productions for optionals
+************************************************************************************************************************)
+module Snip227 = struct 
+
+(* open Jvsp_abstract_language_t ;;
+
+let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+
+let check_li1 = List.filter (fun (x,y)->String.starts_with x ~prefix:"Optional") li1 ;;
+
+let li2 = List.flatten (Image.image (fun (x,y)->
+  match y with (Jvsp_abstract_language_t.Disjunction l)->l |_->[]) li1) ;;
+
+let li3 = List.flatten(Image.image (fun (Jvsp_abstract_language_t.Concat l)->l) li2);;  
+
+let unordered_optionals_in_li3 = List.filter_map (
+  function (Jvsp_abstract_language_t.Optional nm)->Some ( nm) | _ ->None
+) li3 ;;
+
+let optionals_in_li3 = Ordered.sort Total_ordering.lex_for_strings unordered_optionals_in_li3 ;;
+
+let beheaded_name name =
+   if String.starts_with name ~prefix:"Atomic"
+   then Cull_string.two_sided_cutting ("Atomic","") name 
+   else name;; 
+
+let optional_expansions_for_li3 = 
+  Image.image (
+   fun tt -> ("Optional"^(beheaded_name tt),Jvsp_abstract_language_t.Just_an_optional tt)
+  ) optionals_in_li3 ;;
+
+let lgr2 = 
+  Ordered.sort Jvsp_abstract_language.order_on_pairs
+  (li1@ optional_expansions_for_li3) ;;
+
+let gram2 = Jvsp_abstract_language_t.AL lgr2 ;;
+
+let transform_on_element_level elt = match elt with 
+    (Optional tt) -> Ref("Optional"^(beheaded_name tt))
+    | _ -> elt ;;
+
+let transform_on_concat_level (Concat l)= 
+  Concat (Image.image transform_on_element_level l)  ;; 
+
+
+let transform_on_form_level form= match form with 
+  (Disjunction l) -> Disjunction (Image.image transform_on_concat_level l)
+  |_ -> form   ;; 
+
+let transform_on_pair_level (x,y) = (x,transform_on_form_level y);;
+  
+let lgr3 = Image.image transform_on_pair_level lgr2 ;;
+
+let gram3 = Jvsp_abstract_language_t.AL lgr3 ;;
+
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram3_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;; *)
+  
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 226 : Remove short references from Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip226 = struct 
 
-open Jvsp_abstract_language_t ;;
+(* open Jvsp_abstract_language_t ;;
 
 let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
 
@@ -48,7 +116,9 @@ let act () =
     "Ref(\"}\")","Ref(\"AtomicRc\")";
    ]  
    ap ;; 
-end;;
+ *)
+
+end ;; 
 
 (************************************************************************************************************************
  Entry 225 : Create specific grammar productions for atomics
