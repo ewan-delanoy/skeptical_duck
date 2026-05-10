@@ -71,11 +71,14 @@ let order_on_forms = (
    (fun form1 form2 ->Total_ordering.standard form1 form2): 
      form Total_ordering_t.t ) ;; 
 
+let order_on_pairs = Total_ordering.product 
+    Total_ordering.lex_for_strings order_on_forms ;;
+
 end ;; 
 
 let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
-let order_on_forms = Private.order_on_forms ;;
+let order_on_pairs = Private.order_on_pairs ;;
 
 (* This is a registered printer : print_out_form *)
 let print_out_form = Private.print_out_form ;;
