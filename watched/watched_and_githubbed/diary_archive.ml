@@ -1,6 +1,56 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 226 : Remove short references from Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip226 = struct 
+
+open Jvsp_abstract_language_t ;;
+
+let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+
+let check_li1 = List.filter (fun (x,y)->String.starts_with x ~prefix:"Optional") li1 ;;
+
+let special_elements_in_li1 = List.filter (fun (x,y)->
+  match y with 
+  Disjunction (ll) -> List.exists( fun (Concat l) ->List.mem(Optional(";")) l) ll
+    | _ -> false
+  ) li1 ;;
+
+let is_a_short_ref = function (Ref s) -> (String.length s)<=3 | _ -> false ;;  
+
+let short_reffed_in_li1 = List.filter (fun (x,y)->
+  match y with 
+  Disjunction (ll) -> List.exists( fun (Concat l) ->List.exists is_a_short_ref l) ll
+    | _ -> false
+  ) li1 ;;
+
+let li2 = List.flatten (Image.image (fun (x,y)->
+  match y with (Jvsp_abstract_language_t.Disjunction l)->l |_->[]) li1) ;;
+
+let li3 = List.flatten(Image.image (fun (Jvsp_abstract_language_t.Concat l)->l) li2);;  
+
+let unordered_short_refs_in_li3 = List.filter_map (
+  function (Jvsp_abstract_language_t.Ref s)->if String.length(s)<=3 then Some s else None  | _ ->None
+) li3 ;;  
+
+let short_refs_in_li3 = Ordered.sort Total_ordering.lex_for_strings unordered_short_refs_in_li3 ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let act () = 
+  Replace_inside.replace_several_inside_file
+   [
+    "Ref(\";\")","Ref(\"AtomicSm\")";
+    "Ref(\"[\")","Ref(\"AtomicLb\")";
+    "Ref(\"]\")","Ref(\"AtomicRb\")";
+    "Ref(\"{\")","Ref(\"AtomicLc\")";
+    "Ref(\"}\")","Ref(\"AtomicRc\")";
+   ]  
+   ap ;; 
+end;;
+
+(************************************************************************************************************************
  Entry 225 : Create specific grammar productions for atomics
 ************************************************************************************************************************)
 module Snip225 = struct 

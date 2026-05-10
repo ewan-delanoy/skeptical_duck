@@ -12,6 +12,7 @@ type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction =
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 
+   |Just_an_optional of string
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_star of string ;;
 
@@ -30,6 +31,7 @@ let ocaml_name_of_element_in_disjunction (Concat l) =
 let ocaml_name_of_form = function 
   (Disjunction l) ->
    "Disjunction(["^(String.concat ";" (Image.image ocaml_name_of_element_in_disjunction l))^"])"
+  |Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
   |Just_atomic(l) -> "Just_atomic(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"
   |Just_a_star(nm) -> "Just_a_star(\""^nm^"\")";;
 
@@ -58,16 +60,22 @@ let form_to_string = function
    else       
    "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^(element_in_disjunction_to_string elt)) l))^"\n" 
+  |Just_an_optional(nm) -> "\u{3010}"^nm^"\u{3011}"    
   |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))    
   |(Just_a_star nm) -> nm^"\u{2605}"  ;;
 
 let print_out_form (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (form_to_string form);;
 
+let order_on_forms = (
+   (fun form1 form2 ->Total_ordering.standard form1 form2): 
+     form Total_ordering_t.t ) ;; 
+
 end ;; 
 
 let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
+let order_on_forms = Private.order_on_forms ;;
 
 (* This is a registered printer : print_out_form *)
 let print_out_form = Private.print_out_form ;;

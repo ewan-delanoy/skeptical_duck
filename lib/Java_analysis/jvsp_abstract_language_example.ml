@@ -79,6 +79,7 @@ type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction =
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 
+   |Just_an_optional of string
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_star of string ;;
 
@@ -132,6 +133,8 @@ AL ([
    ("AtomicInstanceof",Just_atomic([INSTANCEOF_T]));
    ("AtomicInterface",Just_atomic([INTERFACE_T]));
    ("AtomicInt",Just_atomic([INT_T]));
+   ("AtomicLb",Just_atomic([LB_T]));
+   ("AtomicLc",Just_atomic([LC_T]));
    ("AtomicLe",Just_atomic([LE_T]));
    ("AtomicLong",Just_atomic([LONG_T]));
    ("AtomicLp",Just_atomic([LP_T]));
@@ -156,6 +159,8 @@ AL ([
    ("AtomicProtected",Just_atomic([PROTECTED_T]));
    ("AtomicProvides",Just_atomic([PROVIDES_T]));
    ("AtomicPublic",Just_atomic([PUBLIC_T]));
+   ("AtomicRb",Just_atomic([RB_T]));
+   ("AtomicRc",Just_atomic([RC_T]));
    ("AtomicRecord",Just_atomic([RECORD_T]));
    ("AtomicRequires",Just_atomic([REQUIRES_T]));
    ("AtomicReturn",Just_atomic([RETURN_T]));
@@ -227,7 +232,7 @@ AL ([
    ("SingleStaticImportDeclaration",Disjunction([Concat([Ref("AtomicImport");Ref("AtomicStatic");Ref("TypeName");Ref("IdentifierPrecededByDot");Ref("AtomicSm")])]));
    ("StaticImportOnDemandDeclaration",Disjunction([Concat([Ref("AtomicImport");Ref("AtomicStatic");Ref("TypeName");Ref("AtomicDot");Ref("AtomicTimes");Ref("AtomicSm")])]));
    ("TopLevelClassOrInterfaceDeclaration",Disjunction([Concat([Ref("ClassDeclaration")]);Concat([Ref("InterfaceDeclaration")]);Concat([Ref("AtomicSm")])]));
-   ("ModuleDeclaration",Disjunction([Concat([Ref("StarredAnnotation");Optional("open");Ref("AtomicModule");Ref("Identifier");Ref("StarredIdentifierPrecededByDot");Ref("{");Ref("StarredModuleDirective");Ref("}")])]));
+   ("ModuleDeclaration",Disjunction([Concat([Ref("StarredAnnotation");Optional("open");Ref("AtomicModule");Ref("Identifier");Ref("StarredIdentifierPrecededByDot");Ref("AtomicLc");Ref("StarredModuleDirective");Ref("AtomicRc")])]));
    ("ModuleDirective",Disjunction([Concat([Ref("AtomicRequires");Ref("StarredRequiresModifier");Ref("ModuleName");Ref("AtomicSm")]);Concat([Ref("AtomicExports");Ref("PackageName");Optional("ToModuleList");Ref("AtomicSm")]);Concat([Ref("AtomicOpens");Ref("PackageName");Optional("ToModuleList");Ref("AtomicSm")]);Concat([Ref("AtomicUses");Ref("TypeName");Ref("AtomicSm")]);Concat([Ref("AtomicProvides");Ref("TypeName");Ref("AtomicWith");Ref("TypeName");Ref("StarredTypeNamePrecededByComma");Ref("AtomicSm")])]));
    ("RequiresModifier",Disjunction([Concat([Ref("AtomicTransitive")]);Concat([Ref("AtomicStatic")])]));
    ("ClassDeclaration",Disjunction([Concat([Ref("NormalClassDeclaration")]);Concat([Ref("EnumDeclaration")]);Concat([Ref("RecordDeclaration")])]));
@@ -239,7 +244,7 @@ AL ([
    ("ClassImplements",Disjunction([Concat([Ref("AtomicImplements");Ref("InterfaceTypeList")])]));
    ("InterfaceTypeList",Disjunction([Concat([Ref("InterfaceType");Ref("StarredInterfaceTypePrecededByComma")])]));
    ("ClassPermits",Disjunction([Concat([Ref("AtomicPermits");Ref("TypeName");Ref("StarredTypeNamePrecededByComma")])]));
-   ("ClassBody",Disjunction([Concat([Ref("{");Ref("StarredClassBodyDeclaration");Ref("}")])]));
+   ("ClassBody",Disjunction([Concat([Ref("AtomicLc");Ref("StarredClassBodyDeclaration");Ref("AtomicRc")])]));
    ("ClassBodyDeclaration",Disjunction([Concat([Ref("ClassMemberDeclaration")]);Concat([Ref("InstanceInitializer")]);Concat([Ref("StaticInitializer")]);Concat([Ref("ConstructorDeclaration")])]));
    ("ClassMemberDeclaration",Disjunction([Concat([Ref("FieldDeclaration")]);Concat([Ref("MethodDeclaration")]);Concat([Ref("ClassDeclaration")]);Concat([Ref("InterfaceDeclaration")]);Concat([Ref("AtomicSm")])]));
    ("FieldDeclaration",Disjunction([Concat([Ref("StarredFieldModifier");Ref("UnannType");Ref("VariableDeclaratorList");Ref("AtomicSm")])]));
@@ -276,10 +281,10 @@ AL ([
    ("ConstructorModifier",Disjunction([Concat([Ref("Annotation")]);Concat([Ref("AtomicPublic")]);Concat([Ref("AtomicProtected")]);Concat([Ref("AtomicPrivate")])]));
    ("ConstructorDeclarator",Disjunction([Concat([Optional("TypeParameters");Ref("SimpleTypeName");Ref("AtomicLp");Optional("ReceiverParameterFollowedByComma");Optional("FormalParameterList");Ref("AtomicRp")])]));
    ("SimpleTypeName",Disjunction([Concat([Ref("TypeIdentifier")])]));
-   ("ConstructorBody",Disjunction([Concat([Ref("{");Optional("ExplicitConstructorInvocation");Optional("BlockStatements");Ref("}")])]));
+   ("ConstructorBody",Disjunction([Concat([Ref("AtomicLc");Optional("ExplicitConstructorInvocation");Optional("BlockStatements");Ref("AtomicRc")])]));
    ("ExplicitConstructorInvocation",Disjunction([Concat([Optional("TypeArguments");Ref("AtomicThis");Ref("ParenthesedArgumentList");Ref("AtomicSm")]);Concat([Optional("TypeArguments");Ref("AtomicSuper");Ref("ParenthesedArgumentList");Ref("AtomicSm")]);Concat([Ref("ExpressionName");Ref("AtomicDot");Optional("TypeArguments");Ref("AtomicSuper");Ref("ParenthesedArgumentList");Ref("AtomicSm")]);Concat([Ref("Primary");Ref("AtomicDot");Optional("TypeArguments");Ref("AtomicSuper");Ref("ParenthesedArgumentList");Ref("AtomicSm")])]));
    ("EnumDeclaration",Disjunction([Concat([Ref("StarredClassModifier");Ref("AtomicEnum");Ref("TypeIdentifier");Optional("ClassImplements");Ref("EnumBody")])]));
-   ("EnumBody",Disjunction([Concat([Ref("{");Optional("EnumConstantList");Optional(",");Optional("EnumBodyDeclarations");Ref("}")])]));
+   ("EnumBody",Disjunction([Concat([Ref("AtomicLc");Optional("EnumConstantList");Optional("AtomicCm");Optional("EnumBodyDeclarations");Ref("AtomicRc")])]));
    ("EnumConstantList",Disjunction([Concat([Ref("EnumConstant");Ref("StarredEnumConstantPrecededByComma")])]));
    ("EnumConstant",Disjunction([Concat([Ref("StarredEnumConstantModifier");Ref("Identifier");Optional("ParenthesedArgumentList");Optional("ClassBody")])]));
    ("EnumConstantModifier",Disjunction([Concat([Ref("Annotation")])]));
@@ -290,7 +295,7 @@ AL ([
    ("RecordComponent",Disjunction([Concat([Ref("StarredRecordComponentModifier");Ref("UnannType");Ref("Identifier")]);Concat([Ref("VariableArityRecordComponent")])]));
    ("VariableArityRecordComponent",Disjunction([Concat([Ref("StarredRecordComponentModifier");Ref("UnannType");Ref("StarredAnnotation");Ref("AtomicDot");Ref("AtomicDot");Ref("AtomicDot");Ref("Identifier")])]));
    ("RecordComponentModifier",Disjunction([Concat([Ref("Annotation")])]));
-   ("RecordBody",Disjunction([Concat([Ref("{");Ref("StarredRecordBodyDeclaration");Ref("}")])]));
+   ("RecordBody",Disjunction([Concat([Ref("AtomicLc");Ref("StarredRecordBodyDeclaration");Ref("AtomicRc")])]));
    ("RecordBodyDeclaration",Disjunction([Concat([Ref("ClassBodyDeclaration")]);Concat([Ref("CompactConstructorDeclaration")])]));
    ("CompactConstructorDeclaration",Disjunction([Concat([Ref("StarredConstructorModifier");Ref("SimpleTypeName");Ref("ConstructorBody")])]));
    ("InterfaceDeclaration",Disjunction([Concat([Ref("NormalInterfaceDeclaration")]);Concat([Ref("AnnotationInterfaceDeclaration")])]));
@@ -298,14 +303,14 @@ AL ([
    ("InterfaceModifier",Disjunction([Concat([Ref("Annotation")]);Concat([Ref("AtomicPublic")]);Concat([Ref("AtomicProtected")]);Concat([Ref("AtomicPrivate")]);Concat([Ref("AtomicAbstract")]);Concat([Ref("AtomicStatic")]);Concat([Ref("AtomicSealed")]);Concat([Ref("AtomicNonsealed")]);Concat([Ref("AtomicStrictfp")])]));
    ("InterfaceExtends",Disjunction([Concat([Ref("AtomicExtends");Ref("InterfaceTypeList")])]));
    ("InterfacePermits",Disjunction([Concat([Ref("AtomicPermits");Ref("TypeName");Ref("StarredTypeNamePrecededByComma")])]));
-   ("InterfaceBody",Disjunction([Concat([Ref("{");Ref("StarredInterfaceMemberDeclaration");Ref("}")])]));
+   ("InterfaceBody",Disjunction([Concat([Ref("AtomicLc");Ref("StarredInterfaceMemberDeclaration");Ref("AtomicRc")])]));
    ("InterfaceMemberDeclaration",Disjunction([Concat([Ref("ConstantDeclaration")]);Concat([Ref("InterfaceMethodDeclaration")]);Concat([Ref("ClassDeclaration")]);Concat([Ref("InterfaceDeclaration")]);Concat([Ref("AtomicSm")])]));
    ("ConstantDeclaration",Disjunction([Concat([Ref("StarredConstantModifier");Ref("UnannType");Ref("VariableDeclaratorList");Ref("AtomicSm")])]));
    ("ConstantModifier",Disjunction([Concat([Ref("Annotation")]);Concat([Ref("AtomicPublic")]);Concat([Ref("AtomicStatic")]);Concat([Ref("AtomicFinal")])]));
    ("InterfaceMethodDeclaration",Disjunction([Concat([Ref("StarredInterfaceMethodModifier");Ref("MethodHeader");Ref("MethodBody")])]));
    ("InterfaceMethodModifier",Disjunction([Concat([Ref("Annotation")]);Concat([Ref("AtomicPublic")]);Concat([Ref("AtomicPrivate")]);Concat([Ref("AtomicAbstract")]);Concat([Ref("AtomicDefault")]);Concat([Ref("AtomicStatic")]);Concat([Ref("AtomicStrictfp")])]));
    ("AnnotationInterfaceDeclaration",Disjunction([Concat([Ref("StarredInterfaceModifier");Ref("AtomicSnail");Ref("AtomicInterface");Ref("TypeIdentifier");Ref("AnnotationInterfaceBody")])]));
-   ("AnnotationInterfaceBody",Disjunction([Concat([Ref("{");Ref("StarredAnnotationInterfaceMemberDeclaration");Ref("}")])]));
+   ("AnnotationInterfaceBody",Disjunction([Concat([Ref("AtomicLc");Ref("StarredAnnotationInterfaceMemberDeclaration");Ref("AtomicRc")])]));
    ("AnnotationInterfaceMemberDeclaration",Disjunction([Concat([Ref("AnnotationInterfaceElementDeclaration")]);Concat([Ref("ConstantDeclaration")]);Concat([Ref("ClassDeclaration")]);Concat([Ref("InterfaceDeclaration")]);Concat([Ref("AtomicSm")])]));
    ("AnnotationInterfaceElementDeclaration",Disjunction([Concat([Ref("StarredAnnotationInterfaceElementModifier");Ref("UnannType");Ref("Identifier");Ref("AtomicLp");Ref("AtomicRp");Optional("Dims");Optional("DefaultValue");Ref("AtomicSm")])]));
    ("AnnotationInterfaceElementModifier",Disjunction([Concat([Ref("Annotation")]);Concat([Ref("AtomicPublic")]);Concat([Ref("AtomicAbstract")])]));
@@ -315,13 +320,13 @@ AL ([
    ("ElementValuePairList",Disjunction([Concat([Ref("ElementValuePair");Ref("StarredElementValuePrecededByCommaPair")])]));
    ("ElementValuePair",Disjunction([Concat([Ref("Identifier");Ref("AtomicEq");Ref("ElementValue")])]));
    ("ElementValue",Disjunction([Concat([Ref("ConditionalExpression")]);Concat([Ref("ElementValueArrayInitializer")]);Concat([Ref("Annotation")])]));
-   ("ElementValueArrayInitializer",Disjunction([Concat([Ref("{");Optional("ElementValueList");Optional(",");Ref("}")])]));
+   ("ElementValueArrayInitializer",Disjunction([Concat([Ref("AtomicLc");Optional("ElementValueList");Optional("AtomicCm");Ref("AtomicRc")])]));
    ("ElementValueList",Disjunction([Concat([Ref("ElementValue");Ref("StarredElementValuePrecededByComma")])]));
    ("MarkerAnnotation",Disjunction([Concat([Ref("AtomicSnail");Ref("TypeName")])]));
    ("SingleElementAnnotation",Disjunction([Concat([Ref("AtomicSnail");Ref("TypeName");Ref("AtomicLp");Ref("ElementValue");Ref("AtomicRp")])]));
-   ("ArrayInitializer",Disjunction([Concat([Ref("{");Optional("VariableInitializerList");Optional(",");Ref("}")])]));
+   ("ArrayInitializer",Disjunction([Concat([Ref("AtomicLc");Optional("VariableInitializerList");Optional("AtomicCm");Ref("AtomicRc")])]));
    ("VariableInitializerList",Disjunction([Concat([Ref("VariableInitializer");Ref("StarredVariableInitializerPrecededByComma")])]));
-   ("Block",Disjunction([Concat([Ref("{");Optional("BlockStatements");Ref("}")])]));
+   ("Block",Disjunction([Concat([Ref("AtomicLc");Optional("BlockStatements");Ref("AtomicRc")])]));
    ("BlockStatements",Disjunction([Concat([Ref("BlockStatement");Ref("StarredBlockStatement")])]));
    ("BlockStatement",Disjunction([Concat([Ref("LocalClassOrInterfaceDeclaration")]);Concat([Ref("LocalVariableDeclarationStatement")]);Concat([Ref("Statement")])]));
    ("LocalClassOrInterfaceDeclaration",Disjunction([Concat([Ref("ClassDeclaration")]);Concat([Ref("NormalInterfaceDeclaration")])]));
@@ -331,7 +336,7 @@ AL ([
    ("Statement",Disjunction([Concat([Ref("StatementWithoutTrailingSubstatement")]);Concat([Ref("LabeledStatement")]);Concat([Ref("IfThenStatement")]);Concat([Ref("IfThenElseStatement")]);Concat([Ref("WhileStatement")]);Concat([Ref("ForStatement")])]));
    ("StatementNoShortIf",Disjunction([Concat([Ref("StatementWithoutTrailingSubstatement")]);Concat([Ref("LabeledStatementNoShortIf")]);Concat([Ref("IfThenElseStatementNoShortIf")]);Concat([Ref("WhileStatementNoShortIf")]);Concat([Ref("ForStatementNoShortIf")])]));
    ("StatementWithoutTrailingSubstatement",Disjunction([Concat([Ref("Block")]);Concat([Ref("EmptyStatement")]);Concat([Ref("ExpressionStatement")]);Concat([Ref("AssertStatement")]);Concat([Ref("SwitchStatement")]);Concat([Ref("DoStatement")]);Concat([Ref("BreakStatement")]);Concat([Ref("ContinueStatement")]);Concat([Ref("ReturnStatement")]);Concat([Ref("SynchronizedStatement")]);Concat([Ref("ThrowStatement")]);Concat([Ref("TryStatement")]);Concat([Ref("YieldStatement")])]));
-   ("EmptyStatement",Disjunction([Concat([Ref(";")])]));
+   ("EmptyStatement",Disjunction([Concat([Ref("AtomicSm")])]));
    ("LabeledStatement",Disjunction([Concat([Ref("Identifier");Ref("AtomicColon");Ref("Statement")])]));
    ("LabeledStatementNoShortIf",Disjunction([Concat([Ref("Identifier");Ref("AtomicColon");Ref("StatementNoShortIf")])]));
    ("ExpressionStatement",Disjunction([Concat([Ref("StatementExpression");Ref("AtomicSm")])]));
@@ -341,7 +346,7 @@ AL ([
    ("IfThenElseStatementNoShortIf",Disjunction([Concat([Ref("AtomicIf");Ref("AtomicLp");Ref("Expression");Ref("AtomicRp");Ref("StatementNoShortIf");Ref("AtomicElse");Ref("StatementNoShortIf")])]));
    ("AssertStatement",Disjunction([Concat([Ref("AtomicAssert");Ref("Expression");Ref("AtomicSm")]);Concat([Ref("AtomicAssert");Ref("Expression");Ref("AtomicColon");Ref("Expression");Ref("AtomicSm")])]));
    ("SwitchStatement",Disjunction([Concat([Ref("AtomicSwitch");Ref("AtomicLp");Ref("Expression");Ref("AtomicRp");Ref("SwitchBlock")])]));
-   ("SwitchBlock",Disjunction([Concat([Ref("{");Ref("SwitchRule");Ref("StarredSwitchRule");Ref("}")]);Concat([Ref("{");Ref("StarredSwitchBlockStatementGroup");Ref("StarredSwitchLabelFollowedByColon");Ref("}")])]));
+   ("SwitchBlock",Disjunction([Concat([Ref("AtomicLc");Ref("SwitchRule");Ref("StarredSwitchRule");Ref("AtomicRc")]);Concat([Ref("AtomicLc");Ref("StarredSwitchBlockStatementGroup");Ref("StarredSwitchLabelFollowedByColon");Ref("AtomicRc")])]));
    ("SwitchRule",Disjunction([Concat([Ref("SwitchLabel");Ref("AtomicMinus");Ref("AtomicGt");Ref("Expression");Ref("AtomicSm")]);Concat([Ref("SwitchLabel");Ref("AtomicMinus");Ref("AtomicGt");Ref("Block")]);Concat([Ref("SwitchLabel");Ref("AtomicMinus");Ref("AtomicGt");Ref("ThrowStatement")])]));
    ("SwitchBlockStatementGroup",Disjunction([Concat([Ref("SwitchLabelFollowedByColon");Ref("StarredSwitchLabelFollowedByColon");Ref("BlockStatements")])]));
    ("SwitchLabel",Disjunction([Concat([Ref("AtomicCase");Ref("CaseConstant");Ref("StarredCaseConstantPrecededByComma")]);Concat([Ref("AtomicDefault")])]));
@@ -371,7 +376,7 @@ AL ([
    ("CatchType",Disjunction([Concat([Ref("UnannClassType");Ref("StarredClassTypePrecededByVerticalBar")])]));
    ("Finally",Disjunction([Concat([Ref("AtomicFinally");Ref("Block")])]));
    ("TryWithResourcesStatement",Disjunction([Concat([Ref("AtomicTry");Ref("ResourceSpecification");Ref("Block");Optional("Catches");Optional("Finally")])]));
-   ("ResourceSpecification",Disjunction([Concat([Ref("AtomicLp");Ref("ResourceList");Optional(";");Ref("AtomicRp")])]));
+   ("ResourceSpecification",Disjunction([Concat([Ref("AtomicLp");Ref("ResourceList");Ref("AtomicSm");Ref("AtomicRp")])]));
    ("ResourceList",Disjunction([Concat([Ref("Resource");Ref("StarredResourcePrecededBySemiColon")])]));
    ("Resource",Disjunction([Concat([Ref("LocalVariableDeclaration")]);Concat([Ref("VariableAccess")])]));
    ("Pattern",Disjunction([Concat([Ref("TypePattern")])]));
@@ -384,13 +389,13 @@ AL ([
    ("ClassOrInterfaceTypeToInstantiate",Disjunction([Concat([Ref("StarredAnnotation");Ref("Identifier");Ref("StarredAnnotatedIdentifierrPrecededByDot");Optional("TypeArgumentsOrDiamond")])]));
    ("TypeArgumentsOrDiamond",Disjunction([Concat([Ref("TypeArguments")]);Concat([Ref("AtomicLt");Ref("AtomicGt")])]));
    ("FieldAccess",Disjunction([Concat([Ref("Primary");Ref("IdentifierPrecededByDot")]);Concat([Ref("AtomicSuper");Ref("IdentifierPrecededByDot")]);Concat([Ref("TypeName");Ref("AtomicDot");Ref("AtomicSuper");Ref("IdentifierPrecededByDot")])]));
-   ("ArrayAccess",Disjunction([Concat([Ref("ExpressionName");Ref("[");Ref("Expression");Ref("]")]);Concat([Ref("PrimaryNoNewArray");Ref("[");Ref("Expression");Ref("]")])]));
+   ("ArrayAccess",Disjunction([Concat([Ref("ExpressionName");Ref("AtomicLb");Ref("Expression");Ref("AtomicRb")]);Concat([Ref("PrimaryNoNewArray");Ref("AtomicLb");Ref("Expression");Ref("AtomicRb")])]));
    ("MethodInvocation",Disjunction([Concat([Ref("MethodName");Ref("ParenthesedArgumentList")]);Concat([Ref("TypeName");Ref("AtomicDot");Optional("TypeArguments");Ref("Identifier");Ref("ParenthesedArgumentList")]);Concat([Ref("ExpressionName");Ref("AtomicDot");Optional("TypeArguments");Ref("Identifier");Ref("ParenthesedArgumentList")]);Concat([Ref("Primary");Ref("AtomicDot");Optional("TypeArguments");Ref("Identifier");Ref("ParenthesedArgumentList")]);Concat([Ref("AtomicSuper");Ref("AtomicDot");Optional("TypeArguments");Ref("Identifier");Ref("ParenthesedArgumentList")]);Concat([Ref("TypeName");Ref("AtomicDot");Ref("AtomicSuper");Ref("AtomicDot");Optional("TypeArguments");Ref("Identifier");Ref("ParenthesedArgumentList")])]));
    ("ArgumentList",Disjunction([Concat([Ref("Expression");Ref("StarredExpressionPrecededByComma")])]));
    ("MethodReference",Disjunction([Concat([Ref("ExpressionName");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("Identifier")]);Concat([Ref("Primary");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("Identifier")]);Concat([Ref("ReferenceType");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("Identifier")]);Concat([Ref("AtomicSuper");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("Identifier")]);Concat([Ref("TypeName");Ref("AtomicDot");Ref("AtomicSuper");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("Identifier")]);Concat([Ref("ClassType");Ref("AtomicColon");Ref("AtomicColon");Optional("TypeArguments");Ref("AtomicNew")]);Concat([Ref("ArrayType");Ref("AtomicColon");Ref("AtomicColon");Ref("AtomicNew")])]));
    ("ArrayCreationExpression",Disjunction([Concat([Ref("AtomicNew");Ref("PrimitiveType");Ref("DimExprs");Optional("Dims")]);Concat([Ref("AtomicNew");Ref("ClassOrInterfaceType");Ref("DimExprs");Optional("Dims")]);Concat([Ref("AtomicNew");Ref("PrimitiveType");Ref("Dims");Ref("ArrayInitializer")]);Concat([Ref("AtomicNew");Ref("ClassOrInterfaceType");Ref("Dims");Ref("ArrayInitializer")])]));
    ("DimExprs",Disjunction([Concat([Ref("DimExpr");Ref("StarredDimExpr")])]));
-   ("DimExpr",Disjunction([Concat([Ref("StarredAnnotation");Ref("[");Ref("Expression");Ref("]")])]));
+   ("DimExpr",Disjunction([Concat([Ref("StarredAnnotation");Ref("AtomicLb");Ref("Expression");Ref("AtomicRb")])]));
    ("Expression",Disjunction([Concat([Ref("LambdaExpression")]);Concat([Ref("AssignmentExpression")])]));
    ("LambdaExpression",Disjunction([Concat([Ref("LambdaParameters");Ref("AtomicMinus");Ref("AtomicGt");Ref("LambdaBody")])]));
    ("LambdaParameters",Disjunction([Concat([Ref("AtomicLp");Optional("LambdaParameterList");Ref("AtomicRp")]);Concat([Ref("Identifier")])]));
@@ -426,11 +431,11 @@ AL ([
    ("ConstantExpression",Disjunction([Concat([Ref("Expression")])]));
    ("AnnotatedIdentifierrPrecededByDot",Disjunction([Concat([Ref("AtomicDot");Ref("StarredAnnotation");Ref("Identifier")])]));
    ("ClassTypePrecededByVerticalBar",Disjunction([Concat([Ref("AtomicOr");Ref("ClassType")])]));
-   ("DimsElement",Disjunction([Concat([Ref("StarredAnnotation");Ref("[");Ref("]")])]));
+   ("DimsElement",Disjunction([Concat([Ref("StarredAnnotation");Ref("AtomicLb");Ref("AtomicRb")])]));
    ("EqualsVariableInitializer",Disjunction([Concat([Ref("AtomicEq");Ref("VariableInitializer")])]));
    ("IdentifierFollowedByDot",Disjunction([Concat([Ref("Identifier");Ref("AtomicDot")])]));
    ("IdentifierPrecededByDot",Disjunction([Concat([Ref("AtomicDot");Ref("Identifier")])]));
-   ("OpenSquare",Disjunction([Concat([Ref("[");Ref("]")])]));
+   ("OpenSquare",Disjunction([Concat([Ref("AtomicLb");Ref("AtomicRb")])]));
    ("ParenthesedArgumentList",Disjunction([Concat([Ref("AtomicLp");Optional("ArgumentList");Ref("AtomicRp")])]));
    ("ToModuleList",Disjunction([Concat([Ref("AtomicTo");Ref("ModuleName");Ref("StarredModuleNamePrecededByComma")])]));
    ("ReceiverParameterFollowedByComma",Disjunction([Concat([Ref("ReceiverParameter");Ref("AtomicCm")])]));
