@@ -5,8 +5,6 @@
 *)
 
 
-type element_in_concat = Ref of string ;;
-
 type element_in_disjunction = Concat of string list ;;
      
 type form = 

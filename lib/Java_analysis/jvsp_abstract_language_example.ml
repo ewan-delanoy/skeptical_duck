@@ -71,10 +71,6 @@ type token_type = Jvsp_types.token_type =
 |LINEBREAK_T;;
 
 
-type element_in_concat = Jvsp_abstract_language_t.element_in_concat = 
-   Ref of string ;;
-
-
 type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
    Concat of string list ;;
      
