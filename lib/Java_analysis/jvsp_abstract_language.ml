@@ -5,7 +5,7 @@
 *)
 
 type element_in_concat = Jvsp_abstract_language_t.element_in_concat = 
-   Ref of string |Atomic of Jvsp_types.token_type | Optional of string;;
+   Ref of string | Optional of string;;
 
 type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
    Concat of element_in_concat list ;;
@@ -22,7 +22,6 @@ module Private = struct
 
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")"
-  |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
   |(Optional nm) -> "Optional(\""^nm^"\")"  ;;
 
 let ocaml_name_of_element_in_disjunction (Concat l) =
@@ -47,7 +46,6 @@ let get (AL l) name = List.assoc name l ;;
 
 let element_in_concat_to_string = function
    (Ref nm) -> nm
-  |(Atomic tok) -> (Jvsp_util.summary_of_token_type tok)
   |(Optional nm) -> "\u{3010}"^nm^"\u{3011}"  ;;
 
 let element_in_disjunction_to_string (Concat l) =

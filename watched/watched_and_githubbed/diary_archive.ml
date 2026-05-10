@@ -1,6 +1,76 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 225 : Create specific grammar productions for atomics
+************************************************************************************************************************)
+module Snip225 = struct 
+
+(* open Jvsp_abstract_language_t ;;
+
+let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+
+let check_li1 = List.filter (fun (x,y)->String.starts_with x ~prefix:"Atomic") li1 ;;
+
+let li2 = List.flatten (Image.image (fun (x,y)->
+  match y with (Jvsp_abstract_language_t.Disjunction l)->l |_->[]) li1) ;;
+
+let li3 = List.flatten(Image.image (fun (Jvsp_abstract_language_t.Concat l)->l) li2);;  
+
+let unordered_atomics_in_li3 = List.filter_map (
+  function (Jvsp_abstract_language_t.Atomic nm)->Some (Jvsp_util.ocaml_name_for_token_type nm) | _ ->None
+) li3 ;;
+
+let string_atomics_in_li3 = Ordered.sort Total_ordering.lex_for_strings unordered_atomics_in_li3 ;;
+
+let atomics_in_li3 = Image.image Jvsp_util.token_type_from_ocaml_name string_atomics_in_li3 ;;
+
+let snakecased_name toktype =
+  let bare_tok = Cull_string.two_sided_cutting ("","_T") (Jvsp_util.ocaml_name_for_token_type toktype) in 
+  let parts = Str.split (Str.regexp_string "_") bare_tok in 
+  let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
+  String.concat "" lowercase_parts ;;
+
+
+
+let atomic_expansions_for_li3 = 
+  Image.image (
+   fun tt -> ("Atomic"^(snakecased_name tt),Jvsp_abstract_language_t.Just_atomic [tt])
+  ) atomics_in_li3 ;;
+
+let lgr2 = atomic_expansions_for_li3 @li1;;
+
+let gram2 = Jvsp_abstract_language_t.AL lgr2 ;;
+
+let transform_on_element_level elt = match elt with 
+    (Atomic tt) -> Ref("Atomic"^(snakecased_name tt))
+    | _ -> elt ;;
+
+let transform_on_concat_level (Concat l)= 
+  Concat (Image.image transform_on_element_level l)  ;; 
+
+
+let transform_on_form_level form= match form with 
+  (Disjunction l) -> Disjunction (Image.image transform_on_concat_level l)
+  |_ -> form   ;; 
+
+let transform_on_pair_level (x,y) = (x,transform_on_form_level y);;
+  
+let lgr3 = Image.image transform_on_pair_level lgr2 ;;
+
+let gram3 = Jvsp_abstract_language_t.AL lgr3 ;;
+
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram3_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;; *)
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 224 : Write repetitive boilerplate to implement parser concatenators and disjunctors of varying arity
 ************************************************************************************************************************)
 module Snip224 = struct 
