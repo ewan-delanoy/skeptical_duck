@@ -8,8 +8,7 @@ type element_in_concat = Jvsp_abstract_language_t.element_in_concat =
    Ref of string ;;
 
 type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
-    Concat of string list
-   |Cancot of element_in_concat list ;;
+   Concat of string list ;;
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 
@@ -25,9 +24,8 @@ module Private = struct
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")" ;;
 
-let ocaml_name_of_element_in_disjunction = function 
-  (Cancot l) -> "Cancot(["^(String.concat ";" (Image.image ocaml_name_of_element_in_concat l))^"])"
-  |(Concat l)-> "Concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])";;
+let ocaml_name_of_element_in_disjunction (Concat l) =
+    "Concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])";;
 
 let ocaml_name_of_form = function 
   (Disjunction l) ->
@@ -50,9 +48,7 @@ let get (AL l) name = List.assoc name l ;;
 let element_in_concat_to_string = function
    (Ref nm) -> nm  ;;
 
-let element_in_disjunction_to_string = function 
-  (Cancot l) ->String.concat " " (Image.image element_in_concat_to_string l) 
-  |(Concat l) ->String.concat " " l;;
+let element_in_disjunction_to_string (Concat l) =String.concat " " l;;
 
 
 let form_to_string = function 

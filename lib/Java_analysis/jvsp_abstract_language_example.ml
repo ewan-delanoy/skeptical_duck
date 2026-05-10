@@ -76,8 +76,7 @@ type element_in_concat = Jvsp_abstract_language_t.element_in_concat =
 
 
 type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
-    Concat of string list
-   |Cancot of element_in_concat list ;;
+   Concat of string list ;;
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 

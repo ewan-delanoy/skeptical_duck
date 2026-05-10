@@ -7,9 +7,7 @@
 
 type element_in_concat = Ref of string ;;
 
-type element_in_disjunction = 
-    Concat of string list
-   |Cancot of element_in_concat list ;;
+type element_in_disjunction = Concat of string list ;;
      
 type form = 
    Disjunction of element_in_disjunction list 
