@@ -156,7 +156,7 @@ module Snip222 = struct
 
 
 
-open Jvsp_abstract_language_t ;;
+(* open Jvsp_abstract_language_t ;;
 
 let ref_in_dis x = Concat [Ref x] ;;
 let atom_in_dis x = Concat [Atomic x] ;;
@@ -449,7 +449,7 @@ let l1 = betty_list ;;
 let (AL l2) = Jvsp_abstract_language_example.java_grammar ;;
 let n1 = List.length l1 ;;
 let n2 = List.length l2 ;;
-(* let l3 = List.combine l1 l2 ;; *) 
+let l3 = List.combine l1 l2 ;; *) 
 
 
 

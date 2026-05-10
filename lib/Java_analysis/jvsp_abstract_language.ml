@@ -5,7 +5,7 @@
 *)
 
 type element_in_concat = Jvsp_abstract_language_t.element_in_concat = 
-   Ref of string |Atomic of Jvsp_types.token_type | Star of string | Optional of string;;
+   Ref of string |Atomic of Jvsp_types.token_type | Optional of string;;
 
 type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
    Concat of element_in_concat list ;;
@@ -22,7 +22,6 @@ module Private = struct
 let ocaml_name_of_element_in_concat = function 
   (Ref nm) -> "Ref(\""^nm^"\")"
   |(Atomic tok) -> "Atomic("^(Jvsp_util.ocaml_name_for_token_type tok)^")"
-  |(Star nm) -> "Star(\""^nm^"\")"
   |(Optional nm) -> "Optional(\""^nm^"\")"  ;;
 
 let ocaml_name_of_element_in_disjunction (Concat l) =
@@ -47,8 +46,7 @@ let get (AL l) name = List.assoc name l ;;
 let element_in_concat_to_string = function
    (Ref nm) -> nm
   |(Atomic tok) -> (Jvsp_util.summary_of_token_type tok)
-  |(Star nm) -> nm^"\u{2605}"
-  |(Optional nm) -> "\u{21B6}"^nm^"\u{21B7}"  ;;
+  |(Optional nm) -> "\u{3010}"^nm^"\u{3011}"  ;;
 
 let element_in_disjunction_to_string (Concat l) =
    String.concat " " (Image.image element_in_concat_to_string l) ;;
@@ -60,7 +58,7 @@ let form_to_string = function
    else       
    "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^(element_in_disjunction_to_string elt)) l))^"\n" 
-  |(Just_a_star nm) -> "("^nm^")*"  ;;
+  |(Just_a_star nm) -> nm^"\u{2605}"  ;;
 
 let print_out_form (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (form_to_string form);;

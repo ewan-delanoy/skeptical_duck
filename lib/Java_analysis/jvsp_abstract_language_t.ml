@@ -6,7 +6,7 @@
 
 
 type element_in_concat = 
-   Ref of string |Atomic of Jvsp_types.token_type | Star of string |Optional of string;;
+   Ref of string |Atomic of Jvsp_types.token_type |Optional of string;;
 
 type element_in_disjunction = Concat of element_in_concat list ;;
      
