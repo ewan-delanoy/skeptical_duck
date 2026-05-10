@@ -13,6 +13,7 @@ type form =  Jvsp_abstract_language_t.form =
    |Just_an_optional of string
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list  
+   |Just_a_disjunction of string list 
    |Just_a_star of string 
    |Synonym of string;;
 
@@ -30,6 +31,7 @@ let ocaml_name_of_form = function
   |Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
   |Just_atomic(l) -> "Just_atomic(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"
   |Just_a_concat(l) -> "Just_a_concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
+  |Just_a_disjunction(l) -> "Just_a_disjunction(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
   |Just_a_star(nm) -> "Just_a_star(\""^nm^"\")"
   |Synonym(nm) -> "Synonym(\""^nm^"\")";;
 
@@ -56,6 +58,9 @@ let form_to_string = function
   |Just_an_optional(nm) -> "\u{3010}"^nm^"\u{3011}"    
   |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
   |Just_a_concat(l) ->  String.concat " " l
+  |Just_a_disjunction(l) ->
+     "\n"^(String.concat "\n" (Image.image (fun elt->
+      "|"^elt) l))^"\n"
   |(Just_a_star nm) -> nm^"\u{2605}"  
   |Synonym(nm) -> nm;;
 

@@ -12,6 +12,7 @@ type form =
    |Just_an_optional of string 
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list 
+   |Just_a_disjunction of string list 
    |Just_a_star of string 
    |Synonym of string
   ;;
