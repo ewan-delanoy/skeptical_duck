@@ -79,7 +79,8 @@ type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction =
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 
-   |Just_a_star of string (* Just_a_star(s) is equivalent to Disjunction[Concat[Star(s)]]*);;;;
+   |Just_atomic of Jvsp_types.token_type list
+   |Just_a_star of string ;;
 
 type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;; 
 

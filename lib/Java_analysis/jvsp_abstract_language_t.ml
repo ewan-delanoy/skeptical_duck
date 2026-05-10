@@ -12,7 +12,8 @@ type element_in_disjunction = Concat of element_in_concat list ;;
      
 type form = 
    Disjunction of element_in_disjunction list 
-   |Just_a_star of string (* Just_a_star(s) is equivalent to Disjunction[Concat[Star(s)]]*)
+   |Just_atomic of Jvsp_types.token_type list
+   |Just_a_star of string 
   ;;
 
 type t = AL of (string * form) list ;; 

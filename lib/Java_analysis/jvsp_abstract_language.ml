@@ -12,7 +12,8 @@ type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction =
      
 type form =  Jvsp_abstract_language_t.form = 
    Disjunction of element_in_disjunction list 
-   |Just_a_star of string (* Just_a_star(s) is equivalent to Disjunction[Concat[Star(s)]]*);;
+   |Just_atomic of Jvsp_types.token_type list
+   |Just_a_star of string ;;
 
 type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;; 
 
@@ -30,6 +31,7 @@ let ocaml_name_of_element_in_disjunction (Concat l) =
 let ocaml_name_of_form = function 
   (Disjunction l) ->
    "Disjunction(["^(String.concat ";" (Image.image ocaml_name_of_element_in_disjunction l))^"])"
+  |Just_atomic(l) -> "Just_atomic(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"
   |Just_a_star(nm) -> "Just_a_star(\""^nm^"\")";;
 
 let ocaml_name_of_sf (name,frm) =
@@ -58,6 +60,7 @@ let form_to_string = function
    else       
    "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^(element_in_disjunction_to_string elt)) l))^"\n" 
+  |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))    
   |(Just_a_star nm) -> nm^"\u{2605}"  ;;
 
 let print_out_form (fmt:Format.formatter) form=
