@@ -1,6 +1,75 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 229 : Create productions for simple disjunctions in Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip229 = struct 
+
+(* open Jvsp_abstract_language_t ;;
+
+let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+
+let li2 = List.filter_map (fun (x,y)->
+  match y with (Disjunction l)->Some((x,y),l) |_->None) li1;;
+
+let is_a_large_concat (Concat l) = (List.length(l)<>1) ;;
+
+let li3 = Image.image (
+  fun ((x,y),l) ->
+    ((x,y),l,List.filter_map (fun z->
+      if is_a_large_concat z then Some(x,z) else None
+      ) l)
+) li2 ;;
+
+let (good1,bad1) = List.partition (fun ((x,y),l,modified_l) -> modified_l=[]  ) li3 ;;
+
+let lgr3 = Image.image (
+  fun ((x,y),l,ml) ->
+    if ml = []
+    then (x,Just_a_disjunction(Image.image (fun (Concat w)->List.hd w) l))
+    else (x,y)
+) li3 ;;
+
+(*
+
+let lgr2 = 
+  Ordered.sort Jvsp_abstract_language.order_on_pairs
+  (li1@ optional_expansions_for_li3) ;;
+ *)
+
+let lgr2 = li1 ;;
+
+let gram2 = Jvsp_abstract_language_t.AL lgr2 ;;
+
+
+let transform_on_form_level form= match form with 
+  (Disjunction ll) -> 
+    if List.length(ll)<>1 then form else 
+      let (Concat l) = List.hd ll  in
+      if List.length(l)=1
+      then Synonym(List.hd l)
+      else Just_a_concat(l)   
+  |_ -> form   ;; 
+
+let transform_on_pair_level (x,y) = (x,transform_on_form_level y);;
+  
+let lgr3 = Image.image transform_on_pair_level lgr2 ;;
+
+let gram3 = Jvsp_abstract_language_t.AL lgr3 ;;
+
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram3_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;; *)
+  
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 228 : Simplify argument of Jvsp_abstract_language_t.Concat constructor
 ************************************************************************************************************************)
 module Snip228 = struct 
