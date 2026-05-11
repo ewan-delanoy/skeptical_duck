@@ -1,6 +1,496 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 230 : Recover forgotten pairs in Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip230 = struct 
+
+open Jvsp_abstract_language_t ;;
+
+let production_names = 
+["AdditionalBound"; "AdditiveExpression"; "AmbiguousName"; "AndExpression";
+   "AnnotatedIdentifierrPrecededByDot"; "Annotation";
+   "AnnotationInterfaceBody"; "AnnotationInterfaceDeclaration";
+   "AnnotationInterfaceElementDeclaration";
+   "AnnotationInterfaceElementModifier";
+   "AnnotationInterfaceMemberDeclaration"; "ArgumentList"; "ArrayAccess";
+   "ArrayCreationExpression"; "ArrayInitializer"; "ArrayType";
+   "AssertStatement"; "Assignment"; "AssignmentExpression";
+   "BasicForStatement"; "BasicForStatementNoShortIf"; "Block";
+   "BlockStatement"; "BlockStatements"; "BreakStatement"; "CaseConstant";
+   "CaseConstantPrecededByComma"; "CastExpression"; "CatchClause"; "Catches";
+   "CatchFormalParameter"; "CatchType"; "ClassBody"; "ClassBodyDeclaration";
+   "ClassDeclaration"; "ClassExtends"; "ClassImplements";
+   "ClassInstanceCreationExpression"; "ClassLiteral"; "ClassMemberDeclaration";
+   "ClassModifier"; "ClassOrInterfaceType";
+   "ClassOrInterfaceTypeToInstantiate"; "ClassPermits"; "ClassType";
+   "ClassTypePrecededByVerticalBar"; "CompactConstructorDeclaration";
+   "CompilationUnit"; "ConditionalAndExpression"; "ConditionalExpression";
+   "ConditionalOrExpression"; "ConstantDeclaration"; "ConstantExpression";
+   "ConstantModifier"; "ConstructorBody"; "ConstructorDeclaration";
+   "ConstructorDeclarator"; "ConstructorModifier"; "ContinueStatement";
+   "DefaultValue"; "DimExpr"; "DimExprs"; "Dims"; "DimsElement"; "DoStatement";
+   "ElementValue"; "ElementValueArrayInitializer"; "ElementValueList";
+   "ElementValuePair"; "ElementValuePairList";
+   "ElementValuePairPrecededByComma"; "ElementValuePrecededByComma";
+   "EmptyStatement"; "EnhancedForStatement"; "EnhancedForStatementNoShortIf";
+   "EnumBody"; "EnumBodyDeclarations"; "EnumConstant"; "EnumConstantList";
+   "EnumConstantModifier"; "EnumConstantPrecededByComma"; "EnumDeclaration";
+   "EqualityExpression"; "EqualsVariableInitializer"; "ExceptionType";
+   "ExceptionTypeList"; "ExceptionTypePrecededByComma";
+   "ExclusiveOrExpression"; "ExplicitConstructorInvocation"; "Expression";
+   "ExpressionName"; "ExpressionPrecededByComma"; "ExpressionStatement";
+   "FieldAccess"; "FieldDeclaration"; "FieldModifier"; "Finally";
+   "FloatingPointType"; "ForInit"; "FormalParameter"; "FormalParameterList";
+   "FormalParameterPrecededByComma"; "ForStatement"; "ForStatementNoShortIf";
+   "ForUpdate"; "IdentifierFollowedByDot"; "IdentifierPrecededByComma";
+   "IdentifierPrecededByDot"; "IfThenElseStatement";
+   "IfThenElseStatementNoShortIf"; "IfThenStatement"; "ImportDeclaration";
+   "InclusiveOrExpression"; "InstanceInitializer"; "InstanceofExpression";
+   "IntegralType"; "InterfaceBody"; "InterfaceDeclaration"; "InterfaceExtends";
+   "InterfaceMemberDeclaration"; "InterfaceMethodDeclaration";
+   "InterfaceMethodModifier"; "InterfaceModifier"; "InterfacePermits";
+   "InterfaceType"; "InterfaceTypeList"; "InterfaceTypePrecededByComma";
+   "LabeledStatement"; "LabeledStatementNoShortIf"; "LambdaBody";
+   "LambdaExpression"; "LambdaParameter"; "LambdaParameterList";
+   "LambdaParameterPrecededByComma"; "LambdaParameters"; "LambdaParameterType";
+   "LeftHandSide"; "Literal"; "LocalClassOrInterfaceDeclaration";
+   "LocalVariableDeclaration"; "LocalVariableDeclarationStatement";
+   "LocalVariableType"; "MarkerAnnotation"; "MethodBody"; "MethodDeclaration";
+   "MethodDeclarator"; "MethodHeader"; "MethodInvocation"; "MethodModifier";
+   "MethodName"; "MethodReference"; "ModularCompilationUnit";
+   "ModuleDeclaration"; "ModuleDirective"; "ModuleName";
+   "ModuleNamePrecededByComma"; "MultiplicativeExpression"; "NormalAnnotation";
+   "NormalClassDeclaration"; "NormalInterfaceDeclaration"; "NumericType";
+   "OpenSquare"; "OrdinaryCompilationUnit"; "PackageDeclaration";
+   "PackageModifier"; "PackageName"; "PackageOrTypeName";
+   "ParenthesedArgumentList"; "Pattern"; "PostDecrementExpression";
+   "PostfixExpression"; "PostIncrementExpression"; "PreDecrementExpression";
+   "PreIncrementExpression"; "Primary"; "PrimaryNoNewArray"; "PrimitiveType";
+   "ReceiverParameter"; "ReceiverParameterFollowedByComma"; "RecordBody";
+   "RecordBodyDeclaration"; "RecordComponent"; "RecordComponentList";
+   "RecordComponentModifier"; "RecordComponentPrecededByComma";
+   "RecordDeclaration"; "RecordHeader"; "ReferenceType";
+   "RelationalExpression"; "RequiresModifier"; "Resource"; "ResourceList";
+   "ResourcePrecededByComma"; "ResourcePrecededBySemiColon";
+   "ResourceSpecification"; "Result"; "ReturnStatement"; "ShiftExpression";
+   "SimpleTypeName"; "SingleElementAnnotation";
+   "SingleStaticImportDeclaration"; "SingleTypeImportDeclaration"; "Statement";
+   "StatementExpression"; "StatementExpressionList";
+   "StatementExpressionPrecededByComma"; "StatementNoShortIf";
+   "StatementWithoutTrailingSubstatement"; "StaticImportOnDemandDeclaration";
+   "StaticInitializer"; "SwitchBlock"; "SwitchBlockStatementGroup";
+   "SwitchExpression"; "SwitchLabel"; "SwitchLabelFollowedByColon";
+   "SwitchRule"; "SwitchStatement"; "SynchronizedStatement"; "Throws";
+   "ThrowStatement"; "ToModuleList"; "TopLevelClassOrInterfaceDeclaration";
+   "TryStatement"; "TryWithResourcesStatement"; "Type"; "TypeArgument";
+   "TypeArgumentList"; "TypeArgumentPrecededByComma"; "TypeArguments";
+   "TypeArgumentsOrDiamond"; "TypeBound"; "TypeImportOnDemandDeclaration";
+   "TypeName"; "TypeNamePrecededByComma"; "TypeParameter"; "TypeParameterList";
+   "TypeParameterModifier"; "TypeParameterPrecededByComma"; "TypeParameters";
+   "TypePattern"; "TypeVariable"; "UnannArrayType";
+   "UnannClassOrInterfaceType"; "UnannClassType"; "UnannInterfaceType";
+   "UnannPrimitiveType"; "UnannReferenceType"; "UnannType";
+   "UnannTypeVariable"; "UnaryExpression"; "UnaryExpressionNotPlusMinus";
+   "UnqualifiedClassInstanceCreationExpression"; "VariableArityParameter";
+   "VariableArityRecordComponent"; "VariableDeclarator";
+   "VariableDeclaratorId"; "VariableDeclaratorList";
+   "VariableDeclaratorPrecededByComma"; "VariableInitializer";
+   "VariableInitializerList"; "VariableInitializerPrecededByComma";
+   "VariableModifier"; "WhileStatement"; "WhileStatementNoShortIf"; "Wildcard";
+   "WildcardBounds"; "YieldStatement"]
+ ;;
+
+
+let forgotten_ones =
+[(16, ("InterfaceType", ["ClassType"]));
+   (17, ("TypeVariable", ["{Annotation} TypeIdentifier"]));
+   (19, ("Dims", ["DimsElement {DimsElement}"]));
+   (20,
+    ("TypeParameter", ["{TypeParameterModifier} TypeIdentifier [TypeBound]"]));
+   (21, ("TypeParameterModifier", ["Annotation"]));
+   (23, ("AdditionalBound", ["& InterfaceType"]));
+   (24, ("TypeArguments", ["< TypeArgumentList >"]));
+   (25, ("TypeArgumentList", ["TypeArgument {TypeArgumentPrecededByComma}"]));
+   (27, ("Wildcard", ["{Annotation} ? [WildcardBounds]"]));
+   (33, ("MethodName", ["UnqualifiedMethodIdentifier"]));
+   (37,
+    ("OrdinaryCompilationUnit",
+     ["[PackageDeclaration] {ImportDeclaration} {TopLevelClassOrInterfaceDeclaration}"]));
+   (38, ("ModularCompilationUnit", ["{ImportDeclaration} ModuleDeclaration"]));
+   (39,
+    ("PackageDeclaration",
+     ["{PackageModifier} package Identifier {IdentifierPrecededByDot} ;"]));
+   (40, ("PackageModifier", ["Annotation"]));
+   (42, ("SingleTypeImportDeclaration", ["import TypeName ;"]));
+   (43, ("TypeImportOnDemandDeclaration", ["import PackageOrTypeName . * ;"]));
+   (44,
+    ("SingleStaticImportDeclaration",
+     ["import static TypeName IdentifierPrecededByDot ;"]));
+   (45, ("StaticImportOnDemandDeclaration", ["import static TypeName . * ;"]));
+   (47,
+    ("ModuleDeclaration",
+     ["{Annotation} [open] module Identifier {IdentifierPrecededByDot} LC {ModuleDirective} RC"]));
+   (51,
+    ("NormalClassDeclaration",
+     ["{ClassModifier} class TypeIdentifier [TypeParameters] [ClassExtends] [ClassImplements] [ClassPermits] ClassBody"]));
+   (53, ("TypeParameters", ["< TypeParameterList >"]));
+   (54,
+    ("TypeParameterList", ["TypeParameter {TypeParameterPrecededByComma}"]));
+   (55, ("ClassExtends", ["extends ClassType"]));
+   (56, ("ClassImplements", ["implements InterfaceTypeList"]));
+   (57,
+    ("InterfaceTypeList", ["InterfaceType {InterfaceTypePrecededByComma}"]));
+   (58, ("ClassPermits", ["permits TypeName {TypeNamePrecededByComma}"]));
+   (59, ("ClassBody", ["LC {ClassBodyDeclaration} RC"]));
+   (62,
+    ("FieldDeclaration",
+     ["{FieldModifier} UnannType VariableDeclaratorList ;"]));
+   (64,
+    ("VariableDeclaratorList",
+     ["VariableDeclarator {VariableDeclaratorPrecededByComma}"]));
+   (65,
+    ("VariableDeclarator",
+     ["VariableDeclaratorId [EqualsVariableInitializer]"]));
+   (66, ("VariableDeclaratorId", ["Identifier [Dims]"]));
+   (73, ("UnannInterfaceType", ["UnannClassType"]));
+   (74, ("UnannTypeVariable", ["TypeIdentifier"]));
+   (76, ("MethodDeclaration", ["{MethodModifier} MethodHeader MethodBody"]));
+   (80,
+    ("MethodDeclarator",
+     ["Identifier ( [ReceiverParameterFollowedByComma] [FormalParameterList] ) [Dims]"]));
+   (81,
+    ("ReceiverParameter",
+     ["{Annotation} UnannType [IdentifierFollowedByDot] this"]));
+   (82,
+    ("FormalParameterList",
+     ["FormalParameter {FormalParameterPrecededByComma}"]));
+   (84,
+    ("VariableArityParameter",
+     ["{VariableModifier} UnannType {Annotation}  . . . Identifier"]));
+   (86, ("Throws", ["throws ExceptionTypeList"]));
+   (87,
+    ("ExceptionTypeList", ["ExceptionType {ExceptionTypePrecededByComma}"]));
+   (90, ("InstanceInitializer", ["Block"]));
+   (91, ("StaticInitializer", ["static Block"]));
+   (92,
+  ("ConstructorDeclaration",
+   ["{ConstructorModifier} ConstructorDeclarator [Throws] ConstructorBody"]));
+ (94,
+  ("ConstructorDeclarator",
+   ["[TypeParameters] SimpleTypeName ( [ReceiverParameterFollowedByComma] [FormalParameterList] )"]));
+ (95, ("SimpleTypeName", ["TypeIdentifier"]));
+ (96,
+  ("ConstructorBody",
+   ["LC [ExplicitConstructorInvocation] [BlockStatements] RC"]));
+ (98,
+  ("EnumDeclaration",
+   ["{ClassModifier} enum TypeIdentifier [ClassImplements] EnumBody"]));
+ (99, ("EnumBody", ["LC [EnumConstantList] [,] [EnumBodyDeclarations] RC"]));
+ (100, ("EnumConstantList", ["EnumConstant {EnumConstantPrecededByComma}"]));
+ (101,
+  ("EnumConstant",
+   ["{EnumConstantModifier} Identifier [ParenthesedArgumentList] [ClassBody]"]));
+ (102, ("EnumConstantModifier", ["Annotation"]));
+ (103, ("EnumBodyDeclarations", ["; {ClassBodyDeclaration}"]));
+ (104,
+  ("RecordDeclaration",
+   ["{ClassModifier} record TypeIdentifier [TypeParameters] RecordHeader [ClassImplements] RecordBody"]));
+ (105, ("RecordHeader", ["( [RecordComponentList] )"]));
+ (106,
+  ("RecordComponentList", ["RecordComponent {RecordComponentPrecededByComma}"]));
+ (108,
+  ("VariableArityRecordComponent",
+   ["{RecordComponentModifier} UnannType {Annotation}  . . . Identifier"]));
+ (109, ("RecordComponentModifier", ["Annotation"]));
+ (110, ("RecordBody", ["LC {RecordBodyDeclaration} RC"]));
+ (112,
+  ("CompactConstructorDeclaration",
+   ["{ConstructorModifier} SimpleTypeName ConstructorBody"]));
+ (114,
+  ("NormalInterfaceDeclaration",
+   ["{InterfaceModifier} interface TypeIdentifier [TypeParameters] [InterfaceExtends] [InterfacePermits] InterfaceBody"]));
+ (116, ("InterfaceExtends", ["extends InterfaceTypeList"]));
+ (117, ("InterfacePermits", ["permits TypeName {TypeNamePrecededByComma}"]));
+ (118, ("InterfaceBody", ["LC {InterfaceMemberDeclaration} RC"]));
+ (120,
+  ("ConstantDeclaration",
+   ["{ConstantModifier} UnannType VariableDeclaratorList ;"]));
+ (122,
+  ("InterfaceMethodDeclaration",
+   ["{InterfaceMethodModifier} MethodHeader MethodBody"]));
+ (124,
+  ("AnnotationInterfaceDeclaration",
+   ["{InterfaceModifier} @ interface TypeIdentifier AnnotationInterfaceBody"]));
+ (125,
+  ("AnnotationInterfaceBody", ["LC {AnnotationInterfaceMemberDeclaration} RC"]));
+ (127,
+  ("AnnotationInterfaceElementDeclaration",
+   ["{AnnotationInterfaceElementModifier} UnannType Identifier ( ) [Dims] [DefaultValue] ;"]));
+ (129, ("DefaultValue", ["default ElementValue"]));
+ (131, ("NormalAnnotation", ["@ TypeName ( [ElementValuePairList] )"]));
+ (132,
+  ("ElementValuePairList",
+   ["ElementValuePair {ElementValuePrecededByCommaPair}"]));
+ (133, ("ElementValuePair", ["Identifier = ElementValue"]));
+ (135, ("ElementValueArrayInitializer", ["LC [ElementValueList] [,] RC"]));
+ (136, ("ElementValueList", ["ElementValue {ElementValuePrecededByComma}"]));
+ (137, ("MarkerAnnotation", ["@ TypeName"]));
+ (138, ("SingleElementAnnotation", ["@ TypeName ( ElementValue )"]));
+ (139, ("ArrayInitializer", ["LC [VariableInitializerList] [,] RC"]));
+ (140,
+  ("VariableInitializerList",
+   ["VariableInitializer {VariableInitializerPrecededByComma}"]));
+ (141, ("Block", ["LC [BlockStatements] RC"]));
+ (142, ("BlockStatements", ["BlockStatement {BlockStatement}"]));
+ (145, ("LocalVariableDeclarationStatement", ["LocalVariableDeclaration ;"]));
+ (146,
+  ("LocalVariableDeclaration",
+   ["{VariableModifier} LocalVariableType VariableDeclaratorList"]));
+ (151, ("EmptyStatement", [";"]));
+ (152, ("LabeledStatement", ["Identifier : Statement"]));
+ (153, ("LabeledStatementNoShortIf", ["Identifier : StatementNoShortIf"]));
+ (154, ("ExpressionStatement", ["StatementExpression ;"]));
+ (156, ("IfThenStatement", ["if ( Expression ) Statement"]));
+  (157,
+  ("IfThenElseStatement",
+   ["if ( Expression ) StatementNoShortIf else Statement"]));
+ (158,
+  ("IfThenElseStatementNoShortIf",
+   ["if ( Expression ) StatementNoShortIf else StatementNoShortIf"]));
+ (160, ("SwitchStatement", ["switch ( Expression ) SwitchBlock"]));
+ (163,
+  ("SwitchBlockStatementGroup",
+   ["SwitchLabelFollowedByColon {SwitchLabelFollowedByColon} BlockStatements"]));
+ (165, ("CaseConstant", ["ConditionalExpression"]));
+ (166, ("WhileStatement", ["while ( Expression ) Statement"]));
+ (167,
+  ("WhileStatementNoShortIf", ["while ( Expression ) StatementNoShortIf"]));
+ (168, ("DoStatement", ["do Statement while ( Expression ) ;"]));
+ (171,
+  ("BasicForStatement",
+   ["for ( [ForInit] ; [Expression] ; [ForUpdate] ) Statement"]));
+ (172,
+  ("BasicForStatementNoShortIf",
+   ["for ( [ForInit] ; [Expression] ; [ForUpdate] ) StatementNoShortIf"]));
+ (174, ("ForUpdate", ["StatementExpressionList"]));
+ (175,
+  ("StatementExpressionList",
+   ["StatementExpression {StatementExpressionPrecededByComma}"]));
+ (176,
+  ("EnhancedForStatement",
+   ["for ( LocalVariableDeclaration : Expression ) Statement"]));
+ (177,
+  ("EnhancedForStatementNoShortIf",
+   ["for ( LocalVariableDeclaration : Expression ) StatementNoShortIf"]));
+ (178, ("BreakStatement", ["break [Identifier] ;"]));
+ (179, ("YieldStatement", ["yield Expression ;"]));
+ (180, ("ContinueStatement", ["continue [Identifier] ;"]));
+ (181, ("ReturnStatement", ["return [Expression] ;"]));
+ (182, ("ThrowStatement", ["throw Expression ;"]));
+ (183, ("SynchronizedStatement", ["synchronized ( Expression ) Block"]));
+ (185, ("Catches", ["CatchClause {CatchClause}"]));
+ (186, ("CatchClause", ["catch ( CatchFormalParameter ) Block"]));
+ (187,
+  ("CatchFormalParameter",
+   ["{VariableModifier} CatchType VariableDeclaratorId"]));
+ (188, ("CatchType", ["UnannClassType {ClassTypePrecededByVerticalBar}"]));
+ (189, ("Finally", ["finally Block"]));
+ (190,
+  ("TryWithResourcesStatement",
+   ["try ResourceSpecification Block [Catches] [Finally]"]));
+ (191, ("ResourceSpecification", ["( ResourceList [;] )"]));
+ (192, ("ResourceList", ["Resource {ResourcePrecededBySemiColon}"]));
+ (194, ("Pattern", ["TypePattern"]));
+ (195, ("TypePattern", ["LocalVariableDeclaration"]));
+ (200,
+  ("UnqualifiedClassInstanceCreationExpression",
+   ["new [TypeArguments] ClassOrInterfaceTypeToInstantiate ParenthesedArgumentList [ClassBody]"]));
+ (201,
+  ("ClassOrInterfaceTypeToInstantiate",
+   ["{Annotation} Identifier {AnnotatedIdentifierrPrecededByDot} [TypeArgumentsOrDiamond]"]));
+ (206, ("ArgumentList", ["Expression {ExpressionPrecededByComma}"]));
+ (209, ("DimExprs", ["DimExpr {DimExpr}"]));
+ (210, ("DimExpr", ["{Annotation} LB Expression RB"]));
+ (212, ("LambdaExpression", ["LambdaParameters - > LambdaBody"]));
+ (219, ("Assignment", ["LeftHandSide AssignmentOperator Expression"]));
+ (235, ("PreIncrementExpression", ["++ UnaryExpression"]));
+ (236, ("PreDecrementExpression", ["-- UnaryExpression"]));
+ (239, ("PostIncrementExpression", ["PostfixExpression ++"]));
+ (240, ("PostDecrementExpression", ["PostfixExpression --"]));
+ (242, ("SwitchExpression", ["switch ( Expression ) SwitchBlock"]));
+ (243, ("ConstantExpression", ["Expression"]));
+ (244, ("AnnotatedIdentifierrPrecededByDot", [". {Annotation} Identifier"]));
+ (245, ("ClassTypePrecededByVerticalBar", ["| ClassType"]));
+ (246, ("DimsElement", ["{Annotation} LB RB"]));
+ (247, ("EqualsVariableInitializer", ["= VariableInitializer"]));
+ (248, ("IdentifierFollowedByDot", ["Identifier ."]));
+ (249, ("IdentifierPrecededByDot", [". Identifier"]));
+ (250, ("OpenSquare", ["LB RB"]));
+ (251, ("ParenthesedArgumentList", ["( [ArgumentList] )"]));
+ (252, ("ToModuleList", ["to ModuleName {ModuleNamePrecededByComma}"]));
+ (253, ("ReceiverParameterFollowedByComma", ["ReceiverParameter ,"]));
+ (254, ("ResourcePrecededBySemiColon", ["; Resource"]));
+ (255, ("SwitchLabelFollowedByColon", ["SwitchLabel :"]));
+ (256, ("CaseConstantPrecededByComma", [", CaseConstant"]));
+ (257, ("ElementValuePrecededByComma", [", ElementValue"]));
+ (258, ("ElementValuePairPrecededByComma", [", ElementValuePair"]));
+ (259, ("EnumConstantPrecededByComma", [", EnumConstant"]));
+ (260, ("ExceptionTypePrecededByComma", [", ExceptionType"]));
+ (261, ("ExpressionPrecededByComma", [", Expression"]));
+ (262, ("FormalParameterPrecededByComma", [", FormalParameter"]));
+ (263, ("IdentifierPrecededByComma", [", Identifier"]));
+ (264, ("InterfaceTypePrecededByComma", [", InterfaceType"]));
+ (265, ("LambdaParameterPrecededByComma", [", LambdaParameter"]));
+ (266, ("ModuleNamePrecededByComma", [", ModuleName"]));
+ (267, ("RecordComponentPrecededByComma", [", RecordComponent"]));
+ (268, ("ResourcePrecededByComma", [", Resource"]));
+ (269, ("StatementExpressionPrecededByComma", [", StatementExpression"]));
+ (270, ("TypeArgumentPrecededByComma", [", TypeArgument"]));
+ (271, ("TypeNamePrecededByComma", [", TypeName"]));
+ (272, ("TypeParameterPrecededByComma", [", TypeParameter"]));
+ (273, ("VariableDeclaratorPrecededByComma", [", VariableDeclarator"]));
+ (274, ("VariableInitializerPrecededByComma", [", VariableInitializer"]))
+
+] ;;
+
+let unwrap s =
+   if (String.starts_with s ~prefix:"{") && (String.ends_with s ~suffix:"}") 
+   then ("Starred",Cull_string.two_sided_cutting ("{","}") s )
+   else
+   if (String.starts_with s ~prefix:"[") && (String.ends_with s ~suffix:"]") 
+   then ("Optional",Cull_string.two_sided_cutting ("[","]") s)
+   else ("",s)
+       
+let token_type_from_summary_opt name = 
+  match List.find_opt (
+   fun tok_type -> Jvsp_util.summary_of_token_type tok_type = name
+  ) Jvsp_util.all_token_types with 
+ (Some answer) -> Some answer
+  |None -> List.assoc_opt name [
+    ("AssignmentOperator",Jvsp_types.OPERATOR_EQ_T);
+    ("Identifier",Jvsp_types.IDENTIFIER_T);
+    ("TypeIdentifier",Jvsp_types.IDENTIFIER_T);
+    ("UnqualifiedMethodIdentifier",Jvsp_types.IDENTIFIER_T);
+    ("LB",Jvsp_types.LB_T);
+    ("RB",Jvsp_types.RB_T);
+    ("LC",Jvsp_types.LB_T);
+    ("RC",Jvsp_types.RB_T);
+  ];; 
+
+type categorized_elt = From_java_spec of string | From_token of Jvsp_types.token_type ;;
+
+exception Get_categorized_version_exn of string ;;
+
+let get_categorized_version name =
+   match token_type_from_summary_opt name with 
+   Some tok -> From_token tok 
+   | None -> 
+      if (List.mem name production_names)
+      then From_java_spec(name)
+      else 
+      match List.assoc_opt name [
+         "ElementValuePrecededByCommaPair","ElementValuePairPrecededByComma"
+      ]  with 
+      (Some answer) ->From_java_spec answer 
+      | None -> raise (Get_categorized_version_exn(name)) ;;   
+
+let final_name_for_categorized_version = function 
+  (From_java_spec nm) -> (false,nm) 
+  |(From_token tok) -> 
+      let long_tokname = Jvsp_util.ocaml_name_for_token_type tok in 
+      let tokname = Cull_string.coending 2 long_tokname in 
+      let parts = Str.split (Str.regexp "[_]+") tokname in 
+      let modified_parts = Image.image (fun s->
+        String.capitalize_ascii(String.lowercase_ascii s)  
+      ) parts in 
+      (true,String.concat "" modified_parts) ;;
+
+let final_name (qualifier,name) = 
+    let (is_from_a_token,f_name) = final_name_for_categorized_version 
+    (get_categorized_version name) in 
+    if (qualifier = "")&&is_from_a_token then "Atomic"^f_name else 
+    qualifier ^ f_name;;
+
+let decompose str = Image.image unwrap (Str.split (Str.regexp "[ ]+") str) ;;
+
+let composite_strings_used = List.flatten(Image.image (fun (idx,(name,expansion))->expansion) forgotten_ones);;
+
+let possibly_wrapped_strings_used = 
+  Ordered.sort Total_ordering.lex_for_strings
+   (List.flatten(Image.image (fun s->Str.split (Str.regexp "[ ]+") s) composite_strings_used)) ;;
+
+let bare_strings_used =
+   let temp = Image.image (fun s->snd(unwrap s)) possibly_wrapped_strings_used in 
+   Ordered.sort Total_ordering.lex_for_strings temp ;;
+
+
+
+
+let nonproduction_strings_used = List.filter (
+  fun s->not(List.mem s production_names)
+)  bare_strings_used ;;
+
+let other_strings_used = List.filter (
+  fun s->(token_type_from_summary_opt s)=None
+)  nonproduction_strings_used ;;
+
+
+
+let version1 = Image.image (
+ fun (idx,(name,l)) ->(idx,(name,Image.image decompose l))
+) forgotten_ones ;; 
+
+
+let tr2 (idx,(name,ll)) = (idx,(name,Image.image 
+ (fun l->(Image.image final_name l)) ll)) ;;
+
+let version2 = Image.image tr2 version1 ;; 
+
+let tr3_core ll = 
+  if List.length(ll)<>1 
+  then if List.for_all (fun l->List.length l=1) ll  
+       then Just_a_disjunction (Image.image List.hd ll)
+       else Disjunction(Image.image(fun l->Concat(l))ll) 
+  else 
+  let l0 = List.hd ll in 
+  if List.length l0 = 1 
+  then Synonym (List.hd l0)
+  else Just_a_concat l0;;
+
+
+let tr3 (idx,(name,ll)) =  (name,tr3_core ll) ;; 
+
+let new_pairs = Image.image tr3 version2 ;;        
+
+let (AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
+
+let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (old_pairs@ new_pairs) ;;
+
+let gram3 = Jvsp_abstract_language_t.AL all_pairs ;;
+
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram3_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+
+
+(*
+
+
+let g1 = List.filter (fun s->String.starts_with s ~prefix:"ElementValuePrecededBy") production_names ;;
+
+let g2 = List.filter (
+ fun (idx,(name,l)) ->List.exists (fun s->Substring.is_a_substring_of "ElementValuePrecededBy" s) l
+) forgotten_ones ;; 
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 229 : Create productions for simple disjunctions in Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip229 = struct 
@@ -788,7 +1278,6 @@ end;;
 ************************************************************************************************************************)
 module Snip221 = struct 
 
-
 open Jvsp_types ;;
 
 
@@ -1400,8 +1889,21 @@ let ap_for_storing_command = Absolute_path.of_string "watched/watched_not_github
 
 let store_command () = Io.append_string_to_file u10 ap_for_storing_command ;;
 
+let g name = Jvsp_abstract_language.get Jvsp_abstract_language_example.java_grammar name;;
+
+let g_opt name = try Some(g name) with _ -> None ;;
+
+let forgotten_ones_from_u7 = List.filter (
+  fun (idx,(name,_)) -> g_opt name = None
+) corrected_u7 ;;
 
 (*
+
+let unordered_production_names = Image.image (
+ fun (idx,(name,l)) ->name
+) corrected_u7 ;; 
+
+let production_names = Ordered.sort Total_ordering.lex_for_strings unordered_production_names ;; 
 
 let ap_for_diary = Absolute_path.of_string "watched/watched_and_githubbed/diary_archive.ml" ;;
 let diary_text = Io.read_whole_file ap_for_diary ;;
