@@ -1,6 +1,141 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 231 : Recover forgotten atomics, optionals and stars in Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip231 = struct 
+
+open Jvsp_types ;;
+open Jvsp_abstract_language_t ;;
+
+let (AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
+
+let production_names = Image.image fst old_pairs ;;
+
+let unordered_used_names = function
+   (Disjunction ll) ->List.flatten (Image.image (fun (Concat l)->l) ll)
+   |(Just_an_optional nm) -> [nm]
+   |Just_atomic _ -> []
+   |Just_a_concat l -> l
+   |Just_a_disjunction l -> l 
+   |Just_a_star nm -> [nm]
+   |Synonym nm -> [nm];;
+
+let used_names form = Ordered.sort Total_ordering.lex_for_strings (unordered_used_names form) ;;
+
+let all_used_names = 
+  Ordered.fold_merge Total_ordering.lex_for_strings
+  (Image.image (fun (_,form)->used_names form) old_pairs) ;;
+
+
+
+let grammar_name_for_token_type tok =    
+      let long_tokname = Jvsp_util.ocaml_name_for_token_type tok in 
+      let tokname = Cull_string.coending 2 long_tokname in 
+      let parts = Str.split (Str.regexp "[_]+") tokname in 
+      let modified_parts = Image.image (fun s->
+        String.capitalize_ascii(String.lowercase_ascii s)  
+      ) parts in 
+      String.concat "" modified_parts ;;
+
+let token_type_from_grammar_name_opt name = 
+  List.find_opt (
+   fun tok_type -> grammar_name_for_token_type tok_type = name
+  ) Jvsp_util.all_token_types ;;
+
+let forgotten_names = 
+  Ordered.setminus Total_ordering.lex_for_strings
+  all_used_names production_names ;;
+
+let (atomic_section,nonatomic) = List.partition (String.starts_with ~prefix:"Atomic") forgotten_names ;;
+let (optional_section,nonoptional) = List.partition (String.starts_with ~prefix:"Optional") nonatomic ;;
+let (starred_section,others) = List.partition (String.starts_with ~prefix:"Starred") nonoptional ;;
+
+let beheaded_atomic = Image.image (Cull_string.two_sided_cutting("Atomic","")) atomic_section ;; 
+let beheaded_optional = Image.image (Cull_string.two_sided_cutting("Optional","")) optional_section ;; 
+let beheaded_starred = Image.image (Cull_string.two_sided_cutting("Starred","")) starred_section ;; 
+
+let nonregistered_in_optional = 
+  Ordered.setminus Total_ordering.lex_for_strings 
+    beheaded_optional production_names ;;
+
+let nonregistered_in_starred = 
+  Ordered.setminus Total_ordering.lex_for_strings 
+    beheaded_starred production_names ;;
+
+let needed_for_atomic =
+    Ordered.fold_merge Total_ordering.lex_for_strings 
+    [beheaded_atomic;nonregistered_in_optional;nonregistered_in_starred] ;;
+
+let atomic_pairs = Image.image (
+   fun name ->("Atomic"^name,
+      Just_atomic[Option.get(token_type_from_grammar_name_opt name )])
+) needed_for_atomic ;;   
+
+let optional_pairs = Image.image (
+   fun name ->
+     let ancestor = (if List.mem name production_names then name else 
+       "Atomic"^name
+      ) in 
+     ("Optional"^name,
+      Just_an_optional(ancestor))
+) beheaded_optional ;;   
+
+let starred_pairs = Image.image (
+   fun name ->
+     let ancestor = (if List.mem name production_names then name else 
+       "Atomic"^name
+      ) in 
+     ("Starred"^name,
+      Just_a_star(ancestor))
+) beheaded_starred ;;   
+
+let new_pairs = [
+    "TypeIdentifier",Synonym("Identifier");
+    "VariableAccess",Just_a_disjunction(["ExpressionName";"FieldAccess"]);
+] ;;        
+
+let new_pairs = [
+    "BooleanLiteral",Just_atomic [BOOLEAN_LITERAL_T]; 
+    "CharacterLiteral",Just_atomic [CHARACTER_LITERAL_T]; 
+    "FloatingPointLiteral",Just_atomic [FLOATING_POINT_LITERAL_T]; 
+    "Identifier",Just_atomic [IDENTIFIER_T];
+    "IntegerLiteral",Just_atomic [INTEGER_LITERAL_T]; 
+    "NullLiteral",Just_atomic [NULL_LITERAL_T]; 
+    "StringLiteral",Just_atomic [STRING_LITERAL_T]; 
+    "TextBlock",Just_atomic [TEXT_BLOCK_T];
+] ;;   
+
+let new_pairs = atomic_pairs @ optional_pairs @ starred_pairs ;;
+
+let z1 = List.filter (fun lit ->List.mem("Atomic"^lit) atomic_section) others ;;
+
+let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (old_pairs@ new_pairs) ;;
+
+let gram3 = Jvsp_abstract_language_t.AL all_pairs ;;
+
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram3_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+
+
+(*
+
+
+let g1 = List.filter (fun s->String.starts_with s ~prefix:"ElementValuePrecededBy") production_names ;;
+
+let g2 = List.filter (
+ fun (idx,(name,l)) ->List.exists (fun s->Substring.is_a_substring_of "ElementValuePrecededBy" s) l
+) forgotten_ones ;; 
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 230 : Recover forgotten pairs in Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip230 = struct 
