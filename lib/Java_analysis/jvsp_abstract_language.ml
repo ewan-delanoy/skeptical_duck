@@ -149,7 +149,141 @@ let remove_immediate_redundant_concats gram =
 
 end ;;
 
-module Mergable_token_sequences = struct
+module Mergeable_token_sequences = struct
+
+   let get_atomic_content_opt = function 
+   (Just_atomic ac) -> Some ac
+   |Disjunction _ 
+   |Just_a_concat _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> None ;;
+
+let find_realizing_pair_opt toktypes (name,form) = match form with  
+   (Just_atomic ac) -> if ac = toktypes then Some name else None
+   |Disjunction _ 
+   |Just_a_concat _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> None ;;
+
+let find_realization_opt toktypes (AL l) = 
+    List.find_map (find_realizing_pair_opt toktypes) l ;;      
+
+
+let is_a_token_sequence form = ((get_atomic_content_opt form)<>None) ;;   
+
+let mergeable_tl_subsequences_in_concat_list gram l= 
+   let temp1 = Image.image (get gram) l in 
+   let temp2 = List_again.connected_fibers is_a_token_sequence temp1 in 
+   List.filter_map (
+    fun (_range,seq,is_a_tl_seq) ->
+      if is_a_tl_seq && (List.length(seq)>1)
+      then  Some (List.flatten(Image.image (fun z->Option.get(get_atomic_content_opt z)) seq)) 
+      else None
+   ) temp2;;
+
+let mergeable_tl_subsequences_in_pair gram (name,form) = 
+   let specify_name = (fun l->(name,(l,mergeable_tl_subsequences_in_concat_list gram l))) in 
+   match form with
+   (Disjunction ll) -> Image.image (fun (Concat l)->specify_name l) ll
+   |Just_a_concat l ->[specify_name l]
+   |Just_atomic _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> [] ;;
+
+
+let all_mergeable_tl_subsequences1 =Memoized.make (fun gram->
+  let (AL pairs) = gram in   
+  let temp =List.flatten(Image.image (mergeable_tl_subsequences_in_pair gram) pairs) in 
+  List.filter (fun (_name,(_l,seqs))->seqs<>[]) temp );; 
+
+let order_on_token_types = 
+  ((fun tt1 tt2 ->Total_ordering.lex_for_strings 
+     (Jvsp_util.ocaml_name_for_token_type tt1)
+      (Jvsp_util.ocaml_name_for_token_type tt2)
+     ) : 
+     Jvsp_types.token_type  Total_ordering_t.t );; 
+
+let order_on_tl_sequences = Total_ordering.silex_compare order_on_token_types ;; 
+
+let all_mergeable_tl_subsequences2 = Memoized.make(fun gram -> 
+  let temp1 = Image.image (fun (_name,(_l,seqs))->seqs) (all_mergeable_tl_subsequences1 gram) in 
+  let temp2 = List.flatten temp1 in 
+  Ordered.sort order_on_tl_sequences temp2) ;;
+
+let all_mergeable_tl_subsequences3 = Memoized.make(fun gram -> 
+  let temp1 = all_mergeable_tl_subsequences2 gram in 
+  let temp2 = Image.image(fun seq->(seq,find_realization_opt seq gram)) temp1 in 
+  let (good,bad) = List.partition (fun (_seq,realizers)->realizers<>None) temp2 in 
+  (Image.image fst bad,Image.image (fun (seq,opt)->(seq,Option.get opt)) good)
+  ) ;;
+let names_involving_mergeable_tl_sequences = Memoized.make(fun gram -> 
+  Ordered.sort Total_ordering.lex_for_strings
+   (Image.image fst (all_mergeable_tl_subsequences1 gram))) ;;
+
+
+let new_pairs_merging_tl_sequences = Memoized.make(fun gram -> 
+  let (seqs,_) = all_mergeable_tl_subsequences3 gram in 
+  Image.image (fun seq->(Jvsp_util.code_for_tokentype_sequence_in_production_names seq,Just_atomic seq)) seqs
+  ) ;; 
+
+let data_for_merging_tl_sequences = Memoized.make(fun gram -> 
+  let involved_names = names_involving_mergeable_tl_sequences gram
+  and  (seqs,_) = all_mergeable_tl_subsequences3 gram in 
+  (involved_names,Image.image (fun seq->(seq,Jvsp_util.code_for_tokentype_sequence_in_production_names seq)) seqs)
+  ) ;; 
+
+exception Merge_tl_sequence_in_concat_exn of Jvsp_types.token_type list;;
+
+let merge_tl_sequence_in_concat gram associator l = 
+  let temp1 = Image.image (fun nm->(nm,get gram nm)) l in 
+  let temp2 = List_again.connected_fibers (fun (_,form)->is_a_token_sequence form) temp1 in 
+  let temp3 = Image.image (
+    fun (_range,segment,is_a_tl_segment) ->
+      if is_a_tl_segment && (List.length(segment)>1)
+      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(get_atomic_content_opt z)) segment) in  
+           let seq_name_opt = List.assoc_opt seq associator in 
+           (
+             match seq_name_opt with 
+             None -> raise(Merge_tl_sequence_in_concat_exn(seq)) 
+             |Some name_seq -> [name_seq]
+           )
+      else Image.image fst segment
+  ) temp2 in 
+  List.flatten temp3 ;; 
+
+
+let merge_tl_sequence_in_form gram associator form =
+  match form with
+   (Disjunction ll) -> Disjunction(Image.image (fun (Concat l)->Concat(merge_tl_sequence_in_concat gram associator l)) ll)
+   |Just_a_concat l ->Just_a_concat (merge_tl_sequence_in_concat gram associator l)
+   |Just_atomic _   
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> form ;;
+
+let merge_tl_sequence_in_pair gram data_for_merging pair =
+    let (involved_names,associator) = data_for_merging in
+    let (name,form) = pair in 
+    if not(List.mem name involved_names)
+    then pair 
+    else (name, merge_tl_sequence_in_form gram associator form) ;; 
+
+let merge_tl_sequences_in_grammar gram =
+  let data_for_merging = data_for_merging_tl_sequences gram 
+  and new_pairs = new_pairs_merging_tl_sequences gram in 
+  let (AL l) = gram in 
+  let unordered_new_l = 
+    new_pairs@(Image.image (merge_tl_sequence_in_pair gram data_for_merging) l) in 
+  let new_l = Ordered.sort order_on_pairs unordered_new_l in   
+  AL(new_l) ;;
+
 
 
 
@@ -159,7 +293,12 @@ end ;;
 
 
 module Preliminary_normalizations = struct
-  
+
+   let mergeable_token_sequences = 
+      Private.Mergeable_token_sequences.all_mergeable_tl_subsequences3 ;;
+   let merge_token_sequences = 
+      Private.Mergeable_token_sequences.merge_tl_sequences_in_grammar ;;  
+      
 let redundant_concats = Private.Redundant_concats.replacements_by_name2 ;;
 let remove_immediate_redundant_concats = Private.Redundant_concats.remove_immediate_redundant_concats ;;
 
