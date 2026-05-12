@@ -30,7 +30,27 @@ let rec iterator_for_finding_and_remembering f (treated,to_be_treated) =
 let find_and_remember_opt f items = 
     iterator_for_finding_and_remembering f ([],items) ;;
   
+let rec helper_for_connected_fibers 
+  (treated,start_of_current_fiber,end_of_current_fiber,fiber,fiber_image,to_be_treated) = 
+  match to_be_treated with 
+  [] -> List.rev (  ((start_of_current_fiber,end_of_current_fiber),List.rev fiber,fiber_image) :: treated)
+  |(idx_for_b,b,image_of_b) :: others ->
+      if image_of_b<>fiber_image 
+     then let newly_treated = ((start_of_current_fiber,end_of_current_fiber),List.rev fiber,fiber_image) :: treated in 
+          helper_for_connected_fibers  
+          (newly_treated,idx_for_b,idx_for_b,[b],image_of_b,others)  
+     else helper_for_connected_fibers 
+         (treated,start_of_current_fiber,idx_for_b,b::fiber,fiber_image,others)   ;;
 
+let connected_fibers f l =
+   let indexed_l = Int_range.index_everything l in 
+   let indexed_l_with_images = Image.image (fun (i,x)->(i,x,f x)) indexed_l in    
+   match indexed_l_with_images with 
+   [] -> []
+   |(idx_for_a,a,image_of_a) :: others ->
+      helper_for_connected_fibers  
+          ([],idx_for_a,idx_for_a,[a],image_of_a,others)  ;;
+   
 
 end ;;    
 
@@ -38,6 +58,11 @@ let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([]
 
 (*
 common_initial_sublist [1;2;3;7;8] [1;2;3;9] ;; 
+*)
+
+let connected_fibers = Private.connected_fibers ;;
+(*
+connected_fibers (fun x->int_of_float(floor(sqrt(float_of_int x)))) (Int_range.range 1 50) ;;
 *)
 
 let find_and_remember_opt = Private.find_and_remember_opt ;;
