@@ -109,9 +109,11 @@ let get_concat_content_opt = function
 
 let form_is_a_concat form = (get_concat_content_opt(form)<>None);;
 
-let concat_parts_inside name form = match form with
-   (Disjunction ll) -> List.flatten(Image.image (fun (Concat l)->Image.image (fun z->(name,(l,z))) l) ll)
-   |Just_a_concat l -> Image.image (fun z->(name,(l,z))) l
+let concat_parts_inside name form = 
+   let specify_name = (fun l->Image.image (fun z->(name,(l,z))) l) in 
+    match form with
+   (Disjunction ll) -> List.flatten(Image.image (fun (Concat l)->specify_name l) ll)
+   |Just_a_concat l -> specify_name l
    |Just_atomic _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -150,7 +152,7 @@ end ;;
 module Mergable_token_sequences = struct
 
 
-   
+
 end ;;   
 
 end ;; 
