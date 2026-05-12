@@ -74,8 +74,88 @@ let order_on_forms = (
 let order_on_pairs = Total_ordering.product 
     Total_ordering.lex_for_strings order_on_forms ;;
 
+module Redundant_concats = struct
+
+let apply_replacements_to_list reps li = 
+   match List.assoc_opt li reps with
+   (Some other_li) -> other_li
+   |None -> li ;;
+
+
+let apply_replacements_to_form reps form = match form with
+   (Disjunction ll) -> Disjunction(Image.image (fun (Concat l)->Concat(apply_replacements_to_list reps l))  ll)
+   |Just_a_concat l -> Just_a_concat(apply_replacements_to_list reps l)
+   |Just_atomic _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> form ;;
+
+let apply_replacements_to_pair named_reps pair =
+  let (name,form) = pair in 
+  match List.assoc_opt name named_reps with 
+  None -> pair 
+  |Some(reps)->(name,apply_replacements_to_form reps form) ;; 
+
+let apply_replacements_to_grammar reps (AL l) = AL(Image.image (apply_replacements_to_pair reps) l) ;;
+let get_concat_content_opt = function 
+   (Just_a_concat cc) -> Some cc
+   |Disjunction _ 
+   |Just_atomic _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> None ;;
+
+let form_is_a_concat form = (get_concat_content_opt(form)<>None);;
+
+let concat_parts_inside name form = match form with
+   (Disjunction ll) -> List.flatten(Image.image (fun (Concat l)->Image.image (fun z->(name,(l,z))) l) ll)
+   |Just_a_concat l -> Image.image (fun z->(name,(l,z))) l
+   |Just_atomic _
+   |Just_a_disjunction _ 
+   |Just_a_star _
+   |Just_an_optional _
+   |Synonym _ -> [] ;;
+
+let redundant_concats_inside gram (name,form) =
+   List.filter (fun (_,(_,z))->
+      form_is_a_concat(get gram z))  (concat_parts_inside name form) ;;
+
+let all_redundant_concats =Memoized.make (fun gram->
+  let (AL pairs) = gram in   
+   List.flatten(Image.image (redundant_concats_inside gram) pairs));; 
+
+let replacements_by_name1 =Memoized.make (fun gram -> Image.image (
+  fun (name,(initial_list,culprit)) ->
+    let inner_list = Option.get(get_concat_content_opt(get gram culprit)) in 
+    let final_list = List.flatten(Image.image (fun t->if t=culprit then inner_list else [t]) initial_list) in 
+    (name,(initial_list,final_list))
+) (all_redundant_concats gram)) ;;  
+
+let names_involved_in_replacements = Memoized.make(fun gram -> 
+  Ordered.sort Total_ordering.lex_for_strings (Image.image fst (replacements_by_name1 gram))) ;;
+
+let replacements_by_name2 = Memoized.make(fun gram -> Image.image (
+  fun name -> (name,List.filter_map 
+  (fun pair->if fst(pair)=name then Some(snd pair) else None) 
+    (replacements_by_name1 gram))
+) (names_involved_in_replacements gram) );;  
+
+let remove_immediate_redundant_concats gram = 
+   apply_replacements_to_grammar (replacements_by_name2 gram) gram ;;
+
+end ;;
+
 end ;; 
 
+
+module Preliminary_normalizations = struct
+  
+let redundant_concats = Private.Redundant_concats.replacements_by_name2 ;;
+let remove_immediate_redundant_concats = Private.Redundant_concats.remove_immediate_redundant_concats ;;
+
+end ;;
 let get = Private.get ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
