@@ -5,12 +5,9 @@
 *)
 
 
-type element_in_disjunction = Jvsp_abstract_language_t.element_in_disjunction = 
-   Concat of string list ;;
      
 type form =  Jvsp_abstract_language_t.form = 
-   Disjunction of element_in_disjunction list 
-   |Just_an_optional of string
+    Just_an_optional of string
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list  
    |Just_a_disjunction of string list 
@@ -22,13 +19,8 @@ type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;;
 
 module Private = struct 
 
-let ocaml_name_of_element_in_disjunction (Concat l) =
-    "Concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])";;
-
 let ocaml_name_of_form = function 
-  (Disjunction l) ->
-   "Disjunction(["^(String.concat ";" (Image.image ocaml_name_of_element_in_disjunction l))^"])"
-  |Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
+   Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
   |Just_atomic(l) -> "Just_atomic(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"
   |Just_a_concat(l) -> "Just_a_concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
   |Just_a_disjunction(l) -> "Just_a_disjunction(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
@@ -46,18 +38,10 @@ let ocaml_name (AL l)=
 
 let get (AL l) name = List.assoc name l ;;
 
-let element_in_disjunction_to_string (Concat l) =String.concat " " l;;
-
 let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
 let display_star nm = nm ^ "\u{2605}" ;;
 let form_to_string = function 
-   (Disjunction l) -> 
-   if List.length(l) = 1 
-   then element_in_disjunction_to_string(List.hd l)
-   else       
-   "\n"^(String.concat "\n" (Image.image (fun elt->
-      "|"^(element_in_disjunction_to_string elt)) l))^"\n" 
-  |Just_an_optional(nm) -> display_optional nm   
+   Just_an_optional(nm) -> display_optional nm   
   |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
   |Just_a_concat(l) ->  String.concat " " l
   |Just_a_disjunction(l) ->
@@ -70,8 +54,7 @@ let print_out_form (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (form_to_string form);;
 
 let concat_element_to_enhanced_string name form = match form with
-  |(Disjunction _) 
-  |Just_a_disjunction(_) -> name
+   Just_a_disjunction(_) -> name
   |Just_an_optional(_) 
   |Just_atomic(_)    
   |(Just_a_concat _) 
@@ -81,12 +64,10 @@ let concat_element_to_enhanced_string name form = match form with
 let concat_to_enhanced_string gram l = 
     String.concat " " (Image.image (fun nm->concat_element_to_enhanced_string nm (get gram nm)) l) ;;
 
-let element_in_disjunction_to_enhanced_string gram (Concat l) = 
-    concat_to_enhanced_string gram l ;;
+
 
 let form_to_enhanced1_string gram form = match form with
    (Just_a_concat l) -> concat_to_enhanced_string gram l
-  |(Disjunction _) 
   |Just_an_optional(_)   
   |Just_atomic(_)    
   |Just_a_disjunction(_) 
@@ -94,13 +75,7 @@ let form_to_enhanced1_string gram form = match form with
   |Synonym(_) -> form_to_string form;;
 
 let form_to_enhanced2_string gram form= match form with
-   (Disjunction l) -> 
-   if List.length(l) = 1 
-   then element_in_disjunction_to_enhanced_string gram (List.hd l)
-   else       
-   "\n"^(String.concat "\n" (Image.image (fun elt->
-      "|"^(element_in_disjunction_to_enhanced_string gram elt)) l))^"\n" 
-  |Just_a_disjunction(l) ->
+   Just_a_disjunction(l) ->
      "\n"^(String.concat "\n" (Image.image (fun elt->
       let expanded_elt = get gram elt in 
       "|"^elt^" : "^(form_to_enhanced1_string gram expanded_elt)) l))^"\n"  
@@ -111,8 +86,7 @@ let form_to_enhanced2_string gram form= match form with
   |Synonym(_) -> form_to_string form;;
 
 let needs_extra_display form= match form with
-   (Disjunction _)  
-  |Just_a_disjunction(_) 
+   Just_a_disjunction(_) 
   |Just_a_concat(_) ->  true    
   |Just_an_optional(_) 
   |Just_atomic(_)    
@@ -145,8 +119,7 @@ let apply_replacements_to_list reps li =
 
 
 let apply_replacements_to_form reps form = match form with
-   (Disjunction ll) -> Disjunction(Image.image (fun (Concat l)->Concat(apply_replacements_to_list reps l))  ll)
-   |Just_a_concat l -> Just_a_concat(apply_replacements_to_list reps l)
+    Just_a_concat l -> Just_a_concat(apply_replacements_to_list reps l)
    |Just_atomic _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -162,7 +135,6 @@ let apply_replacements_to_pair named_reps pair =
 let apply_replacements_to_grammar reps (AL l) = AL(Image.image (apply_replacements_to_pair reps) l) ;;
 let get_concat_content_opt = function 
    (Just_a_concat cc) -> Some cc
-   |Disjunction _ 
    |Just_atomic _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -174,8 +146,7 @@ let form_is_a_concat form = (get_concat_content_opt(form)<>None);;
 let concat_parts_inside name form = 
    let specify_name = (fun l->Image.image (fun z->(name,(l,z))) l) in 
     match form with
-   (Disjunction ll) -> List.flatten(Image.image (fun (Concat l)->specify_name l) ll)
-   |Just_a_concat l -> specify_name l
+    Just_a_concat l -> specify_name l
    |Just_atomic _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -215,7 +186,6 @@ module Mergeable_token_sequences = struct
 
    let get_atomic_content_opt = function 
    (Just_atomic ac) -> Some ac
-   |Disjunction _ 
    |Just_a_concat _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -224,7 +194,6 @@ module Mergeable_token_sequences = struct
 
 let find_realizing_pair_opt toktypes (name,form) = match form with  
    (Just_atomic ac) -> if ac = toktypes then Some name else None
-   |Disjunction _ 
    |Just_a_concat _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -248,10 +217,8 @@ let mergeable_tl_subsequences_in_concat_list gram l=
    ) temp2;;
 
 let mergeable_tl_subsequences_in_pair gram (name,form) = 
-   let specify_name = (fun l->(name,(l,mergeable_tl_subsequences_in_concat_list gram l))) in 
    match form with
-   (Disjunction ll) -> Image.image (fun (Concat l)->specify_name l) ll
-   |Just_a_concat l ->[specify_name l]
+    Just_a_concat l ->[(name,(l,mergeable_tl_subsequences_in_concat_list gram l))]
    |Just_atomic _
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -322,8 +289,7 @@ let merge_tl_sequence_in_concat gram associator l =
 
 let merge_tl_sequence_in_form gram associator form =
   match form with
-   (Disjunction ll) -> Disjunction(Image.image (fun (Concat l)->Concat(merge_tl_sequence_in_concat gram associator l)) ll)
-   |Just_a_concat l ->Just_a_concat (merge_tl_sequence_in_concat gram associator l)
+    Just_a_concat l ->Just_a_concat (merge_tl_sequence_in_concat gram associator l)
    |Just_atomic _   
    |Just_a_disjunction _ 
    |Just_a_star _
@@ -355,8 +321,7 @@ module Name_usage = struct
 
 let unordered_used_names_in_form form =
   match form with
-   (Disjunction ll) -> List.flatten (Image.image (fun (Concat l)->l) ll)
-   |Just_a_concat l -> l
+    Just_a_concat l -> l
    |Just_atomic _  -> [] 
    |Just_a_disjunction l -> l 
    |Just_a_star nm -> [nm]

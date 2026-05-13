@@ -4,12 +4,9 @@
 
 *)
 
-
-type element_in_disjunction = Concat of string list ;;
      
 type form = 
-   Disjunction of element_in_disjunction list 
-   |Just_an_optional of string 
+    Just_an_optional of string 
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list 
    |Just_a_disjunction of string list 

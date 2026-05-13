@@ -1,6 +1,256 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 232 : add names for bad concats in Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip232 = struct 
+
+module T = Jvsp_types ;;
+open Jvsp_abstract_language_t ;;
+
+let old_gram = Jvsp_abstract_language_example.java_grammar ;;
+
+let (see1,see2,see3)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+
+let (Jvsp_abstract_language.AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
+
+let g = Jvsp_abstract_language.get_and_display old_gram;;
+
+(* let all_disjunctions = List.filter_map (fun (name,form)->
+  match form with (Disjunction l)->Some(name,l) |_->None) old_pairs;;
+
+let bad_concats_inside_disjunction l =
+  List.filter (fun (Concat z)->List.length(z)<>1 ) l ;;
+
+let disjunctions_containing_bad_concats = List.flatten(Image.image (
+  fun (name,disjunction_list)->
+    let temp = bad_concats_inside_disjunction disjunction_list in 
+    Image.image (fun conc ->(name,conc)) temp
+) all_disjunctions);;
+
+let left_recursions = List.filter (
+  fun (x,Concat(l))->List.hd(l)=x
+) (disjunctions_containing_bad_concats) ;;
+
+let intermediary_data = Image.image 
+  (fun (x,Concat y)->(x,String.concat " " y)) disjunctions_containing_bad_concats ;;
+
+let description_of_intermediary_data =
+   "\n\n\n[\n\n" ^ 
+    (String.concat "\n" (Image.image (fun (x,y)->("( \""^x^"\" , \""^y^"\" ) ;")) intermediary_data))^
+   "\n\n];;\n\n\n" ;;
+
+let display_intermediary_data () = print_string description_of_intermediary_data ;;
+
+
+let towards_names_for_bad_concats = [
+( "AdditiveExpression" , "UsingPlusAdditiveExpression" ) ;
+( "AdditiveExpression" , "UsingMinusAdditiveExpression" ) ;
+( "AmbiguousName" , "CompoundAmbiguousName" ) ;
+( "AndExpression" , "CompoundAndExpression" ) ;
+( "ArrayAccess" , "ShortArrayAccess" ) ;
+( "ArrayAccess" , "LongArrayAccess" ) ;
+( "ArrayCreationExpression" , "HaddockArrayCreationExpression" ) ;
+( "ArrayCreationExpression" , "MackerelCreationExpression" ) ;
+( "ArrayCreationExpression" , "SalmonCreationExpression" ) ;
+( "ArrayCreationExpression" , "TunaCreationExpression" ) ;
+( "ArrayType" , "PrimitiveArrayType" ) ;
+( "ArrayType" , "GlassArrayType" ) ;
+( "ArrayType" , "PlasticArrayType" ) ;
+( "AssertStatement" , "WithoutColonAssertStatement" ) ;
+( "AssertStatement" , "WithColonAssertStatement" ) ;
+( "CastExpression" , "BasicCastExpression" ) ;
+( "CastExpression" , "NonmappyCastExpression" ) ;
+( "CastExpression" , "MappyCastExpression" ) ;
+( "ClassInstanceCreationExpression" , "HaddockClassInstanceCreationExpression");
+( "ClassInstanceCreationExpression" , "MackerelClassInstanceCreationExpression");
+( "ClassInstanceCreationExpression" , "SalmonClassInstanceCreationExpression");
+( "ClassLiteral" , "UserDefinedClassLiteral" );
+( "ClassLiteral" , "NumericClassLiteral" );
+( "ClassLiteral" , "BoolyClassLiteral" );
+( "ClassType" , "ShortClassType" ) ;
+( "ClassType" , "UsualClassType" ) ;
+( "ClassType" , "LongClassType" ) ;
+( "ConditionalAndExpression" , "CompoundConditionalAndExpression" ) ;
+( "ConditionalExpression" , "LambdalessConditionalAndExpression" ) ;
+( "ConditionalExpression" , "LambdafulConditionalAndExpression" ) ;
+( "ConditionalOrExpression" , "CompoundConditionalOrExpression" ) ;
+( "EqualityExpression" , "WithEqEqEqualityExpression" ) ;
+( "EqualityExpression" , "WithNotEqEqualityExpression" ) ;
+( "ExclusiveOrExpression" , "CompoundExclusiveOrExpression" ) ;
+( "ExplicitConstructorInvocation", "HaddockExplicitConstructorInvocation" );
+( "ExplicitConstructorInvocation", "MackerelExplicitConstructorInvocation" );
+( "ExplicitConstructorInvocation", "SalmonExplicitConstructorInvocation" );
+( "ExplicitConstructorInvocation", "TunaExplicitConstructorInvocation" );
+( "ExpressionName" , "CompoundAmbiguousName" ) ;
+( "FieldAccess" , "SimplestFieldAccess" ) ;
+( "FieldAccess" , "ExplicitCallToSuperFieldAccess" ) ;
+( "FormalParameter" , "Strict" ) ;
+( "FormalParameter" , "UsualParameter" ) ;
+( "InclusiveOrExpression" , "Compound" ) ;
+( "InstanceofExpression" , "Short" ) ;
+( "InstanceofExpression" , "Long" ) ;
+( "LambdaParameter" , "Heavy" ) ;
+( "LambdaParameter" , "UsualParameter" ) ;
+( "LambdaParameterList" , "Lambday" ) ;
+( "LambdaParameterList" , "Identifiery" ) ;
+( "LambdaParameters" , "Listy" ) ;
+( "MethodHeader" , "Basic" ) ;
+( "MethodHeader" , "Diamondly" ) ;
+( "MethodInvocation" , "Basic" ) ;
+( "MethodInvocation" , "Typey" ) ;
+( "MethodInvocation" , "Expressiony" ) ;
+( "MethodInvocation" , "Primaryy" ) ;
+( "MethodInvocation" , "ThisSuper" ) ;
+( "MethodInvocation" , "OtherSuper" ) ;
+
+( "MethodReference" , "Expressiony" ) ;
+( "MethodReference" , "Primaryy" ) ;
+( "MethodReference" , "ReferenceTypey" ) ;
+( "MethodReference" , "ThisSuper" ) ;
+( "MethodReference" , "TypeNamey" ) ;
+( "MethodReference" , "ClassTypey" ) ;
+( "MethodReference" , "ArrayTypey" ) ;
+
+( "ModuleDirective" , "Requiresy" ) ;
+( "ModuleDirective" , "Exportsy" ) ;
+( "ModuleDirective" , "Opensy" ) ;
+( "ModuleDirective" , "Usesy" ) ;
+( "ModuleDirective" , "Providesy" ) ;
+( "ModuleName" , "Compound" ) ;
+( "MultiplicativeExpression" , "UsingTimes" ) ;
+( "MultiplicativeExpression" , "UsingDiv" ) ;
+( "MultiplicativeExpression" , "UsingMod" ) ;
+( "PackageName" , "Compound" ) ;
+( "PackageOrTypeName" , "Compound" ) ;
+( "PrimaryNoNewArray" , "UsingThis" ) ;
+( "PrimaryNoNewArray" , "Parenthesed" ) ;
+( "PrimitiveType" , "Numericy" ) ;
+( "PrimitiveType" , "Booly" ) ;
+( "RecordComponent" , "Basic" ) ;
+( "RecordComponent" , "UsingThreeDots" ) ;
+( "RelationalExpression" , "UsingLt" ) ;
+( "RelationalExpression" , "UsingGt" ) ;
+( "RelationalExpression" , "UsingLe" ) ;
+( "RelationalExpression" , "UsingGe" ) ;
+( "ShiftExpression" , "UsingLs" ) ;
+( "ShiftExpression" , "UsingSrs" ) ;
+( "ShiftExpression" , "UsingUrs" ) ;
+( "SwitchBlock" , "Basic" ) ;
+( "SwitchBlock" , "Compound" ) ;
+( "SwitchLabel" , "Compound" ) ;
+( "SwitchRule" , "Basic" ) ;
+( "SwitchRule" , "UsingBrackets" ) ;
+( "SwitchRule" , "UsingAThrow" ) ;
+( "TryStatement" , "Long" ) ;
+( "TryStatement" , "Short" ) ;
+( "TryStatement" , "Parenthesed" ) ;
+( "TypeArgumentsOrDiamond" , "NonEmpty" ) ;
+( "TypeBound" , "Identifiery" ) ;
+( "TypeBound" , "Glass" ) ;
+( "TypeName" , "Compound" ) ;
+( "UnannArrayType" , "Primitivey" ) ;
+( "UnannArrayType" , "Glass" ) ;
+( "UnannArrayType" , "Typey" ) ;
+
+( "UnannClassType" , "Short" ) ;
+( "UnannClassType" , "UsualClassType" ) ;
+( "UnannClassType" , "Long" ) ;
+( "UnaryExpression" , "UsingIncr" ) ;
+( "UnaryExpression" , "UsingDecr" ) ;
+( "UnaryExpression" , "UsingPlus" ) ;
+( "UnaryExpression" , "UsingMinus" ) ;
+( "UnaryExpressionNotPlusMinus" , "UsingCompl" ) ;
+( "UnaryExpressionNotPlusMinus" , "UsingNot" ) ;
+( "UnaryExpressionNotPlusMinus" , "Parenthesed" ) ;
+( "WildcardBounds" , "UsingExtends" ) ;
+( "WildcardBounds" , "UsingSuper" ) ;
+
+] ;;
+
+let initial_check = (towards_names_for_bad_concats = intermediary_data) ;;
+
+let bad_concats_in_string_form = Ordered.sort Total_ordering.lex_for_strings (Image.image snd intermediary_data) ;; 
+
+let repetitions_for_bad_concats = List.filter_map (
+  fun y0->
+    let temp = List.filter_map (fun (x,y)->if y=y0 then Some x else None) intermediary_data in 
+    if List.length(temp)>1
+    then Some(y0,temp)
+    else None  
+) bad_concats_in_string_form;;
+
+let special_names = ["CompoundAmbiguousName";"UsualClassType";"UsualParameter"] ;;
+
+let names_for_bad_concats = Image.image (
+  fun (x,y) -> 
+   let final_y=
+   ( if (List.mem y special_names)||(String.ends_with y ~suffix:x) 
+    then y 
+    else y^x
+   ) in 
+   (x,final_y) 
+) towards_names_for_bad_concats ;;
+
+let check1 = (hi bad_concats_in_string_form,hi intermediary_data) ;;
+
+let check2 = List.filter (fun (x,y)->String.contains y ' ') names_for_bad_concats ;;
+
+let quadruples = List.combine disjunctions_containing_bad_concats names_for_bad_concats ;;
+
+let check3 = List.filter (fun ((x1,y),(x2,z))->x1<>x2) quadruples ;;
+
+let pairs_for_association = Image.image  (fun ((x1,y),(x2,z))->(y,z)) quadruples ;;
+
+let all_bad_concats = Ordered.sort Total_ordering.standard (Image.image snd disjunctions_containing_bad_concats );;
+
+let towards_replacements = Image.image (
+  fun conc->(conc,Ordered.sort Total_ordering.standard (List.filter_map (fun p->
+    if fst(p)=conc 
+    then Some(snd p) 
+    else None) pairs_for_association))
+) all_bad_concats ;;
+
+let check4 = List.filter (fun (x,l)->List.length(l)<>1) towards_replacements ;;
+
+let replacements = Image.image (fun (x,l)->(x,List.hd(l)) ) towards_replacements ;;
+
+
+let at_form_level form = match form with
+  |(Disjunction ll) ->Just_a_disjunction(Image.image (fun conc->
+    let (Concat l) = conc in 
+    if List.length(l)=1 then List.hd(l) else
+    List.assoc conc replacements
+    ) ll) 
+  |Just_a_disjunction(_) 
+  |Just_an_optional(_) 
+  |Just_atomic(_)    
+  |(Just_a_concat _) 
+  |(Just_a_star _) 
+  |Synonym(_) -> form;;
+
+let at_pair_level (name,form) = (name,at_form_level form) ;;    
+
+let modified_old_pairs = Image.image at_pair_level old_pairs ;;
+let new_pairs = Image.image (fun (Concat conc,name)->(name,Just_a_concat conc)) replacements ;;
+
+let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (modified_old_pairs@ new_pairs) ;;
+
+let new_gram = AL all_pairs ;;
+
+let new_gram_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name new_gram) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:new_gram_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+
+ *)
+
+end;;
+
+(************************************************************************************************************************
  Entry 231 : Recover forgotten atomics, optionals and stars in Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip231 = struct 
@@ -13,8 +263,7 @@ let (AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
 let production_names = Image.image fst old_pairs ;;
 
 let unordered_used_names = function
-   (Disjunction ll) ->List.flatten (Image.image (fun (Concat l)->l) ll)
-   |(Just_an_optional nm) -> [nm]
+   (Just_an_optional nm) -> [nm]
    |Just_atomic _ -> []
    |Just_a_concat l -> l
    |Just_a_disjunction l -> l 
@@ -586,7 +835,7 @@ let tr3_core ll =
   if List.length(ll)<>1 
   then if List.for_all (fun l->List.length l=1) ll  
        then Just_a_disjunction (Image.image List.hd ll)
-       else Disjunction(Image.image(fun l->Concat(l))ll) 
+       else failwith("aaa")
   else 
   let l0 = List.hd ll in 
   if List.length l0 = 1 
@@ -1082,8 +1331,6 @@ module Snip223 = struct
    
 let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
 
-let li2 = List.flatten (Image.image (fun (x,y)->
-  match y with (Jvsp_abstract_language_t.Disjunction l)->l |_->[]) li1) ;;
 
 (*  
 open Jvsp_abstract_language_t ;;
@@ -1091,6 +1338,10 @@ open Jvsp_abstract_language_t ;;
 let dis_length (Disjunction l) = List.length l ;; 
 
 let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+
+let li2 = List.flatten (Image.image (fun (x,y)->
+  match y with (Jvsp_abstract_language_t.Disjunction l)->l |_->[]) li1) ;;
+
 
 let res1 = Max.maximize_it_with_care (fun (x,y)->dis_length y) li1 ;;
 
