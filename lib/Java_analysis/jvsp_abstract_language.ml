@@ -67,6 +67,57 @@ let form_to_string = function
 let print_out_form (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (form_to_string form);;
 
+let concat_to_enhanced_string gram l = 
+    String.concat " " (Image.image (fun nm->form_to_string(get gram nm)) l) ;;
+
+let element_in_disjunction_to_enhanced_string gram (Concat l) = 
+    concat_to_enhanced_string gram l ;;
+
+let form_to_enhanced1_string gram form = match form with
+   (Just_a_concat l) -> concat_to_enhanced_string gram l
+  |(Disjunction _) 
+  |Just_an_optional(_)   
+  |Just_atomic(_)    
+  |Just_a_disjunction(_) 
+  |(Just_a_star _) 
+  |Synonym(_) -> form_to_string form;;
+
+let form_to_enhanced2_string gram form= match form with
+   (Disjunction l) -> 
+   if List.length(l) = 1 
+   then element_in_disjunction_to_enhanced_string gram (List.hd l)
+   else       
+   "\n"^(String.concat "\n" (Image.image (fun elt->
+      "|"^(element_in_disjunction_to_enhanced_string gram elt)) l))^"\n" 
+  |Just_a_disjunction(l) ->
+     "\n"^(String.concat "\n" (Image.image (fun elt->
+      let expanded_elt = get gram elt in 
+      "|"^elt^" : "^(form_to_enhanced1_string gram expanded_elt)) l))^"\n"  
+  |Just_a_concat(l) ->  concat_to_enhanced_string gram l     
+  |Just_an_optional(_) 
+  |Just_atomic(_)    
+  |(Just_a_star _) 
+  |Synonym(_) -> form_to_string form;;
+
+let needs_extra_display form= match form with
+   (Disjunction _)  
+  |Just_a_disjunction(_) 
+  |Just_a_concat(_) ->  true    
+  |Just_an_optional(_) 
+  |Just_atomic(_)    
+  |(Just_a_star _) 
+  |Synonym(_) -> false;;  
+
+let get_and_display gram name =
+   let form = get gram name in 
+   let _ = (
+      if needs_extra_display form 
+      then let msg = "\n\n\n" ^ (form_to_enhanced2_string gram form) ^ "\n\n\n" in 
+           print_string msg;flush stdout
+   ) in 
+   form ;;
+   
+
 let order_on_forms = (
    (fun form1 form2 ->Total_ordering.standard form1 form2): 
      form Total_ordering_t.t ) ;; 
@@ -289,21 +340,65 @@ let merge_tl_sequences_in_grammar gram =
 
 end ;;   
 
+module Name_usage = struct 
+
+let unordered_used_names_in_form form =
+  match form with
+   (Disjunction ll) -> List.flatten (Image.image (fun (Concat l)->l) ll)
+   |Just_a_concat l -> l
+   |Just_atomic _  -> [] 
+   |Just_a_disjunction l -> l 
+   |Just_a_star nm -> [nm]
+   |Just_an_optional nm -> [nm]
+   |Synonym nm -> [nm] ;;
+
+let used_names_in_form form =
+    Ordered.sort Total_ordering.lex_for_strings (unordered_used_names_in_form form) ;;
+
+let used_names_in_grammar (AL l)=
+  let temp = Image.image (fun (_,form)->used_names_in_form form) l in 
+  Ordered.fold_merge Total_ordering.lex_for_strings temp ;;
+  
+let unused_names_in_grammar gram =
+  let (AL l)= gram in
+  let names = Image.image fst l in 
+  Ordered.setminus Total_ordering.lex_for_strings names (used_names_in_grammar gram) ;;  
+
+
+let remove_unused_names gram ~exceptions=
+  let unused_names = unused_names_in_grammar gram in 
+  let to_be_removed =  Ordered.setminus Total_ordering.lex_for_strings unused_names exceptions in 
+  let (AL l)= gram in 
+  AL(List.filter (fun (name,_)->
+   not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l);;
+
+
+
+end ;;   
+
 end ;; 
 
 
 module Preliminary_normalizations = struct
 
-   let mergeable_token_sequences = 
+let mergeable_token_sequences = 
       Private.Mergeable_token_sequences.all_mergeable_tl_subsequences3 ;;
-   let merge_token_sequences = 
+let merge_token_sequences = 
       Private.Mergeable_token_sequences.merge_tl_sequences_in_grammar ;;  
       
 let redundant_concats = Private.Redundant_concats.replacements_by_name2 ;;
 let remove_immediate_redundant_concats = Private.Redundant_concats.remove_immediate_redundant_concats ;;
 
+let remove_unused_names = Private.Name_usage.remove_unused_names ;;
+
+let unused_names = Private.Name_usage.unused_names_in_grammar ;;
+
+
+
 end ;;
 let get = Private.get ;;
+
+let get_and_display = Private.get_and_display ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 
