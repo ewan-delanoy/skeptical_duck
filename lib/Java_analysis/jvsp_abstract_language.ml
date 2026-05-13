@@ -48,6 +48,8 @@ let get (AL l) name = List.assoc name l ;;
 
 let element_in_disjunction_to_string (Concat l) =String.concat " " l;;
 
+let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
+let display_star nm = nm ^ "\u{2605}" ;;
 let form_to_string = function 
    (Disjunction l) -> 
    if List.length(l) = 1 
@@ -55,20 +57,29 @@ let form_to_string = function
    else       
    "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^(element_in_disjunction_to_string elt)) l))^"\n" 
-  |Just_an_optional(nm) -> "\u{3010}"^nm^"\u{3011}"    
+  |Just_an_optional(nm) -> display_optional nm   
   |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
   |Just_a_concat(l) ->  String.concat " " l
   |Just_a_disjunction(l) ->
      "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^elt) l))^"\n"
-  |(Just_a_star nm) -> nm^"\u{2605}"  
+  |(Just_a_star nm) -> display_star nm 
   |Synonym(nm) -> nm;;
 
 let print_out_form (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (form_to_string form);;
 
+let concat_element_to_enhanced_string name form = match form with
+  |(Disjunction _) 
+  |Just_a_disjunction(_) -> name
+  |Just_an_optional(_) 
+  |Just_atomic(_)    
+  |(Just_a_concat _) 
+  |(Just_a_star _) 
+  |Synonym(_) -> form_to_string form;;
+
 let concat_to_enhanced_string gram l = 
-    String.concat " " (Image.image (fun nm->form_to_string(get gram nm)) l) ;;
+    String.concat " " (Image.image (fun nm->concat_element_to_enhanced_string nm (get gram nm)) l) ;;
 
 let element_in_disjunction_to_enhanced_string gram (Concat l) = 
     concat_to_enhanced_string gram l ;;
@@ -393,7 +404,7 @@ let remove_unused_names = Private.Name_usage.remove_unused_names ;;
 
 let unused_names = Private.Name_usage.unused_names_in_grammar ;;
 
-
+let all gram = (mergeable_token_sequences gram,redundant_concats gram,unused_names gram) ;; 
 
 end ;;
 let get = Private.get ;;
