@@ -16,8 +16,20 @@ type form =  Jvsp_abstract_language_t.form =
 
 type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;; 
 
+type modification = Jvsp_abstract_language_t.modification = 
+   Set_production of string * form 
+  |Rename of string * string ;;
+
 
 module Private = struct 
+
+  let str_order = Total_ordering.lex_for_strings ;;
+  let str_fold_merge = Ordered.fold_merge str_order ;;
+  let str_merge= Ordered.merge str_order ;;
+  let str_setminus = Ordered.setminus str_order ;;
+  let str_sort = Ordered.sort str_order ;;
+
+  
 
 let ocaml_name_of_form = function 
    Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
@@ -107,8 +119,7 @@ let order_on_forms = (
    (fun form1 form2 ->Total_ordering.standard form1 form2): 
      form Total_ordering_t.t ) ;; 
 
-let order_on_pairs = Total_ordering.product 
-    Total_ordering.lex_for_strings order_on_forms ;;
+let order_on_pairs = Total_ordering.product str_order order_on_forms ;;
 
 module Redundant_concats = struct
 
@@ -169,7 +180,7 @@ let replacements_by_name1 =Memoized.make (fun gram -> Image.image (
 ) (all_redundant_concats gram)) ;;  
 
 let names_involved_in_replacements = Memoized.make(fun gram -> 
-  Ordered.sort Total_ordering.lex_for_strings (Image.image fst (replacements_by_name1 gram))) ;;
+  str_sort (Image.image fst (replacements_by_name1 gram))) ;;
 
 let replacements_by_name2 = Memoized.make(fun gram -> Image.image (
   fun name -> (name,List.filter_map 
@@ -252,8 +263,7 @@ let all_mergeable_tl_subsequences3 = Memoized.make(fun gram ->
   (Image.image fst bad,Image.image (fun (seq,opt)->(seq,Option.get opt)) good)
   ) ;;
 let names_involving_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  Ordered.sort Total_ordering.lex_for_strings
-   (Image.image fst (all_mergeable_tl_subsequences1 gram))) ;;
+  str_sort (Image.image fst (all_mergeable_tl_subsequences1 gram))) ;;
 
 
 let new_pairs_merging_tl_sequences = Memoized.make(fun gram -> 
@@ -329,28 +339,78 @@ let unordered_used_names_in_form form =
    |Synonym nm -> [nm] ;;
 
 let used_names_in_form form =
-    Ordered.sort Total_ordering.lex_for_strings (unordered_used_names_in_form form) ;;
+   str_sort (unordered_used_names_in_form form) ;;
 
 let used_names_in_grammar (AL l)=
   let temp = Image.image (fun (_,form)->used_names_in_form form) l in 
-  Ordered.fold_merge Total_ordering.lex_for_strings temp ;;
+  str_fold_merge temp ;;
   
-let unused_names_in_grammar gram =
+let immediately_unused_names_in_grammar gram =
   let (AL l)= gram in
   let names = Image.image fst l in 
-  Ordered.setminus Total_ordering.lex_for_strings names (used_names_in_grammar gram) ;;  
+  str_setminus names (used_names_in_grammar gram) ;;  
 
 
-let remove_unused_names gram ~exceptions=
-  let unused_names = unused_names_in_grammar gram in 
-  let to_be_removed =  Ordered.setminus Total_ordering.lex_for_strings unused_names exceptions in 
+let remove_immediately_unused_names gram ~exceptions=
+  let unused_names = immediately_unused_names_in_grammar gram in 
+  let to_be_removed =  str_setminus unused_names exceptions in 
   let (AL l)= gram in 
-  AL(List.filter (fun (name,_)->
-   not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l);;
+  (unused_names,AL(List.filter (fun (name,_)->
+   not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l));;
 
+let rec helper_for_removing_unused_names exceptions (unused_names,gram1,gram2)=
+   if gram1 = gram2  
+   then (unused_names,gram1)
+   else let (new_unused_names,gram3) = remove_immediately_unused_names gram2 ~exceptions in 
+        helper_for_removing_unused_names exceptions (
+          str_merge unused_names new_unused_names,gram2,gram3) ;; 
 
+let remove_unused_names gram ~exceptions = 
+  let (first_unused_names,gram2) = remove_immediately_unused_names gram ~exceptions in 
+  helper_for_removing_unused_names exceptions 
+  (first_unused_names,gram,gram2) ;; 
 
 end ;;   
+
+module Modify = struct
+  
+let add_pair pair (AL l) = 
+  let (name,_form) = pair in 
+  let new_l = (
+    match List.assoc_opt name l with 
+    None -> pair :: l 
+    |Some _ -> Image.image (fun pair2->
+      if (fst pair2)=name then pair else pair2 ) l
+  )  in 
+  AL(Ordered.sort order_on_pairs new_l);; 
+
+let rename_on_name (old_name,new_name) name =
+  if name = old_name then new_name else name ;; 
+  
+let rename_on_form renaming_data form = 
+  let rename = rename_on_name renaming_data in 
+  match form with
+    Just_a_concat l -> Just_a_concat(Image.image rename l)
+   |Just_atomic _  -> form
+   |Just_a_disjunction l -> Just_a_concat(Image.image rename l) 
+   |Just_a_star nm -> Just_a_star (rename nm)
+   |Just_an_optional nm -> Just_an_optional (rename nm)
+   |Synonym nm -> Synonym (rename nm) ;;  
+
+let rename_on_pair renaming_data (name,form) =
+   (rename_on_name renaming_data name,rename_on_form renaming_data form) ;;    
+
+let rename_on_grammar renaming_data (AL l)=
+(AL (Image.image (rename_on_pair renaming_data) l)) ;;
+
+let apply gram = function 
+   (Set_production(name,form)) -> add_pair (name,form) gram 
+  |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram ;;
+
+let apply_several gram modifications = 
+   List.fold_left apply gram modifications ;;
+
+end ;; 
 
 end ;; 
 
@@ -367,14 +427,15 @@ let remove_immediate_redundant_concats = Private.Redundant_concats.remove_immedi
 
 let remove_unused_names = Private.Name_usage.remove_unused_names ;;
 
-let unused_names = Private.Name_usage.unused_names_in_grammar ;;
-
-let all gram = (mergeable_token_sequences gram,redundant_concats gram,unused_names gram) ;; 
+let all gram = (mergeable_token_sequences gram,redundant_concats gram,
+ fst(remove_unused_names gram ~exceptions:["OrdinaryCompilationUnit"])) ;; 
 
 end ;;
 let get = Private.get ;;
 
 let get_and_display = Private.get_and_display ;;
+
+let modify = Private.Modify.apply_several ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 
