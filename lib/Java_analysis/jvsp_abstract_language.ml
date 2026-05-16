@@ -26,6 +26,7 @@ module Private = struct
 
   let str_order = Total_ordering.lex_for_strings ;;
   let str_fold_merge = Ordered.fold_merge str_order ;;
+  let str_intersect= Ordered.intersect str_order ;;
   let str_merge= Ordered.merge str_order ;;
   let str_setminus = Ordered.setminus str_order ;;
   let str_sort = Ordered.sort str_order ;;
@@ -142,7 +143,40 @@ let is_contained_in_form nm form = match form with
 
 let is_contained_in_pair nm (_name,form) = is_contained_in_form nm form;;
 
+let unordered_coatoms form = match form with
+    Just_a_concat l ->  l
+   |Just_atomic _ -> []
+   |Just_a_disjunction l -> l
+   |Just_a_star nm -> [nm]
+   |Just_an_optional nm -> [nm]
+   |Synonym nm -> [nm] ;;
+
+let coatoms form = str_sort (unordered_coatoms form) ;;
+
 let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
+
+exception Find_acyclic_ordering_exn of string * (string list list) ;;
+
+let find_acyclic_ordering unordered_l =
+  let l = Ordered.sort order_on_pairs unordered_l in  
+  let names = Image.image fst l in 
+  let relative_coatoms = Memoized.make(fun name ->
+     let form = List.assoc name l in 
+     str_intersect(coatoms form) names
+  ) in  
+  let (cycles,acyclic_ordering) = 
+     Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms names in 
+  if cycles<>[]
+  then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
+  else       
+  let names1 = Image.image fst acyclic_ordering in 
+  let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) names1 in 
+  let names2 = ghosts @ nonghosts in 
+  (AL(Image.image (fun name -> (name,List.assoc name l)) names2));; 
+
+let extract_at_names (AL l) names = 
+   (AL(List.filter (fun (name,_)->List.mem name names) l)) 
+
 
 module Modify = struct
   

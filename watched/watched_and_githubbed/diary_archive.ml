@@ -1,6 +1,79 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 233 : Experimenting with basic modifications on Jvsp_abstract_language_example.java_grammar
+************************************************************************************************************************)
+module Snip233 = struct 
+
+module T = Jvsp_types ;;
+open Jvsp_abstract_language_t ;;
+
+open Jvsp_abstract_language.Private ;;
+
+let old_gram = Jvsp_abstract_language_example.java_grammar ;;
+
+let (AL li1) = old_gram ;;
+let g = Jvsp_abstract_language.get_and_display old_gram ;;
+let c name = Jvsp_abstract_language.containing name old_gram ;;
+
+
+
+let (see1,see2,see3,see4)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+
+
+let z1 = Jvsp_abstract_language.Private.Redundant_concats.all_redundant_concats old_gram ;;
+
+(*
+let sub_li1 = List.filter (fun (nm,_)->
+   List.mem nm ["AmbiguousName";"ModuleName";"PackageName";"PackageOrTypeName"]) li1 ;;
+
+let li2 = List.filter (fun (nm,_)->nm<>"IdentifierPrecededByDot") li1 ;;
+
+let li2 = Ordered.sort order_on_pairs li1 ;;
+let gram2 = AL li2 ;; 
+
+let new_gram = 
+    Jvsp_abstract_language.modify gram2 
+    [
+      Rename("IdentifierPrecededByDot","MolecularDot_Identifier");
+      Rename("StarredIdentifierPrecededByDot","StarredMolecularDot_Identifier")
+    ] ;;
+
+List_again.assoc_right_opt (Just_atomic[T.DOT_T;T.IDENTIFIER_T])  li1 ;;
+
+Jvsp_abstract_language.containing "MolecularDot_Identifier" old_gram ;;
+Jvsp_abstract_language.containing "IdentifierPrecededByDot" old_gram ;;
+Jvsp_abstract_language.containing "StarredIdentifierPrecededByDot" old_gram ;;
+
+
+
+*)
+
+let (removed,new_gram) = Jvsp_abstract_language.Preliminary_normalizations.remove_unused_names 
+    old_gram ~exceptions:["OrdinaryCompilationUnit"];;
+let new_gram = 
+    Jvsp_abstract_language.modify old_gram 
+    [
+      Set_production("AmbiguousName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("ModuleName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageOrTypeName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+    ] ;;
+
+
+let new_gram_description = "\n\n\n let original_java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name new_gram) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:new_gram_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 232 : add names for bad concats in Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip232 = struct 
@@ -10,7 +83,7 @@ open Jvsp_abstract_language_t ;;
 
 let old_gram = Jvsp_abstract_language_example.java_grammar ;;
 
-let (see1,see2,see3)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+let (see1,see2,see3,see4)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
 
 let (Jvsp_abstract_language.AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
 
