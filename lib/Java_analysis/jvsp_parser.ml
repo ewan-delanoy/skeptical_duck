@@ -6,6 +6,8 @@
 
 module Private = struct
 
+let always_fails = ((Jvsp_types.Parser (fun _tokens _idx ->None)): unit Jvsp_types.parser);;
+
 let apply (Jvsp_types.Parser f) l idx= f l idx ;;
 
 let helper_for_star prsr l n=
@@ -837,6 +839,8 @@ let concat14 prsr1 prsr2 prsr3 prsr4 prsr5 prsr6 prsr7 prsr8 prsr9 prsr10 prsr11
 
 
 end ;;
+
+let always_fails = Private.always_fails ;;
 
 let concat2 = Private.concat2 ;;
 let concat3 = Private.concat3 ;;
