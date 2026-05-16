@@ -50,7 +50,23 @@ let connected_fibers f l =
    |(idx_for_a,a,image_of_a) :: others ->
       helper_for_connected_fibers  
           ([],idx_for_a,idx_for_a,[a],image_of_a,others)  ;;
-   
+
+let rec helper1_for_interval (accu,b,l) =
+  if b =0
+  then List.rev accu
+  else helper1_for_interval ((List.hd l)::accu,b-1,List.tl l);;          
+
+let rec helper2_for_interval (a,b,l) =
+  if a =1
+  then helper1_for_interval ([List.hd l],b-1,List.tl l)
+  else helper2_for_interval (a-1,b-1,List.tl l);;
+
+let interval l a b =
+   let n = List.length l in 
+   if (1>a) || (a>b) || (b>n)
+   then []
+   else helper2_for_interval (a,b,l) ;; 
+
 end ;;    
 
 let assoc_right_opt y l = 
@@ -97,6 +113,10 @@ exception Head_with_tail_exn ;;
 let head_with_tail x=match x with
     []->raise(Head_with_tail_exn)
     |a::b->(a,b);;
+
+let interval = Private.interval ;;
+
+(* interval (Int_range.range 1 7) 2 5 ;; *)
 
 exception Long_head_with_tail_exn of int*int;;
 
