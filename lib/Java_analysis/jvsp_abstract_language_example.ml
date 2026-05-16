@@ -664,15 +664,42 @@ AL ([
 
 (* Java grammar ends here *)
 
-let java_grammar = 
-    Jvsp_abstract_language.modify original_java_grammar 
+
+
+
+let modifications_to_original_java_grammar = 
     [
-      (* The following four action remove left recursions and are fully equivalent to the original *)
+      (* The following four actions remove left recursions and are fully equivalent to the original *)
+      (*
       Set_production("AmbiguousName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
       Set_production("ModuleName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
       Set_production("PackageName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
       Set_production("PackageOrTypeName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      *)
+      (* A consequence of the preceding four actions *) 
+      Set_production("ExpressionName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("CompoundTypeName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+
+      Set_production("ExpressionyMethodInvocation",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"OptionalTypeArguments";"MolecularIdentifier_Lp";"OptionalArgumentList";"AtomicRp"]));
+      Set_production("ExpressionyMethodReference",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularColon_Colon";"OptionalTypeArguments";"Identifier"]));
+      Set_production("MackerelClassInstanceCreationExpression",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularDot_New";"OptionalTypeArguments";"StarredAnnotation";"Identifier";"StarredAnnotatedIdentifierrPrecededByDot";"OptionalTypeArgumentsOrDiamond";"AtomicLp";"OptionalArgumentList";"AtomicRp";"OptionalClassBody"]));
+      Set_production("SalmonExplicitConstructorInvocation",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
+      Set_production("ShortArrayAccess",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicLb";"Expression";"AtomicRb"]));
+      Set_production("TypeImportOnDemandDeclaration",Just_a_concat(["AtomicImport";"Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
+      Set_production("UsualClassType",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]));
+      Set_production("MolecularImport_Identifier",Just_atomic([IMPORT_T;IDENTIFIER_T]));
+      Set_production("TypeImportOnDemandDeclaration",Just_a_concat(["MolecularImport_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
+
+
+      Remove_productions( [
+      "AmbiguousName"; "CompoundAmbiguousName";  
+      "CompoundModuleName"; "CompoundPackageName"; "CompoundPackageOrTypeName";"ModuleName";
+      "PackageName"; "PackageOrTypeName"]);
     ] ;;
+
+let java_grammar = 
+    Jvsp_abstract_language.modify original_java_grammar 
+     modifications_to_original_java_grammar ;;
 
  end ;;
 
