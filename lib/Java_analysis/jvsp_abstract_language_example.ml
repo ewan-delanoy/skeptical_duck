@@ -663,7 +663,17 @@ AL ([
 
 (* Java grammar ends here *)
 
-let java_grammar = original_java_grammar ;;
+let java_grammar = 
+    Jvsp_abstract_language.modify original_java_grammar 
+    [
+      (* The following four action remove left recursions and are fully equivalent to the original *)
+      Set_production("AmbiguousName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("ModuleName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageOrTypeName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+    ] ;;
 
  end ;;
+
+
 let java_grammar = Private.java_grammar ;;
