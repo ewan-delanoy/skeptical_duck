@@ -84,7 +84,8 @@ type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;;
 
 type modification = Jvsp_abstract_language_t.modification = 
    Set_production of string * form 
-  |Rename of string * string ;;
+  |Rename of string * string  
+  |Remove_productions of string list;;
 
 (* Java grammar begins here *)
 

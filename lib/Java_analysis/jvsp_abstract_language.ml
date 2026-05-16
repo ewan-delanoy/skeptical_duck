@@ -18,7 +18,8 @@ type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;;
 
 type modification = Jvsp_abstract_language_t.modification = 
    Set_production of string * form 
-  |Rename of string * string ;;
+  |Rename of string * string 
+  |Remove_productions of string list;;
 
 
 module Private = struct 
@@ -416,9 +417,13 @@ let rename_on_grammar renaming_data (AL l)=
  let unordered_new_l = Image.image (rename_on_pair renaming_data) l in 
 (AL (Ordered.sort order_on_pairs (unordered_new_l))) ;;
 
+let remove_productions to_be_removed (AL l) = 
+   AL(List.filter (fun (name,_)->not(List.mem name to_be_removed)) l) ;;
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
-  |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram ;;
+  |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
+  |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram ;;
 
 let apply_several gram modifications = 
    List.fold_left apply gram modifications ;;
