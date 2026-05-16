@@ -121,6 +121,18 @@ let order_on_forms = (
 
 let order_on_pairs = Total_ordering.product str_order order_on_forms ;;
 
+let is_contained_in_form nm form = match form with
+    Just_a_concat l -> List.mem nm l
+   |Just_atomic _ -> false
+   |Just_a_disjunction l -> List.mem nm l
+   |Just_a_star nm2 -> nm2 = nm
+   |Just_an_optional nm2 -> nm2 = nm
+   |Synonym nm2 -> nm2 = nm ;;
+
+let is_contained_in_pair nm (_name,form) = is_contained_in_form nm form;;
+
+let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
+
 module Redundant_concats = struct
 
 let apply_replacements_to_list reps li = 
@@ -355,7 +367,7 @@ let remove_immediately_unused_names gram ~exceptions=
   let unused_names = immediately_unused_names_in_grammar gram in 
   let to_be_removed =  str_setminus unused_names exceptions in 
   let (AL l)= gram in 
-  (unused_names,AL(List.filter (fun (name,_)->
+  (to_be_removed,AL(List.filter (fun (name,_)->
    not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l));;
 
 let rec helper_for_removing_unused_names exceptions (unused_names,gram1,gram2)=
@@ -392,7 +404,7 @@ let rename_on_form renaming_data form =
   match form with
     Just_a_concat l -> Just_a_concat(Image.image rename l)
    |Just_atomic _  -> form
-   |Just_a_disjunction l -> Just_a_concat(Image.image rename l) 
+   |Just_a_disjunction l -> Just_a_disjunction(Image.image rename l) 
    |Just_a_star nm -> Just_a_star (rename nm)
    |Just_an_optional nm -> Just_an_optional (rename nm)
    |Synonym nm -> Synonym (rename nm) ;;  
@@ -401,7 +413,8 @@ let rename_on_pair renaming_data (name,form) =
    (rename_on_name renaming_data name,rename_on_form renaming_data form) ;;    
 
 let rename_on_grammar renaming_data (AL l)=
-(AL (Image.image (rename_on_pair renaming_data) l)) ;;
+ let unordered_new_l = Image.image (rename_on_pair renaming_data) l in 
+(AL (Ordered.sort order_on_pairs (unordered_new_l))) ;;
 
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
@@ -431,6 +444,8 @@ let all gram = (mergeable_token_sequences gram,redundant_concats gram,
  fst(remove_unused_names gram ~exceptions:["OrdinaryCompilationUnit"])) ;; 
 
 end ;;
+
+let containing = Private.containing ;;
 let get = Private.get ;;
 
 let get_and_display = Private.get_and_display ;;

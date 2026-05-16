@@ -51,8 +51,14 @@ let connected_fibers f l =
       helper_for_connected_fibers  
           ([],idx_for_a,idx_for_a,[a],image_of_a,others)  ;;
    
-
 end ;;    
+
+let assoc_right_opt y l = 
+    Option.map fst (List.find_opt (fun p->snd(p)=y) l);;
+
+(*
+assoc_right_opt 3 (Int_range.scale (fun t->(t*t,t)) 1 7) ;;
+*)
 
 let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([],l1,l2) ;;
 

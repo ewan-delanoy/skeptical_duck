@@ -303,7 +303,6 @@ AL ([
    ("Identifier",Just_atomic([IDENTIFIER_T]));
    ("IdentifierFollowedByDot",Just_a_concat(["MolecularIdentifier_Dot"]));
    ("IdentifierPrecededByComma",Just_a_concat(["MolecularCm_Identifier"]));
-   ("IdentifierPrecededByDot",Just_a_concat(["MolecularDot_Identifier"]));
    ("IdentifieryLambdaParameterList",Just_a_concat(["Identifier";"StarredIdentifierPrecededByComma"]));
    ("IdentifieryTypeBound",Just_a_concat(["AtomicExtends";"StarredAnnotation";"Identifier"]));
    ("IfThenElseStatement",Just_a_concat(["MolecularIf_Lp";"Expression";"AtomicRp";"StatementNoShortIf";"AtomicElse";"Statement"]));
@@ -463,7 +462,7 @@ AL ([
    ("OptionalWildcardBounds",Just_an_optional("WildcardBounds"));
    ("OrdinaryCompilationUnit",Just_a_concat(["OptionalPackageDeclaration";"StarredImportDeclaration";"StarredTopLevelClassOrInterfaceDeclaration"]));
    ("OtherSuperMethodInvocation",Just_a_concat(["TypeName";"MolecularDot_Super_Dot";"OptionalTypeArguments";"MolecularIdentifier_Lp";"OptionalArgumentList";"AtomicRp"]));
-   ("PackageDeclaration",Just_a_concat(["StarredPackageModifier";"MolecularPackage_Identifier";"StarredIdentifierPrecededByDot";"AtomicSm"]));
+   ("PackageDeclaration",Just_a_concat(["StarredPackageModifier";"MolecularPackage_Identifier";"StarredMolecularDot_Identifier";"AtomicSm"]));
    ("PackageModifier",Synonym("Annotation"));
    ("PackageName",Just_a_disjunction(["Identifier";"CompoundPackageName"]));
    ("PackageOrTypeName",Just_a_disjunction(["Identifier";"CompoundPackageOrTypeName"]));
@@ -537,7 +536,6 @@ AL ([
    ("StarredFieldModifier",Just_a_star("FieldModifier"));
    ("StarredFormalParameterPrecededByComma",Just_a_star("FormalParameterPrecededByComma"));
    ("StarredIdentifierPrecededByComma",Just_a_star("IdentifierPrecededByComma"));
-   ("StarredIdentifierPrecededByDot",Just_a_star("IdentifierPrecededByDot"));
    ("StarredImportDeclaration",Just_a_star("ImportDeclaration"));
    ("StarredInterfaceMemberDeclaration",Just_a_star("InterfaceMemberDeclaration"));
    ("StarredInterfaceMethodModifier",Just_a_star("InterfaceMethodModifier"));
@@ -545,6 +543,7 @@ AL ([
    ("StarredInterfaceTypePrecededByComma",Just_a_star("InterfaceTypePrecededByComma"));
    ("StarredLambdaParameterPrecededByComma",Just_a_star("LambdaParameterPrecededByComma"));
    ("StarredMethodModifier",Just_a_star("MethodModifier"));
+   ("StarredMolecularDot_Identifier",Just_a_star("MolecularDot_Identifier"));
    ("StarredOpenSquare",Just_a_star("OpenSquare"));
    ("StarredPackageModifier",Just_a_star("PackageModifier"));
    ("StarredRecordBodyDeclaration",Just_a_star("RecordBodyDeclaration"));
@@ -660,6 +659,7 @@ AL ([
    ("YieldStatement",Just_a_concat(["AtomicYield";"Expression";"AtomicSm"]));
 
 ]);;
+
 
 (* Java grammar ends here *)
 
