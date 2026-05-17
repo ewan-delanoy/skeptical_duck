@@ -65,7 +65,7 @@ let form_to_string = function
   |Synonym(nm) -> nm;;
 
 let print_out_form (fmt:Format.formatter) form=
-   Format.fprintf fmt "@[%s@]" (form_to_string form);;
+   Format.fprintf fmt "@[%s@]" (Strung.with_size_limit ~size_limit:250 (form_to_string form));;
 
 let concat_element_to_enhanced_string name form = match form with
    Just_a_disjunction(_) -> name
@@ -142,16 +142,6 @@ let is_contained_in_form nm form = match form with
    |Synonym nm2 -> nm2 = nm ;;
 
 let is_contained_in_pair nm (_name,form) = is_contained_in_form nm form;;
-
-let unordered_coatoms form = match form with
-    Just_a_concat l ->  l
-   |Just_atomic _ -> []
-   |Just_a_disjunction l -> l
-   |Just_a_star nm -> [nm]
-   |Just_an_optional nm -> [nm]
-   |Synonym nm -> [nm] ;;
-
-let coatoms form = str_sort (unordered_coatoms form) ;;
 
 let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
 
@@ -465,24 +455,38 @@ end ;;
 
 module WriteParser = struct 
 
+let unordered_coatoms form = match form with
+    Just_a_concat l ->  l
+   |Just_atomic _ -> []
+   |Just_a_disjunction l -> l
+   |Just_a_star nm -> [nm]
+   |Just_an_optional nm -> [nm]
+   |Synonym nm -> [nm] ;;
+
+let coatoms form = str_sort (unordered_coatoms form) ;;
+
+
 exception Find_acyclic_ordering_exn of string * (string list list) ;;
 
 let find_acyclic_ordering unordered_l =
   let l = Ordered.sort order_on_pairs unordered_l in  
-  let names = Image.image fst l in 
+  let defined_names = str_sort(Image.image fst l) 
+  and referenced_names = str_fold_merge(Image.image (fun (_,form)->coatoms form) l) in 
+  let undefined_names = str_setminus referenced_names defined_names in 
   let relative_coatoms = Memoized.make(fun name ->
      let form = List.assoc name l in 
-     str_intersect(coatoms form) names
+     str_intersect(coatoms form) defined_names
   ) in  
   let (cycles,acyclic_ordering) = 
-     Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms names in 
+     Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms defined_names in 
   if cycles<>[]
   then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
   else       
-  let names1 = Image.image fst acyclic_ordering in 
-  let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) names1 in 
-  let names2 = ghosts @ nonghosts in 
-  Image.image (fun name -> (name,List.assoc name l)) names2;; 
+  let defined_names_in_acylic_order = Image.image fst acyclic_ordering in 
+  let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) defined_names_in_acylic_order in 
+  let part1 = Image.image (fun name -> (name,None)) undefined_names
+  and part2 = Image.image (fun name -> (name,List.assoc_opt name l)) (ghosts@nonghosts) in 
+  part1 @ part2 ;; 
 
 let extract_at_names (AL l) names = 
    List.filter (fun (name,_)->List.mem name names) l ;;  
@@ -545,8 +549,13 @@ let prsrtxt_for_optional name nm =
 let prsrtxt_for_synonym name nm = 
   "let "^(parser_name name)^" = "^(parser_name nm)^" ;;" ;;
 
+let prsrtxt_for_undefined name = 
+  "let "^(parser_name name)^" = Jvsp_"^"parser.always_fails ;;" ;;  
 
-let prsrtxt_for_pair (name,form) = match form with 
+let prsrtxt_for_pair (name,form_opt) = match form_opt with 
+  None -> prsrtxt_for_undefined name 
+  |(Some form) ->
+  match form with 
    (Just_a_concat l) ->  prsrtxt_for_concat name l
    |Just_atomic l -> prsrtxt_for_atomic name l
    |Just_a_disjunction l -> prsrtxt_for_disjunction name l
