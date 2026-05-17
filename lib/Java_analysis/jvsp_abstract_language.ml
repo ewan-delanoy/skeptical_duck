@@ -19,7 +19,9 @@ type t =  Jvsp_abstract_language_t.t = AL of (string * form) list ;;
 type modification = Jvsp_abstract_language_t.modification = 
    Set_production of string * form 
   |Rename of string * string 
-  |Remove_productions of string list;;
+  |Remove_productions of string list 
+  |Register_molecular of Jvsp_types.token_type list ;;
+
 
 
 module Private = struct 
@@ -119,7 +121,10 @@ let get_and_display gram name =
 let ocaml_name_of_modification = function 
     Set_production(name,form) -> "Set_production(\""^name^"\","^(ocaml_name_of_form form)^")" 
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
-  |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   ;;
+  |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
+  |Register_molecular(l) -> "Register_molecular(["^(String.concat ";" 
+  (Image.image (fun token_type->Jvsp_util.ocaml_name_for_token_type token_type) l))^"])"
+;;
 
 let ocaml_name_of_modification_list l = 
   "[\n"^
@@ -160,6 +165,11 @@ let add_pair pair (AL l) =
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
 
+let register_molecular token_types gram =
+   let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
+   add_pair (name,Just_atomic(token_types)) gram ;;
+
+
 let rename_on_name (old_name,new_name) name =
   if name = old_name then new_name else name ;; 
   
@@ -186,7 +196,8 @@ let remove_productions to_be_removed (AL l) =
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
-  |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram ;;
+  |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
+  |Register_molecular(token_types) -> register_molecular token_types gram ;;
 
 let apply_several gram modifications = 
    List.fold_left apply gram modifications ;;
@@ -506,7 +517,8 @@ let snake_case_from_camel_case camel_case =
         let s = String.make 1 c in 
         if (is_uppercase c) && is_not_the_first_char then "_"^s else s 
     ) exploded in 
-    String.lowercase_ascii (String.concat "" temp) ;;
+    let temp2 =String.lowercase_ascii (String.concat "" temp) in 
+    Replace_inside.replace_inside_text ~display_number_of_matches:false ("__","_") temp2;;
 
 (*
     snake_case_from_camel_case "TopLevelClassOrInterfaceDeclaration" ;;
