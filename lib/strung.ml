@@ -390,4 +390,7 @@ let announce ~trailer ~printer ~items ~separator=
    let msg = "\n\n"^trailer^"\n\n"^(String.concat separator temp1)^"\n\n" in 
    (print_string msg;flush stdout) ;;    
 
-   
+let with_size_limit s ~size_limit =
+    if String.length(s)>size_limit 
+    then (String.sub s 0 size_limit)^"(...)"
+    else s ;;      

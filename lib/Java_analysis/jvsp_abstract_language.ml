@@ -594,6 +594,8 @@ end ;;
  
 
 let containing = Private.containing ;;
+
+let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
 
 let get_and_display = Private.get_and_display ;;
