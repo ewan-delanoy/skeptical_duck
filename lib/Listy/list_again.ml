@@ -67,6 +67,11 @@ let interval l a b =
    then []
    else helper2_for_interval (a,b,l) ;; 
 
+let replace_if_proposed replacements x =
+  match List.assoc_opt x replacements with 
+   None -> x 
+   |(Some y) -> y ;;
+
 end ;;    
 
 let assoc_right_opt y l = 
@@ -154,6 +159,7 @@ let power_set l=
   ) in
   tempf([[]],List.rev l );;
 
+let replace_if_proposed = Private.replace_if_proposed ;;
 
 let rev_map f l=
   let rec tempf=(
