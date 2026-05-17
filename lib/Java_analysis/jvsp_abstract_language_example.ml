@@ -696,6 +696,11 @@ let modifications_to_original_java_grammar =
       "AmbiguousName"; "CompoundAmbiguousName";  
       "CompoundModuleName"; "CompoundPackageName"; "CompoundPackageOrTypeName";"ModuleName";
       "PackageName"; "PackageOrTypeName"]);
+      Register_with_standardized_name (Just_an_optional("AtomicStatic")) ;
+      Register_with_standardized_name (Just_atomic([DOT_T;TIMES_T])) ;
+      Register_with_standardized_name (Just_an_optional("MolecularDot_Times"));
+      Set_production("ImportDeclaration",Just_a_concat(["AtomicImport";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"AtomicSm"]));
+
     ] ;;
 
 let java_grammar = 
