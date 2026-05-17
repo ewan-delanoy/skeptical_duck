@@ -155,27 +155,7 @@ let coatoms form = str_sort (unordered_coatoms form) ;;
 
 let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
 
-exception Find_acyclic_ordering_exn of string * (string list list) ;;
 
-let find_acyclic_ordering unordered_l =
-  let l = Ordered.sort order_on_pairs unordered_l in  
-  let names = Image.image fst l in 
-  let relative_coatoms = Memoized.make(fun name ->
-     let form = List.assoc name l in 
-     str_intersect(coatoms form) names
-  ) in  
-  let (cycles,acyclic_ordering) = 
-     Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms names in 
-  if cycles<>[]
-  then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
-  else       
-  let names1 = Image.image fst acyclic_ordering in 
-  let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) names1 in 
-  let names2 = ghosts @ nonghosts in 
-  Image.image (fun name -> (name,List.assoc name l)) names2;; 
-
-let extract_at_names (AL l) names = 
-   List.filter (fun (name,_)->List.mem name names) l ;;
 
 
 module Modify = struct
@@ -483,6 +463,110 @@ let remove_unused_names gram ~exceptions =
 
 end ;;   
 
+module WriteParser = struct 
+
+exception Find_acyclic_ordering_exn of string * (string list list) ;;
+
+let find_acyclic_ordering unordered_l =
+  let l = Ordered.sort order_on_pairs unordered_l in  
+  let names = Image.image fst l in 
+  let relative_coatoms = Memoized.make(fun name ->
+     let form = List.assoc name l in 
+     str_intersect(coatoms form) names
+  ) in  
+  let (cycles,acyclic_ordering) = 
+     Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms names in 
+  if cycles<>[]
+  then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
+  else       
+  let names1 = Image.image fst acyclic_ordering in 
+  let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) names1 in 
+  let names2 = ghosts @ nonghosts in 
+  Image.image (fun name -> (name,List.assoc name l)) names2;; 
+
+let extract_at_names (AL l) names = 
+   List.filter (fun (name,_)->List.mem name names) l ;;  
+
+let uppercase_min = int_of_char 'A' ;;
+let uppercase_max = int_of_char 'Z' ;;
+
+let is_uppercase c = 
+   let i = int_of_char c in 
+   (uppercase_min<=i) && (i<=uppercase_max) ;;
+
+let snake_case_from_camel_case camel_case =
+    let n = String.length camel_case in
+    let exploded = Int_range.scale (fun j->(j>1,String.get camel_case (j-1)) ) 1 n in 
+    let temp = Image.image (
+      fun (is_not_the_first_char,c) -> 
+        let s = String.make 1 c in 
+        if (is_uppercase c) && is_not_the_first_char then "_"^s else s 
+    ) exploded in 
+    String.lowercase_ascii (String.concat "" temp) ;;
+
+(*
+    snake_case_from_camel_case "TopLevelClassOrInterfaceDeclaration" ;;
+*)
+    
+let parser_name camel_case = (snake_case_from_camel_case camel_case)^"_prsr" ;;
+
+let prsrtxt_for_concat name l = 
+  let sn = string_of_int(List.length l) in 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.concat"^sn^" \n"^
+  "   "^(String.concat " " (Image.image parser_name l))^" ;;" ;;
+
+let prsrtxt_for_atomic name l = 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.molecular \n"^
+  "   ["^(String.concat ";" (Image.image 
+    (fun tt->"T."^(Jvsp_util.ocaml_name_for_token_type tt) ) l))^"] ;;" ;;
+
+let prsrtxt_for_disjunction name l = 
+  let sn = string_of_int(List.length l) in 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.dis"^sn^" \n"^
+  "   "^(String.concat " " (Image.image parser_name l))^" ;;" ;;
+
+let prsrtxt_for_disjunction name l = 
+  let sn = string_of_int(List.length l) in 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.dis"^sn^" \n"^
+  "   "^(String.concat " " (Image.image parser_name l))^" ;;" ;;
+
+let prsrtxt_for_star name nm = 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.star "^(parser_name nm)^" ;;" ;;
+
+let prsrtxt_for_optional name nm = 
+  "let "^(parser_name name)^" = \n"^
+  "   Jvsp"^"_parser.optional "^(parser_name nm)^" ;;" ;;
+
+let prsrtxt_for_synonym name nm = 
+  "let "^(parser_name name)^" = "^(parser_name nm)^" ;;" ;;
+
+
+let prsrtxt_for_pair (name,form) = match form with 
+   (Just_a_concat l) ->  prsrtxt_for_concat name l
+   |Just_atomic l -> prsrtxt_for_atomic name l
+   |Just_a_disjunction l -> prsrtxt_for_disjunction name l
+   |Just_a_star nm -> prsrtxt_for_star name nm
+   |Just_an_optional nm -> prsrtxt_for_optional name nm
+   |Synonym nm -> prsrtxt_for_synonym name nm ;;
+
+let prsrtxt_for_pair_list l = 
+  "\n\n\n module T = Jvsp_types ;; \n\n"^(String.concat "\n" (Image.image prsrtxt_for_pair l))^"\n\n\n" ;;
+
+let ap_for_prsrtxt = Absolute_path.of_string "watched/watched_not_githubbed/preparatory_jvsp_parser.ml" ;;   
+
+let write_prsrtxt l = 
+   let acyclic_l =find_acyclic_ordering l in 
+   let text = prsrtxt_for_pair_list acyclic_l in 
+   Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:text  ("(* OCaml-generated parser begins here *)","(* OCaml-generated parser ends here *)") 
+   ap_for_prsrtxt ;;
+
+end ;;  
 
 
 end ;; 
@@ -520,3 +604,5 @@ let order_on_pairs = Private.order_on_pairs ;;
 
 (* This is a registered printer : print_out_form *)
 let print_out_form = Private.print_out_form ;;
+
+let write_parser = Private.WriteParser.write_prsrtxt ;;
