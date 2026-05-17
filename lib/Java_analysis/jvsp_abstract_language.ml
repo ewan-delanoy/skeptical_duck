@@ -628,4 +628,6 @@ let order_on_pairs = Private.order_on_pairs ;;
 (* This is a registered printer : print_out_form *)
 let print_out_form = Private.print_out_form ;;
 
+let registration_opt (AL l) form = 
+    Option.map fst (List.find_opt (fun (_,form2)->form2=form) l) ;;
 let write_parser = Private.WriteParser.write_prsrtxt ;;
