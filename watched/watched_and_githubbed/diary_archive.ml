@@ -1,6 +1,22 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 234 :    Alphabet string
+************************************************************************************************************************)
+module Snip234 = struct 
+
+  let alphabet = (Int_range.scale (fun k->char_of_int k) 48 57)@
+               (Int_range.scale (fun k->char_of_int k) 65 90)@
+             (Int_range.scale (fun k->char_of_int k) 97 122) ;;
+
+let alphabet_string = Strung.implode alphabet ;;
+
+let haag1 = Int_range.scale (fun x->alphabet_string) 1 16130 ;;
+let haag2 = String.concat "\n" haag1 ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 233 : Experimenting with basic modifications on Jvsp_abstract_language_example.java_grammar
 ************************************************************************************************************************)
 module Snip233 = struct 

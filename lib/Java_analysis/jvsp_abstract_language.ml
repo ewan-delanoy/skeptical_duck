@@ -172,10 +172,10 @@ let find_acyclic_ordering unordered_l =
   let names1 = Image.image fst acyclic_ordering in 
   let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) names1 in 
   let names2 = ghosts @ nonghosts in 
-  (AL(Image.image (fun name -> (name,List.assoc name l)) names2));; 
+  Image.image (fun name -> (name,List.assoc name l)) names2;; 
 
 let extract_at_names (AL l) names = 
-   (AL(List.filter (fun (name,_)->List.mem name names) l)) 
+   List.filter (fun (name,_)->List.mem name names) l ;;
 
 
 module Modify = struct

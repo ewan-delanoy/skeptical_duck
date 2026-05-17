@@ -619,56 +619,6 @@ let has_variable_content = function
 |YIELD_T
 |EOF_T -> false ;;
 
-end ;;
-
-open Private ;;
-
-let all_token_types = 
-[ABSTRACT_T;AND_AND_T;AND_T;ASSERT_T;BOOLEAN_T;BREAK_T;BYTE_T;CASE_T;CATCH_T;CHAR_T;CLASS_T;CM_T;COLON_T;
-COMMENT_T;COMPL_T;COND_T;CONTINUE_T;DECR_T;DEFAULT_T;DIV_T;DOT_T;DOUBLE_T;DO_T;ELSE_T;ENUM_T;EQ_EQ_T;EQ_T;EXPORTS_T;
-EXTENDS_T;FINALLY_T;FINAL_T;FLOAT_T;FOR_T;GE_T;GT_T;IF_T;IMPLEMENTS_T;IMPORT_T;INCR_T;INSTANCEOF_T;INTERFACE_T;
-INT_T;LB_T;LC_T;LE_T;LP_T;LINEBREAK_T;LONG_T;LP_T;LS_T;LT_T;MINUS_T;MODULE_T;MOD_T;NATIVE_T;NEW_T;NONSEALED_T;
-NOT_EQ_T;NOT_T;OPEN_T;OPENS_T;
-OPERATOR_EQ_T;OR_OR_T;OR_T;PACKAGE_T;PERMITS_T;PLUS_T;PRIVATE_T;PROTECTED_T;PROVIDES_T;PUBLIC_T;RECORD_T;
-REQUIRES_T;RETURN_T;RB_T;RC_T;RP_T;SEALED_T;SHORT_T;SM_T;SNAIL_T;SRS_T;STATIC_T;STRICTFP_T;SUPER_T;SWITCH_T;SYNCHRONIZED_T;
-THIS_T;THROWS_T;THROW_T;TIMES_T;TO_T;TRANSIENT_T;TRANSITIVE_T;TRY_T;URS_T;USES_T;VAR_T;VOID_T;VOLATILE_T;WHILE_T;
-WHITESPACE_T;WITH_T;XOR_T;YIELD_T] ;; 
-
-let code_for_tokentype_in_production_names toktype = 
-   let full_name = Private.ocaml_name_for_token_type toktype in 
-   let short_name = Cull_string.two_sided_cutting ("","_T") full_name in 
-   let parts = Str.split (Str.regexp_string "_") short_name in 
-   let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
-   String.concat "" lowercase_parts ;;
-let code_for_tokentype_sequence_in_production_names seq =
-   "Molecular"^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
- 
-let extract_nonpassive_token_types postoks = 
-    List.filter_map Private.extract_nonpassive_token_type_opt postoks ;;
-
-let get_token_type = Private.get_token_type ;;
-
-
-let has_variable_content = Private.has_variable_content ;;
-
-let ocaml_name_for_token_type = Private.ocaml_name_for_token_type ;;
-let passive_token_types = Private.passive_token_types ;;
-
-let pretty_print_list_of_token_types toktypes =
-   let temp = Image.image summary_of_token_type toktypes in 
-   let text = String.concat " " temp in 
-   let n = String.length text in 
-   if n<=300
-   then "\""^text^"\"" 
-   else "\""^(Cull_string.beginning 300 text)^"(...)\"" ;;
-
-let summary_of_token_type = Private.summary_of_token_type ;;
-
-let token_type_from_ocaml_name name = 
-  List.find (
-   fun tok_type -> ocaml_name_for_token_type tok_type = name
-  ) all_token_types ;;
-
 
 let token_to_string = function
 |(IDENTIFIER txt) -> txt
@@ -788,6 +738,60 @@ let token_to_string = function
 |(WHITESPACE txt) -> txt 
 |(LINEBREAK txt) -> txt;;
 
+
+
+end ;;
+
+open Private ;;
+
+let all_token_types = 
+[ABSTRACT_T;AND_AND_T;AND_T;ASSERT_T;BOOLEAN_T;BREAK_T;BYTE_T;CASE_T;CATCH_T;CHAR_T;CLASS_T;CM_T;COLON_T;
+COMMENT_T;COMPL_T;COND_T;CONTINUE_T;DECR_T;DEFAULT_T;DIV_T;DOT_T;DOUBLE_T;DO_T;ELSE_T;ENUM_T;EQ_EQ_T;EQ_T;EXPORTS_T;
+EXTENDS_T;FINALLY_T;FINAL_T;FLOAT_T;FOR_T;GE_T;GT_T;IF_T;IMPLEMENTS_T;IMPORT_T;INCR_T;INSTANCEOF_T;INTERFACE_T;
+INT_T;LB_T;LC_T;LE_T;LP_T;LINEBREAK_T;LONG_T;LP_T;LS_T;LT_T;MINUS_T;MODULE_T;MOD_T;NATIVE_T;NEW_T;NONSEALED_T;
+NOT_EQ_T;NOT_T;OPEN_T;OPENS_T;
+OPERATOR_EQ_T;OR_OR_T;OR_T;PACKAGE_T;PERMITS_T;PLUS_T;PRIVATE_T;PROTECTED_T;PROVIDES_T;PUBLIC_T;RECORD_T;
+REQUIRES_T;RETURN_T;RB_T;RC_T;RP_T;SEALED_T;SHORT_T;SM_T;SNAIL_T;SRS_T;STATIC_T;STRICTFP_T;SUPER_T;SWITCH_T;SYNCHRONIZED_T;
+THIS_T;THROWS_T;THROW_T;TIMES_T;TO_T;TRANSIENT_T;TRANSITIVE_T;TRY_T;URS_T;USES_T;VAR_T;VOID_T;VOLATILE_T;WHILE_T;
+WHITESPACE_T;WITH_T;XOR_T;YIELD_T] ;; 
+
+let code_for_tokentype_in_production_names toktype = 
+   let full_name = Private.ocaml_name_for_token_type toktype in 
+   let short_name = Cull_string.two_sided_cutting ("","_T") full_name in 
+   let parts = Str.split (Str.regexp_string "_") short_name in 
+   let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
+   String.concat "" lowercase_parts ;;
+let code_for_tokentype_sequence_in_production_names seq =
+   "Molecular"^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
+ 
+let extract_nonpassive_token_types postoks = 
+    List.filter_map Private.extract_nonpassive_token_type_opt postoks ;;
+
+let get_token_type = Private.get_token_type ;;
+
+
+let has_variable_content = Private.has_variable_content ;;
+
+let ocaml_name_for_token_type = Private.ocaml_name_for_token_type ;;
+let passive_token_types = Private.passive_token_types ;;
+
+let pretty_print_list_of_token_types toktypes =
+   let temp = Image.image summary_of_token_type toktypes in 
+   let text = String.concat " " temp in 
+   let n = String.length text in 
+   if n<=300
+   then text
+   else (Cull_string.beginning 300 text)^"(...)" ;;
+
+let summary_of_token_type = Private.summary_of_token_type ;;
+
+let token_type_from_ocaml_name name = 
+  List.find (
+   fun tok_type -> ocaml_name_for_token_type tok_type = name
+  ) all_token_types ;;
+
+
+let token_to_string = Private.token_to_string ;;
 
 
 

@@ -22,6 +22,14 @@ let helper_for_star prsr l n=
 
 let star prsr = Jvsp_types.Parser (fun tokens idx ->helper_for_star prsr tokens (List.length tokens) ([],idx)) ;;
 
+let helper_for_optional prsr tokens idx=
+  match apply prsr tokens idx with 
+    None ->  Some(None,idx)
+  | (Some (part,new_idx)) -> Some(Some part,new_idx) ;;
+
+let optional prsr = Jvsp_types.Parser (fun tokens idx ->helper_for_optional prsr tokens idx) ;;
+
+
 let map f prsr = Jvsp_types.Parser (fun tokens idx ->
   match (apply prsr tokens idx) with 
   None -> None 
@@ -842,6 +850,8 @@ end ;;
 
 let always_fails = Private.always_fails ;;
 
+let apply = Private.apply ;;
+
 let concat2 = Private.concat2 ;;
 let concat3 = Private.concat3 ;;
 let concat4 = Private.concat4 ;;
@@ -875,4 +885,6 @@ let dis14 = Private.dis14 ;;
 let map = Private.map ;;
 
 let molecular = Private.molecular ;;
+
+let optional = Private.optional ;;
 let star = Private.star ;;
