@@ -690,16 +690,19 @@ let modifications_to_original_java_grammar =
       Set_production("UsualClassType",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]));
       Set_production("MolecularImport_Identifier",Just_atomic([IMPORT_T;IDENTIFIER_T]));
       Set_production("TypeImportOnDemandDeclaration",Just_a_concat(["MolecularImport_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
-
-
       Remove_productions( [
       "AmbiguousName"; "CompoundAmbiguousName";  
       "CompoundModuleName"; "CompoundPackageName"; "CompoundPackageOrTypeName";"ModuleName";
       "PackageName"; "PackageOrTypeName"]);
+      (* Simplify the production rule for the import declaration*)
       Register_with_standardized_name (Just_an_optional("AtomicStatic")) ;
       Register_with_standardized_name (Just_atomic([DOT_T;TIMES_T])) ;
       Register_with_standardized_name (Just_an_optional("MolecularDot_Times"));
       Set_production("ImportDeclaration",Just_a_concat(["AtomicImport";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"AtomicSm"]));
+      Remove_productions( ["MolecularDot_Identifier_Sm"; "MolecularDot_Times_Sm";
+      "MolecularImport_Identifier"; "MolecularImport_Static";
+      "SingleStaticImportDeclaration"; "SingleTypeImportDeclaration";
+      "StaticImportOnDemandDeclaration"; "TypeImportOnDemandDeclaration"]);
 
     ] ;;
 

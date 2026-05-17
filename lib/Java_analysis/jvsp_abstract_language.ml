@@ -28,6 +28,7 @@ module Private = struct
 
   let str_order = Total_ordering.lex_for_strings ;;
   let str_fold_merge = Ordered.fold_merge str_order ;;
+  let str_insert= Ordered.insert str_order ;;
   let str_intersect= Ordered.intersect str_order ;;
   let str_merge= Ordered.merge str_order ;;
   let str_setminus = Ordered.setminus str_order ;;
@@ -150,8 +151,26 @@ let is_contained_in_pair nm (_name,form) = is_contained_in_form nm form;;
 
 let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
 
+let unordered_coatoms form = match form with
+    Just_a_concat l ->  l
+   |Just_atomic _ -> []
+   |Just_a_disjunction l -> l
+   |Just_a_star nm -> [nm]
+   |Just_an_optional nm -> [nm]
+   |Synonym nm -> [nm] ;;
 
+let coatoms form = str_sort (unordered_coatoms form) ;;
 
+let rec helper_for_lower_interval_below (gram,treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> treated 
+  |name :: other_names ->
+     let coats = coatoms (get gram name) in 
+     let new_coats = str_setminus coats treated in 
+     helper_for_lower_interval_below (gram,str_insert name treated,str_merge new_coats other_names) 
+  ;;
+
+let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
 
 module Modify = struct
   
@@ -487,15 +506,7 @@ end ;;
 
 module WriteParser = struct 
 
-let unordered_coatoms form = match form with
-    Just_a_concat l ->  l
-   |Just_atomic _ -> []
-   |Just_a_disjunction l -> l
-   |Just_a_star nm -> [nm]
-   |Just_an_optional nm -> [nm]
-   |Synonym nm -> [nm] ;;
 
-let coatoms form = str_sort (unordered_coatoms form) ;;
 
 
 exception Find_acyclic_ordering_exn of string * (string list list) ;;
@@ -641,6 +652,8 @@ let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
 
 let get_and_display = Private.get_and_display ;;
+
+let lower_interval_below = Private.lower_interval_below ;;
 
 let modify = Private.Modify.apply_several ;;
 let ocaml_name = Private.ocaml_name ;;
