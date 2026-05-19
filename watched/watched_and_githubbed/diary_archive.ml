@@ -1,6 +1,205 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 235 : Implementing a Java parser, I
+************************************************************************************************************************)
+module Snip235 = struct 
+
+module T = Jvsp_types ;;
+open Jvsp_abstract_language_t ;;
+
+open Jvsp_abstract_language.Private ;;
+
+type grammar_transformation = {
+   selected_productions : string list;
+   temporary_substitutes : (string * form) list; 
+} ;;
+
+module Grammar_transformation = struct 
+  
+let expand grtr (new_productions,replacement_for_substitutes) = {
+   selected_productions = str_sort (new_productions @ (grtr.selected_productions));
+   temporary_substitutes = Image.image (
+  fun (name,prod) -> (List_again.replace_if_proposed 
+  [replacement_for_substitutes] name,prod)) grtr.temporary_substitutes;
+} ;;
+
+let simplify grtr (new_productions,to_be_removed) = {
+   selected_productions = str_sort (new_productions @ (grtr.selected_productions));
+   temporary_substitutes = List.filter (fun (name,_)->name <> to_be_removed) grtr.temporary_substitutes;
+} ;;
+
+end ;; 
+
+let old_gram = Jvsp_abstract_language_example.java_grammar ;;
+
+let (AL li1) = old_gram ;;
+let g = Jvsp_abstract_language.get_and_display old_gram ;;
+let c name = Jvsp_abstract_language.containing name old_gram ;;
+
+let p = Jvsp_util.pretty_print_list_of_token_types ;;
+
+let head_with_tail k l = let (a,b)=List_again.long_head_with_tail k l in (List.rev a,b) ;;
+
+let see = Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+
+let (see1,see2,see3,see4)=see ;;
+
+let text1 = rf ("~/Teuliou/Java_Hub/expanded_jars/Spring_boot_4_0_5/org/springframework/"^
+"boot/SpringApplication.java") ;;
+
+let parsed_text1 = Java_lexer.parse text1 ;;
+let all_toktypes1 = Jvsp_util.extract_nonpassive_token_types parsed_text1 ;;
+
+let (i1,_) = List.find (fun (idx,tt)->not(List.mem tt 
+[T.DOT_T;T.IDENTIFIER_T;T.PACKAGE_T;T.SM_T])) 
+ (Int_range.index_everything all_toktypes1) ;;
+
+let (toktypes2,toktypes3) = head_with_tail (i1-1) all_toktypes1 ;;
+
+let (i2,_) = List.find (fun (idx,tt)->not(List.mem tt 
+[T.DOT_T;T.IMPORT_T;T.IDENTIFIER_T;T.PACKAGE_T;T.SM_T])) 
+ (Int_range.index_everything toktypes3) ;;
+
+let (toktypes4,toktypes5) = head_with_tail (i2-1) toktypes3 ;;
+
+let check1 = (all_toktypes1 = toktypes2 @ toktypes4 @ toktypes5) ;;
+
+
+
+module Version1 = struct
+let names_of_copied_productions = str_sort(["OrdinaryCompilationUnit";"OptionalPackageDeclaration";"StarredTopLevelClassOrInterfaceDeclaration";
+  "PackageDeclaration";"StarredPackageModifier";
+  "MolecularPackage_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Identifier";"AtomicSm"]) ;;
+
+let temporary_substitutes = [
+   "StarredImportDeclaration",Just_atomic(toktypes4) ;
+   "TopLevelClassOrInterfaceDeclaration",Just_atomic(toktypes5) ;
+] ;;
+
+end ;; 
+
+module Version2 = struct
+let names_of_copied_productions = str_sort(
+   ["ImportDeclaration";"StarredImportDeclaration";
+    "AtomicImport";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"AtomicSm";
+    "AtomicStatic";"MolecularDot_Identifier";"OptionalMolecularDot_Times"]@Version1.names_of_copied_productions
+) ;;
+
+let temporary_substitutes = List.filter (
+  fun (name,_) -> name <> "StarredImportDeclaration"
+) Version1.temporary_substitutes ;;
+
+end ;; 
+
+module Version3 = struct
+let names_of_copied_productions = str_sort(
+   ["TopLevelClassOrInterfaceDeclaration"]@Version2.names_of_copied_productions
+) ;;
+
+let temporary_substitutes = Image.image (
+  fun (name,prod) -> (List_again.replace_if_proposed 
+  ["TopLevelClassOrInterfaceDeclaration","ClassDeclaration"] name,prod)
+
+) Version2.temporary_substitutes ;;
+
+end ;; 
+
+module Version4 = struct
+let names_of_copied_productions = str_sort(
+   ["ClassDeclaration"]@Version3.names_of_copied_productions
+) ;;
+
+let temporary_substitutes = Image.image (
+  fun (name,prod) -> (List_again.replace_if_proposed 
+  ["ClassDeclaration","NormalClassDeclaration"] name,prod)
+
+) Version3.temporary_substitutes ;;
+
+end ;; 
+
+
+open Version3 ;;
+let data_for_parser = Ordered.sort order_on_pairs (
+  temporary_substitutes   
+@ (Jvsp_abstract_language.extract_at_names old_gram names_of_copied_productions));;
+
+
+let grtr1 = {
+   selected_productions = str_sort(["OrdinaryCompilationUnit";"OptionalPackageDeclaration";"StarredTopLevelClassOrInterfaceDeclaration";
+  "PackageDeclaration";"StarredPackageModifier";
+  "MolecularPackage_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Identifier";"AtomicSm"]);
+   temporary_substitutes =  [
+   "StarredImportDeclaration",Just_atomic(toktypes4) ;
+   "TopLevelClassOrInterfaceDeclaration",Just_atomic(toktypes5) ;
+]; 
+} ;;
+
+let grtr2 = Grammar_transformation.simplify grtr1 ([
+  "ImportDeclaration";"StarredImportDeclaration";"AtomicImport";"OptionalStatic";
+  "Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"AtomicSm";
+  "AtomicStatic";"MolecularDot_Identifier";"OptionalMolecularDot_Times"],"StarredImportDeclaration") ;;
+
+let grtr3 = Grammar_transformation.expand grtr2 (["TopLevelClassOrInterfaceDeclaration"],
+("TopLevelClassOrInterfaceDeclaration","ClassDeclaration")) ;;
+
+let grtr4 = Grammar_transformation.expand grtr3 (["ClassDeclaration"],
+("ClassDeclaration","NormalClassDeclaration")) ;;
+
+
+let check_grtr2 = (
+  grtr2.selected_productions=Version2.names_of_copied_productions,
+  grtr2.temporary_substitutes=Version2.temporary_substitutes
+  )  ;;
+
+let check_grtr3 = (
+  grtr3.selected_productions=Version3.names_of_copied_productions,
+  grtr3.temporary_substitutes=Version3.temporary_substitutes
+  )  ;;  
+
+let check_grtr4 = (
+  grtr4.selected_productions=Version4.names_of_copied_productions,
+  grtr4.temporary_substitutes=Version4.temporary_substitutes
+  )  ;;    
+
+(*
+
+Jvsp_abstract_language.registration_opt old_gram (Just_an_optional("AtomicStatic")) ;;
+Jvsp_abstract_language.registration_opt old_gram (Just_atomic([DOT_T;TIMES_T])) ;;
+Jvsp_abstract_language.registration_opt old_gram (Just_an_optional("MolecularDot_Times")) ;;
+
+
+
+g "OrdinaryCompilationUnit" ;;
+g "ImportDeclaration" ;;
+g "TopLevelClassOrInterfaceDeclaration" ;;
+
+let form1 = g "MolecularDot_Times_Sm" ;;
+let form1 = g "TypeImportOnDemandDeclaration" ;;
+let form1 = g "TopLevelClassOrInterfaceDeclaration" ;;
+
+let cn_form1 = Jvsp_abstract_language.Private.ocaml_name_of_form form1 ;;
+print_string("\n\n\n"^cn_form1^"\n\n\n") ;;
+
+
+(Just_a_disjunction(["ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
+
+
+#use"watched/watched_not_githubbed/jug.ml";;
+
+Jvsp_abstract_language.write_parser  data_for_parser ;;
+
+#use"watched/watched_not_githubbed/preparatory_jvsp_parser.ml";;
+
+let check = Jvsp_parser.apply ordinary_compilation_unit_prsr parsed_text1 1;;
+
+
+*)
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 234 :    Alphabet string
 ************************************************************************************************************************)
 module Snip234 = struct 

@@ -10,6 +10,8 @@ let ae = Fw_usual_manager.all_endinglesses;;
 
 let bel = Fw_usual_manager.sugared_below;;
 
+let clean_dbg = Fw_usual_manager.clean_debug_dir () ;;
+
 let cod ()=
    let ucs = Fw_usual_manager.current_state() in 
    Check_ocaml_dircopy.check 

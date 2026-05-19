@@ -347,12 +347,14 @@ let start_debugging fw=
    let dbgbuild_path =  Dfa_subdirectory.connectable_to_subpath(Fw_constant.debug_build_subdir) in 
    let msg=(
      if answer
-     then "\n\n The debugging-friendly executable has been created. \n"^
+     then "\n\n I trust that you have correctly written the debuggable file at "^debugged_file_path^". \n"^
+          "\n\n The debugging-friendly executable has been created. \n"^
          "Now, go to "^dbgbuild_path^" and start \n\nocamldebug "^name_element_for_debugged_file^
           ".ocaml_debuggable\n\nin another terminal.\n\n"^
           "If you need to use pretty printers, from inside ocamldebug do \n\n"^ 
           "source "^ppodbg_path^" \n\n"
-     else "\n\n Something went wrong, see above. \n\n"
+     else "\n\n Something went wrong, see above. \n"^
+          "Did you remember to write the debuggable file at "^debugged_file_path^" ? \n\n"
    ) in
    let _=(
      print_string msg;

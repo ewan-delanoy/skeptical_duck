@@ -246,7 +246,7 @@ AL ([
    ("ConditionalOrExpression",Just_a_disjunction(["ConditionalAndExpression";"CompoundConditionalOrExpression"]));
    ("ConstantDeclaration",Just_a_concat(["StarredConstantModifier";"UnannType";"Identifier";"OptionalDims";"OptionalEqualsVariableInitializer";"StarredVariableDeclaratorPrecededByComma";"AtomicSm"]));
    ("ConstantModifier",Just_a_disjunction(["Annotation";"AtomicPublic";"AtomicStatic";"AtomicFinal"]));
-   ("ConstructorDeclaration",Just_a_concat(["StarredConstructorModifier";"OptionalTypeParameters";"SimpleTypeName";"AtomicLp";"OptionalReceiverParameterFollowedByComma";"OptionalFormalParameterList";"AtomicRp";"OptionalThrows";"AtomicLb";"OptionalExplicitConstructorInvocation";"OptionalBlockStatements";"AtomicRb"]));
+   ("ConstructorDeclaration",Just_a_concat(["StarredConstructorModifier";"OptionalTypeParameters";"SimpleTypeName";"AtomicLp";"OptionalReceiverParameterFollowedByComma";"OptionalFormalParameterList";"AtomicRp";"OptionalThrows";"AtomicLc";"OptionalExplicitConstructorInvocation";"OptionalBlockStatements";"AtomicRc"]));
    ("ConstructorModifier",Just_a_disjunction(["Annotation";"AtomicPublic";"AtomicProtected";"AtomicPrivate"]));
    ("ContinueStatement",Just_a_concat(["AtomicContinue";"OptionalIdentifier";"AtomicSm"]));
    ("DefaultValue",Just_a_concat(["AtomicDefault";"ElementValue"]));
@@ -571,7 +571,7 @@ AL ([
    ("StatementNoShortIf",Just_a_disjunction(["StatementWithoutTrailingSubstatement";"LabeledStatementNoShortIf";"IfThenElseStatementNoShortIf";"WhileStatementNoShortIf";"ForStatementNoShortIf"]));
    ("StatementWithoutTrailingSubstatement",Just_a_disjunction(["Block";"EmptyStatement";"ExpressionStatement";"AssertStatement";"SwitchStatement";"DoStatement";"BreakStatement";"ContinueStatement";"ReturnStatement";"SynchronizedStatement";"ThrowStatement";"TryStatement";"YieldStatement"]));
    ("StaticImportOnDemandDeclaration",Just_a_concat(["MolecularImport_Static";"TypeName";"MolecularDot_Times_Sm"]));
-   ("StaticInitializer",Just_a_concat(["MolecularStatic_Lb";"OptionalBlockStatements";"AtomicRb"]));
+   ("StaticInitializer",Just_a_concat(["MolecularStatic_Lc";"OptionalBlockStatements";"AtomicRc"]));
    ("StrictFormalParameter",Just_a_concat(["StarredVariableModifier";"UnannType";"Identifier";"OptionalDims"]));
    ("StringLiteral",Just_atomic([STRING_LITERAL_T]));
    ("SwitchBlock",Just_a_disjunction(["BasicSwitchBlock";"CompoundSwitchBlock"]));

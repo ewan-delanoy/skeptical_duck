@@ -612,7 +612,8 @@ let prsrtxt_for_pair (name,form_opt) = match form_opt with
 let prsrtxt_for_pair_list l = 
   "\n\n\n module T = Jvsp_types ;; \n\n"^(String.concat "\n" (Image.image prsrtxt_for_pair l))^"\n\n\n" ;;
 
-let ap_for_prsrtxt = Absolute_path.of_string "watched/watched_not_githubbed/preparatory_jvsp_parser.ml" ;;   
+let ap_for_prsrtxt = Absolute_path.of_string 
+((Sys.getenv "HOME") ^"/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/preparatory_jvsp_parser.ml");;   
 
 let write_prsrtxt l = 
    let acyclic_l =find_acyclic_ordering l in 
