@@ -1,6 +1,23 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 236 : Minor fix
+************************************************************************************************************************)
+module Snip236 = struct 
+   
+let ap1 = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml";;
+  
+let act1 () = Replace_inside.replace_several_inside_file 
+[ 
+  "MackerelCreationExpressionArrayCreationExpression","MackerelArrayCreationExpression";
+  "SalmonCreationExpressionArrayCreationExpression","SalmonArrayCreationExpression";
+  "TunaCreationExpressionArrayCreationExpression","TunaArrayCreationExpression";
+] ap1 ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 235 : Implementing a Java parser, I
 ************************************************************************************************************************)
 module Snip235 = struct 

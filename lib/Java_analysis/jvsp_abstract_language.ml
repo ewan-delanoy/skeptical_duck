@@ -22,7 +22,7 @@ type modification = Jvsp_abstract_language_t.modification =
   |Remove_productions of string list 
   |Register_with_standardized_name of form ;;
 
-
+exception Get_exn of string ;;
 
 module Private = struct 
 
@@ -53,7 +53,9 @@ let ocaml_name (AL l)=
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 
-let get (AL l) name = List.assoc name l ;;
+let get (AL l) name = match List.assoc_opt name l with 
+  None -> raise(Get_exn(name))
+ |Some answer -> answer ;;
 
 let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
 let display_star nm = nm ^ "\u{2605}" ;;

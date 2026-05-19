@@ -107,8 +107,8 @@ AL ([
    ("AnnotationInterfaceMemberDeclaration",Just_a_disjunction(["AnnotationInterfaceElementDeclaration";"ConstantDeclaration";"ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
    ("ArgumentList",Just_a_concat(["Expression";"StarredExpressionPrecededByComma"]));
    ("ArrayAccess",Just_a_disjunction(["ShortArrayAccess";"LongArrayAccess"]));
-   ("ArrayCreationExpression",Just_a_disjunction(["HaddockArrayCreationExpression";"MackerelCreationExpressionArrayCreationExpression";"SalmonCreationExpressionArrayCreationExpression";"TunaCreationExpressionArrayCreationExpression"]));
-   ("ArrayInitializer",Just_a_concat(["AtomicLb";"OptionalVariableInitializerList";"OptionalCm";"AtomicRb"]));
+   ("ArrayCreationExpression",Just_a_disjunction(["HaddockArrayCreationExpression";"MackerelArrayCreationExpression";"SalmonArrayCreationExpression";"TunaArrayCreationExpression"]));
+   ("ArrayInitializer",Just_a_concat(["AtomicLc";"OptionalVariableInitializerList";"OptionalCm";"AtomicRc"]));
    ("ArrayType",Just_a_disjunction(["PrimitiveArrayType";"GlassArrayType";"PlasticArrayType"]));
    ("ArrayTypeyMethodReference",Just_a_concat(["ArrayType";"MolecularColon_Colon_New"]));
    ("AssertStatement",Just_a_disjunction(["WithoutColonAssertStatement";"WithColonAssertStatement"]));
@@ -201,7 +201,7 @@ AL ([
    ("BasicRecordComponent",Just_a_concat(["StarredRecordComponentModifier";"UnannType";"Identifier"]));
    ("BasicSwitchBlock",Just_a_concat(["AtomicLc";"SwitchRule";"StarredSwitchRule";"AtomicRc"]));
    ("BasicSwitchRule",Just_a_concat(["SwitchLabel";"MolecularMinus_Gt";"Expression";"AtomicSm"]));
-   ("Block",Just_a_concat(["AtomicLb";"OptionalBlockStatements";"AtomicRb"]));
+   ("Block",Just_a_concat(["AtomicLc";"OptionalBlockStatements";"AtomicRc"]));
    ("BlockStatement",Just_a_disjunction(["LocalClassOrInterfaceDeclaration";"LocalVariableDeclarationStatement";"Statement"]));
    ("BlockStatements",Just_a_concat(["BlockStatement";"StarredBlockStatement"]));
    ("BooleanLiteral",Just_atomic([BOOLEAN_LITERAL_T]));
@@ -214,7 +214,7 @@ AL ([
    ("CatchClause",Just_a_concat(["MolecularCatch_Lp";"StarredVariableModifier";"UnannClassType";"StarredClassTypePrecededByVerticalBar";"Identifier";"OptionalDims";"MolecularRp_Lb";"OptionalBlockStatements";"AtomicRb"]));
    ("Catches",Just_a_concat(["MolecularCatch_Lp";"StarredVariableModifier";"UnannClassType";"StarredClassTypePrecededByVerticalBar";"Identifier";"OptionalDims";"MolecularRp_Lb";"OptionalBlockStatements";"AtomicRb";"StarredCatchClause"]));
    ("CharacterLiteral",Just_atomic([CHARACTER_LITERAL_T]));
-   ("ClassBody",Just_a_concat(["AtomicLb";"StarredClassBodyDeclaration";"AtomicRb"]));
+   ("ClassBody",Just_a_concat(["AtomicLc";"StarredClassBodyDeclaration";"AtomicRc"]));
    ("ClassBodyDeclaration",Just_a_disjunction(["ClassMemberDeclaration";"InstanceInitializer";"StaticInitializer";"ConstructorDeclaration"]));
    ("ClassDeclaration",Just_a_disjunction(["NormalClassDeclaration";"EnumDeclaration";"RecordDeclaration"]));
    ("ClassExtends",Just_a_concat(["AtomicExtends";"ClassType"]));
@@ -228,7 +228,7 @@ AL ([
    ("ClassType",Just_a_disjunction(["ShortClassType";"UsualClassType";"LongClassType"]));
    ("ClassTypePrecededByVerticalBar",Just_a_concat(["AtomicOr";"ClassType"]));
    ("ClassTypeyMethodReference",Just_a_concat(["ClassType";"MolecularColon_Colon";"OptionalTypeArguments";"AtomicNew"]));
-   ("CompactConstructorDeclaration",Just_a_concat(["StarredConstructorModifier";"SimpleTypeName";"AtomicLb";"OptionalExplicitConstructorInvocation";"OptionalBlockStatements";"AtomicRb"]));
+   ("CompactConstructorDeclaration",Just_a_concat(["StarredConstructorModifier";"SimpleTypeName";"AtomicLc";"OptionalExplicitConstructorInvocation";"OptionalBlockStatements";"AtomicRc"]));
    ("CompoundAmbiguousName",Just_a_concat(["AmbiguousName";"MolecularDot_Identifier"]));
    ("CompoundAndExpression",Just_a_concat(["AndExpression";"AtomicAnd";"EqualityExpression"]));
    ("CompoundConditionalAndExpression",Just_a_concat(["ConditionalAndExpression";"AtomicAndAnd";"InclusiveOrExpression"]));
@@ -256,7 +256,7 @@ AL ([
    ("DimsElement",Just_a_concat(["StarredAnnotation";"MolecularLb_Rb"]));
    ("DoStatement",Just_a_concat(["AtomicDo";"Statement";"MolecularWhile_Lp";"Expression";"MolecularRp_Sm"]));
    ("ElementValue",Just_a_disjunction(["ConditionalExpression";"ElementValueArrayInitializer";"Annotation"]));
-   ("ElementValueArrayInitializer",Just_a_concat(["AtomicLb";"OptionalElementValueList";"OptionalCm";"AtomicRb"]));
+   ("ElementValueArrayInitializer",Just_a_concat(["AtomicLc";"OptionalElementValueList";"OptionalCm";"AtomicRc"]));
    ("ElementValueList",Just_a_concat(["ElementValue";"StarredElementValuePrecededByComma"]));
    ("ElementValuePairList",Just_a_concat(["MolecularIdentifier_Eq";"ElementValue";"StarredElementValuePairPrecededByComma"]));
    ("ElementValuePairPrecededByComma",Just_a_concat(["MolecularCm_Identifier_Eq";"ElementValue"]));
@@ -268,7 +268,7 @@ AL ([
    ("EnumConstantList",Just_a_concat(["StarredEnumConstantModifier";"Identifier";"OptionalParenthesedArgumentList";"OptionalClassBody";"StarredEnumConstantPrecededByComma"]));
    ("EnumConstantModifier",Synonym("Annotation"));
    ("EnumConstantPrecededByComma",Just_a_concat(["AtomicCm";"StarredEnumConstantModifier";"Identifier";"OptionalParenthesedArgumentList";"OptionalClassBody"]));
-   ("EnumDeclaration",Just_a_concat(["StarredClassModifier";"MolecularEnum_Identifier";"OptionalClassImplements";"AtomicLb";"OptionalEnumConstantList";"OptionalCm";"OptionalEnumBodyDeclarations";"AtomicRb"]));
+   ("EnumDeclaration",Just_a_concat(["StarredClassModifier";"MolecularEnum_Identifier";"OptionalClassImplements";"AtomicLc";"OptionalEnumConstantList";"OptionalCm";"OptionalEnumBodyDeclarations";"AtomicRc"]));
    ("EqualityExpression",Just_a_disjunction(["RelationalExpression";"WithEqEqEqualityExpression";"WithNotEqEqualityExpression"]));
    ("EqualsVariableInitializer",Just_a_concat(["AtomicEq";"VariableInitializer"]));
    ("ExceptionType",Just_a_disjunction(["ClassType";"TypeVariable"]));
@@ -350,7 +350,7 @@ AL ([
    ("LongTryStatement",Just_a_concat(["MolecularTry_Lb";"OptionalBlockStatements";"MolecularRb_Catch_Lp";"StarredVariableModifier";"UnannClassType";"StarredClassTypePrecededByVerticalBar";"Identifier";"OptionalDims";"MolecularRp_Lb";"OptionalBlockStatements";"AtomicRb";"StarredCatchClause"]));
    ("LongUnannClassType",Just_a_concat(["UnannClassOrInterfaceType";"AtomicDot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]));
    ("MackerelClassInstanceCreationExpression",Just_a_concat(["ExpressionName";"MolecularDot_New";"OptionalTypeArguments";"StarredAnnotation";"Identifier";"StarredAnnotatedIdentifierrPrecededByDot";"OptionalTypeArgumentsOrDiamond";"AtomicLp";"OptionalArgumentList";"AtomicRp";"OptionalClassBody"]));
-   ("MackerelCreationExpressionArrayCreationExpression",Just_a_concat(["AtomicNew";"ClassOrInterfaceType";"StarredAnnotation";"AtomicLb";"Expression";"AtomicRb";"StarredDimExpr";"OptionalDims"]));
+   ("MackerelArrayCreationExpression",Just_a_concat(["AtomicNew";"ClassOrInterfaceType";"StarredAnnotation";"AtomicLb";"Expression";"AtomicRb";"StarredDimExpr";"OptionalDims"]));
    ("MackerelExplicitConstructorInvocation",Just_a_concat(["OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
    ("MappyCastExpression",Just_a_concat(["AtomicLp";"ReferenceType";"StarredAdditionalBound";"AtomicRp";"LambdaParameters";"MolecularMinus_Gt";"LambdaBody"]));
    ("MarkerAnnotation",Just_a_concat(["AtomicSnail";"TypeName"]));
@@ -400,7 +400,7 @@ AL ([
    ("MolecularRp_Lb",Just_atomic([RP_T;LB_T]));
    ("MolecularRp_Sm",Just_atomic([RP_T;SM_T]));
    ("MolecularSnail_Interface_Identifier_Lb",Just_atomic([SNAIL_T;INTERFACE_T;IDENTIFIER_T;LB_T]));
-   ("MolecularStatic_Lb",Just_atomic([STATIC_T;LB_T]));
+   ("MolecularStatic_Lc",Just_atomic([STATIC_T;LC_T]));
    ("MolecularSuper_Colon_Colon",Just_atomic([SUPER_T;COLON_T;COLON_T]));
    ("MolecularSuper_Dot",Just_atomic([SUPER_T;DOT_T]));
    ("MolecularSuper_Dot_Identifier",Just_atomic([SUPER_T;DOT_T;IDENTIFIER_T]));
@@ -492,7 +492,7 @@ AL ([
    ("RecordComponentList",Just_a_concat(["RecordComponent";"StarredRecordComponentPrecededByComma"]));
    ("RecordComponentModifier",Synonym("Annotation"));
    ("RecordComponentPrecededByComma",Just_a_concat(["AtomicCm";"RecordComponent"]));
-   ("RecordDeclaration",Just_a_concat(["StarredClassModifier";"MolecularRecord_Identifier";"OptionalTypeParameters";"AtomicLp";"OptionalRecordComponentList";"AtomicRp";"OptionalClassImplements";"AtomicLb";"StarredRecordBodyDeclaration";"AtomicRb"]));
+   ("RecordDeclaration",Just_a_concat(["StarredClassModifier";"MolecularRecord_Identifier";"OptionalTypeParameters";"AtomicLp";"OptionalRecordComponentList";"AtomicRp";"OptionalClassImplements";"AtomicLc";"StarredRecordBodyDeclaration";"AtomicRc"]));
    ("ReferenceType",Just_a_disjunction(["ClassOrInterfaceType";"TypeVariable";"ArrayType"]));
    ("ReferenceTypeyMethodReference",Just_a_concat(["ReferenceType";"MolecularColon_Colon";"OptionalTypeArguments";"Identifier"]));
    ("RelationalExpression",Just_a_disjunction(["ShiftExpression";"UsingLtRelationalExpression";"UsingGtRelationalExpression";"UsingLeRelationalExpression";"UsingGeRelationalExpression";"InstanceofExpression"]));
@@ -501,7 +501,7 @@ AL ([
    ("Result",Just_a_disjunction(["UnannType";"AtomicVoid"]));
    ("ReturnStatement",Just_a_concat(["AtomicReturn";"OptionalExpression";"AtomicSm"]));
    ("SalmonClassInstanceCreationExpression",Just_a_concat(["Primary";"MolecularDot_New";"OptionalTypeArguments";"StarredAnnotation";"Identifier";"StarredAnnotatedIdentifierrPrecededByDot";"OptionalTypeArgumentsOrDiamond";"AtomicLp";"OptionalArgumentList";"AtomicRp";"OptionalClassBody"]));
-   ("SalmonCreationExpressionArrayCreationExpression",Just_a_concat(["AtomicNew";"PrimitiveType";"StarredAnnotation";"MolecularLb_Rb";"StarredDimsElement";"AtomicLb";"OptionalVariableInitializerList";"OptionalCm";"AtomicRb"]));
+   ("SalmonArrayCreationExpression",Just_a_concat(["AtomicNew";"PrimitiveType";"StarredAnnotation";"MolecularLb_Rb";"StarredDimsElement";"AtomicLc";"OptionalVariableInitializerList";"OptionalCm";"AtomicRc"]));
    ("SalmonExplicitConstructorInvocation",Just_a_concat(["ExpressionName";"AtomicDot";"OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
    ("ShiftExpression",Just_a_disjunction(["AdditiveExpression";"UsingLsShiftExpression";"UsingSrsShiftExpression";"UsingUrsShiftExpression"]));
    ("ShortArrayAccess",Just_a_concat(["ExpressionName";"AtomicLb";"Expression";"AtomicRb"]));
@@ -588,7 +588,7 @@ AL ([
    ("ThrowStatement",Just_a_concat(["AtomicThrow";"Expression";"AtomicSm"]));
    ("TopLevelClassOrInterfaceDeclaration",Just_a_disjunction(["ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
    ("TryStatement",Just_a_disjunction(["LongTryStatement";"ShortTryStatement";"ParenthesedTryStatement"]));
-   ("TunaCreationExpressionArrayCreationExpression",Just_a_concat(["AtomicNew";"ClassOrInterfaceType";"StarredAnnotation";"MolecularLb_Rb";"StarredDimsElement";"AtomicLb";"OptionalVariableInitializerList";"OptionalCm";"AtomicRb"]));
+   ("TunaArrayCreationExpression",Just_a_concat(["AtomicNew";"ClassOrInterfaceType";"StarredAnnotation";"MolecularLb_Rb";"StarredDimsElement";"AtomicLc";"OptionalVariableInitializerList";"OptionalCm";"AtomicRc"]));
    ("TunaExplicitConstructorInvocation",Just_a_concat(["Primary";"AtomicDot";"OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
    ("TypeArgument",Just_a_disjunction(["ReferenceType";"Wildcard"]));
    ("TypeArgumentPrecededByComma",Just_a_concat(["AtomicCm";"TypeArgument"]));
@@ -685,7 +685,7 @@ let modifications_to_original_java_grammar =
       Set_production("ExpressionyMethodReference",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularColon_Colon";"OptionalTypeArguments";"Identifier"]));
       Set_production("MackerelClassInstanceCreationExpression",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularDot_New";"OptionalTypeArguments";"StarredAnnotation";"Identifier";"StarredAnnotatedIdentifierrPrecededByDot";"OptionalTypeArgumentsOrDiamond";"AtomicLp";"OptionalArgumentList";"AtomicRp";"OptionalClassBody"]));
       Set_production("SalmonExplicitConstructorInvocation",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
-      Set_production("ShortArrayAccess",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicLb";"Expression";"AtomicRb"]));
+      Set_production("ShortArrayAccess",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicLc";"Expression";"AtomicRc"]));
       Set_production("TypeImportOnDemandDeclaration",Just_a_concat(["AtomicImport";"Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
       Set_production("UsualClassType",Just_a_concat(["Identifier";"StarredMolecularDot_Identifier";"AtomicDot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]));
       Set_production("MolecularImport_Identifier",Just_atomic([IMPORT_T;IDENTIFIER_T]));
