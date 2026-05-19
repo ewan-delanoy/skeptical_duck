@@ -417,8 +417,8 @@ AL ([
    ("NonEmptyTypeArgumentsOrDiamond",Just_a_concat(["AtomicLt";"TypeArgument";"StarredTypeArgumentPrecededByComma";"AtomicGt"]));
    ("NonmappyCastExpression",Just_a_concat(["AtomicLp";"ReferenceType";"StarredAdditionalBound";"AtomicRp";"UnaryExpressionNotPlusMinus"]));
    ("NormalAnnotation",Just_a_concat(["AtomicSnail";"TypeName";"AtomicLp";"OptionalElementValuePairList";"AtomicRp"]));
-   ("NormalClassDeclaration",Just_a_concat(["StarredClassModifier";"MolecularClass_Identifier";"OptionalTypeParameters";"OptionalClassExtends";"OptionalClassImplements";"OptionalClassPermits";"AtomicLb";"StarredClassBodyDeclaration";"AtomicRb"]));
-   ("NormalInterfaceDeclaration",Just_a_concat(["StarredInterfaceModifier";"MolecularInterface_Identifier";"OptionalTypeParameters";"OptionalInterfaceExtends";"OptionalInterfacePermits";"AtomicLb";"StarredInterfaceMemberDeclaration";"AtomicRb"]));
+   ("NormalClassDeclaration",Just_a_concat(["StarredClassModifier";"MolecularClass_Identifier";"OptionalTypeParameters";"OptionalClassExtends";"OptionalClassImplements";"OptionalClassPermits";"AtomicLc";"StarredClassBodyDeclaration";"AtomicRc"]));
+   ("NormalInterfaceDeclaration",Just_a_concat(["StarredInterfaceModifier";"MolecularInterface_Identifier";"OptionalTypeParameters";"OptionalInterfaceExtends";"OptionalInterfacePermits";"AtomicLc";"StarredInterfaceMemberDeclaration";"AtomicRc"]));
    ("NullLiteral",Just_atomic([NULL_LITERAL_T]));
    ("NumericClassLiteral",Just_a_concat(["NumericType";"StarredOpenSquare";"MolecularDot_Class"]));
    ("NumericType",Just_a_disjunction(["IntegralType";"FloatingPointType"]));

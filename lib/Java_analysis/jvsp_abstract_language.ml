@@ -172,6 +172,8 @@ let rec helper_for_lower_interval_below (gram,treated,to_be_treated) =
 
 let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
 
+let just_below gram name = (unordered_coatoms (get gram name)) ;;
+
 module Modify = struct
   
 let add_pair pair (AL l) = 
@@ -653,6 +655,7 @@ let get = Private.get ;;
 
 let get_and_display = Private.get_and_display ;;
 
+let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;
 
 let modify = Private.Modify.apply_several ;;
