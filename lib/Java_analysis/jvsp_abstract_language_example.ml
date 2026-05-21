@@ -707,7 +707,7 @@ let modifications_to_original_java_grammar =
     ] ;;
 
 let java_grammar = 
-    Jvsp_abstract_language.modify original_java_grammar 
+    Jvsp_abstract_grammar.modify original_java_grammar 
      modifications_to_original_java_grammar ;;
 
  end ;;

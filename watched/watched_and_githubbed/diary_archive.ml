@@ -25,7 +25,7 @@ module Snip235 = struct
 module T = Jvsp_types ;;
 open Jvsp_abstract_grammar_t ;;
 
-open Jvsp_abstract_language.Private ;;
+open Jvsp_abstract_grammar.Private ;;
 
 type grammar_transformation = {
    selected_productions : string list;
@@ -51,14 +51,14 @@ end ;;
 let old_gram = Jvsp_abstract_language_example.java_grammar ;;
 
 let (AL li1) = old_gram ;;
-let g = Jvsp_abstract_language.get_and_display old_gram ;;
-let c name = Jvsp_abstract_language.containing name old_gram ;;
+let g = Jvsp_abstract_grammar.get_and_display old_gram ;;
+let c name = Jvsp_abstract_grammar.containing name old_gram ;;
 
 let p = Jvsp_util.pretty_print_list_of_token_types ;;
 
 let head_with_tail k l = let (a,b)=List_again.long_head_with_tail k l in (List.rev a,b) ;;
 
-let see = Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+let see = Jvsp_abstract_grammar.Preliminary_normalizations.all   old_gram ;;
 
 let (see1,see2,see3,see4)=see ;;
 
@@ -139,7 +139,7 @@ end ;;
 open Version3 ;;
 let data_for_parser = Ordered.sort order_on_pairs (
   temporary_substitutes   
-@ (Jvsp_abstract_language.extract_at_names old_gram names_of_copied_productions));;
+@ (Jvsp_abstract_grammar.extract_at_names old_gram names_of_copied_productions));;
 
 
 let grtr1 = {
@@ -240,20 +240,20 @@ module Snip233 = struct
 module T = Jvsp_types ;;
 open Jvsp_abstract_grammar_t ;;
 
-open Jvsp_abstract_language.Private ;;
+open Jvsp_abstract_grammar.Private ;;
 
 let old_gram = Jvsp_abstract_language_example.java_grammar ;;
 
 let (AL li1) = old_gram ;;
-let g = Jvsp_abstract_language.get_and_display old_gram ;;
-let c name = Jvsp_abstract_language.containing name old_gram ;;
+let g = Jvsp_abstract_grammar.get_and_display old_gram ;;
+let c name = Jvsp_abstract_grammar.containing name old_gram ;;
 
 
 
-let (see1,see2,see3,see4)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+let (see1,see2,see3,see4)=Jvsp_abstract_grammar.Preliminary_normalizations.all   old_gram ;;
 
 
-let z1 = Jvsp_abstract_language.Private.Redundant_concats.all_redundant_concats old_gram ;;
+let z1 = Jvsp_abstract_grammar.Private.Redundant_concats.all_redundant_concats old_gram ;;
 
 (*
 let sub_li1 = List.filter (fun (nm,_)->
@@ -281,10 +281,10 @@ Jvsp_abstract_language.containing "StarredIdentifierPrecededByDot" old_gram ;;
 
 *)
 
-let (removed,new_gram) = Jvsp_abstract_language.Preliminary_normalizations.remove_unused_names 
+let (removed,new_gram) = Jvsp_abstract_grammar.Preliminary_normalizations.remove_unused_names 
     old_gram ~exceptions:["OrdinaryCompilationUnit"];;
 let new_gram = 
-    Jvsp_abstract_language.modify old_gram 
+    Jvsp_abstract_grammar.modify old_gram 
     [
       Set_production("AmbiguousName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
       Set_production("ModuleName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
@@ -293,7 +293,7 @@ let new_gram =
     ] ;;
 
 
-let new_gram_description = "\n\n\n let original_java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name new_gram) ^ ";;\n\n\n" ;;
+let new_gram_description = "\n\n\n let original_java_grammar = \n\n" ^ (Jvsp_abstract_grammar.ocaml_name new_gram) ^ ";;\n\n\n" ;;
 
 let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
 
@@ -315,11 +315,11 @@ open Jvsp_abstract_grammar_t ;;
 
 let old_gram = Jvsp_abstract_language_example.java_grammar ;;
 
-let (see1,see2,see3,see4)=Jvsp_abstract_language.Preliminary_normalizations.all   old_gram ;;
+let (see1,see2,see3,see4)=Jvsp_abstract_grammar.Preliminary_normalizations.all   old_gram ;;
 
-let (Jvsp_abstract_language.AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
+let (Jvsp_abstract_grammar.AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
 
-let g = Jvsp_abstract_language.get_and_display old_gram;;
+let g = Jvsp_abstract_grammar.get_and_display old_gram;;
 
 (* let all_disjunctions = List.filter_map (fun (name,form)->
   match form with (Disjunction l)->Some(name,l) |_->None) old_pairs;;
@@ -664,11 +664,11 @@ let new_pairs = atomic_pairs @ optional_pairs @ starred_pairs ;;
 
 let z1 = List.filter (fun lit ->List.mem("Atomic"^lit) atomic_section) others ;;
 
-let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (old_pairs@ new_pairs) ;;
+let all_pairs = Ordered.sort Jvsp_abstract_grammar.order_on_pairs (old_pairs@ new_pairs) ;;
 
 let gram3 = Jvsp_abstract_grammar_t.AL all_pairs ;;
 
-let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_grammar.ocaml_name gram3) ^ ";;\n\n\n" ;;
 
 let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
 
@@ -1154,11 +1154,11 @@ let new_pairs = Image.image tr3 version2 ;;
 
 let (AL old_pairs) = Jvsp_abstract_language_example.java_grammar ;;
 
-let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (old_pairs@ new_pairs) ;;
+let all_pairs = Ordered.sort Jvsp_abstract_grammar.order_on_pairs (old_pairs@ new_pairs) ;;
 
 let gram3 = Jvsp_abstract_grammar_t.AL all_pairs ;;
 
-let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_language.ocaml_name gram3) ^ ";;\n\n\n" ;;
+let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_grammar.ocaml_name gram3) ^ ";;\n\n\n" ;;
 
 let ap = Absolute_path.of_string "lib/Java_analysis/jvsp_abstract_language_example.ml" ;;
 
@@ -1634,7 +1634,7 @@ end;;
 ************************************************************************************************************************)
 module Snip223 = struct 
    
-let (Jvsp_abstract_language.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
+let (Jvsp_abstract_grammar.AL li1) = Jvsp_abstract_language_example.java_grammar ;;
 
 
 (*  
@@ -2580,7 +2580,7 @@ let ap_for_storing_command = Absolute_path.of_string "watched/watched_not_github
 
 let store_command () = Io.append_string_to_file u10 ap_for_storing_command ;;
 
-let g name = Jvsp_abstract_language.get Jvsp_abstract_language_example.java_grammar name;;
+let g name = Jvsp_abstract_grammar.get Jvsp_abstract_language_example.java_grammar name;;
 
 let g_opt name = try Some(g name) with _ -> None ;;
 
