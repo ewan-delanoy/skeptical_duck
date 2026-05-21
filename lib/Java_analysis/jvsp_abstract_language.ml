@@ -22,7 +22,11 @@ type modification = Jvsp_abstract_language_t.modification =
   |Remove_productions of string list 
   |Register_with_standardized_name of form ;;
 
+type nonrecursive_grammar = Jvsp_abstract_language_t.nonrecursive_grammar = 
+   NRG of ((string * (form * string list)) list) ;;     
+
 exception Get_exn of string ;;
+exception Circularity of string * (string list) ;; 
 
 module Private = struct 
 
@@ -30,6 +34,7 @@ module Private = struct
   let str_fold_merge = Ordered.fold_merge str_order ;;
   let str_insert= Ordered.insert str_order ;;
   let str_intersect= Ordered.intersect str_order ;;
+  let str_mem= Ordered.mem str_order ;;
   let str_merge= Ordered.merge str_order ;;
   let str_setminus = Ordered.setminus str_order ;;
   let str_sort = Ordered.sort str_order ;;
@@ -626,6 +631,56 @@ let write_prsrtxt l =
 
 end ;;  
 
+module Nonrecursive_grammar = struct 
+
+let auxiliary_order = (
+   (fun pair1 pair2 ->Total_ordering.standard pair1 pair2): 
+     (form *(string list)) Total_ordering_t.t ) ;; 
+
+let order_on_nrg_pairs = Total_ordering.product str_order auxiliary_order ;;
+
+let insert_new (NRG l) new_item = 
+    NRG(Ordered.insert order_on_nrg_pairs new_item l);; 
+
+
+exception Expand_a_second_time_exn1 of string ;;
+exception Expand_a_second_time_exn2 of string * form;;
+exception Expand_a_second_time_exn3 of string * string * (string list);;
+
+let expand_a_second_time provider nonrec_grammar outer_name inner_name = 
+  let (NRG l) = nonrec_grammar in 
+  match List.assoc_opt outer_name l with 
+  None -> raise(Expand_a_second_time_exn1(outer_name))
+  |(Some (outer_form,outer_ancestry)) ->
+  if not(str_mem inner_name (coatoms outer_form))
+  then raise(Expand_a_second_time_exn2(inner_name,outer_form))
+  else  
+  match List.assoc_opt inner_name l with 
+   (Some (_,ancestry_from_elsewhere)) -> raise(Expand_a_second_time_exn3(outer_name,inner_name,ancestry_from_elsewhere))
+  | None->  
+  if str_mem inner_name outer_ancestry
+  then raise(Circularity(inner_name,outer_ancestry))
+  else    
+  let inner_form = get provider inner_name in 
+  let new_triple = (inner_name,(inner_form,inner_name::outer_ancestry)) in 
+  insert_new nonrec_grammar new_triple ;;
+
+let singleton provider origin =
+   let original_form = get provider origin in 
+   NRG[origin,(original_form,[origin])] ;;
+
+let get provider nonrec_grammar outer_name inner_name = 
+    let (NRG l) = nonrec_grammar in 
+  match List.assoc_opt inner_name l with 
+   (Some old_answer) -> (fst old_answer,None)   
+  | None -> 
+    let new_nonrec_grammar = expand_a_second_time provider nonrec_grammar outer_name inner_name in 
+    let (NRG new_l) = new_nonrec_grammar in   
+    (fst(List.assoc inner_name new_l),Some new_nonrec_grammar) ;;
+  
+
+end ;;  
+
 
 end ;; 
 
@@ -649,7 +704,12 @@ let all gram =
 
 end ;;
 
- 
+module Nonrecursive_grammar = struct 
+
+let get = Private.Nonrecursive_grammar.get ;;  
+let singleton = Private.Nonrecursive_grammar.singleton ;;
+
+end ;;  
 
 let containing = Private.containing ;;
 

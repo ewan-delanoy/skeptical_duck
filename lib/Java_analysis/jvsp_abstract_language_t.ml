@@ -21,3 +21,5 @@ type modification =
   |Rename of string * string 
   |Remove_productions of string list
   |Register_with_standardized_name of form ;;
+
+type nonrecursive_grammar = NRG of ((string * (form * string list)) list) ;;   
