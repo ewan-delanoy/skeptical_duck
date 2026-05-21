@@ -22,4 +22,8 @@ type modification =
   |Remove_productions of string list
   |Register_with_standardized_name of form ;;
 
-type nonrecursive_grammar = NRG of ((string * (form * string list)) list) ;;   
+type nonrecursive_grammar = {
+   sons_and_fathers : (string * string) list ;
+   productions : (string * (form * string list)) list;
+} ;;
+

@@ -23,7 +23,11 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Register_with_standardized_name of form ;;
 
 type nonrecursive_grammar = Jvsp_abstract_grammar_t.nonrecursive_grammar = 
-   NRG of ((string * (form * string list)) list) ;;     
+   {
+    sons_and_fathers : (string * string) list ;
+    productions : (string * (form * string list)) list;
+   } ;;
+  
 
 exception Get_exn of string ;;
 exception Circularity of string * (string list) ;; 
@@ -633,50 +637,53 @@ end ;;
 
 module Nonrecursive_grammar = struct 
 
-let auxiliary_order = (
+let order_on_string_pairs = Total_ordering.product str_order str_order ;;
+
+let auxiliary_order2 = (
    (fun pair1 pair2 ->Total_ordering.standard pair1 pair2): 
      (form *(string list)) Total_ordering_t.t ) ;; 
 
-let order_on_nrg_pairs = Total_ordering.product str_order auxiliary_order ;;
+let order_on_nrg_pairs = Total_ordering.product str_order auxiliary_order2 ;;
 
-let insert_new (NRG l) new_item = 
-    NRG(Ordered.insert order_on_nrg_pairs new_item l);; 
+exception Fatherless of string ;;
+exception Unproductive_son of string * string;;
+
+let insert_new old_grammar son son_form = 
+  match List.assoc_opt son old_grammar.sons_and_fathers with 
+  (Some father) -> raise(Unproductive_son(son,father))
+  | None ->
+  match List.find_opt (fun (_,(form,_)) ->str_mem son (coatoms form)) old_grammar.productions with 
+  None -> raise(Fatherless(son))
+  |(Some (father,(_form,ancestry))) ->
+    if List.mem son ancestry 
+    then raise(Circularity(son,father::ancestry))
+    else     
+    let new_item = (son,(son_form,father::ancestry)) in   
+  {
+   sons_and_fathers  = Ordered.insert order_on_string_pairs (son,father) old_grammar.sons_and_fathers;
+   productions = Ordered.insert order_on_nrg_pairs new_item old_grammar.productions;
+  };; 
 
 
-exception Expand_a_second_time_exn1 of string ;;
+
 exception Expand_a_second_time_exn2 of string * form;;
 exception Expand_a_second_time_exn3 of string * string * (string list);;
 
-let expand_a_second_time provider nonrec_grammar outer_name inner_name = 
-  let (NRG l) = nonrec_grammar in 
-  match List.assoc_opt outer_name l with 
-  None -> raise(Expand_a_second_time_exn1(outer_name))
-  |(Some (outer_form,outer_ancestry)) ->
-  if not(str_mem inner_name (coatoms outer_form))
-  then raise(Expand_a_second_time_exn2(inner_name,outer_form))
-  else  
-  match List.assoc_opt inner_name l with 
-   (Some (_,ancestry_from_elsewhere)) -> raise(Expand_a_second_time_exn3(outer_name,inner_name,ancestry_from_elsewhere))
-  | None->  
-  if str_mem inner_name outer_ancestry
-  then raise(Circularity(inner_name,outer_ancestry))
-  else    
-  let inner_form = get provider inner_name in 
-  let new_triple = (inner_name,(inner_form,inner_name::outer_ancestry)) in 
-  insert_new nonrec_grammar new_triple ;;
+let get_from_nonrecursive_grammar provider old_grammar name = 
+  match List.assoc_opt name old_grammar.productions with 
+   (Some (form,_)) -> (form,None) 
+  | None->    
+  let form = get provider name in 
+  let new_grammar = insert_new old_grammar name form in 
+  (form, Some new_grammar) ;;
 
-let singleton provider origin =
-   let original_form = get provider origin in 
-   NRG[origin,(original_form,[origin])] ;;
+let singleton provider origin = 
+  let original_form = get provider origin in 
+  {
+   sons_and_fathers  = [];
+   productions = [origin,(original_form,[])];
+  };; 
 
-let get provider nonrec_grammar outer_name inner_name = 
-    let (NRG l) = nonrec_grammar in 
-  match List.assoc_opt inner_name l with 
-   (Some old_answer) -> (fst old_answer,None)   
-  | None -> 
-    let new_nonrec_grammar = expand_a_second_time provider nonrec_grammar outer_name inner_name in 
-    let (NRG new_l) = new_nonrec_grammar in   
-    (fst(List.assoc inner_name new_l),Some new_nonrec_grammar) ;;
   
 
 end ;;  
@@ -706,7 +713,7 @@ end ;;
 
 module Nonrecursive_grammar = struct 
 
-let get = Private.Nonrecursive_grammar.get ;;  
+let get = Private.Nonrecursive_grammar.get_from_nonrecursive_grammar ;;  
 let singleton = Private.Nonrecursive_grammar.singleton ;;
 
 end ;;  
