@@ -170,6 +170,17 @@ let rev_map f l=
   ) in
   tempf([],l);;
 
+let starts_with l1 l2 = 
+   let (_common,_left,right) = Private.helper_for_common_initial_sublist ([],l1,l2) in 
+  right=[];;
+
+(*
+
+starts_with (Int_range.range 1 3) (Int_range.range 1 7) ;;
+starts_with (Int_range.range 1 7) (Int_range.range 1 3) ;;
+
+*)
+
 let sublist_with_indices l indices = Image.image (fun k->List.nth l (k-1)) indices ;;
 
 (* sublist_with_indices  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)

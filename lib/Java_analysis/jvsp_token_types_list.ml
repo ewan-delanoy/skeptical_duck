@@ -15,6 +15,8 @@ end ;;
 
 let construct l =(TTL l) ;;
 
+let find_opt f (TTL l) = List.find_opt f l ;;
+
 let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
   
 (* This is a registered printer : print_out *)
