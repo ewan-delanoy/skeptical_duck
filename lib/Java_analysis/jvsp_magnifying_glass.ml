@@ -4,8 +4,6 @@
 
 *)
 
-module Private = struct 
-
 type form = Jvsp_abstract_grammar_t.form = 
     Just_an_optional of string 
    |Just_atomic of Jvsp_types.token_type list
@@ -18,6 +16,9 @@ type form = Jvsp_abstract_grammar_t.form =
 type magnifying_glass = Jvsp_abstract_grammar_t.magnifying_glass = MG of 
   (string * ((string * form) list)) list 
  ;;
+
+
+module Private = struct 
 
 
 let maximal_name_size (MG l)= snd(Max.maximize_it (fun (name,_)->String.length name) l) ;;
@@ -45,8 +46,35 @@ let to_string mg =
 let print_out (fmt:Format.formatter) mg=
    Format.fprintf fmt "@[%s@]" (to_string mg);;
 
+let concatify gram name =
+   let form = Jvsp_abstract_grammar.get gram name in 
+   match form with 
+   Just_a_concat(l) ->  
+     Image.image (fun name2->(name2,Jvsp_abstract_grammar.get gram name2)) l
+  |Just_an_optional(_)  
+  |Just_a_disjunction(_)
+  |Just_atomic(_)  
+  |Just_a_star _  
+  |Synonym(_) -> [name,form] ;;
+
+
+
+let get gram name =
+   let form = Jvsp_abstract_grammar.get gram name in 
+   match form with 
+   Just_a_disjunction(l) -> 
+     MG(Image.image (fun name2->(name2,concatify gram name2)) l)
+  |Just_a_concat(_) ->
+     MG[name,concatify gram name]    
+  |Just_an_optional(_)  
+  |Just_atomic(_)  
+  |Just_a_star _  
+  |Synonym(_) -> MG([name,[name,form]]) ;;
+
 
 end ;; 
 
+
+let get = Private.get ;; 
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
