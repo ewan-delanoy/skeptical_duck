@@ -68,16 +68,14 @@ let get (AL l) name = match List.assoc_opt name l with
   None -> raise(Get_exn(name))
  |Some answer -> answer ;;
 
-let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
-let display_star nm = nm ^ "\u{2605}" ;;
 let form_to_string = function 
-   Just_an_optional(nm) -> display_optional nm   
+   Just_an_optional(nm) -> Jvsp_util.display_optional nm   
   |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
   |Just_a_concat(l) ->  String.concat " " l
   |Just_a_disjunction(l) ->
      "\n"^(String.concat "\n" (Image.image (fun elt->
       "|"^elt) l))^"\n"
-  |(Just_a_star nm) -> display_star nm 
+  |(Just_a_star nm) -> Jvsp_util.display_star nm 
   |Synonym(nm) -> nm;;
 
 let print_out_form (fmt:Format.formatter) form=
