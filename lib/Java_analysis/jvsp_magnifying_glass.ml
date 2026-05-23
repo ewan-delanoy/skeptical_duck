@@ -17,6 +17,9 @@ type magnifying_glass = Jvsp_abstract_grammar_t.magnifying_glass = MG of
   (string * ((string * form) list)) list 
  ;;
 
+exception Missing_element_in_list_exn of   string * (string list) ;;
+exception Unspecified_index_in_list_exn of string * (string list) ;;
+exception Bad_index_in_list_exn of int * string * (string list) ;; 
 
 module Private = struct 
 
@@ -72,9 +75,60 @@ let get gram name =
   |Synonym(_) -> MG([name,[name,form]]) ;;
 
 
+let extract_element_in_indexed_list name idx_opt l indexed_l=
+   let sols = List.filter (fun (_,(name2,_))->name2 = name) indexed_l in 
+   let n = List.length sols in 
+   if n=0 then raise(Missing_element_in_list_exn(name,Image.image fst l)) else 
+   if n=1 then fst(List.hd sols) else 
+    match idx_opt with 
+    None -> raise(Unspecified_index_in_list_exn(name,Image.image fst l))
+    |Some idx -> 
+      if List.assoc_opt idx sols = None 
+      then raise(Bad_index_in_list_exn(idx,name,Image.image fst l))
+      else idx ;;  
+
+let disjunction_content_opt form = match form with 
+   (Just_a_disjunction l) -> Some l    
+   |Just_a_concat _
+   |Just_atomic  _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Synonym _ -> None;;   
+
+exception Wrong_main_name_exn of string ;; 
+exception Name_does_not_indicate_subdisjunction_exn of string * form ;;
+
+let expand_subdisjunction gram ?(idx_opt=None) mg ~main_name  ~subdis_name =
+   let (MG outer_l) =mg in 
+   match List.assoc_opt main_name outer_l with 
+   None -> raise(Wrong_main_name_exn(main_name))
+   |Some l ->
+    let indexed_l = Int_range.index_everything l in 
+    let idx = extract_element_in_indexed_list subdis_name idx_opt l indexed_l in
+    let (_,old_subdis) = List.assoc idx indexed_l in 
+    match disjunction_content_opt old_subdis with 
+     None -> raise(Name_does_not_indicate_subdisjunction_exn(subdis_name,old_subdis))
+     |Some inner_l ->
+      let before = List.filter_map (fun (i,pair)->if i<idx then Some pair else None) indexed_l 
+      and after = List.filter_map (fun (i,pair)->if i>idx then Some pair else None) indexed_l  
+      and indexed_inner_l=Int_range.index_everything inner_l in 
+      let replacement = Image.image (
+       fun (idx2,name2) -> (main_name^"."^(string_of_int idx2),before@(concatify gram name2)@after)
+      ) indexed_inner_l in 
+      let new_outer_l = List.flatten(Image.image (
+       fun pair->
+         if fst(pair)=main_name then replacement else [pair]
+      ) outer_l) in 
+      MG new_outer_l ;;
+
+let select (MG l) names = 
+   MG(List.filter (fun (name,_)->List.mem name names) l);;
+
 end ;; 
 
+let expand_subdisjunction = Private.expand_subdisjunction ;;
 
 let get = Private.get ;; 
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
+let select = Private.select ;;
