@@ -87,7 +87,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Rename of string * string  
   |Remove_productions of string list 
   |Register_with_standardized_name of form 
-  |Expand_in_disjunction of string * string;;
+  |Expand_in_disjunction of string * string 
+  |Expand_in_synonym of string * string ;;
 
 (* Java grammar begins here *)
 
