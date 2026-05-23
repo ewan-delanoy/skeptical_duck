@@ -655,12 +655,6 @@ let prsrtxt_for_disjunction name l =
   "   Jvsp"^"_parser.dis"^sn^" \n"^
   "   "^(String.concat " " (Image.image parser_name l))^" ;;" ;;
 
-let prsrtxt_for_disjunction name l = 
-  let sn = string_of_int(List.length l) in 
-  "let "^(parser_name name)^" = \n"^
-  "   Jvsp"^"_parser.dis"^sn^" \n"^
-  "   "^(String.concat " " (Image.image parser_name l))^" ;;" ;;
-
 let prsrtxt_for_star name nm = 
   "let "^(parser_name name)^" = \n"^
   "   Jvsp"^"_parser.star "^(parser_name nm)^" ;;" ;;

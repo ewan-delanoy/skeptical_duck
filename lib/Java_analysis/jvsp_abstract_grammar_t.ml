@@ -29,3 +29,6 @@ type nonrecursive_grammar = {
    productions : (string * (form * string list)) list;
 } ;;
 
+type magnifying_glass = MG of 
+  (string * ((string * form) list)) list 
+ ;;

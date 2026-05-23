@@ -103,7 +103,7 @@ AL ([
    ("AndExpression",Just_a_disjunction(["EqualityExpression";"CompoundAndExpression"]));
    ("AnnotatedIdentifierrPrecededByDot",Just_a_concat(["AtomicDot";"StarredAnnotation";"Identifier"]));
    ("Annotation",Just_a_disjunction(["NormalAnnotation";"MarkerAnnotation";"SingleElementAnnotation"]));
-   ("AnnotationInterfaceDeclaration",Just_a_concat(["StarredInterfaceModifier";"MolecularSnail_Interface_Identifier_Lb";"StarredAnnotationInterfaceMemberDeclaration";"AtomicRb"]));
+   ("AnnotationInterfaceDeclaration",Just_a_concat(["StarredInterfaceModifier";"MolecularSnail_Interface_Identifier_Lc";"StarredAnnotationInterfaceMemberDeclaration";"AtomicRc"]));
    ("AnnotationInterfaceElementDeclaration",Just_a_concat(["StarredAnnotationInterfaceElementModifier";"UnannType";"MolecularIdentifier_Lp_Rp";"OptionalDims";"OptionalDefaultValue";"AtomicSm"]));
    ("AnnotationInterfaceElementModifier",Just_a_disjunction(["Annotation";"AtomicPublic";"AtomicAbstract"]));
    ("AnnotationInterfaceMemberDeclaration",Just_a_disjunction(["AnnotationInterfaceElementDeclaration";"ConstantDeclaration";"ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
@@ -401,7 +401,7 @@ AL ([
    ("MolecularRecord_Identifier",Just_atomic([RECORD_T;IDENTIFIER_T]));
    ("MolecularRp_Lb",Just_atomic([RP_T;LB_T]));
    ("MolecularRp_Sm",Just_atomic([RP_T;SM_T]));
-   ("MolecularSnail_Interface_Identifier_Lb",Just_atomic([SNAIL_T;INTERFACE_T;IDENTIFIER_T;LB_T]));
+   ("MolecularSnail_Interface_Identifier_Lc",Just_atomic([SNAIL_T;INTERFACE_T;IDENTIFIER_T;LC_T]));
    ("MolecularStatic_Lc",Just_atomic([STATIC_T;LC_T]));
    ("MolecularSuper_Colon_Colon",Just_atomic([SUPER_T;COLON_T;COLON_T]));
    ("MolecularSuper_Dot",Just_atomic([SUPER_T;DOT_T]));
@@ -705,7 +705,26 @@ let modifications_to_original_java_grammar =
       "MolecularImport_Identifier"; "MolecularImport_Static";
       "SingleStaticImportDeclaration"; "SingleTypeImportDeclaration";
       "StaticImportOnDemandDeclaration"; "TypeImportOnDemandDeclaration"]);
-
+      (* Simplify the production rule for the class bdoy declaration*)
+      Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
+      Expand_in_synonym("Block","InstanceInitializer");
+      Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
+      Expand_in_disjunction("InterfaceDeclaration","ClassBodyDeclaration");
+      Expand_in_disjunction("Annotation","ClassModifier");
+      Expand_in_disjunction("Annotation","ConstructorModifier");
+      Expand_in_disjunction("Annotation","FieldModifier");
+      Expand_in_disjunction("Annotation","InterfaceModifier");
+      Expand_in_disjunction("Annotation","MethodModifier");
+      Expand_in_disjunction("UnannPrimitiveType","UnannType");
+      Expand_in_disjunction("UnannReferenceType","UnannType");
+      Expand_in_disjunction("UnannType","Result");
+      Expand_in_disjunction("UnannPrimitiveType","Result");
+      Expand_in_disjunction("NumericType","UnannType");
+      Expand_in_disjunction("UnannClassOrInterfaceType","UnannType");
+      Expand_in_disjunction("UnannArrayType","UnannType");
+      Expand_in_disjunction("IntegralType","UnannType");
+      Expand_in_disjunction("FloatingPointType","UnannType");
+      Expand_in_disjunction("UnannClassType","UnannType");
     ] ;;
 
 let java_grammar = 
