@@ -20,7 +20,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
    Set_production of string * form 
   |Rename of string * string 
   |Remove_productions of string list 
-  |Register_with_standardized_name of form ;;
+  |Register_with_standardized_name of form 
+  |Expand_in_disjunction of string * string;;
 
 type nonrecursive_grammar = Jvsp_abstract_grammar_t.nonrecursive_grammar = 
    {
@@ -136,6 +137,7 @@ let ocaml_name_of_modification = function
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
   |Register_with_standardized_name(form) -> "Register__with_standardized_name("^(
     ocaml_name_of_form form)^")"
+  |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"   
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -184,6 +186,15 @@ let rec helper_for_lower_interval_below (gram,treated,to_be_treated) =
 let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
 
 let just_below gram name = (unordered_coatoms (get gram name)) ;;
+
+exception Disjunction_content_exn of form ;;
+let disjunction_content form = match form with 
+   (Just_a_disjunction l) -> l    
+   |Just_a_concat _
+   |Just_atomic  _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Synonym _ -> raise(Disjunction_content_exn(form));;   
 
 module Modify = struct
   
@@ -246,11 +257,35 @@ let register_with_standardized_name form gram=
    let name = standardized_name form in 
    add_pair (name,form) gram ;;
 
+let eid_in_dijsunction (contained,replacement) l = 
+  Just_a_disjunction (List.flatten(Image.image(
+                                 fun nm -> if nm = contained then replacement else [nm]
+                            ) l)) ;;     
+
+let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
+   (Just_a_disjunction l) -> (if name=container 
+                            then eid_in_dijsunction (contained,replacement) l
+                            else form)     
+   |Just_a_concat _
+   |Just_atomic  _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Synonym _ -> form;;   
+
+let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) ) ;;
+   
+let eid_in_grammar (contained,container) gram =
+   let (AL l) = gram 
+   and replacement = disjunction_content (get gram contained) in 
+   AL(Image.image(eid_in_pair (contained,container,replacement)) l);;
+   
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
-  |Register_with_standardized_name(form) -> register_with_standardized_name form gram ;;
+  |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
+  |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram;;
 
 let apply_several gram modifications = 
    List.fold_left apply gram modifications ;;

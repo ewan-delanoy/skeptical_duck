@@ -20,7 +20,8 @@ type modification =
    Set_production of string * form 
   |Rename of string * string 
   |Remove_productions of string list
-  |Register_with_standardized_name of form ;;
+  |Register_with_standardized_name of form 
+  |Expand_in_disjunction of string * string;;
 
 type nonrecursive_grammar = {
    sons_and_fathers : (string * string) list ;

@@ -1,6 +1,262 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 237 : start constructing a Java parser
+************************************************************************************************************************)
+module Snip237 = struct 
+
+module T = Jvsp_types ;;
+open Jvsp_abstract_grammar_t ;;
+
+open Jvsp_abstract_grammar ;;
+
+type stream = {
+   cursor : int ;
+   remaining_list : Jvsp_token_types_list.t ;
+} ;;
+
+module Stream = struct 
+
+ let consume old_stream k = 
+  {
+   cursor  = old_stream.cursor + k ;
+   remaining_list = Jvsp_token_types_list.long_tail k old_stream.remaining_list ;
+} ;;
+
+end ;;  
+
+type indications = {
+  inds_using_prefixes : (string  * (T.token_type list list)) list ;  
+  inds_for_marked_disjunctions : (string * ( (T.token_type * string) list)) list;
+} ;;
+
+exception Get_indication_exn of string *  stream ;;
+exception Ambiguous_disjunction_exn of string * (string list) * stream ;;
+exception Untreated_disjunction_exn of string * (string list) * stream ;;
+
+module Indications =struct 
+let get_opt inds strm  name=
+  match List.assoc_opt name inds.inds_using_prefixes with 
+  None -> None
+  |(Some prefixes) -> 
+    let l = Jvsp_token_types_list.unveil strm.remaining_list in 
+    Some(List.exists (List_again.starts_with l) prefixes) ;;    
+
+let get inds name strm =
+  match get_opt inds strm name with 
+  None -> raise(Get_indication_exn(name,strm))
+  |(Some answer) -> answer ;;
+
+exception Get_mark_for_disjunction_exn of string  * stream ;;
+
+let get_mark_for_disjunction inds dis_name strm = 
+  match List.assoc_opt dis_name inds.inds_for_marked_disjunctions with 
+  None -> None
+  |Some(associator) ->
+    let keys = Image.image fst associator in 
+    match  Jvsp_token_types_list.find_opt (fun tt->List.mem tt keys) strm.remaining_list with 
+    None -> raise (Get_mark_for_disjunction_exn(dis_name,strm))
+  |Some key -> Some(List.assoc key associator);;  
+
+let get_for_disjunction inds dis_name names strm = 
+  match get_mark_for_disjunction inds dis_name strm  with 
+  (Some answer) -> answer 
+  | None ->
+  let selected = List.filter (
+    fun name -> get_opt inds strm name = Some true 
+  ) names in 
+  let s = List.length selected in 
+  if s=0 then raise(Untreated_disjunction_exn(dis_name,names,strm)) else 
+  if s>1 then raise(Ambiguous_disjunction_exn(dis_name,names,strm)) else 
+  List.hd selected ;;  
+
+end ;;  
+
+
+type state = {
+  tree : unit -> nonrecursive_grammar ;
+  head : string ;
+  tail : string list ;
+  consumable : stream ;
+} ;;
+
+module State = struct
+let put_new_tree_if_needed old_state new_tree_opt should_update_tree= 
+  match new_tree_opt with
+  None -> old_state
+  |Some new_tree -> 
+    if should_update_tree 
+    then {old_state with tree=(fun () ->new_tree);}
+    else old_state;;  
+
+let change_head old_state new_head= 
+     {
+      old_state with 
+      head = new_head ;
+     } ;;
+
+
+exception End_reached ;;
+
+let pass_to_tail old_state = 
+   match old_state.tail with 
+   [] -> raise End_reached 
+   |prod::other_prods ->
+     {
+      old_state with 
+      head = prod ;
+      tail = other_prods ;
+     } ;;
+
+exception Blocked_state_exn of state ;;
+
+let next_state (provider,inds) old_state = 
+   let (production,new_tree_opt) = Nonrecursive_grammar.get provider (old_state.tree()) old_state.head in 
+   let (before_updating_tree,should_update_tree) = (
+   match production with 
+   (Just_an_optional nm) -> 
+       let is_used = (
+        if old_state.tail=[]
+        then true
+        else Indications.get inds old_state.head old_state.consumable) in  
+       if is_used 
+       then (change_head old_state nm,true)
+       else (pass_to_tail old_state,false)  
+  |Just_atomic(toktypes) -> 
+       let remaining = Jvsp_token_types_list.unveil old_state.consumable.remaining_list in 
+       let (common,left,right) = List_again.common_initial_sublist toktypes remaining in 
+       if left<>[]
+       then raise(Blocked_state_exn(old_state))
+       else let k = List.length common in 
+            (pass_to_tail({
+              old_state with 
+              consumable = Stream.consume old_state.consumable k; 
+            }),true) 
+  |Just_a_concat(l) -> 
+       ({
+              old_state with 
+              head = (List.hd l);
+              tail = (List.tl l)@old_state.tail ;
+        },true)
+  |Just_a_disjunction(l) ->  
+       let choice = Indications.get_for_disjunction inds old_state.head l old_state.consumable in 
+       (change_head old_state choice, true)
+  |Just_a_star(nm) ->  
+       let is_used = (
+        if old_state.tail=[]
+        then true
+        else Indications.get inds old_state.head old_state.consumable) in  
+       if is_used 
+       then ({
+              old_state with 
+              head = nm;
+              tail = old_state.head :: old_state.tail ;
+            },true)
+       else (pass_to_tail old_state,false)  
+  |Synonym(nm) -> (change_head old_state nm, true)) in 
+  put_new_tree_if_needed before_updating_tree new_tree_opt should_update_tree;;
+    
+  let starter provider origin tok_types=
+    let form =  get provider origin in 
+    let coats = Private.unordered_coatoms form in 
+    {
+      tree =(fun () ->Nonrecursive_grammar.singleton provider origin) ;
+      head = List.hd(coats) ;
+      tail = List.tl(coats);
+      consumable =  {
+        cursor = 1 ;
+       remaining_list = Jvsp_token_types_list.construct  tok_types ;
+      };
+    } ;;
+
+end ;;
+let current_gram = Jvsp_abstract_grammar_example.java_grammar ;;
+let g = Jvsp_abstract_grammar.get_and_display current_gram ;;
+let c name = Jvsp_abstract_grammar.containing name current_gram ;;
+let p = Jvsp_util.pretty_print_list_of_token_types ;;
+let jb = Jvsp_abstract_grammar.just_below current_gram ;;
+let sjb name = List.filter (fun x->
+  List.exists(fun prefix->String.starts_with x ~prefix)["Optional";"Starred"])(jb name) 
+let see = Jvsp_abstract_grammar.Preliminary_normalizations.all  current_gram ;;
+
+let (see1,see2,see3,see4)=see ;;
+
+let text1 = rf ("~/Teuliou/Java_Hub/expanded_jars/Spring_boot_4_0_5/org/springframework/"^
+"boot/SpringApplication.java") ;;
+
+let parsed_text1 = Java_lexer.parse text1 ;;
+let all_toktypes1 = Jvsp_util.extract_nonpassive_token_types parsed_text1 ;;
+
+(*
+let current_indications = r{
+  inds_for_disjunctions = [] ;
+  inds_for_optionals = [] ;
+  inds_for_stars = [] ;  
+} ;;
+
+*)
+
+let current_indications = {
+  inds_using_prefixes = [
+   ("ClassDeclaration",[[T.PUBLIC_T;T.CLASS_T]]);
+   ("OptionalClassExtends",[[T.EXTENDS_T]]); 
+   ("OptionalClassImplements",[[T.IMPLEMENTS_T]]); 
+   ("OptionalClassPermits",[[T.PERMITS_T]]); 
+   ("OptionalMolecularDot_Times",[[T.DOT_T;T.TIMES_T]]);
+   ("OptionalPackageDeclaration",[[T.PACKAGE_T]]);
+   ("OptionalStatic",[[T.STATIC_T]]); 
+   ("OptionalTypeParameters",[[T.LT_T]]);
+   ("StarredClassModifier",[[T.SNAIL_T];[T.PUBLIC_T];[T.PROTECTED_T];[T.PRIVATE_T];[T.ABSTRACT_T];
+                            [T.STATIC_T];[T.FINAL_T];[T.SEALED_T];[T.NONSEALED_T];[T.STRICTFP_T]]);
+   ("StarredImportDeclaration",[[T.IMPORT_T]]); 
+   ("StarredMolecularDot_Identifier",[[T.DOT_T;T.IDENTIFIER_T]]); 
+   ("StarredPackageModifier",[[T.SNAIL_T]]);
+  ] ;  
+  inds_for_marked_disjunctions = [
+     "ClassDeclaration", [
+        T.CLASS_T,"NormalClassDeclaration";
+        T.ENUM_T,"EnumDeclaration";
+        T.RECORD_T,"RecordDeclaration";
+     ];
+     "ClassModifier", [
+       T.SNAIL_T,"Annotation"; 
+       T.PUBLIC_T,"AtomicPublic";
+       T.PROTECTED_T,"AtomicProtected";
+       T.PRIVATE_T,"AtomicPrivate";
+       T.ABSTRACT_T,"AtomicAbstract";
+       T.STATIC_T,"AtomicStatic"; 
+       T.FINAL_T,"AtomicFinal";
+       T.SEALED_T,"AtomicSealed";
+       T.NONSEALED_T,"AtomicNonsealed";
+       T.STRICTFP_T,"AtomicStrictfp";
+     ];
+  ] ;
+} ;;
+
+let starter = State.starter current_gram "OrdinaryCompilationUnit" all_toktypes1 ;; 
+
+let next_state = State.next_state (current_gram,current_indications) ;;
+
+let ff = Memoized.small next_state starter ;;
+let db ( )= Tools_for_debugging.extract_from_iteration next_state starter ;;
+
+(*
+
+#use"watched/watched_not_githubbed/ham.ml";;
+
+db () ;;
+
+*)
+
+(*
+
+
+
+
+  *)
+end;;
+
+(************************************************************************************************************************
  Entry 236 : Minor fix
 ************************************************************************************************************************)
 module Snip236 = struct 
