@@ -22,7 +22,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Remove_productions of string list 
   |Register_with_standardized_name of form 
   |Expand_in_disjunction of string * string 
-  |Expand_in_synonym of string * string;;
+  |Expand_in_synonym of string * string 
+  |Collapse_synonym_locally of string * string;;
 
 type nonrecursive_grammar = Jvsp_abstract_grammar_t.nonrecursive_grammar = 
    {
@@ -137,7 +138,8 @@ let ocaml_name_of_modification = function
   |Register_with_standardized_name(form) -> "Register__with_standardized_name("^(
     ocaml_name_of_form form)^")"
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
-  |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"   
+  |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
+  |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"   
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -186,6 +188,15 @@ let rec helper_for_lower_interval_below (gram,treated,to_be_treated) =
 let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
 
 let just_below gram name = (unordered_coatoms (get gram name)) ;;
+
+exception Concat_content_exn of form ;;
+let concat_content form = match form with 
+   (Just_a_concat l) -> l    
+   |Just_a_disjunction _
+   |Just_atomic  _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Synonym _ -> raise(Concat_content_exn(form));;   
 
 exception Disjunction_content_exn of form ;;
 let disjunction_content form = match form with 
@@ -308,13 +319,46 @@ let eis_in_grammar (name_for_content,container) gram =
    and actual_content = get gram name_for_content in 
    AL(Image.image(eis_in_pair (name_for_content,container,actual_content)) l);;   
 
+let csg_in_form (newer_synonym,older_synonym) form = match form with 
+   (Synonym nm) -> (if nm=newer_synonym
+                   then Synonym older_synonym
+                  else form)     
+   |Just_a_disjunction l ->
+        let new_l=(
+          if List.mem older_synonym l 
+          then List.filter (fun x->x<>newer_synonym) l
+          else l) in 
+        if List.length(new_l)=1 
+        then Synonym older_synonym 
+        else Just_a_disjunction new_l    
+   |Just_a_concat _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Just_atomic  _ -> form;;   
+
+
+let csl_in_named_form (newer_synonym,container,older_synonym) (name,form) = 
+   if name <> container 
+   then form 
+   else csg_in_form (newer_synonym,older_synonym) form;;   
+
+let csl_in_pair triple (name,form) = (name,csl_in_named_form triple (name,form) ) ;; 
+
+
+let csl_in_grammar (newer_synonym,container) gram =
+   let (AL l) = gram 
+   and older_synonym = synonym_content(get gram newer_synonym) in 
+   AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l);;
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
   |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
-  |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram;;
+  |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
+  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram;;
+ 
 
 let apply_several gram modifications = 
    List.fold_left apply gram modifications ;;

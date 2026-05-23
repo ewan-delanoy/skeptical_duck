@@ -88,7 +88,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Remove_productions of string list 
   |Register_with_standardized_name of form 
   |Expand_in_disjunction of string * string 
-  |Expand_in_synonym of string * string ;;
+  |Expand_in_synonym of string * string 
+  |Collapse_synonym_locally of string * string;;
 
 (* Java grammar begins here *)
 
@@ -715,6 +716,7 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("Annotation","FieldModifier");
       Expand_in_disjunction("Annotation","InterfaceModifier");
       Expand_in_disjunction("Annotation","MethodModifier");
+      (*
       Expand_in_disjunction("UnannPrimitiveType","UnannType");
       Expand_in_disjunction("UnannReferenceType","UnannType");
       Expand_in_disjunction("UnannType","Result");
@@ -724,7 +726,11 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("UnannArrayType","UnannType");
       Expand_in_disjunction("IntegralType","UnannType");
       Expand_in_disjunction("FloatingPointType","UnannType");
-      Expand_in_disjunction("UnannClassType","UnannType");
+      Expand_in_synonym("UnannClassType","UnannInterfaceType");
+      (* this is fully equivalent to the original since UnannInterfaceType = UnannClassType*)
+      Set_production("UnannClassOrInterfaceType",Synonym("UnannClassType"));
+      Expand_in_synonym("UnannClassType","UnannClassOrInterfaceType");
+      *)
     ] ;;
 
 let java_grammar = 
