@@ -124,6 +124,10 @@ let expand_subdisjunction gram ?(idx_opt=None) mg ~main_name  ~subdis_name =
 let select (MG l) names = 
    MG(List.filter (fun (name,_)->List.mem name names) l);;
 
+let take_tails (MG outer_l) = 
+   MG(Image.image (fun (name,l)->(name,List.tl l)) outer_l);;   
+
+
 end ;; 
 
 let expand_subdisjunction = Private.expand_subdisjunction ;;
@@ -132,3 +136,4 @@ let get = Private.get ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
 let select = Private.select ;;
+let take_tails = Private.take_tails ;; 
