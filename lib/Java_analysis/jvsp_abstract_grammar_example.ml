@@ -89,7 +89,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Register_with_standardized_name of form 
   |Expand_in_disjunction of string * string 
   |Expand_in_synonym of string * string 
-  |Collapse_synonym_locally of string * string;;
+  |Collapse_synonym_locally of string * string
+  |Collapse_synonym_globally of string ;;
 
 (* Java grammar begins here *)
 
@@ -716,14 +717,19 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("Annotation","FieldModifier");
       Expand_in_disjunction("Annotation","InterfaceModifier");
       Expand_in_disjunction("Annotation","MethodModifier");
-      (*
+      Collapse_synonym_locally("UnannInterfaceType","UnannClassOrInterfaceType");
+      Collapse_synonym_globally("UnannClassOrInterfaceType");
       Expand_in_disjunction("UnannPrimitiveType","UnannType");
       Expand_in_disjunction("UnannReferenceType","UnannType");
+      Collapse_synonym_locally("UnannTypeVariable","UnannType");
+      Expand_in_disjunction("NumericType","UnannType");
+      Expand_in_disjunction("UnannClassType","UnannType");
+      Expand_in_disjunction("UnannArrayType","UnannType");
+      (*
       Expand_in_disjunction("UnannType","Result");
       Expand_in_disjunction("UnannPrimitiveType","Result");
-      Expand_in_disjunction("NumericType","UnannType");
+      
       Expand_in_disjunction("UnannClassOrInterfaceType","UnannType");
-      Expand_in_disjunction("UnannArrayType","UnannType");
       Expand_in_disjunction("IntegralType","UnannType");
       Expand_in_disjunction("FloatingPointType","UnannType");
       Expand_in_synonym("UnannClassType","UnannInterfaceType");

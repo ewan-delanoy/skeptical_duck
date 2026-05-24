@@ -23,12 +23,15 @@ type modification =
   |Register_with_standardized_name of form 
   |Expand_in_disjunction of string * string 
   |Expand_in_synonym of string * string
-  |Collapse_synonym_locally of string * string;;
+  |Collapse_synonym_locally of string * string
+  |Collapse_synonym_globally of string ;;
 
 type nonrecursive_grammar = {
    sons_and_fathers : (string * string) list ;
    productions : (string * (form * string list)) list;
 } ;;
+
+type magnifying_glass_line = MGL of (string * ((string * form) list)) ;; 
 
 type magnifying_glass = MG of 
   (string * ((string * form) list)) list 

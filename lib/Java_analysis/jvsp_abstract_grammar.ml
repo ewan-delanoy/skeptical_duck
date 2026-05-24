@@ -23,7 +23,8 @@ type modification = Jvsp_abstract_grammar_t.modification =
   |Register_with_standardized_name of form 
   |Expand_in_disjunction of string * string 
   |Expand_in_synonym of string * string 
-  |Collapse_synonym_locally of string * string;;
+  |Collapse_synonym_locally of string * string
+  |Collapse_synonym_globally of string ;;
 
 type nonrecursive_grammar = Jvsp_abstract_grammar_t.nonrecursive_grammar = 
    {
@@ -93,13 +94,15 @@ let concat_element_to_enhanced_string name form = match form with
 let concat_to_enhanced_string gram l = 
     String.concat " " (Image.image (fun nm->concat_element_to_enhanced_string nm (get gram nm)) l) ;;
 
-
+let adhoc_disjunction_to_string l = 
+    "\n"^(String.concat "\n" (Image.image (fun elt->
+      "    |"^elt) l)) ;; 
 
 let form_to_enhanced1_string gram form = match form with
    (Just_a_concat l) -> concat_to_enhanced_string gram l
+   |Just_a_disjunction(l) -> adhoc_disjunction_to_string l
   |Just_an_optional(_)   
   |Just_atomic(_)    
-  |Just_a_disjunction(_) 
   |(Just_a_star _) 
   |Synonym(_) -> form_to_string form;;
 
@@ -107,7 +110,7 @@ let form_to_enhanced2_string gram form= match form with
    Just_a_disjunction(l) ->
      "\n"^(String.concat "\n" (Image.image (fun elt->
       let expanded_elt = get gram elt in 
-      "|"^elt^" : "^(form_to_enhanced1_string gram expanded_elt)) l))^"\n"  
+      elt^" : "^(form_to_enhanced1_string gram expanded_elt)) l))^"\n"  
   |Just_a_concat(l) ->  concat_to_enhanced_string gram l     
   |Just_an_optional(_) 
   |Just_atomic(_)    
@@ -139,7 +142,8 @@ let ocaml_name_of_modification = function
     ocaml_name_of_form form)^")"
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
-  |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"   
+  |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
+  |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")"   
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -319,21 +323,22 @@ let eis_in_grammar (name_for_content,container) gram =
    and actual_content = get gram name_for_content in 
    AL(Image.image(eis_in_pair (name_for_content,container,actual_content)) l);;   
 
-let csg_in_form (newer_synonym,older_synonym) form = match form with 
-   (Synonym nm) -> (if nm=newer_synonym
-                   then Synonym older_synonym
-                  else form)     
+let csg_in_form rep_pair form = 
+   let (newer_synonym,older_synonym)= rep_pair in 
+   let replacer = List_again.replace_if_proposed [rep_pair] in 
+   match form with 
+   (Synonym nm) -> Synonym(replacer nm)    
    |Just_a_disjunction l ->
         let new_l=(
           if List.mem older_synonym l 
           then List.filter (fun x->x<>newer_synonym) l
-          else l) in 
+          else Image.image replacer l) in 
         if List.length(new_l)=1 
         then Synonym older_synonym 
         else Just_a_disjunction new_l    
-   |Just_a_concat _
-   |Just_a_star _
-   |Just_an_optional _ 
+   |Just_a_concat l -> Just_a_concat(Image.image replacer l)
+   |Just_a_star nm -> Just_a_star(replacer nm)
+   |Just_an_optional nm -> Just_an_optional (replacer nm)
    |Just_atomic  _ -> form;;   
 
 
@@ -350,6 +355,18 @@ let csl_in_grammar (newer_synonym,container) gram =
    and older_synonym = synonym_content(get gram newer_synonym) in 
    AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l);;
 
+let csg_in_pair_opt rep_pair (name,form) = 
+  if name = fst(rep_pair)
+  then None 
+  else Some(name,csg_in_form rep_pair form ) ;; 
+
+
+let csg_in_grammar newer_synonym gram =
+   let (AL l) = gram 
+   and older_synonym = synonym_content(get gram newer_synonym) in 
+   AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
+
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
@@ -357,7 +374,8 @@ let apply gram = function
   |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
-  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram;;
+  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
+  |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram;;
  
 
 let apply_several gram modifications = 
