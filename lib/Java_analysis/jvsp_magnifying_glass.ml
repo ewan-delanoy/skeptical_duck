@@ -4,7 +4,7 @@
 
 *)
 
-type form = Jvsp_abstract_grammar_t.form = 
+type form = Jvag_types.form = 
     Just_an_optional of string 
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list 
@@ -13,7 +13,7 @@ type form = Jvsp_abstract_grammar_t.form =
    |Synonym of string
   ;;
 
-type magnifying_glass = Jvsp_abstract_grammar_t.magnifying_glass = MG of 
+type magnifying_glass = Jvag_types.magnifying_glass = MG of 
   (string * ((string * form) list)) list 
  ;;
 

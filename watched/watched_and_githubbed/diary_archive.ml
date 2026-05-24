@@ -6,7 +6,7 @@ open Needed_values ;;
 module Snip237 = struct 
 
 module T = Jvsp_types ;;
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 open Jvsp_abstract_grammar ;;
 
@@ -279,7 +279,7 @@ end;;
 module Snip235 = struct 
 
 module T = Jvsp_types ;;
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 open Jvsp_abstract_grammar.Private ;;
 
@@ -495,7 +495,7 @@ end;;
 module Snip233 = struct 
 
 module T = Jvsp_types ;;
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 open Jvsp_abstract_grammar.Private ;;
 
@@ -568,7 +568,7 @@ end;;
 module Snip232 = struct 
 
 module T = Jvsp_types ;;
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 let old_gram = Jvsp_abstract_grammar_example.java_grammar ;;
 
@@ -818,7 +818,7 @@ end;;
 module Snip231 = struct 
 
 open Jvsp_types ;;
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 
 let (AL old_pairs) = Jvsp_abstract_grammar_example.java_grammar ;;
@@ -924,7 +924,7 @@ let z1 = List.filter (fun lit ->List.mem("Atomic"^lit) atomic_section) others ;;
 
 let all_pairs = Ordered.sort Jvsp_abstract_grammar.order_on_pairs (old_pairs@ new_pairs) ;;
 
-let gram3 = Jvsp_abstract_grammar_t.AL all_pairs ;;
+let gram3 = Jvag_types.AL all_pairs ;;
 
 let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_grammar.ocaml_name gram3) ^ ";;\n\n\n" ;;
 
@@ -952,7 +952,7 @@ end;;
 ************************************************************************************************************************)
 module Snip230 = struct 
 
-open Jvsp_abstract_grammar_t ;;
+open Jvag_types ;;
 
 let production_names = 
 ["AdditionalBound"; "AdditiveExpression"; "AmbiguousName"; "AndExpression";
@@ -1414,7 +1414,7 @@ let (AL old_pairs) = Jvsp_abstract_grammar_example.java_grammar ;;
 
 let all_pairs = Ordered.sort Jvsp_abstract_grammar.order_on_pairs (old_pairs@ new_pairs) ;;
 
-let gram3 = Jvsp_abstract_grammar_t.AL all_pairs ;;
+let gram3 = Jvag_types.AL all_pairs ;;
 
 let gram3_description = "\n\n\n let java_grammar = \n\n" ^ (Jvsp_abstract_grammar.ocaml_name gram3) ^ ";;\n\n\n" ;;
 

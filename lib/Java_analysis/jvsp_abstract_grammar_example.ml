@@ -72,7 +72,7 @@ type token_type = Jvsp_types.token_type =
 
 
      
-type form =  Jvsp_abstract_grammar_t.form = 
+type form =  Jvag_types.form = 
     Just_an_optional of string
    |Just_atomic of Jvsp_types.token_type list
    |Just_a_concat of string list 
@@ -80,9 +80,9 @@ type form =  Jvsp_abstract_grammar_t.form =
    |Just_a_star of string 
    |Synonym of string;;
 
-type t =  Jvsp_abstract_grammar_t.t = AL of (string * form) list ;; 
+type t =  Jvag_types.t = AL of (string * form) list ;; 
 
-type modification = Jvsp_abstract_grammar_t.modification = 
+type modification = Jvag_types.modification = 
    Set_production of string * form 
   |Rename of string * string  
   |Remove_productions of string list 
