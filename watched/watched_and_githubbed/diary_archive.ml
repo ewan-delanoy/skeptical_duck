@@ -574,7 +574,7 @@ let old_gram = Jvag_example.java_grammar ;;
 
 let (see1,see2,see3,see4)=Jvag_grammar.Preliminary_normalizations.all   old_gram ;;
 
-let (Jvag_grammar.AL old_pairs) = Jvag_example.java_grammar ;;
+let (Jvag_types.AL old_pairs) = Jvag_example.java_grammar ;;
 
 let g = Jvag_grammar.get_and_display old_gram;;
 
@@ -1892,7 +1892,7 @@ end;;
 ************************************************************************************************************************)
 module Snip223 = struct 
    
-let (Jvag_grammar.AL li1) = Jvag_example.java_grammar ;;
+let (Jvag_types.AL li1) = Jvag_example.java_grammar ;;
 
 
 (*  

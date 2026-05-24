@@ -4,18 +4,7 @@
 
 *)
 
-type form = Jvag_types.form = 
-    Just_an_optional of string 
-   |Just_atomic of Jvsp_types.token_type list
-   |Just_a_concat of string list 
-   |Just_a_disjunction of string list 
-   |Just_a_star of string 
-   |Synonym of string
-  ;;
-
-type magnifying_glass = Jvag_types.magnifying_glass = MG of 
-  (string * ((string * form) list)) list 
- ;;
+open Jvag_types ;;
 
 exception Missing_element_in_list_exn of   string * (string list) ;;
 exception Unspecified_index_in_list_exn of string * (string list) ;;
