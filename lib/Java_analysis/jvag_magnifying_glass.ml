@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Java_analysis/jvsp_magnifying_glass.ml";;
+#use"lib/Java_analysis/jvag_magnifying_glass.ml";;
 
 *)
 
