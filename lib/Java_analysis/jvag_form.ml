@@ -57,6 +57,14 @@ let disjunction_content form = match form with
    |Just_an_optional _ 
    |Synonym _ -> raise(Disjunction_content_exn(form));;   
 
+let disjunction_content_opt form = match form with 
+   (Just_a_disjunction l) -> Some l    
+   |Just_a_concat _
+   |Just_atomic  _
+   |Just_a_star _
+   |Just_an_optional _ 
+   |Synonym _ -> None;;  
+
 let is_contained_in nm form = match form with
     Just_a_concat l -> List.mem nm l
    |Just_atomic _ -> false
