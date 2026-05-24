@@ -139,3 +139,5 @@ type token_type =
 
 
 type 'a parser = Parser of ((positioned_token list) -> int -> ('a * int) option) ;;
+
+type token_type_list = TTL of (token_type list) ;;

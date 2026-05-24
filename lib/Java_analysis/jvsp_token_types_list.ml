@@ -4,7 +4,7 @@
 
 *)
 
-type t = TTL of (Jvsp_types.token_type list) ;;
+type t = Jvsp_types.token_type_list =  TTL of (Jvsp_types.token_type list) ;;
 
 module Private = struct 
 
