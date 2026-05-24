@@ -50,10 +50,10 @@ let print_out (fmt:Format.formatter) mg=
    Format.fprintf fmt "@[%s@]" (to_string mg);;
 
 let concatify gram name =
-   let form = Jvsp_abstract_grammar.get gram name in 
+   let form = Jvag_grammar.get gram name in 
    match form with 
    Just_a_concat(l) ->  
-     Image.image (fun name2->(name2,Jvsp_abstract_grammar.get gram name2)) l
+     Image.image (fun name2->(name2,Jvag_grammar.get gram name2)) l
   |Just_an_optional(_)  
   |Just_a_disjunction(_)
   |Just_atomic(_)  
@@ -63,7 +63,7 @@ let concatify gram name =
 
 
 let get gram name =
-   let form = Jvsp_abstract_grammar.get gram name in 
+   let form = Jvag_grammar.get gram name in 
    match form with 
    Just_a_disjunction(l) -> 
      MG(Image.image (fun name2->(name2,concatify gram name2)) l)
