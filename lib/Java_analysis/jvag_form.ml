@@ -15,12 +15,6 @@ exception Synonym_content_exn of form ;;
 module Private = struct 
 
   let str_order = Total_ordering.lex_for_strings ;;
-  let str_fold_merge = Ordered.fold_merge str_order ;;
-  let str_insert= Ordered.insert str_order ;;
-  let str_intersect= Ordered.intersect str_order ;;
-  let str_mem= Ordered.mem str_order ;;
-  let str_merge= Ordered.merge str_order ;;
-  let str_setminus = Ordered.setminus str_order ;;
   let str_sort = Ordered.sort str_order ;;
 
 
@@ -103,5 +97,7 @@ let synonym_content form = match form with
    |Just_atomic  _
    |Just_a_star _
    |Just_an_optional _ -> raise(Synonym_content_exn(form));;
+
+let to_string = Private.to_string ;; 
 
 let unordered_coatoms = Private.unordered_coatoms ;;   

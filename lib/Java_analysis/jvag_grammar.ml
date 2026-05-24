@@ -20,18 +20,8 @@ module Private = struct
   let str_setminus = Ordered.setminus str_order ;;
   let str_sort = Ordered.sort str_order ;;
 
-  
-
-let ocaml_name_of_form = function 
-   Just_an_optional(nm) -> "Just_an_optional(\""^nm^"\")"
-  |Just_atomic(l) -> "Just_atomic(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"
-  |Just_a_concat(l) -> "Just_a_concat(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
-  |Just_a_disjunction(l) -> "Just_a_disjunction(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"
-  |Just_a_star(nm) -> "Just_a_star(\""^nm^"\")"
-  |Synonym(nm) -> "Synonym(\""^nm^"\")";;
-
 let ocaml_name_of_sf (name,frm) =
-    "(\""^name^"\","^(ocaml_name_of_form frm)^")";;
+    "(\""^name^"\","^(Jvag_form.ocaml_name frm)^")";;
 
 let ocaml_name (AL l)=
   let lines = Image.image (fun sf->(String.make 3 ' ')^(ocaml_name_of_sf sf)^";") l in 
@@ -43,26 +33,13 @@ let get (AL l) name = match List.assoc_opt name l with
   None -> raise(Get_exn(name))
  |Some answer -> answer ;;
 
-let form_to_string = function 
-   Just_an_optional(nm) -> Jvsp_util.display_optional nm   
-  |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
-  |Just_a_concat(l) ->  String.concat " " l
-  |Just_a_disjunction(l) ->
-     "\n"^(String.concat "\n" (Image.image (fun elt->
-      "|"^elt) l))^"\n"
-  |(Just_a_star nm) -> Jvsp_util.display_star nm 
-  |Synonym(nm) -> nm;;
-
-let print_out_form (fmt:Format.formatter) form=
-   Format.fprintf fmt "@[%s@]" (Strung.with_size_limit ~size_limit:250 (form_to_string form));;
-
 let concat_element_to_enhanced_string name form = match form with
    Just_a_disjunction(_) -> name
   |Just_an_optional(_) 
   |Just_atomic(_)    
   |(Just_a_concat _) 
   |(Just_a_star _) 
-  |Synonym(_) -> form_to_string form;;
+  |Synonym(_) -> Jvag_form.to_string form;;
 
 let concat_to_enhanced_string gram l = 
     String.concat " " (Image.image (fun nm->concat_element_to_enhanced_string nm (get gram nm)) l) ;;
@@ -77,7 +54,7 @@ let form_to_enhanced1_string gram form = match form with
   |Just_an_optional(_)   
   |Just_atomic(_)    
   |(Just_a_star _) 
-  |Synonym(_) -> form_to_string form;;
+  |Synonym(_) -> Jvag_form.to_string form;;
 
 let form_to_enhanced2_string gram form= match form with
    Just_a_disjunction(l) ->
@@ -88,31 +65,24 @@ let form_to_enhanced2_string gram form= match form with
   |Just_an_optional(_) 
   |Just_atomic(_)    
   |(Just_a_star _) 
-  |Synonym(_) -> form_to_string form;;
+  |Synonym(_) -> Jvag_form.to_string form;;
 
-let needs_extra_display form= match form with
-   Just_a_disjunction(_) 
-  |Just_a_concat(_) ->  true    
-  |Just_an_optional(_) 
-  |Just_atomic(_)    
-  |(Just_a_star _) 
-  |Synonym(_) -> false;;  
 
 let get_and_display gram name =
    let form = get gram name in 
    let _ = (
-      if needs_extra_display form 
+      if Jvag_form.needs_extra_display form 
       then let msg = "\n\n\n" ^ (form_to_enhanced2_string gram form) ^ "\n\n\n" in 
            print_string msg;flush stdout
    ) in 
    form ;;
    
 let ocaml_name_of_modification = function 
-    Set_production(name,form) -> "Set_production(\""^name^"\","^(ocaml_name_of_form form)^")" 
+    Set_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")" 
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
   |Register_with_standardized_name(form) -> "Register__with_standardized_name("^(
-    ocaml_name_of_form form)^")"
+    Jvag_form.ocaml_name form)^")"
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
   |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
@@ -125,73 +95,27 @@ let ocaml_name_of_modification_list l =
   "\n]" ;;
      
 
-let order_on_forms = (
-   (fun form1 form2 ->Total_ordering.standard form1 form2): 
-     form Total_ordering_t.t ) ;; 
+let order_on_pairs = Total_ordering.product str_order Jvag_form.order ;;
 
-let order_on_pairs = Total_ordering.product str_order order_on_forms ;;
 
-let is_contained_in_form nm form = match form with
-    Just_a_concat l -> List.mem nm l
-   |Just_atomic _ -> false
-   |Just_a_disjunction l -> List.mem nm l
-   |Just_a_star nm2 -> nm2 = nm
-   |Just_an_optional nm2 -> nm2 = nm
-   |Synonym nm2 -> nm2 = nm ;;
-
-let is_contained_in_pair nm (_name,form) = is_contained_in_form nm form;;
+let is_contained_in_pair nm (_name,form) = Jvag_form.is_contained_in nm form;;
 
 let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
 
-let unordered_coatoms form = match form with
-    Just_a_concat l ->  l
-   |Just_atomic _ -> []
-   |Just_a_disjunction l -> l
-   |Just_a_star nm -> [nm]
-   |Just_an_optional nm -> [nm]
-   |Synonym nm -> [nm] ;;
-
-let coatoms form = str_sort (unordered_coatoms form) ;;
 
 let rec helper_for_lower_interval_below (gram,treated,to_be_treated) = 
   match to_be_treated with 
   [] -> treated 
   |name :: other_names ->
-     let coats = coatoms (get gram name) in 
+     let coats = Jvag_form.coatoms (get gram name) in 
      let new_coats = str_setminus coats treated in 
      helper_for_lower_interval_below (gram,str_insert name treated,str_merge new_coats other_names) 
   ;;
 
 let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
 
-let just_below gram name = (unordered_coatoms (get gram name)) ;;
+let just_below gram name = (Jvag_form.unordered_coatoms (get gram name)) ;;
 
-exception Concat_content_exn of form ;;
-let concat_content form = match form with 
-   (Just_a_concat l) -> l    
-   |Just_a_disjunction _
-   |Just_atomic  _
-   |Just_a_star _
-   |Just_an_optional _ 
-   |Synonym _ -> raise(Concat_content_exn(form));;   
-
-exception Disjunction_content_exn of form ;;
-let disjunction_content form = match form with 
-   (Just_a_disjunction l) -> l    
-   |Just_a_concat _
-   |Just_atomic  _
-   |Just_a_star _
-   |Just_an_optional _ 
-   |Synonym _ -> raise(Disjunction_content_exn(form));;   
-
-exception Synonym_content_exn of form ;;
-let synonym_content form = match form with 
-   (Synonym nm) -> nm   
-   |Just_a_disjunction _
-   |Just_a_concat _
-   |Just_atomic  _
-   |Just_a_star _
-   |Just_an_optional _ -> raise(Synonym_content_exn(form));; 
 
 
 module Modify = struct
@@ -274,7 +198,7 @@ let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) )
    
 let eid_in_grammar (contained,container) gram =
    let (AL l) = gram 
-   and replacement = disjunction_content (get gram contained) in 
+   and replacement = Jvag_form.disjunction_content (get gram contained) in 
    AL(Image.image(eid_in_pair (contained,container,replacement)) l);;
    
 exception Bad_substitution_in_synonym_exn of string * string ;;
@@ -325,7 +249,7 @@ let csl_in_pair triple (name,form) = (name,csl_in_named_form triple (name,form) 
 
 let csl_in_grammar (newer_synonym,container) gram =
    let (AL l) = gram 
-   and older_synonym = synonym_content(get gram newer_synonym) in 
+   and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
    AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l);;
 
 let csg_in_pair_opt rep_pair (name,form) = 
@@ -336,7 +260,7 @@ let csg_in_pair_opt rep_pair (name,form) =
 
 let csg_in_grammar newer_synonym gram =
    let (AL l) = gram 
-   and older_synonym = synonym_content(get gram newer_synonym) in 
+   and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
    AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
 
 
@@ -626,11 +550,11 @@ exception Find_acyclic_ordering_exn of string * (string list list) ;;
 let find_acyclic_ordering unordered_l =
   let l = Ordered.sort order_on_pairs unordered_l in  
   let defined_names = str_sort(Image.image fst l) 
-  and referenced_names = str_fold_merge(Image.image (fun (_,form)->coatoms form) l) in 
+  and referenced_names = str_fold_merge(Image.image (fun (_,form)->Jvag_form.coatoms form) l) in 
   let undefined_names = str_setminus referenced_names defined_names in 
   let relative_coatoms = Memoized.make(fun name ->
      let form = List.assoc name l in 
-     str_intersect(coatoms form) defined_names
+     str_intersect(Jvag_form.coatoms form) defined_names
   ) in  
   let (cycles,acyclic_ordering) = 
      Reconstruct_linear_poset.reconstruct_linear_poset relative_coatoms defined_names in 
@@ -745,7 +669,7 @@ let insert_new old_grammar son son_form =
   match List.assoc_opt son old_grammar.sons_and_fathers with 
   (Some father) -> raise(Unproductive_son(son,father))
   | None ->
-  match List.find_opt (fun (_,(form,_)) ->str_mem son (coatoms form)) old_grammar.productions with 
+  match List.find_opt (fun (_,(form,_)) ->str_mem son (Jvag_form. coatoms form)) old_grammar.productions with 
   None -> raise(Fatherless(son))
   |(Some (father,(_form,ancestry))) ->
     if List.mem son ancestry 
@@ -824,9 +748,6 @@ let lower_interval_below = Private.lower_interval_below ;;
 let modify = Private.Modify.apply_several ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
-
-(* This is a registered printer : print_out_form *)
-let print_out_form = Private.print_out_form ;;
 
 let registration_opt (AL l) form = 
     Option.map fst (List.find_opt (fun (_,form2)->form2=form) l) ;;

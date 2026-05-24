@@ -158,7 +158,7 @@ let next_state (provider,inds) old_state =
     
   let starter provider origin tok_types=
     let form =  get provider origin in 
-    let coats = Private.unordered_coatoms form in 
+    let coats = Jvag_form.unordered_coatoms form in 
     {
       tree =(fun () ->Nonrecursive_grammar.singleton provider origin) ;
       head = List.hd(coats) ;
