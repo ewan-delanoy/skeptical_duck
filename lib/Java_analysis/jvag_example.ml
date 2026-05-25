@@ -644,6 +644,18 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("NumericType","UnannType");
       Expand_in_disjunction("UnannClassType","UnannType");
       Expand_in_disjunction("UnannArrayType","UnannType");
+     (*
+       Creating a fully equivalent production for UnannClassType, begin
+     *)
+      Set_production("MediumUnannClassType",Just_a_concat(["Identifier"; "StarredMolecularDot_Identifier"]));
+      Set_production("BasicUnannClassType",Just_a_disjunction(["ShortUnannClassType"; "MediumUnannClassType"]));
+      Set_production("UnannClassTypeExtender",Just_a_concat(["AtomicDot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
+      Set_production("StarredUnannClassTypeExtender",Just_a_star("UnannClassTypeExtender"));
+      Set_production("UnannClassType",Just_a_concat(["BasicUnannClassType";"StarredUnannClassTypeExtender"]));
+      (*
+       Creating a fully equivalent production for UnannClassType, end
+     *)
+      Remove_productions(["ClassMemberDeclaration"; "UnannArrayType"; "UnannInterfaceType";"UnannReferenceType"]);
       (*
       Expand_in_disjunction("UnannType","Result");
       Expand_in_disjunction("UnannPrimitiveType","Result");
