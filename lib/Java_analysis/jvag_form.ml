@@ -37,6 +37,14 @@ let unordered_coatoms form = match form with
    |Synonym nm -> [nm] ;;
 
 
+let molecular_content_opt form = match form with 
+   (Molecular l) -> Some l    
+   |Concat _
+   |Disjunction _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> None;;  
+
 end ;;
 
 let coatoms form = Private.str_sort (Private.unordered_coatoms form) ;;
@@ -65,15 +73,9 @@ let disjunction_content_opt form = match form with
    |Optional _ 
    |Synonym _ -> None;;  
 
-let molecular_content_opt form = match form with 
-   (Molecular l) -> Some l    
-   |Concat _
-   |Disjunction _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> None;;  
 
 
+let is_a_token_sequence form = ((Private.molecular_content_opt form)<>None) ;;
 
 let is_contained_in nm form = match form with
     Concat l -> List.mem nm l
@@ -83,6 +85,7 @@ let is_contained_in nm form = match form with
    |Optional nm2 -> nm2 = nm
    |Synonym nm2 -> nm2 = nm ;;
 
+let molecular_content_opt = Private.molecular_content_opt ;;   
 let needs_extra_display form= match form with
    Disjunction(_) 
   |Concat(_) ->  true    

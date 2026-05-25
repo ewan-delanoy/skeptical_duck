@@ -655,6 +655,13 @@ let modifications_to_original_java_grammar =
       (*
        Creating a fully equivalent production for UnannClassType, end
      *)
+     (*
+       Creating a fully equivalent production for TypeName, begin
+     *)
+     Set_production("TypeName",Concat(["Identifier";"StarredMolecularDot_Identifier"]));
+     (*
+       Creating a fully equivalent production for TypeName, end
+     *)
       Remove_productions(["ClassMemberDeclaration"; "UnannArrayType"; "UnannInterfaceType";"UnannReferenceType"]);
       (*
       Expand_in_disjunction("UnannType","Result");

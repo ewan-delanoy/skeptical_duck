@@ -471,6 +471,26 @@ let merge_tl_sequence_in_concat gram associator l =
   ) temp2 in 
   List.flatten temp3 ;; 
 
+let raphael = ref None ;;
+
+let merge_tl_sequence_in_concat gram associator l = 
+  let temp1 = Image.image (fun nm->(nm,get gram nm)) l in 
+  let temp2 = List_again.connected_fibers (fun (_,form)->is_a_token_sequence form) temp1 in 
+  let temp3 = Image.image (
+    fun (_range,segment,is_a_tl_segment) ->
+      if is_a_tl_segment && (List.length(segment)>1)
+      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(get_atomic_content_opt z)) segment) in  
+           let seq_name_opt = List.assoc_opt seq associator in 
+           (
+             match seq_name_opt with 
+             None -> let _ = (raphael:=Some(gram,associator,l,seq)) in 
+                     raise(Merge_tl_sequence_in_concat_exn(seq)) 
+             |Some name_seq -> [name_seq]
+           )
+      else Image.image fst segment
+  ) temp2 in 
+  List.flatten temp3 ;; 
+
 
 let merge_tl_sequence_in_form gram associator form =
   match form with
