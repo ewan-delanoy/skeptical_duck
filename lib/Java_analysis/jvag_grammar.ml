@@ -144,7 +144,7 @@ let add_pair_naively pair (AL l) =
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
 
-let add_pair pair gram = 
+let heavy_add_pair pair gram = 
   let gram2 = add_pair_naively pair gram in 
   match snd pair with 
   (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
@@ -179,7 +179,7 @@ let remove_productions to_be_removed (AL l) =
 
 let register_molecular token_types gram =
    let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
-   add_pair (name,Molecular(token_types)) gram ;;
+   add_pair_naively (name,Molecular(token_types)) gram ;;
 
 let shortened_version name = 
   if String.starts_with name ~prefix:"Atomic"
@@ -199,7 +199,7 @@ let standardized_name = function
 
 let register_with_standardized_name form gram= 
    let name = standardized_name form in 
-   add_pair (name,form) gram ;;
+   add_pair_naively (name,form) gram ;;
 
 let eid_in_dijsunction (contained,replacement) l = 
   Disjunction (List.flatten(Image.image(
@@ -287,7 +287,7 @@ let csg_in_grammar newer_synonym gram =
 
 
 let apply gram = function 
-   (Set_production(name,form)) -> add_pair (name,form) gram 
+   (Set_production(name,form)) -> add_pair_naively (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
   |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
@@ -517,6 +517,7 @@ let merge_tl_sequences_in_grammar gram =
 
 end ;;   
 
+
 module Name_usage = struct 
 
 let unordered_used_names_in_form form =
@@ -727,6 +728,50 @@ let singleton provider origin =
 
 end ;;  
 
+module HeavyModify = struct 
+
+let expand_form_using_concat (name,chain) form = match form with
+  (Concat l) -> Concat(List.flatten(Image.image (fun name2->if name2=name then chain else [name2]) l))
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> form;;   
+
+let expand_pair_using_concat data (name,form) =
+    (name,expand_form_using_concat data form) ;;
+
+let expand_grammar_using_concat data (AL l) =
+  AL(Image.image (expand_pair_using_concat data) l);;
+
+let heavy_add_pair pair gram = 
+  let gram2 = Modify.add_pair_naively pair gram in 
+  let gram3 =(match snd pair with 
+  (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> gram2) in 
+  Mergeable_token_sequences.merge_tl_sequences_in_grammar gram3;;   
+
+
+let apply gram modification = match modification with
+   (Set_production(name,form)) -> heavy_add_pair (name,form) gram 
+  |Rename(_,_) 
+  |Remove_productions(_) 
+  |Register_with_standardized_name(_) 
+  |Expand_in_disjunction(_,_) 
+  |Expand_in_synonym(_,_) 
+  |Collapse_synonym_locally(_,_) 
+  |Collapse_synonym_globally(_) -> Modify.apply gram modification;;
+ 
+
+let apply_several gram modifications = 
+   List.fold_left apply gram modifications ;;
+
+
+end ;;  
 
 end ;; 
 
@@ -767,7 +812,7 @@ let get_and_display = Private.get_and_display ;;
 let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;
 
-let modify = Private.Modify.apply_several ;;
+let modify = Private.HeavyModify.apply_several ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 

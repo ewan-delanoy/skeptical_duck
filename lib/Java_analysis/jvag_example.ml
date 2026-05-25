@@ -662,7 +662,10 @@ let modifications_to_original_java_grammar =
      (*
        Creating a fully equivalent production for TypeName, end
      *)
-      Remove_productions(["ClassMemberDeclaration"; "UnannArrayType"; "UnannInterfaceType";"UnannReferenceType"]);
+      Remove_productions(["ClassMemberDeclaration"; "UnannArrayType"; "UnannInterfaceType";"UnannReferenceType";
+      "AtomicPermits"; "AtomicSnail"; "CompoundTypeName"; "TypeName";
+  "UnannClassType"
+      ]);
       (*
       Expand_in_disjunction("UnannType","Result");
       Expand_in_disjunction("UnannPrimitiveType","Result");

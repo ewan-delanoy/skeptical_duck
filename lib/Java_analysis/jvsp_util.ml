@@ -631,7 +631,12 @@ let code_for_tokentype_in_production_names toktype =
    let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
    String.concat "" lowercase_parts ;;
 let code_for_tokentype_sequence_in_production_names seq =
-   "Molecular"^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
+   let prefix = (
+    if List.length(seq)=1
+    then "Atomic"
+    else "Molecular"  
+   ) in 
+   prefix^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
  
 let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
 let display_star nm = nm ^ "\u{2605}" ;;

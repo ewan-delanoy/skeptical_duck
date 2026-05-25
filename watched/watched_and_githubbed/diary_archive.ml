@@ -1,6 +1,66 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 240 : Debugging session involving Jvag_grammar.Preliminary_normalizations.merge_token_sequences
+************************************************************************************************************************)
+module Snip240 = struct 
+
+open Jvag_types ;;
+let gram = Jvag_example.java_grammar ;;
+
+let bad1 = Jvag_grammar.Preliminary_normalizations.mergeable_token_sequences gram ;;
+
+module MTS = Jvag_grammar.Private.Mergeable_token_sequences ;;
+let bad2 = MTS.display_corrections_needed_for_merging_tl_sequences gram ;;
+
+let bad3 = MTS.corrections_needed_for_merging_tl_sequences gram ;;
+
+let bad4 = MTS.data_for_merging_tl_sequences gram ;;
+
+let involved_names = MTS.names_involving_mergeable_tl_sequences gram ;;
+  
+let bad5 = MTS.not_yet_registered_mergeable_tl_subsequences gram ;;
+
+let temp1 = MTS.all_mergeable_tl_subsequences2 gram ;;
+
+let temp2 = Image.image(fun seq->(seq,MTS.find_realization_opt seq gram)) temp1 ;;
+
+let not_yet_registered_mergeable_tl_subsequences = Memoized.make(fun gram -> 
+  let temp1 = all_mergeable_tl_subsequences2 gram in 
+  let temp2 = Image.image(fun seq->(seq,find_realization_opt seq gram)) temp1 in 
+  let (good,bad) = List.partition (fun (_seq,realizers)->realizers<>None) temp2 in 
+  (Image.image fst bad,Image.image (fun (seq,opt)->(seq,Option.get opt)) good)
+  ) ;;
+
+
+(*
+let np = MTS.new_pairs_merging_tl_sequences gram ;;
+
+let new_pairs = Image.image (fun (a,b)->Set_production(a,b)) ;;
+
+let (involved_names,associator) = data_for_merging ;;
+
+let mapper = (
+     fun name -> let old_form = Jvag_grammar.Private.get gram name in 
+     let new_form = MTS.merge_tl_sequence_in_form gram associator old_form in 
+     Set_production(name,new_form)
+   ) ;;
+let modified_old_pairs = Image.image mapper involved_names ;;
+
+let see = Tools_for_debugging.extract_from_list mapper involved_names ;;
+
+let bad4 = mapper "TypeNamePrecededByComma" ;;
+
+let name = "TypeNamePrecededByComma" ;;
+let old_form = Jvag_grammar.Private.get gram name ;;
+     let new_form = MTS.merge_tl_sequence_in_form gram associator old_form in 
+     Set_production(name,new_form)
+
+*)
+
+end;;
+
+(************************************************************************************************************************
  Entry 239 : Experimenting with Jvag_magnifying_glass
 ************************************************************************************************************************)
 module Snip239 = struct 
