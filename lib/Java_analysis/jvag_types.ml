@@ -6,11 +6,11 @@
 
      
 type form = 
-    Just_an_optional of string 
-   |Just_atomic of Jvsp_types.token_type list
-   |Just_a_concat of string list 
-   |Just_a_disjunction of string list 
-   |Just_a_star of string 
+    Optional of string 
+   |Molecular of Jvsp_types.token_type list
+   |Concat of string list 
+   |Disjunction of string list 
+   |Star of string 
    |Synonym of string
   ;;
 

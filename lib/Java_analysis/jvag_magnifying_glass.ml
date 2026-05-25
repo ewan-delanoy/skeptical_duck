@@ -19,11 +19,11 @@ let maximal_name_size (MG l)= snd(Max.maximize_it
 
 
 let link_to_string (name,form) = match form with 
-   Just_an_optional(nm) -> Jvsp_util.display_optional nm   
-  |Just_atomic(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
-  |Just_a_concat(_) ->  name
-  |Just_a_disjunction(_) -> name^"(DIS)"
-  |(Just_a_star nm) -> Jvsp_util.display_star nm 
+   Optional(nm) -> Jvsp_util.display_optional nm   
+  |Molecular(l) -> (String.concat " " (Image.image Jvsp_util.summary_of_token_type l))   
+  |Concat(_) ->  name
+  |Disjunction(_) -> name^"(DIS)"
+  |(Star nm) -> Jvsp_util.display_star nm 
   |Synonym(_) -> name
 ;;
 
@@ -42,12 +42,12 @@ let print_out (fmt:Format.formatter) mg=
 let concatify gram name =
    let form = Jvag_grammar.get gram name in 
    match form with 
-   Just_a_concat(l) ->  
+   Concat(l) ->  
      Image.image (fun name2->(name2,Jvag_grammar.get gram name2)) l
-  |Just_an_optional(_)  
-  |Just_a_disjunction(_)
-  |Just_atomic(_)  
-  |Just_a_star _  
+  |Optional(_)  
+  |Disjunction(_)
+  |Molecular(_)  
+  |Star _  
   |Synonym(_) -> [name,form] ;;
 
 
@@ -55,13 +55,13 @@ let concatify gram name =
 let get gram name =
    let form = Jvag_grammar.get gram name in 
    match form with 
-   Just_a_disjunction(l) -> 
+   Disjunction(l) -> 
      MG(Image.image (fun name2->MGL(name2,concatify gram name2)) l)
-  |Just_a_concat(_) ->
+  |Concat(_) ->
      MG[MGL(name,concatify gram name)]    
-  |Just_an_optional(_)  
-  |Just_atomic(_)  
-  |Just_a_star _  
+  |Optional(_)  
+  |Molecular(_)  
+  |Star _  
   |Synonym(_) -> MG([MGL(name,[name,form])]) ;;
 
 
@@ -89,11 +89,11 @@ let rec assoc_opt name0 = function
 let inner_expansion_of_inner_node gram form = 
    let (temp,expansion_should_occur)=
    (match form with 
-    (Just_a_disjunction l) -> (Image.image (fun x->[x]) l,true)    
-   |Just_a_concat l->([l],true)
-   |Just_atomic  _ -> ([],false)
-   |Just_a_star nm -> ([[];[nm;"Starred"^nm]],true)
-   |Just_an_optional nm -> ([[];[nm]],true)
+    (Disjunction l) -> (Image.image (fun x->[x]) l,true)    
+   |Concat l->([l],true)
+   |Molecular  _ -> ([],false)
+   |Star nm -> ([[];[nm;"Starred"^nm]],true)
+   |Optional nm -> ([[];[nm]],true)
    |Synonym nm -> ([[nm]],true)) in 
    (Image.image (Image.image (fun name->(name,Jvag_grammar.get gram name))) temp,
    expansion_should_occur);; 
@@ -155,7 +155,7 @@ let head_with_tail concatenation =
    let final_tail = (
       if t=[]
       then other_nodes 
-      else (Jvsp_util.code_for_tokentype_sequence_in_production_names t,Just_atomic(t)) :: other_nodes   
+      else (Jvsp_util.code_for_tokentype_sequence_in_production_names t,Molecular(t)) :: other_nodes   
    ) in 
    (h,final_tail) ;;
 

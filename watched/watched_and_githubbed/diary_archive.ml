@@ -1,6 +1,38 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 238 : Making a find/replace on a few files
+************************************************************************************************************************)
+module Snip238 = struct 
+
+let list_of_aps = ref ([]: Absolute_path.t list);;
+let list_of_reps = ref ([]: (string * string) list);;
+
+let act () = List.iter ( Replace_inside.replace_several_inside_file (!list_of_reps)) (!list_of_aps) ;;
+
+list_of_aps:=(   Image.image Absolute_path.of_string 
+   [
+     "watched/watched_and_githubbed/diary_archive.ml";
+     "watched/watched_not_githubbed/jug.ml";
+     "watched/watched_not_githubbed/ham.ml";
+     "lib/Java_analysis/jvag_grammar.ml";
+     "lib/Java_analysis/jvag_types.ml";
+     "lib/Java_analysis/jvag_example.ml";
+     "lib/Java_analysis/jvag_magnifying_glass.ml";
+     "lib/Java_analysis/jvag_form.ml";
+   ] );;
+
+list_of_reps:=(  
+   [
+      "Just_an_optional","Optional";
+      "Just_atomic","Molecular";
+      "Just_a_concat","Concat";
+      "Just_a_disjunction","Disjunction";
+      "Just_a_star","Star"
+   ] );;   
+end;;
+
+(************************************************************************************************************************
  Entry 237 : start constructing a Java parser
 ************************************************************************************************************************)
 module Snip237 = struct 
@@ -114,7 +146,7 @@ let next_state (provider,inds) old_state =
    let (production,new_tree_opt) = Nonrecursive_grammar.get provider (old_state.tree()) old_state.head in 
    let (before_updating_tree,should_update_tree) = (
    match production with 
-   (Just_an_optional nm) -> 
+   (Optional nm) -> 
        let is_used = (
         if old_state.tail=[]
         then true
@@ -122,7 +154,7 @@ let next_state (provider,inds) old_state =
        if is_used 
        then (change_head old_state nm,true)
        else (pass_to_tail old_state,false)  
-  |Just_atomic(toktypes) -> 
+  |Molecular(toktypes) -> 
        let remaining = Jvsp_token_types_list.unveil old_state.consumable.remaining_list in 
        let (common,left,right) = List_again.common_initial_sublist toktypes remaining in 
        if left<>[]
@@ -132,16 +164,16 @@ let next_state (provider,inds) old_state =
               old_state with 
               consumable = Stream.consume old_state.consumable k; 
             }),true) 
-  |Just_a_concat(l) -> 
+  |Concat(l) -> 
        ({
               old_state with 
               head = (List.hd l);
               tail = (List.tl l)@old_state.tail ;
         },true)
-  |Just_a_disjunction(l) ->  
+  |Disjunction(l) ->  
        let choice = Indications.get_for_disjunction inds old_state.head l old_state.consumable in 
        (change_head old_state choice, true)
-  |Just_a_star(nm) ->  
+  |Star(nm) ->  
        let is_used = (
         if old_state.tail=[]
         then true
@@ -347,8 +379,8 @@ let names_of_copied_productions = str_sort(["OrdinaryCompilationUnit";"OptionalP
   "MolecularPackage_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Identifier";"AtomicSm"]) ;;
 
 let temporary_substitutes = [
-   "StarredImportDeclaration",Just_atomic(toktypes4) ;
-   "TopLevelClassOrInterfaceDeclaration",Just_atomic(toktypes5) ;
+   "StarredImportDeclaration",Molecular(toktypes4) ;
+   "TopLevelClassOrInterfaceDeclaration",Molecular(toktypes5) ;
 ] ;;
 
 end ;; 
@@ -404,8 +436,8 @@ let grtr1 = {
   "PackageDeclaration";"StarredPackageModifier";
   "MolecularPackage_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Identifier";"AtomicSm"]);
    temporary_substitutes =  [
-   "StarredImportDeclaration",Just_atomic(toktypes4) ;
-   "TopLevelClassOrInterfaceDeclaration",Just_atomic(toktypes5) ;
+   "StarredImportDeclaration",Molecular(toktypes4) ;
+   "TopLevelClassOrInterfaceDeclaration",Molecular(toktypes5) ;
 ]; 
 } ;;
 
@@ -438,9 +470,9 @@ let check_grtr4 = (
 
 (*
 
-Jvsp_abstract_language.registration_opt old_gram (Just_an_optional("AtomicStatic")) ;;
-Jvsp_abstract_language.registration_opt old_gram (Just_atomic([DOT_T;TIMES_T])) ;;
-Jvsp_abstract_language.registration_opt old_gram (Just_an_optional("MolecularDot_Times")) ;;
+Jvsp_abstract_language.registration_opt old_gram (Optional("AtomicStatic")) ;;
+Jvsp_abstract_language.registration_opt old_gram (Molecular([DOT_T;TIMES_T])) ;;
+Jvsp_abstract_language.registration_opt old_gram (Optional("MolecularDot_Times")) ;;
 
 
 
@@ -456,7 +488,7 @@ let cn_form1 = Jvsp_abstract_language.Private.ocaml_name_of_form form1 ;;
 print_string("\n\n\n"^cn_form1^"\n\n\n") ;;
 
 
-(Just_a_disjunction(["ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
+(Disjunction(["ClassDeclaration";"InterfaceDeclaration";"AtomicSm"]));
 
 
 #use"watched/watched_not_githubbed/jug.ml";;
@@ -528,7 +560,7 @@ let new_gram =
       Rename("StarredIdentifierPrecededByDot","StarredMolecularDot_Identifier")
     ] ;;
 
-List_again.assoc_right_opt (Just_atomic[T.DOT_T;T.IDENTIFIER_T])  li1 ;;
+List_again.assoc_right_opt (Molecular[T.DOT_T;T.IDENTIFIER_T])  li1 ;;
 
 Jvsp_abstract_language.containing "MolecularDot_Identifier" old_gram ;;
 Jvsp_abstract_language.containing "IdentifierPrecededByDot" old_gram ;;
@@ -543,10 +575,10 @@ let (removed,new_gram) = Jvag_grammar.Preliminary_normalizations.remove_unused_n
 let new_gram = 
     Jvag_grammar.modify old_gram 
     [
-      Set_production("AmbiguousName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("ModuleName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("PackageName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("PackageOrTypeName",Just_a_concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("AmbiguousName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("ModuleName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
+      Set_production("PackageOrTypeName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
     ] ;;
 
 
@@ -779,22 +811,22 @@ let replacements = Image.image (fun (x,l)->(x,List.hd(l)) ) towards_replacements
 
 
 let at_form_level form = match form with
-  |(Disjunction ll) ->Just_a_disjunction(Image.image (fun conc->
+  |(Disjunction ll) ->Disjunction(Image.image (fun conc->
     let (Concat l) = conc in 
     if List.length(l)=1 then List.hd(l) else
     List.assoc conc replacements
     ) ll) 
-  |Just_a_disjunction(_) 
-  |Just_an_optional(_) 
-  |Just_atomic(_)    
-  |(Just_a_concat _) 
-  |(Just_a_star _) 
+  |Disjunction(_) 
+  |Optional(_) 
+  |Molecular(_)    
+  |(Concat _) 
+  |(Star _) 
   |Synonym(_) -> form;;
 
 let at_pair_level (name,form) = (name,at_form_level form) ;;    
 
 let modified_old_pairs = Image.image at_pair_level old_pairs ;;
-let new_pairs = Image.image (fun (Concat conc,name)->(name,Just_a_concat conc)) replacements ;;
+let new_pairs = Image.image (fun (Concat conc,name)->(name,Concat conc)) replacements ;;
 
 let all_pairs = Ordered.sort Jvsp_abstract_language.order_on_pairs (modified_old_pairs@ new_pairs) ;;
 
@@ -826,11 +858,11 @@ let (AL old_pairs) = Jvag_example.java_grammar ;;
 let production_names = Image.image fst old_pairs ;;
 
 let unordered_used_names = function
-   (Just_an_optional nm) -> [nm]
-   |Just_atomic _ -> []
-   |Just_a_concat l -> l
-   |Just_a_disjunction l -> l 
-   |Just_a_star nm -> [nm]
+   (Optional nm) -> [nm]
+   |Molecular _ -> []
+   |Concat l -> l
+   |Disjunction l -> l 
+   |Star nm -> [nm]
    |Synonym nm -> [nm];;
 
 let used_names form = Ordered.sort Total_ordering.lex_for_strings (unordered_used_names form) ;;
@@ -881,7 +913,7 @@ let needed_for_atomic =
 
 let atomic_pairs = Image.image (
    fun name ->("Atomic"^name,
-      Just_atomic[Option.get(token_type_from_grammar_name_opt name )])
+      Molecular[Option.get(token_type_from_grammar_name_opt name )])
 ) needed_for_atomic ;;   
 
 let optional_pairs = Image.image (
@@ -890,7 +922,7 @@ let optional_pairs = Image.image (
        "Atomic"^name
       ) in 
      ("Optional"^name,
-      Just_an_optional(ancestor))
+      Optional(ancestor))
 ) beheaded_optional ;;   
 
 let starred_pairs = Image.image (
@@ -899,23 +931,23 @@ let starred_pairs = Image.image (
        "Atomic"^name
       ) in 
      ("Starred"^name,
-      Just_a_star(ancestor))
+      Star(ancestor))
 ) beheaded_starred ;;   
 
 let new_pairs = [
     "TypeIdentifier",Synonym("Identifier");
-    "VariableAccess",Just_a_disjunction(["ExpressionName";"FieldAccess"]);
+    "VariableAccess",Disjunction(["ExpressionName";"FieldAccess"]);
 ] ;;        
 
 let new_pairs = [
-    "BooleanLiteral",Just_atomic [BOOLEAN_LITERAL_T]; 
-    "CharacterLiteral",Just_atomic [CHARACTER_LITERAL_T]; 
-    "FloatingPointLiteral",Just_atomic [FLOATING_POINT_LITERAL_T]; 
-    "Identifier",Just_atomic [IDENTIFIER_T];
-    "IntegerLiteral",Just_atomic [INTEGER_LITERAL_T]; 
-    "NullLiteral",Just_atomic [NULL_LITERAL_T]; 
-    "StringLiteral",Just_atomic [STRING_LITERAL_T]; 
-    "TextBlock",Just_atomic [TEXT_BLOCK_T];
+    "BooleanLiteral",Molecular [BOOLEAN_LITERAL_T]; 
+    "CharacterLiteral",Molecular [CHARACTER_LITERAL_T]; 
+    "FloatingPointLiteral",Molecular [FLOATING_POINT_LITERAL_T]; 
+    "Identifier",Molecular [IDENTIFIER_T];
+    "IntegerLiteral",Molecular [INTEGER_LITERAL_T]; 
+    "NullLiteral",Molecular [NULL_LITERAL_T]; 
+    "StringLiteral",Molecular [STRING_LITERAL_T]; 
+    "TextBlock",Molecular [TEXT_BLOCK_T];
 ] ;;   
 
 let new_pairs = atomic_pairs @ optional_pairs @ starred_pairs ;;
@@ -1397,13 +1429,13 @@ let version2 = Image.image tr2 version1 ;;
 let tr3_core ll = 
   if List.length(ll)<>1 
   then if List.for_all (fun l->List.length l=1) ll  
-       then Just_a_disjunction (Image.image List.hd ll)
+       then Disjunction (Image.image List.hd ll)
        else failwith("aaa")
   else 
   let l0 = List.hd ll in 
   if List.length l0 = 1 
   then Synonym (List.hd l0)
-  else Just_a_concat l0;;
+  else Concat l0;;
 
 
 let tr3 (idx,(name,ll)) =  (name,tr3_core ll) ;; 
@@ -1463,7 +1495,7 @@ let (good1,bad1) = List.partition (fun ((x,y),l,modified_l) -> modified_l=[]  ) 
 let lgr3 = Image.image (
   fun ((x,y),l,ml) ->
     if ml = []
-    then (x,Just_a_disjunction(Image.image (fun (Concat w)->List.hd w) l))
+    then (x,Disjunction(Image.image (fun (Concat w)->List.hd w) l))
     else (x,y)
 ) li3 ;;
 
@@ -1485,7 +1517,7 @@ let transform_on_form_level form= match form with
       let (Concat l) = List.hd ll  in
       if List.length(l)=1
       then Synonym(List.hd l)
-      else Just_a_concat(l)   
+      else Concat(l)   
   |_ -> form   ;; 
 
 let transform_on_pair_level (x,y) = (x,transform_on_form_level y);;
@@ -1533,7 +1565,7 @@ let beheaded_name name =
 
 let optional_expansions_for_li3 = 
   Image.image (
-   fun tt -> ("Optional"^(beheaded_name tt),Jvsp_abstract_language_t.Just_an_optional tt)
+   fun tt -> ("Optional"^(beheaded_name tt),Jvsp_abstract_language_t.Optional tt)
   ) optionals_in_li3 ;;
 
 let lgr2 = 
@@ -1604,7 +1636,7 @@ let beheaded_name name =
 
 let optional_expansions_for_li3 = 
   Image.image (
-   fun tt -> ("Optional"^(beheaded_name tt),Jvsp_abstract_language_t.Just_an_optional tt)
+   fun tt -> ("Optional"^(beheaded_name tt),Jvsp_abstract_language_t.Optional tt)
   ) optionals_in_li3 ;;
 
 let lgr2 = 
@@ -1729,7 +1761,7 @@ let snakecased_name toktype =
 
 let atomic_expansions_for_li3 = 
   Image.image (
-   fun tt -> ("Atomic"^(snakecased_name tt),Jvsp_abstract_language_t.Just_atomic [tt])
+   fun tt -> ("Atomic"^(snakecased_name tt),Jvsp_abstract_language_t.Molecular [tt])
   ) atomics_in_li3 ;;
 
 let lgr2 = atomic_expansions_for_li3 @li1;;

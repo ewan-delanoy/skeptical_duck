@@ -34,11 +34,11 @@ let get (AL l) name = match List.assoc_opt name l with
  |Some answer -> answer ;;
 
 let concat_element_to_enhanced_string name form = match form with
-   Just_a_disjunction(_) -> name
-  |Just_an_optional(_) 
-  |Just_atomic(_)    
-  |(Just_a_concat _) 
-  |(Just_a_star _) 
+   Disjunction(_) -> name
+  |Optional(_) 
+  |Molecular(_)    
+  |(Concat _) 
+  |(Star _) 
   |Synonym(_) -> Jvag_form.to_string form;;
 
 let concat_to_enhanced_string gram l = 
@@ -49,22 +49,22 @@ let adhoc_disjunction_to_string l =
       "    |"^elt) l)) ;; 
 
 let form_to_enhanced1_string gram form = match form with
-   (Just_a_concat l) -> concat_to_enhanced_string gram l
-   |Just_a_disjunction(l) -> adhoc_disjunction_to_string l
-  |Just_an_optional(_)   
-  |Just_atomic(_)    
-  |(Just_a_star _) 
+   (Concat l) -> concat_to_enhanced_string gram l
+   |Disjunction(l) -> adhoc_disjunction_to_string l
+  |Optional(_)   
+  |Molecular(_)    
+  |(Star _) 
   |Synonym(_) -> Jvag_form.to_string form;;
 
 let form_to_enhanced2_string gram form= match form with
-   Just_a_disjunction(l) ->
+   Disjunction(l) ->
      "\n"^(String.concat "\n" (Image.image (fun elt->
       let expanded_elt = get gram elt in 
       elt^" : "^(form_to_enhanced1_string gram expanded_elt)) l))^"\n"  
-  |Just_a_concat(l) ->  concat_to_enhanced_string gram l     
-  |Just_an_optional(_) 
-  |Just_atomic(_)    
-  |(Just_a_star _) 
+  |Concat(l) ->  concat_to_enhanced_string gram l     
+  |Optional(_) 
+  |Molecular(_)    
+  |(Star _) 
   |Synonym(_) -> Jvag_form.to_string form;;
 
 
@@ -138,11 +138,11 @@ let rename_on_name (old_name,new_name) name =
 let rename_on_form renaming_data form = 
   let rename = rename_on_name renaming_data in 
   match form with
-    Just_a_concat l -> Just_a_concat(Image.image rename l)
-   |Just_atomic _  -> form
-   |Just_a_disjunction l -> Just_a_disjunction(Image.image rename l) 
-   |Just_a_star nm -> Just_a_star (rename nm)
-   |Just_an_optional nm -> Just_an_optional (rename nm)
+    Concat l -> Concat(Image.image rename l)
+   |Molecular _  -> form
+   |Disjunction l -> Disjunction(Image.image rename l) 
+   |Star nm -> Star (rename nm)
+   |Optional nm -> Optional (rename nm)
    |Synonym nm -> Synonym (rename nm) ;;  
 
 let rename_on_pair renaming_data (name,form) =
@@ -157,7 +157,7 @@ let remove_productions to_be_removed (AL l) =
 
 let register_molecular token_types gram =
    let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
-   add_pair (name,Just_atomic(token_types)) gram ;;
+   add_pair (name,Molecular(token_types)) gram ;;
 
 let shortened_version name = 
   if String.starts_with name ~prefix:"Atomic"
@@ -168,11 +168,11 @@ let shortened_string_concatenation a b = a ^ (shortened_version b) ;;
 
 exception Standardized_name_exn of string ;;   
 let standardized_name = function 
-   Just_a_concat _ -> raise(Standardized_name_exn("Concat"))
-   |Just_atomic token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
-   |Just_a_disjunction _ -> raise(Standardized_name_exn("Disjunction"))
-   |Just_a_star nm -> shortened_string_concatenation "Starred" nm
-   |Just_an_optional nm -> shortened_string_concatenation "Optional" nm
+   Concat _ -> raise(Standardized_name_exn("Concat"))
+   |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
+   |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
+   |Star nm -> shortened_string_concatenation "Starred" nm
+   |Optional nm -> shortened_string_concatenation "Optional" nm
    |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
 let register_with_standardized_name form gram= 
@@ -180,18 +180,18 @@ let register_with_standardized_name form gram=
    add_pair (name,form) gram ;;
 
 let eid_in_dijsunction (contained,replacement) l = 
-  Just_a_disjunction (List.flatten(Image.image(
+  Disjunction (List.flatten(Image.image(
                                  fun nm -> if nm = contained then replacement else [nm]
                             ) l)) ;;     
 
 let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
-   (Just_a_disjunction l) -> (if name=container 
+   (Disjunction l) -> (if name=container 
                             then eid_in_dijsunction (contained,replacement) l
                             else form)     
-   |Just_a_concat _
-   |Just_atomic  _
-   |Just_a_star _
-   |Just_an_optional _ 
+   |Concat _
+   |Molecular  _
+   |Star _
+   |Optional _ 
    |Synonym _ -> form;;   
 
 let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) ) ;;
@@ -208,11 +208,11 @@ let eis_in_named_form (name_for_content,container,actual_content) (name,form) = 
                          then raise(Bad_substitution_in_synonym_exn(name_for_content,name2_for_content)) 
                          else actual_content
                   else form)     
-   |Just_a_disjunction _
-   |Just_a_concat _
-   |Just_atomic  _
-   |Just_a_star _
-   |Just_an_optional _ -> form;;   
+   |Disjunction _
+   |Concat _
+   |Molecular  _
+   |Star _
+   |Optional _ -> form;;   
 
 let eis_in_pair triple (name,form) = (name,eis_in_named_form triple(name,form) ) ;;   
 let eis_in_grammar (name_for_content,container) gram =
@@ -225,18 +225,18 @@ let csg_in_form rep_pair form =
    let replacer = List_again.replace_if_proposed [rep_pair] in 
    match form with 
    (Synonym nm) -> Synonym(replacer nm)    
-   |Just_a_disjunction l ->
+   |Disjunction l ->
         let new_l=(
           if List.mem older_synonym l 
           then List.filter (fun x->x<>newer_synonym) l
           else Image.image replacer l) in 
         if List.length(new_l)=1 
         then Synonym older_synonym 
-        else Just_a_disjunction new_l    
-   |Just_a_concat l -> Just_a_concat(Image.image replacer l)
-   |Just_a_star nm -> Just_a_star(replacer nm)
-   |Just_an_optional nm -> Just_an_optional (replacer nm)
-   |Just_atomic  _ -> form;;   
+        else Disjunction new_l    
+   |Concat l -> Concat(Image.image replacer l)
+   |Star nm -> Star(replacer nm)
+   |Optional nm -> Optional (replacer nm)
+   |Molecular  _ -> form;;   
 
 
 let csl_in_named_form (newer_synonym,container,older_synonym) (name,form) = 
@@ -282,20 +282,20 @@ end ;;
 
 module Redundant_concats = struct
 let get_concat_content_opt = function 
-   (Just_a_concat cc) -> Some cc
-   |Just_atomic _
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+   (Concat cc) -> Some cc
+   |Molecular _
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> None ;;
 
 let concat_parts_inside_opt form = 
     match form with
-    Just_a_concat l -> Some(l)
-   |Just_atomic _
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+    Concat l -> Some(l)
+   |Molecular _
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> None ;;
 
 let redundant_concats_inside gram (name,form) = 
@@ -326,7 +326,7 @@ let names_involved_in_replacements = Memoized.make(fun gram ->
   str_sort (Image.image fst (replacements_by_name gram))) ;;
 
 let corrections_needed_for_redundant_concats = Memoized.make(fun gram -> Image.image (
-  fun (name,(_initial_list,final_list)) -> Set_production(name,Just_a_concat(final_list))
+  fun (name,(_initial_list,final_list)) -> Set_production(name,Concat(final_list))
 ) (replacements_by_name gram) );;  
 
 let display_corrections_needed_for_redundant_concats gram = 
@@ -346,19 +346,19 @@ end ;;
 module Mergeable_token_sequences = struct
 
    let get_atomic_content_opt = function 
-   (Just_atomic ac) -> Some ac
-   |Just_a_concat _
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+   (Molecular ac) -> Some ac
+   |Concat _
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> None ;;
 
 let find_realizing_pair_opt toktypes (name,form) = match form with  
-   (Just_atomic ac) -> if ac = toktypes then Some name else None
-   |Just_a_concat _
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+   (Molecular ac) -> if ac = toktypes then Some name else None
+   |Concat _
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> None ;;
 
 let find_realization_opt toktypes (AL l) = 
@@ -379,15 +379,15 @@ let mergeable_tl_subsequences_in_concat_list gram l=
 
 let mergeable_tl_subsequences_in_pair gram (name,form) = 
    match form with
-    Just_a_concat l ->
+    Concat l ->
       let temp = mergeable_tl_subsequences_in_concat_list gram l in 
       if temp = []
       then None  
       else Some((name,l),temp)
-   |Just_atomic _
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+   |Molecular _
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> None ;;
 
 
@@ -421,7 +421,7 @@ let names_involving_mergeable_tl_sequences = Memoized.make(fun gram ->
 
 let new_pairs_merging_tl_sequences = Memoized.make(fun gram -> 
   let (seqs,_) = not_yet_registered_mergeable_tl_subsequences gram in 
-  Image.image (fun seq->(Jvsp_util.code_for_tokentype_sequence_in_production_names seq,Just_atomic seq)) seqs
+  Image.image (fun seq->(Jvsp_util.code_for_tokentype_sequence_in_production_names seq,Molecular seq)) seqs
   ) ;; 
 
 let data_for_merging_tl_sequences = Memoized.make(fun gram -> 
@@ -452,11 +452,11 @@ let merge_tl_sequence_in_concat gram associator l =
 
 let merge_tl_sequence_in_form gram associator form =
   match form with
-    Just_a_concat l ->Just_a_concat (merge_tl_sequence_in_concat gram associator l)
-   |Just_atomic _   
-   |Just_a_disjunction _ 
-   |Just_a_star _
-   |Just_an_optional _
+    Concat l ->Concat (merge_tl_sequence_in_concat gram associator l)
+   |Molecular _   
+   |Disjunction _ 
+   |Star _
+   |Optional _
    |Synonym _ -> form ;;
 
 let merge_tl_sequence_in_pair gram data_for_merging pair =
@@ -499,11 +499,11 @@ module Name_usage = struct
 
 let unordered_used_names_in_form form =
   match form with
-    Just_a_concat l -> l
-   |Just_atomic _  -> [] 
-   |Just_a_disjunction l -> l 
-   |Just_a_star nm -> [nm]
-   |Just_an_optional nm -> [nm]
+    Concat l -> l
+   |Molecular _  -> [] 
+   |Disjunction l -> l 
+   |Star nm -> [nm]
+   |Optional nm -> [nm]
    |Synonym nm -> [nm] ;;
 
 let used_names_in_form form =
@@ -630,11 +630,11 @@ let prsrtxt_for_pair (name,form_opt) = match form_opt with
   None -> prsrtxt_for_undefined name 
   |(Some form) ->
   match form with 
-   (Just_a_concat l) ->  prsrtxt_for_concat name l
-   |Just_atomic l -> prsrtxt_for_atomic name l
-   |Just_a_disjunction l -> prsrtxt_for_disjunction name l
-   |Just_a_star nm -> prsrtxt_for_star name nm
-   |Just_an_optional nm -> prsrtxt_for_optional name nm
+   (Concat l) ->  prsrtxt_for_concat name l
+   |Molecular l -> prsrtxt_for_atomic name l
+   |Disjunction l -> prsrtxt_for_disjunction name l
+   |Star nm -> prsrtxt_for_star name nm
+   |Optional nm -> prsrtxt_for_optional name nm
    |Synonym nm -> prsrtxt_for_synonym name nm ;;
 
 let prsrtxt_for_pair_list l = 
