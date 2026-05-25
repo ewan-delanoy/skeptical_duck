@@ -1,6 +1,76 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 239 : Experimenting with Jvag_magnifying_glass
+************************************************************************************************************************)
+module Snip239 = struct 
+
+module T = Jvsp_types ;;
+open Jvag_types ;;
+
+open Jvag_grammar ;;
+
+let old_gram = Jvag_example.java_grammar ;;
+
+let current_gram = Jvag_grammar.modify old_gram [
+  (*
+  Expand_in_disjunction("UnannPrimitiveType","UnannType")
+  *)
+] ;;
+
+let g = Jvag_grammar.get_and_display current_gram ;;
+let c name = Jvag_grammar.containing name current_gram ;;
+
+g "ClassBodyDeclaration" ;;
+
+let see = Jvag_grammar.Preliminary_normalizations.all  current_gram ;;
+
+let (see1,see2,see3,see4)=see ;;
+
+let mgl (MG l) = List.length l ;;
+let mg0 = Jvag_magnifying_glass.get current_gram "ClassBodyDeclaration" ;;
+
+let mg1 = Jvag_magnifying_glass.select mg0 ["FieldDeclaration";"MethodDeclaration";"ConstructorDeclaration"];;
+let mg2 = Jvag_magnifying_glass.behead_each_one mg1 ;;
+
+let (good2,bad2) = Jvag_magnifying_glass.determine_first_token current_gram  mg2 ;;
+
+let (_,mg3) = List.hd(bad2) ;; 
+
+let (good3,bad3) = Jvag_magnifying_glass.determine_first_token current_gram  mg3 ;;
+
+let (_,mg4) = List.hd(bad3) ;; 
+
+let (good4,bad4) = Jvag_magnifying_glass.determine_first_token current_gram  mg4 ;;
+
+let (_,mg5) = List.hd(bad4) ;; 
+
+
+
+let next_mg mg =
+  let (pre_mg,_) = Jvag_magnifying_glass.expand_all_heads current_gram  mg in 
+  fst(Jvag_magnifying_glass.determined_or_not pre_mg) ;;
+
+let pre_ff = Memoized.small next_mg mg2 ;;
+
+let ff n = let mg = pre_ff n in (mgl mg,mg) ;;
+
+
+(*
+let z1 = g "ShortUnannClassType" ;;
+let z2 = Private.concat_content z1 ;;
+
+let z3 = g "UsualClassType" ;;
+let z4 = Jvag_form.concat_content z3 ;;
+
+let z5 = g "UnannClassType" ;;
+let z6 = Jvag_form.concat_content z5 ;;
+
+Private.unordered_coatoms (g "ClassBodyDeclaration") ;;
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 238 : Making a find/replace on a few files
 ************************************************************************************************************************)
 module Snip238 = struct 
