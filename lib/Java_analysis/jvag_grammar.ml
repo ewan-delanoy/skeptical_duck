@@ -120,7 +120,21 @@ let just_below gram name = (Jvag_form.unordered_coatoms (get gram name)) ;;
 
 module Modify = struct
   
-let add_pair pair (AL l) = 
+let expand_form_using_concat (name,chain) form = match form with
+  (Concat l) -> Concat(List.flatten(Image.image (fun name2->if name2=name then chain else [name2]) l))
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> form;;   
+
+let expand_pair_using_concat data (name,form) =
+    (name,expand_form_using_concat data form) ;;
+
+let expand_grammar_using_concat data (AL l) =
+  AL(Image.image (expand_pair_using_concat data) l);;
+
+let add_pair_naively pair (AL l) = 
   let (name,_form) = pair in 
   let new_l = (
     match List.assoc_opt name l with 
@@ -130,7 +144,15 @@ let add_pair pair (AL l) =
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
 
-
+let add_pair pair gram = 
+  let gram2 = add_pair_naively pair gram in 
+  match snd pair with 
+  (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> gram2;;   
 
 let rename_on_name (old_name,new_name) name =
   if name = old_name then new_name else name ;; 

@@ -161,6 +161,29 @@ let head_with_tail concatenation =
 
 let mg_length (MG l) = List.length l;;   
 
+
+
+let is_a_digit c= let i = int_of_char c in (48<=i)&&(i<=57) ;;
+
+let is_a_digit_or_dot c = (is_a_digit c) || (c='.') ;; 
+
+let is_not_a_digit_or_dot c = not(is_a_digit_or_dot c) ;;
+
+let numberless_core str =
+   match String_find_char.backwards_from_inclusive_opt is_not_a_digit_or_dot str (String.length str) with 
+   None -> ""
+   |Some k -> Cull_string.beginning k str ;;
+
+(*
+
+numberless_core "Gabriel7.21.53" ;;
+
+*)   
+
+let str_order = Total_ordering.lex_for_strings ;;
+let str_sort = Ordered.sort str_order ;;
+
+
 let analize_after_first_token_determination (MG l)= 
   let temp1 = Image.image (fun (MGL(name,concatenation)) -> 
     let (h,final_tail) = head_with_tail concatenation in 
@@ -168,10 +191,12 @@ let analize_after_first_token_determination (MG l)=
    ) l in 
   let tokens = Ordered.sort Total_ordering.standard (Image.image fst temp1) in   
   let temp2 = Image.image (
-    fun h->(h,
-    MG(List.filter_map (fun pair->if fst(pair)=h then Some(snd pair) else None) temp1))
+    fun h->
+      let for_h = List.filter_map (fun pair->if fst(pair)=h then Some(snd pair) else None) temp1 in 
+      let numberless_versions = str_sort (Image.image (fun (MGL(name,_))->numberless_core name) for_h) in 
+      ((h,numberless_versions),MG(for_h))
   ) tokens in    
-  List.partition (fun (_h,realizers)->mg_length(realizers)=1) temp2;; 
+  List.partition (fun ((_h,versions),_realizers)->List.length(versions)=1) temp2;; 
 
 let determine_first_token gram mg =
    let mg2 = helper_for_first_token_determination gram (expand_all_heads gram mg) in 
@@ -187,8 +212,12 @@ let determined_or_not (MG l) =
       Jvag_form.molecular_content_opt form=None) l in 
    (MG(a),MG(b));;
 
+let behead_each_one (MG l) =
+   MG(Image.image (fun (MGL(name,concatenation))->MGL(name,List.tl concatenation)) l);;
+
 end ;; 
 
+let behead_each_one = Private.behead_each_one ;;
 let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
