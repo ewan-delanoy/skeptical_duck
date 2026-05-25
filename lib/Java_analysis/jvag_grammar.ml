@@ -367,13 +367,6 @@ end ;;
 
 module Mergeable_token_sequences = struct
 
-   let get_atomic_content_opt = function 
-   (Molecular ac) -> Some ac
-   |Concat _
-   |Disjunction _ 
-   |Star _
-   |Optional _
-   |Synonym _ -> None ;;
 
 let find_realizing_pair_opt toktypes (name,form) = match form with  
    (Molecular ac) -> if ac = toktypes then Some name else None
@@ -385,17 +378,15 @@ let find_realizing_pair_opt toktypes (name,form) = match form with
 
 let find_realization_opt toktypes (AL l) = 
     List.find_map (find_realizing_pair_opt toktypes) l ;;      
-
-
-let is_a_token_sequence form = ((get_atomic_content_opt form)<>None) ;;   
+   
 
 let mergeable_tl_subsequences_in_concat_list gram l= 
    let temp1 = Image.image (get gram) l in 
-   let temp2 = List_again.connected_fibers is_a_token_sequence temp1 in 
+   let temp2 = List_again.connected_fibers Jvag_form.is_a_token_sequence temp1 in 
    List.filter_map (
     fun (_range,seq,is_a_tl_seq) ->
       if is_a_tl_seq && (List.length(seq)>1)
-      then  Some (List.flatten(Image.image (fun z->Option.get(get_atomic_content_opt z)) seq)) 
+      then  Some (List.flatten(Image.image (fun z->Option.get(Jvag_form.molecular_content_opt z)) seq)) 
       else None
    ) temp2;;
 
@@ -413,7 +404,7 @@ let mergeable_tl_subsequences_in_pair gram (name,form) =
    |Synonym _ -> None ;;
 
 
-let all_mergeable_tl_subsequences1 =Memoized.make (fun gram->
+let initial_complete_data_on_mergeable_tl_subsequences =Memoized.make (fun gram->
   let (AL pairs) = gram in   
   List.filter_map (mergeable_tl_subsequences_in_pair gram) pairs);; 
 
@@ -426,65 +417,54 @@ let order_on_token_types =
 
 let order_on_tl_sequences = Total_ordering.silex_compare order_on_token_types ;; 
 
-let all_mergeable_tl_subsequences2 = Memoized.make(fun gram -> 
-  let temp1 = Image.image (fun (_,seqs)->seqs) (all_mergeable_tl_subsequences1 gram) in 
+let all_mergeable_tl_subsequences = Memoized.make(fun gram -> 
+  let temp1 = Image.image (fun (_,seqs)->seqs) (initial_complete_data_on_mergeable_tl_subsequences gram) in 
   let temp2 = List.flatten temp1 in 
   Ordered.sort order_on_tl_sequences temp2) ;;
 
-let not_yet_registered_mergeable_tl_subsequences = Memoized.make(fun gram -> 
-  let temp1 = all_mergeable_tl_subsequences2 gram in 
+let data_to_start_naming_all_mergeable_tl_sequences = Memoized.make(fun gram -> 
+  let temp1 = all_mergeable_tl_subsequences gram in 
   let temp2 = Image.image(fun seq->(seq,find_realization_opt seq gram)) temp1 in 
-  let (good,bad) = List.partition (fun (_seq,realizers)->realizers<>None) temp2 in 
-  (Image.image fst bad,Image.image (fun (seq,opt)->(seq,Option.get opt)) good)
-  ) ;;
-let names_involving_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  str_sort (Image.image (fun ((name,_),_)->name) (all_mergeable_tl_subsequences1 gram))) ;;
-
-
-let new_pairs_merging_tl_sequences = Memoized.make(fun gram -> 
-  let (seqs,_) = not_yet_registered_mergeable_tl_subsequences gram in 
-  Image.image (fun seq->(Jvsp_util.code_for_tokentype_sequence_in_production_names seq,Molecular seq)) seqs
+  let (found,not_found) = List.partition (fun (_,opt)->opt<>None) temp2 in 
+    (Image.image (fun (seq,opt)->(seq,Option.get opt)) found,
+     Image.image fst not_found 
+    )  
   ) ;; 
 
+let namings_for_registered_mergeable_tl_sequences gram = fst(data_to_start_naming_all_mergeable_tl_sequences gram) ;;
+
+let namings_for_unregistered_mergeable_tl_sequences = Memoized.make(fun gram -> 
+  Image.image(fun seq->(seq,Jvsp_util.code_for_tokentype_sequence_in_production_names seq)) 
+    (snd(data_to_start_naming_all_mergeable_tl_sequences gram))
+  ) ;; 
+  
+
+let namings_for_all_mergeable_tl_sequences = Memoized.make(fun gram -> 
+  (namings_for_registered_mergeable_tl_sequences gram) @
+  (namings_for_unregistered_mergeable_tl_sequences gram)  
+) ;; 
+let names_involving_mergeable_tl_sequences = Memoized.make(fun gram -> 
+  str_sort (Image.image (fun ((name,_),_)->name) (initial_complete_data_on_mergeable_tl_subsequences gram))) ;;
+
 let data_for_merging_tl_sequences = Memoized.make(fun gram -> 
-  let involved_names = names_involving_mergeable_tl_sequences gram
-  and  (seqs,_) = not_yet_registered_mergeable_tl_subsequences gram in 
-  (involved_names,Image.image (fun seq->(seq,Jvsp_util.code_for_tokentype_sequence_in_production_names seq)) seqs)
+  (names_involving_mergeable_tl_sequences gram,
+  namings_for_all_mergeable_tl_sequences gram
+  )
   ) ;; 
 
 exception Merge_tl_sequence_in_concat_exn of Jvsp_types.token_type list;;
 
 let merge_tl_sequence_in_concat gram associator l = 
   let temp1 = Image.image (fun nm->(nm,get gram nm)) l in 
-  let temp2 = List_again.connected_fibers (fun (_,form)->is_a_token_sequence form) temp1 in 
+  let temp2 = List_again.connected_fibers (fun (_,form)->Jvag_form.is_a_token_sequence form) temp1 in 
   let temp3 = Image.image (
     fun (_range,segment,is_a_tl_segment) ->
       if is_a_tl_segment && (List.length(segment)>1)
-      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(get_atomic_content_opt z)) segment) in  
+      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(Jvag_form.molecular_content_opt z)) segment) in  
            let seq_name_opt = List.assoc_opt seq associator in 
            (
              match seq_name_opt with 
              None -> raise(Merge_tl_sequence_in_concat_exn(seq)) 
-             |Some name_seq -> [name_seq]
-           )
-      else Image.image fst segment
-  ) temp2 in 
-  List.flatten temp3 ;; 
-
-let raphael = ref None ;;
-
-let merge_tl_sequence_in_concat gram associator l = 
-  let temp1 = Image.image (fun nm->(nm,get gram nm)) l in 
-  let temp2 = List_again.connected_fibers (fun (_,form)->is_a_token_sequence form) temp1 in 
-  let temp3 = Image.image (
-    fun (_range,segment,is_a_tl_segment) ->
-      if is_a_tl_segment && (List.length(segment)>1)
-      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(get_atomic_content_opt z)) segment) in  
-           let seq_name_opt = List.assoc_opt seq associator in 
-           (
-             match seq_name_opt with 
-             None -> let _ = (raphael:=Some(gram,associator,l,seq)) in 
-                     raise(Merge_tl_sequence_in_concat_exn(seq)) 
              |Some name_seq -> [name_seq]
            )
       else Image.image fst segment
@@ -510,7 +490,7 @@ let merge_tl_sequence_in_pair gram data_for_merging pair =
 
 let corrections_needed_for_merging_tl_sequences = Memoized.make(fun gram->
    let data_for_merging = data_for_merging_tl_sequences gram 
-   and new_pairs = Image.image (fun (a,b)->Set_production(a,b)) (new_pairs_merging_tl_sequences gram) in 
+   and new_pairs = Image.image (fun (a,b)->Set_production(b,Molecular a)) (namings_for_unregistered_mergeable_tl_sequences gram) in 
    let (involved_names,associator) = data_for_merging in  
    let modified_old_pairs = Image.image(
      fun name -> let old_form = get gram name in 
