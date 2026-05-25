@@ -104,11 +104,12 @@ let append_index_after_sharp name idx =
    then name ^ "." ^ s 
    else name ^ "#" ^ s ;;      
 
-let sharpless_core str = Cull_string.before_rightmost str '#' ;;
+let sharpless_core str = Cull_string.before_rightmost_possibly_all str '#' ;;
 
 
 (*
 
+sharpless_core "Gabriel" ;;
 sharpless_core "Gabriel#7.21.53" ;;
 append_index_after_sharp "Gabriel#7.21.53" 64 ;;
 
