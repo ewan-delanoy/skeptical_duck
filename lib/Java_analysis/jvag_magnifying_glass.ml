@@ -98,6 +98,22 @@ let inner_expansion_of_inner_node gram form =
    (Image.image (Image.image (fun name->(name,Jvag_grammar.get gram name))) temp,
    expansion_should_occur);; 
 
+let append_index_after_sharp name idx =
+   let s = string_of_int idx in 
+   if String.contains name '#'
+   then name ^ "." ^ s 
+   else name ^ "#" ^ s ;;      
+
+let sharpless_core str = Cull_string.before_rightmost str '#' ;;
+
+
+(*
+
+sharpless_core "Gabriel#7.21.53" ;;
+append_index_after_sharp "Gabriel#7.21.53" 64 ;;
+
+*)      
+
 let expand_node_in_line_at_index gram idx line_in_mg  =
    let (MGL(main_name,concatenation)) =line_in_mg in 
    let indexed_concatenation = Int_range.index_everything concatenation in 
@@ -111,7 +127,8 @@ let expand_node_in_line_at_index gram idx line_in_mg  =
    and indexed_inner_l=Int_range.index_everything inner_l in 
    (Image.image (
        fun (idx2,data2) -> 
-         MGL(main_name^"."^(string_of_int idx2),before@(data2)@after)
+         MGL(append_index_after_sharp main_name idx2,
+         before@(data2)@after)
    ) indexed_inner_l,Some node_name) ;;
 
 let expand_node_in_line_according_to_data gram line_in_mg data =
@@ -163,28 +180,11 @@ let mg_length (MG l) = List.length l;;
 
 
 
-let is_a_digit c= let i = int_of_char c in (48<=i)&&(i<=57) ;;
-
-let is_a_digit_or_dot c = (is_a_digit c) || (c='.') ;; 
-
-let is_not_a_digit_or_dot c = not(is_a_digit_or_dot c) ;;
-
-let numberless_core str =
-   match String_find_char.backwards_from_inclusive_opt is_not_a_digit_or_dot str (String.length str) with 
-   None -> ""
-   |Some k -> Cull_string.beginning k str ;;
-
-(*
-
-numberless_core "Gabriel7.21.53" ;;
-
-*)   
-
 let str_order = Total_ordering.lex_for_strings ;;
 let str_sort = Ordered.sort str_order ;;
 
 let numberless_versions (MG l)=
-   str_sort (Image.image (fun (MGL(name,_))->numberless_core name) l) ;;
+   str_sort (Image.image (fun (MGL(name,_))->sharpless_core name) l) ;;
 
 let group_by_first_token (MG l)= 
   let temp1 = Image.image (fun (MGL(name,concatenation)) -> 
