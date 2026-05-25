@@ -183,24 +183,58 @@ numberless_core "Gabriel7.21.53" ;;
 let str_order = Total_ordering.lex_for_strings ;;
 let str_sort = Ordered.sort str_order ;;
 
+let numberless_versions (MG l)=
+   str_sort (Image.image (fun (MGL(name,_))->numberless_core name) l) ;;
 
-let analize_after_first_token_determination (MG l)= 
+let group_by_first_token (MG l)= 
   let temp1 = Image.image (fun (MGL(name,concatenation)) -> 
     let (h,final_tail) = head_with_tail concatenation in 
     (h,MGL(name,final_tail))
    ) l in 
   let tokens = Ordered.sort Total_ordering.standard (Image.image fst temp1) in   
-  let temp2 = Image.image (
+  Image.image (
     fun h->
       let for_h = List.filter_map (fun pair->if fst(pair)=h then Some(snd pair) else None) temp1 in 
-      let numberless_versions = str_sort (Image.image (fun (MGL(name,_))->numberless_core name) for_h) in 
-      ((h,numberless_versions),MG(for_h))
-  ) tokens in    
-  List.partition (fun ((_h,versions),_realizers)->List.length(versions)=1) temp2;; 
+      (h,MG(for_h))
+  ) tokens ;; 
+
+
 
 let determine_first_token gram mg =
    let mg2 = helper_for_first_token_determination gram (expand_all_heads gram mg) in 
-   analize_after_first_token_determination mg2 ;;
+   let grouped_by_first_tok = group_by_first_token mg2 in 
+   Image.image (
+    fun (h,mg_for_h)->
+      let versions = numberless_versions mg_for_h in 
+      (h,(versions,mg_for_h))
+  ) grouped_by_first_tok;;
+
+let determine_first_token_and_partition gram mg =
+   List.partition (fun (_h,(versions,_realizers))->List.length(versions)=1) 
+      (determine_first_token gram mg);;
+
+let react_to_imposed_first_token gram mg imposed_first_token=
+   let list_of_cases = determine_first_token gram mg in 
+   List.assoc imposed_first_token list_of_cases ;;
+
+exception Prefix_too_short_exn of Jvsp_types.token_type list ;;
+
+let rec helper_for_shortest_determinative_prefix gram (giver,taker,(versions,mg)) = 
+   if List.length(versions)=1
+   then (List.rev taker,List.hd versions,mg)
+   else  
+   match giver with 
+   [] -> raise(Prefix_too_short_exn(List.rev taker))     
+   |toktype::others ->
+      helper_for_shortest_determinative_prefix gram (others,toktype::taker,
+       react_to_imposed_first_token gram mg toktype
+      ) ;; 
+
+let shortest_determinative_prefix gram mg toklist =
+   helper_for_shortest_determinative_prefix gram (Jvsp_token_types_list.unveil toklist,[],(numberless_versions mg,mg)) ;;
+
+let behead_each_one (MG l) =
+   MG(Image.image (fun (MGL(name,concatenation))->MGL(name,List.tl concatenation)) l);;
 
 
 let select (MG l) names = 
@@ -212,8 +246,7 @@ let determined_or_not (MG l) =
       Jvag_form.molecular_content_opt form=None) l in 
    (MG(a),MG(b));;
 
-let behead_each_one (MG l) =
-   MG(Image.image (fun (MGL(name,concatenation))->MGL(name,List.tl concatenation)) l);;
+
 
 end ;; 
 
@@ -225,4 +258,5 @@ let get = Private.get ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
 let select = Private.select ;;
+let shortest_determinative_prefix  = Private.shortest_determinative_prefix ;;
 
