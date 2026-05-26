@@ -198,9 +198,6 @@ let group_by_first_token (MG l)=
       let for_h = List.filter_map (fun pair->if fst(pair)=h then Some(snd pair) else None) temp1 in 
       (h,MG(for_h))
   ) tokens ;; 
-
-
-
 let determine_first_token gram mg =
    let mg2 = helper_for_first_token_determination gram (expand_all_heads gram mg) in 
    let grouped_by_first_tok = group_by_first_token mg2 in 
@@ -254,6 +251,9 @@ let possible_first_tokens gram name =
    let tokens = Ordered.sort Jvsp_util.order_on_token_types unordered_tokens in 
    (tokens,complete_info) ;;
 
+let nonempty_lines (MG l) = 
+   MG(List.filter (fun (MGL(_name,z))->z<>[]) l);;
+
 
 end ;; 
 
@@ -262,6 +262,7 @@ let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
 let get = Private.get ;; 
+let nonempty_lines = Private.nonempty_lines ;;
 let possible_first_tokens = Private.possible_first_tokens ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;

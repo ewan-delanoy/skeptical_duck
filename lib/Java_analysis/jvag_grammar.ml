@@ -202,9 +202,9 @@ let register_with_standardized_name form gram=
    add_pair_naively (name,form) gram ;;
 
 let eid_in_dijsunction (contained,replacement) l = 
-  Disjunction (List.flatten(Image.image(
+  Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
                                  fun nm -> if nm = contained then replacement else [nm]
-                            ) l)) ;;     
+                            ) l))) ;;     
 
 let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
    (Disjunction l) -> (if name=container 

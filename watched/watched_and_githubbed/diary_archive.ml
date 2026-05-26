@@ -1,6 +1,27 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 241 :    Checking the coincidence of two orders
+************************************************************************************************************************)
+module Snip241 = struct 
+
+
+
+  let g1 = Jvsp_util.all_token_types ;;
+
+
+  let g2 = Image.image (fun t->Cull_string.coending 2 (Jvsp_util.ocaml_name_for_token_type t)) g1 ;;
+
+let g3 = Ordered.sort Total_ordering.lex_for_strings g2 ;;
+
+
+let (g4,g5,g6) = List_again.common_initial_sublist g2 g3 ;;
+
+let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;
+
+end;;
+
+(************************************************************************************************************************
  Entry 240 : Debugging session involving Jvag_grammar.Preliminary_normalizations.merge_token_sequences
 ************************************************************************************************************************)
 module Snip240 = struct 
@@ -18,19 +39,10 @@ let bad3 = MTS.corrections_needed_for_merging_tl_sequences gram ;;
 let bad4 = MTS.data_for_merging_tl_sequences gram ;;
 
 let involved_names = MTS.names_involving_mergeable_tl_sequences gram ;;
-  
-let bad5 = MTS.not_yet_registered_mergeable_tl_subsequences gram ;;
 
-let temp1 = MTS.all_mergeable_tl_subsequences2 gram ;;
+let temp1 = [] ;;
 
 let temp2 = Image.image(fun seq->(seq,MTS.find_realization_opt seq gram)) temp1 ;;
-
-let not_yet_registered_mergeable_tl_subsequences = Memoized.make(fun gram -> 
-  let temp1 = all_mergeable_tl_subsequences2 gram in 
-  let temp2 = Image.image(fun seq->(seq,find_realization_opt seq gram)) temp1 in 
-  let (good,bad) = List.partition (fun (_seq,realizers)->realizers<>None) temp2 in 
-  (Image.image fst bad,Image.image (fun (seq,opt)->(seq,Option.get opt)) good)
-  ) ;;
 
 
 (*
@@ -92,18 +104,6 @@ let mg0 = Jvag_magnifying_glass.get current_gram "ClassBodyDeclaration" ;;
 
 let mg1 = Jvag_magnifying_glass.select mg0 ["FieldDeclaration";"MethodDeclaration";"ConstructorDeclaration"];;
 let mg2 = Jvag_magnifying_glass.behead_each_one mg1 ;;
-
-let (good2,bad2) = Jvag_magnifying_glass.determine_first_token current_gram  mg2 ;;
-
-let (_,mg3) = List.hd(bad2) ;; 
-
-let (good3,bad3) = Jvag_magnifying_glass.determine_first_token current_gram  mg3 ;;
-
-let (_,mg4) = List.hd(bad3) ;; 
-
-let (good4,bad4) = Jvag_magnifying_glass.determine_first_token current_gram  mg4 ;;
-
-let (_,mg5) = List.hd(bad4) ;; 
 
 
 
@@ -211,15 +211,8 @@ let get inds name strm =
 
 exception Get_mark_for_disjunction_exn of string  * stream ;;
 
-let get_mark_for_disjunction inds dis_name strm = 
-  match List.assoc_opt dis_name inds.inds_for_marked_disjunctions with 
-  None -> None
-  |Some(associator) ->
-    let keys = Image.image fst associator in 
-    match  Jvsp_token_types_list.find_opt (fun tt->List.mem tt keys) strm.remaining_list with 
-    None -> raise (Get_mark_for_disjunction_exn(dis_name,strm))
-  |Some key -> Some(List.assoc key associator);;  
-
+let get_mark_for_disjunction inds dis_name strm = None ;;
+  
 let get_for_disjunction inds dis_name names strm = 
   match get_mark_for_disjunction inds dis_name strm  with 
   (Some answer) -> answer 
@@ -402,20 +395,6 @@ let next_state = State.next_state (current_gram,current_indications) ;;
 let ff = Memoized.small next_state starter ;;
 let db ( )= Tools_for_debugging.extract_from_iteration next_state starter ;;
 
-(*
-
-#use"watched/watched_not_githubbed/ham.ml";;
-
-db () ;;
-
-*)
-
-(*
-
-
-
-
-  *)
 end;;
 
 (************************************************************************************************************************

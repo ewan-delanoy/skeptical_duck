@@ -631,9 +631,7 @@ let modifications_to_original_java_grammar =
       Expand_in_synonym("Block","InstanceInitializer");
       Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
       Expand_in_disjunction("InterfaceDeclaration","ClassBodyDeclaration");
-      (* Expand_in_disjunction("Annotation","ClassModifier"); *)
       Expand_in_disjunction("Annotation","ConstructorModifier");
-      Expand_in_disjunction("Annotation","FieldModifier");
       Expand_in_disjunction("Annotation","InterfaceModifier");
       Expand_in_disjunction("Annotation","MethodModifier");
       Collapse_synonym_locally("UnannInterfaceType","UnannClassOrInterfaceType");
@@ -644,6 +642,8 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("NumericType","UnannType");
       Expand_in_disjunction("UnannClassType","UnannType");
       Expand_in_disjunction("UnannArrayType","UnannType");
+      Expand_in_disjunction("FloatingPointType","UnannType");
+      Expand_in_disjunction("IntegralType","UnannType");
      (*
        Creating a fully equivalent production for UnannClassType, begin
      *)
@@ -666,17 +666,27 @@ let modifications_to_original_java_grammar =
       "AtomicPermits"; "AtomicSnail"; "CompoundTypeName"; "TypeName";
   "UnannClassType"
       ]);
+      (* Introducting a new production, related to ShortUnannClassType*)
+      Set_production("StrictShortUnannClassType",Concat(["Identifier";"AtomicLt";"TypeArgument";"StarredTypeArgumentPrecededByComma";"AtomicGt"]));
+      Set_production("ShortUnannClassType",Disjunction(["Identifier";"StrictShortUnannClassType"]));
+      Expand_in_disjunction("ShortUnannClassType","UnannType");
+      Expand_in_disjunction("ShortUnannClassType","BasicUnannClassType");
+
+      Expand_in_disjunction("NumericType","UnannPrimitiveType");
+      Expand_in_disjunction("FloatingPointType","UnannPrimitiveType");
+      Expand_in_disjunction("IntegralType","UnannPrimitiveType");
+
+       (* Introducting a new production, related to MediumUnannClassType*)
+      Set_production("StrictMediumUnannClassType",Concat(["Identifier";"AtomicDot";"Identifier";"StarredMolecularDot_Identifier";]));
+      Set_production("MediumUnannClassType",Disjunction(["Identifier";"StrictMediumUnannClassType"]));
+      Expand_in_disjunction("MediumUnannClassType","BasicUnannClassType");
+      Remove_productions(["MediumUnannClassType"; "ShortUnannClassType"]);
+      Rename("StrictMediumUnannClassType","MediumUnannClassType");
+      Rename("StrictShortUnannClassType","MediumShortClassType");
+
       (*
       Expand_in_disjunction("UnannType","Result");
       Expand_in_disjunction("UnannPrimitiveType","Result");
-      
-      Expand_in_disjunction("UnannClassOrInterfaceType","UnannType");
-      Expand_in_disjunction("IntegralType","UnannType");
-      Expand_in_disjunction("FloatingPointType","UnannType");
-      Expand_in_synonym("UnannClassType","UnannInterfaceType");
-      (* this is fully equivalent to the original since UnannInterfaceType = UnannClassType*)
-      Set_production("UnannClassOrInterfaceType",Synonym("UnannClassType"));
-      Expand_in_synonym("UnannClassType","UnannClassOrInterfaceType");
       *)
     ] ;;
 
