@@ -650,6 +650,8 @@ let get_token_type = Private.get_token_type ;;
 let has_variable_content = Private.has_variable_content ;;
 
 let ocaml_name_for_token_type = Private.ocaml_name_for_token_type ;;
+
+let order_on_token_types = Total_ordering.from_list all_token_types ;;
 let passive_token_types = Private.passive_token_types ;;
 
 let pretty_print_list_of_token_types toktypes =

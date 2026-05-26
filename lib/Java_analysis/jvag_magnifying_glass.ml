@@ -251,7 +251,7 @@ let possible_first_tokens gram name =
    let mg = get gram name in 
    let complete_info = determine_first_token gram mg in 
    let unordered_tokens = Image.image fst complete_info in 
-   let tokens = Ordered.sort Total_ordering.standard unordered_tokens in 
+   let tokens = Ordered.sort Jvsp_util.order_on_token_types unordered_tokens in 
    (tokens,complete_info) ;;
 
 
