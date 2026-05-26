@@ -247,6 +247,12 @@ let determined_or_not (MG l) =
       Jvag_form.molecular_content_opt form=None) l in 
    (MG(a),MG(b));;
 
+let possible_first_tokens gram name =
+   let mg = get gram name in 
+   let complete_info = determine_first_token gram mg in 
+   let unordered_tokens = Image.image fst complete_info in 
+   let tokens = Ordered.sort Total_ordering.standard unordered_tokens in 
+   (tokens,complete_info) ;;
 
 
 end ;; 
@@ -256,6 +262,7 @@ let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
 let get = Private.get ;; 
+let possible_first_tokens = Private.possible_first_tokens ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
 let select = Private.select ;;

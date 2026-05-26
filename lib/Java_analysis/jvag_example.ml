@@ -631,7 +631,7 @@ let modifications_to_original_java_grammar =
       Expand_in_synonym("Block","InstanceInitializer");
       Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
       Expand_in_disjunction("InterfaceDeclaration","ClassBodyDeclaration");
-      Expand_in_disjunction("Annotation","ClassModifier");
+      (* Expand_in_disjunction("Annotation","ClassModifier"); *)
       Expand_in_disjunction("Annotation","ConstructorModifier");
       Expand_in_disjunction("Annotation","FieldModifier");
       Expand_in_disjunction("Annotation","InterfaceModifier");
