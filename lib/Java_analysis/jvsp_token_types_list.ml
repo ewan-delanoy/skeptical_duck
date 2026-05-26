@@ -6,14 +6,26 @@
 
 type t = Jvsp_types.token_type_list =  TTL of (Jvsp_types.token_type list) ;;
 
+exception Find_opt_exn ;;
+
 module Private = struct 
 
 let to_string (TTL l) = String.concat " " (Image.image Jvsp_util.summary_of_token_type l) ;;
+
+let rec find_opt f l = match l with 
+ [] -> raise Find_opt_exn 
+ | x :: others ->
+    if f x 
+   then l
+   else find_opt f others ;;
 
 end ;;    
 
 
 let construct l =(TTL l) ;;
+
+let find_opt f (TTL l) = TTL(Private.find_opt f l);;
+
 
 let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
   
