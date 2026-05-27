@@ -1,6 +1,73 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 242 : Checking consistency after changing the conventions in Jvsp_util.token_type_sequence_from_codes_in_production_names
+************************************************************************************************************************)
+module Snip242 = struct 
+
+open Jvag_types ;;
+
+let gram1 = Jvag_example.Private.original_java_grammar ;;
+
+let gram2 = Jvag_example.java_grammar ;;
+
+let (AL l1) = gram1 and (AL l2) = gram2 ;;
+
+let l= l1 @ l2 ;;
+
+let l3 = Image.image fst l;;
+
+let l4 = List.filter (fun x->List.exists(fun pref->String.starts_with x ~prefix:pref) ["Atomic";"Molecular"]) l3 ;;
+
+let check_l4 = Image.image Jvsp_util.token_type_sequence_from_codes_in_production_names l4 ;;
+
+
+
+let g1 = Jvsp_util.all_token_types ;;  
+let g2 = Image.image Jvsp_util.code_for_tokentype_in_production_names g1 ;;
+
+let false_inclusions x=List.filter (fun y->(y<>x)&&(String.starts_with x ~prefix:y)) g2 ;; 
+
+let g3 = List.filter_map (fun x->let l=false_inclusions x in if l=[] then None else Some(x,l)) g2 ;;
+
+let ap1 = Absolute_path.of_string "lib/Java_analysis/jvag_example.ml" ;;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let u1 = Substring.occurrences_of_in "Interface" text1 ;;
+
+let u2 = Image.image (fun i->Cull_string.interval text1 (i-20) (i+20)) u1 ;;
+
+let (part1,not_in_sphere1) = List.partition (fun i->Cull_string.interval text1 i (i+9)="InterfaceType\"") u1;;
+
+let (part2,not_in_sphere2) = List.partition (fun i->Cull_string.interval text1 i (i+5)="Double") not_in_sphere1;;
+
+let (part3,not_in_sphere3) = List.partition (fun i->Cull_string.interval text1 i (i+2)="DoS") not_in_sphere2;;
+
+let (part4,not_in_sphere4) = List.partition (fun i->Cull_string.interval text1 (i-7) (i+2)="\"AtomicDo\"") not_in_sphere3;;
+
+let adhoc_replacements (old_name,new_name) = [
+ "Atomic"^old_name,"Atomic"^new_name; 
+ "Molecular"^old_name,"Molecular"^new_name;
+ "_"^old_name,"_"^new_name;
+] ;;
+
+
+let act1 () = Replace_inside.replace_several_inside_file (adhoc_replacements ("AndAnd","StrongAnd")) ap1 ;;
+
+let act1 () = Replace_inside.replace_several_inside_file (adhoc_replacements ("EqEq","StrongEq")) ap1 ;;
+
+let act1 () = Replace_inside.replace_several_inside_file (adhoc_replacements ("OrOr","StrongOr")) ap1 ;;
+
+
+let u3 = Image.image (fun i->Cull_string.interval text1 (i-20) (i+20)) not_in_sphere1 ;;
+
+let i0 = 6832 ;;
+
+Cull_string.interval text1 (i0-11) (i0+3);;
+end;;
+
+(************************************************************************************************************************
  Entry 241 :    Checking the coincidence of two orders
 ************************************************************************************************************************)
 module Snip241 = struct 

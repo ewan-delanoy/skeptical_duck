@@ -6,6 +6,10 @@
 
 open Jvsp_types ;;
 
+exception Parse_code_sequence_exn of string * string * (string list) ;;   
+exception Token_type_sequence_from_codes_in_production_names_exn of string ;;
+
+
 module Private = struct
 
 let ocaml_name_for_token_type = function 
@@ -609,9 +613,31 @@ let token_to_string = function
 |(WHITESPACE txt) -> txt 
 |(LINEBREAK txt) -> txt;;
 
+let exceptions_for_tokentype_codes_in_production_names = 
+   (* ensured that no code is a prefix of another. This is used in
+    the token_type_sequence_from_codes_in_production_names below. *)
+   [
+     AND_AND_T,"StrongAnd";
+     DO_T,"Doo";
+     EQ_EQ_T,"StrongEq";
+     FINALLY_T,"AtLast";
+     INTERFACE_T,"Inyourface";
+     MODULE_T,"Mudole";
+     NOT_EQ_T,"ExclamationEq";
+     OPENS_T,"Unlids";
+     OR_OR_T,"StrongOr";
+     THROWS_T,"Sends";
+] ;;
 
-
-end ;;
+let code_for_token_type_in_production_names toktype = 
+   match List.assoc_opt toktype exceptions_for_tokentype_codes_in_production_names with 
+   Some answer -> answer 
+   |None ->
+   let full_name = ocaml_name_for_token_type toktype in 
+   let short_name = Cull_string.two_sided_cutting ("","_T") full_name in 
+   let parts = Str.split (Str.regexp_string "_") short_name in 
+   let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
+   String.concat "" lowercase_parts ;;
 
 let all_token_types = 
 [
@@ -627,12 +653,47 @@ TRANSITIVE_T;TRY_T;URS_T;USES_T;VAR_T;VOID_T;VOLATILE_T;WHILE_T;WHITESPACE_T;WIT
 
 ] ;; 
 
-let code_for_tokentype_in_production_names toktype = 
-   let full_name = Private.ocaml_name_for_token_type toktype in 
-   let short_name = Cull_string.two_sided_cutting ("","_T") full_name in 
-   let parts = Str.split (Str.regexp_string "_") short_name in 
-   let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
-   String.concat "" lowercase_parts ;;
+let all_codes_and_token_types = Image.image (
+  fun tok -> (code_for_token_type_in_production_names tok,tok)
+) all_token_types ;;
+
+let token_type_from_code_in_production_names code =
+   List.assoc code all_codes_and_token_types ;;
+
+
+
+let rec parse_codeseq (treated,original_str,str,n) =
+   if n=0 then List.rev treated else 
+   let temp = List.filter (fun (code,_tok)->String.starts_with str ~prefix:code) all_codes_and_token_types in 
+   if List.length(temp)<>1
+   then raise(Parse_code_sequence_exn(original_str,str,Image.image fst temp))  
+   else
+   let (code,tok) = List.hd temp in 
+   let (str2,n2) = (Cull_string.two_sided_cutting (code,"") str,n-String.length(code)) in 
+   let (str3,n3) = (
+      if String.starts_with str2 ~prefix:"_"
+      then (Cull_string.two_sided_cutting ("_","") str2,n2-1)
+      else (str2,n2)
+      ) in
+   parse_codeseq (tok::treated,original_str,str3,n3) ;;  
+
+let token_type_sequence_from_codes_in_production_names codeseq =
+   if String.starts_with codeseq ~prefix:"Atomic"
+   then let core = Cull_string.two_sided_cutting ("Atomic","") codeseq in 
+        [token_type_from_code_in_production_names core] 
+   else      
+    if String.starts_with codeseq ~prefix:"Molecular"
+   then let core = Cull_string.two_sided_cutting ("Molecular","") codeseq in 
+        parse_codeseq ([],core,core,String.length core) 
+   else raise(Token_type_sequence_from_codes_in_production_names_exn(codeseq)) ;;
+
+end ;;
+
+let all_token_types = Private.all_token_types ;;
+
+
+let code_for_tokentype_in_production_names = Private.code_for_token_type_in_production_names ;; 
+   
 let code_for_tokentype_sequence_in_production_names seq =
    let prefix = (
     if List.length(seq)=1
@@ -667,13 +728,13 @@ let pretty_print_list_of_token_types toktypes =
 
 let summary_of_token_type = Private.summary_of_token_type ;;
 
+let token_to_string = Private.token_to_string ;;
 let token_type_from_ocaml_name name = 
   List.find (
    fun tok_type -> ocaml_name_for_token_type tok_type = name
   ) all_token_types ;;
 
-
-let token_to_string = Private.token_to_string ;;
+let token_type_sequence_from_codes_in_production_names = Private.token_type_sequence_from_codes_in_production_names ;;
 
 
 
