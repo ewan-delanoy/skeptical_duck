@@ -27,8 +27,8 @@ let register_rootless_paths pfw rootless_paths=
    let new_fw = Fw_automatic_persisting.register_rootless_paths (!pfw) rootless_paths in 
    pfw:=new_fw;;
    
-let relocate_module_to pfw old_module new_subdir=
-   let new_fw = Fw_automatic_persisting.relocate_module_to (!pfw) old_module new_subdir in 
+let relocate_modules_to pfw old_modules new_subdir=
+   let new_fw = Fw_automatic_persisting.relocate_modules_to (!pfw) old_modules new_subdir in 
    pfw:=new_fw;;  
    
 let rename_subdirectory pfw old_subdir new_subdir=

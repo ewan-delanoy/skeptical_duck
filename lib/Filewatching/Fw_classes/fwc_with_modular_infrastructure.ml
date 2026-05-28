@@ -179,11 +179,11 @@ let register_rootless_paths old_fw rootlesses =
  let _ = Fw_modular_infrastructure.ReactOnReference.register_rootless_paths extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
-let relocate_module_to old_fw (mod_name,new_subdir) =  
+let relocate_modules_to old_fw (mod_names,new_subdir) =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (infrastructure old_fw) in 
- let (new_fw_dets,extra) = Fwc_with_file_details.relocate_module_to old_fw_dets (mod_name,new_subdir) in 
- let _ = Fw_modular_infrastructure.ReactOnReference.relocate_module_to extra new_fw_dets deps_ref  in 
+ let (new_fw_dets,extra) = Fwc_with_file_details.relocate_modules_to old_fw_dets (mod_names,new_subdir) in 
+ let _ = Fw_modular_infrastructure.ReactOnReference.relocate_modules_to extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
 let remove_files old_fw removed_rootless_paths =  
@@ -526,7 +526,7 @@ let plunge_fw_configuration = Private.Core.plunge_fw_configuration ;;
 let principal_ending_for_module fw mn = Fw_module_details.principal_ending (Private.details_for_module fw mn) ;;
 let register_rootless_paths = Private.Core.register_rootless_paths ;;
 let registered_printers fw = (Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.registered_printers ;;
-let relocate_module_to = Private.Core.relocate_module_to ;;
+let relocate_modules_to = Private.Core.relocate_modules_to ;;
 let remove_files = Private.Core.remove_files ;;
 let rename_module_on_filename_level_and_in_files = Private.Core.rename_module_on_filename_level_and_in_files ;;
 let rename_subdirectory_as = Private.Core.rename_subdirectory_as ;;

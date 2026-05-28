@@ -36,8 +36,8 @@ let register_rootless_paths fw rootless_path=
    let _=Fw_persisting.persist fw2 in 
    fw2;;  
    
-let relocate_module_to fw old_module new_subdir=
-   let fw2 = Fw_check_for_no_changes.relocate_module_to fw old_module new_subdir in 
+let relocate_modules_to fw old_modules new_subdir=
+   let fw2 = Fw_check_for_no_changes.relocate_modules_to fw old_modules new_subdir in 
    let _=Fw_persisting.persist fw2 in 
    fw2;;   
    

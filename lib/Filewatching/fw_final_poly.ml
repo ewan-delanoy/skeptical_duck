@@ -64,7 +64,7 @@ let of_concrete_object = Fwc_with_githubbing.Crobj.of_concrete_object ;;
 let plunge_fw_config_with_github_config fw_config github_config =  Fwc_with_githubbing.plunge_fw_config_with_github_config fw_config github_config ;;
 let register_rootless_paths = Fwc_with_githubbing.register_rootless_paths  ;;
 
-let relocate_module_to = Fwc_with_githubbing.relocate_module_to  ;;
+let relocate_modules_to = Fwc_with_githubbing.relocate_modules_to  ;;
 let rename_module =  Fwc_with_githubbing.rename_module  ;;
 
 let rename_subdirectory_as = Fwc_with_githubbing.rename_subdirectory_as ;;

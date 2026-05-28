@@ -385,7 +385,7 @@ let order deps_ref=
  ) ;;  
 
 
- let relocate_module_to extra new_fw_dets deps_ref= 
+ let relocate_modules_to extra new_fw_dets deps_ref= 
   let old_details = ((!deps_ref).Fw_modular_infrastructure_t.modularized_details) in 
   let new_details = compute_new_details_in_stable_case new_fw_dets old_details (fst extra) in 
   (

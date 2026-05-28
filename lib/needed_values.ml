@@ -52,7 +52,7 @@ let save msg=Fw_usual_manager.save_latest_changes (Some msg);;
 
 let regi rootless_line=Fw_usual_manager.register_rootless_line rootless_line;;
 
-let relo = Fw_usual_manager.relocate_module_to;;
+let relo = Fw_usual_manager.relocate_modules_to;;
 
 let ren = Fw_usual_manager.rename_module;;
 

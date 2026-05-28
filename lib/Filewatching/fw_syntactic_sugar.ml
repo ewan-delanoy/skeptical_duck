@@ -39,9 +39,9 @@ let register_several fw_ref lines =
 let register_one fw_ref line = 
    register_several fw_ref [line]  ;;
    
-let relocate_module_to fw_ref old_module_name new_subdir=
-   let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in
-   Fw_act_on_reference.relocate_module_to fw_ref mn new_subdir ;;
+let relocate_modules_to fw_ref module_names new_subdir=
+   let mns = Image.image (fun mod_name ->Dfa_module.of_line(String.uncapitalize_ascii mod_name)) module_names in
+   Fw_act_on_reference.relocate_modules_to fw_ref mns new_subdir ;;
    
 let rename_module fw_ref old_module_name new_name=
    let mn = Dfa_module.of_line(String.uncapitalize_ascii old_module_name) in

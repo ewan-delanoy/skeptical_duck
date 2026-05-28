@@ -12261,7 +12261,7 @@ into the row-polymorphism family.
 (* Step 1 : Rename and relocate the module with a Fwc_prefix *)
 
 ren "fw_with_dependencies" "fwc_with_dependencies";;
-relo "fwc_with_dependencies" 
+relo ["fwc_with_dependencies"] 
 (Dfa_subdirectory.of_line "lib/Filewatching/Fw_classes") ;; 
 
 (* Step 2 : Create the Fwg corresponding to the Fwc *)
@@ -12526,7 +12526,7 @@ module Snip161 = struct
   let f28 = Fwc_with_githubbing.Crobj.of_concrete_object ;;
   let f31 = Fwc_with_githubbing.plunge_fw_config_with_github_config ;;
   let f33 = Fwc_with_githubbing.register_rootless_paths ;;
-  let f34 = Fwc_with_githubbing.relocate_module_to ;;
+  let f34 = Fwc_with_githubbing.relocate_modules_to ;;
   let f35 = Fwc_with_githubbing.rename_module ;;
   let f36 = Fwc_with_githubbing.rename_subdirectory_as ;;
   let f37 = Fwc_with_githubbing.replace_string ;;
@@ -28383,7 +28383,7 @@ let u3 = Image.image ( fun
 (Dfn_endingless_t.J(r,sd,m)) -> Dfa_module.to_line m
 ) u2 ;;
 
-let act1 () = Explicit.image (fun mn->relo mn sd2) u3 ;;
+let act1 () = Explicit.image (fun mn->relo [mn] sd2) u3 ;;
 
 
 

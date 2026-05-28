@@ -190,11 +190,11 @@ module Private = struct
       let (_,_,nc_files) = canonical_tripartition fw all_files in 
       nc_files ;;
       
-   let relocate_module_to fw mod_name new_subdir=
+   let relocate_modules_to fw mod_names new_subdir=
       let all_files = Image.image fst (watched_files fw) in 
       let (_,u_files,_) = canonical_tripartition fw all_files in 
       let the_files = List.filter (
-                  fun path-> (Dfn_rootless.to_module path)=mod_name 
+                  fun path-> List.mem (Dfn_rootless.to_module path) mod_names 
       ) u_files in 
       let old_parent = parent fw in    
       let replacements = Image.image (fun path->
@@ -310,7 +310,7 @@ let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
 let partition_for_singles = Private.canonical_tripartition ;; 
 let plunge_fw_configuration = Private.plunge_fw_configuration ;;
 let register_rootless_paths = Private.register_rootless_paths ;; 
-let relocate_module_to = Private.relocate_module_to ;;
+let relocate_modules_to = Private.relocate_modules_to ;;
 let remove_files = Private.remove_files ;;  
 let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;

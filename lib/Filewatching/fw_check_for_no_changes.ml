@@ -19,9 +19,9 @@ let register_rootless_paths fw rootless_path=
    let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
    Fwc_with_githubbing.register_rootless_paths fw rootless_path ;;  
    
-let relocate_module_to fw old_module new_subdir=
+let relocate_modules_to fw old_modules new_subdir=
    let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 
-   Fwc_with_githubbing.relocate_module_to fw old_module new_subdir ;;   
+   Fwc_with_githubbing.relocate_modules_to fw old_modules new_subdir ;;   
    
 let rename_module fw old_middle_name new_nonslashed_name=
    let _=Fwc_with_githubbing.Inherited.check_that_no_change_has_occurred fw in 

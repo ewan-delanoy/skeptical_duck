@@ -181,16 +181,16 @@ module Private = struct
       (old_details @ new_details),
       (Fwc_with_archives.partition_for_singles new_parent rootless_paths,new_details) ) ;;    
    
-   let relocate_module_to fw (mod_name,new_subdir)=
+   let relocate_modules_to fw (mod_names,new_subdir)=
       let old_parent = parent fw 
       and old_details = file_details fw  in 
-      let (new_parent,replacements) = Fwc_with_archives.relocate_module_to 
-           old_parent mod_name new_subdir in 
+      let (new_parent,replacements) = Fwc_with_archives.relocate_modules_to 
+           old_parent mod_names new_subdir in 
       let accu = ref [] in      
       let new_small_details = Image.image (
          fun old_pair->
          let rl = fst old_pair in
-         if (Dfn_rootless.to_module rl) = mod_name 
+         if List.mem (Dfn_rootless.to_module rl) mod_names 
          then let new_rl = Dfn_rootless.relocate_to rl new_subdir in 
               let new_pair = (new_rl,snd old_pair) in 
               let _ = (accu := (rl,Some new_pair) :: (!accu)) in
@@ -320,7 +320,7 @@ module Private = struct
    let overwrite_file_if_it_exists = Private.overwrite_file_if_it_exists ;;
    let plunge_fw_configuration config= Fwg_with_file_details.make (Fwc_with_archives.plunge_fw_configuration config) [] ;; 
    let register_rootless_paths = Private.register_rootless_paths;;
-   let relocate_module_to = Private.relocate_module_to;;
+   let relocate_modules_to = Private.relocate_modules_to;;
    let remove_files = Private.remove_files;;
    let rename_module_on_filename_level_and_in_files = Private.rename_module_on_filename_level_and_in_files ;;
    let rename_subdirectory_as = Private.rename_subdirectory_as;;

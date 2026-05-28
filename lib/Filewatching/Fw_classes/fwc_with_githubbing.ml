@@ -209,12 +209,13 @@ let register_rootless_paths fw rootless_paths =
   Inherited.make new_fw_deps (github_configuration fw) ;;   
    
 
-let relocate_module_to fw mod_name new_subdir = 
+let relocate_modules_to fw mod_names new_subdir = 
   let old_fw_deps = Inherited.parent fw in 
   let (new_fw_deps,(_,replacements))=
-  Fwc_with_modular_infrastructure.relocate_module_to old_fw_deps 
-  (mod_name,new_subdir) in
-  let msg="move "^(Dfa_module.to_line mod_name)^" to "^
+  Fwc_with_modular_infrastructure.relocate_modules_to old_fw_deps 
+  (mod_names,new_subdir) in 
+  let names = String.concat "," (Image.image Dfa_module.to_line mod_names) in 
+  let msg="move "^names^" to "^
   (Dfa_subdirectory.connectable_to_subpath new_subdir) in 
   let diff = Dircopy_diff.replace Dircopy_diff.empty_one replacements  in  
   let _ = backup fw diff (Some msg) in     
@@ -300,7 +301,7 @@ let inspect_and_update = Private.inspect_and_update ;;
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let refresh = Private.refresh ;;
 let register_rootless_paths = Private.register_rootless_paths ;;      
-let relocate_module_to  = Private.relocate_module_to ;;         
+let relocate_modules_to  = Private.relocate_modules_to ;;         
 let rename_module = Private.rename_module ;;   
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
