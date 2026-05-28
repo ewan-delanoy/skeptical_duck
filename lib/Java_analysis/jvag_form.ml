@@ -110,6 +110,13 @@ let order = (
 let print_out (fmt:Format.formatter) form=
    Format.fprintf fmt "@[%s@]" (Strung.with_size_limit ~size_limit:250 (Private.to_string form));;
 
+let starred_content_opt form = match form with 
+   |Star nm -> Some nm
+   |Molecular _    
+   |Concat _
+   |Disjunction _
+   |Optional _ 
+   |Synonym _ -> None;;  
 
 let synonym_content form = match form with 
    (Synonym nm) -> nm   

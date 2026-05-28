@@ -19,8 +19,13 @@ let l3 = Image.image fst l;;
 
 let l4 = List.filter (fun x->List.exists(fun pref->String.starts_with x ~prefix:pref) ["Atomic";"Molecular"]) l3 ;;
 
-let check_l4 = Image.image Jvsp_util.token_type_sequence_from_codes_in_production_names l4 ;;
+let l5 = Image.image Jvsp_util.token_type_sequence_from_codes_in_production_names l4 ;;
 
+let l6 = Image.image (fun tok->
+  let code = Jvsp_util.code_for_tokentype_sequence_in_production_names tok in    
+  (tok,code,Jvsp_util.token_type_sequence_from_codes_in_production_names code) )l5 ;;
+
+let check_l6 = List.filter (fun (tok,code,tok2)->tok2<>tok) l6 ;; 
 
 
 let g1 = Jvsp_util.all_token_types ;;  
