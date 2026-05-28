@@ -1,6 +1,18 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 243 : Using relo with multiple modules
+************************************************************************************************************************)
+module Snip243 = struct 
+
+let sd = Dfa_subdirectory.of_line "lib/Java_analysis/Jvsp_abstract_grammar" ;;
+
+let bad1 = relo ["jvag_example";"jvag_form";"jvag_grammar";"jvag_magnifying_glass"] sd ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 242 : Checking consistency after changing the conventions in Jvsp_util.token_type_sequence_from_codes_in_production_names
 ************************************************************************************************************************)
 module Snip242 = struct 
