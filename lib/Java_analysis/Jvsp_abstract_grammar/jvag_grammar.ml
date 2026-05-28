@@ -1,6 +1,6 @@
 (*
 
-#use"lib/Java_analysis/jvag_grammar.ml";;
+#use"lib/Java_analysis/Jvsp_abstract_grammar/jvag_grammar.ml";;
 
 *)
 
