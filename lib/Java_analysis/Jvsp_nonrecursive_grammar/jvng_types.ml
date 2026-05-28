@@ -5,3 +5,5 @@
 *)
 
 type name_with_ancestry = NWA of string * (string list) ;;     
+
+type ancestry_manager = AM of string * ((string list) list) ;;
