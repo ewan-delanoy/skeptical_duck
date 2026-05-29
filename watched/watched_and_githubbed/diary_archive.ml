@@ -1,6 +1,30 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 244 : See repetitions in grammar productions
+************************************************************************************************************************)
+module Snip244 = struct 
+
+open Jvag_types ;;
+
+let gram1 = Jvag_example.java_grammar ;;
+
+let (AL u1) = gram1 ;;
+
+let concat_content_opt form = 
+  try Some(Jvag_form.concat_content form) with 
+  _ -> None ;;
+
+let u2 = List.filter_map (fun (nm,form)-> Option.map (fun l->(nm,l)) (concat_content_opt form)) u1 ;;
+
+let u3 = List.filter (
+  fun (nm,l)->
+     let ordered_l = Ordered.sort Total_ordering.lex_for_strings l in 
+     List.length(ordered_l)<>(List.length l)
+) u2 ;;
+end;;
+
+(************************************************************************************************************************
  Entry 243 : Using relo with multiple modules
 ************************************************************************************************************************)
 module Snip243 = struct 

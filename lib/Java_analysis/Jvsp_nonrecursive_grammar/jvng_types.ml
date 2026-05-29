@@ -4,6 +4,17 @@
 
 *)
 
-type name_with_ancestry = NWA of string * (string list) ;;     
+(*
+type possibly_reduplicated_name = {
+   name : string ;
+   duplication_index: int ; 
+} ;;
 
-type ancestry_manager = AM of string * ((string list) list) ;;
+type link = 
+    CONCAT_L
+   |DISJUNCTION_L
+   |OPTIONAL_L
+   |STARRED_L ;;
+
+type indexer = Idxr of possibly_reduplicated_name * (link * (int list)) ;;
+*)
