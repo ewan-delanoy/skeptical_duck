@@ -4,24 +4,13 @@
 
 *)
 
-type form = 
-    Optional of Jvng_duplicated_name.t 
-   |Molecular of Jvsp_types.token_type list
-   |Concat of Jvng_duplicated_name.t list 
-   |Disjunction of Jvng_duplicated_name.t list 
-   |Star of Jvng_duplicated_name.t 
-   |Synonym of Jvng_duplicated_name.t
-  ;;
-
-type t = AL of (Jvng_duplicated_name.t * form) list ;; 
-
-(*
+open Jvng_jvag_types ;;
 
 module Private = struct 
 
 module Modify = struct 
 
-   let order_on_pairs = Total_ordering.product str_order Jvag_form.order ;;
+   let order_on_pairs = Total_ordering.product Jvng_duplicated_name.order Jvng_jvag_form.order ;;
 
    let add_pair_naively pair (AL l) = 
   let (name,_form) = pair in 
@@ -39,5 +28,4 @@ end ;;
 
 let add_pair_naively = Private.Modify.add_pair_naively ;;
 
-*)
 let get_opt (AL l) name = List.assoc_opt name l ;;

@@ -11,6 +11,6 @@ type ancestry_data = {
 
 type with_ancestry_manager = {
    source : Jvag_types.grammar ; 
-   receiver : Jvng_jvag_grammar.t ;
+   receiver : Jvng_jvag_types.grammar ;
    ancestry_manager : (Jvng_duplicated_name.t * ancestry_data) list ;
 } ;;
