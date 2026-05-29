@@ -4,6 +4,8 @@
 
 *)
 
+open Jvng_jvag_types ;;
+
 let order = (
    (fun form1 form2 ->Total_ordering.standard form1 form2): 
      form Total_ordering_t.t ) ;; 

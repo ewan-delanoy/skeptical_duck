@@ -13,4 +13,4 @@ type form =
    |Synonym of Jvng_duplicated_name.t
   ;;
 
-type t = AL of (Jvng_duplicated_name.t * form) list ;; 
+type grammar = AL of (Jvng_duplicated_name.t * form) list ;; 

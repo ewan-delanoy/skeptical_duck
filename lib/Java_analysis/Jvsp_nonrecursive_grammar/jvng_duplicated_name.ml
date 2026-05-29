@@ -29,8 +29,8 @@ let constructor str k =
    veil ((core str)^suffix);;
 
 
-let name prn =
-   let str = unveil prn in 
+let name pdn =
+   let str = unveil pdn in 
    match String_find_char.backwards_from_inclusive_opt is_not_a_digit_or_dot str (String.length str) with 
    None -> ""
    |Some k -> Cull_string.beginning k str ;;
@@ -42,8 +42,8 @@ name (veil "Gabriel") ;;
 
 *)
 
-let index prn =
-   let str = unveil prn in 
+let index pdn =
+   let str = unveil pdn in 
    match String_find_char.backwards_from_inclusive_opt is_not_a_digit_or_dot str (String.length str) with 
    None -> int_of_string str
    |Some k -> 
@@ -58,9 +58,12 @@ index (veil "Gabriel") ;;
 
 *)      
 
+let order pdn1 pdn2 = Total_ordering.standard (unveil pdn1) (unveil pdn2) ;; 
+
 end ;;
 
 let constructor = Private.constructor ;;
 let index = Private.index ;;
 let name = Private.name ;;
+let order = (Private.order : t Total_ordering_t.t) ;;
 
