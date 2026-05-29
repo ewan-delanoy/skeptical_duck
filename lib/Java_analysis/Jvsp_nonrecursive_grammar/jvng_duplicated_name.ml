@@ -24,7 +24,7 @@ let core str =
    None -> ""
    |Some k -> Cull_string.beginning k str ;;
 
-let constructor str k = 
+let make str k = 
    let suffix = (if k=1 then "" else string_of_int k) in 
    veil ((core str)^suffix);;
 
@@ -62,7 +62,7 @@ let order pdn1 pdn2 = Total_ordering.standard (unveil pdn1) (unveil pdn2) ;;
 
 end ;;
 
-let constructor = Private.constructor ;;
+let make = Private.make ;;
 let index = Private.index ;;
 let name = Private.name ;;
 let order = (Private.order : t Total_ordering_t.t) ;;
