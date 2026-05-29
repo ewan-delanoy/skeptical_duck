@@ -34,3 +34,11 @@ type nonrecursive_grammar = {
 type line_in_magnifying_glass = MGL of (string * ((string * form) list)) ;; 
 
 type magnifying_glass = MG of line_in_magnifying_glass list ;;
+
+type link =
+    Optional_L 
+   |Concat_L
+   |Disjunction_L 
+   |Star_L
+   |Synonym_L
+  ;;
