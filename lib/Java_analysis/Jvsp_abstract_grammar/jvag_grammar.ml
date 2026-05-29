@@ -802,6 +802,7 @@ let singleton = Private.Nonrecursive_grammar.singleton ;;
 
 end ;;  
 
+let add_pair_naively = Private.Modify.add_pair_naively ;;
 let containing = Private.containing ;;
 
 let extract_at_names = Private.WriteParser.extract_at_names ;;
