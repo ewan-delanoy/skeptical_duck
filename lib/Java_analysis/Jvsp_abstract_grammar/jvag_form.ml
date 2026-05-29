@@ -128,4 +128,19 @@ let synonym_content form = match form with
 
 let to_string = Private.to_string ;; 
 
+let uniform_composition link l = match link with 
+    Optional_L -> Optional(List.hd l)
+   |Concat_L -> Concat(l)
+   |Disjunction_L -> Disjunction(l)
+   |Star_L -> Star(List.hd l)
+   |Synonym_L -> Synonym(List.hd l);;
+
+let uniform_decomposition_opt form = match form with
+   |Molecular _ -> None    
+   |Concat l ->  Some(Concat_L,l)
+   |Disjunction l -> Some(Disjunction_L,l)
+   |Star nm -> Some(Star_L,[nm])
+   |Optional nm -> Some(Optional_L,[nm])
+   |Synonym nm -> Some(Synonym_L,[nm]) ;;
+
 let unordered_coatoms = Private.unordered_coatoms ;;   

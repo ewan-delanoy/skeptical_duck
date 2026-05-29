@@ -9,3 +9,10 @@ open Jvng_jvag_types ;;
 let order = (
    (fun form1 form2 ->Total_ordering.standard form1 form2): 
      form Total_ordering_t.t ) ;; 
+
+let uniform_composition link l = match link with 
+    Jvag_types.Optional_L -> Optional(List.hd l)
+   |Jvag_types.Concat_L -> Concat(l)
+   |Jvag_types.Disjunction_L -> Disjunction(l)
+   |Jvag_types.Star_L -> Star(List.hd l)
+   |Jvag_types.Synonym_L -> Synonym(List.hd l);;     
