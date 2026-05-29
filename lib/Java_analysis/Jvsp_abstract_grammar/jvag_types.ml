@@ -14,7 +14,7 @@ type form =
    |Synonym of string
   ;;
 
-type t = AL of (string * form) list ;; 
+type grammar = AL of (string * form) list ;; 
 
 type modification = 
    Set_production of string * form 
