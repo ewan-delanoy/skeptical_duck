@@ -29,3 +29,5 @@ end ;;
 let add_pair_naively = Private.Modify.add_pair_naively ;;
 
 let get_opt (AL l) name = List.assoc_opt name l ;;
+
+let singleton name form = AL [name,form] ;;     

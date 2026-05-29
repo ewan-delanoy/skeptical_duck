@@ -820,4 +820,6 @@ let order_on_pairs = Private.order_on_pairs ;;
 
 let registration_opt (AL l) form = 
     Option.map fst (List.find_opt (fun (_,form2)->form2=form) l) ;;
+
+let singleton name form = AL [name,form] ;;     
 let write_parser = Private.WriteParser.write_prsrtxt ;;
