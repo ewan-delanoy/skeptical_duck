@@ -11,7 +11,7 @@ type ancestry_data = {
 
 type ancestry_manager = AM of (Jvng_duplicated_name.t * ancestry_data) list ;;
 
-type with_ancestry_manager = {
+type grammar_with_ancestry_manager = {
    source : Jvag_types.grammar ; 
    receiver : Jvng_jvag_types.grammar ;
    manager : ancestry_manager ;
@@ -27,3 +27,8 @@ type local_analizer = {
   case_by_case : (((Jvsp_types.token_type list)*string) list) ; 
   analysis_is_complete : bool ;
 };;
+
+type battery_of_analizers = {
+  deciders_for_optionals_or_stars : (string  * local_analizer) list ;  
+  choosers_for_disjunctions : (string * local_analizer) list;
+} ;;

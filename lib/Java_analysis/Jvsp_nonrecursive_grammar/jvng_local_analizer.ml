@@ -9,7 +9,7 @@ open Jvng_types ;;
 module Private = struct 
 
 let no_first_trial cbc is_complete = {
-  first_approach = (fun (tl:Jvsp_types.token_type_list) -> (None:string option));
+  first_approach = (fun (_tl:Jvsp_types.token_type_list) -> (None:string option));
   case_by_case = cbc ; 
   analysis_is_complete = is_complete ;
 };;
