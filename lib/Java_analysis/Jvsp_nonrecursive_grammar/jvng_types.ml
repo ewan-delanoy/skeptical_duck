@@ -32,3 +32,11 @@ type battery_of_analizers = {
   deciders_for_optionals_or_stars : (Jvng_duplicated_name.t  * local_analizer) list ;  
   choosers_for_disjunctions : (Jvng_duplicated_name.t * local_analizer) list;
 } ;;
+
+type global_analizer = {
+  managed_grammar : grammar_with_ancestry_manager ;
+  battery_of_managers : battery_of_analizers ;
+  head : Jvng_duplicated_name.t ;
+  tail : Jvng_duplicated_name.t list ;
+  consumable : stream ;
+} ;;
