@@ -22,7 +22,8 @@ type stream = {
    remaining_list : Jvsp_token_types_list.t ;
 } ;;
 
-type local_analizer = Rm of 
-  (Jvsp_types.token_type_list -> string option) * 
-  (((Jvsp_types.token_type list)*string) list) * 
-   bool;;
+type local_analizer = {
+  first_approach : (Jvsp_types.token_type_list -> string option) ;
+  case_by_case : (((Jvsp_types.token_type list)*string) list) ; 
+  analysis_is_complete : bool ;
+};;
