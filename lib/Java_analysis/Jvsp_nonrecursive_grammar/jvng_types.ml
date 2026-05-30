@@ -29,6 +29,6 @@ type local_analizer = {
 };;
 
 type battery_of_analizers = {
-  deciders_for_optionals_or_stars : (string  * local_analizer) list ;  
-  choosers_for_disjunctions : (string * local_analizer) list;
+  deciders_for_optionals_or_stars : (Jvng_duplicated_name.t  * local_analizer) list ;  
+  choosers_for_disjunctions : (Jvng_duplicated_name.t * local_analizer) list;
 } ;;
