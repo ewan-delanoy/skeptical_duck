@@ -35,7 +35,7 @@ type battery_of_analizers = {
 
 type global_analizer = {
   managed_grammar : grammar_with_ancestry_manager ;
-  battery_of_managers : battery_of_analizers ;
+  battery : battery_of_analizers ;
   head : Jvng_duplicated_name.t ;
   tail : Jvng_duplicated_name.t list ;
   consumable : stream ;
