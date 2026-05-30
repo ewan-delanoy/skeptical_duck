@@ -16,3 +16,8 @@ type with_ancestry_manager = {
    receiver : Jvng_jvag_types.grammar ;
    manager : ancestry_manager ;
 } ;;
+
+type stream = {
+   cursor : int ;
+   remaining_list : Jvsp_token_types_list.t ;
+} ;;
