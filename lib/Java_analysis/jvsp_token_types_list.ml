@@ -10,7 +10,9 @@ exception Find_opt_exn ;;
 
 module Private = struct 
 
-let to_string (TTL l) = String.concat " " (Image.image Jvsp_util.summary_of_token_type l) ;;
+let to_string (TTL l) = 
+   Strung.with_size_limit ~size_limit:250
+   (String.concat " " (Image.image Jvsp_util.summary_of_token_type l)) ;;
 
 let rec find_opt f l = match l with 
  [] -> raise Find_opt_exn 
@@ -31,8 +33,10 @@ let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
   
 (* This is a registered printer : print_out *)
 let print_out (fmt:Format.formatter) ttl=
-   Format.fprintf fmt "@[%s@]" (Strung.with_size_limit ~size_limit:250 (Private.to_string ttl));;
+   Format.fprintf fmt "@[%s@]" (Private.to_string ttl);;
 
 let starts_with (TTL l) prefix = List_again.starts_with l prefix;;
+
+let to_string = Private.to_string ;;
 
 let unveil (TTL l)= l;;     
