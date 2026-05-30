@@ -66,5 +66,6 @@ let make = Private.make ;;
 let index = Private.index ;;
 let name = Private.name ;;
 let order = (Private.order : t Total_ordering_t.t) ;;
+let of_string str = make str 1 ;;
 let starts_with pdn ~prefix = String.starts_with (name pdn) ~prefix ;;
 
