@@ -23,8 +23,8 @@ type stream = {
 } ;;
 
 type local_analizer = {
-  first_approach : (Jvsp_types.token_type_list -> string option) ;
-  case_by_case : (((Jvsp_types.token_type list)*string) list) ; 
+  first_approach : (Jvsp_types.token_type_list -> Jvng_duplicated_name.t option) ;
+  case_by_case : (((Jvsp_types.token_type list)*Jvng_duplicated_name.t) list) ; 
   analysis_is_complete : bool ;
 };;
 

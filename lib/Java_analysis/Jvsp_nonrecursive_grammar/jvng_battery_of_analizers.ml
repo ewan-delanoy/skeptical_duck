@@ -25,7 +25,7 @@ let decide battery dname strm=
   let analizer = Private.get_local_analizer battery dname in 
   match (Jvng_local_analizer.use analizer strm.remaining_list) with 
      None -> raise(Incomplete(dname))
-    |Some answer -> bool_of_string answer ;;    
+    |Some answer -> bool_of_string (Jvng_duplicated_name.name answer) ;;    
 
 let choose battery dis_name strm= 
   match List.assoc_opt dis_name battery.choosers_for_disjunctions with 

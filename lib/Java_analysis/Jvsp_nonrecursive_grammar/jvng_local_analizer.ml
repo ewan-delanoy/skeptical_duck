@@ -9,14 +9,14 @@ open Jvng_types ;;
 module Private = struct 
 
 let no_first_trial cbc is_complete = {
-  first_approach = (fun (_tl:Jvsp_types.token_type_list) -> (None:string option));
+  first_approach = (fun (_tl:Jvsp_types.token_type_list) -> None);
   case_by_case = cbc ; 
   analysis_is_complete = is_complete ;
 };;
 
 end ;;
    
-let direct l= Private.no_first_trial (Image.image (fun x->(x,"true")) l) true ;;
+let direct l= Private.no_first_trial (Image.image (fun x->(x,Jvng_duplicated_name.of_string "true")) l) true ;;
 
 let first_trial_only f = {
   first_approach = f;
@@ -36,7 +36,7 @@ let use anlizr remaining_list =
      Some(_,answer2) -> Some answer2
      |None ->
        if anlizr.analysis_is_complete 
-       then Some "false" 
+       then Some (Jvng_duplicated_name.of_string "false") 
        else None ;;
 
 
