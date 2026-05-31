@@ -10,9 +10,11 @@ open Jvng_types ;;
 module Private = struct 
 
 (* The values below are defined by the pt function defined above *)
-let list_for_precomputed_first_tokens = Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
-   "FieldModifier",[T.FINAL_T;T.PRIVATE_T;T.PROTECTED_T;T.PUBLIC_T; T.SNAIL_T;T.STATIC_T;T.TRANSIENT_T;T.VOLATILE_T];
-   "UnannType",[T.BOOLEAN_T; T.BYTE_T;T.CHAR_T; T.DOUBLE_T;T.FLOAT_T;T.IDENTIFIER_T;T.INT_T; T.LONG_T;T.SHORT_T];
+let list_for_precomputed_first_tokens = 
+  let liofli = Image.image (fun tok->[tok]) in 
+  Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
+   "FieldModifier",liofli [T.FINAL_T;T.PRIVATE_T;T.PROTECTED_T;T.PUBLIC_T; T.SNAIL_T;T.STATIC_T;T.TRANSIENT_T;T.VOLATILE_T];
+   "UnannType",liofli [T.BOOLEAN_T; T.BYTE_T;T.CHAR_T; T.DOUBLE_T;T.FLOAT_T;T.IDENTIFIER_T;T.INT_T; T.LONG_T;T.SHORT_T];
 ] ;;
 
 let d = Jvng_duplicated_name.of_string ;;
@@ -150,10 +152,7 @@ let example = {
      ] false;
      "UnannType", La.first_trial_only for_UnannType;
   ] ;
-  precomputed_first_tokens = Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
-   "FieldModifier",[T.FINAL_T;T.PRIVATE_T;T.PROTECTED_T;T.PUBLIC_T; T.SNAIL_T;T.STATIC_T;T.TRANSIENT_T;T.VOLATILE_T];
-   "UnannType",[T.BOOLEAN_T; T.BYTE_T;T.CHAR_T; T.DOUBLE_T;T.FLOAT_T;T.IDENTIFIER_T;T.INT_T; T.LONG_T;T.SHORT_T];
-] ;
+  precomputed_first_tokens = list_for_precomputed_first_tokens;
 } ;;
 
 end ;;  

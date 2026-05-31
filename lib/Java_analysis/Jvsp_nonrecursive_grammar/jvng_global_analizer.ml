@@ -43,7 +43,7 @@ let pass_to_tail old_global =
 
 let parse_token_type_sequence_opt dname =
   let name = Jvng_duplicated_name.name dname in 
-  try Some(Jvsp_util.token_type_sequence_from_codes_in_production_names name) with 
+  try Some([Jvsp_util.token_type_sequence_from_codes_in_production_names name]) with 
   _ -> None ;;      
 
 let read_first_token_types_from_concat_opt global dname =
@@ -53,7 +53,7 @@ let read_first_token_types_from_concat_opt global dname =
   None -> None 
   |(Some l)-> 
     let first_in_concat =  Jvag_grammar.get global.managed_grammar.source  (List.hd l) in 
-    Jvag_form.molecular_content_opt first_in_concat;; 
+    Option.map (fun l->[l]) (Jvag_form.molecular_content_opt first_in_concat);; 
 
 let possible_first_tokens_opt global dname = 
   let trial1 = parse_token_type_sequence_opt dname in 
@@ -87,7 +87,7 @@ let easy_decision_that_analizer_head_is_used global =
     if List.mem None total_data_opt
     then false   
     else  
-    let total_data = Image.image Option.get total_data_opt 
+    let total_data = List.flatten(Image.image Option.get total_data_opt) 
     and rem_list = global.consumable.remaining_list in 
     (List.for_all (fun list_start->not(Jvsp_token_types_list.starts_with rem_list list_start)) total_data);;
 
@@ -95,9 +95,9 @@ let easy_decision_that_analizer_head_is_used global =
 let easy_decision_that_analizer_head_is_not_used old_global nm= 
     match possible_first_tokens_opt old_global nm with 
     None -> false
-    |(Some first_toks) -> 
-      let stream_head = List.hd(Jvsp_token_types_list.unveil(old_global.consumable.remaining_list)) in 
-      not(List.mem stream_head first_toks) 
+    |(Some possible_starts) -> 
+       let rem_list = old_global.consumable.remaining_list in 
+      (List.for_all (fun list_start->not(Jvsp_token_types_list.starts_with rem_list list_start)) possible_starts)
     ;;
 
 
