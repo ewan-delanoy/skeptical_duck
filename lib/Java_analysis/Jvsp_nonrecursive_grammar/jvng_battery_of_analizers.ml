@@ -11,11 +11,11 @@ exception Incomplete of Jvng_duplicated_name.t ;;
 
 module Private = struct 
 let get_local_analizer battery dname =  
-  if List.exists (fun pref ->Jvng_duplicated_name.starts_with dname ~prefix:pref) ["Molecular"]
-  then let name = Jvng_duplicated_name.name dname in
-       Jvng_local_analizer.one_level_above_molecular 
-    (Jvsp_util.token_type_sequence_from_codes_in_production_names name)
-  else match List.assoc_opt dname battery.deciders_for_optionals_or_stars with 
+  let name = Jvng_duplicated_name.name dname in
+  match Jvsp_util.token_type_sequence_from_codes_in_production_names_opt name with 
+  Some toktypes -> Jvng_local_analizer.one_level_above_molecular toktypes 
+  | None ->
+  match List.assoc_opt dname battery.deciders_for_optionals_or_stars with 
         None -> raise(Untreated(dname))
      |(Some analizer) -> analizer;;
 

@@ -41,17 +41,20 @@ let pass_to_tail old_global =
       tail = other_prods ;
      } ;;
 
-
-let possible_first_tokens_opt global name = 
-   List.assoc_opt name global.battery.precomputed_first_tokens ;;
-
 let parse_token_type_sequence_opt dname =
   if Jvng_duplicated_name.index dname <>1 then None else 
   let name = Jvng_duplicated_name.name dname in 
   try Some(Jvsp_util.token_type_sequence_from_codes_in_production_names name) with 
-  _ -> None ;; 
+  _ -> None ;;      
 
-let easy_beheading_situation1 old_global = 
+let possible_first_tokens_opt global dname = 
+  let trial1 = parse_token_type_sequence_opt dname in 
+  if trial1<>None then trial1 else
+  List.assoc_opt dname global.battery.precomputed_first_tokens ;;
+
+
+
+let easy_decision_that_analizer_head_is_used1 old_global = 
   match old_global.tail with 
   [] -> false 
   | dname2 :: _others ->
@@ -61,7 +64,7 @@ let easy_beheading_situation1 old_global =
       (List.hd l)<>(List.hd(Jvsp_token_types_list.unveil(old_global.consumable.remaining_list))) 
     ;;
 
-let easy_beheading_situation2 old_global = 
+let easy_decision_that_analizer_head_is_used2 old_global = 
   match old_global.tail with 
   [] -> false 
   | dname2 :: _others ->
@@ -72,7 +75,7 @@ let easy_beheading_situation2 old_global =
       not(List.mem stream_head first_toks) 
     ;;
 
-let easy_nonbeheading_situation old_global nm= 
+let easy_decision_that_analizer_head_is_not_used old_global nm= 
     match possible_first_tokens_opt old_global nm with 
     None -> false
     |(Some first_toks) -> 
@@ -81,9 +84,9 @@ let easy_nonbeheading_situation old_global nm=
     ;;
 
 
-let easy_beheading_situation old_global =
-   (easy_beheading_situation1 old_global) ||
-   (easy_beheading_situation2 old_global)  ;;
+let easy_decision_that_analizer_head_is_used old_global =
+   (easy_decision_that_analizer_head_is_used1 old_global) ||
+   (easy_decision_that_analizer_head_is_used2 old_global)  ;;
 
 
 
@@ -112,10 +115,10 @@ let step old_global =
      Jvag_types.Optional_L -> 
        let nm = List.hd coatoms in 
        let is_used = (
-        if (old_global.tail=[])||(easy_beheading_situation old_global)
+        if (old_global.tail=[])||(easy_decision_that_analizer_head_is_used old_global)
         then true
         else 
-        if easy_nonbeheading_situation old_global nm 
+        if easy_decision_that_analizer_head_is_not_used old_global nm 
         then false
         else    
         Jvng_battery_of_analizers.decide old_global.battery nm old_global.consumable) in  
@@ -134,10 +137,10 @@ let step old_global =
   |Jvag_types.Star_L ->  
        let nm = List.hd coatoms in 
        let is_used = (
-        if (old_global.tail=[])||(easy_beheading_situation old_global)
+        if (old_global.tail=[])||(easy_decision_that_analizer_head_is_used old_global)
         then true
         else 
-        if easy_nonbeheading_situation old_global nm 
+        if easy_decision_that_analizer_head_is_not_used old_global nm 
         then false
         else      
         Jvng_battery_of_analizers.decide old_global.battery  nm old_global.consumable) in  

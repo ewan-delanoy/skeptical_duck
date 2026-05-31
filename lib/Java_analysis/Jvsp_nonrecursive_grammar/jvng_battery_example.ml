@@ -22,12 +22,14 @@ let for_ClassBodyDeclaration rem_list =
   let h = List.hd(Jvsp_token_types_list.unveil rem_list) in 
   if h = T.SM_T then Some (d "Sm") else 
   if h = T.LC_T then Some (d "InstanceInitializer") else   
-  let rem_list2 = Jvsp_token_types_list.find_opt (fun tok->
+  match Jvsp_token_types_list.find_and_forget_opt (fun tok->
     not(List.mem tok [
         T.PUBLIC_T;T.PRIVATE_T;T.ABSTRACT_T;T.STATIC_T;
         T.FINAL_T;T.SEALED_T;T.NONSEALED_T;T.STRICTFP_T
      ])  
-  ) rem_list in 
+  ) rem_list with 
+  None -> None 
+  |Some rem_list2 -> 
   List.assoc_opt (List.hd(Jvsp_token_types_list.unveil rem_list2)) [
       T.CLASS_T,d "NormalClassDeclaration";
       T.ENUM_T,d "EnumDeclaration";
@@ -35,12 +37,14 @@ let for_ClassBodyDeclaration rem_list =
   ] ;; 
 
 let for_ClassDeclaration rem_list = 
-  let rem_list2 = Jvsp_token_types_list.find_opt (fun tok->
+  match Jvsp_token_types_list.find_and_forget_opt (fun tok->
     not(List.mem tok [
         T.PUBLIC_T;T.PRIVATE_T;T.ABSTRACT_T;T.STATIC_T;
         T.FINAL_T;T.SEALED_T;T.NONSEALED_T;T.STRICTFP_T
      ])  
-  ) rem_list in 
+  ) rem_list with 
+  None -> None 
+  |Some rem_list2 -> 
   List.assoc_opt (List.hd(Jvsp_token_types_list.unveil rem_list2)) [
       T.CLASS_T,d "NormalClassDeclaration";
       T.ENUM_T,d "EnumDeclaration";
@@ -56,12 +60,14 @@ let for_TypeParameters rem_list =
    if h<>T.LT_T then Some (d "false") else None;; 
 
 let for_TopLevelClassOrInterfaceDeclaration rem_list = 
-  let rem_list2 = Jvsp_token_types_list.find_opt (fun tok->
+  match Jvsp_token_types_list.find_and_forget_opt (fun tok->
     not(List.mem tok [
         T.PUBLIC_T;T.PRIVATE_T;T.ABSTRACT_T;T.STATIC_T;
         T.FINAL_T;T.SEALED_T;T.NONSEALED_T;T.STRICTFP_T
      ])  
-  ) rem_list in 
+  ) rem_list with 
+  None -> None 
+  |Some rem_list2 -> 
   List.assoc_opt (List.hd(Jvsp_token_types_list.unveil rem_list2)) [
       T.CLASS_T,d "ClassDeclaration";
       T.ENUM_T,d "ClassDeclaration";

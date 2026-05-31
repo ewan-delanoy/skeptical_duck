@@ -732,6 +732,9 @@ let token_type_from_ocaml_name name =
 
 let token_type_sequence_from_codes_in_production_names = Private.token_type_sequence_from_codes_in_production_names ;;
 
+let token_type_sequence_from_codes_in_production_names_opt codeseq = 
+   try Some (Private.token_type_sequence_from_codes_in_production_names codeseq) with 
+   _ -> None ;;
 
 
 

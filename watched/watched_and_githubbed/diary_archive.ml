@@ -1,6 +1,47 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 245 : remove use of Atomic label in code names
+************************************************************************************************************************)
+module Snip245 = struct 
+
+open Jvsp_types ;;
+open Jvag_types ;;
+
+let calvinify_name name = 
+if String.starts_with name ~prefix:"Atomic"
+then Cull_string.two_sided_cutting ("Atomic","") name 
+else  name ;;
+   
+let calvinify_form form = match form with 
+   (Optional nm) -> Optional(calvinify_name nm) 
+  |Concat(l) ->  Concat(Image.image calvinify_name l)
+  |Disjunction(l) -> Disjunction(Image.image calvinify_name l)
+  |(Star nm) -> Star(calvinify_name nm) 
+  |Synonym(nm) ->Synonym(calvinify_name nm) 
+  |Molecular(_) -> form ;;
+
+   
+let calvinify_pair (name,form) = (calvinify_name name,calvinify_form form) ;; 
+let calvinify_grammar (AL l) = AL(
+Ordered.sort Jvag_grammar.Private.order_on_pairs   
+(Image.image calvinify_pair l)) ;;
+
+let gram1 = Jvag_example.Private.original_java_grammar ;;
+
+let gram2 = calvinify_grammar gram1 ;;
+
+let gram2_description = "\n\n\n let original_java_grammar = \n\n" ^ (Jvag_grammar.ocaml_name gram2) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/Jvsp_abstract_grammar/jvag_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram2_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 244 : See repetitions in grammar productions
 ************************************************************************************************************************)
 module Snip244 = struct 

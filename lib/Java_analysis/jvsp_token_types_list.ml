@@ -6,7 +6,7 @@
 
 type t = Jvsp_types.token_type_list =  TTL of (Jvsp_types.token_type list) ;;
 
-exception Find_opt_exn ;;
+
 
 module Private = struct 
 
@@ -14,20 +14,30 @@ let to_string (TTL l) =
    Strung.with_size_limit ~size_limit:250
    (String.concat " " (Image.image Jvsp_util.summary_of_token_type l)) ;;
 
-let rec find_opt f l = match l with 
- [] -> raise Find_opt_exn 
+let rec find_and_forget_opt f l = match l with 
+ [] -> None 
  | x :: others ->
     if f x 
-   then l
-   else find_opt f others ;;
+   then Some l
+   else find_and_forget_opt f others ;;
+
+let rec helper_for_finding_and_remembering f (accu,l) = match l with 
+ [] -> None
+ | x :: others ->
+    if f x 
+   then Some(List.rev accu,x)
+   else helper_for_finding_and_remembering f (x::accu,others) ;;
+
+let find_and_remember_opt f  l = helper_for_finding_and_remembering f ([],l) ;;
 
 end ;;    
 
 
 let construct l =(TTL l) ;;
 
-let find_opt f (TTL l) = TTL(Private.find_opt f l);;
+let find_and_forget_opt f (TTL l) = Option.map (fun z->TTL z)(Private.find_and_forget_opt f l);;
 
+let find_and_remember_opt f (TTL l) = Private.find_and_remember_opt f l;;
 
 let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
   
