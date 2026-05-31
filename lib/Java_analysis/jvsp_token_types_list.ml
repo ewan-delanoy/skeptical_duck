@@ -21,14 +21,6 @@ let rec find_and_forget_opt f l = match l with
    then Some l
    else find_and_forget_opt f others ;;
 
-let rec helper_for_finding_and_remembering f (accu,l) = match l with 
- [] -> None
- | x :: others ->
-    if f x 
-   then Some(List.rev accu,x)
-   else helper_for_finding_and_remembering f (x::accu,others) ;;
-
-let find_and_remember_opt f  l = helper_for_finding_and_remembering f ([],l) ;;
 
 end ;;    
 
@@ -36,8 +28,6 @@ end ;;
 let construct l =(TTL l) ;;
 
 let find_and_forget_opt f (TTL l) = Option.map (fun z->TTL z)(Private.find_and_forget_opt f l);;
-
-let find_and_remember_opt f (TTL l) = Private.find_and_remember_opt f l;;
 
 let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
   

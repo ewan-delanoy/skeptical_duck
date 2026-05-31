@@ -58,30 +58,39 @@ let read_first_token_types_from_concat_opt global dname =
 let possible_first_tokens_opt global dname = 
   let trial1 = parse_token_type_sequence_opt dname in 
   if trial1<>None then trial1 else
-  List.assoc_opt dname global.battery.precomputed_first_tokens ;;
+  let trial2 = List.assoc_opt dname global.battery.precomputed_first_tokens in 
+  if trial2<>None then trial2 else
+  read_first_token_types_from_concat_opt global dname ;;
 
+let find_earliest_nonoptional_opt global=
+  List_again.find_and_remember_opt ( 
+   fun dname ->
+    let name = Jvng_duplicated_name.name dname in 
+    not(List.exists (fun prefix->String.starts_with name ~prefix) ["Optional";"Starred"])
+  ) global.tail ;;
 
+let behead_uncertain_production dname = 
+   let name = Jvng_duplicated_name.name dname in 
+   let new_name =(match List.find_opt (fun pref->String.starts_with name ~prefix:pref) ["Optional";"Starred"] with
+   None -> name 
+   |Some pref -> Cull_string.two_sided_cutting (pref,"") name ) in 
+   Jvng_duplicated_name.of_string new_name;; 
+    
 
-let easy_decision_that_analizer_head_is_used1 old_global = 
-  match old_global.tail with 
-  [] -> false 
-  | dname2 :: _others ->
-    match parse_token_type_sequence_opt dname2 with 
-    None -> false
-    |(Some l) -> 
-      (List.hd l)<>(List.hd(Jvsp_token_types_list.unveil(old_global.consumable.remaining_list))) 
-    ;;
+let easy_decision_that_analizer_head_is_used global = 
+  match find_earliest_nonoptional_opt global with 
+  None -> false 
+  | Some(optionals_before,earliest_nonoptional,_) ->
+    let data_before_opt = Image.image (fun dname -> 
+        possible_first_tokens_opt global (behead_uncertain_production dname)) optionals_before in 
+    let total_data_opt = data_before_opt @ [possible_first_tokens_opt global earliest_nonoptional] in   
+    if List.mem None total_data_opt
+    then false   
+    else  
+    let total_data = Image.image Option.get total_data_opt 
+    and rem_list = global.consumable.remaining_list in 
+    (List.for_all (fun list_start->not(Jvsp_token_types_list.starts_with rem_list list_start)) total_data);;
 
-let easy_decision_that_analizer_head_is_used2 old_global = 
-  match old_global.tail with 
-  [] -> false 
-  | dname2 :: _others ->
-    match possible_first_tokens_opt old_global dname2 with 
-    None -> false
-    |(Some first_toks) -> 
-      let stream_head = List.hd(Jvsp_token_types_list.unveil(old_global.consumable.remaining_list)) in 
-      not(List.mem stream_head first_toks) 
-    ;;
 
 let easy_decision_that_analizer_head_is_not_used old_global nm= 
     match possible_first_tokens_opt old_global nm with 
@@ -90,13 +99,6 @@ let easy_decision_that_analizer_head_is_not_used old_global nm=
       let stream_head = List.hd(Jvsp_token_types_list.unveil(old_global.consumable.remaining_list)) in 
       not(List.mem stream_head first_toks) 
     ;;
-
-
-let easy_decision_that_analizer_head_is_used old_global =
-   (easy_decision_that_analizer_head_is_used1 old_global) ||
-   (easy_decision_that_analizer_head_is_used2 old_global)  ;;
-
-
 
 
 let step old_global = 
