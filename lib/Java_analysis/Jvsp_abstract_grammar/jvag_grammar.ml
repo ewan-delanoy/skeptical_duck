@@ -181,20 +181,13 @@ let register_molecular token_types gram =
    let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
    add_pair_naively (name,Molecular(token_types)) gram ;;
 
-let shortened_version name = 
-  if String.starts_with name ~prefix:"Atomic"
-  then Cull_string.two_sided_cutting ("Atomic","") name 
-  else name ;;
-  
-let shortened_string_concatenation a b = a ^ (shortened_version b) ;;  
-
 exception Standardized_name_exn of string ;;   
 let standardized_name = function 
    Concat _ -> raise(Standardized_name_exn("Concat"))
    |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
    |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
-   |Star nm -> shortened_string_concatenation "Starred" nm
-   |Optional nm -> shortened_string_concatenation "Optional" nm
+   |Star nm -> "Starred"^ nm
+   |Optional nm -> "Optional"^ nm
    |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
 let register_with_standardized_name form gram= 

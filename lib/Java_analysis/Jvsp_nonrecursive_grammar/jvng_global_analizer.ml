@@ -175,7 +175,7 @@ let enclose dname = "\""^(Jvng_duplicated_name.to_string dname)^"\"" ;;
 let to_string global =
   let head = enclose global.head 
   and tail = "["^(String.concat ";" (Image.image enclose global.tail))^"]" in
-   "(...)"^head^","^tail^","^(string_of_int(global.consumable.cursor))^","^(Jvsp_token_types_list.to_string global.consumable.remaining_list);;    
+   "(...)"^head^","^tail^",\n\n\n"^(string_of_int(global.consumable.cursor))^",\n\n"^(Jvsp_token_types_list.to_string global.consumable.remaining_list);;    
  
 end ;;   
 

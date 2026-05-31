@@ -20,7 +20,7 @@ let d = Jvng_duplicated_name.of_string ;;
 let for_ClassBodyDeclaration rem_list = 
   if Jvsp_token_types_list.starts_with rem_list [T.STATIC_T;T.LC_T] then Some (d "StaticInitilaizer") else 
   let h = List.hd(Jvsp_token_types_list.unveil rem_list) in 
-  if h = T.SM_T then Some (d "AtomicSm") else 
+  if h = T.SM_T then Some (d "Sm") else 
   if h = T.LC_T then Some (d "InstanceInitializer") else   
   let rem_list2 = Jvsp_token_types_list.find_opt (fun tok->
     not(List.mem tok [
@@ -68,7 +68,7 @@ let for_TopLevelClassOrInterfaceDeclaration rem_list =
       T.RECORD_T,d "ClassDeclaration";
       T.INTERFACE_T,d "InterfaceDeclaration";
       T.SNAIL_T,d "InterfaceDeclaration";
-      T.SM_T,d "AtomicSm";
+      T.SM_T,d "Sm";
   ] ;; 
 
 let for_UnannType rem_list =    
@@ -117,25 +117,25 @@ let example = {
   choosers_for_disjunctions = Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
      "ClassModifier", (La.no_first_trial [
        [T.SNAIL_T],"Annotation"; 
-       [T.PUBLIC_T],"AtomicPublic";
-       [T.PROTECTED_T],"AtomicProtected";
-       [T.PRIVATE_T],"AtomicPrivate";
-       [T.ABSTRACT_T],"AtomicAbstract";
-       [T.STATIC_T],"AtomicStatic"; 
-       [T.FINAL_T],"AtomicFinal";
-       [T.SEALED_T],"AtomicSealed";
-       [T.NONSEALED_T],"AtomicNonsealed";
-       [T.STRICTFP_T],"AtomicStrictfp";
+       [T.PUBLIC_T],"Public";
+       [T.PROTECTED_T],"Protected";
+       [T.PRIVATE_T],"Private";
+       [T.ABSTRACT_T],"Abstract";
+       [T.STATIC_T],"Static"; 
+       [T.FINAL_T],"Final";
+       [T.SEALED_T],"Sealed";
+       [T.NONSEALED_T],"Nonsealed";
+       [T.STRICTFP_T],"Strictfp";
      ] true);
      "FieldModifier", (La.no_first_trial [
        [T.SNAIL_T],"Annotation"; 
-       [T.PUBLIC_T],"AtomicPublic";
-       [T.PROTECTED_T],"AtomicProtected";
-       [T.PRIVATE_T],"AtomicPrivate";
-       [T.STATIC_T],"AtomicStatic"; 
-       [T.FINAL_T],"AtomicFinal";
-       [T.TRANSIENT_T],"AtomicFinal";
-       [T.VOLATILE_T],"AtomicVolatile";
+       [T.PUBLIC_T],"Public";
+       [T.PROTECTED_T],"Protected";
+       [T.PRIVATE_T],"Private";
+       [T.STATIC_T],"Static"; 
+       [T.FINAL_T],"Final";
+       [T.TRANSIENT_T],"Final";
+       [T.VOLATILE_T],"Volatile";
      ] true);
      "TopLevelClassOrInterfaceDeclaration", La.first_trial_only for_TopLevelClassOrInterfaceDeclaration;
      "ClassDeclaration", La.first_trial_only for_ClassDeclaration;

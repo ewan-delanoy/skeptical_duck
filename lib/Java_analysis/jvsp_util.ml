@@ -677,15 +677,11 @@ let rec parse_codeseq (treated,original_str,str,n) =
       ) in
    parse_codeseq (tok::treated,original_str,str3,n3) ;;  
 
-let token_type_sequence_from_codes_in_production_names codeseq =
-   if String.starts_with codeseq ~prefix:"Atomic"
-   then let core = Cull_string.two_sided_cutting ("Atomic","") codeseq in 
-        [token_type_from_code_in_production_names core] 
-   else      
+let token_type_sequence_from_codes_in_production_names codeseq = 
     if String.starts_with codeseq ~prefix:"Molecular"
    then let core = Cull_string.two_sided_cutting ("Molecular","") codeseq in 
         parse_codeseq ([],core,core,String.length core) 
-   else raise(Token_type_sequence_from_codes_in_production_names_exn(codeseq)) ;;
+   else [token_type_from_code_in_production_names codeseq] ;;
 
 end ;;
 
@@ -696,9 +692,9 @@ let code_for_tokentype_in_production_names = Private.code_for_token_type_in_prod
    
 let code_for_tokentype_sequence_in_production_names seq =
    let prefix = (
-    if List.length(seq)=1
-    then "Atomic"
-    else "Molecular"  
+    if List.length(seq)>1
+    then "Molecular"
+    else ""  
    ) in 
    prefix^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
  
