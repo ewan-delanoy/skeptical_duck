@@ -57,6 +57,14 @@ let concat_content form = match form with
    |Optional _ 
    |Synonym _ -> raise(Concat_content_exn(form));;   
  
+let concat_content_opt form = match form with 
+   (Concat l) -> Some l    
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> None;;   
+
 let disjunction_content form = match form with 
    (Disjunction l) -> l    
    |Concat _

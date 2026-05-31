@@ -42,10 +42,18 @@ let pass_to_tail old_global =
      } ;;
 
 let parse_token_type_sequence_opt dname =
-  if Jvng_duplicated_name.index dname <>1 then None else 
   let name = Jvng_duplicated_name.name dname in 
   try Some(Jvsp_util.token_type_sequence_from_codes_in_production_names name) with 
   _ -> None ;;      
+
+let read_first_token_types_from_concat_opt global dname =
+  let name = Jvng_duplicated_name.name dname in 
+  let form = Jvag_grammar.get global.managed_grammar.source name in 
+  match Jvag_form.concat_content_opt form with 
+  None -> None 
+  |(Some l)-> 
+    let first_in_concat =  Jvag_grammar.get global.managed_grammar.source  (List.hd l) in 
+    Jvag_form.molecular_content_opt first_in_concat;; 
 
 let possible_first_tokens_opt global dname = 
   let trial1 = parse_token_type_sequence_opt dname in 
