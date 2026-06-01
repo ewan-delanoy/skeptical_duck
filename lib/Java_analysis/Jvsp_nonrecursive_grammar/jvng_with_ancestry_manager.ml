@@ -24,37 +24,29 @@ let insert_in_ancestry_manager (AM l) pair =
 
 let insert_several_in_ancestry_manager man pairs =
    List.fold_left insert_in_ancestry_manager man pairs ;;
- 
-let lower_bound_according_to_ancestry name ancestry =
-   let temp = List.filter_map (fun dname ->
-      if Jvng_duplicated_name.name dname = name 
-      then Some (Jvng_duplicated_name.index dname)
-      else None) ancestry in 
-   if temp = []
-   then 1
-   else 1+(Max.list temp) ;;  
-
-let rec compute_final_index indices_to_be_avoided lower_bound =
-   if List.mem lower_bound indices_to_be_avoided 
-   then compute_final_index indices_to_be_avoided (lower_bound+1)
-   else lower_bound ;;   
 
 let compute_suitable_duplicate common_ancestry (treated_coatoms,old_manager) (coatom_idx,coatom) =
    let (AM old_ancestry_data)=old_manager in 
-   let similar_items = List.filter (fun (nm,data)->
-      (data.ancestry = common_ancestry) && ((Jvng_duplicated_name.name nm)=coatom) 
-   ) old_ancestry_data in 
-   match List.find_opt ( fun (_,data)->data.position_in_birth_list = coatom_idx) similar_items with 
+   match List.find_opt ( fun (nm,data)->
+      (data.ancestry = common_ancestry) 
+        && ((Jvng_duplicated_name.name nm)=coatom)
+          && (data.position_in_birth_list = coatom_idx)   
+   ) old_ancestry_data with 
    Some(old_answer,_) -> (old_answer::treated_coatoms,AM old_ancestry_data)
    |None ->
-   let current_location = {
+   let final_idx = (
+     if not(List.exists (fun older_dname ->Jvng_duplicated_name.name older_dname = coatom) common_ancestry) 
+     then 1
+     else let older_indices = List.filter_map (fun (nm,_data)->
+           if ((Jvng_duplicated_name.name nm)=coatom) then Some (Jvng_duplicated_name.index nm) else None
+         ) old_ancestry_data  in 
+         1+Max.list older_indices  
+   ) in    
+   let final_dname = Jvng_duplicated_name.make coatom final_idx 
+   and current_location = {
      ancestry = common_ancestry ;
      position_in_birth_list = coatom_idx ;
    } in 
-   let indices_to_be_avoided = Image.image ( fun (_,data)->data.position_in_birth_list) similar_items 
-   and lower_bound = lower_bound_according_to_ancestry coatom common_ancestry  in 
-   let final_idx = compute_final_index indices_to_be_avoided lower_bound in 
-   let final_dname = Jvng_duplicated_name.make coatom final_idx in 
    let new_pair = (final_dname,current_location) in 
    (final_dname::treated_coatoms,insert_in_ancestry_manager old_manager new_pair ) ;;    
 
