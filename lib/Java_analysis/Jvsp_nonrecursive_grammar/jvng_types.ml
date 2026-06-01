@@ -28,6 +28,11 @@ type local_analizer = {
   analysis_is_complete : bool ;
 };;
 
+type disjunction_ladder = {
+  initial_data : ((Jvsp_types.token_type_list -> bool) * (Jvng_duplicated_name.t list)) list;
+  computed_once_data : (Jvng_duplicated_name.t * ((Jvsp_types.token_type_list -> Jvng_duplicated_name.t option) list)) list;
+} ;;
+
 type battery_of_analizers = {
   deciders_for_optionals_or_stars : (Jvng_duplicated_name.t  * local_analizer) list ;  
   choosers_for_disjunctions : (Jvng_duplicated_name.t * local_analizer) list;

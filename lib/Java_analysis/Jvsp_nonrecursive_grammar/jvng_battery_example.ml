@@ -9,7 +9,7 @@ open Jvng_types ;;
 
 module Private = struct 
 
-(* The values below are defined by the pt function defined above *)
+
 let list_for_precomputed_first_tokens = 
   let liofli = Image.image (fun tok->[tok]) in 
   Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
@@ -20,7 +20,7 @@ let list_for_precomputed_first_tokens =
 let d = Jvng_duplicated_name.of_string ;;
 
 let for_ClassBodyDeclaration rem_list = 
-  if Jvsp_token_types_list.starts_with rem_list [T.STATIC_T;T.LC_T] then Some (d "StaticInitilaizer") else 
+  if Jvsp_token_types_list.starts_with rem_list [T.STATIC_T;T.LC_T] then Some (d "StaticInitializer") else 
   let h = List.hd(Jvsp_token_types_list.unveil rem_list) in 
   if h = T.SM_T then Some (d "Sm") else 
   if h = T.LC_T then Some (d "InstanceInitializer") else   
@@ -86,6 +86,14 @@ let for_UnannType rem_list =
     then Some (d "Identifier") 
     else None;; 
 
+let for_VariableInitializer rem_list =    
+    let l = Jvsp_token_types_list.unveil rem_list in 
+    let nt = (fun k->List.nth l (k-1)) in
+    if (nt 1<>T.LC_T)
+    then Some (d "Expression") 
+    else None;; 
+
+
 module La = struct 
   
   let direct = Jvng_local_analizer.direct ;;
@@ -123,6 +131,21 @@ let example = {
    ("TypeParameters",La.first_trial_only for_TypeParameters); 
   ] ;  
   choosers_for_disjunctions = Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
+     "AdditiveExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"MultiplicativeExpression"; 
+     ] false);
+     "AndExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"EqualityExpression"; 
+     ] false);
+     "AssignmentExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalExpression"; 
+       [T.STRING_LITERAL_T;T.SM_T],"ConditionalExpression"; 
+     ] false);
+     "ClassBodyDeclaration", La.make for_ClassBodyDeclaration [
+       [T.PUBLIC_T;T.STATIC_T;T.FINAL_T;T.IDENTIFIER_T;T.IDENTIFIER_T;T.EQ_T],"FieldDeclaration";
+       [T.PRIVATE_T;T.STATIC_T;T.FINAL_T;T.IDENTIFIER_T;T.IDENTIFIER_T;T.EQ_T],"FieldDeclaration";
+     ] false;
+     "ClassDeclaration", La.first_trial_only for_ClassDeclaration;
      "ClassModifier", (La.no_first_trial [
        [T.SNAIL_T],"Annotation"; 
        [T.PUBLIC_T],"Public";
@@ -135,6 +158,25 @@ let example = {
        [T.NONSEALED_T],"Nonsealed";
        [T.STRICTFP_T],"Strictfp";
      ] true);
+      "ConditionalExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalOrExpression"; 
+      ] false);
+      "ConditionalAndExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"InclusiveOrExpression"; 
+      ] false);
+      "ConditionalOrExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalAndExpression"; 
+      ] false);
+      "EqualityExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"RelationalExpression"; 
+     ] false);
+      "ExclusiveOrExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AndExpression"; 
+      ] false);
+     "Expression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AssignmentExpression"; 
+       [T.STRING_LITERAL_T;T.SM_T],"AssignmentExpression"; 
+     ] false);
      "FieldModifier", (La.no_first_trial [
        [T.SNAIL_T],"Annotation"; 
        [T.PUBLIC_T],"Public";
@@ -145,12 +187,30 @@ let example = {
        [T.TRANSIENT_T],"Final";
        [T.VOLATILE_T],"Volatile";
      ] true);
+     "InclusiveOrExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ExclusiveOrExpression"; 
+      ] false);
+      "MultiplicativeExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"UnaryExpression"; 
+     ] false);
+     "UnaryExpressionNotPlusMinus", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"PostfixExpression"; 
+     ] false);
+      "PostfixExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ExpressionName"; 
+     ] false);
+      "RelationalExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ShiftExpression"; 
+     ] false);
+     "ShiftExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AdditiveExpression"; 
+     ] false);
      "TopLevelClassOrInterfaceDeclaration", La.first_trial_only for_TopLevelClassOrInterfaceDeclaration;
-     "ClassDeclaration", La.first_trial_only for_ClassDeclaration;
-     "ClassBodyDeclaration", La.make for_ClassBodyDeclaration [
-       [T.PUBLIC_T;T.STATIC_T;T.FINAL_T;T.IDENTIFIER_T;T.IDENTIFIER_T;T.EQ_T],"FieldDeclaration";
-     ] false;
      "UnannType", La.first_trial_only for_UnannType;
+     "UnaryExpression", (La.no_first_trial [
+       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"UnaryExpressionNotPlusMinus"; 
+     ] false);
+     "VariableInitializer", La.first_trial_only for_VariableInitializer;
   ] ;
   precomputed_first_tokens = list_for_precomputed_first_tokens;
 } ;;
