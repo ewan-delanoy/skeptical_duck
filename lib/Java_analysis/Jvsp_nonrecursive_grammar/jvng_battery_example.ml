@@ -125,22 +125,9 @@ let example = {
    ("ImportDeclaration",La.direct [[T.IMPORT_T]]); 
    ("PackageDeclaration",La.direct [[T.PACKAGE_T]]);
    ("PackageModifier",La.direct [[T.SNAIL_T]]);
-   (*
-   ("Static",La.one_level_above_molecular [T.STATIC_T]); 
-   *)
    ("TypeParameters",La.first_trial_only for_TypeParameters); 
   ] ;  
   choosers_for_disjunctions = Image.image (fun (str,l)->(Jvng_duplicated_name.of_string  str,l)) [
-     "AdditiveExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"MultiplicativeExpression"; 
-     ] false);
-     "AndExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"EqualityExpression"; 
-     ] false);
-     "AssignmentExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalExpression"; 
-       [T.STRING_LITERAL_T;T.SM_T],"ConditionalExpression"; 
-     ] false);
      "ClassBodyDeclaration", La.make for_ClassBodyDeclaration [
        [T.PUBLIC_T;T.STATIC_T;T.FINAL_T;T.IDENTIFIER_T;T.IDENTIFIER_T;T.EQ_T],"FieldDeclaration";
        [T.PRIVATE_T;T.STATIC_T;T.FINAL_T;T.IDENTIFIER_T;T.IDENTIFIER_T;T.EQ_T],"FieldDeclaration";
@@ -158,25 +145,6 @@ let example = {
        [T.NONSEALED_T],"Nonsealed";
        [T.STRICTFP_T],"Strictfp";
      ] true);
-      "ConditionalExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalOrExpression"; 
-      ] false);
-      "ConditionalAndExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"InclusiveOrExpression"; 
-      ] false);
-      "ConditionalOrExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ConditionalAndExpression"; 
-      ] false);
-      "EqualityExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"RelationalExpression"; 
-     ] false);
-      "ExclusiveOrExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AndExpression"; 
-      ] false);
-     "Expression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AssignmentExpression"; 
-       [T.STRING_LITERAL_T;T.SM_T],"AssignmentExpression"; 
-     ] false);
      "FieldModifier", (La.no_first_trial [
        [T.SNAIL_T],"Annotation"; 
        [T.PUBLIC_T],"Public";
@@ -187,33 +155,13 @@ let example = {
        [T.TRANSIENT_T],"Final";
        [T.VOLATILE_T],"Volatile";
      ] true);
-     "InclusiveOrExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ExclusiveOrExpression"; 
-      ] false);
-      "MultiplicativeExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"UnaryExpression"; 
-     ] false);
-     "UnaryExpressionNotPlusMinus", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"PostfixExpression"; 
-     ] false);
-      "PostfixExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ExpressionName"; 
-     ] false);
-      "RelationalExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"ShiftExpression"; 
-     ] false);
-     "ShiftExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"AdditiveExpression"; 
-     ] false);
      "TopLevelClassOrInterfaceDeclaration", La.first_trial_only for_TopLevelClassOrInterfaceDeclaration;
      "UnannType", La.first_trial_only for_UnannType;
-     "UnaryExpression", (La.no_first_trial [
-       [T.IDENTIFIER_T;T.DOT_T;T.IDENTIFIER_T;T.SM_T;],"UnaryExpressionNotPlusMinus"; 
-     ] false);
+  
      "VariableInitializer", La.first_trial_only for_VariableInitializer;
   ] ;
   precomputed_first_tokens = list_for_precomputed_first_tokens;
-  ladder_list = Jvng_ladder_example.example ;
+  ladder_list = Jvng_ladder_list_example.example ;
 } ;;
 
 end ;;  
