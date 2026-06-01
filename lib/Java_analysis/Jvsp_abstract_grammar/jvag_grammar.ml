@@ -29,7 +29,9 @@ let ocaml_name (AL l)=
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 
-let get (AL l) name = match List.assoc_opt name l with 
+let get_opt (AL l) name = List.assoc_opt name l ;;
+
+let get gram name = match get_opt gram name  with 
   None -> raise(Get_exn(name))
  |Some answer -> answer ;;
 
@@ -116,6 +118,25 @@ let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name
 
 let just_below gram name = (Jvag_form.unordered_coatoms (get gram name)) ;;
 
+exception Bad_step_in_ladder_exn of string ;;
+exception Strange_step_in_ladder_exn of string ;;
+exception Bad_link_in_ladder_exn of string * string * (string list) ;;
+
+let test_disjunction_ladder_link gram (x,y) =
+  match get_opt gram x with 
+  None -> raise(Bad_step_in_ladder_exn(x))
+  |Some form -> 
+       match Jvag_form.disjunction_content_opt form with 
+       None -> raise(Strange_step_in_ladder_exn(x))
+       |Some l ->
+       if not(List.mem y l) 
+       then raise(Bad_link_in_ladder_exn(x,y,l))
+       else () ;;  
+
+
+let check_disjunction_ladder gram ladder = 
+   let temp1 = List_again.universal_delta_list ladder in   
+   List.iter (test_disjunction_ladder_link gram) temp1 ;;
 
 
 module Modify = struct
@@ -796,6 +817,8 @@ let singleton = Private.Nonrecursive_grammar.singleton ;;
 end ;;  
 
 let add_pair_naively = Private.Modify.add_pair_naively ;;
+
+let check_disjunction_ladder = Private.check_disjunction_ladder ;; 
 let containing = Private.containing ;;
 
 let extract_at_names = Private.WriteParser.extract_at_names ;;
