@@ -28,6 +28,9 @@ let decide battery dname strm=
     |Some answer -> bool_of_string (Jvng_duplicated_name.name answer) ;;    
 
 let choose battery dis_name strm= 
+  match Jvng_disjunction_ladder_list.apply battery.ladder_list dis_name strm.remaining_list with 
+   Some answer -> answer 
+   |None ->
   match List.assoc_opt dis_name battery.choosers_for_disjunctions with 
   None -> raise(Untreated(dis_name))
   |Some(analizer) ->match (Jvng_local_analizer.use analizer strm.remaining_list) with 

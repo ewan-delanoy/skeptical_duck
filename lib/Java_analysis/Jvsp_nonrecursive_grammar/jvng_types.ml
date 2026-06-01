@@ -39,6 +39,7 @@ type battery_of_analizers = {
   deciders_for_optionals_or_stars : (Jvng_duplicated_name.t  * local_analizer) list ;  
   choosers_for_disjunctions : (Jvng_duplicated_name.t * local_analizer) list;
   precomputed_first_tokens : ( Jvng_duplicated_name.t * ((Jvsp_types.token_type list) list)) list;
+  ladder_list : disjunction_ladder_list;
 } ;;
 
 type global_analizer = {
