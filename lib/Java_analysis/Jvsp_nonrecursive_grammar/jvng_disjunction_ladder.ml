@@ -31,6 +31,13 @@ let make pre_l =
     computed_once_data = prepared_data_for_several_items l; 
   } ;;   
 
+let apply ladder production_name token_types =
+   match List.assoc_opt production_name ladder.computed_once_data with 
+   None -> None
+   |Some testers ->
+     List.find_map (fun tester ->tester token_types) testers ;;
+   
 end ;; 
 
+let apply = Private.apply ;;
 let make = Private.make ;;
