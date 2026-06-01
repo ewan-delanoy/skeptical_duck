@@ -27,7 +27,7 @@ let prepared_data_for_several_items items =
 let make pre_l =
   let l = Image.image (fun (f,z)->(f,Image.image Jvng_duplicated_name.of_string z)) pre_l in 
   {
-    initial_data = l;
+    initial_data = Image.image (fun (f,z)->DL(f,z)) l;
     computed_once_data = prepared_data_for_several_items l; 
   } ;;   
 

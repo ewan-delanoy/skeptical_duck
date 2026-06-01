@@ -28,8 +28,10 @@ type local_analizer = {
   analysis_is_complete : bool ;
 };;
 
-type disjunction_ladder = {
-  initial_data : ((Jvsp_types.token_type_list -> bool) * (Jvng_duplicated_name.t list)) list;
+type disjunction_ladder = DL of (Jvsp_types.token_type_list -> bool) * (Jvng_duplicated_name.t list) ;;
+  
+type disjunction_ladder_list = {
+  initial_data : disjunction_ladder list;
   computed_once_data : (Jvng_duplicated_name.t * ((Jvsp_types.token_type_list -> Jvng_duplicated_name.t option) list)) list;
 } ;;
 
