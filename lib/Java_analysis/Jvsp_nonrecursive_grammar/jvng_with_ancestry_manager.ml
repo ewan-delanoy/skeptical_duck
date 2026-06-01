@@ -78,7 +78,7 @@ let get gram_with_am dname =
       let original_form = Jvag_grammar.get src name in 
       let (adjusted_form,new_ancestry_data) = duplicate_in_form gram_with_am dname original_form in 
       let final_receiver = 
-           Jvng_jvag_grammar.add_pair_naively (dname,adjusted_form) rcvr in 
+           Jvng_jvag_grammar.add_pair_fearfully (dname,adjusted_form) rcvr in 
       let final_gram = {
           gram_with_am with 
           receiver = final_receiver ;
