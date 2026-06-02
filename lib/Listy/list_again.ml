@@ -182,6 +182,25 @@ let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with
     
 let long_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;    
 
+
+
+let rec next_in_line_opt x0 l =
+  match l with 
+  [] -> None 
+  |x::others ->
+     if x<>x0 
+     then next_in_line_opt x0 others
+     else
+     if others=[] 
+     then None 
+     else Some(List.hd others) ;;
+
+(*
+
+next_in_line_opt 26 [17;26;35;44] ;;
+
+*)     
+
 let nonredundant_version l=
   let rec tempf=(
     fun (treated,to_be_treated)->
