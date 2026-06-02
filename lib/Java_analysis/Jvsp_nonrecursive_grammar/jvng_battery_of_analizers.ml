@@ -28,7 +28,7 @@ let decide battery dname strm=
     |Some answer -> bool_of_string (Jvng_duplicated_name.name answer) ;;    
 
 let choose battery dis_name strm= 
-  match Jvng_disjunction_ladder_list.apply battery.ladder_finder dis_name strm.remaining_list with 
+  match Jvng_disjunction_ladder_finder.apply battery.ladder_finder dis_name strm.remaining_list with 
    Some answer -> answer 
    |None ->
   match List.assoc_opt dis_name battery.choosers_for_disjunctions with 

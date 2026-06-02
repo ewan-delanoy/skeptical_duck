@@ -52,7 +52,7 @@ let expression_ladder_opt abstract_l =
   else None ;;        
 
 
-let example =   Jvng_disjunction_ladder_list.make [
+let example =   Jvng_disjunction_ladder_finder.make [
    expression_ladder_opt
 ] ;;
 
