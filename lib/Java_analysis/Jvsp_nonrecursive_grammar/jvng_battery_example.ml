@@ -161,7 +161,7 @@ let example = {
      "VariableInitializer", La.first_trial_only for_VariableInitializer;
   ] ;
   precomputed_first_tokens = list_for_precomputed_first_tokens;
-  ladder_finder = Jvng_ladder_list_example.example ;
+  ladder_finder = Jvng_ladder_finder_example.example ;
 } ;;
 
 end ;;  
