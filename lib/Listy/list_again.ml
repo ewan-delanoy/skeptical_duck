@@ -72,6 +72,29 @@ let replace_if_proposed replacements x =
    None -> x 
    |(Some y) -> y ;;
 
+let decompose_using_prefix_opt l pref = 
+  let (_common,left,right) = helper_for_common_initial_sublist ([],l,pref) in 
+  if right=[]
+  then Some left 
+  else None ;;
+
+(*
+
+decompose_using_prefix_opt (Int_range.range 1 7) (Int_range.range 1 3);;
+decompose_using_prefix_opt (Int_range.range 1 7) (Int_range.range 2 4);;
+*)  
+
+let rec iterator_for_finding_interval_sublist_and_remembering itvsub (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> None 
+  |item :: next_items ->
+    match decompose_using_prefix_opt to_be_treated itvsub with 
+    None -> iterator_for_finding_interval_sublist_and_remembering itvsub (item::treated,next_items) 
+    |Some right ->Some(List.rev treated,right) ;;
+
+let find_interval_sublist_and_remember_opt itvsub items = 
+    iterator_for_finding_interval_sublist_and_remembering itvsub ([],items) ;;
+
 end ;;    
 
 let assoc_right_opt y l = 
@@ -112,6 +135,14 @@ let find_index_of_in_opt x ll=
     |u::v->if u=x then Some j else sub_f(j+1,v)) in
     sub_f(1,ll);;
 
+
+let find_interval_sublist_and_remember_opt = Private.find_interval_sublist_and_remember_opt ;;    
+
+(*
+
+find_interval_sublist_and_remember_opt (Int_range.range 3 7) (Int_range.range 1 10) ;;
+
+*)
 
 exception Head_with_tail_exn ;; 
 

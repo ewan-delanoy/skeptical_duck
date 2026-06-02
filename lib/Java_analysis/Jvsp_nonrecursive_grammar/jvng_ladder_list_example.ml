@@ -8,6 +8,13 @@ module T = Jvsp_types ;;
 
 module Private = struct 
 
+exception Not_defined_yet of string * (Jvsp_types.token_type list);;
+
+let realize_as_Expression _ = () ;;
+
+List_again.find_and_remember_opt ;;
+
+
 let rec recognize_StarredMolecularDot_Identifier l =
   match l with 
   [] -> true 
