@@ -30,6 +30,10 @@ let rec iterator_for_finding_and_remembering f (treated,to_be_treated) =
 let find_and_remember_opt f items = 
     iterator_for_finding_and_remembering f ([],items) ;;
   
+let find_rightmost_and_remember_opt f items = 
+  Option.map (fun (rev_right,item,rev_left)->
+    (List.rev rev_left,item,List.rev rev_right)) (find_and_remember_opt f (List.rev items))  ;;
+
 let rec helper_for_connected_fibers 
   (treated,start_of_current_fiber,end_of_current_fiber,fiber,fiber_image,to_be_treated) = 
   match to_be_treated with 
@@ -141,6 +145,14 @@ let find_interval_sublist_and_remember_opt = Private.find_interval_sublist_and_r
 (*
 
 find_interval_sublist_and_remember_opt (Int_range.range 3 7) (Int_range.range 1 10) ;;
+
+*)
+
+let find_rightmost_and_remember_opt = Private.find_rightmost_and_remember_opt ;;
+
+(*
+
+find_rightmost_and_remember_opt (fun x->List.mem x [3;7;20]) (Int_range.range 1 30) ;;
 
 *)
 
