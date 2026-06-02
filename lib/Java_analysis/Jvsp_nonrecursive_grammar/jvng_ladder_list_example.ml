@@ -8,7 +8,7 @@ module T = Jvsp_types ;;
 
 module Private = struct 
 
-exception Not_defined_yet of string * (Jvsp_types.token_type list);;
+
 
 let realize_as_Expression _ = () ;;
 
@@ -39,13 +39,21 @@ let detect_ExpressionName_followed_by_Semicolon abstract_l =
    None -> false 
    |(Some(start,_,_)) -> recognize_ExpressionName start ;;
 
-let example = Jvng_disjunction_ladder_list.make  [
-   detect_ExpressionName_followed_by_Semicolon,[
-    "Expression";"AssignmentExpression";"ConditionalExpression";"ConditionalOrExpression";"ConditionalAndExpression";
+
+let expression_ladder_opt abstract_l = 
+  if detect_ExpressionName_followed_by_Semicolon abstract_l
+  then Some(
+    Image.image Jvng_duplicated_name.of_string 
+    ["Expression";"AssignmentExpression";"ConditionalExpression";"ConditionalOrExpression";"ConditionalAndExpression";
     "InclusiveOrExpression";"ExclusiveOrExpression";"AndExpression";"EqualityExpression";"RelationalExpression";
     "ShiftExpression";"AdditiveExpression";"MultiplicativeExpression";"UnaryExpression";"UnaryExpressionNotPlusMinus";
-    "PostfixExpression";"ExpressionName"
-   ]
+    "PostfixExpression";"ExpressionName"]
+       )
+  else None ;;        
+
+
+let example =   Jvng_disjunction_ladder_list.make [
+   expression_ladder_opt
 ] ;;
 
 end ;;

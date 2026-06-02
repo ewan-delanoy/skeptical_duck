@@ -28,18 +28,16 @@ type local_analizer = {
   analysis_is_complete : bool ;
 };;
 
-type disjunction_ladder = DL of (Jvsp_types.token_type_list -> bool) * (Jvng_duplicated_name.t list) ;;
+type disjunction_ladder_atomic_finder = DLAF of (Jvsp_types.token_type_list -> (Jvng_duplicated_name.t list) option) ;;
   
-type disjunction_ladder_list = {
-  initial_data : disjunction_ladder list;
-  computed_once_data : (Jvng_duplicated_name.t * ((Jvsp_types.token_type_list -> Jvng_duplicated_name.t option) list)) list;
-} ;;
+type disjunction_ladder_finder = DLF of disjunction_ladder_atomic_finder list ;;
+
 
 type battery_of_analizers = {
   deciders_for_optionals_or_stars : (Jvng_duplicated_name.t  * local_analizer) list ;  
   choosers_for_disjunctions : (Jvng_duplicated_name.t * local_analizer) list;
   precomputed_first_tokens : ( Jvng_duplicated_name.t * ((Jvsp_types.token_type list) list)) list;
-  ladder_list : disjunction_ladder_list;
+  ladder_finder : disjunction_ladder_finder;
 } ;;
 
 type global_analizer = {
