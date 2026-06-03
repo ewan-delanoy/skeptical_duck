@@ -88,6 +88,15 @@ decompose_using_prefix_opt (Int_range.range 1 7) (Int_range.range 1 3);;
 decompose_using_prefix_opt (Int_range.range 1 7) (Int_range.range 2 4);;
 *)  
 
+let decompose_using_pattern_opt l pattern = 
+  List.find_map (fun pref ->Option.map (fun res->(pref,res)) 
+  (decompose_using_prefix_opt l pref)) pattern ;;
+
+(*
+
+decompose_using_pattern_opt (Int_range.range 1 7) [[8];(Int_range.range 1 3);[9;10]];;
+*)    
+
 let rec iterator_for_finding_interval_sublist_and_remembering itvsub (treated,to_be_treated) = 
   match to_be_treated with 
   [] -> None 
@@ -98,6 +107,22 @@ let rec iterator_for_finding_interval_sublist_and_remembering itvsub (treated,to
 
 let find_interval_sublist_and_remember_opt itvsub items = 
     iterator_for_finding_interval_sublist_and_remembering itvsub ([],items) ;;
+
+let rec iterator_for_finding_pattern_and_remembering pattern (treated,to_be_treated) = 
+  match to_be_treated with 
+  [] -> None 
+  |item :: next_items ->
+    match decompose_using_pattern_opt to_be_treated pattern with 
+    None -> iterator_for_finding_pattern_and_remembering pattern (item::treated,next_items) 
+    |Some (middle,right) ->Some(List.rev treated,middle,right) ;;
+
+let find_pattern_and_remember_opt pattern items = 
+    iterator_for_finding_pattern_and_remembering pattern ([],items) ;;
+
+let find_rightmost_pattern_and_remember_opt f items = 
+  Option.map (fun (rev_right,item,rev_left)->
+    (List.rev rev_left,item,List.rev rev_right)) (find_pattern_and_remember_opt f (List.rev items))  ;;
+
 
 end ;;    
 
@@ -148,11 +173,30 @@ find_interval_sublist_and_remember_opt (Int_range.range 3 7) (Int_range.range 1 
 
 *)
 
+let find_pattern_and_remember_opt = Private.find_pattern_and_remember_opt ;;
+
+(*
+
+find_pattern_and_remember_opt [[8];(Int_range.range 4 7);[9]] (Int_range.range 1 30) ;;
+
+*)
+
 let find_rightmost_and_remember_opt = Private.find_rightmost_and_remember_opt ;;
 
 (*
 
 find_rightmost_and_remember_opt (fun x->List.mem x [3;7;20]) (Int_range.range 1 30) ;;
+
+*)
+
+let find_rightmost_pattern_and_remember_opt = Private.find_rightmost_pattern_and_remember_opt ;;
+
+(*
+
+
+find_pattern_and_remember_opt  [[8];(Int_range.range 4 7);[9]] ([4;5;6;7]@(Int_range.range 1 30)) ;;
+
+find_rightmost_pattern_and_remember_opt  [[8];(Int_range.range 4 7);[9]] ([4;5;6;7]@(Int_range.range 1 30)) ;;
 
 *)
 
