@@ -1,6 +1,159 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 247 : Checking consistency after changing the conventions in Jvsp_util.token_type_sequence_from_codes_in_production_names, II
+************************************************************************************************************************)
+module Snip247 = struct 
+
+module T = Jvsp_types ;;
+
+open Jvag_types ;;
+
+
+
+let peggy = function 
+
+T.ABSTRACT_T|T.AND_T|T.AND_AND_T|T.ASSERT_T|T.BOOLEAN_T|T.BOOLEAN_LITERAL_T|T.BREAK_T|T.BYTE_T|T.CASE_T|T.CATCH_T|T.CHAR_T|T.CHARACTER_LITERAL_T|T.CLASS_T|T.CM_T
+|T.COLON_T|T.COMMENT_T|T.COMPL_T|T.COND_T|T.CONST_T|T.CONTINUE_T|T.DECR_T|T.DEFAULT_T|T.DIV_T|T.DO_T|T.DOT_T|T.DOUBLE_T|T.ELSE_T
+|T.EOF_T
+|T.ENUM_T|T.EQ_T|T.EQ_EQ_T|T.EXPORTS_T|T.EXTENDS_T|T.FINAL_T|T.FINALLY_T|T.FLOAT_T|T.FLOATING_POINT_LITERAL_T|T.FOR_T|T.GE_T|T.GOTO_T|T.GT_T|T.IDENTIFIER_T
+|T.IF_T|T.IMPLEMENTS_T|T.IMPORT_T|T.INCR_T|T.INSTANCEOF_T|T.INT_T|T.INTEGER_LITERAL_T|T.INTERFACE_T|T.LB_T|T.LC_T|T.LE_T|T.LINEBREAK_T
+|T.LONG_T|T.LOWLEVEL_TYPE_T|T.LP_T|T.LS_T|T.LT_T|T.MINUS_T|T.MOD_T|T.MODULE_T|T.NATIVE_T|T.NEW_T|T.NONSEALED_T|T.NOT_T|T.NOT_EQ_T
+|T.NULL_LITERAL_T|T.OPEN_T
+|T.OPENS_T|T.OPERATOR_EQ_T|T.OR_T|T.OR_OR_T|T.PACKAGE_T|T.PERMITS_T|T.PLUS_T|T.PRIVATE_T|T.PROTECTED_T|T.PROVIDES_T
+|T.PUBLIC_T|T.RB_T|T.RC_T|T.RECORD_T|T.REQUIRES_T|T.RETURN_T|T.RP_T|T.SEALED_T|T.SHORT_T|T.SM_T|T.SNAIL_T|T.SRS_T|T.STATIC_T
+|T.STRICTFP_T|T.STRING_LITERAL_T|T.SUPER_T|T.SWITCH_T|T.SYNCHRONIZED_T|T.THIS_T|T.THROW_T|T.THROWS_T|T.TEXT_BLOCK_T|T.TIMES_T|T.TO_T|T.TRANSIENT_T
+|T.TRANSITIVE_T|T.TRY_T|T.URS_T|T.USES_T|T.VAR_T|T.VOID_T|T.VOLATILE_T|T.WHILE_T|T.WHITESPACE_T|T.WITH_T|T.XOR_T|T.YIELD_T ->
+
+  1 ;;
+
+let bigger_list = [
+  T.ABSTRACT_T;T.AND_T;T.AND_AND_T;T.ASSERT_T;T.BOOLEAN_T;T.BOOLEAN_LITERAL_T;T.BREAK_T;T.BYTE_T;T.CASE_T;T.CATCH_T;T.CHAR_T;T.CHARACTER_LITERAL_T;T.CLASS_T;T.CM_T
+;T.COLON_T;T.COMMENT_T;T.COMPL_T;T.COND_T;T.CONST_T;T.CONTINUE_T;T.DECR_T;T.DEFAULT_T;T.DIV_T;T.DO_T;T.DOT_T;T.DOUBLE_T;T.ELSE_T
+;T.EOF_T
+;T.ENUM_T;T.EQ_T;T.EQ_EQ_T;T.EXPORTS_T;T.EXTENDS_T;T.FINAL_T;T.FINALLY_T;T.FLOAT_T;T.FLOATING_POINT_LITERAL_T;T.FOR_T;T.GE_T;T.GOTO_T;T.GT_T;T.IDENTIFIER_T
+;T.IF_T;T.IMPLEMENTS_T;T.IMPORT_T;T.INCR_T;T.INSTANCEOF_T;T.INT_T;T.INTEGER_LITERAL_T;T.INTERFACE_T;T.LB_T;T.LC_T;T.LE_T;T.LINEBREAK_T
+;T.LONG_T;T.LOWLEVEL_TYPE_T;T.LP_T;T.LS_T;T.LT_T;T.MINUS_T;T.MOD_T;T.MODULE_T;T.NATIVE_T;T.NEW_T;T.NONSEALED_T;T.NOT_T;T.NOT_EQ_T
+;T.NULL_LITERAL_T;T.OPEN_T
+;T.OPENS_T;T.OPERATOR_EQ_T;T.OR_T;T.OR_OR_T;T.PACKAGE_T;T.PERMITS_T;T.PLUS_T;T.PRIVATE_T;T.PROTECTED_T;T.PROVIDES_T
+;T.PUBLIC_T;T.RB_T;T.RC_T;T.RECORD_T;T.REQUIRES_T;T.RETURN_T;T.RP_T;T.SEALED_T;T.SHORT_T;T.SM_T;T.SNAIL_T;T.SRS_T;T.STATIC_T
+;T.STRICTFP_T;T.STRING_LITERAL_T;T.SUPER_T;T.SWITCH_T;T.SYNCHRONIZED_T;T.THIS_T;T.THROW_T;T.THROWS_T;T.TEXT_BLOCK_T;T.TIMES_T;T.TO_T;T.TRANSIENT_T
+;T.TRANSITIVE_T;T.TRY_T;T.URS_T;T.USES_T;T.VAR_T;T.VOID_T;T.VOLATILE_T;T.WHILE_T;T.WHITESPACE_T;T.WITH_T;T.XOR_T;T.YIELD_T
+
+]  ;;
+
+let st_order = Total_ordering.standard ;;
+let st_sort = Ordered.sort st_order ;;
+let st_setminus = Ordered.setminus st_order ;;
+
+let forgotten_items = st_setminus (st_sort bigger_list) (st_sort Jvsp_util.all_token_types) ;;
+
+let check_forgotten_items = (
+  forgotten_items =  [T.BOOLEAN_LITERAL_T; T.CHARACTER_LITERAL_T; T.FLOATING_POINT_LITERAL_T;
+   T.INTEGER_LITERAL_T; T.NULL_LITERAL_T; T.STRING_LITERAL_T; T.TEXT_BLOCK_T;
+   T.LOWLEVEL_TYPE_T; T.CONST_T; T.GOTO_T; T.EOF_T]
+) ;; 
+
+
+let v1 = Image.image Jvsp_util.ocaml_name_for_token_type forgotten_items ;;
+
+let main_text = rf "lib/Java_analysis/java_lexer.mll";;
+
+let v2 = Image.image (Cull_string.coending 2) v1 ;;
+  
+let v3 = Image.image (fun str->(str,Substring.occurrences_of_in str main_text)) v2 ;;
+
+let v4 = List.filter (fun (x,y)->y=[]) v3 ;;
+
+let w1 = Uple.list_of_pairs bigger_list ;;
+
+let w2 = Image.image (fun (x1,x2) ->((x1,x2),
+(Jvsp_util.code_for_tokentype_in_production_names x1,Jvsp_util.code_for_tokentype_in_production_names x2))) w1 ;;
+
+let check_w2 = List.filter (fun (_,(y1,y2))->
+  (String.starts_with y1 ~prefix:y2)||(String.starts_with y2 ~prefix:y1)) w2;;
+
+let gram1 = Jvag_example.Private.original_java_grammar ;;
+
+let gram2 = Jvag_example.java_grammar ;;
+
+let (AL l1) = gram1 and (AL l2) = gram2 ;;
+
+let l= l1 @ l2 ;;
+
+let l3 = Image.image fst l;;
+
+let l4 = List.filter (fun x->List.exists(fun pref->String.starts_with x ~prefix:pref) ["Atomic";"Molecular"]) l3 ;;
+
+let l5 = Image.image Jvsp_util.token_type_sequence_from_codes_in_production_names l4 ;;
+
+let l6 = Image.image (fun tok->
+  let code = Jvsp_util.code_for_tokentype_sequence_in_production_names tok in    
+  (tok,code,Jvsp_util.token_type_sequence_from_codes_in_production_names code) )l5 ;;
+
+let check_l6 = List.filter (fun (tok,code,tok2)->tok2<>tok) l6 ;; 
+
+
+
+let g1 = Jvsp_util.all_token_types ;;
+
+
+let g2 = Image.image (fun t->Cull_string.coending 2 (Jvsp_util.ocaml_name_for_token_type t)) g1 ;;
+
+let order_from_cuttings = ((fun s1 s2 ->
+  Total_ordering.lex_for_strings (Cull_string.coending 2 s1) (Cull_string.coending 2 s2)
+  ):string Total_ordering_t.t );;
+
+let g3 = Ordered.sort order_from_cuttings g2 ;;
+
+
+let (g4,g5,g6) = List_again.common_initial_sublist g2 g3 ;;
+
+let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;
+end;;
+
+(************************************************************************************************************************
+ Entry 246 : Pretty-print a list with some hundred elements
+************************************************************************************************************************)
+module Snip246 = struct 
+
+module T = Jvsp_types ;;
+
+open Jvag_types ;;
+
+let bigger_list = [
+  T.ABSTRACT_T;T.AND_T;T.AND_AND_T;T.ASSERT_T;T.BOOLEAN_T;T.BOOLEAN_LITERAL_T;T.BREAK_T;T.BYTE_T;T.CASE_T;T.CATCH_T;T.CHAR_T;T.CHARACTER_LITERAL_T;T.CLASS_T;T.CM_T
+;T.COLON_T;T.COMMENT_T;T.COMPL_T;T.COND_T;T.CONST_T;T.CONTINUE_T;T.DECR_T;T.DEFAULT_T;T.DIV_T;T.DO_T;T.DOT_T;T.DOUBLE_T;T.ELSE_T
+;T.EOF_T
+;T.ENUM_T;T.EQ_T;T.EQ_EQ_T;T.EXPORTS_T;T.EXTENDS_T;T.FINAL_T;T.FINALLY_T;T.FLOAT_T;T.FLOATING_POINT_LITERAL_T;T.FOR_T;T.GE_T;T.GOTO_T;T.GT_T;T.IDENTIFIER_T
+;T.IF_T;T.IMPLEMENTS_T;T.IMPORT_T;T.INCR_T;T.INSTANCEOF_T;T.INT_T;T.INTEGER_LITERAL_T;T.INTERFACE_T;T.LB_T;T.LC_T;T.LE_T;T.LINEBREAK_T
+;T.LONG_T;T.LOWLEVEL_TYPE_T;T.LP_T;T.LS_T;T.LT_T;T.MINUS_T;T.MOD_T;T.MODULE_T;T.NATIVE_T;T.NEW_T;T.NONSEALED_T;T.NOT_T;T.NOT_EQ_T
+;T.NULL_LITERAL_T;T.OPEN_T
+;T.OPENS_T;T.OPERATOR_EQ_T;T.OR_T;T.OR_OR_T;T.PACKAGE_T;T.PERMITS_T;T.PLUS_T;T.PRIVATE_T;T.PROTECTED_T;T.PROVIDES_T
+;T.PUBLIC_T;T.RB_T;T.RC_T;T.RECORD_T;T.REQUIRES_T;T.RETURN_T;T.RP_T;T.SEALED_T;T.SHORT_T;T.SM_T;T.SNAIL_T;T.SRS_T;T.STATIC_T
+;T.STRICTFP_T;T.STRING_LITERAL_T;T.SUPER_T;T.SWITCH_T;T.SYNCHRONIZED_T;T.THIS_T;T.THROW_T;T.THROWS_T;T.TEXT_BLOCK_T;T.TIMES_T;T.TO_T;T.TRANSIENT_T
+;T.TRANSITIVE_T;T.TRY_T;T.URS_T;T.USES_T;T.VAR_T;T.VOID_T;T.VOLATILE_T;T.WHILE_T;T.WHITESPACE_T;T.WITH_T;T.XOR_T;T.YIELD_T
+
+]  ;;
+
+let n = List.length bigger_list ;;
+let q = (n/10) and r=(n mod 10) ;;
+
+let unordered_bl = Image.image Jvsp_util.ocaml_name_for_token_type bigger_list ;;
+
+let bl = Ordered.sort Total_ordering.lex_for_strings unordered_bl ;;
+let parts_of_bl = Int_range.scale (fun j->List_again.interval bl (10*j-9) (min (10*j) n)) 1 (q+1) ;;
+
+let check_parts_of_bl = (bl = List.flatten parts_of_bl) ;;
+
+let u1 = Image.image (fun l->" "^(String.concat ";" l)^";") parts_of_bl ;;
+
+let u2 = "\n\n\n" ^ (String.concat "\n" u1) ^ "\n\n\n" ;;
+
+let display () = print_string u2 ;;
+end;;
+
+(************************************************************************************************************************
  Entry 245 : remove use of Atomic label in code names
 ************************************************************************************************************************)
 module Snip245 = struct 

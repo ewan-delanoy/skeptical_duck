@@ -613,6 +613,10 @@ let token_to_string = function
 |(WHITESPACE txt) -> txt 
 |(LINEBREAK txt) -> txt;;
 
+let basic_literals= [
+   BOOLEAN_LITERAL_T;CHARACTER_LITERAL_T;FLOATING_POINT_LITERAL_T;INTEGER_LITERAL_T
+] ;;
+
 let exceptions_for_tokentype_codes_in_production_names = 
    (* ensured that no code is a prefix of another. This is used in
     the token_type_sequence_from_codes_in_production_names below. *)
@@ -636,20 +640,27 @@ let code_for_token_type_in_production_names toktype =
    let full_name = ocaml_name_for_token_type toktype in 
    let short_name = Cull_string.two_sided_cutting ("","_T") full_name in 
    let parts = Str.split (Str.regexp_string "_") short_name in 
-   let lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
-   String.concat "" lowercase_parts ;;
+   let capitalized_lowercase_parts = Image.image (fun part->String.capitalize_ascii(String.lowercase_ascii part)) parts in 
+   let usual = String.concat "" capitalized_lowercase_parts in 
+   if List.mem toktype basic_literals 
+   then "Lit"^usual 
+   else usual;;
 
 let all_token_types = 
 [
-ABSTRACT_T;AND_T;AND_AND_T;ASSERT_T;BOOLEAN_T;BREAK_T;BYTE_T;CASE_T;CATCH_T;CHAR_T;CLASS_T;CM_T;
-COLON_T;COMMENT_T;COMPL_T;COND_T;CONTINUE_T;DECR_T;DEFAULT_T;DIV_T;DO_T;DOT_T;DOUBLE_T;ELSE_T;
-ENUM_T;EQ_T;EQ_EQ_T;EXPORTS_T;EXTENDS_T;FINAL_T;FINALLY_T;FLOAT_T;FOR_T;GE_T;GT_T;IDENTIFIER_T;
-IF_T;IMPLEMENTS_T;IMPORT_T;INCR_T;INSTANCEOF_T;INT_T;INTERFACE_T;LB_T;LC_T;LE_T;LINEBREAK_T;
-LONG_T;LP_T;LS_T;LT_T;MINUS_T;MOD_T;MODULE_T;NATIVE_T;NEW_T;NONSEALED_T;NOT_T;NOT_EQ_T;OPEN_T;
-OPENS_T;OPERATOR_EQ_T;OR_T;OR_OR_T;PACKAGE_T;PERMITS_T;PLUS_T;PRIVATE_T;PROTECTED_T;PROVIDES_T;
-PUBLIC_T;RB_T;RC_T;RECORD_T;REQUIRES_T;RETURN_T;RP_T;SEALED_T;SHORT_T;SM_T;SNAIL_T;SRS_T;STATIC_T;
-STRICTFP_T;SUPER_T;SWITCH_T;SYNCHRONIZED_T;THIS_T;THROW_T;THROWS_T;TIMES_T;TO_T;TRANSIENT_T;
-TRANSITIVE_T;TRY_T;URS_T;USES_T;VAR_T;VOID_T;VOLATILE_T;WHILE_T;WHITESPACE_T;WITH_T;XOR_T;YIELD_T
+
+ ABSTRACT_T;AND_T;AND_AND_T;ASSERT_T;BOOLEAN_T;BOOLEAN_LITERAL_T;BREAK_T;BYTE_T;CASE_T;CATCH_T;
+ CHAR_T;CHARACTER_LITERAL_T;CLASS_T;CM_T;COLON_T;COMMENT_T;COMPL_T;COND_T;CONST_T;CONTINUE_T;
+ DECR_T;DEFAULT_T;DIV_T;DO_T;DOT_T;DOUBLE_T;ELSE_T;ENUM_T;EOF_T;EQ_T;
+ EQ_EQ_T;EXPORTS_T;EXTENDS_T;FINAL_T;FINALLY_T;FLOAT_T;FLOATING_POINT_LITERAL_T;FOR_T;GE_T;GOTO_T;
+ GT_T;IDENTIFIER_T;IF_T;IMPLEMENTS_T;IMPORT_T;INCR_T;INSTANCEOF_T;INT_T;INTEGER_LITERAL_T;INTERFACE_T;
+ LB_T;LC_T;LE_T;LINEBREAK_T;LONG_T;LOWLEVEL_TYPE_T;LP_T;LS_T;LT_T;MINUS_T;
+ MOD_T;MODULE_T;NATIVE_T;NEW_T;NONSEALED_T;NOT_T;NOT_EQ_T;NULL_LITERAL_T;OPEN_T;OPENS_T;
+ OPERATOR_EQ_T;OR_T;OR_OR_T;PACKAGE_T;PERMITS_T;PLUS_T;PRIVATE_T;PROTECTED_T;PROVIDES_T;PUBLIC_T;
+ RB_T;RC_T;RECORD_T;REQUIRES_T;RETURN_T;RP_T;SEALED_T;SHORT_T;SM_T;SNAIL_T;
+ SRS_T;STATIC_T;STRICTFP_T;STRING_LITERAL_T;SUPER_T;SWITCH_T;SYNCHRONIZED_T;TEXT_BLOCK_T;THIS_T;THROW_T;
+ THROWS_T;TIMES_T;TO_T;TRANSIENT_T;TRANSITIVE_T;TRY_T;URS_T;USES_T;VAR_T;VOID_T;
+ VOLATILE_T;WHILE_T;WHITESPACE_T;WITH_T;XOR_T;YIELD_T;
 
 ] ;; 
 
