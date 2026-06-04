@@ -28,7 +28,7 @@ let link_to_string (name,form) = match form with
 ;;
 
 
-let line_to_string max_name_size (MGL(name,concatenation)) = 
+let line_to_string max_name_size (MGL(name,(concatenation,_path))) = 
 (Strung.insert_repetitive_offset_on_the_left ' ' max_name_size name)^" : "^
 (String.concat " " (Image.image link_to_string concatenation)) ;;
 
@@ -56,13 +56,13 @@ let get gram name =
    let form = Jvag_grammar.get gram name in 
    match form with 
    Disjunction(l) -> 
-     MG(Image.image (fun name2->MGL(name2,concatify gram name2)) l)
+     MG(Image.image (fun name2->MGL(name2,(concatify gram name2,[name]))) l)
   |Concat(_) ->
-     MG[MGL(name,concatify gram name)]    
+     MG[MGL(name,(concatify gram name,[name]))]    
   |Optional(_)  
   |Molecular(_)  
   |Star _  
-  |Synonym(_) -> MG([MGL(name,[name,form])]) ;;
+  |Synonym(_) -> MG([MGL(name,([name,form],[name]))]) ;;
 
 
 let extract_element_in_indexed_list (name,idx_opt) l =
@@ -116,7 +116,7 @@ append_index_after_sharp "Gabriel#7.21.53" 64 ;;
 *)      
 
 let expand_node_in_line_at_index gram idx line_in_mg  =
-   let (MGL(main_name,concatenation)) =line_in_mg in 
+   let (MGL(main_name,(concatenation,path))) =line_in_mg in 
    let indexed_concatenation = Int_range.index_everything concatenation in 
    let (node_name,old_node) = List.nth concatenation (idx-1) in 
    let (inner_l,expansion_should_occur) = inner_expansion_of_inner_node gram old_node in 
@@ -129,11 +129,11 @@ let expand_node_in_line_at_index gram idx line_in_mg  =
    (Image.image (
        fun (idx2,data2) -> 
          MGL(append_index_after_sharp main_name idx2,
-         before@(data2)@after)
+         (before@(data2)@after,path))
    ) indexed_inner_l,Some node_name) ;;
 
 let expand_node_in_line_according_to_data gram line_in_mg data =
-   let (MGL(_main_name,concatenation)) =line_in_mg in 
+   let (MGL(_main_name,(concatenation,_path))) =line_in_mg in 
    let idx = extract_element_in_indexed_list data concatenation in
    expand_node_in_line_at_index gram idx line_in_mg   ;;
 
@@ -188,9 +188,9 @@ let numberless_versions (MG l)=
    str_sort (Image.image (fun (MGL(name,_))->sharpless_core name) l) ;;
 
 let group_by_first_token (MG l)= 
-  let temp1 = Image.image (fun (MGL(name,concatenation)) -> 
+  let temp1 = Image.image (fun (MGL(name,(concatenation,path))) -> 
     let (h,final_tail) = head_with_tail concatenation in 
-    (h,MGL(name,final_tail))
+    (h,MGL(name,(final_tail,path)))
    ) l in 
   let tokens = Ordered.sort Total_ordering.standard (Image.image fst temp1) in   
   Image.image (
@@ -232,14 +232,14 @@ let shortest_determinative_prefix gram mg toklist =
    helper_for_shortest_determinative_prefix gram (Jvsp_token_types_list.unveil toklist,[],(numberless_versions mg,mg)) ;;
 
 let behead_each_one (MG l) =
-   MG(Image.image (fun (MGL(name,concatenation))->MGL(name,List.tl concatenation)) l);;
+   MG(Image.image (fun (MGL(name,(concatenation,path)))->MGL(name,(List.tl concatenation,path))) l);;
 
 
 let select (MG l) names = 
    MG(List.filter (fun (MGL(name,_))->List.mem name names) l);;
 
 let determined_or_not (MG l) = 
-   let (a,b)=List.partition (fun (MGL(_,concatenation))->
+   let (a,b)=List.partition (fun (MGL(_,(concatenation,_)))->
       let (_,form) = List.hd concatenation in 
       Jvag_form.molecular_content_opt form=None) l in 
    (MG(a),MG(b));;
@@ -252,8 +252,10 @@ let possible_first_tokens gram name =
    (tokens,complete_info) ;;
 
 let nonempty_lines (MG l) = 
-   MG(List.filter (fun (MGL(_name,z))->z<>[]) l);;
+   MG(List.filter (fun (MGL(_name,(concatenation,_)))->concatenation<>[]) l);;
 
+let names (MG l) = 
+   Image.image (fun (MGL(name,_form))->name) l;;   
 
 end ;; 
 
@@ -262,6 +264,7 @@ let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
 let get = Private.get ;; 
+let names = Private.names ;;
 let nonempty_lines = Private.nonempty_lines ;;
 let possible_first_tokens = Private.possible_first_tokens ;;
 (* This is a registered printer : print_out *)
