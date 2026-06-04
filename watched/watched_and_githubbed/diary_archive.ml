@@ -1,6 +1,27 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 248 : Rename a production in Jvag_example.Private.java_grammar
+************************************************************************************************************************)
+module Snip248 = struct 
+
+let gram1 = Jvag_example.Private.original_java_grammar ;;
+
+let gram2 = Jvag_grammar.modify gram1 [Jvag_types.Rename(
+  "ParenthesedUnaryExpressionNotPlusMinus",
+  "SwitchedUnaryExpressionNotPlusMinus"
+)] ;;
+
+let gram2_description = "\n\n\n let original_java_grammar = \n\n" ^ (Jvag_grammar.ocaml_name gram2) ^ ";;\n\n\n" ;;
+
+let ap = Absolute_path.of_string "lib/Java_analysis/Jvsp_abstract_grammar/jvag_example.ml" ;;
+
+let persist_new_grammar () = 
+  Replace_inside.overwrite_between_markers_inside_file 
+   ~overwriter:gram2_description  ("(* Java grammar begins here *)","(* Java grammar ends here *)") ap ;;
+end;;
+
+(************************************************************************************************************************
  Entry 247 : Checking consistency after changing the conventions in Jvsp_util.token_type_sequence_from_codes_in_production_names, II
 ************************************************************************************************************************)
 module Snip247 = struct 
@@ -8,7 +29,6 @@ module Snip247 = struct
 module T = Jvsp_types ;;
 
 open Jvag_types ;;
-
 
 
 let peggy = function 
@@ -104,12 +124,13 @@ let order_from_cuttings = ((fun s1 s2 ->
   Total_ordering.lex_for_strings (Cull_string.coending 2 s1) (Cull_string.coending 2 s2)
   ):string Total_ordering_t.t );;
 
-let g3 = Ordered.sort order_from_cuttings g2 ;;
+let g3 = Ordered.sort Total_ordering.lex_for_strings g2 ;;
 
 
 let (g4,g5,g6) = List_again.common_initial_sublist g2 g3 ;;
 
-let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;
+let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;  
+   
 end;;
 
 (************************************************************************************************************************
@@ -141,7 +162,11 @@ let q = (n/10) and r=(n mod 10) ;;
 
 let unordered_bl = Image.image Jvsp_util.ocaml_name_for_token_type bigger_list ;;
 
-let bl = Ordered.sort Total_ordering.lex_for_strings unordered_bl ;;
+let order_from_cuttings = ((fun s1 s2 ->
+  Total_ordering.lex_for_strings (Cull_string.coending 2 s1) (Cull_string.coending 2 s2)
+  ):string Total_ordering_t.t );;
+
+let bl = Ordered.sort order_from_cuttings unordered_bl ;;
 let parts_of_bl = Int_range.scale (fun j->List_again.interval bl (10*j-9) (min (10*j) n)) 1 (q+1) ;;
 
 let check_parts_of_bl = (bl = List.flatten parts_of_bl) ;;

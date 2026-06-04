@@ -30,6 +30,11 @@ module Private = struct
      then Some [current_name;name_for_decomposed]
      else None ;;
 
+  let just_one_token name tok l =
+    if List.length(l)<>1 then None else 
+    let h = List.hd l in 
+    if h= tok then Some [name] else None ;;
+
   let rec recognize_StarredMolecularDot_Identifier l =
   match l with 
   [] -> true 
@@ -48,7 +53,61 @@ let recognize_ExpressionName l =
     if tok1<>T.IDENTIFIER_T then false else
     recognize_StarredMolecularDot_Identifier others1 ;;
 
-   let ladder_for_Primary_opt _l = None ;;
+     let ladder_for_IntegerLiteral_opt  = just_one_token "IntegerLiteral" T.INTEGER_LITERAL_T ;;
+     let ladder_for_FloatingPointLiteral_opt  = just_one_token "FloatingPointLiteral" T.FLOATING_POINT_LITERAL_T ;;
+     let ladder_for_BooleanLiteral_opt  = just_one_token "BooleanLiteral" T.BOOLEAN_LITERAL_T ;;
+     let ladder_for_CharacterLiteral_opt  = just_one_token "CharacterLiteral" T.CHARACTER_LITERAL_T ;;
+     let ladder_for_StringLiteral_opt  = just_one_token "StringLiteral" T.STRING_LITERAL_T ;;
+     let ladder_for_TextBlock_opt  = just_one_token "TextBlock" T.TEXT_BLOCK_T ;;
+     let ladder_for_NullLiteral_opt  = just_one_token "NullLiteral" T.NULL_LITERAL_T ;;  
+    
+   
+     let ladder_for_Literal_opt l = cons_opt "Literal" (List.find_map (
+     fun f-> f l
+   ) [
+     ladder_for_IntegerLiteral_opt;
+     ladder_for_FloatingPointLiteral_opt;
+     ladder_for_BooleanLiteral_opt;
+     ladder_for_CharacterLiteral_opt;
+     ladder_for_StringLiteral_opt;
+     ladder_for_TextBlock_opt;
+     ladder_for_NullLiteral_opt;
+   ] );;   
+
+     let ladder_for_ClassLiteral_opt _l  = None ;;
+     let ladder_for_This_opt  = just_one_token "This" T.THIS_T ;;
+     let ladder_for_UsingThisPrimaryNoNewArray_opt _l  = None ;;
+     let ladder_for_ParenthesedPrimaryNoNewArray_opt _l  = None ;;
+     let ladder_for_ClassInstanceCreationExpression_opt _l  = None ;;
+     let ladder_for_FieldAccess_opt _l  = None ;;
+     let ladder_for_ArrayAccess_opt _l  = None ;;
+     let ladder_for_MethodInvocation_opt _l  = None ;;
+     let ladder_for_MethodReference_opt _l  = None ;;
+
+
+   let ladder_for_PrimaryNoNewArray_opt l = cons_opt "PrimaryNoNewArray" (List.find_map (
+     fun f-> f l
+   ) [
+     ladder_for_Literal_opt;
+     ladder_for_ClassLiteral_opt;
+     ladder_for_This_opt;
+     ladder_for_UsingThisPrimaryNoNewArray_opt;
+     ladder_for_ParenthesedPrimaryNoNewArray_opt;
+     ladder_for_ClassInstanceCreationExpression_opt;
+     ladder_for_FieldAccess_opt;
+     ladder_for_ArrayAccess_opt;
+     ladder_for_MethodInvocation_opt;
+     ladder_for_MethodReference_opt;
+   ] );; 
+     
+   let ladder_for_ArrayCreationExpression_opt _l = None ;; 
+
+   let ladder_for_Primary_opt l = cons_opt "Primary" (List.find_map (
+     fun f-> f l
+   ) [
+     ladder_for_PrimaryNoNewArray_opt;
+     ladder_for_ArrayCreationExpression_opt;
+   ] );; 
    let ladder_for_ExpressionName_opt l = 
       if recognize_ExpressionName l 
       then Some["ExpressionName"]
@@ -57,14 +116,14 @@ let recognize_ExpressionName l =
      
    let ladder_for_PostDecrementExpression_opt _l = None ;; 
 
-   let ladder_for_PostfixExpression_opt l= List.find_map (
+   let ladder_for_PostfixExpression_opt l= cons_opt "PostfixExpression" (List.find_map (
      fun f-> f l
    ) [
      ladder_for_Primary_opt;
      ladder_for_ExpressionName_opt;
      ladder_for_PostIncrementExpression_opt;
      ladder_for_PostDecrementExpression_opt;
-   ] ;; 
+   ] );; 
 
    let ladder_for_ParenthesedUnaryExpressionNotPlusMinus_opt _l = None ;; 
 
@@ -113,7 +172,7 @@ let recognize_ExpressionName l =
 
     let ladder_for_MultiplicativeExpression_opt =
    left_to_right_associative 
-    "RelationalExpression" 
+    "MultiplicativeExpression" 
      ladder_for_MultiplicativeExpressionII_opt [[T.DIV_T];[T.MOD_T];[T.TIMES_T]] ladder_for_UnaryExpression_opt 
       "UnaryExpression"  
        ladder_for_UnaryExpression_opt  ;;

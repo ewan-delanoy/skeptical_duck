@@ -362,7 +362,6 @@ AL ([
    ("ParenthesedArgumentList",Concat(["Lp";"OptionalArgumentList";"Rp"]));
    ("ParenthesedPrimaryNoNewArray",Concat(["Lp";"Expression";"Rp"]));
    ("ParenthesedTryStatement",Concat(["MolecularTry_Lp";"Resource";"StarredResourcePrecededBySemiColon";"OptionalSm";"MolecularRp_Lb";"OptionalBlockStatements";"Rb";"OptionalCatches";"OptionalFinally"]));
-   ("ParenthesedUnaryExpressionNotPlusMinus",Concat(["MolecularSwitch_Lp";"Expression";"Rp";"SwitchBlock"]));
    ("Pattern",Synonym("TypePattern"));
    ("Permits",Molecular([PERMITS_T]));
    ("PlasticArrayType",Concat(["StarredAnnotation";"Identifier";"StarredAnnotation";"MolecularLb_Rb";"StarredDimsElement"]));
@@ -489,6 +488,7 @@ AL ([
    ("Super",Molecular([SUPER_T]));
    ("SwitchBlock",Disjunction(["BasicSwitchBlock";"CompoundSwitchBlock"]));
    ("SwitchBlockStatementGroup",Concat(["SwitchLabel";"Colon";"StarredSwitchLabelFollowedByColon";"BlockStatement";"StarredBlockStatement"]));
+   ("SwitchedUnaryExpressionNotPlusMinus",Concat(["MolecularSwitch_Lp";"Expression";"Rp";"SwitchBlock"]));
    ("SwitchLabel",Disjunction(["CompoundSwitchLabel";"Default"]));
    ("SwitchLabelFollowedByColon",Concat(["SwitchLabel";"Colon"]));
    ("SwitchRule",Disjunction(["BasicSwitchRule";"UsingBracketsSwitchRule";"UsingAThrowSwitchRule"]));
@@ -533,7 +533,7 @@ AL ([
    ("UnannType",Disjunction(["UnannPrimitiveType";"UnannReferenceType"]));
    ("UnannTypeVariable",Synonym("Identifier"));
    ("UnaryExpression",Disjunction(["UsingIncrUnaryExpression";"UsingDecrUnaryExpression";"UsingPlusUnaryExpression";"UsingMinusUnaryExpression";"UnaryExpressionNotPlusMinus"]));
-   ("UnaryExpressionNotPlusMinus",Disjunction(["PostfixExpression";"UsingComplUnaryExpressionNotPlusMinus";"UsingNotUnaryExpressionNotPlusMinus";"CastExpression";"ParenthesedUnaryExpressionNotPlusMinus"]));
+   ("UnaryExpressionNotPlusMinus",Disjunction(["PostfixExpression";"UsingComplUnaryExpressionNotPlusMinus";"UsingNotUnaryExpressionNotPlusMinus";"CastExpression";"SwitchedUnaryExpressionNotPlusMinus"]));
    ("Urs",Molecular([URS_T]));
    ("UserDefinedClassLiteral",Concat(["TypeName";"StarredOpenSquare";"MolecularDot_Class"]));
    ("UsingAThrowSwitchRule",Concat(["SwitchLabel";"MolecularMinus_Gt_Throw";"Expression";"Sm"]));
