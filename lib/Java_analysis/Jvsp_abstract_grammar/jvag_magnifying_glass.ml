@@ -33,11 +33,25 @@ let line_to_string max_name_size (MGL(name,(concatenation,_path))) =
 (String.concat " " (Image.image link_to_string concatenation)) ;;
 
 let to_string mg =
-   let m = maximal_name_size mg and (MG l)=mg in 
+   let (MG l)=mg in 
+   if l=[] then "{}" else
+   let m = maximal_name_size mg in 
    "\n\n\n" ^ (String.concat "\n" (Image.image (line_to_string m) l)) ^ "\n\n\n" ;;
 
 let print_out (fmt:Format.formatter) mg=
    Format.fprintf fmt "@[%s@]" (to_string mg);;
+
+let line_to_pathful_string max_name_size (MGL(name,(concatenation,path))) = 
+(Strung.insert_repetitive_offset_on_the_left ' ' max_name_size name)^" : "^
+(String.concat " " (Image.image link_to_string concatenation))^", "^
+(String.concat "<" path) ;;
+
+let to_pathful_string mg =
+   let (MG l)=mg in 
+   if l=[] then "{}" else
+   let m = maximal_name_size mg in 
+   "\n\n\n" ^ (String.concat "\n" (Image.image (line_to_pathful_string m) l)) ^ "\n\n\n" ;;
+
 
 let concatify gram name =
    let form = Jvag_grammar.get gram name in 
@@ -89,15 +103,16 @@ let rec assoc_opt name0 = function
 let inner_expansion_of_inner_node gram form = 
    let (temp,expansion_should_occur)=
    (match form with 
-    (Disjunction l) -> (Image.image (fun x->[x]) l,true)    
-   |Concat l->([l],true)
+    (Disjunction l) -> (Image.image (fun x->([x],Some x)) l,true)    
+   |Concat l->([l,None],true)
    |Molecular  _ -> ([],false)
-   |Star nm -> ([[];[nm;"Starred"^nm]],true)
-   |Optional nm -> ([[];[nm]],true)
-   |Synonym nm -> ([[nm]],true)) in 
-   (Image.image (Image.image (fun name->(name,Jvag_grammar.get gram name))) temp,
+   |Star nm -> ([([],None);([nm;"Starred"^nm],None)],true)
+   |Optional nm -> ([([],None);([nm],Some nm)],true)
+   |Synonym nm -> ([[nm],Some nm],true)) in 
+   (Image.image (fun (ll,path_data_opt) ->
+      (Image.image (fun name->(name,Jvag_grammar.get gram name)) ll,path_data_opt) ) temp,
    expansion_should_occur);; 
-
+   
 let append_index_after_sharp name idx =
    let s = string_of_int idx in 
    if String.contains name '#'
@@ -115,6 +130,10 @@ append_index_after_sharp "Gabriel#7.21.53" 64 ;;
 
 *)      
 
+let cons_opt added_item_opt l = match added_item_opt with
+ None -> l 
+ |Some x -> x::l;;
+
 let expand_node_in_line_at_index gram idx line_in_mg  =
    let (MGL(main_name,(concatenation,path))) =line_in_mg in 
    let indexed_concatenation = Int_range.index_everything concatenation in 
@@ -127,9 +146,9 @@ let expand_node_in_line_at_index gram idx line_in_mg  =
    and after = List.filter_map (fun (i,pair)->if i>idx then Some pair else None) indexed_concatenation  
    and indexed_inner_l=Int_range.index_everything inner_l in 
    (Image.image (
-       fun (idx2,data2) -> 
+       fun (idx2,(data2,path_data_opt)) -> 
          MGL(append_index_after_sharp main_name idx2,
-         (before@(data2)@after,path))
+         (before@(data2)@after,cons_opt path_data_opt path))
    ) indexed_inner_l,Some node_name) ;;
 
 let expand_node_in_line_according_to_data gram line_in_mg data =
@@ -257,9 +276,23 @@ let nonempty_lines (MG l) =
 let names (MG l) = 
    Image.image (fun (MGL(name,_form))->name) l;;   
 
+let paths (MG l)=Image.image (fun (MGL(_,(_,path))) -> path) l;;    
+
+let path_is_circular = function 
+ [] -> false 
+ |a::b -> List.mem a b ;;
+
+let is_nonempty (MG l)=(l<>[]) ;;
+
+let circularities (MG l) = 
+   let new_mg = MG(List.filter (fun (MGL(_name,(_concatenation,path)))->path_is_circular path) l) in 
+   let _ = (if is_nonempty new_mg then print_string(to_pathful_string new_mg)) in 
+   new_mg;;
+
 end ;; 
 
 let behead_each_one = Private.behead_each_one ;;
+let circularities = Private.circularities ;;
 let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
@@ -267,6 +300,7 @@ let get = Private.get ;;
 let names = Private.names ;;
 let nonempty_lines = Private.nonempty_lines ;;
 let possible_first_tokens = Private.possible_first_tokens ;;
+let paths = Private.paths ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
 let select = Private.select ;;

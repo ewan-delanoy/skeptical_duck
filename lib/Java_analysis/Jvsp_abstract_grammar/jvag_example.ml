@@ -683,23 +683,9 @@ let modifications_to_original_java_grammar =
       Remove_productions(["MediumUnannClassType"; "ShortUnannClassType"]);
       Rename("StrictMediumUnannClassType","MediumUnannClassType");
       Rename("StrictShortUnannClassType","MediumShortClassType");
-      (*
-      Expand_in_disjunction("Expression","VariableInitializer");
-      Expand_in_disjunction("AssignmentExpression","VariableInitializer");
-      Expand_in_disjunction("ConditionalExpression","VariableInitializer");
-      Expand_in_disjunction("ConditionalOrExpression","VariableInitializer");
-      Expand_in_disjunction("ConditionalAndExpression","VariableInitializer");
-      Expand_in_disjunction("InclusiveOrExpression","VariableInitializer");
-      Expand_in_disjunction("ExclusiveOrExpression","VariableInitializer");
-      Expand_in_disjunction("AndExpression","VariableInitializer");
-      Expand_in_disjunction("EqualityExpression","VariableInitializer");
-      Expand_in_disjunction("RelationalExpression","VariableInitializer");
-      Expand_in_disjunction("ShiftExpression","VariableInitializer");
-      Expand_in_disjunction("InstanceofExpression","VariableInitializer");
-      Expand_in_disjunction("AdditiveExpression","VariableInitializer");
-      Expand_in_disjunction("UnannType","Result");
-      Expand_in_disjunction("UnannPrimitiveType","Result");
-      *)
+      
+      Remove_productions(["ExceptionType"; "ExceptionTypePrecededByComma"; "Sends";
+      "StarredExceptionTypePrecededByComma"]);
     ] ;;
 
 let java_grammar = 
