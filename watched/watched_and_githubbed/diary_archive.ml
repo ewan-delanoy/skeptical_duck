@@ -12880,48 +12880,23 @@ end;;
 ************************************************************************************************************************)
 module Snip159 = struct 
 
-
-  let sipdf = "~/Teuliou/Heavy/Scanning/Single_Pdf/Colette/" ;;
-  let ap1 = Absolute_path.of_string (sipdf^"sk456.pdf") ;;
-  let ap2 = Absolute_path.of_string (sipdf^"skeudennou.pdf") ;;
-  
-  let act1 () = Coherent_pdf.replace_inside 
-  ~patient:ap2
-  ~replacer:ap1
-  ~left_of_cut:2 
-  ~right_of_cut:3
-  ~outputfile_name:"helena" ;;
-  
-  let ap3 = Absolute_path.of_string (sipdf^"Erratum/erratum_002.pdf") ;;
-  let ap4 = Absolute_path.of_string (sipdf^"p4.pdf") ;;
-  
-  let act2 () = Coherent_pdf.replace_inside 
-  ~patient:ap4
-  ~replacer:ap3
-  ~left_of_cut:1 
-  ~right_of_cut:3 
-  ~outputfile_name:"new_p4" ;;
-  
-  let ap5 = Absolute_path.of_string (sipdf^"colette.pdf") ;;
+  let sipdf = "~/Teuliou/Heavy/Scanning/Step_3_Book_pdfs/" ;;
+  let ap3 = Absolute_path.of_string (sipdf^"suzanne.pdf") ;;
+let replacer3 = Absolute_path.of_string (sipdf^"p170.pdf") ;;
+let act3 () = Coherent_pdf.replace_inside 
+  ~patient:ap3
+  ~replacer:replacer3
+  ~left_of_cut:169
+  ~right_of_cut:171
+  ~outputfile_name:"suzanne2" ;;
+    
+let ap5 = Absolute_path.of_string (sipdf^"colette.pdf") ;;
   
   let act3 () = Coherent_pdf.remove_interval_inside
   ~patient:ap5
   ~first_in_cut:179 
   ~last_in_cut:179 
-  ~outputfile_name:"celotte" ;;
-  
-  let ap5 = Absolute_path.of_string (sipdf^"colette.pdf") ;;
-  
-  let ap6 = Absolute_path.of_string (sipdf^"rotated.pdf") ;;
-  
-  let act4 () = Coherent_pdf.replace_inside 
-  ~patient:ap5
-  ~replacer:ap6
-  ~left_of_cut:9 
-  ~right_of_cut:14 
-  ~outputfile_name:"new_colette" ;;
-
-
+  ~outputfile_name:"celotte" ;; 
 end;;
 
 (************************************************************************************************************************

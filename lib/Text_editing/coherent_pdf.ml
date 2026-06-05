@@ -83,6 +83,17 @@ module Private = struct
         (fun l->float_of_string(List.nth l 2),float_of_string(List.nth l 3)) data  
        ;; 
 
+  let fl_order = ((fun x y->
+    let d=(Float.compare x y) in 
+    if d=0 then Total_ordering_result_t.Equal else 
+    if d>0 then Total_ordering_result_t.Greater else 
+    Total_ordering_result_t.Lower  
+      ): float Total_ordering_t.t ) ;;
+
+  let fl_sort = Ordered.sort fl_order ;;  
+
+  let nearest_multiple_of_ten fl = (Float.to_int(Float.round(fl *. 0.1))) * 10 ;; 
+
   let average_page_width_and_height ap =
      let n = number_of_pages_in_pdf ap in 
      let data =  Int_range.scale (mediabox_in_pdf ap) 1 n in 
@@ -100,7 +111,7 @@ module Private = struct
         (fun l->float_of_string(List.nth l 3)) data in 
       let float_n=float_of_int n in 
       let take_average = (fun l->
-        (List.fold_left (+.) 0. l)/.(float_n)
+        nearest_multiple_of_ten((List.fold_left (+.) 0. l)/.(float_n))
       ) in   
       (take_average widths,take_average heights)    ;;
 
@@ -447,3 +458,5 @@ let replace_inside
     ) ;;
 
 let sizes_for_each_page = Private.sizes_for_each_page ;;    
+
+let work_path = Private.work_path ;;
