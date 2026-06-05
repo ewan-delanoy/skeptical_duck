@@ -227,6 +227,21 @@ module OnSiteCommand = struct
     "cpdf "^onsite_input^".pdf -pad-multiple "^(string_of_int m)^
     " -o "^output_name^".pdf";; 
 
+  let corep_bigger_cuttable_transform onsite_input outputfile_name padded_nbr= 
+    let q = (padded_nbr/4) in
+    let corep_cuttable_order = List.flatten (Int_range.scale (fun j->
+        [2*q+2*j-1;2*j-1;2*j;2*q+2*j]
+      ) 1 q) in 
+    (pad_up_to_multiple onsite_input  4 "padded")::
+    (explode  "padded" "page")::
+    (
+     [
+       (generic_implode "page" "reaggregated" corep_cuttable_order);
+       ("cpdf -twoup -impose-margin 15 reaggregated.pdf -o "^outputfile_name^".pdf");
+       "rm initial_copy.pdf page*.pdf padded.pdf reaggregated.pdf";
+     ]
+    );; 
+
   let corep_cuttable_transform onsite_input outputfile_name padded_nbr= 
     let q = (padded_nbr/8) in
     let corep_cuttable_order = List.flatten (Int_range.scale (fun j->
@@ -296,6 +311,39 @@ module OnSiteCommand = struct
     "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf replacer_copy.pdf"
     ] ;;
 
+   let replace_pages_inside total_nbr_of_pages indices_to_be_replaced outputfile_name = 
+      if indices_to_be_replaced = []
+      then ["cp initial_copy "^outputfile_name]
+      else  
+      let first_i = List.hd(indices_to_be_replaced)
+      and last_i = List.hd(List.rev(indices_to_be_replaced)) in 
+      
+      let pairs = List_again.universal_delta_list indices_to_be_replaced in 
+      let abstract_path = (1,first_i-1) ::(List.flatten (Image.image (fun (i,j)->[(i+1,j-1);(j,j)]) pairs))
+                          @[last_i+1,total_nbr_of_pages] in 
+      let effective_path = List.filter (fun (i,j)->i<=j) abstract_path in 
+      let preliminary_extractions = ref [] in 
+      let links_in_chain = Image.image (
+          fun (i,j) ->
+          let si=string_of_int i in   
+          if (i=j)&&(List.mem i indices_to_be_replaced) 
+          then ((i,j),"replacer"^si^".pdf")
+          else
+          let sj=string_of_int j in     
+          let new_file = "from_"^si^"_to_"^sj^".pdf" in 
+          let cmd = "cpdf initial_copy.pdf "^si^"-"^sj^" -o "^new_file in 
+          let _ =(preliminary_extractions:=cmd::(!preliminary_extractions)) in 
+          ((i,j),new_file)
+      ) effective_path in 
+      let chain = String.concat " " (Image.image snd links_in_chain) in 
+      (List.rev(!preliminary_extractions))@
+   [
+    "cpdf "^chain^" -o "^outputfile_name^".pdf";
+    "rm from* initial_copy.pdf replacer*.pdf"
+    ] ;;
+
+   
+
   let remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name= 
     let left_part = (
        if (first_in_cut<=1) then ("",[]) else 
@@ -337,6 +385,16 @@ end ;;
 
 module Command = struct 
   
+  let corep_bigger_cuttable_transform ap outputfile_name = 
+    let original_nbr = Private.number_of_pages_in_pdf ap in 
+    let padded_nbr = (Basic.frac_ceiling original_nbr 4)*4 in 
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Private.containing_dir ap in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.corep_bigger_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
+     "cd "^current_dir];;
   let corep_cuttable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
@@ -381,6 +439,18 @@ module Command = struct
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];; 
 
+  let replace_pages_inside 
+    ~patient:patient_ap indices_to_be_replaced outputfile_name = 
+   let current_dir = Sys.getcwd () 
+   and end_user_dir = Private.containing_dir patient_ap in 
+   let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.replace_pages_inside total_nbr_of_pages indices_to_be_replaced outputfile_name) @
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
+     "cd "^current_dir];;    
+
+
   let remove_interval_inside 
     ~patient:patient_ap 
    ~first_in_cut ~last_in_cut outputfile_name = 
@@ -419,6 +489,10 @@ let average_page_width_and_height =
   (Int_range.scale (fun t->prefix^(string_of_int t)^".pdf") first last))^
   " -o whole.pdf" ;; *)
 
+let corep_bigger_cuttable_transform ap ~outputfile_name= 
+    Unix_command.indexed_multiple_uc 
+     (Command.corep_cuttable_transform ap outputfile_name) ;;   
+
 let corep_cuttable_transform ap ~outputfile_name= 
     Unix_command.indexed_multiple_uc 
      (Command.corep_cuttable_transform ap outputfile_name) ;;    
@@ -456,6 +530,14 @@ let replace_inside
     ~patient:patient_ap ~replacer:replacer_ap
    ~left_of_cut ~right_of_cut outputfile_name
     ) ;;
+
+let replace_pages_inside 
+    ~patient:patient_ap indices_to_be_replaced outputfile_name = 
+    Unix_command.indexed_multiple_uc  (
+     Command.replace_pages_inside 
+     ~patient:patient_ap indices_to_be_replaced outputfile_name
+    ) ;;
+
 
 let sizes_for_each_page = Private.sizes_for_each_page ;;    
 
