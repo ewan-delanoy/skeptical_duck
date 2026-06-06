@@ -5,6 +5,7 @@
 *)
 
 
+exception Completions_on_each_side_exn of string ;; 
 
 module Private = struct 
 
@@ -31,9 +32,26 @@ let ranges_for_occurrences_of_in x y=
    Image.image (fun i->(i,i+m-1)) temp1;;  
 
 
+
+let completions_in_on_each_side_of container contained =
+  match leftmost_index_of_in_from_opt contained container 1 with 
+  None -> raise(Completions_on_each_side_exn(contained))
+  | (Some k) -> 
+   let n = String.length container and m = String.length contained in 
+   (
+   String.sub container 0 (k-1),String.sub container (k+m-1) (n+1-(k+m))) ;;
+
+(*
+
+completions_on_each_side "123456789" "45" ;;
+
+*)
+
+
 end ;;    
 
-let leftmost_index_of_in_from_opt = Private.leftmost_index_of_in_from_opt ;; 
+
+let completions_in_on_each_side_of = Private.completions_in_on_each_side_of ;;
 
 let decorated_occurrences_of_in x y =
    let ny = String.length y 
@@ -57,6 +75,9 @@ let decorated_occurrences_of_in x y =
    let tester=(function j->(String.sub y j lx)=x) in
    Int_range.exists tester 0 (String.length(y)-lx);;               
 
+  let leftmost_index_of_in_from_opt = Private.leftmost_index_of_in_from_opt ;; 
+
+   
   let rightmost_index_of_in_opt x y=
       let lx=String.length(x) in
       let tester=(function j->(String.sub y j lx)=x) 

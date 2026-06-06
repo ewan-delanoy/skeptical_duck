@@ -136,7 +136,7 @@ module Command = struct
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (commands_for_copying_replacers@(
    (Coherent_pdf.OnSiteCommand.replace_pages_inside total_nbr_of_pages indices_to_be_replaced intermediary_name) @
-    ["mv "^intermediary_name^".pdf "^filename;
+    ["mv "^intermediary_name^".pdf "^filename^ ".pdf";
      "cd "^current_dir]));;     
 
 

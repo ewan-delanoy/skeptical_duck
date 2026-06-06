@@ -319,7 +319,7 @@ module OnSiteCommand = struct
       and last_i = List.hd(List.rev(indices_to_be_replaced)) in 
       
       let pairs = List_again.universal_delta_list indices_to_be_replaced in 
-      let abstract_path = (1,first_i-1) ::(List.flatten (Image.image (fun (i,j)->[(i+1,j-1);(j,j)]) pairs))
+      let abstract_path = (1,first_i-1) ::(first_i,first_i)::(List.flatten (Image.image (fun (i,j)->[(i+1,j-1);(j,j)]) pairs))
                           @[last_i+1,total_nbr_of_pages] in 
       let effective_path = List.filter (fun (i,j)->i<=j) abstract_path in 
       let preliminary_extractions = ref [] in 
