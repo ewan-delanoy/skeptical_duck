@@ -8,6 +8,7 @@ open Jvag_types ;;
 
 exception Get_exn of string ;;
 exception Circularity of string * (string list) ;; 
+exception Name_already_in_use of string ;;
 
 module Private = struct 
 
@@ -30,6 +31,8 @@ let ocaml_name (AL l)=
 "\n\n])" ;; 
 
 let get_opt (AL l) name = List.assoc_opt name l ;;
+
+let name_for_form_opt (AL l) form = List_again.assoc_right_opt form l ;;
 
 let get gram name = match get_opt gram name  with 
   None -> raise(Get_exn(name))
@@ -164,6 +167,28 @@ let add_pair_naively pair (AL l) =
       if (fst pair2)=name then pair else pair2 ) l
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
+
+let name_form_if_needed gram form new_name =
+  match name_for_form_opt gram form with 
+  Some old_name ->(None,old_name)
+  |None -> 
+     if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
+     let new_ag = add_pair_naively (new_name,form) gram in 
+     (Some new_ag,new_name) ;;
+
+let rec helper_for_naming_several_forms (treated,change_made,gram,to_be_treated) =
+  match to_be_treated with 
+  []->((if change_made then Some gram else None),List.rev treated)
+  |(form1,name1) :: other_pairs ->
+     let (new_gram_opt,final_name) = name_form_if_needed gram form1 name1 in 
+     let treated2 = final_name :: treated in 
+     match new_gram_opt with 
+     None ->  helper_for_naming_several_forms (treated2,change_made,gram,other_pairs)
+     |(Some new_gram) ->  helper_for_naming_several_forms (treated2,true,new_gram,other_pairs) ;;
+           
+let name_several_forms_as_needed gram pairs = 
+   helper_for_naming_several_forms ([],false,gram,pairs) ;; 
+
 
 let heavy_add_pair pair gram = 
   let gram2 = add_pair_naively pair gram in 
@@ -831,6 +856,8 @@ let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;
 
 let modify = Private.HeavyModify.apply_several ;;
+let name_for_form_opt = Private.name_for_form_opt ;; 
+let name_several_forms_as_needed = Private.Modify.name_several_forms_as_needed ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 

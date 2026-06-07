@@ -296,6 +296,25 @@ let partition_according_to_whether_first_name_in_chain_equals (MG l) name0=
       name=name0) l in  
    (MG(a),MG(b));;   
 
+let expand_concat_in_line gram mgl =
+    let (MGL(name,(concatenation,path))) =mgl in 
+    if List.length(concatenation)<>1 then mgl else 
+    let (_,form1)  = List.hd concatenation in 
+    match Jvag_form.concat_content_opt form1 with 
+    None -> mgl 
+    |Some(l)->
+      let new_concatenation = Image.image (fun name2->(name2,Jvag_grammar.get gram name2)) l in 
+      MGL(name,(new_concatenation,path)) ;;
+
+let expand_some_concats gram (MG l) names =
+   let new_l = Image.image (fun mgl ->
+      let (MGL(name,_)) = mgl in 
+      if List.mem name names
+      then expand_concat_in_line gram mgl
+      else mgl) l in
+   MG(new_l);;
+
+
 end ;; 
 
 let behead_each_one = Private.behead_each_one ;;
@@ -303,6 +322,7 @@ let circularities = Private.circularities ;;
 let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
+let expand_some_concats = Private.expand_some_concats ;;
 let expand_some_heads = Private.expand_some_heads ;;
 let get = Private.get ;; 
 let names = Private.names ;;
