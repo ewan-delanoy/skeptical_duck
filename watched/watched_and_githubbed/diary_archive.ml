@@ -1,6 +1,114 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 249 : Check for mistyped LaTeX commands in a LaTeX file
+************************************************************************************************************************)
+module Snip249 = struct 
+
+let str_order = Total_ordering.silex_for_strings ;;
+
+let str_setminus = Ordered.setminus str_order ;;
+let str_sort = Ordered.sort str_order ;;
+
+
+exception Unknown_command_termination of string ;;
+
+let command_terminators = [' ';'\n';'\r';'\t';'$';'{';'}';'[';'\\';'*';'(';')'] ;;
+let latex_command_at_index text i = 
+  match String_find_char.from_inclusive_opt (
+    fun c->List.mem c command_terminators
+  ) text (i+1) with 
+  None -> raise(Unknown_command_termination(Cull_string.interval text (i+1) (min(i+50)(String.length text))))
+  |(Some i0)->Cull_string.interval text (i+1) (i0-1) ;;  
+
+let text1 = rf "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex" ;;
+
+let check () =Check_ocr.check_basic_footnotes_on_all_pages text1 ;;
+
+let u1 = Substring.occurrences_of_in "\\" text1 ;;
+
+let unordered_u2 = Image.image (latex_command_at_index text1) u1 ;;
+
+let unclean_u2 = str_sort unordered_u2 ;;
+
+let u2 = str_setminus unclean_u2 ["";"%";"it"] ;;
+
+let u3 = List.flatten (Image.image (fun str->Image.image (fun k->(str,k)) (Substring.occurrences_of_in str text1)) u2) ;;
+
+let u4 = List.filter (fun (str,k)->
+  let j = k + (String.length str) in 
+  (Strung.get text1 (k-1)<>'\\')
+  &&
+  (List.mem (Strung.get text1 j) command_terminators )
+  ) u3 ;;
+
+let itv = Cull_string.interval text1 ;;
+
+let item_checker (str,k)= List.for_all (
+  fun other_meaning ->
+    match Substring.leftmost_index_of_in_from_opt str other_meaning 1 with 
+    None -> true 
+    |(Some j) ->
+     not(Substring.is_a_substring_located_at other_meaning text1 (k-j+1))
+
+) ["coup "; "coup\\"; "fend "; "fisc "; "loup "; "pend "; "rend "; "rend\\";
+ "tend "; "tend\\"; " large "; "\\textsc{"; "\\noindent "]
+ ;; 
+
+let u5 = List.filter item_checker u4 ;;
+let check_u5 = Image.image (fun (str,k)->
+  let j = k + (String.length str) in 
+  (itv (k-20) (k-1),str,itv j (j+20))) u5 ;;
+
+let expand_view (str,k) = 
+   let stoppers = [' ';'\n';'\r';'\t';'\\';'(';')';'{';'}'] in 
+  let j1 = Option.get(String_find_char.backwards_from_inclusive_opt (fun c->List.mem c stoppers) text1 k)
+  and j2 = Option.get(String_find_char.from_inclusive_opt (fun c->List.mem c stoppers) text1 k) in 
+  (k,itv j1 j2) ;;
+
+let u6 = Image.image expand_view u5 ;;
+
+let unordered_u7 = Image.image (fun (k,slice)->
+  let n =String.length slice in 
+  Cull_string.interval slice 2 (n-1)
+  ) u6 ;;
+   
+let u7 = str_sort unordered_u7 ;;
+  
+let u6 = List.hd unordered_u7 ;;
+
+let ap1 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex";;
+
+let act () = Replace_inside.replace_inside_file ("\226\128\153","'") ap1 ;; 
+
+(*
+let g1 = List.hd(List.rev u5) ;; 
+
+let g2 =expand_view g1 ;;
+
+let (str,k) = g1 ;;
+
+let other_meaning = "\\noindent " ;;
+let j = Option.get(Substring.leftmost_index_of_in_from_opt str other_meaning 1) ;;
+
+let check1 = Substring.is_a_substring_located_at other_meaning text1 (k-j+1) ;;
+
+
+
+ 
+let z1 = List.nth u2 23 ;;
+
+let z1 = "noindentÂ" ;;
+
+let iz1 = List.find (fun x->x=z1) u2 ;;
+let n1 = String.length z1 ;;
+
+let z2 = Cull_string.interval z1 n1 n1 ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 248 : Rename a production in Jvag_example.Private.java_grammar
 ************************************************************************************************************************)
 module Snip248 = struct 

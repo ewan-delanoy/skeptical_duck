@@ -156,27 +156,28 @@ let expand_node_in_line_according_to_data gram line_in_mg data =
    let idx = extract_element_in_indexed_list data concatenation in
    expand_node_in_line_at_index gram idx line_in_mg   ;;
 
-let expand_all_heads gram ?(verbose=false) (MG l) =
+let expand_all_heads_and_remember_count gram (MG l) =
    let temp = Image.image (expand_node_in_line_at_index gram 1) l in 
    let answer = MG(List.flatten(Image.image fst temp)) in
    let expanded_heads = List.filter_map snd temp in 
    let m = List.length expanded_heads in 
-   let _ = (
-     if verbose then 
-     let msg = (
-       if m=0 then "All the heads are already expanded." else 
-       if m=1 then "A single head has been expanded : "^(List.hd expanded_heads) else 
-       "The following "^(string_of_int m)^" heads have been expanded : "^
-       (String.concat ", " expanded_heads)  
-     ) in 
-     print_string ("\n\n"^msg^"\n\n");flush stdout
-   ) in 
    (answer,m) ;;
+
+let expand_all_heads gram mg = fst(expand_all_heads_and_remember_count gram mg) ;;
+
+let expand_some_heads gram (MG l) names=
+   let temp = Image.image (fun mgl ->
+      let (MGL(name,_)) = mgl in 
+      if List.mem name names
+      then fst(expand_node_in_line_at_index gram 1 mgl)
+      else [mgl]) l in 
+   MG(List.flatten(temp));;
+
 
 let rec helper_for_first_token_determination gram (mg,number_of_recent_actions) = 
    if number_of_recent_actions = 0 
    then mg 
-   else helper_for_first_token_determination gram (expand_all_heads gram mg) ;; 
+   else helper_for_first_token_determination gram (expand_all_heads_and_remember_count gram mg) ;; 
     
 exception Bad_head_exn of string * form ;; 
 
@@ -218,7 +219,7 @@ let group_by_first_token (MG l)=
       (h,MG(for_h))
   ) tokens ;; 
 let determine_first_token gram mg =
-   let mg2 = helper_for_first_token_determination gram (expand_all_heads gram mg) in 
+   let mg2 = helper_for_first_token_determination gram (expand_all_heads_and_remember_count gram mg) in 
    let grouped_by_first_tok = group_by_first_token mg2 in 
    Image.image (
     fun (h,mg_for_h)->
@@ -289,6 +290,12 @@ let circularities (MG l) =
    let _ = (if is_nonempty new_mg then print_string(to_pathful_string new_mg)) in 
    new_mg;;
 
+let partition_according_to_whether_first_name_in_chain_equals (MG l) name0= 
+   let (a,b)=List.partition (fun (MGL(_,(concatenation,_)))->
+      let (name,_) = List.hd concatenation in 
+      name=name0) l in  
+   (MG(a),MG(b));;   
+
 end ;; 
 
 let behead_each_one = Private.behead_each_one ;;
@@ -296,11 +303,13 @@ let circularities = Private.circularities ;;
 let determined_or_not = Private.determined_or_not ;;
 let determine_first_token = Private.determine_first_token ;;
 let expand_all_heads = Private.expand_all_heads ;;
+let expand_some_heads = Private.expand_some_heads ;;
 let get = Private.get ;; 
 let names = Private.names ;;
 let nonempty_lines = Private.nonempty_lines ;;
 let possible_first_tokens = Private.possible_first_tokens ;;
 let paths = Private.paths ;;
+let partition_according_to_whether_first_name_in_chain_equals = Private.partition_according_to_whether_first_name_in_chain_equals ;;
 (* This is a registered printer : print_out *)
 let print_out = Private.print_out ;;
 let select = Private.select ;;

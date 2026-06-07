@@ -9,8 +9,7 @@ module Private = struct
 let root_dir = "~/Teuliou/Heavy/Scanning/" ;;
 let step3_dir = root_dir ^ "Step_3_Book_pdfs/" ;;
 let step4_dir = root_dir ^ "Step_4_Same_sized_pages_book_pdfs/" ;;
-let step5_dir = root_dir ^ "Step_5_Adbridged_pdfs/" ;;
-let step6_dir = root_dir ^ "Step_6_Printable_pdfs/" ;;
+let step5_dir = root_dir ^ "Step_5_Printable_pdfs/" ;;
 
 let i0 = int_of_char '0' ;;
 let i9 = int_of_char '9' ;;
@@ -75,19 +74,19 @@ end ;;
 module Command = struct 
 
    let corep_bigger_cuttable_transform filename = 
-    let ap = Absolute_path.of_string (Private.step5_dir ^ filename ^ ".pdf") in 
+    let ap = Absolute_path.of_string (Private.step4_dir ^ filename ^ ".pdf") in 
     let original_nbr = Coherent_pdf.number_of_pages_in_pdf ap in 
-    let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
+    let padded_nbr = (Basic.frac_ceiling original_nbr 4)*4 in 
     let intermediary_name = "YGQSCwoSZgQhzFTSnAQA" in 
     let current_dir = Sys.getcwd ()  in 
    ("cd "^ Coherent_pdf.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (Coherent_pdf.OnSiteCommand.corep_bigger_cuttable_transform "initial_copy" intermediary_name padded_nbr) @
-    ["mv "^intermediary_name^".pdf "^Private.step6_dir^"printable_"^filename^".pdf";
+    ["mv "^intermediary_name^".pdf "^Private.step5_dir^"printable_"^filename^".pdf";
      "cd "^current_dir];;
 
   let corep_cuttable_transform filename = 
-    let ap = Absolute_path.of_string (Private.step5_dir ^ filename ^ ".pdf") in 
+    let ap = Absolute_path.of_string (Private.step4_dir ^ filename ^ ".pdf") in 
     let original_nbr = Coherent_pdf.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
     let intermediary_name = "YGQSCwoSZgQhzFTSnAQA" in 
@@ -95,11 +94,11 @@ module Command = struct
    ("cd "^ Coherent_pdf.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (Coherent_pdf.OnSiteCommand.corep_cuttable_transform "initial_copy" intermediary_name padded_nbr) @
-    ["mv "^intermediary_name^".pdf "^Private.step6_dir^"printable_"^filename^".pdf";
+    ["mv "^intermediary_name^".pdf "^Private.step5_dir^"printable_"^filename^".pdf";
      "cd "^current_dir];;
 
   let corep_foldable_transform filename = 
-    let ap = Absolute_path.of_string (Private.step5_dir ^ filename ^ ".pdf") in 
+    let ap = Absolute_path.of_string (Private.step4_dir ^ filename ^ ".pdf") in 
     let original_nbr = Coherent_pdf.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
     let intermediary_name = "YGQSCwoSZgQhzFTSnAQA" in 
@@ -107,7 +106,7 @@ module Command = struct
    ("cd "^ Coherent_pdf.work_path) :: 
    ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
    (Coherent_pdf.OnSiteCommand.corep_foldable_transform "initial_copy" intermediary_name padded_nbr) @
-    ["mv "^intermediary_name^".pdf "^Private.step6_dir^"printable_"^filename^".pdf";
+    ["mv "^intermediary_name^".pdf "^Private.step5_dir^"printable_"^filename^".pdf";
      "cd "^current_dir];;
 
   let force_same_size_for_all_pages filename = 
