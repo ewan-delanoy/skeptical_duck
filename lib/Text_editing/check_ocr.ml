@@ -226,41 +226,6 @@ end ;;
 module Basic = struct 
 
 let separator_announcing_footnotes="% FOOTNOTES BEGIN HERE" ;;
-let seek_naive_reference_at_index text idx =     
-  match Common.seek_substring_at_index "(" text idx with 
-  None -> None 
-  | Some idx2 -> 
-     (
-      match Common.seek_positive_integer_at_index text idx2 with 
-           None -> None 
-           | Some(written_integer,idx3) -> 
-      (match Common.seek_substring_at_index ")" text idx3 with 
-      None -> None 
-      | Some idx4 -> Some(written_integer,idx4)
-     ));;
-
-(*    
-seek_naive_reference_at_index "1234(67) go marching in" 5;;    
-
-*)
-
-let pusher_for_naive_reference_collecting text (references,next_idx) =
-   match  seek_naive_reference_at_index text next_idx with 
-   Some(footnote_nbr,idx2) -> (footnote_nbr::references,idx2) 
-    | None ->(references,next_idx+1)   ;; 
-
-let helper_for_naive_reference_collecting (text,text_length) =
-   let rec tempf = (fun pair -> 
-   let (references,next_idx) = pair in  
-   if next_idx > text_length 
-   then List.rev references
-   else tempf(pusher_for_naive_reference_collecting text pair) ) in 
-  tempf ;; 
-
-let collect_naive_references text =
-  helper_for_naive_reference_collecting (text,String.length text) ([],1) ;;
-
-
 let collect_footnotes text = 
   let idx_opt = Substring.leftmost_index_of_in_from_opt 
       separator_announcing_footnotes text 1 in 
@@ -269,10 +234,11 @@ let collect_footnotes text =
     |Some idx -> 
       let body = Cull_string.beginning idx text 
       and appendix = Cull_string.cobeginning idx text  in 
-      (body,collect_naive_references appendix)
+      let (_prologue2,pairs2) = Naive_footnote.collect appendix in 
+      (body,Image.image fst pairs2)
   ) in 
-  (* let (prologue,pairs) = *)
-  (collect_naive_references main_text,footnotes) ;;
+  let (_prologue,pairs) = Naive_footnote.collect main_text in 
+  (Image.image fst pairs,footnotes) ;;
 
 let footnote_inconsistencies numbered_pages = 
   List.filter_map (
