@@ -66,6 +66,12 @@ let before_and_after w x=
    Some(  beginning (j-1) x,
     cobeginning (j+String.length(w)-1) x);;
 
+(*
+
+before_and_after "45" "123456789" ;;
+
+*)
+
 let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
       match List.find_opt(fun j->

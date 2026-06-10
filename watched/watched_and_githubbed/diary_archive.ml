@@ -1,6 +1,63 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 250 :   Miscellaneous editings of latex files
+************************************************************************************************************************)
+module Snip250 = struct 
+
+let ap1 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/page150.tex";;
+
+let act1 () = Lines_in_text.remove_interval_in_file ap1 9350 15689 ;;
+
+let act2 () = Lines_in_text.remove_interval_in_file ap1 20 9279 ;;
+
+let text1 = rf "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex";;
+
+let u1 = Lines_in_text.interval text1 9300 9349;;
+let u2 = Lines_in_text.indexed_lines u1 ;;
+
+let u3 = Image.image (
+  fun (idx,line)->(idx,
+  Replace_inside.replace_several_inside_text [
+    "\\noindent ","";
+    "\\linebreak","";
+    "\\indent ","";
+    "\\newline ","";
+  ] line
+  )
+) u2 ;;
+
+let u4 = Image.image (
+  fun (idx,line)->
+    "\\node[anchor=south west] at (\\xou-0.1,\\you+"^(string_of_int(50-idx))^"*\\step-0.1) "^
+    "{\\makebox[10.2 cm][s]{\\scriptsize "^line^
+    "}}; "
+) u3 ;;
+
+let u5 = "\n\n\n" ^ (String.concat "\n" u4) ^ "\n\n\n" ;;
+
+let act () = print_string u5 ;;
+
+let ap1 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex";;
+
+let act1 () = Replace_inside.replace_several_inside_file 
+  ["\\normalsize","\\scriptsize"] ap1 ;;
+
+let act2 () = Replace_inside.replace_several_inside_file 
+  ["\\large","\\normalsize"] ap1 ;;  
+
+let act3 () = Replace_inside.replace_several_inside_file 
+  ["\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=24.5cm}",
+   "\\newgeometry{paper=a5paper,left=2.82cm,right=1.88cm,textheight=19cm}"] ap1 ;; 
+
+let act4 () = Replace_inside.replace_several_inside_file 
+  ["\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=24cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}"] ap1 ;; 
+
+   
+end;;
+
+(************************************************************************************************************************
  Entry 249 : Check for mistyped LaTeX commands in a LaTeX file
 ************************************************************************************************************************)
 module Snip249 = struct 
@@ -543,7 +600,7 @@ let mg2 = Jvag_magnifying_glass.behead_each_one mg1 ;;
 
 
 let next_mg mg =
-  let (pre_mg,_) = Jvag_magnifying_glass.expand_all_heads current_gram  mg in 
+  let pre_mg = Jvag_magnifying_glass.expand_all_heads current_gram  mg in 
   fst(Jvag_magnifying_glass.determined_or_not pre_mg) ;;
 
 let pre_ff = Memoized.small next_mg mg2 ;;

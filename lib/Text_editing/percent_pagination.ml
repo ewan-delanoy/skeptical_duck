@@ -102,8 +102,8 @@ let extract_all_pages_in_lined_form verbose text =
 
 (*    
  
-extract_all_pages_in_lined_form 
-"A\n%\n% Page 1\n%\nB\nC\nD\n%\n% Page 2\n%\nE\nF\nG\n%\n% Page 3\n%\nH\nI\nJ";;
+extract_all_pages_in_lined_form false
+"A\n%\n% Page 1 \n%\nB\nC\nD\n%\n% Page 2 \n%\nE\nF\nG\n%\n% Page 3 \n%\nH\nI\nJ";;
 
 *)
 
@@ -138,7 +138,7 @@ let text2 = merge_all_pages pairs1 ;;
 *)  
 
 
-let modify_string_pagewise f old_text = 
+let modify_text_pagewise f old_text = 
   let indexed_pages =extract_all_pages true old_text in 
   String.concat "\n" (Image.image (
   fun (page_nbr,old_text) ->
@@ -161,10 +161,10 @@ let extract_first_page_in_file file = Private.extract_first_page_and_remerge (Io
 
 let modify_file_pagewise f file = 
   let old_text = Io.read_whole_file file in
-  let new_text = Private.modify_string_pagewise f old_text  in
+  let new_text = Private.modify_text_pagewise f old_text  in
   Io.overwrite_with file new_text ;;  
 
 let merge_all_pages = Private.merge_all_pages ;;  
-let modify_string_pagewise = Private.modify_string_pagewise ;;
+let modify_text_pagewise = Private.modify_text_pagewise ;;
 let read_number_of_first_page = Private.read_number_of_first_page ;;
 
