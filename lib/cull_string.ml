@@ -4,6 +4,12 @@
 
 *)
 
+exception Absent_beginning_marker of string;;
+exception Absent_ending_marker of string;; 
+exception Beginning_failure;;
+exception Ending_failure;;   
+exception Two_sided_cutting_exn of int*int*int;;
+
 module Private = struct 
 
    let interval s a b=String.sub s (a-1) (b-a+1);;
@@ -14,8 +20,126 @@ module Private = struct
       None->None
      |Some(k)->Some(k+1);;
 
+    
+
+let tripartition_using_markers (bm,em) text =
+      let n = String.length text in 
+      match leftmost_index_of_in_from_opt bm text 1 with 
+      None -> raise(Absent_beginning_marker(bm)) 
+      |Some i1 ->
+      let j1=i1+(String.length bm)-1 in
+      match leftmost_index_of_in_from_opt em text (j1+1) with 
+      None -> raise(Absent_ending_marker(em)) 
+      |Some i2 ->
+      let j2=i2+(String.length em)-1 in
+      (interval text 1 (i1-1),
+       interval text (j1+1) (i2-1),
+       interval text (j2+1) n) ;; 
+
+(*
+
+tripartition_using_markers ("backdoor","man") "123backdoor45man678" ;;
+
+*)
+
+ let trim_spaces s=
+   let n=String.length s in
+   let opt1=List.find_opt(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in
+   if opt1=None then "" else
+   let i1=Option.get opt1 in
+   let k1=List.find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in 
+   let j1=(n+1)-k1 in
+   interval s i1 j1;;
+
+
+ let split_wrt_rightmost s c=
+   let i=(try String.rindex(s)(c) with _->(-1)) in
+   if i<0
+   then ("",s)
+   else (String.sub s 0 i,String.sub s (i+1) ((String.length s)-i-1) );;  
+
+  let beginning k s=
+   if k<1 then "" else
+   let n=String.length(s) in
+   if (k>n)
+   then raise(Beginning_failure)
+   else String.sub s 0 k;;
+   
+ let ending k s=
+   if k<1 then "" else
+   let n=String.length(s) in
+   if (k>n)
+   then raise(Ending_failure)
+   else String.sub s (n-k) k;; 
+
+ let cobeginning k s=ending (String.length(s)-k) s;; 
+   
+ 
+
+let two_sided_cutting (left_part,right_part) s=
+   let n=String.length s 
+   and l=String.length left_part 
+   and r=String.length right_part in 
+   let d=n-(l+r) in 
+   if n<l+r
+   then raise(Two_sided_cutting_exn(n,l,r)) 
+   else String.sub s l d;;
+
+(*
+
+two_sided_cutting ("ab","efg") "abcdefg";;
+
+*)      
+ 
+
 end ;;   
 
+let before_and_after w x=
+  let j_opt=Substring.leftmost_index_of_in_from_opt(w)(x) 1 in
+  if j_opt=None then None else 
+   let j = Option.get j_opt in 
+   Some(  Private.beginning (j-1) x,
+    Private.cobeginning (j+String.length(w)-1) x);;
+
+(*
+
+before_and_after "45" "123456789" ;;
+
+*)
+
+let after_rightmost s c=snd(Private.split_wrt_rightmost s c);;
+
+let before_rightmost s c=fst(Private.split_wrt_rightmost s c);;
+
+let before_rightmost_possibly_all s c=
+   let i=(try String.rindex(s)(c) with _->(-1)) in
+   if i<0
+   then s
+   else String.sub s 0 i;;
+
+
+
+let beginning = Private.beginning;;
+   
+
+let between_markers markers text=
+  let (_,middle,_) = Private.tripartition_using_markers markers text in 
+  middle;; 
+ 
+let between_markers_opt p s=
+   try Some(between_markers p s) with _->None;; 
+   
+(*
+
+between_markers ("aaa","bb") "123aaa45bb678";;
+
+*)     
+
+ let cobeginning k s=Private.cobeginning k s;; 
+ 
+ let coending k s=beginning (String.length(s)-k) s;; 
+
+ let ending = Private.ending ;;
 
 let interval =Private.interval;;
 
@@ -24,53 +148,8 @@ let neighborhood_with_center_and_size s i d=
    and b=min(String.length s)(i+d) in
    interval s a b;;
 
-exception Beginning_failure;;
-
-let beginning k s=
-   if k<1 then "" else
-   let n=String.length(s) in
-   if (k>n)
-   then raise(Beginning_failure)
-   else String.sub s 0 k;;
-   
-exception Ending_failure;;   
-   
- let ending k s=
-   if k<1 then "" else
-   let n=String.length(s) in
-   if (k>n)
-   then raise(Ending_failure)
-   else String.sub s (n-k) k;;
-    
- let cobeginning k s=ending (String.length(s)-k) s;; 
  
- let coending k s=beginning (String.length(s)-k) s;; 
- 
- let resize_from_left s p c=
-   let d=p-String.length(s) in
-   if d>0
-   then s^(String.make d c)
-   else beginning p s;;
-   
-  let resize_from_right s p c=
-   let d=p-String.length(s) in
-   if d>0
-   then (String.make d c)^s
-   else ending p s;;  
-     
 
-let before_and_after w x=
-  let j_opt=Substring.leftmost_index_of_in_from_opt(w)(x) 1 in
-  if j_opt=None then None else 
-   let j = Option.get j_opt in 
-   Some(  beginning (j-1) x,
-    cobeginning (j+String.length(w)-1) x);;
-
-(*
-
-before_and_after "45" "123456789" ;;
-
-*)
 
 let remove_chars_in_set_on_the_left l s=
       let n=String.length s in
@@ -88,98 +167,40 @@ let remove_chars_in_set_on_the_right l s=
       None->""
       |Some(d)->coending (d-1) s;;
 
-let trim_spaces_on_the_left =remove_chars_in_set_on_the_left [' ';'\t';'\r';'\n'];;
+let rec remove_suffixes_from_list_on_the_right str suffixes =
+   match List.find_opt (fun suffix->String.ends_with str ~suffix) suffixes with 
+   None -> str 
+   |Some suff ->
+     let shorter_str = Private.two_sided_cutting ("",suff) str in 
+     remove_suffixes_from_list_on_the_right shorter_str suffixes ;;
 
-let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'\n'] ;;
+(*
 
-let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
+remove_suffixes_from_list_on_the_right "A. I. V. C 2642.\\newline\n\n\\indent" 
+ [" ";"\n";"\r";"\t";"\\newline";"\\linebreak";"\\indent";"\\noindent"];;
+
+*)
+
+
+ let resize_from_left s p c=
+   let d=p-String.length(s) in
+   if d>0
+   then s^(String.make d c)
+   else beginning p s;;
    
+  let resize_from_right s p c=
+   let d=p-String.length(s) in
+   if d>0
+   then (String.make d c)^s
+   else ending p s;;  
+     
+
+
 let shortened_version max_length s = 
    let n = String.length s in 
    if n<=max_length 
    then s 
-   else (beginning max_length s)^"(...)" ;;                  
-
-
- let trim_spaces s=
-   let n=String.length s in
-   let opt1=List.find_opt(fun j->not(List.mem(String.get s (j-1)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in
-   if opt1=None then "" else
-   let i1=Option.get opt1 in
-   let k1=List.find(fun j->not(List.mem(String.get s (n-j)) [' ';'\r';'\t';'\n']))(Int_range.range 1 n) in 
-   let j1=(n+1)-k1 in
-   interval s i1 j1;;
-
-exception Absent_beginning_marker of string;;
-exception Absent_ending_marker of string;; 
-
-let tripartition_using_markers (bm,em) text =
-      let n = String.length text in 
-      match Private.leftmost_index_of_in_from_opt bm text 1 with 
-      None -> raise(Absent_beginning_marker(bm)) 
-      |Some i1 ->
-      let j1=i1+(String.length bm)-1 in
-      match Private.leftmost_index_of_in_from_opt em text (j1+1) with 
-      None -> raise(Absent_ending_marker(em)) 
-      |Some i2 ->
-      let j2=i2+(String.length em)-1 in
-      (interval text 1 (i1-1),
-       interval text (j1+1) (i2-1),
-       interval text (j2+1) n) ;; 
-
-(*
-
-tripartition_using_markers ("backdoor","man") "123backdoor45man678" ;;
-
-*)
-
-exception Two_sided_cutting_exn of int*int*int;;
-
-let two_sided_cutting (left_part,right_part) s=
-   let n=String.length s 
-   and l=String.length left_part 
-   and r=String.length right_part in 
-   let d=n-(l+r) in 
-   if n<l+r
-   then raise(Two_sided_cutting_exn(n,l,r)) 
-   else String.sub s l d;;
-
-(*
-
-two_sided_cutting ("ab","efg") "abcdefg";;
-
-*)      
-
-
-
- 
-let between_markers markers text=
-  let (_,middle,_) = tripartition_using_markers markers text in 
-  middle;; 
- 
-let optional_between_markers p s=
-   try Some(between_markers p s) with _->None;; 
-   
-(*
-
-between_markers ("aaa","bb") "123aaa45bb678";;
-
-*)     
-   
-let split_wrt_rightmost s c=
-   let i=(try String.rindex(s)(c) with _->(-1)) in
-   if i<0
-   then ("",s)
-   else (String.sub s 0 i,String.sub s (i+1) ((String.length s)-i-1) );;
-
-let before_rightmost s c=fst(split_wrt_rightmost s c);;
-let after_rightmost s c=snd(split_wrt_rightmost s c);;
-
-let before_rightmost_possibly_all s c=
-   let i=(try String.rindex(s)(c) with _->(-1)) in
-   if i<0
-   then s
-   else String.sub s 0 i;;
+   else (beginning max_length s)^"(...)" ;;    
 
 let shorten_blanks s=
    let blanks = [' ';'\n';'\r';'\t'] in 
@@ -194,13 +215,36 @@ let shorten_blanks s=
    let temp1 = List.filter test_idx (Int_range.range 1 n) in 
    let temp2 = Image.image (fun j->String.make 1 (String.get s (j-1))) temp1 in 
    let temp3 = String.concat "" temp2 in 
-   trim_spaces temp3 ;;
+   Private.trim_spaces temp3 ;;
 
 (*
 
 shorten_blanks " \n 123\r \n45 \n\n6\n  7\t 89\n";;
 
 *)    
+
+let trim_spaces = Private.trim_spaces ;;
+
+let trim_spaces_on_the_left =remove_chars_in_set_on_the_left [' ';'\t';'\r';'\n'];;
+
+let trim_spaces_on_the_right = remove_chars_in_set_on_the_right [' ';'\t';'\r';'\n'] ;;
+
+let trim_slashes_on_the_right =remove_chars_in_set_on_the_right ['/'];;
+                 
+
+
+
+let tripartition_using_markers = Private.tripartition_using_markers ;;
+
+let two_sided_cutting = Private.two_sided_cutting ;;
+
+
+ 
+   
+let split_wrt_rightmost = Private.split_wrt_rightmost;;
+
+
+
 
   
              
