@@ -271,6 +271,7 @@ let collect_footnotes text =
       and appendix = Cull_string.cobeginning idx text  in 
       (body,collect_naive_references appendix)
   ) in 
+  (* let (prologue,pairs) = *)
   (collect_naive_references main_text,footnotes) ;;
 
 let footnote_inconsistencies numbered_pages = 
