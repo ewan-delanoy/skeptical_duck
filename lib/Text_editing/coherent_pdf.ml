@@ -311,7 +311,8 @@ module OnSiteCommand = struct
     "rm "^(fst left_part)^" "^(fst right_part)^" initial_copy.pdf replacer_copy.pdf"
     ] ;;
 
-   let replace_pages_inside total_nbr_of_pages indices_to_be_replaced outputfile_name = 
+   let replace_pages_inside total_nbr_of_pages pairs_for_replacement outputfile_name = 
+      let indices_to_be_replaced = Image.image fst pairs_for_replacement in   
       if indices_to_be_replaced = []
       then ["cp initial_copy "^outputfile_name]
       else  
@@ -327,7 +328,7 @@ module OnSiteCommand = struct
           fun (i,j) ->
           let si=string_of_int i in   
           if (i=j)&&(List.mem i indices_to_be_replaced) 
-          then ((i,j),"replacer"^si^".pdf")
+          then ((i,j),(List.assoc i pairs_for_replacement)^".pdf")
           else
           let sj=string_of_int j in     
           let new_file = "from_"^si^"_to_"^sj^".pdf" in 
@@ -339,8 +340,9 @@ module OnSiteCommand = struct
       (List.rev(!preliminary_extractions))@
    [
     "cpdf "^chain^" -o "^outputfile_name^".pdf";
-    "rm from* initial_copy.pdf replacer*.pdf"
+    "rm from* initial_copy.pdf"
     ] ;;
+
 
    
 
@@ -440,13 +442,13 @@ module Command = struct
      "cd "^current_dir];; 
 
   let replace_pages_inside 
-    ~patient:patient_ap indices_to_be_replaced outputfile_name = 
+    ~patient:patient_ap pairs_for_replacement outputfile_name = 
    let current_dir = Sys.getcwd () 
    and end_user_dir = Private.containing_dir patient_ap in 
    let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
-   (OnSiteCommand.replace_pages_inside total_nbr_of_pages indices_to_be_replaced outputfile_name) @
+   (OnSiteCommand.replace_pages_inside total_nbr_of_pages pairs_for_replacement outputfile_name) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;    
 
@@ -531,13 +533,11 @@ let remove_interval_inside
    ~first_in_cut ~last_in_cut outputfile_name 
     ) ;;    
 
-
-
 let replace_pages_inside 
-    ~patient:patient_ap indices_to_be_replaced outputfile_name = 
+    ~patient:patient_ap ~page_numbers_with_their_replacements ~outputfile_name = 
     Unix_command.indexed_multiple_uc  (
      Command.replace_pages_inside 
-     ~patient:patient_ap indices_to_be_replaced outputfile_name
+     ~patient:patient_ap page_numbers_with_their_replacements outputfile_name
     ) ;;
 
 
