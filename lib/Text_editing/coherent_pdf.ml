@@ -288,7 +288,7 @@ module OnSiteCommand = struct
      ]
     ;; 
 
-   let replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name= 
+   let insert_after_optional_cut total_nbr_of_pages left_of_cut right_of_cut outputfile_name= 
       let left_part = (
          if (left_of_cut<0) then ("",[]) else 
           ("left.pdf",
@@ -426,16 +426,16 @@ module Command = struct
     ["mv "^outputfile_name^".pdf "^end_user_dir;
       "cd "^current_dir];; 
 
-  let replace_inside 
-    ~patient:patient_ap ~replacer:replacer_ap
+  let insert_after_optional_cut 
+    ~patient:patient_ap ~inserted:inserted_ap
    ~left_of_cut ~right_of_cut outputfile_name = 
    let current_dir = Sys.getcwd () 
    and end_user_dir = Private.containing_dir patient_ap in 
    let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
-   ("cp "^(Absolute_path.to_string replacer_ap)^" replacer_copy.pdf") ::
-   (OnSiteCommand.replace_inside total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
+   ("cp "^(Absolute_path.to_string inserted_ap)^" replacer_copy.pdf") ::
+   (OnSiteCommand.insert_after_optional_cut total_nbr_of_pages left_of_cut right_of_cut outputfile_name) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];; 
 
@@ -506,6 +506,15 @@ let force_same_size_for_all_pages ap ~outputfile_name
     (Command.force_same_size_for_all_pages ap outputfile_name
         ~forced_width ~forced_height) ;;
 
+let insert_after_optional_cut
+    ~patient:patient_ap ~inserted:inserted_ap
+   ~left_of_cut ~right_of_cut ~outputfile_name = 
+    Unix_command.indexed_multiple_uc  (
+     Command.insert_after_optional_cut
+    ~patient:patient_ap ~inserted:inserted_ap
+   ~left_of_cut ~right_of_cut outputfile_name
+    ) ;;
+
 let many_pngs_one_pdf dir ~outputfile_name = 
        Unix_command.indexed_multiple_uc 
         (Command.many_pngs_one_pdf dir outputfile_name) ;;
@@ -522,14 +531,7 @@ let remove_interval_inside
    ~first_in_cut ~last_in_cut outputfile_name 
     ) ;;    
 
-let replace_inside 
-    ~patient:patient_ap ~replacer:replacer_ap
-   ~left_of_cut ~right_of_cut ~outputfile_name = 
-    Unix_command.indexed_multiple_uc  (
-     Command.replace_inside 
-    ~patient:patient_ap ~replacer:replacer_ap
-   ~left_of_cut ~right_of_cut outputfile_name
-    ) ;;
+
 
 let replace_pages_inside 
     ~patient:patient_ap indices_to_be_replaced outputfile_name = 

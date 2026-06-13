@@ -1,6 +1,148 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 253 : Use the Systematic_coherent_pdf module
+************************************************************************************************************************)
+module Snip253 = struct 
+
+Systematic_coherent_pdf.force_same_size_for_all_pages "bonvallet" ;;
+Systematic_coherent_pdf.corep_bigger_cuttable_transform "bonvallet" ;;
+
+let z1 = Coherent_pdf.sizes_for_each_page 
+(Absolute_path.of_string "~/Teuliou/Heavy/Scanning/Step_5_Printable_pdfs/printable_bonvallet.pdf") ;;
+
+let z2 = Coherent_pdf.sizes_for_each_page 
+(Absolute_path.of_string "~/Teuliou/Heavy/Scanning/Step_5_Printable_pdfs/a5_dans_a4.pdf") ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 252 : Fix header page numbers and local page parameters in a tex file
+************************************************************************************************************************)
+module Snip252 = struct 
+
+
+
+let rewrite_page (page_nbr,page_content) = 
+  if page_nbr<2 then (page_nbr,page_content) else
+  let lines = Lines_in_text.lines page_content in 
+  let starter = (
+    if page_nbr mod 2 = 0 
+    then "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}"
+    else "\\newgeometry{paper=a5paper,left=2.82cm,right=1.88cm,textheight=19cm}"   
+  ) in
+  (page_nbr,String.concat "\n" (starter::(List.tl lines))) ;;
+
+let rewrite_page (page_nbr,page_content) = 
+  let s= string_of_int page_nbr in 
+  let new_page_content = 
+     Replace_inside.replace_inside_text 
+       ("-"^s^"-","—"^s^"—") page_content in 
+
+  (page_nbr,new_page_content) ;;  
+
+
+let ap1 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex";;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let doc_boundaries = ("\\begin{document}","\\end{document}") ;; 
+
+let text2 = Cull_string.between_markers doc_boundaries text1 ;;
+
+let u1 = Percent_pagination.extract_all_pages text2 ;;
+
+let check_u1 = List.filter (fun (page_nbr,page_content) ->
+  (page_nbr>1) && (not(String.starts_with page_content ~prefix:"\\newgeometry"))
+  ) u1 ;;
+
+let new_u1 = Image.image rewrite_page u1 ;;
+
+let text3 = Percent_pagination.merge_all_pages new_u1 ;;
+
+let act1 () = Replace_inside.overwrite_between_markers_inside_file
+     doc_boundaries ~overwriter:text3 ap1 ;;
+
+end;;
+
+(************************************************************************************************************************
+ Entry 251 : Fix footnotes in a tex file
+************************************************************************************************************************)
+module Snip251 = struct 
+
+let rewrite_footnote_pair p (idx_in_page,(idx,note)) =
+  let cleaned_note = Cull_string.remove_suffixes_from_list_on_the_right note 
+ [" ";"\n";"\r";"\t";"\\newline";"\\linebreak";"\\indent";"\\noindent"]  in 
+   (if idx_in_page=1 then "" else "\\indent ")^"("^(string_of_int idx)^")"^cleaned_note^(if idx_in_page=p then "" else "\\newline") ;;
+
+let rewrite_footnote_pairs pairs =
+  let p = List.length pairs in 
+  let indexed_pairs = Int_range.index_everything pairs in  
+  String.concat "\n" (Image.image (rewrite_footnote_pair p) indexed_pairs) ;;  
+
+let rewrite_footnote_zp (prologue,pairs) = prologue ^ (rewrite_footnote_pairs pairs) ;;
+
+let rewrite_footnote_zone zone = 
+  let (prologue,footnote_pairs) = Naive_footnote.collect zone in 
+   rewrite_footnote_zp (prologue,footnote_pairs) ;;
+
+let rewrite_footnoted_page main_text footnotes_zone =
+  main_text ^ Check_ocr.separator_announcing_basic_footer ^ (rewrite_footnote_zone footnotes_zone) ;;
+
+let rewrite_page (page_nbr,(page_content,footnotes_opt)) = 
+  match footnotes_opt with 
+  None -> (page_nbr,page_content)
+  |Some(main_text,footnotes_zone) ->
+    (page_nbr,rewrite_footnoted_page main_text footnotes_zone) ;;
+
+
+
+let ap1 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/bonvallet.tex";;
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let doc_boundaries = ("\\begin{document}","\\end{document}") ;; 
+
+let text2 = Cull_string.between_markers doc_boundaries text1 ;;
+
+let u1 = Percent_pagination.extract_all_pages text2 ;;
+let u2 = Image.image (
+  fun (page_nbr,page_content) ->
+    (page_nbr,(page_content,
+    (Cull_string.before_and_after Check_ocr.separator_announcing_basic_footer page_content)))
+) u1 ;;
+
+let u3 = Image.image rewrite_page u2 ;;
+
+let text3 = Percent_pagination.merge_all_pages u3 ;;
+
+let act1 () = Replace_inside.overwrite_between_markers_inside_file
+     doc_boundaries ~overwriter:text3 ap1 ;;
+
+let act2 () = Replace_inside.replace_inside_file 
+("\\rule{3cm}{0.4pt}\\linebreak\n\\bigskip\n\n","\\rule{3cm}{0.4pt}\\linebreak\n") ap1 ;;
+
+(*
+let v1 = List.filter_map (
+    fun (page_nbr,(page_content,opt)) ->
+    Option.map (fun r->  (page_nbr,(page_content,r))) opt
+) u2 ;;
+
+
+let (page_nbr1,(page_content1,(main_text1,footnotes1))) = List.nth v1 30 ;;
+
+let (prologue1,pairs1) = Naive_footnote.collect footnotes1 ;;
+
+let p1 = List.length pairs1 ;;
+ let indexed_pairs1 = Int_range.index_everything pairs1 ;;
+let last_or_not_pairs1 = Image.image (fun (idx_in_page,(idx,note))->(idx_in_page=p1,(idx,note)) ) indexed_pairs1 ;;
+
+print_string(rewrite_footnote_zone (prologue1,pairs1)) ;;
+
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 250 :   Miscellaneous editings of latex files
 ************************************************************************************************************************)
 module Snip250 = struct 
@@ -47,13 +189,43 @@ let act2 () = Replace_inside.replace_several_inside_file
   ["\\large","\\normalsize"] ap1 ;;  
 
 let act3 () = Replace_inside.replace_several_inside_file 
-  ["\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=24.5cm}",
+  ["\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=24cm}",
    "\\newgeometry{paper=a5paper,left=2.82cm,right=1.88cm,textheight=19cm}"] ap1 ;; 
 
 let act4 () = Replace_inside.replace_several_inside_file 
   ["\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=24cm}",
    "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}"] ap1 ;; 
 
+
+
+let act6 () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=24.5cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;; 
+
+let act () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=25.5cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;;  
+
+let act5 () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=3.3cm,right=5.6cm,textheight=26cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;; 
+
+let act () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=25cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;;
+
+let act8 () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=25.5cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;;
+
+let act7 () = Replace_inside.replace_inside_file 
+  ("\\newgeometry{paper=a4paper,left=5.6cm,right=3.3cm,textheight=26.5cm}",
+   "\\newgeometry{paper=a5paper,left=1.88cm,right=2.82cm,textheight=19cm}") ap1 ;; 
+
+
+
+
+  
    
 end;;
 
@@ -13048,9 +13220,9 @@ module Snip159 = struct
   let sipdf = "~/Teuliou/Heavy/Scanning/Step_3_Book_pdfs/" ;;
   let ap3 = Absolute_path.of_string (sipdf^"suzanne.pdf") ;;
 let replacer3 = Absolute_path.of_string (sipdf^"p170.pdf") ;;
-let act3 () = Coherent_pdf.replace_inside 
+let act3 () = Coherent_pdf.insert_after_optional_cut 
   ~patient:ap3
-  ~replacer:replacer3
+  ~inserted:replacer3
   ~left_of_cut:169
   ~right_of_cut:171
   ~outputfile_name:"suzanne2" ;;
@@ -16004,8 +16176,8 @@ let ap1 = Absolute_path.of_string (
 let ap2 = Absolute_path.of_string (
    "~/Teuliou/Heavy/Workshop/page.pdf") ;;   
 
-let act1 () = Coherent_pdf.replace_inside 
-  ~patient:ap1 ~replacer:ap2
+let act1 () = Coherent_pdf.insert_after_optional_cut
+  ~patient:ap1 ~inserted:ap2
     ~left_of_cut:7 ~right_of_cut:8 
      ~outputfile_name:"output" ;; 
 
