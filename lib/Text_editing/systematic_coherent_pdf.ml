@@ -121,23 +121,6 @@ module Command = struct
     ["mv "^intermediary_name^".pdf "^Private.step4_dir^filename^".pdf";
       "cd "^current_dir];; 
 
-  let replace_pages_inside filename indices_to_be_replaced= 
-    let ap = Absolute_path.of_string (Coherent_pdf.work_path ^ filename ^ ".pdf") in 
-    let intermediary_name = "YGQSCwoSZgQhzFTSnAQA" in 
-    let current_dir = Sys.getcwd ()  in 
-    let files = Private.get_files_from_indices indices_to_be_replaced in 
-    let commands_for_copying_replacers = Image.image (fun (i,file)->
-      let si = string_of_int i in 
-      "cp "^file^si^".pdf replacer"^si^".pdf"  
-    ) files in 
-    let total_nbr_of_pages = Coherent_pdf.number_of_pages_in_pdf ap in 
-   ("cd "^ Coherent_pdf.work_path) :: 
-   ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
-   (commands_for_copying_replacers@(
-   (Coherent_pdf.OnSiteCommand.replace_pages_inside total_nbr_of_pages indices_to_be_replaced intermediary_name) @
-    ["mv "^intermediary_name^".pdf "^filename^ ".pdf";
-     "cd "^current_dir]));;     
-
 
 end ;;  
 
@@ -152,6 +135,3 @@ let corep_foldable_transform filename=
 
 let force_same_size_for_all_pages filename= 
    Unix_command.indexed_multiple_uc (Command.force_same_size_for_all_pages filename) ;;
-
-let replace_pages_inside filename indices_to_be_replaced =
-   Unix_command.indexed_multiple_uc (Command.replace_pages_inside filename indices_to_be_replaced) ;;    
