@@ -485,11 +485,11 @@ end ;;
 let average_page_width_and_height = 
     Private.average_page_width_and_height ;;
 
-(* let command_for_naive_implosion ~prefix ~first ~last =
+let command_for_naive_implosion ~prefix ~first ~last =
   "cpdf "^
   (String.concat " " 
   (Int_range.scale (fun t->prefix^(string_of_int t)^".pdf") first last))^
-  " -o whole.pdf" ;; *)
+  " -o whole.pdf" ;; 
 
 let corep_bigger_cuttable_transform ap ~outputfile_name= 
     Unix_command.indexed_multiple_uc 
