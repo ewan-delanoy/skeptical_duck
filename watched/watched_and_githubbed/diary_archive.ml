@@ -1,6 +1,31 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 254 : Aggregate some partial pdf files in the same directory
+************************************************************************************************************************)
+module Snip254 = struct 
+
+let u1 = Unix_again.quick_beheaded_complete_ls 
+"~/Teuliou/Heavy/Scanning/Step_1_Raw_scan_pngs_or_pdfs/Giot/Even/";;
+
+let u2 = List.filter (String.starts_with ~prefix:"part") u1;;
+
+let projection fn = int_of_string(Cull_string.interval fn 5 6) ;;
+
+let order =((fun fn1 fn2->Total_ordering.for_integers (projection fn1)  (projection fn2)) : string Total_ordering_t.t) ;; 
+
+let ordered_u2 = Ordered.sort order u2 ;;
+
+let u3 = "\n\n\n"^(String.concat " " ("cpdf"::ordered_u2@["-o";"usual.pdf"]))^"\n\n\n" ;; 
+
+let u4 () = print_string u3 ;;
+
+Coherent_pdf.replace_pages_inside ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 253 : Use the Systematic_coherent_pdf module
 ************************************************************************************************************************)
 module Snip253 = struct 
