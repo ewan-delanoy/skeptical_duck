@@ -26,15 +26,18 @@ let rec helper_for_power (a,b,accu) =
     let multiplier = (if b mod 2=0 then 1 else a) in 
     helper_for_power (a*a,b/2,multiplier * accu) ;;  
 
-end ;;  
-
-let announce cmd =
-    print_string (cmd ^ " ...\n\n");
+let display_message msg =
+    print_string ("\n\n\n" ^ msg ^ " \n\n\n");
     flush stdout
   ;;
 
+end ;;  
 
+let announce cmd = Private.display_message (cmd ^ " ...") ;;
+   
 let announce_execution cmd = announce ("Executing " ^ cmd) ;;
+
+let display_message = Private.display_message ;;
 let fold_prod=function
 []->1
 |a::b->List.fold_left( * )(a)(b);;
