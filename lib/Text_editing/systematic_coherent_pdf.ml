@@ -11,17 +11,9 @@ let step3_dir = root_dir ^ "Step_3_Book_pdfs/" ;;
 let step4_dir = root_dir ^ "Step_4_Same_sized_pages_book_pdfs/" ;;
 let step5_dir = root_dir ^ "Step_5_Printable_pdfs/" ;;
 
-let i0 = int_of_char '0' ;;
-let i9 = int_of_char '9' ;;
-let is_a_digit c = 
-   let i = int_of_char c in 
-   (i0<=i) && (i<=i9) ;;
-
-let is_not_a_digit c = not(is_a_digit c) ;;
-
 let extract_rightmost_number name =
    let n = String.length name in 
-   match String_find_char.backwards_from_inclusive_opt is_not_a_digit name n with 
+   match String_find_char.backwards_from_inclusive_opt Charset.is_not_a_digit name n with 
    None -> ("",int_of_string name)
    |Some(k) ->
      if k =n 
