@@ -129,6 +129,7 @@ module Pqyz = struct
   
   
   let analize_first_char c =
+    (* tests if the character is in the p..z range *)
     let i = int_of_char c in 
     if (i<112)||(i>122)
     then None 

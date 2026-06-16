@@ -20,7 +20,15 @@ let u3 = "\n\n\n"^(String.concat " " ("cpdf"::ordered_u2@["-o";"usual.pdf"]))^"\
 
 let u4 () = print_string u3 ;;
 
-Coherent_pdf.replace_pages_inside ;;
+let v0 = List.filter (String.starts_with ~prefix:"page_") u1;;
+
+let v1 = Image.image (fun s->int_of_string(Cull_string.two_sided_cutting ("page_",".pdf") s)) v0;;
+
+let v2 = Image.image (fun i->"mv page_"^(string_of_int i)^".pdf rect_"^(string_of_int(i/2))^".pdf") v1;;
+
+let v3 = "\n\n\n"^(String.concat " && " v2)^"\n\n\n" ;; 
+
+let v4 () = print_string v3 ;;
 
 
 end;;

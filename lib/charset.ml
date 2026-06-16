@@ -4,43 +4,18 @@
 
 *)
 
-let lowercase_letters=    
-  ['a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
-   'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
-   'u';'v';'w';'x';'y';'z'];;
+module Private = struct 
 
-    
-let uppercase_letters= 
-   ['A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
-    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
-    'U';'V';'W';'X';'Y';'Z'];;
-    
-let anycase_letters=
-    lowercase_letters@uppercase_letters;;
+let i0 = int_of_char '0' ;;
+let i9 = int_of_char '9' ;;
+let is_a_digit c = 
+   let i = int_of_char c in 
+   (i0<=i) && (i<=i9) ;;
 
-let lowercase_identifier_elements=    
-    ['a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
-     'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
-     'u';'v';'w';'x';'y';'z';'_';'+';'-';'*';
-     '0';'1';'2';'3';'4';'5';'6';'7';'8';'9']@uppercase_letters;;
-     
-let php_label_first_letters =
-  [
-    'a';'b';'c';'d';'e';'f';'g';'h';'i';'j';
-    'k';'l';'m';'n';'o';'p';'q';'r';'s';'t';
-    'u';'v';'w';'x';'y';'z';
-    'A';'B';'C';'D';'E';'F';'G';'H';'I';'J';
-    'K';'L';'M';'N';'O';'P';'Q';'R';'S';'T';
-    'U';'V';'W';'X';'Y';'Z';
-    '_';
-    ];;  
+let is_not_a_digit c = not(is_a_digit c) ;;
 
- let php_label_nonfirst_letters =
-  php_label_first_letters
-  @
-  [
-   '0';'1';'2';'3';'4';'5';'6';'7';'8';'9'
-  ];;   
+end ;;  
+
 
 let ocaml_modulename_nonfirst_letters=
   ['a'; 'b'; 'c'; 'd'; 'e'; 'f'; 'g'; 'h'; 'i'; 'j'; 'k'; 'l'; 'm'; 'n'; 'o';
@@ -49,26 +24,6 @@ let ocaml_modulename_nonfirst_letters=
  'T'; 'U'; 'V'; 'W'; 'X'; 'Y'; 'Z'; '_'; '0'; '1'; '2'; '3'; '4'; '5'; '6';
  '7'; '8'; '9'];;
 
-let alphanumeric_characters =
-  php_label_nonfirst_letters @
-  [
-   '.';'\''
-  ];;    
+let is_a_digit = Private.is_a_digit ;;
 
-let unix_filename_admissible_characters =
-  php_label_nonfirst_letters @
-  [
-   '.';'/';'!';'~';
-  ];;        
-    
-let list_of_whites=[' ';'\n';'\r';'\t'];; 
-  
-let classlike_declaration_chars=
-    list_of_whites@Characters_in_namespace_name.chars;;  
-
-let enclosers=[
-      '(',')';
-      '[',']';
-      '{','}';
-];;
-           
+let is_not_a_digit = Private.is_not_a_digit ;;
