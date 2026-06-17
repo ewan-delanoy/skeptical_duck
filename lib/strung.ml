@@ -41,8 +41,10 @@ print_string("\n\n\n"^(sophisticated_enclose "\n123\n45\n678\n912\n")^"\n\n\n") 
 
 *)
 
-
-
+let random chars m=
+  let n = List.length chars in    
+  let temp = Int_range.scale (fun _->List.nth chars (Random.int n)) 1 m in 
+  String.concat "" (Image.image (String.make 1) temp) ;;
 let implode l=
    let n=List.length(l) in
    let by=Bytes.make n ' ' in
