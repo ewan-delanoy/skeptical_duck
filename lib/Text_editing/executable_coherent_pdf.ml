@@ -34,10 +34,30 @@ let find_file dir filename =
    _ -> denounce("There is no file called "^filename^" in "^dir) ;;
 
 
+let describe_range (i,j) = 
+   let si = string_of_int i 
+   and sj = string_of_int j in 
+   match j-i with 
+   0 -> si 
+   |1 -> si^","^sj 
+   |_ -> si^".."^sj ;;
+
+let describe_list_of_ranges l = String.concat "," (Image.image describe_range l) ;;
+
 let apply_pqyz_renaming _command_parameters =
    let dir= Directory_name.of_string (Sys.getcwd()) in  
    let _ =Coherent_pdf.apply_pqyz_renaming dir in 
    ();;  
+
+let get_ranges command_parameters = 
+   if Array.length (command_parameters) < 3
+   then denounce ("Some parameters are missing in your command. The format is cepdf -get-ranges <prefix>,\n"^
+        "for example : cepdf -get-ranges sally, if your replacer files are sally3.pdf, sally27.pdf etc")  
+   else
+   let dir = Directory_name.of_string(Sys.getcwd ()) in 
+   let prefix = Array.get command_parameters 2 in 
+   let ranges = Coherent_pdf.get_ranges prefix dir in  
+   Basic.display_message (describe_list_of_ranges ranges);;
 
 
 let replace_pages_inside command_parameters = 
@@ -57,6 +77,7 @@ let replace_pages_inside command_parameters =
 
 let options_for_main_command =
    [
+     "-get-ranges",get_ranges;
      "-pqyz-rename",apply_pqyz_renaming;
      "-replace",replace_pages_inside;
    ] ;;

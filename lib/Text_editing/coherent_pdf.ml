@@ -125,6 +125,14 @@ module Private = struct
      (Cull_string.before_rightmost s_ap '/')^"/" ;;
 
 
+  let get_png_dimensions filename =
+    let cmd = Printf.sprintf "identify -format \"%%w %%h\" %s" filename in
+    let ic = Unix.open_process_in cmd in
+    let line = input_line ic in
+    let _ = Unix.close_process_in ic in
+    Scanf.sscanf line "%d %d" (fun w h -> (w, h)) ;; 
+
+
 module Pqyz = struct
   
   
@@ -564,6 +572,8 @@ let force_same_size_for_all_pages ap ~outputfile_name
    Unix_command.indexed_multiple_uc 
     (Command.force_same_size_for_all_pages ap outputfile_name
         ~forced_width ~forced_height) ;;
+
+let get_png_dimensions = Private.get_png_dimensions ;;
 
 let insert_after_optional_cut
     ~patient:patient_ap ~inserted:inserted_ap
