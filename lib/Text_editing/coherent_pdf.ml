@@ -14,6 +14,8 @@ module Private = struct
 
   let work_path = home ^ "/Teuliou/Heavy/Scanning/Workshop/" ;;
 
+  let unusual_prefix = "GQSCwoSZ" ;; 
+
   let commands_for_number_of_pages_in_pdf ap = 
     let temp_file = work_path ^ "temp.txt" in 
     (
@@ -172,11 +174,19 @@ module Pqyz = struct
     Some((fn,final_page_number,normalized_form,cmd_opt)) ;;
   
   (*  
-  pqyz_analize_filename "v56.png" ;;
+  analize_filename "v56.png" ;;
   *)
 
-  
-  let analize_dir  dir = 
+  let pqyz_renamed_version fn = match analize_filename fn with 
+    None -> fn 
+    |Some(_,i,_,_)->"p"^(string_of_int(i))^(Cull_string.ending 4 fn);;
+
+   (*  
+  pqyz_renamed_version "v56.png" ;;
+  *)
+
+
+  let analize_dir_for_many_pngs_one_pdf  dir = 
     let temp1 = Unix_again.beheaded_simple_ls dir in 
     let temp2 = List.filter_map analize_filename temp1 in 
     let cmds = List.filter_map (
@@ -341,7 +351,7 @@ module OnSiteCommand = struct
       (List.rev(!preliminary_extractions))@
    [
     "cpdf "^chain^" -o "^outputfile_name^".pdf";
-    "rm from* initial_copy.pdf"
+    "rm from* "^Private.unusual_prefix^"* initial_copy.pdf"
     ] ;;
 
 
@@ -447,9 +457,16 @@ module Command = struct
    let current_dir = Sys.getcwd () 
    and end_user_dir = Private.containing_dir patient_ap in 
    let total_nbr_of_pages = Private.number_of_pages_in_pdf patient_ap in 
+   let copies_for_replacements = Image.image (
+     fun (_i,fn) -> "cp "^end_user_dir^fn^".pdf "^Private.unusual_prefix^fn^".pdf"
+   ) pairs_for_replacement 
+   and new_pairs =  Image.image (
+     fun (i,fn) -> (i,Private.unusual_prefix^fn)
+   ) pairs_for_replacement in 
    ("cd "^ Private.work_path) :: 
    ("cp "^(Absolute_path.to_string patient_ap)^" initial_copy.pdf") ::
-   (OnSiteCommand.replace_pages_inside total_nbr_of_pages pairs_for_replacement outputfile_name) @
+   copies_for_replacements @
+   (OnSiteCommand.replace_pages_inside total_nbr_of_pages new_pairs outputfile_name) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;    
 
@@ -467,7 +484,7 @@ module Command = struct
       "cd "^current_dir];; 
 
   let many_pngs_one_pdf dir outputfile_name = 
-    let uple = Pqyz.analize_dir dir in 
+    let uple = Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
     let (_,_,_,found_files)  = uple in  
     let current_dir = Sys.getcwd () 
     and end_user_dir = Directory_name.connectable_to_subpath dir in 
@@ -480,6 +497,12 @@ module Command = struct
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;    
 
+  let apply_pqyz_renaming dir  = 
+    let (_,_,_,found_files) = Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
+    let ordered_files = Ordered.sort Total_ordering.lex_for_strings found_files in 
+    Image.image (
+      fun fn -> "mv "^fn^" "^(Pqyz.pqyz_renamed_version fn)
+    ) ordered_files ;;       
 
 end ;;  
 
