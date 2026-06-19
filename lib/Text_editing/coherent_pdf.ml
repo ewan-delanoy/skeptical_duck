@@ -506,6 +506,10 @@ module Command = struct
 
 end ;;  
 
+let apply_pqyz_renaming dir= 
+    Unix_command.indexed_multiple_uc 
+     (Command.apply_pqyz_renaming dir) ;;  
+
 let average_page_width_and_height = 
     Private.average_page_width_and_height ;;
 
