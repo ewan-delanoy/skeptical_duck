@@ -34,6 +34,11 @@ let find_file dir filename =
    _ -> denounce("There is no file called "^filename^" in "^dir) ;;
 
 
+let apply_pqyz_renaming _command_parameters =
+   let dir= Directory_name.of_string (Sys.getcwd()) in  
+   let _ =Coherent_pdf.apply_pqyz_renaming dir in 
+   ();;  
+
 
 let replace_pages_inside command_parameters = 
    if Array.length (command_parameters) < 4
@@ -52,12 +57,13 @@ let replace_pages_inside command_parameters =
 
 let options_for_main_command =
    [
-     "-replace",replace_pages_inside
+     "-pqyz-rename",apply_pqyz_renaming;
+     "-replace",replace_pages_inside;
    ] ;;
 
 let description_of_options_for_main_command=
   "Currently, the available options are : \n" ^ (
-    String.concat "," (Image.image fst options_for_main_command)
+    String.concat ",\n" (Image.image fst options_for_main_command)
   ) ^
   ".";;   
 

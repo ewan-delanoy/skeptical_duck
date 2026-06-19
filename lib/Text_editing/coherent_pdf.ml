@@ -8,8 +8,11 @@ exception Disconnected of (int * int) list ;;
 
 module Private = struct 
 
-  exception Shifted_mediabox 
-    of string * string * string * string ;;  
+   let i_order = Total_ordering.for_integers ;;
+  let i_sort = Ordered.sort i_order ;;
+  
+
+  exception Shifted_mediabox of string * string * string * string ;;  
   let home = Sys.getenv "HOME" ;;
 
   let work_path = home ^ "/Teuliou/Heavy/Scanning/Workshop/" ;;
@@ -122,12 +125,8 @@ module Private = struct
      (Cull_string.before_rightmost s_ap '/')^"/" ;;
 
 
-  end ;;  
-
 module Pqyz = struct
   
-  let i_order = Total_ordering.for_integers ;;
-  let i_sort = Ordered.sort i_order ;;
   
   
   let analize_first_char c =
@@ -209,6 +208,33 @@ module Pqyz = struct
     (a,b,cmds,found_files) ;;
   
 
+
+end ;;
+
+module Get_Ranges = struct 
+
+let analize_filename prefix fn =
+  let unpointed_fn = Cull_string.before_rightmost_possibly_all fn '.' in 
+  if not(String.starts_with unpointed_fn ~prefix) 
+  then None 
+  else let core = Cull_string.two_sided_cutting (prefix,"") unpointed_fn in 
+       int_of_string_opt core ;;
+ 
+(*
+
+analize_filename "sally" "sally251.txt" ;;
+analize_filename "robert" "robert47" ;;
+
+*)       
+
+let analize_dir  prefix dir = 
+    let temp1 = Unix_again.beheaded_simple_ls dir in 
+    let unordered_page_numbers = List.filter_map (analize_filename prefix) temp1 in 
+    let page_numbers = i_sort unordered_page_numbers in 
+    Arithmetic_list.decompose_into_connected_components page_numbers  ;;
+  
+
+end ;;  
 
 end ;;
 
@@ -484,7 +510,7 @@ module Command = struct
       "cd "^current_dir];; 
 
   let many_pngs_one_pdf dir outputfile_name = 
-    let uple = Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
+    let uple = Private.Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
     let (_,_,_,found_files)  = uple in  
     let current_dir = Sys.getcwd () 
     and end_user_dir = Directory_name.connectable_to_subpath dir in 
@@ -498,13 +524,16 @@ module Command = struct
      "cd "^current_dir];;    
 
   let apply_pqyz_renaming dir  = 
-    let (_,_,_,found_files) = Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
-    let ordered_files = Ordered.sort Total_ordering.lex_for_strings found_files in 
+    let (_,_,_,found_files) = Private.Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
+    let changing_files = List.filter (fun fn->not(String.starts_with fn ~prefix:"p")) found_files in 
+    let ordered_files = Ordered.sort Total_ordering.lex_for_strings changing_files in 
     Image.image (
-      fun fn -> "mv "^fn^" "^(Pqyz.pqyz_renamed_version fn)
+      fun fn -> "mv "^fn^" "^(Private.Pqyz.pqyz_renamed_version fn)
     ) ordered_files ;;       
 
 end ;;  
+
+let get_ranges = Private.Get_Ranges.analize_dir ;;
 
 let apply_pqyz_renaming dir= 
     Unix_command.indexed_multiple_uc 
