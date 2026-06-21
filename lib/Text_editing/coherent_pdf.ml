@@ -425,7 +425,10 @@ module OnSiteCommand = struct
     (Int_range.scale (fun idx->"rm -f p"^(string_of_int idx)^".pdf") a b)
   ;;
 
-
+  let reorder_pages new_order outputfile_name= 
+   [explode  "initial_copy" "page";
+     (generic_implode "page" outputfile_name new_order);
+     "rm initial_copy.pdf page*.pdf"] ;;
 
 end ;;  
 
@@ -442,6 +445,7 @@ module Command = struct
    (OnSiteCommand.corep_bigger_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;
+
   let corep_cuttable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
@@ -452,6 +456,7 @@ module Command = struct
    (OnSiteCommand.corep_cuttable_transform "initial_copy" outputfile_name padded_nbr) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
      "cd "^current_dir];;
+
   let corep_foldable_transform ap outputfile_name = 
     let original_nbr = Private.number_of_pages_in_pdf ap in 
     let padded_nbr = (Basic.frac_ceiling original_nbr 8)*8 in 
@@ -516,6 +521,15 @@ module Command = struct
    (OnSiteCommand.remove_interval_inside total_nbr_of_pages first_in_cut last_in_cut outputfile_name) @
     ["mv "^outputfile_name^".pdf "^end_user_dir;
       "cd "^current_dir];; 
+
+  let reorder_pages ap new_order outputfile_name = 
+    let current_dir = Sys.getcwd () 
+    and end_user_dir = Private.containing_dir ap in 
+   ("cd "^ Private.work_path) :: 
+   ("cp "^(Absolute_path.to_string ap)^" initial_copy.pdf") ::
+   (OnSiteCommand.reorder_pages new_order outputfile_name ) @
+    ["mv "^outputfile_name^".pdf "^end_user_dir;
+     "cd "^current_dir];;
 
   let many_pngs_one_pdf dir outputfile_name = 
     let uple = Private.Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
@@ -599,6 +613,10 @@ let remove_interval_inside
      ~patient:patient_ap 
    ~first_in_cut ~last_in_cut outputfile_name 
     ) ;;    
+
+let reorder_pages ap new_order ~outputfile_name= 
+    Unix_command.indexed_multiple_uc 
+     (Command.reorder_pages ap new_order outputfile_name) ;;  
 
 let replace_pages_inside 
     ~patient:patient_ap ~page_numbers_with_their_replacements ~outputfile_name = 

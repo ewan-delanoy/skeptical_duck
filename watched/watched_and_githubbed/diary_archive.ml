@@ -1,6 +1,233 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 255 : Creating a LaTeX copy for a recent book
+************************************************************************************************************************)
+module Snip255 = struct 
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_mem = Ordered.mem i_order ;;
+
+let i_merge = Ordered.merge i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+let main_dir = "~/Teuliou/LaTeX/Brouilhedou/Remasterised/Giot/";;
+let blank_pages = [
+   2;10;18;92;238;
+] ;;
+
+let image_full_pages = 1 :: (Int_range.range (246+1) (246+19)) ;; 
+
+let not_numbered_pages = [
+   1;3;4;5;6;
+] ;;
+
+let ranges_for_sections = [
+   "INTRODUCTION", (11,17);
+   "L'HISTOIRE NATURELLE DES MILIEUX DE BRETAGNE", (19,30);
+   "L'HISTOIRE NATURELLE DES HOMMES D'ARMORIQUE ET DE BRETAGNE", (31,74);
+   "LA CHRETIENTÉ BRETONNE DES ORIGINES AU VIÈME SIÈCLE", (75,91);
+   "LES SAINTS ET LA « SECONDE MIGRATION BRETONNE »", (93,120);
+   "LA BRETAGNE ET LES CAROLINGIENS", (121,154);
+   "LA CIVILISATION MATÉRIELLE DES ANCIENS BRETONS ARMORICAINS", (155,216);
+   "BIBLIOGRAPHIE", (217,230);
+   "INDEX", (231,237);
+   "TABLE DES ILLUSTRATIONS", (239,242);
+   "TABLE DES MATIÈRES", (243,246);
+] ;;
+
+let pages_containing_photos = [
+   7;19;20;22;26;         27;29;30;34;43;
+   44;45;50;51;53;        54;55;57;62;63;
+   64;65;66;70;71;        77;78;84;85;86;
+   93;94;108;114;116;    117;118;119;124;131;
+   132;133;135;136;143;  145;149;150;159;160;
+   161;163;164;165;169;  170;171;174;175;177;
+   178;181;182;183;184;  185;187;188;191;192;
+   193;194;195;196;197;  198;199;201;207;208;
+   210;211;212;213;214
+] ;;
+
+let pages_needing_color = i_merge pages_containing_photos image_full_pages;;
+
+let alter_ego page = if page mod 2=0 then page -1 else page+1 ;;
+
+let needs_color_in_recto_verso_printing page =
+    (i_mem page pages_needing_color) || (i_mem (alter_ego page) pages_needing_color) ;;
+
+let fibers = List_again.connected_fibers needs_color_in_recto_verso_printing (Int_range.range 1 264);;
+
+let (fibers_needing_color,fibers_not_needing_color) = List.partition 
+(fun (pair,domain,needs)->needs) fibers ;;
+
+let pages_needing_color = List.flatten(Image.image (fun (pair,domain,needs)->domain) fibers_needing_color) ;;
+
+let pages_not_needing_color = List.flatten(Image.image (fun (pair,domain,needs)->domain) fibers_not_needing_color) ;;
+
+let sizes = (List.length pages_needing_color,List.length pages_not_needing_color) ;;
+
+let header_for_page page = 
+     match List.find_opt (fun (section_name,(first,last))->(first<=page)&&(page<=last) ) ranges_for_sections with 
+    None -> ""
+    |Some(section_name,(first,last)) ->
+      if page = first 
+      then ""
+      else  
+    let header_content=(  
+    if page mod 2 = 0 
+        then "LES PREMIERS BRETONS D'ARMORIQUE"
+        else section_name    
+    ) in 
+    "\\centerline{\\it "^header_content^"}\n"
+    ;;    
+
+
+let footer_for_page page = 
+    (* if we get here, the page is not blank, or image-full *)
+     if List.mem page not_numbered_pages
+    then ""
+    else  
+    "\\smallskip\n"^
+    "\\centerline{"^(string_of_int page)^"}\n"^
+    "\\centerline{\\pagedecoration}\n"
+    ;;   
+
+let dummy_line page = "\\phantom{This page number "^(string_of_int page)^" is blank}" ;;
+
+let a4_total_width = 2100 ;;
+let a4_total_height = 2970 ;;
+
+let rule_of_three new_x old_x old_y = int_of_float(Float.round(
+    (float_of_int(old_y*new_x))/.(float_of_int(old_x)))) ;;
+let nonempty_header_height = 50 ;;
+let nonempty_footer_height = 120 ;;
+let large_horizontal_margin = 300 ;;
+let small_horizontal_margin = 100 ;;
+let occupied_width = a4_total_width - (large_horizontal_margin+small_horizontal_margin) ;; 
+
+let image_dimensions_at_page page = Coherent_pdf.get_png_dimensions (main_dir^"p"^(string_of_int page)^".png") ;;
+
+let image_frame_at_page_number page =
+   (* the page is assumed to be non-blank *)
+   let (w,h) = image_dimensions_at_page page in 
+   let occupied_height=rule_of_three occupied_width w h in 
+   (occupied_width,occupied_height) ;;   
+
+let headered_and_footered_image_frame_at_page_number page =
+   (* the page is assumed to be non-blank *)
+   let (occupied_width,occupied_height) = image_frame_at_page_number page in 
+   let header_height=(if header_for_page page="" then 0 else nonempty_header_height)
+   and footer_height=(if footer_for_page page="" then 0 else nonempty_footer_height) in 
+   (occupied_width,occupied_height+header_height+footer_height) ;;  
+
+let leeway = 200 ;;
+
+let top_and_bottom_margins_at_page_number page =
+   (* the page is assumed to be non-blank *)
+   let (_,occupied_height) = headered_and_footered_image_frame_at_page_number page in 
+   let unused_height = a4_total_height - occupied_height - leeway in 
+   let top = unused_height/2 in 
+   let bottom = unused_height - top in 
+   (top,bottom) ;;
+
+ 
+let latex_form_for_length l = 
+   let str1 = string_of_float(0.01*.(float_of_int(l))) in 
+   let str2 = (
+      if String.ends_with str1 ~suffix:"."
+      then Cull_string.coending 1 str1   
+      else str1   ) in 
+   str2^"cm";;
+
+let latex_form_for_headered_and_footered_image_frame_at_page_number page =
+   (* the page is assumed to be non-blank *) 
+   let (w,h) = headered_and_footered_image_frame_at_page_number page in 
+   (latex_form_for_length w,latex_form_for_length h) ;;  
+
+
+
+let image_content_at_page_number page =
+   (* the page is assumed to be non-blank *)
+   let (w,h) = latex_form_for_headered_and_footered_image_frame_at_page_number page in 
+   "\\includegraphics[width="^w^",height="^h^"]{p"^(string_of_int page)^".png}\n" ;;
+
+
+let core_content_at_page_number page =
+    if List.mem page blank_pages 
+    then dummy_line page
+    else
+    let img = image_content_at_page_number page in 
+    if List.mem page image_full_pages
+    then img
+    else  
+    (header_for_page page)^
+    img^
+    (footer_for_page page) ;;   
+
+
+
+
+let geometry_at_page_number page =   
+  let (left,right)=(
+    if page mod 2 = 0 
+    then (small_horizontal_margin,large_horizontal_margin)
+    else (large_horizontal_margin,small_horizontal_margin)  
+  )
+  and (top,bottom) = top_and_bottom_margins_at_page_number page
+  in
+  "\\newgeometry{"^
+  "left="^(latex_form_for_length left)^","^
+  "right="^(latex_form_for_length right)^","^
+  "top="^(latex_form_for_length top)^","^
+  "bottom="^(latex_form_for_length bottom)^"}" ;;   
+
+
+let content_at_page_number page = 
+ String.concat "\n"   
+ [   
+ "%";
+ "% Page "^(string_of_int page)^" ";
+ "%";
+ geometry_at_page_number page;
+ "\\newpage";
+ (core_content_at_page_number page)
+ ] ;;   
+
+let ap1 = Absolute_path.of_string (main_dir^"partial.tex");; 
+
+let s_main_dir = Absolute_path.to_string (Absolute_path.of_string (main_dir));;
+
+let wr k = (Replace_inside.overwrite_between_markers_inside_file 
+  ~overwriter:(content_at_page_number k) ("\\begin{document}","\\end{document}") ap1;
+  Unix_command.indexed_multiple_uc [
+   "cd "^s_main_dir;
+   "pdflatex partial.tex  >> output_of_pdflatex.txt"
+  ]
+);; 
+
+let pdf_ap = Absolute_path.of_string (main_dir^"giot.pdf");;
+
+let extract_according_to_color () = 
+   let _ = Coherent_pdf.reorder_pages pdf_ap pages_needing_color ~outputfile_name:"colored_giot" in 
+   let _ = Coherent_pdf.reorder_pages pdf_ap pages_not_needing_color ~outputfile_name:"black_and_white_giot" in 
+   () ;;   
+
+let computation1 = Memoized.make (fun ()->
+   Explicit.image content_at_page_number (Int_range.range 1 264)) ;; 
+
+let full_text = Memoized.make(fun ()->
+   String.concat "\n\n\n" (""::(computation1())@[""])) ;;
+
+let ap = Absolute_path.of_string (main_dir^"giot.tex");;
+
+let write () = Replace_inside.overwrite_between_markers_inside_file 
+  ~overwriter:(full_text()) ("\\begin{document}","\\end{document}") ap;; 
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 254 : Aggregate some partial pdf files in the same directory
 ************************************************************************************************************************)
 module Snip254 = struct 
