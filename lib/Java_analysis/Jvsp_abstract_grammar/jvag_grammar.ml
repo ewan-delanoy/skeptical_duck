@@ -9,6 +9,7 @@ open Jvag_types ;;
 exception Get_exn of string ;;
 exception Circularity of string * (string list) ;; 
 exception Name_already_in_use of string ;;
+exception Flatten_triangle_exn of string ;;
 
 module Private = struct 
 
@@ -141,6 +142,13 @@ let check_disjunction_ladder gram ladder =
    let temp1 = List_again.universal_delta_list ladder in   
    List.iter (test_disjunction_ladder_link gram) temp1 ;;
 
+let differences (AL l1) (AL l2) =
+  let names = str_merge (Image.image fst l1) (Image.image fst l2) in 
+  let data = Image.image (
+    fun name ->(name,(List.assoc_opt name l1,List.assoc_opt name l2))
+  ) names in 
+  List.filter (fun (_name,(opt1,opt2))->opt1<>opt2) data ;;
+
 
 module Modify = struct
   
@@ -228,8 +236,9 @@ let register_molecular token_types gram =
    add_pair_naively (name,Molecular(token_types)) gram ;;
 
 exception Standardized_name_exn of string ;;   
+
 let standardized_name = function 
-   Concat _ -> raise(Standardized_name_exn("Concat"))
+   Concat l -> "CCCCC"^(String.concat "NNNNN" l)^"TTTTT"
    |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
    |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
    |Star nm -> "Starred"^ nm
@@ -239,6 +248,9 @@ let standardized_name = function
 let register_with_standardized_name form gram= 
    let name = standardized_name form in 
    add_pair_naively (name,form) gram ;;
+
+let give_standardized_name_if_needed gram form = 
+  name_form_if_needed gram form (standardized_name form) ;;
 
 let eid_in_dijsunction (contained,replacement) l = 
   Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
@@ -324,6 +336,50 @@ let csg_in_grammar newer_synonym gram =
    and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
    AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
 
+let triangle_parameters gram triangle_name =
+   let form1 = get gram triangle_name in 
+   match Jvag_form.disjunction_content_opt form1 with 
+   None -> None 
+   |Some li1 -> 
+     let temp1 = Image.image (fun n->
+       let f = get gram n in 
+      (n,f,Jvag_form.concat_content_opt f)) li1 in 
+      let (temp2,temp3) = List.partition (fun (_n,_f,l_opt)->l_opt=None) temp1 in 
+      if (List.length(temp2),List.length(temp3))<>(1,1)
+      then None
+      else 
+      let (name_for_core,_,_) = List.hd temp2  
+      and (name_for_compound,_,li3_opt) = List.hd temp3 in 
+      let li3 = Option.get li3_opt in
+      if List.hd(li3)<>triangle_name then None else 
+      let li4 = List.tl li3 in 
+      let (new_gram_opt,name_for_extender) = (
+         if List.length(li4)=1 then (None,List.hd li4) else 
+         let form4 = Jvag_types.Concat li4 in 
+         give_standardized_name_if_needed gram form4
+      ) in 
+      let gram2 = (match new_gram_opt with Some gramm->gramm |None ->gram) in
+      let starred_extender = Jvag_types.Star name_for_extender in 
+      let (new_gram_opt2,name_for_starred_extender) = give_standardized_name_if_needed gram2 starred_extender in
+      let gram3 = (match new_gram_opt2 with Some gramm->gramm |None ->gram2) in
+      let final_gram_opt = (if (new_gram_opt,new_gram_opt2)=(None,None) then None else Some gram3) in  
+      Some(triangle_name,name_for_core,name_for_compound,
+      name_for_extender,name_for_starred_extender,final_gram_opt) ;;
+
+
+let flatten_triangle gram triangle_name = 
+   match triangle_parameters gram triangle_name with 
+   None -> raise(Flatten_triangle_exn(triangle_name))
+   |Some(triangle_name,name_for_core,name_for_compound,
+      _name_for_extender,name_for_starred_extender,final_gram_opt) ->
+   let gram2 = (match final_gram_opt with Some gramm->gramm |None ->gram) in    
+   let gram3 = heavy_add_pair (triangle_name,Jvag_types.Concat([name_for_core;name_for_starred_extender])) gram2 in 
+   let gram4 = (
+      if containing name_for_compound gram3 = []
+      then remove_productions [name_for_compound] gram3 
+      else gram3 
+   ) in 
+  gram4;; 
 
 let apply gram = function 
    (Set_production(name,form)) -> add_pair_naively (name,form) gram 
@@ -845,7 +901,7 @@ let add_pair_naively = Private.Modify.add_pair_naively ;;
 
 let check_disjunction_ladder = Private.check_disjunction_ladder ;; 
 let containing = Private.containing ;;
-
+let differences = Private.differences ;;
 let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
 

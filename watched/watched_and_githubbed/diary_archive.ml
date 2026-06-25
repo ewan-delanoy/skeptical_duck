@@ -198,20 +198,38 @@ let ap1 = Absolute_path.of_string (main_dir^"partial.tex");;
 
 let s_main_dir = Absolute_path.to_string (Absolute_path.of_string (main_dir));;
 
-let wr k = (Replace_inside.overwrite_between_markers_inside_file 
-  ~overwriter:(content_at_page_number k) ("\\begin{document}","\\end{document}") ap1;
+let subset_of_pages page_numbers= 
+  let temp = Image.image content_at_page_number page_numbers in 
+   String.concat "\n\n\n" (""::(temp@[""]));; 
+
+
+
+let write_subset_of_pages page_numbers = (Replace_inside.overwrite_between_markers_inside_file 
+  ~overwriter:(subset_of_pages page_numbers) ("\\begin{document}","\\end{document}") ap1;
   Unix_command.indexed_multiple_uc [
    "cd "^s_main_dir;
    "pdflatex partial.tex  >> output_of_pdflatex.txt"
   ]
 );; 
 
+let wr k = write_subset_of_pages [k] ;; 
+
+let u1_needing_color = List.filter (fun p->(113<=p) && (p<=246)) pages_needing_color ;;
+
+let u1_not_needing_color = List.filter (fun p->(113<=p) && (p<=246)) pages_not_needing_color ;;
+
+let itvc a b = Image.image (fun k->List.nth u1_needing_color (k-1)) (Int_range.range a b);;
+
+
+let wtvc a b = let l=itvc a b in let _= write_subset_of_pages l in l ;; 
+
+let itvnc a b = Image.image (fun k->List.nth u1_not_needing_color (k-1)) (Int_range.range a b);;
+
+
+let wtvnc a b = let l=itvnc a b in let _= write_subset_of_pages l in l ;; 
+
 let pdf_ap = Absolute_path.of_string (main_dir^"giot.pdf");;
 
-let extract_according_to_color () = 
-   let _ = Coherent_pdf.reorder_pages pdf_ap pages_needing_color ~outputfile_name:"colored_giot" in 
-   let _ = Coherent_pdf.reorder_pages pdf_ap pages_not_needing_color ~outputfile_name:"black_and_white_giot" in 
-   () ;;   
 
 let computation1 = Memoized.make (fun ()->
    Explicit.image content_at_page_number (Int_range.range 1 264)) ;; 
