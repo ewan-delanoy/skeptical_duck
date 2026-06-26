@@ -10,6 +10,7 @@ exception Get_exn of string ;;
 exception Circularity of string * (string list) ;; 
 exception Name_already_in_use of string ;;
 exception Flatten_triangle_exn of string ;;
+exception Flatten_tetris1_exn of string ;;
 
 module Private = struct 
 
@@ -94,6 +95,7 @@ let ocaml_name_of_modification = function
   |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
   |Flatten_triangle(triangle_name) ->  "Flatten_triangle(\""^triangle_name^"\")"
+  |Flatten_tetris1(tetris1_name) -> "Flatten_tetris1(\""^tetris1_name^"\")"
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -383,6 +385,33 @@ let flatten_triangle gram triangle_name =
    ) in 
   gram5;; 
 
+let tetris1_parameters gram tetris1_name =
+   let form1 = get gram tetris1_name in 
+   match Jvag_form.disjunction_content_opt form1 with 
+   None -> None 
+   |Some li1 -> 
+     let temp1 = Image.image (fun n->
+       let f = get gram n in 
+      (n,f,Jvag_form.concat_content_opt f)) li1 in 
+      let (temp2,temp3) = List.partition (fun (_n,_f,l_opt)->l_opt=None) temp1 in 
+      if (List.length(temp2),List.length(temp3))<>(1,1)
+      then None
+      else 
+      let (name_for_core,_,_) = List.hd temp2  
+      and (_,_,li3_opt) = List.hd temp3 in 
+      let li3 = Option.get li3_opt in
+      if List.length(li3)<>3 then None else 
+      let ext1 = List.nth li3 1 
+      and ext2 = List.nth li3 2 in 
+      if (List.hd(li3)<>name_for_core)||(ext2<>"Starred"^ext1) then None else 
+      Some(name_for_core,ext1,ext2) ;;   
+
+let flatten_tetris1 gram tetris1_name = 
+   match tetris1_parameters gram tetris1_name with 
+   None -> raise(Flatten_tetris1_exn(tetris1_name))
+   |Some(name_for_core,_ext,starred_ext) ->
+   heavy_add_pair (tetris1_name,Jvag_types.Concat([name_for_core;starred_ext])) gram ;; 
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair_naively (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
@@ -392,7 +421,8 @@ let apply gram = function
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
   |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
-  |Flatten_triangle(triangle_name) -> flatten_triangle gram triangle_name;;
+  |Flatten_triangle(triangle_name) -> flatten_triangle gram triangle_name
+  |Flatten_tetris1(tetris1_name) -> flatten_tetris1 gram tetris1_name;;
  
 
 let apply_several gram modifications = 
@@ -863,7 +893,8 @@ let apply gram modification = match modification with
   |Expand_in_synonym(_,_) 
   |Collapse_synonym_locally(_,_) 
   |Collapse_synonym_globally(_) 
-  |Flatten_triangle(_)-> Modify.apply gram modification;;
+  |Flatten_triangle(_)
+  |Flatten_tetris1(_) -> Modify.apply gram modification;;
  
 
 let apply_several gram modifications = 
