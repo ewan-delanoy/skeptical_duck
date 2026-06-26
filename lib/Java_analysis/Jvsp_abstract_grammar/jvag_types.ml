@@ -24,7 +24,8 @@ type modification =
   |Expand_in_disjunction of string * string 
   |Expand_in_synonym of string * string
   |Collapse_synonym_locally of string * string
-  |Collapse_synonym_globally of string ;;
+  |Collapse_synonym_globally of string 
+  |Flatten_triangle of string ;;
 
 type nonrecursive_grammar = {
    sons_and_fathers : (string * string) list ;

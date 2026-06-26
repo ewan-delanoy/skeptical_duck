@@ -92,7 +92,8 @@ let ocaml_name_of_modification = function
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
   |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
-  |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")"   
+  |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
+  |Flatten_triangle(triangle_name) ->  "Flatten_triangle(\""^triangle_name^"\")"
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -371,15 +372,16 @@ let flatten_triangle gram triangle_name =
    match triangle_parameters gram triangle_name with 
    None -> raise(Flatten_triangle_exn(triangle_name))
    |Some(triangle_name,name_for_core,name_for_compound,
-      _name_for_extender,name_for_starred_extender,final_gram_opt) ->
+      name_for_extender,name_for_starred_extender,final_gram_opt) ->
    let gram2 = (match final_gram_opt with Some gramm->gramm |None ->gram) in    
    let gram3 = heavy_add_pair (triangle_name,Jvag_types.Concat([name_for_core;name_for_starred_extender])) gram2 in 
-   let gram4 = (
-      if containing name_for_compound gram3 = []
-      then remove_productions [name_for_compound] gram3 
-      else gram3 
+   let gram4 = heavy_add_pair (name_for_compound,Jvag_types.Concat([name_for_core;name_for_extender;name_for_starred_extender])) gram3 in 
+   let gram5 = (
+      if containing name_for_compound gram4 = []
+      then remove_productions [name_for_compound] gram4 
+      else gram4 
    ) in 
-  gram4;; 
+  gram5;; 
 
 let apply gram = function 
    (Set_production(name,form)) -> add_pair_naively (name,form) gram 
@@ -389,7 +391,8 @@ let apply gram = function
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
   |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
-  |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram;;
+  |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
+  |Flatten_triangle(triangle_name) -> flatten_triangle gram triangle_name;;
  
 
 let apply_several gram modifications = 
@@ -859,7 +862,8 @@ let apply gram modification = match modification with
   |Expand_in_disjunction(_,_) 
   |Expand_in_synonym(_,_) 
   |Collapse_synonym_locally(_,_) 
-  |Collapse_synonym_globally(_) -> Modify.apply gram modification;;
+  |Collapse_synonym_globally(_) 
+  |Flatten_triangle(_)-> Modify.apply gram modification;;
  
 
 let apply_several gram modifications = 

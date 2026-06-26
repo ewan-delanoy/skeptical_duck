@@ -594,15 +594,14 @@ AL ([
 let modifications_to_original_java_grammar = 
     [
       (* The following four actions remove left recursions and are fully equivalent to the original *)
-      (*
-      Set_production("AmbiguousName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("ModuleName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("PackageName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("PackageOrTypeName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-      *)
+      
+      Flatten_triangle("AmbiguousName");
+      Flatten_triangle("ModuleName");
+      Flatten_triangle("PackageName");
+      Flatten_triangle("PackageOrTypeName");
+      
       (* A consequence of the preceding four actions *) 
       Set_production("ExpressionName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-      Set_production("CompoundTypeName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
 
       Set_production("ExpressionyMethodInvocation",Concat(["Identifier";"StarredMolecularDot_Identifier";"Dot";"OptionalTypeArguments";"MolecularIdentifier_Lp";"OptionalArgumentList";"Rp"]));
       Set_production("ExpressionyMethodReference",Concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularColon_Colon";"OptionalTypeArguments";"Identifier"]));
@@ -626,7 +625,7 @@ let modifications_to_original_java_grammar =
       "MolecularImport_Identifier"; "MolecularImport_Static";
       "SingleStaticImportDeclaration"; "SingleTypeImportDeclaration";
       "StaticImportOnDemandDeclaration"; "TypeImportOnDemandDeclaration"]);
-      (* Simplify the production rule for the class bdoy declaration*)
+      (* Simplify the production rule for the class body declaration*)
       Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
       Expand_in_synonym("Block","InstanceInitializer");
       Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
