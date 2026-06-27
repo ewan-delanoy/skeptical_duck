@@ -152,6 +152,14 @@ let differences (AL l1) (AL l2) =
   ) names in 
   List.filter (fun (_name,(opt1,opt2))->opt1<>opt2) data ;;
 
+module Local_Modification = struct 
+  
+let lm_get gram name = 
+  let form1 = get gram name in 
+  let l =Jvag_form.disjunction_content form1 in 
+  Image.image (get gram) l;;
+  
+end ;;  
 
 module Modify = struct
   

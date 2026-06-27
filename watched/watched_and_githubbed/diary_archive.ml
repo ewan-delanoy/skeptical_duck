@@ -1,6 +1,39 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 256 : Extract data from a html file
+************************************************************************************************************************)
+module Snip256 = struct 
+
+let ap1 = Absolute_path.of_string "~/Downloads/source.txt" ;;
+let text1 = Io.read_whole_file ap1 ;;
+
+let text2 = Lines_in_text.interval text1 2681 2771 ;;
+
+let u1 = Substring.occurrences_of_in "<li>" text2 ;;
+let u2 = Substring.occurrences_of_in "</li>" text2 ;;
+
+let u12 = List.combine u1 u2 ;;
+
+let u3 = Image.image (fun (i,j) -> Cull_string.interval text2 (i+4) (j-5)) u12 ;;
+
+let u4 = Image.image (fun s->let k=Option.get(Substring.rightmost_index_of_in_opt ">" s)
+in Cull_string.cobeginning k s
+) u3 ;;
+
+let u5 = Int_range.index_everything  u4 ;;
+
+let u6 = Image.image (fun (i,s)->"("^(string_of_int i)^",\""^s^"\")") u5 ;;
+
+let u6 = Int_range.scale (fun i->"("^(string_of_int i)^",[])") 1 91 ;;
+
+let u7 = "\n\n\n[\n"^(String.concat ";\n" u6)^"\n]\n\n\n" ;;
+
+let u8 () = print_string u7 ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 255 : Creating a LaTeX copy for a recent book
 ************************************************************************************************************************)
 module Snip255 = struct 

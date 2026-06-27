@@ -599,27 +599,16 @@ let modifications_to_original_java_grammar =
       Flatten_triangle("ModuleName");
       Flatten_triangle("PackageName");
       Flatten_triangle("PackageOrTypeName");
-      
-      (* A consequence of the preceding four actions *) 
-      Set_production("ExpressionName",Concat["Identifier";"StarredMolecularDot_Identifier"]);
-
-      Set_production("ExpressionyMethodInvocation",Concat(["Identifier";"StarredMolecularDot_Identifier";"Dot";"OptionalTypeArguments";"MolecularIdentifier_Lp";"OptionalArgumentList";"Rp"]));
-      Set_production("ExpressionyMethodReference",Concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularColon_Colon";"OptionalTypeArguments";"Identifier"]));
-      Set_production("MackerelClassInstanceCreationExpression",Concat(["Identifier";"StarredMolecularDot_Identifier";"MolecularDot_New";"OptionalTypeArguments";"StarredAnnotation";"Identifier";"StarredAnnotatedIdentifierrPrecededByDot";"OptionalTypeArgumentsOrDiamond";"Lp";"OptionalArgumentList";"Rp";"OptionalClassBody"]));
-      Set_production("SalmonExplicitConstructorInvocation",Concat(["Identifier";"StarredMolecularDot_Identifier";"Dot";"OptionalTypeArguments";"MolecularSuper_Lp";"OptionalArgumentList";"MolecularRp_Sm"]));
-      Set_production("ShortArrayAccess",Concat(["Identifier";"StarredMolecularDot_Identifier";"Lc";"Expression";"Rc"]));
-      Set_production("TypeImportOnDemandDeclaration",Concat(["Import";"Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
-      Set_production("UsualClassType",Concat(["Identifier";"StarredMolecularDot_Identifier";"Dot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]));
-      Set_production("MolecularImport_Identifier",Molecular([IMPORT_T;IDENTIFIER_T]));
-      Set_production("TypeImportOnDemandDeclaration",Concat(["MolecularImport_Identifier";"StarredMolecularDot_Identifier";"MolecularDot_Times_Sm"]));
+      Flatten_tetris1("ExpressionName");
       Remove_productions( [
-      "AmbiguousName"; "CompoundAmbiguousName";  
-      "CompoundModuleName"; "CompoundPackageName"; "CompoundPackageOrTypeName";"ModuleName";
+      "AmbiguousName"; "CompoundAmbiguousName";  "ModuleName";
       "PackageName"; "PackageOrTypeName"]);
       (* Simplify the production rule for the import declaration*)
       Register_with_standardized_name (Optional("Static")) ;
       Register_with_standardized_name (Molecular([DOT_T;TIMES_T])) ;
       Register_with_standardized_name (Optional("MolecularDot_Times"));
+
+      
       Set_production("ImportDeclaration",Concat(["Import";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"Sm"]));
       Remove_productions( ["MolecularDot_Identifier_Sm"; "MolecularDot_Times_Sm";
       "MolecularImport_Identifier"; "MolecularImport_Static";

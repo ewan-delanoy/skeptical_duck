@@ -16,6 +16,9 @@ type form =
 
 type grammar = AL of (string * form) list ;; 
 
+type local_modification = 
+  Lm_expand_disj_in_concat_in_disj of int * int ;;
+
 type modification = 
    Set_production of string * form 
   |Rename of string * string 
