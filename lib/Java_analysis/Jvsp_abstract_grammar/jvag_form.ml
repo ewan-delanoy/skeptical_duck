@@ -134,6 +134,15 @@ let synonym_content form = match form with
    |Star _
    |Optional _ -> raise(Synonym_content_exn(form));;
 
+let synonym_content_opt form = match form with 
+   (Synonym nm) -> Some nm   
+   |Disjunction _
+   |Concat _
+   |Molecular  _
+   |Star _
+   |Optional _ -> None;;
+
+
 let to_string = Private.to_string ;; 
 
 let uniform_composition link l = match link with 

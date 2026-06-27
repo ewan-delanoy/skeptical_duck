@@ -226,6 +226,14 @@ let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with
     
 let long_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;    
 
+let long_tail_with_head l s =
+  long_head_with_tail (List.length(l)-s) l ;;
+
+(*
+
+long_tail_with_head (Int_range.range 1 7) 3 ;; 
+
+*)
 
 
 let rec next_in_line_opt x0 l =

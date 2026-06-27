@@ -84,6 +84,21 @@ let get_and_display gram name =
    ) in 
    form ;;
    
+let ocaml_name_of_local_modification lmod=
+  let soi =string_of_int in 
+  match lmod with 
+  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
+    "Lm_expand_disjunction("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
+ |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
+    "Lm_expand_synonym("^(soi index_in_disj)^","^(soi index_in_concat)^")"
+ |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
+   "Lm_expand_concat("^(soi index_in_disj)^","^(soi index_in_concat)^")"
+ |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->  
+  "Lm_implode_molecule("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))"
+ |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
+   "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
+;;
+
 let ocaml_name_of_modification = function 
     Set_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")" 
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
@@ -96,6 +111,8 @@ let ocaml_name_of_modification = function
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
   |Flatten_triangle(triangle_name) ->  "Flatten_triangle(\""^triangle_name^"\")"
   |Flatten_tetris1(tetris1_name) -> "Flatten_tetris1(\""^tetris1_name^"\")"
+  |Local(name,mods)->  "Local(\""^name^"\",["^(String.concat ";" 
+     (Image.image ocaml_name_of_local_modification mods))^"])"
 ;;
 
 let ocaml_name_of_modification_list l = 
@@ -152,6 +169,53 @@ let differences (AL l1) (AL l2) =
   ) names in 
   List.filter (fun (_name,(opt1,opt2))->opt1<>opt2) data ;;
 
+let add_pair_naively pair (AL l) = 
+  let (name,_form) = pair in 
+  let new_l = (
+    match List.assoc_opt name l with 
+    None -> pair :: l 
+    |Some _ -> Image.image (fun pair2->
+      if (fst pair2)=name then pair else pair2 ) l
+  )  in 
+  AL(Ordered.sort order_on_pairs new_l);; 
+
+let name_form_if_needed gram form new_name =
+  match name_for_form_opt gram form with 
+  Some old_name ->(None,old_name)
+  |None -> 
+     if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
+     let new_ag = add_pair_naively (new_name,form) gram in 
+     (Some new_ag,new_name) ;;
+
+exception Standardized_name_exn of string ;;   
+
+let standardized_name = function 
+   Concat l -> "CCCCC"^(String.concat "NNNNN" l)^"TTTTT"
+   |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
+   |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
+   |Star nm -> "Starred"^ nm
+   |Optional nm -> "Optional"^ nm
+   |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
+
+let give_standardized_name_if_needed gram form = 
+  name_form_if_needed gram form (standardized_name form) ;;
+
+let register_if_needed gram form = 
+  let (new_gram_opt,name) = give_standardized_name_if_needed gram form in 
+  ((match new_gram_opt with None ->gram |Some(new_gram)->new_gram),name) ;;  
+
+let rec helper_for_multiple_registration (treated,gram,to_be_treated) =
+  match to_be_treated with 
+  [] -> (gram,List.rev treated)
+  |form1 :: other_forms ->
+    let (gram1,name1) = register_if_needed gram form1 in 
+    helper_for_multiple_registration (name1::treated,gram1,other_forms)
+  ;;
+
+let register_several_if_needed gram forms = 
+      helper_for_multiple_registration ([],gram,forms) ;;
+
+
 module Local_Modification = struct 
   
 let lm_get gram name = 
@@ -159,6 +223,204 @@ let lm_get gram name =
   let l =Jvag_form.disjunction_content form1 in 
   Image.image (get gram) l;;
   
+exception Bad_index_in_disjunction_exn of int ;;
+exception Nonconcat_in_disjunction_exn of int * form ;;
+exception Bad_index_in_concat_exn of int ;;
+exception Nondisjunction_in_concat_exn of int * form ;;
+exception Nonsynonym_in_concat_exn of int * form ;;
+exception Nonconcat_in_concat_exn of int * form ;;
+exception Bad_range_in_implode_molecule_exn of int * int ;;
+exception Nonmoleculars_in_implosion_range_exn of ((string list)* (int *int) *(string list) ) ;;
+exception Nonmolecular_in_concat_exn of int * form ;;
+exception Bad_index_in_option_detection_exn of int ;;
+exception Bad_lengths_in_option_detection_exn of int * int ;;
+
+let expand_disjunction (gram,forms) (index_in_disj,index_in_concat) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms))
+  then raise (Bad_index_in_disjunction_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (old_pivot,after) = List_again.head_with_tail temp1 in 
+  match Jvag_form.concat_content_opt old_pivot with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,old_pivot))
+  |Some(chain)->
+  if (index_in_concat<0)||(index_in_concat>List.length(chain))
+  then raise (Bad_index_in_concat_exn(index_in_concat))
+  else
+  let (rev_before2,temp2) = List_again.long_head_with_tail (index_in_concat-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let (pivot2_name,after2) = List_again.head_with_tail temp2 in 
+  let pivot2 = get gram pivot2_name in 
+  match Jvag_form.disjunction_content_opt pivot2 with 
+  None -> raise (Nondisjunction_in_concat_exn(index_in_concat,pivot2))
+  |Some(inner_disjunction)->
+    (gram,before @ (Image.image (fun elt->
+      Jvag_types.Concat(before2@[elt]@after2)) inner_disjunction) @ after);;
+
+let expand_synonym (gram,forms) (index_in_disj,index_in_concat) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms))
+  then raise (Bad_index_in_disjunction_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (old_pivot,after) = List_again.head_with_tail temp1 in 
+  match Jvag_form.concat_content_opt old_pivot with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,old_pivot))
+  |Some(chain)->
+  if (index_in_concat<0)||(index_in_concat>List.length(chain))
+  then raise (Bad_index_in_concat_exn(index_in_concat))
+  else
+  let (rev_before2,temp2) = List_again.long_head_with_tail (index_in_concat-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let (pivot2_name,after2) = List_again.head_with_tail temp2 in 
+  let pivot2 = get gram pivot2_name in 
+  match Jvag_form.synonym_content_opt pivot2 with 
+  None -> raise (Nonsynonym_in_concat_exn(index_in_concat,pivot2))
+  |Some(older_synonym)->
+    (gram,before @ [
+      Jvag_types.Concat(before2@[older_synonym]@after2)]  @ after);;
+
+let expand_concat (gram,forms) (index_in_disj,index_in_concat) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms))
+  then raise (Bad_index_in_disjunction_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (old_pivot,after) = List_again.head_with_tail temp1 in 
+  match Jvag_form.concat_content_opt old_pivot with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,old_pivot))
+  |Some(chain)->
+  if (index_in_concat<0)||(index_in_concat>List.length(chain))
+  then raise (Bad_index_in_concat_exn(index_in_concat))
+  else
+  let (rev_before2,temp2) = List_again.long_head_with_tail (index_in_concat-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let (pivot2_name,after2) = List_again.head_with_tail temp2 in 
+  let pivot2 = get gram pivot2_name in 
+  match Jvag_form.concat_content_opt pivot2 with 
+  None -> raise (Nonconcat_in_concat_exn(index_in_concat,pivot2))
+  |Some(chain2)->
+    (gram,before @ [
+      Jvag_types.Concat(before2@chain2@after2)]  @ after);;
+
+let implode_molecule (gram,forms) (index_in_disj,(range_start,range_end)) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms))
+  then raise (Bad_index_in_disjunction_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (old_pivot,after) = List_again.head_with_tail temp1 in 
+  match Jvag_form.concat_content_opt old_pivot with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,old_pivot))
+  |Some(chain)->
+  if (range_start<0)||(range_end<range_start)||(range_end>List.length(chain))
+  then raise (Bad_range_in_implode_molecule_exn(range_start,range_end))
+  else
+  let (rev_before2,temp2) = List_again.long_head_with_tail (range_start-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let d = range_end - range_start +1 in 
+  let (rev_between2,after2) = List_again.long_head_with_tail d temp2 in 
+  let opts_between2 = List.rev_map (fun name->
+     let form = get gram name in 
+     (name,Jvag_form.molecular_content_opt form)
+    ) rev_between2 in 
+  let bad_between2 = List.filter_map (
+    fun (name,opt) -> if opt= None then Some name else None
+  ) opts_between2 in  
+  if bad_between2<>[]
+  then raise(Nonmoleculars_in_implosion_range_exn(chain,(range_start,range_end),bad_between2))
+  else
+  let tokens = List.flatten(Image.image (fun (_,opt)->Option.get opt) opts_between2) in 
+  let molecular = Jvag_types.Molecular tokens in 
+  let (gram2,name_for_molecular) = register_if_needed gram molecular in 
+  (gram2,before @ [Jvag_types.Concat(before2@[name_for_molecular]@after2)]  @ after);;      
+
+let explode_molecule (gram,forms) (index_in_disj,index_in_concat) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms))
+  then raise (Bad_index_in_disjunction_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (old_pivot,after) = List_again.head_with_tail temp1 in 
+  match Jvag_form.concat_content_opt old_pivot with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,old_pivot))
+  |Some(chain)->
+  if (index_in_concat<0)||(index_in_concat>List.length(chain))
+  then raise (Bad_index_in_concat_exn(index_in_concat))
+  else
+  let (rev_before2,temp2) = List_again.long_head_with_tail (index_in_concat-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let (pivot2_name,after2) = List_again.head_with_tail temp2 in 
+  let pivot2 = get gram pivot2_name in 
+  match Jvag_form.molecular_content_opt pivot2 with 
+  None -> raise (Nonmolecular_in_concat_exn(index_in_concat,pivot2))
+  |Some(tokens)->
+    let atoms = Image.image (fun tok->Jvag_types.Molecular [tok]) tokens in 
+    let (gram2,names_for_the_atoms) = register_several_if_needed gram atoms in 
+    (gram2,before @ [Jvag_types.Concat(before2@names_for_the_atoms@after2)]  @ after);;
+
+(*
+let detect_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
+  if (index_in_disj<0)||(index_in_disj>List.length(forms)-1)
+  then raise (Bad_index_in_option_detection_exn(index_in_disj))
+  else
+  let (rev_before,temp1) = List_again.long_head_with_tail (index_in_disj-1) forms in 
+  let before = List.rev rev_before in 
+  let (pivot1,almost_after) = List_again.head_with_tail temp1 in 
+  let (pivot2,after) = List_again.head_with_tail almost_after in 
+  match Jvag_form.concat_content_opt pivot1 with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj,pivot1))
+  |Some(chain1)->
+  match Jvag_form.concat_content_opt pivot2 with 
+  None -> raise (Nonconcat_in_disjunction_exn(index_in_disj+1,pivot2))
+  |Some(chain2)->
+  let total_length = length_before + length_after in 
+  if (length_before<0)||(length_after<0)||
+     (total_length>List.length(chain1))||(total_length>List.length(chain2))
+  then raise (Bad_lengths_in_option_detection_exn(length_before,length_after))
+  else
+  let (bevor1,almost_nach1)=List_again.long_head_with_tail length_before chain1 
+  and (bevor2,almost_nach2)=List_again.long_head_with_tail length_before chain1 in 
+
+
+  let (rev_before2,temp2) = List_again.long_head_with_tail (range_start-1) chain in 
+  let before2 = List.rev rev_before2 in 
+  let d = range_end - range_start +1 in 
+  let (rev_between2,after2) = List_again.long_head_with_tail d temp2 in 
+  let opts_between2 = List.rev_map (fun name->
+     let form = get gram name in 
+     (name,Jvag_form.molecular_content_opt form)
+    ) rev_between2 in 
+  let bad_between2 = List.filter_map (
+    fun (name,opt) -> if opt= None then Some name else None
+  ) opts_between2 in  
+  if bad_between2<>[]
+  then raise(Nonmoleculars_in_implosion_range_exn(chain,(range_start,range_end),bad_between2))
+  else
+  let tokens = List.flatten(Image.image (fun (_,opt)->Option.get opt) opts_between2) in 
+  let molecular = Jvag_types.Molecular tokens in 
+  let (gram2,name_for_molecular) = register_if_needed gram molecular in 
+  (gram2,before @ [Jvag_types.Concat(before2@[name_for_molecular]@after2)]  @ after);;      
+*)
+
+
+let apply gf =function 
+ (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
+    expand_disjunction gf (index_in_disj,index_in_concat) 
+ |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
+   expand_synonym gf (index_in_disj,index_in_concat)
+ |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
+   expand_concat gf (index_in_disj,index_in_concat)
+  |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->
+   implode_molecule gf (index_in_disj,(range_start,range_end)) 
+   |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
+   explode_molecule gf (index_in_disj,index_in_concat)
+  ;;
+
+
+let apply_several gf mods = List.fold_left apply gf mods ;;
+
 end ;;  
 
 module Modify = struct
@@ -177,23 +439,8 @@ let expand_pair_using_concat data (name,form) =
 let expand_grammar_using_concat data (AL l) =
   AL(Image.image (expand_pair_using_concat data) l);;
 
-let add_pair_naively pair (AL l) = 
-  let (name,_form) = pair in 
-  let new_l = (
-    match List.assoc_opt name l with 
-    None -> pair :: l 
-    |Some _ -> Image.image (fun pair2->
-      if (fst pair2)=name then pair else pair2 ) l
-  )  in 
-  AL(Ordered.sort order_on_pairs new_l);; 
 
-let name_form_if_needed gram form new_name =
-  match name_for_form_opt gram form with 
-  Some old_name ->(None,old_name)
-  |None -> 
-     if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
-     let new_ag = add_pair_naively (new_name,form) gram in 
-     (Some new_ag,new_name) ;;
+
 
 let rec helper_for_naming_several_forms (treated,change_made,gram,to_be_treated) =
   match to_be_treated with 
@@ -246,22 +493,13 @@ let register_molecular token_types gram =
    let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
    add_pair_naively (name,Molecular(token_types)) gram ;;
 
-exception Standardized_name_exn of string ;;   
 
-let standardized_name = function 
-   Concat l -> "CCCCC"^(String.concat "NNNNN" l)^"TTTTT"
-   |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
-   |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
-   |Star nm -> "Starred"^ nm
-   |Optional nm -> "Optional"^ nm
-   |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
 let register_with_standardized_name form gram= 
    let name = standardized_name form in 
    add_pair_naively (name,form) gram ;;
 
-let give_standardized_name_if_needed gram form = 
-  name_form_if_needed gram form (standardized_name form) ;;
+
 
 let eid_in_dijsunction (contained,replacement) l = 
   Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
@@ -420,6 +658,14 @@ let flatten_tetris1 gram tetris1_name =
    |Some(name_for_core,_ext,starred_ext) ->
    heavy_add_pair (tetris1_name,Jvag_types.Concat([name_for_core;starred_ext])) gram ;; 
 
+let apply_local_modifications gram name mods =
+   let start_dis = Local_Modification.lm_get gram name in 
+   let (end_gram,end_dis) =  
+     Local_Modification.apply_several (gram,start_dis) mods in 
+   let (gram2,end_names) = register_several_if_needed end_gram end_dis in   
+   let end_form = Jvag_types.Disjunction end_names in 
+   heavy_add_pair (name,end_form) gram2 ;;
+
 let apply gram = function 
    (Set_production(name,form)) -> add_pair_naively (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
@@ -430,7 +676,8 @@ let apply gram = function
   |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
   |Flatten_triangle(triangle_name) -> flatten_triangle gram triangle_name
-  |Flatten_tetris1(tetris1_name) -> flatten_tetris1 gram tetris1_name;;
+  |Flatten_tetris1(tetris1_name) -> flatten_tetris1 gram tetris1_name
+  |Local(name,mods)->apply_local_modifications gram name mods;;
  
 
 let apply_several gram modifications = 
@@ -881,7 +1128,7 @@ let expand_grammar_using_concat data (AL l) =
   AL(Image.image (expand_pair_using_concat data) l);;
 
 let heavy_add_pair pair gram = 
-  let gram2 = Modify.add_pair_naively pair gram in 
+  let gram2 = add_pair_naively pair gram in 
   let gram3 =(match snd pair with 
   (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
    |Disjunction _
@@ -902,7 +1149,8 @@ let apply gram modification = match modification with
   |Collapse_synonym_locally(_,_) 
   |Collapse_synonym_globally(_) 
   |Flatten_triangle(_)
-  |Flatten_tetris1(_) -> Modify.apply gram modification;;
+  |Flatten_tetris1(_) 
+  |Local(_,_)-> Modify.apply gram modification;;
  
 
 let apply_several gram modifications = 
@@ -940,7 +1188,7 @@ let singleton = Private.Nonrecursive_grammar.singleton ;;
 
 end ;;  
 
-let add_pair_naively = Private.Modify.add_pair_naively ;;
+let add_pair_naively = Private.add_pair_naively ;;
 
 let check_disjunction_ladder = Private.check_disjunction_ladder ;; 
 let containing = Private.containing ;;
