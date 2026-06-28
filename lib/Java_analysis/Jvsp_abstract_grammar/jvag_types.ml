@@ -21,7 +21,11 @@ type local_modification =
   |Lm_expand_synonym of int * int 
   |Lm_expand_concat of int * int  
   |Lm_implode_molecule of int * (int * int)  
-  |Lm_explode_molecule of int * int ;;
+  |Lm_explode_molecule of int * int 
+  |Lm_reunite_star of int * (int * int)
+  |Lm_detect_optional of int * (int * int)
+  |Lm_reunite_disjunction of (int * int) * int 
+;;
 
 type modification = 
    Set_production of string * form 

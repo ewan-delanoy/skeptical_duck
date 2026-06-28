@@ -607,7 +607,7 @@ let modifications_to_original_java_grammar =
       Register_with_standardized_name (Optional("Static")) ;
       Register_with_standardized_name (Molecular([DOT_T;TIMES_T])) ;
       Register_with_standardized_name (Optional("MolecularDot_Times"));
-
+      Set_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
       
       Set_production("ImportDeclaration",Concat(["Import";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"Sm"]));
       Remove_productions( ["MolecularDot_Identifier_Sm"; "MolecularDot_Times_Sm";

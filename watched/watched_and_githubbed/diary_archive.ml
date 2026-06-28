@@ -1,6 +1,36 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 257 : Extract list of items from code snippet
+************************************************************************************************************************)
+module Snip257 = struct 
+
+let text1 = rf "watched/watched_not_githubbed/sirloin.ml" ;;
+
+let lines1 = Lines_in_text.indexed_lines text1 ;;
+
+let indices = Int_range.scale (fun k->50+3*k) 0 13;;
+
+let lines2 = List.filter (fun (idx,line) -> List.mem idx indices) lines1 ;;
+
+let lines3 = Image.image snd lines2 ;;
+
+let lines4 = Image.image (fun s->let k = 
+   Option.get(Substring.leftmost_index_of_in_from_opt "Lm_" s 1) in 
+   Cull_string.cobeginning (k-1) s
+) lines3 ;; 
+
+let lines5 = Image.image (fun s->let k = 
+   Option.get(Substring.rightmost_index_of_in_opt ")" s) in 
+   "("^(Cull_string.beginning (k-1) s)^")"
+) lines4 ;; 
+
+let u1 = String.concat ";\n" lines5 ;;
+
+let u2 = "\n\n\n[\n"^u1^"\n]\n\n\n";;
+end;;
+
+(************************************************************************************************************************
  Entry 256 : Extract data from a html file
 ************************************************************************************************************************)
 module Snip256 = struct 

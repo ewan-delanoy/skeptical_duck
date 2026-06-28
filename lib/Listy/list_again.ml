@@ -299,6 +299,17 @@ let sublist_with_indices l indices = Image.image (fun k->List.nth l (k-1)) indic
 
 (* sublist_with_indices  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
   
+let two_sided_cutting (length_before,length_after) l = 
+   let (left,temp) = long_head_with_tail (length_before-1) l in 
+   let (center,right)= long_tail_with_head temp length_after in 
+   (left,List.rev center,right) ;;
+  
+(*
+
+two_sided_cutting (2,3) (Int_range.range 1 9);;
+
+*)   
+
 let universal_delta_list l=
   let rec sub_f=(function (accu,a,rl)->match rl with
       []->List.rev(accu)
