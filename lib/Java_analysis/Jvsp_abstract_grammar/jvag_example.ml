@@ -588,7 +588,43 @@ AL ([
 
 (* Java grammar ends here *)
 
+let mods_for_import_declaration = [
+   (Lm_expand_disjunction(1,2));
 
+(Lm_expand_synonym(1,2));
+(Lm_expand_concat(2,2));
+(Lm_expand_synonym(2,5));
+(Lm_implode_molecule(2,(4,5)));
+
+(Lm_reunite_star(1,(2,1)));
+(Lm_explode_molecule(2,3));
+(Lm_explode_molecule(2,1));
+
+(Lm_implode_molecule(2,(4,5)));
+(Lm_detect_optional(1,(3,1)));
+
+(Lm_expand_disjunction(3,2));
+(Lm_expand_disjunction(2,2));
+(Lm_expand_concat(5,2));
+(Lm_expand_concat(3,2));
+(Lm_expand_synonym(5,5));
+(Lm_expand_synonym(4,2));
+(Lm_expand_synonym(3,5));
+(Lm_expand_synonym(2,2));
+(Lm_implode_molecule(3,(4,5)));
+(Lm_reunite_star(2,(2,1)));
+(Lm_explode_molecule(2,4));
+(Lm_explode_molecule(3,3));
+(Lm_explode_molecule(4,6));
+(Lm_implode_molecule(4,(4,5)));
+(Lm_reunite_star(3,(2,3)));
+(Lm_reunite_disjunction((2,3),5));
+(Lm_explode_molecule(2,1));
+(Lm_implode_concat(1,(2,4)));
+(Lm_implode_molecule(2,(2,3)));
+(Lm_implode_concat(2,(2,5)));
+(Lm_reunite_disjunction((1,2),2));
+] ;;
 
 
 let modifications_to_original_java_grammar = 
@@ -607,13 +643,18 @@ let modifications_to_original_java_grammar =
       Register_with_standardized_name (Optional("Static")) ;
       Register_with_standardized_name (Molecular([DOT_T;TIMES_T])) ;
       Register_with_standardized_name (Optional("MolecularDot_Times"));
-      Set_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
-      
-      Set_production("ImportDeclaration",Concat(["Import";"OptionalStatic";"Identifier";"StarredMolecularDot_Identifier";"OptionalMolecularDot_Times";"Sm"]));
+      Register_with_standardized_name (Molecular([STATIC_T;IDENTIFIER_T]));
+      Create_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
+      Create_production("NonstaticImportedContent",Concat(["Identifier"; "StarredMolecularDot_Identifier";"OptionalMolecularDot_Times"]));
+      Create_production("StaticImportedContent",Concat(["MolecularStatic_Identifier"; "StarredMolecularDot_Identifier"; "Dot";"IdOrWildcard"]));
+      Create_production("ImportedContent",Disjunction(["NonstaticImportedContent";"StaticImportedContent"]));
+
+      Local("ImportDeclaration",mods_for_import_declaration);
       Remove_productions( ["MolecularDot_Identifier_Sm"; "MolecularDot_Times_Sm";
       "MolecularImport_Identifier"; "MolecularImport_Static";
-      "SingleStaticImportDeclaration"; "SingleTypeImportDeclaration";
-      "StaticImportOnDemandDeclaration"; "TypeImportOnDemandDeclaration"]);
+      "MolecularImport_Static_Identifier"; "SingleStaticImportDeclaration";
+      "SingleTypeImportDeclaration"; "StaticImportOnDemandDeclaration";
+      "TypeImportOnDemandDeclaration"]);
       (* Simplify the production rule for the class body declaration*)
       Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
       Expand_in_synonym("Block","InstanceInitializer");
@@ -635,10 +676,10 @@ let modifications_to_original_java_grammar =
      (*
        Creating a fully equivalent production for UnannClassType, begin
      *)
-      Set_production("MediumUnannClassType",Concat(["Identifier"; "StarredMolecularDot_Identifier"]));
-      Set_production("BasicUnannClassType",Disjunction(["ShortUnannClassType"; "MediumUnannClassType"]));
-      Set_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
-      Set_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
+      Create_production("MediumUnannClassType",Concat(["Identifier"; "StarredMolecularDot_Identifier"]));
+      Create_production("BasicUnannClassType",Disjunction(["ShortUnannClassType"; "MediumUnannClassType"]));
+      Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
+      Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
       Set_production("UnannClassType",Concat(["BasicUnannClassType";"StarredUnannClassTypeExtender"]));
       (*
        Creating a fully equivalent production for UnannClassType, end
@@ -677,9 +718,11 @@ let modifications_to_original_java_grammar =
     ] ;;
 
 let java_grammar = 
+   original_java_grammar  ;;
+  (*
     Jvag_grammar.modify original_java_grammar 
      modifications_to_original_java_grammar ;;
-
+   *)
  end ;;
 
 

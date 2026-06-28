@@ -25,10 +25,12 @@ type local_modification =
   |Lm_reunite_star of int * (int * int)
   |Lm_detect_optional of int * (int * int)
   |Lm_reunite_disjunction of (int * int) * int 
+  |Lm_implode_concat of int * (int * int)
 ;;
 
 type modification = 
-   Set_production of string * form 
+   Set_production of string * form
+  |Create_production of string * form  
   |Rename of string * string 
   |Remove_productions of string list
   |Register_with_standardized_name of form 

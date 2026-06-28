@@ -103,10 +103,13 @@ let ocaml_name_of_local_modification lmod=
   "Lm_detect_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
  |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->
   "Lm_reunite_disjunction(("^(soi disj_range_start)^","^(soi disj_range_end)^"),"^(soi index_in_concat)^")"
+ |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
+  "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
 ;;
 
 let ocaml_name_of_modification = function 
     Set_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")" 
+  |Create_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")"   
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
   |Register_with_standardized_name(form) -> "Register__with_standardized_name("^(
@@ -185,13 +188,17 @@ let add_pair_naively pair (AL l) =
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
 
-let name_form_if_needed gram form new_name =
-  match name_for_form_opt gram form with 
-  Some old_name ->(None,old_name)
-  |None -> 
-     if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
-     let new_ag = add_pair_naively (new_name,form) gram in 
-     (Some new_ag,new_name) ;;
+exception Name_is_not_new_exn of string ;;
+
+let create_new_pair pair (AL l) = 
+  let (name,_form) = pair in 
+  let new_l = (
+    match List.assoc_opt name l with 
+    None -> pair :: l 
+    |Some _ -> raise(Name_is_not_new_exn(name))
+  )  in 
+  AL(Ordered.sort order_on_pairs new_l);; 
+
 
 exception Standardized_name_exn of string ;;   
 
@@ -203,12 +210,14 @@ let standardized_name = function
    |Optional nm -> "Optional"^ nm
    |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
-let give_standardized_name_if_needed gram form = 
-  name_form_if_needed gram form (standardized_name form) ;;
-
 let register_if_needed gram form = 
-  let (new_gram_opt,name) = give_standardized_name_if_needed gram form in 
-  ((match new_gram_opt with None ->gram |Some(new_gram)->new_gram),name) ;;  
+   match name_for_form_opt gram form with 
+  Some old_name ->(gram,old_name)
+  |None -> 
+  let new_name = standardized_name form in 
+  if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
+  let new_ag = add_pair_naively (new_name,form) gram in  
+  (new_ag,new_name) ;;  
 
 let rec helper_for_multiple_registration (treated,gram,to_be_treated) =
   match to_be_treated with 
@@ -228,31 +237,6 @@ let lm_get gram name =
   let form1 = get gram name in 
   let l =Jvag_form.disjunction_content form1 in 
   Image.image (get gram) l;;
-
-(*  
-exception Bad_index_in_disjunction_exn of int ;;
-exception Nonconcat_in_disjunction_exn of int * form ;;
-exception Bad_index_in_concat_exn of int ;;
-exception Nondisjunction_in_concat_exn of int * form ;;
-exception Nonsynonym_in_concat_exn of int * form ;;
-exception Nonconcat_in_concat_exn of int * form ;;
-exception Bad_range_in_implode_molecule_exn of int * int ;;
-exception Nonmoleculars_in_implosion_range_exn of ((string list)* (int *int) *(string list) ) ;;
-exception Nonmolecular_in_concat_exn of int * form ;;
-exception Bad_index_in_star_reuniting_exn of int ;;
-exception Bad_lengths_in_star_reuniting_exn of int * int ;;
-exception Mismatch_in_star_reuniting_exn of (string list) * (string list) ;;
-exception Bad_cores_in_star_reuniting_exn of (string list) * (string list) ;;
-exception Bad_index_in_optional_detection_exn of int ;;
-exception Bad_lengths_in_optional_detection_exn of int * int ;;
-exception Mismatch_in_optional_detection_exn of (string list) * (string list) ;;
-exception Bad_cores_in_optional_detection_exn of (string list) * (string list) ;;
-exception Bad_range_in_disjunction_reuniting_exn of int * int ;;
-exception Bad_index_in_disjunction_reuniting_exn of int ;;
-exception Left_misfit_in_disjunction_reuniting_exn of (string list) * (string list) ;;
-exception Right_misfit_in_disjunction_reuniting_exn of (string list) * (string list) ;;
-exception Nonconcat_in_range_in_disjunction_reuniting_exn ;;
-*)
 
 exception Bad_index_exn of string * int * string ;;
 exception Bad_range_exn of string * int * int * string ;;
@@ -470,6 +454,14 @@ let reunite_disjunction (gram,forms) ((disj_range_start,disj_range_end),index_in
    let (gram2,name_for_final_form) = register_if_needed gram final_form in 
   (gram2,before @ [Jvag_types.Concat(left@[name_for_final_form]@right)]  @ after);;      
 
+let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) = 
+  let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" forms index_in_disj in  
+  let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"implode_concat") in
+  let (before2,between2,after2) = extract_range_from_concat "implode_concat" chain (range_start,range_end) in 
+  let final_form = Jvag_types.Concat between2 in 
+  let (gram2,name_for_final_form) = register_if_needed gram final_form in 
+  (gram2,before @ [Jvag_types.Concat(before2@[name_for_final_form]@after2)]  @ after);;  
+
 
 let apply gf =function 
  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
@@ -488,6 +480,8 @@ let apply gf =function
     detect_optional gf (index_in_disj,(length_before,length_after)) 
  |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
    reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat)
+ |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
+    implode_concat gf (index_in_disj,(range_start,range_end))
   ;;
 
 
@@ -510,22 +504,6 @@ let expand_pair_using_concat data (name,form) =
 
 let expand_grammar_using_concat data (AL l) =
   AL(Image.image (expand_pair_using_concat data) l);;
-
-
-
-
-let rec helper_for_naming_several_forms (treated,change_made,gram,to_be_treated) =
-  match to_be_treated with 
-  []->((if change_made then Some gram else None),List.rev treated)
-  |(form1,name1) :: other_pairs ->
-     let (new_gram_opt,final_name) = name_form_if_needed gram form1 name1 in 
-     let treated2 = final_name :: treated in 
-     match new_gram_opt with 
-     None ->  helper_for_naming_several_forms (treated2,change_made,gram,other_pairs)
-     |(Some new_gram) ->  helper_for_naming_several_forms (treated2,true,new_gram,other_pairs) ;;
-           
-let name_several_forms_as_needed gram pairs = 
-   helper_for_naming_several_forms ([],false,gram,pairs) ;; 
 
 
 let heavy_add_pair pair gram = 
@@ -674,18 +652,17 @@ let triangle_parameters gram triangle_name =
       let li3 = Option.get li3_opt in
       if List.hd(li3)<>triangle_name then None else 
       let li4 = List.tl li3 in 
-      let (new_gram_opt,name_for_extender) = (
-         if List.length(li4)=1 then (None,List.hd li4) else 
+      let (gram2,name_for_extender) = (
+         if List.length(li4)=1 then (gram,List.hd li4) else 
          let form4 = Jvag_types.Concat li4 in 
-         give_standardized_name_if_needed gram form4
+         register_if_needed gram form4
       ) in 
-      let gram2 = (match new_gram_opt with Some gramm->gramm |None ->gram) in
+      
       let starred_extender = Jvag_types.Star name_for_extender in 
-      let (new_gram_opt2,name_for_starred_extender) = give_standardized_name_if_needed gram2 starred_extender in
-      let gram3 = (match new_gram_opt2 with Some gramm->gramm |None ->gram2) in
-      let final_gram_opt = (if (new_gram_opt,new_gram_opt2)=(None,None) then None else Some gram3) in  
+      let (gram3,name_for_starred_extender) = register_if_needed gram2 starred_extender in
+      let changed_gram_opt = (if gram3=gram then None else Some gram3) in  
       Some(triangle_name,name_for_core,name_for_compound,
-      name_for_extender,name_for_starred_extender,final_gram_opt) ;;
+      name_for_extender,name_for_starred_extender,changed_gram_opt) ;;
 
 
 let flatten_triangle gram triangle_name = 
@@ -740,6 +717,7 @@ let apply_local_modifications gram name mods =
 
 let apply gram = function 
    (Set_production(name,form)) -> add_pair_naively (name,form) gram 
+  |Create_production(name,form) ->  create_new_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
   |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
@@ -1213,6 +1191,7 @@ let heavy_add_pair pair gram =
 
 let apply gram modification = match modification with
    (Set_production(name,form)) -> heavy_add_pair (name,form) gram 
+  |Create_production(_,_)
   |Rename(_,_) 
   |Remove_productions(_) 
   |Register_with_standardized_name(_) 
@@ -1276,12 +1255,8 @@ let lower_interval_below = Private.lower_interval_below ;;
 
 let modify = Private.HeavyModify.apply_several ;;
 let name_for_form_opt = Private.name_for_form_opt ;; 
-let name_several_forms_as_needed = Private.Modify.name_several_forms_as_needed ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
-
-let registration_opt (AL l) form = 
-    Option.map fst (List.find_opt (fun (_,form2)->form2=form) l) ;;
 
 let singleton name form = AL [name,form] ;;     
 let write_parser = Private.WriteParser.write_prsrtxt ;;
