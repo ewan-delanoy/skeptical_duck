@@ -367,7 +367,7 @@ let expand_disjunction (gram,forms) (index_in_disj,index_in_concat) =
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"expand_disjunction") in 
   let (before2,pivot2_name,after2) = extract_element_from_concat "expand_disjunction" chain index_in_concat in  
   let pivot2 = get gram pivot2_name in 
-  let inner_disjunction = match_concat pivot2 ("index in concat",index_in_concat,"expand_disjunction") in 
+  let inner_disjunction = match_disjunction pivot2 ("index in concat",index_in_concat,"expand_disjunction") in 
   (gram,before @ (Image.image (fun elt->
       Jvag_types.Concat(before2@[elt]@after2)) inner_disjunction) @ after);;
 
