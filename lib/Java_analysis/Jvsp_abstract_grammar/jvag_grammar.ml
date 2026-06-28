@@ -1243,6 +1243,14 @@ let add_pair_naively = Private.add_pair_naively ;;
 
 let check_disjunction_ladder = Private.check_disjunction_ladder ;; 
 let containing = Private.containing ;;
+
+let debug_bad_list_of_modifications gram modifs=
+  let (count_before_bug,the_problematic_modif) = Tools_for_debugging.extract_from_fold_left Private.HeavyModify.apply gram modifs in 
+  let modifs_before_bug = List_again.long_head count_before_bug modifs in 
+  (Private.HeavyModify.apply_several gram modifs_before_bug,the_problematic_modif) ;;
+
+
+
 let differences = Private.differences ;;
 let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
