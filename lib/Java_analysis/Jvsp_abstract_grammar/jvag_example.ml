@@ -589,20 +589,19 @@ AL ([
 (* Java grammar ends here *)
 
 let mods_for_import_declaration = [
-   (Lm_expand_disjunction(1,2));
-
+  (* Dealing with non-static imports *)
+(Lm_expand_disjunction(1,2));
 (Lm_expand_synonym(1,2));
 (Lm_expand_concat(2,2));
 (Lm_expand_synonym(2,5));
 (Lm_implode_molecule(2,(4,5)));
-
 (Lm_reunite_star(1,(2,1)));
-(Lm_explode_molecule(2,3));
-(Lm_explode_molecule(2,1));
-
+(Lm_explode_molecule(2,4));
 (Lm_implode_molecule(2,(4,5)));
 (Lm_detect_optional(1,(3,1)));
+(Lm_implode_concat(1,(2,4)));
 
+(* Dealing with static imports *)
 (Lm_expand_disjunction(3,2));
 (Lm_expand_disjunction(2,2));
 (Lm_expand_concat(5,2));
@@ -620,22 +619,22 @@ let mods_for_import_declaration = [
 (Lm_reunite_star(3,(2,3)));
 (Lm_reunite_disjunction((2,3),5));
 (Lm_explode_molecule(2,1));
-(Lm_implode_concat(1,(2,4)));
-(Lm_implode_molecule(2,(2,3)));
+(Lm_implode_molecule(2,(2,3))); (* because of token list merging rules*)
 (Lm_implode_concat(2,(2,5)));
+
+(* Joining static with non-static *)
 (Lm_reunite_disjunction((1,2),2));
 ] ;;
 
 
 let modifications_to_original_java_grammar = 
     [
-      (* The following four actions remove left recursions and are fully equivalent to the original *)
-      
-      Flatten_triangle("AmbiguousName");
-      Flatten_triangle("ModuleName");
-      Flatten_triangle("PackageName");
-      Flatten_triangle("PackageOrTypeName");
-      Flatten_tetris1("ExpressionName");
+
+      Local("AmbiguousName",[Lm_pumping_lemma("AmbiguousName",2)]); 
+      Local("ModuleName",[Lm_pumping_lemma("ModuleName",2)]);
+      Local("PackageName",[Lm_pumping_lemma("PackageName",2)]);
+      Local("PackageOrTypeName",[Lm_pumping_lemma("PackageOrTypeName",2)]);
+      Local("ExpressionName",[Lm_reunite_star(1,(1,0))]);
       Remove_productions( [
       "AmbiguousName"; "CompoundAmbiguousName";  "ModuleName";
       "PackageName"; "PackageOrTypeName"]);
@@ -673,56 +672,24 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("UnannArrayType","UnannType");
       Expand_in_disjunction("FloatingPointType","UnannType");
       Expand_in_disjunction("IntegralType","UnannType");
-     (*
-       Creating a fully equivalent production for UnannClassType, begin
-     *)
-      Create_production("MediumUnannClassType",Concat(["Identifier"; "StarredMolecularDot_Identifier"]));
-      Create_production("BasicUnannClassType",Disjunction(["ShortUnannClassType"; "MediumUnannClassType"]));
+    
+
       Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
       Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
-      Set_production("UnannClassType",Concat(["BasicUnannClassType";"StarredUnannClassTypeExtender"]));
-      (*
-       Creating a fully equivalent production for UnannClassType, end
-     *)
-     (*
-       Creating a fully equivalent production for TypeName, begin
-     *)
-     Set_production("TypeName",Concat(["Identifier";"StarredMolecularDot_Identifier"]));
-     (*
-       Creating a fully equivalent production for TypeName, end
-     *)
-      Remove_productions(["ClassMemberDeclaration"; "UnannArrayType"; "UnannInterfaceType";"UnannReferenceType";
-      "Permits"; "Snail"; "CompoundTypeName"; "TypeName";
-  "UnannClassType"
+      Create_production("CoreUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
+      Local("UnannClassType",[Lm_pumping_lemma("UnannClassType",3)]);
+
+      Local("TypeName",[
+      Lm_collapse_synonym(1);Lm_expand_synonym(2,4);
+      Lm_implode_molecule(2,(3,4)); Lm_reunite_star(1,(1,0)); 
       ]);
-      (* Introducting a new production, related to ShortUnannClassType*)
-      Set_production("StrictShortUnannClassType",Concat(["Identifier";"Lt";"TypeArgument";"StarredTypeArgumentPrecededByComma";"Gt"]));
-      Set_production("ShortUnannClassType",Disjunction(["Identifier";"StrictShortUnannClassType"]));
-      Expand_in_disjunction("ShortUnannClassType","UnannType");
-      Expand_in_disjunction("ShortUnannClassType","BasicUnannClassType");
-
-      Expand_in_disjunction("NumericType","UnannPrimitiveType");
-      Expand_in_disjunction("FloatingPointType","UnannPrimitiveType");
-      Expand_in_disjunction("IntegralType","UnannPrimitiveType");
-
-       (* Introducting a new production, related to MediumUnannClassType*)
-      Set_production("StrictMediumUnannClassType",Concat(["Identifier";"Dot";"Identifier";"StarredMolecularDot_Identifier";]));
-      Set_production("MediumUnannClassType",Disjunction(["Identifier";"StrictMediumUnannClassType"]));
-      Expand_in_disjunction("MediumUnannClassType","BasicUnannClassType");
-      Remove_productions(["MediumUnannClassType"; "ShortUnannClassType"]);
-      Rename("StrictMediumUnannClassType","MediumUnannClassType");
-      Rename("StrictShortUnannClassType","MediumShortClassType");
-      
-      Remove_productions(["ExceptionType"; "ExceptionTypePrecededByComma"; "Sends";
-      "StarredExceptionTypePrecededByComma"]);
+     
     ] ;;
 
 let java_grammar = 
-   original_java_grammar  ;;
-  (*
+  
     Jvag_grammar.modify original_java_grammar 
      modifications_to_original_java_grammar ;;
-   *)
  end ;;
 
 

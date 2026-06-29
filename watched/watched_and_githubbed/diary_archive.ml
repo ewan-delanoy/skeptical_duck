@@ -1,6 +1,38 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 258 :  Use debug functions from the Jvag_grammar module
+************************************************************************************************************************)
+module Snip258 = struct 
+
+ let ojg = Jvag_example.Private.original_java_grammar ;;
+
+let modifs = Jvag_example.Private.modifications_to_original_java_grammar ;;
+
+(* let bad1 =  Jvag_grammar.modify ojg modifs ;; *)
+
+let (m_count_before_bug,modifs_before_bug,gram1,the_modif) = Jvag_grammar.debug_bad_list_of_modifications ojg modifs ;;
+
+(* let bad2 = Jvag_grammar.Private.Modify.apply gram1 the_modif ;; *)
+
+let local_modifs = Jvag_example.Private.mods_for_import_declaration ;;
+
+
+let (lm_count_before_bug,local_modifs_before_bug,(gram2,traveler),the_local_modif) = 
+  Jvag_grammar.debug_bad_list_of_local_modifications gram1 "ImportDeclaration" local_modifs ;;
+
+module LM = Jvag_grammar.Private.Local_Modification ;;
+
+(*
+let bad3 = LM.apply (gram2,traveler) the_local_modif ;;
+
+let bad4 = LM.explode_molecule (gram2,traveler) (2,4) ;;
+*)
+ 
+   
+end;;
+
+(************************************************************************************************************************
  Entry 257 : Extract list of items from code snippet
 ************************************************************************************************************************)
 module Snip257 = struct 

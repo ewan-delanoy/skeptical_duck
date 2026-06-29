@@ -17,15 +17,17 @@ type form =
 type grammar = AL of (string * form) list ;; 
 
 type local_modification = 
-   Lm_expand_disjunction of int * int 
+   Lm_collapse_synonym of int 
+  |Lm_detect_optional of int * (int * int)
+  |Lm_expand_disjunction of int * int 
   |Lm_expand_synonym of int * int 
   |Lm_expand_concat of int * int  
-  |Lm_implode_molecule of int * (int * int)  
   |Lm_explode_molecule of int * int 
-  |Lm_reunite_star of int * (int * int)
-  |Lm_detect_optional of int * (int * int)
-  |Lm_reunite_disjunction of (int * int) * int 
   |Lm_implode_concat of int * (int * int)
+  |Lm_implode_molecule of int * (int * int)  
+  |Lm_reunite_star of int * (int * int)
+  |Lm_reunite_disjunction of (int * int) * int
+  |Lm_pumping_lemma of string * int 
 ;;
 
 type modification = 
@@ -38,8 +40,6 @@ type modification =
   |Expand_in_synonym of string * string
   |Collapse_synonym_locally of string * string
   |Collapse_synonym_globally of string 
-  |Flatten_triangle of string
-  |Flatten_tetris1 of string 
   |Local of string * (local_modification list) ;;
 
 type nonrecursive_grammar = {

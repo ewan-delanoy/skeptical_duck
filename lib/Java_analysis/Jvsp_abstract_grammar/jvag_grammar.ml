@@ -105,6 +105,10 @@ let ocaml_name_of_local_modification lmod=
   "Lm_reunite_disjunction(("^(soi disj_range_start)^","^(soi disj_range_end)^"),"^(soi index_in_concat)^")"
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
   "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
+ |(Lm_pumping_lemma(original_name,index_in_disj)) ->  
+   "Lm_pumping_lemma(\""^original_name^"\","^(soi index_in_disj)^")"
+ |(Lm_collapse_synonym(index_in_disj)) ->
+    "Lm_collapse_synonym("^(soi index_in_disj)^")"  
 ;;
 
 let ocaml_name_of_modification = function 
@@ -118,8 +122,6 @@ let ocaml_name_of_modification = function
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
   |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
-  |Flatten_triangle(triangle_name) ->  "Flatten_triangle(\""^triangle_name^"\")"
-  |Flatten_tetris1(tetris1_name) -> "Flatten_tetris1(\""^tetris1_name^"\")"
   |Local(name,mods)->  "Local(\""^name^"\",["^(String.concat ";" 
      (Image.image ocaml_name_of_local_modification mods))^"])"
 ;;
@@ -276,6 +278,10 @@ let match_moleculars forms (text_for_index,caller_name)=
    let indexed_forms = Int_range.index_everything forms in 
    Image.image (fun (index,form)-> match_molecular form (text_for_index,index,caller_name)) indexed_forms;;  
 
+let match_concat_opt form (text_for_index,index,caller_name)= 
+   try (Some(match_concat form (text_for_index,index,caller_name))) with 
+   _ -> None ;;
+
 let extract_element_from_disjunction caller_name forms index_in_disj = 
    if (index_in_disj<0)||(index_in_disj>List.length(forms))
   then raise (Bad_index_exn("index in disjunction",index_in_disj,caller_name))
@@ -405,14 +411,33 @@ let extract_main_name_from_pair_during_star_reuniting between1 between2 =
    if between2 = [] then extract_main_name_from_list_during_star_reuniting between1 else  
    None ;;
    
-   
+
+exception Both_are_nonconcats_in_reunite_star_exn of form * form ;;   
 exception Reunite_star_exn of (string list) * (string list) ;;
+exception Misfit_in_reunite_star_exn of form * (string list) ;;
+
+let deal_with_narrowed_case_in_star_reuniting gram pivot other_chain =
+  let common_name = List.hd other_chain in 
+  if get gram common_name = pivot 
+  then ([common_name],other_chain)
+  else raise(Misfit_in_reunite_star_exn(pivot,other_chain));;    
+
+let deal_with_hard_case_in_star_reuniting gram (pivot1,chain1_opt) (pivot2,chain2_opt) =
+  (* we assume that chain1_opt and chain2_opt are not both equal to None *)
+  if chain1_opt = None then deal_with_narrowed_case_in_star_reuniting gram pivot1 (Option.get chain2_opt) else 
+  if chain2_opt = None then deal_with_narrowed_case_in_star_reuniting gram pivot2 (Option.get chain1_opt) else   
+  (Option.get chain1_opt,Option.get chain2_opt) ;;
+
 
 let reunite_star (gram,forms) (index_in_disj,(length_before,length_after)) = 
   let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_star" forms index_in_disj in  
   let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let chain1 = match_concat pivot1 ("index in disjunction",index_in_disj,"reunite_star") 
-  and chain2 = match_concat pivot2 ("index in disjunction",index_in_disj+1,"reunite_star") in
+  let chain1_opt = match_concat_opt pivot1 ("index in disjunction",index_in_disj,"reunite_star") 
+  and chain2_opt = match_concat_opt pivot2 ("index in disjunction",index_in_disj+1,"reunite_star") in
+  if (chain1_opt,chain2_opt) = (None,None) 
+  then raise(Both_are_nonconcats_in_reunite_star_exn(pivot1,pivot2))  
+  else 
+  let (chain1,chain2) = deal_with_hard_case_in_star_reuniting gram (pivot1,chain1_opt) (pivot2,chain2_opt) in 
   let (left,between,right) = uniform_two_sided_cutting ("reunite_star",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
   let between1 = List.nth between 0 and between2 = List.nth between 1 in 
   match extract_main_name_from_pair_during_star_reuniting between1 between2 with 
@@ -462,6 +487,39 @@ let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) =
   let (gram2,name_for_final_form) = register_if_needed gram final_form in 
   (gram2,before @ [Jvag_types.Concat(before2@[name_for_final_form]@after2)]  @ after);;  
 
+exception Pumping_lemma_exn of string * string ;;
+
+let pumping_lemma (gram,forms) original_name index_in_disj = 
+  let (before,old_pivot,after) = extract_element_from_disjunction "pumping_lemma" forms index_in_disj in  
+  let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"pumping_lemma") in
+  let (head,tail) = List_again.head_with_tail chain in 
+  if head<>original_name 
+  then raise(Pumping_lemma_exn(original_name,head))
+  else 
+  let (gram2,name_for_form1) = (
+    if List.length(tail)=1 
+    then (gram,List.hd tail)
+    else 
+    let form1 = Jvag_types.Concat(tail) in  
+    register_if_needed gram form1 
+  ) in  
+  let form2 = Jvag_types.Star(name_for_form1) in 
+  let (gram3,name_for_form2) = register_if_needed gram2 form2 in 
+  let (gram4,names_for_others) = register_several_if_needed gram3 (before@after) in 
+  let (gram5,name_for_form3) = (
+    if List.length(names_for_others)=1 
+    then (gram4,List.hd names_for_others)
+    else  
+    let form3 = Jvag_types.Disjunction names_for_others in   
+    register_if_needed gram4 form3
+  ) in 
+  (gram5,[Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
+
+let collapse_synonym (gram,forms) index_in_disj =
+  let (before,old_pivot,after) = extract_element_from_disjunction "collapse_synonym" forms index_in_disj in 
+  let older_name = match_synonym old_pivot ("index in disjunction",index_in_disj,"collapse_synonym") in
+  (gram,before @ [Jvag_types.Concat([older_name])]  @ after);;
+
 
 let apply gf =function 
  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
@@ -482,6 +540,10 @@ let apply gf =function
    reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat)
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
     implode_concat gf (index_in_disj,(range_start,range_end))
+ |(Lm_pumping_lemma(original_name,index_in_disj)) ->   
+    pumping_lemma gf original_name index_in_disj 
+ |(Lm_collapse_synonym(index_in_disj)) ->
+    collapse_synonym gf index_in_disj   
   ;;
 
 
@@ -635,84 +697,16 @@ let csg_in_grammar newer_synonym gram =
    and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
    AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
 
-let triangle_parameters gram triangle_name =
-   let form1 = get gram triangle_name in 
-   match Jvag_form.disjunction_content_opt form1 with 
-   None -> None 
-   |Some li1 -> 
-     let temp1 = Image.image (fun n->
-       let f = get gram n in 
-      (n,f,Jvag_form.concat_content_opt f)) li1 in 
-      let (temp2,temp3) = List.partition (fun (_n,_f,l_opt)->l_opt=None) temp1 in 
-      if (List.length(temp2),List.length(temp3))<>(1,1)
-      then None
-      else 
-      let (name_for_core,_,_) = List.hd temp2  
-      and (name_for_compound,_,li3_opt) = List.hd temp3 in 
-      let li3 = Option.get li3_opt in
-      if List.hd(li3)<>triangle_name then None else 
-      let li4 = List.tl li3 in 
-      let (gram2,name_for_extender) = (
-         if List.length(li4)=1 then (gram,List.hd li4) else 
-         let form4 = Jvag_types.Concat li4 in 
-         register_if_needed gram form4
-      ) in 
-      
-      let starred_extender = Jvag_types.Star name_for_extender in 
-      let (gram3,name_for_starred_extender) = register_if_needed gram2 starred_extender in
-      let changed_gram_opt = (if gram3=gram then None else Some gram3) in  
-      Some(triangle_name,name_for_core,name_for_compound,
-      name_for_extender,name_for_starred_extender,changed_gram_opt) ;;
-
-
-let flatten_triangle gram triangle_name = 
-   match triangle_parameters gram triangle_name with 
-   None -> raise(Flatten_triangle_exn(triangle_name))
-   |Some(triangle_name,name_for_core,name_for_compound,
-      name_for_extender,name_for_starred_extender,final_gram_opt) ->
-   let gram2 = (match final_gram_opt with Some gramm->gramm |None ->gram) in    
-   let gram3 = heavy_add_pair (triangle_name,Jvag_types.Concat([name_for_core;name_for_starred_extender])) gram2 in 
-   let gram4 = heavy_add_pair (name_for_compound,Jvag_types.Concat([name_for_core;name_for_extender;name_for_starred_extender])) gram3 in 
-   let gram5 = (
-      if containing name_for_compound gram4 = []
-      then remove_productions [name_for_compound] gram4 
-      else gram4 
-   ) in 
-  gram5;; 
-
-let tetris1_parameters gram tetris1_name =
-   let form1 = get gram tetris1_name in 
-   match Jvag_form.disjunction_content_opt form1 with 
-   None -> None 
-   |Some li1 -> 
-     let temp1 = Image.image (fun n->
-       let f = get gram n in 
-      (n,f,Jvag_form.concat_content_opt f)) li1 in 
-      let (temp2,temp3) = List.partition (fun (_n,_f,l_opt)->l_opt=None) temp1 in 
-      if (List.length(temp2),List.length(temp3))<>(1,1)
-      then None
-      else 
-      let (name_for_core,_,_) = List.hd temp2  
-      and (_,_,li3_opt) = List.hd temp3 in 
-      let li3 = Option.get li3_opt in
-      if List.length(li3)<>3 then None else 
-      let ext1 = List.nth li3 1 
-      and ext2 = List.nth li3 2 in 
-      if (List.hd(li3)<>name_for_core)||(ext2<>"Starred"^ext1) then None else 
-      Some(name_for_core,ext1,ext2) ;;   
-
-let flatten_tetris1 gram tetris1_name = 
-   match tetris1_parameters gram tetris1_name with 
-   None -> raise(Flatten_tetris1_exn(tetris1_name))
-   |Some(name_for_core,_ext,starred_ext) ->
-   heavy_add_pair (tetris1_name,Jvag_types.Concat([name_for_core;starred_ext])) gram ;; 
-
 let apply_local_modifications gram name mods =
    let start_dis = Local_Modification.lm_get gram name in 
    let (end_gram,end_dis) =  
      Local_Modification.apply_several (gram,start_dis) mods in 
-   let (gram2,end_names) = register_several_if_needed end_gram end_dis in   
-   let end_form = Jvag_types.Disjunction end_names in 
+   let (gram2,end_form) = (
+      if List.length(end_dis)=1
+      then (end_gram,List.hd end_dis)
+      else let (temp_gram,end_names) = register_several_if_needed end_gram end_dis in 
+           (temp_gram,Jvag_types.Disjunction end_names)     
+   ) in   
    heavy_add_pair (name,end_form) gram2 ;;
 
 let apply gram = function 
@@ -725,8 +719,6 @@ let apply gram = function
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
   |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
-  |Flatten_triangle(triangle_name) -> flatten_triangle gram triangle_name
-  |Flatten_tetris1(tetris1_name) -> flatten_tetris1 gram tetris1_name
   |Local(name,mods)->apply_local_modifications gram name mods;;
  
 
@@ -1199,8 +1191,6 @@ let apply gram modification = match modification with
   |Expand_in_synonym(_,_) 
   |Collapse_synonym_locally(_,_) 
   |Collapse_synonym_globally(_) 
-  |Flatten_triangle(_)
-  |Flatten_tetris1(_) 
   |Local(_,_)-> Modify.apply gram modification;;
  
 
