@@ -47,10 +47,6 @@ type nonrecursive_grammar = {
    productions : (string * (form * string list)) list;
 } ;;
 
-type line_in_magnifying_glass = MGL of (string * (((string * form ) list) * (string list))) ;; 
-
-type magnifying_glass = MG of line_in_magnifying_glass list ;;
-
 type link =
     Optional_L 
    |Concat_L
@@ -58,3 +54,10 @@ type link =
    |Star_L
    |Synonym_L
   ;;
+
+type hand = {
+   outer : string ;
+   inner : string ;
+   suffix : string list ;
+   other_fingers : (string list) list ;
+}  ;; 
