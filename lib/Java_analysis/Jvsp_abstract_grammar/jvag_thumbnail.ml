@@ -37,13 +37,18 @@ let get gram name =
   Tn(content) ;;   
 
 
+let fold_expand gram orig pushers =
+   let expa = (fun tnail x->expand tnail x (get gram x)) in 
+   List.fold_left expa orig pushers;;
+
 end ;;   
 
 let chain_expansion gram chain =
-   let expa = (fun tnail x->Private.expand tnail x (Private.get gram x)) in 
-   List.fold_left expa (Private.get gram (List.hd chain)) (List.tl chain);;
-
+   Private.fold_expand gram (Private.get gram (List.hd chain)) (List.tl chain);;
+   
 let expand = Private.expand ;;
+
+let fold_expand = Private.fold_expand ;;
 
 let get = Private.get ;;
 
