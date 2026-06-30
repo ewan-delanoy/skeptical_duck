@@ -155,6 +155,10 @@ let example = {
        [T.TRANSIENT_T],"Final";
        [T.VOLATILE_T],"Volatile";
      ] true);
+     "ImportedContent", (La.no_first_trial [
+       [T.IDENTIFIER_T],"NonstaticImportedContent"; 
+       [T.STATIC_T],"StaticImportedContent"; 
+     ] true);
      "TopLevelClassOrInterfaceDeclaration", La.first_trial_only for_TopLevelClassOrInterfaceDeclaration;
      "UnannType", La.first_trial_only for_UnannType;
   

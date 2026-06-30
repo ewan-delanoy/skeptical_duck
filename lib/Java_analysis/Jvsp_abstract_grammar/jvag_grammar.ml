@@ -32,9 +32,24 @@ let ocaml_name (AL l)=
 (String.concat "\n" lines)^
 "\n\n])" ;; 
 
-let get_opt (AL l) name = List.assoc_opt name l ;;
+let get_opt (AL l) name = 
+  match Jvsp_util.token_type_sequence_from_codes_in_production_names_opt name with 
+  Some answer -> Some (Molecular answer) 
+  | None -> List.assoc_opt name l ;;
 
-let name_for_form_opt (AL l) form = List_again.assoc_right_opt form l ;;
+let automatic_name_for_molecular_opt = function 
+   (Molecular l) -> Some(Jvsp_util.code_for_tokentype_sequence_in_production_names l)
+  |Disjunction(_)
+  |Optional(_) 
+  |(Concat _) 
+  |(Star _) 
+  |Synonym(_) -> None;;
+
+
+let name_for_form_opt (AL l) form = 
+  match automatic_name_for_molecular_opt form with 
+  Some code -> Some code
+  | None ->  List_again.assoc_right_opt  form l ;;
 
 let get gram name = match get_opt gram name  with 
   None -> raise(Get_exn(name))

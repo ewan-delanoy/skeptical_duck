@@ -708,7 +708,7 @@ let code_for_tokentype_sequence_in_production_names seq =
     else ""  
    ) in 
    prefix^(String.concat "_" (Image.image code_for_tokentype_in_production_names seq)) ;;
- 
+
 let display_optional nm = "\u{3010}"^nm^"\u{3011}"  ;;
 let display_star nm = nm ^ "\u{2605}" ;;
 
