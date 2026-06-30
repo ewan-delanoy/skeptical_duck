@@ -178,7 +178,7 @@ AL ([
    ("LambdayLambdaParameterList",Concat(["LambdaParameter";"StarredLambdaParameterPrecededByComma"]));
    ("LeftHandSide",Disjunction(["ExpressionName";"FieldAccess";"ArrayAccess"]));
    ("ListyLambdaParameters",Concat(["Lp";"OptionalLambdaParameterList";"Rp"]));
-   ("Literal",Disjunction(["IntegerLiteral";"FloatingPointLiteral";"BooleanLiteral";"CharacterLiteral";"StringLiteral";"TextBlock";"NullLiteral"]));
+   ("Literal",Disjunction(["LitIntegerLiteral";"LitFloatingPointLiteral";"LitBooleanLiteral";"LitCharacterLiteral";"StringLiteral";"TextBlock";"NullLiteral"]));
    ("LocalClassOrInterfaceDeclaration",Disjunction(["ClassDeclaration";"NormalInterfaceDeclaration"]));
    ("LocalVariableDeclaration",Concat(["StarredVariableModifier";"LocalVariableType";"Identifier";"OptionalDims";"OptionalEqualsVariableInitializer";"StarredVariableDeclaratorPrecededByComma"]));
    ("LocalVariableDeclarationStatement",Concat(["StarredVariableModifier";"LocalVariableType";"Identifier";"OptionalDims";"OptionalEqualsVariableInitializer";"StarredVariableDeclaratorPrecededByComma";"Sm"]));

@@ -1270,7 +1270,7 @@ let differences = Private.differences ;;
 let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
 
-let get_opt (AL l) name = List.assoc_opt name l ;;
+let get_opt = Private.get_opt ;;
 let get_and_display = Private.get_and_display ;;
 
 let just_below = Private.just_below ;;
