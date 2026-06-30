@@ -55,9 +55,4 @@ type link =
    |Synonym_L
   ;;
 
-type hand = {
-   outer : string ;
-   inner : string ;
-   suffix : string list ;
-   other_fingers : (string list) list ;
-}  ;; 
+type thumbnail = Tn of (string list) list ;;
