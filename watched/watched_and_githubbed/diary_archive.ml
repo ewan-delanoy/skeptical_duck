@@ -1,6 +1,229 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 259 : First draft of a LR(0) automaton
+************************************************************************************************************************)
+module Snip259 = struct 
+
+type production = Prod of string * (string list) ;;
+type item = Item of string * (string list) ;; 
+type jtem = J of item list ;;
+
+let str_order = Total_ordering.lex_for_strings ;;
+let str_sort = Ordered.sort str_order ;; 
+
+let all_terminals = ["(";")";"*";"+";"i"] ;;
+
+let all_nonterminals = ["E";"T";"F";"S"] ;;
+
+let all_symbols = str_sort (all_terminals @ all_nonterminals) ;;
+
+let all_productions = [
+   Prod("S",["E"]);
+   Prod("E",["E";"+";"T"]);
+   Prod("E",["T"]);
+   Prod("T",["T";"*";"F"]);
+   Prod("T",["F"]);
+   Prod("F",["(";"E";")"]);
+   Prod("F",["i"]);
+] ;;
+
+let items_from_production (Prod(p,l)) =
+  let temp = Three_parts.generic l in 
+  let temp2 = List.rev_map (fun (left,center,right)->(List.rev left,center::right)) temp in 
+  (Image.image (fun (left,right)->Item(p,left@("."::right))) temp2)@[Item(p,l@["."])] ;; 
+
+(* items_from_production (Prod("x",["1";"2";"3";"4"])) ;; *)  
+
+let unordered_list_of_all_items = List.flatten (Image.image items_from_production all_productions) ;; 
+
+let production_from_item (Item(p,l)) = Prod(p,List.filter(fun x->x<>".") l) ;; 
+
+let index_of_dot (Item(p,l))= List_again.find_index_of_in "." l;;
+
+let index_of_production item = List_again.find_index_of_in (production_from_item item) all_productions ;;
+
+let item_order = ((fun item1 item2 ->
+  let trial1 = Total_ordering.for_integers (index_of_dot item1) (index_of_dot item2) in 
+  if trial1<> Total_ordering_result_t.Equal then trial1 else 
+  Total_ordering.for_integers (index_of_production item1) (index_of_production item2)  
+): item Total_ordering_t.t);;
+
+
+let item_fold_merge = Ordered.fold_merge item_order ;;
+let item_merge = Ordered.merge item_order ;;
+let item_setminus = Ordered.setminus item_order ;;
+let item_sort = Ordered.sort item_order ;;
+
+let all_items = item_sort unordered_list_of_all_items ;;
+
+let jtem_order = ((fun (J l1) (J l2)->Total_ordering.lex_compare item_order l1 l2): jtem Total_ordering_t.t) ;;
+let jtem_fold_merge = Ordered.fold_merge jtem_order ;;
+let jtem_merge = Ordered.merge jtem_order ;;
+let jtem_setminus = Ordered.setminus jtem_order ;;
+let jtem_sort = Ordered.sort jtem_order ;;
+
+let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
+ 
+let descendants_for_one (Item(p,l))=
+  let n = List.length l 
+  and j = List_again.find_index_of_in "." l in
+  if j=n then [] else 
+  let symb = List.nth l j in 
+  item_sort(List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
+  if p2=symb then Some(first_item_from_production pr) else None) all_productions);;
+
+let descendants_for_several items = item_fold_merge (Image.image descendants_for_one items) ;; 
+
+let rec towards_closure (whole,treated,to_be_treated) = 
+  if to_be_treated = [] then J(whole) else 
+  let temp = descendants_for_several to_be_treated in 
+  let new_whole = item_merge temp whole 
+  and yet_untreated = item_setminus temp whole  in 
+  towards_closure (new_whole,whole,yet_untreated) ;;
+
+let closure items = towards_closure (items,[],items) ;;
+
+let starter_jtem = closure [Item("S",[".";"E"])] ;;
+
+let colleague_for_one symb (Item(p,l))=
+  let n = List.length l 
+  and j = List_again.find_index_of_in "." l in
+  if j=n then None else 
+  if (List.nth l j)<>symb 
+  then None 
+  else
+  let (head,tail)=List_again.long_head_with_tail (j-1) l in 
+  Some(Item(p,(List.rev head)@(symb::"."::(List.tl(List.tl tail)))))
+  ;;
+
+(*
+
+colleague_for_one "1" (Item("a",[".";"1";"2";"3";"4";"5";"6"])) ;;
+colleague_for_one "3" (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
+colleague_for_one "6" (Item("a",["1";"2";"3";"4";"5";".";"6"])) ;;
+
+*)  
+
+let colleagues_for_several symb items=
+  item_sort (List.filter_map (colleague_for_one symb) items) ;;
+
+let ghetto (J items) symb = closure (colleagues_for_several symb items);;
+
+let ghetto_neighbors_for_one jtem = jtem_sort(Image.image (ghetto jtem) all_symbols) ;;
+
+let ghetto_neighbors_for_several jtems = jtem_fold_merge(Image.image ghetto_neighbors_for_one jtems) ;;
+
+let rec towards_ghetto_neighborhood (whole,treated,to_be_treated) = 
+  if to_be_treated = [] then whole else 
+  let temp = ghetto_neighbors_for_several to_be_treated in 
+  let new_whole = jtem_merge temp whole 
+  and yet_untreated = jtem_setminus temp whole  in 
+ towards_ghetto_neighborhood (new_whole,whole,yet_untreated) ;;
+
+let ghetto_neighborhood jtems = towards_ghetto_neighborhood (jtems,[],jtems) ;; 
+
+let lr0_canonical_jtems = ghetto_neighborhood [starter_jtem] ;;
+
+let nonempty_lr0_jtems = List.tl lr0_canonical_jtems ;;
+
+let eagle_lr0_jtems = Image.image (fun k->List.nth nonempty_lr0_jtems (k-1)) [
+  1;5;7;9;2;10;3;4;6;8;11;12
+];;
+
+let indexed_eagle_lr0_jtems = (-1,J[])::(Image.image (fun (idx,jtem)->(idx-1,jtem)) 
+ (Int_range.index_everything eagle_lr0_jtems)) ;;
+
+let add_index_to_eagle jtem = List.find (fun p->snd(p)=jtem) indexed_eagle_lr0_jtems ;;
+
+let eagle_ghetto jtem symb=
+   add_index_to_eagle(ghetto jtem symb) ;;
+   
+let eagle_ghetto_neighbors eagle = 
+   let temp = Image.image (fun symb -> (symb,eagle_ghetto eagle symb)) all_symbols in 
+  List.filter_map (fun(symb,(idx,jtem))->if jtem=J[] then None else Some(symb,idx)) temp ;;
+
+
+let ea j = List.assoc j indexed_eagle_lr0_jtems ;;  
+let eg j = eagle_ghetto_neighbors (ea j) ;;
+
+
+(*
+I0 is J1
+I1 is J5
+I2 is J7
+I3 is J9
+I4 is J2
+I5 is J10
+I6 is J3
+I7 is J4
+I8 is J6
+I9 is J8
+I10 is J11
+I11 is J12
+
+let indexed_lr0_jtems = (Image.image (fun (idx,jtem)->(idx-1,jtem)) 
+ (Int_range.index_everything lr0_canonical_jtems)) ;;
+
+let z7 = List.filter (fun (idx,J l)->List.length(l)=7) indexed_lr0_jtems ;;  
+let z5 = List.filter (fun (idx,J l)->List.length(l)=5) indexed_lr0_jtems ;;  
+
+let z3 = List.filter (fun (idx,J l)->List.length(l)=3) indexed_lr0_jtems ;; 
+let z2 = List.filter (fun (idx,J l)->List.length(l)=2) indexed_lr0_jtems ;; 
+let z1 = List.filter (fun (idx,J l)->List.length(l)=1) indexed_lr0_jtems ;; 
+
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 258 : Combinatorial musing on Erdos-Ko-Rado theorem
+************************************************************************************************************************)
+module Snip258 = struct 
+
+let i_order = Total_ordering.for_integers ;;
+let i_intersect = Ordered.intersect i_order ;;
+
+let il_order = Total_ordering.silex_compare i_order ;;
+
+let il_insert = Ordered.insert il_order ;;
+
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let mt ll = il_sort(Ordered_misc.minimal_transversals ll) ;;
+
+let ff ll =
+   let temp = mt ll in 
+   (temp,il_setminus temp ll,List.filter(fun (x,y)->i_intersect x y=[]) (Uple.list_of_pairs temp)) ;;
+
+let w0 = [[1;2;4];[1;3;5];[2;3;6];[1;6;7]] ;;
+let w1 = il_insert [3;4;6] w0 ;;
+
+let w2 = il_insert [2;5;6] w1 ;;
+
+let w3 = il_insert [2;3;7] w2 ;;
+
+let w4 = il_insert [1;2;3] w3 ;;
+
+let w5 = il_insert [1;2;6] w4 ;;
+
+let w6 = il_insert [1;3;6] w5 ;;
+
+let w7 = il_insert [1;6;7] w6 ;;
+
+let alf1 = il_sort(List_again.power_set (Int_range.range 1 7)) ;;
+
+let alf2 = Image.image (fun l->(l,List.length l)) alf1 ;;
+
+let alf3 = List.filter (fun (l,p)->p mod 2=1) alf2 ;;
+
+let alf4 = Image.image (fun (l,p)->(l,(p+1)/2)) alf3 ;;
+
+let alf5 = List.filter (fun (l,p)->List.for_all (fun w->List.length(i_intersect w l)>=p) w7) alf4 ;;
+end;;
+
+(************************************************************************************************************************
  Entry 257 : Convert footnotes between phpBB and HTML
 ************************************************************************************************************************)
 module Snip257 = struct 
