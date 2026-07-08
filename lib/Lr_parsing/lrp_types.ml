@@ -6,4 +6,7 @@ Lrp is short for "LR Parsing"
 
 *)
 
+type production = Prod of string * string list ;;
+
+type grammar = G of production list ;;
 
