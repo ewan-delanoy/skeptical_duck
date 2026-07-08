@@ -158,7 +158,7 @@ let find_index_of_in x ll=
     |u::v->if u=x then j else sub_f(j+1,v)) in
     sub_f(1,ll);;
 
-let find_index_of_in_opt x ll=
+let index_of_in_opt x ll=
     let rec sub_f=(function (j,l)->match l with
     []->None      
     |u::v->if u=x then Some j else sub_f(j+1,v)) in

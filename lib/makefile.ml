@@ -438,7 +438,7 @@ let rec helper_for_full_expansion (mixed,chain_head,chain_tail) =
     let vname2 = Option.get bad_opt in 
     let full_chain = chain_head :: chain_tail in 
     let names = Image.image fst full_chain in 
-    match List_again.find_index_of_in_opt vname2 names with  
+    match List_again.index_of_in_opt vname2 names with  
     (Some i) -> raise(Cyclic_dependency(List.rev(vname2::(List_again.long_head (i-1) names))))
     |None ->
       helper_for_full_expansion (mixed,(vname2,eval mixed vname2),full_chain) ;;  
