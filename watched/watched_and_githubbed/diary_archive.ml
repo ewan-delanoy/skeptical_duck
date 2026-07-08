@@ -1,6 +1,172 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 260 : Second draft of a LR(0) automaton
+************************************************************************************************************************)
+module Snip260 = struct 
+
+type production = Prod of string * (string list) ;;
+type item = Item of string * (string list) ;; 
+type jtem = J of item list ;;
+type registered_jtem = RJ of int * (item list) ;;
+
+let str_order = Total_ordering.lex_for_strings ;;
+let str_sort = Ordered.sort str_order ;; 
+
+let all_terminals = ["(";")";"*";"+";"i"] ;;
+
+let all_nonterminals = ["E";"T";"F";"S"] ;;
+
+let all_symbols = str_sort (all_terminals @ all_nonterminals) ;;
+
+let all_productions = [
+   Prod("S",["E"]);
+   Prod("E",["E";"+";"T"]);
+   Prod("E",["T"]);
+   Prod("T",["T";"*";"F"]);
+   Prod("T",["F"]);
+   Prod("F",["(";"E";")"]);
+   Prod("F",["i"]);
+] ;;
+
+let items_from_production (Prod(p,l)) =
+  let temp = Three_parts.generic l in 
+  let temp2 = List.rev_map (fun (left,center,right)->(List.rev left,center::right)) temp in 
+  (Image.image (fun (left,right)->Item(p,left@("."::right))) temp2)@[Item(p,l@["."])] ;; 
+
+(* items_from_production (Prod("x",["1";"2";"3";"4"])) ;; *)  
+
+let unordered_list_of_all_items = List.flatten (Image.image items_from_production all_productions) ;; 
+
+let production_from_item (Item(p,l)) = Prod(p,List.filter(fun x->x<>".") l) ;; 
+
+let index_of_dot (Item(p,l))= List_again.index_of_in "." l;;
+
+let index_of_production item = List_again.index_of_in (production_from_item item) all_productions ;;
+
+let item_order = ((fun item1 item2 ->
+  let trial1 = Total_ordering.for_integers (index_of_dot item1) (index_of_dot item2) in 
+  if trial1<> Total_ordering_result_t.Equal then trial1 else 
+  Total_ordering.for_integers (index_of_production item1) (index_of_production item2)  
+): item Total_ordering_t.t);;
+
+
+let item_fold_merge = Ordered.fold_merge item_order ;;
+let item_merge = Ordered.merge item_order ;;
+let item_setminus = Ordered.setminus item_order ;;
+let item_sort = Ordered.sort item_order ;;
+
+let all_items = item_sort unordered_list_of_all_items ;;
+
+
+let path_order = Total_ordering.silex_compare Total_ordering.silex_for_strings ;;
+
+let path_merge = Ordered.merge path_order ;;
+let path_sort = Ordered.sort path_order ;;
+
+let ref_for_jtems = ref([(J []),[]]) ;;
+
+let register_jtem jtem = 
+  let (J items)=jtem in 
+  match List.find_index  (fun pair->fst(pair)=jtem) (!ref_for_jtems) with 
+   Some old_index -> RJ(old_index -1,items) 
+   | None -> 
+    let _ =(ref_for_jtems := (!ref_for_jtems) @ [jtem,[]]) in 
+    RJ((List.length(!ref_for_jtems)) -2,items);; 
+  
+let add_new_paths_to_jtem jtem paths_to_be_added =
+  let (_,old_paths) = List.find (fun pair->fst(pair)=jtem) (!ref_for_jtems) in 
+  let new_paths = path_merge old_paths (path_sort paths_to_be_added) in 
+  let new_registry = Image.image (
+      fun pair -> if fst(pair)=jtem then (jtem,new_paths) else pair
+  )(!ref_for_jtems) in 
+ ref_for_jtems := new_registry;;
+
+let rjtem_order = ((fun (RJ (i1,_))  (RJ (i2,_))->Total_ordering.for_integers i1 i2): registered_jtem Total_ordering_t.t) ;;
+let rjtem_fold_merge = Ordered.fold_merge rjtem_order ;;
+let rjtem_merge = Ordered.merge rjtem_order ;;
+let rjtem_setminus = Ordered.setminus rjtem_order ;;
+let rjtem_sort = Ordered.sort rjtem_order ;;
+
+let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
+ 
+let descendants_for_one (Item(p,l))=
+  let n = List.length l 
+  and j = List_again.index_of_in "." l in
+  if j=n then [] else 
+  let symb = List.nth l j in 
+  item_sort(List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
+  if p2=symb then Some(first_item_from_production pr) else None) all_productions);;
+
+let descendants_for_several items = item_fold_merge (Image.image descendants_for_one items) ;; 
+
+let rec towards_closure (whole,treated,to_be_treated) = 
+  if to_be_treated = [] then J(whole) else 
+  let temp = descendants_for_several to_be_treated in 
+  let new_whole = item_merge temp whole 
+  and yet_untreated = item_setminus temp whole  in 
+  towards_closure (new_whole,whole,yet_untreated) ;;
+
+let closure items = towards_closure (items,[],items) ;;
+
+let starter_jtem = closure [Item("S",[".";"E"])] ;;
+
+let starter_rjtem = register_jtem starter_jtem ;;
+
+add_new_paths_to_jtem starter_jtem [[]];;
+
+let colleague_for_one symb (Item(p,l))=
+  let n = List.length l 
+  and j = List_again.index_of_in "." l in
+  if j=n then None else 
+  if (List.nth l j)<>symb 
+  then None 
+  else
+  let (head,tail)=List_again.long_head_with_tail (j-1) l in 
+  Some(Item(p,(List.rev head)@(symb::"."::(List.tl(List.tl tail)))))
+  ;;
+
+(*
+
+colleague_for_one "1" (Item("a",[".";"1";"2";"3";"4";"5";"6"])) ;;
+colleague_for_one "3" (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
+colleague_for_one "6" (Item("a",["1";"2";"3";"4";"5";".";"6"])) ;;
+
+*)  
+
+let colleagues_for_several symb items=
+  item_sort (List.filter_map (colleague_for_one symb) items) ;;
+
+let ghetto_for_jterm (J items) symb = closure (colleagues_for_several symb items);;
+
+let ghetto (RJ (idx,items)) symb = 
+  let old_jtem = J items in 
+  let new_jtem = ghetto_for_jterm old_jtem symb in 
+  let new_rjtem = register_jtem new_jtem in 
+  let older_paths = List.assoc old_jtem (!ref_for_jtems) in 
+  let paths_to_be_added= Image.image (fun p->p@[symb]) older_paths in 
+  let _ = add_new_paths_to_jtem new_jtem paths_to_be_added in 
+  new_rjtem  
+  ;;
+
+let ghetto_neighbors_for_one rjtem = rjtem_sort(Image.image (ghetto rjtem) all_symbols) ;;
+
+let ghetto_neighbors_for_several jtems = rjtem_fold_merge(Image.image ghetto_neighbors_for_one jtems) ;;
+
+let rec towards_ghetto_neighborhood (whole,treated,to_be_treated) = 
+  if to_be_treated = [] then whole else 
+  let temp = ghetto_neighbors_for_several to_be_treated in 
+  let new_whole = rjtem_merge temp whole 
+  and yet_untreated = rjtem_setminus temp whole  in 
+ towards_ghetto_neighborhood (new_whole,whole,yet_untreated) ;;
+
+let ghetto_neighborhood jtems = towards_ghetto_neighborhood (jtems,[],jtems) ;; 
+
+let lr0_canonical_jtems = ghetto_neighborhood [starter_rjtem] ;;
+
+end;;
+
+(************************************************************************************************************************
  Entry 259 : First draft of a LR(0) automaton
 ************************************************************************************************************************)
 module Snip259 = struct 

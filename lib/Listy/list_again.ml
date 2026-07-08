@@ -152,18 +152,6 @@ find_and_remember_opt (fun x->x=7) [1; 2; 3; 4; 5; 6; 7; 8; 9; 10] ;;
 
 *)
 
-let index_of_in x ll=
-    let rec sub_f=(function (j,l)->match l with
-    []->(-1)      
-    |u::v->if u=x then j else sub_f(j+1,v)) in
-    sub_f(1,ll);;
-
-let index_of_in_opt x ll=
-    let rec sub_f=(function (j,l)->match l with
-    []->None      
-    |u::v->if u=x then Some j else sub_f(j+1,v)) in
-    sub_f(1,ll);;
-
 
 let find_interval_sublist_and_remember_opt = Private.find_interval_sublist_and_remember_opt ;;    
 
@@ -205,6 +193,19 @@ exception Head_with_tail_exn ;;
 let head_with_tail x=match x with
     []->raise(Head_with_tail_exn)
     |a::b->(a,b);;
+
+let index_of_in x ll=
+    let rec sub_f=(function (j,l)->match l with
+    []->(-1)      
+    |u::v->if u=x then j else sub_f(j+1,v)) in
+    sub_f(1,ll);;
+
+let index_of_in_opt x ll=
+    let rec sub_f=(function (j,l)->match l with
+    []->None      
+    |u::v->if u=x then Some j else sub_f(j+1,v)) in
+    sub_f(1,ll);;
+
 
 let interval = Private.interval ;;
 
