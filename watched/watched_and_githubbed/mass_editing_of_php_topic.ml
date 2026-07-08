@@ -182,7 +182,7 @@ let extract_post_index_in_topic s topic_idx =
   let indices =  post_indices_in_topic topic_idx in 
    let i1=Option.get(Substring.leftmost_index_of_in_from_opt "p=" s 1)
    and i2=Option.get(Substring.leftmost_index_of_in_from_opt "#" s 1) in 
-   List_again.find_index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
+   List_again.index_of_in (int_of_string(Cull_string.interval s (i1+2) (i2-1))) indices;;
 
 let extract_section_path s = 
    let i1=Option.get(Substring.leftmost_index_of_in_from_opt "." s 1) in 

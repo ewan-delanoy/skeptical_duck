@@ -179,7 +179,7 @@ let minimal_transversals l=
 
 let reorder_list_of_pairs_using_list_of_singles pairs singles =
   let idx=Memoized.make(fun x->
-     List_again.find_index_of_in x singles   
+     List_again.index_of_in x singles   
   ) in 
   let ordr = (fun x1 x2 -> Total_ordering.for_integers (idx x1) (idx x2)) in 
   let ordr2 = Total_ordering.product ordr Total_ordering.standard in 

@@ -235,7 +235,7 @@ let list_for_dictionary_order=
 let reindexer_for_dictionary_order i=
     if (i<65)||(i>122) 
     then i 
-    else 64+(List_again.find_index_of_in i list_for_dictionary_order);;
+    else 64+(List_again.index_of_in i list_for_dictionary_order);;
 
 
 let for_characters=let tempf=(fun x y->

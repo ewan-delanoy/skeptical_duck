@@ -56,7 +56,7 @@ module Private = struct
      let rec helper_for_signature (sign,perm) =
       let n = List.length perm in 
       if n<2 then sign else 
-      let j = List_again.find_index_of_in n perm 
+      let j = List_again.index_of_in n perm 
       and shorter_perm = List_again.long_head (n-1) perm in 
       if j = n 
       then helper_for_signature (sign,shorter_perm) 
@@ -72,7 +72,7 @@ module Private = struct
  
    let rewrite_cycle_with_min_at_the_beginning cycle =
        let m = Min.list cycle in 
-       let j = List_again.find_index_of_in  m cycle in 
+       let j = List_again.index_of_in  m cycle in 
        let (before,after) = List_again.long_head_with_tail (j-1) cycle in 
        after @ (List.rev before) ;;
 
@@ -152,7 +152,7 @@ module Private = struct
 
    let evaluate_cycle_at_point cycle k=
      let m = List.length cycle 
-     and j = List_again.find_index_of_in k cycle in 
+     and j = List_again.index_of_in k cycle in 
      if j = m 
      then List.hd cycle 
      else List.nth cycle j ;;    
@@ -248,7 +248,7 @@ module Private = struct
    let inverse sigma = 
       let n = List.length sigma in 
       Int_range.scale 
-      (fun y->List_again.find_index_of_in y sigma) 1 n ;;
+      (fun y->List_again.index_of_in y sigma) 1 n ;;
          
 
    let power sigma k =

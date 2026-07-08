@@ -39,9 +39,9 @@ let unordered_list_of_all_items = List.flatten (Image.image items_from_productio
 
 let production_from_item (Item(p,l)) = Prod(p,List.filter(fun x->x<>".") l) ;; 
 
-let index_of_dot (Item(p,l))= List_again.find_index_of_in "." l;;
+let index_of_dot (Item(p,l))= List_again.index_of_in "." l;;
 
-let index_of_production item = List_again.find_index_of_in (production_from_item item) all_productions ;;
+let index_of_production item = List_again.index_of_in (production_from_item item) all_productions ;;
 
 let item_order = ((fun item1 item2 ->
   let trial1 = Total_ordering.for_integers (index_of_dot item1) (index_of_dot item2) in 
@@ -67,7 +67,7 @@ let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
  
 let descendants_for_one (Item(p,l))=
   let n = List.length l 
-  and j = List_again.find_index_of_in "." l in
+  and j = List_again.index_of_in "." l in
   if j=n then [] else 
   let symb = List.nth l j in 
   item_sort(List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
@@ -88,7 +88,7 @@ let starter_jtem = closure [Item("S",[".";"E"])] ;;
 
 let colleague_for_one symb (Item(p,l))=
   let n = List.length l 
-  and j = List_again.find_index_of_in "." l in
+  and j = List_again.index_of_in "." l in
   if j=n then None else 
   if (List.nth l j)<>symb 
   then None 
@@ -2001,7 +2001,7 @@ let tt = Memoized.make(fun n->
 let ss = Memoized.make(fun n->
   List.filter (
    fun l->
-    let i = List_again.find_index_of_in (n-1) l in 
+    let i = List_again.index_of_in (n-1) l in 
     if (List.mem i [1;n-1;n])
     then false 
     else (List.nth l i)=n   
@@ -2748,12 +2748,12 @@ module Snip211 = struct
 let find_periodicity l= 
   let rl = List.rev l in 
   let (a1,after_a1) = List_again.head_with_tail rl in 
-  let j = List_again.find_index_of_in a1 after_a1 in 
+  let j = List_again.index_of_in a1 after_a1 in 
   let inverted_motif = List_again.long_head j rl in 
   let motif = List.rev inverted_motif in 
   let p = List.length motif in 
   let m0 = Min.list motif in 
-  let i0 = List_again.find_index_of_in m0 motif in 
+  let i0 = List_again.index_of_in m0 motif in 
   let after_m0 = List_again.long_tail i0 motif 
   and before_m0 = List_again.long_head (i0-1) motif in
   (p,m0::(after_m0@before_m0)) ;; 
@@ -2875,7 +2875,7 @@ let compose_list_permutations sigma1 sigma2 =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   List_again.find_index_of_in (compose_list_permutations sigma1 sigma2) base
+   List_again.index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -3453,7 +3453,7 @@ let normal_form x =
     then cx else x ;;
 let all_normal_forms = Image.image normal_form all ;;    
 let table_for_image_sets = Image.image (fun x->
-  (x,S(2+(List_again.find_index_of_in (normal_form x) all_normal_forms))) 
+  (x,S(2+(List_again.index_of_in (normal_form x) all_normal_forms))) 
 ) all ;;
 let image_set x = List.assoc x table_for_image_sets ;;
 let intersection x y = Ordered.intersect Early_atom.order x y;;
@@ -4315,7 +4315,7 @@ let interval_size_is_larger_than frac1 frac2 (p,q) =
    q * (a2*b1-a1*b2) > p * (b1*b2)  ;;
 
 let minmax_using_tor total_ordering x y =
-if (List_again.find_index_of_in x total_ordering) < (List_again.find_index_of_in y total_ordering) 
+if (List_again.index_of_in x total_ordering) < (List_again.index_of_in y total_ordering) 
 then (x,y)
 else (y,x) ;;  
 
@@ -4334,8 +4334,8 @@ let current_k = 3 ;;
 
 let outer_interval_is_too_small  total_ordering =
  let n = List.length total_ordering in 
- let ia = List_again.find_index_of_in "a" total_ordering 
- and ib = List_again.find_index_of_in "b" total_ordering in 
+ let ia = List_again.index_of_in "a" total_ordering 
+ and ib = List_again.index_of_in "b" total_ordering in 
  if List.mem (ia,ib) [1,2;n-1,n] then true else
  if (ia<2)||(ib>=n) then false else 
  let just_below_a = List.nth total_ordering (ia-2) 
@@ -4343,8 +4343,8 @@ let outer_interval_is_too_small  total_ordering =
  interval_size_is_smaller_than just_below_a just_above_b (4,Basic.power 3 current_k) ;; 
 
 let inner_interval_is_too_large  total_ordering =
- let ia = List_again.find_index_of_in "a" total_ordering 
- and ib = List_again.find_index_of_in "b" total_ordering in 
+ let ia = List_again.index_of_in "a" total_ordering 
+ and ib = List_again.index_of_in "b" total_ordering in 
  if ib=ia+1 then false else 
  let just_above_a = List.nth total_ordering ia 
  and just_below_b = List.nth total_ordering (ib-2) in 
@@ -4437,7 +4437,7 @@ let ww n =
 
 let small_size = 2 ;;    
 let base1 = List.flatten (Int_range.scale ww 0 (2*small_size));;
-let b_index pair = List_again.find_index_of_in pair base1  ;;
+let b_index pair = List_again.index_of_in pair base1  ;;
 
 let for_two =((fun pair1 pair2 ->
   Total_ordering.for_integers 
@@ -5866,7 +5866,7 @@ end;;
 module Snip181 = struct 
 let cycle_from_perm perm =
   let n = List.length perm in 
-  let idx = (fun x->List_again.find_index_of_in x perm) in 
+  let idx = (fun x->List_again.index_of_in x perm) in 
   let next = (fun x->
      let i = idx x in 
      if i = n then List.hd perm else 
@@ -7119,7 +7119,7 @@ let inverse_of_list_permutation sigma =
 let uncurried_compose = Memoized.make(fun (i,j) ->
    let sigma1 = List.nth base (i-1)   
    and sigma2 = List.nth base (j-1) in 
-   List_again.find_index_of_in (compose_list_permutations sigma1 sigma2) base
+   List_again.index_of_in (compose_list_permutations sigma1 sigma2) base
 );;     
 
 let compose  i j = uncurried_compose (i,j) ;;
@@ -7128,7 +7128,7 @@ let fold_compose l = List.fold_left compose 1 l ;;
 
 let inverse = Memoized.make(fun i->
     let sigma = List.nth base (i-1)   in 
-    List_again.find_index_of_in (inverse_of_list_permutation sigma) base
+    List_again.index_of_in (inverse_of_list_permutation sigma) base
   ) ;; 
 
 let uncurried_commutator =  Memoized.make(fun (x,y)->
@@ -7247,7 +7247,7 @@ type formal_subgroup = FSG of int ;;
 module Formal_subgroup = struct 
 
 let full_group = FSG(List.length all_subgroups) ;;   
-let of_list l = FSG(List_again.find_index_of_in l all_subgroups) ;; 
+let of_list l = FSG(List_again.index_of_in l all_subgroups) ;; 
 let to_list (FSG k) = List.nth all_subgroups (k-1) ;;
 let derived_subgroup = Memoized.make (fun fsg ->
       of_list(derived_subgroup(to_list fsg))
@@ -8562,8 +8562,8 @@ module Snip150 = struct
                Cell_state.display(List.nth states (idx-1));;
             
             let eval_large_grid_using_matrix bg special_cells large_i large_j =
-                let small_i =  List_again.find_index_of_in large_i [2;3;4;6;7;8;10;11;12]
-                and small_j =  List_again.find_index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
+                let small_i =  List_again.index_of_in large_i [2;3;4;6;7;8;10;11;12]
+                and small_j =  List_again.index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
             if (small_i<0)||(small_j<0)
             then "*"
             else eval_small_grid_using_matrix_coordinates bg special_cells (small_i,small_j);;
@@ -17965,7 +17965,7 @@ module Snip87 = struct
       let pi = List.nth s6_permutations (i-1)
       and pj = List.nth s6_permutations (j-1) in 
       let pk = Permutation.product pi pj in 
-      List_again.find_index_of_in pk s6_permutations
+      List_again.index_of_in pk s6_permutations
   );;
   
   let rec helper_for_generated_subgroup (whole_so_far,not_treated_yet,seed) =
@@ -18105,7 +18105,7 @@ module Snip86 = struct
       let pi = List.nth all_permutations (i-1)
       and pj = List.nth all_permutations (j-1) in 
       let pk = Permutation.product pi pj in 
-      List_again.find_index_of_in pk all_permutations
+      List_again.index_of_in pk all_permutations
   );;
   
   let prod i j = uncurried_prod (i,j) ;;
@@ -18115,7 +18115,7 @@ module Snip86 = struct
   let tau_permutation = Int_range.scale 
   (fun k->if k>2 then k else 3-k) 1 n ;;
   
-  let tau_index = List_again.find_index_of_in 
+  let tau_index = List_again.index_of_in 
     tau_permutation all_permutations ;;
   
   let boar = dot tau_index wreath ;;  
@@ -19207,7 +19207,7 @@ let wreath_uncurried_prod =Memoized.make(fun (i,j) ->
    let perm_i = List.nth wreath (i-1) 
    and perm_j = List.nth wreath (j-1) in 
    let perm = Permutation.product perm_i perm_j in 
-   List_again.find_index_of_in perm wreath);;
+   List_again.index_of_in perm wreath);;
 
 let computation1  = Explicit.image (
    wreath_uncurried_prod
@@ -19218,7 +19218,7 @@ let wreath_prod i j = wreath_uncurried_prod (i,j) ;;
 let wreath_inverse  =Memoized.make(fun i ->
    let perm_i = List.nth wreath (i-1)  in 
    let perm = Permutation.inverse perm_i  in 
-   List_again.find_index_of_in perm wreath);;
+   List_again.index_of_in perm wreath);;
 
 let computation2  = Explicit.image (
    wreath_uncurried_prod
@@ -19553,7 +19553,7 @@ let disu_orbit disu su =
 let ball15_length =   List.length ball15 ;; 
 
 let ivy_get k = List.nth ball15 (k-1) ;;
-let ivy_index su = List_again.find_index_of_in su ball15 ;;
+let ivy_index su = List_again.index_of_in su ball15 ;;
 
 let hashtbl_for_maxie_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;
 let hashtbl_for_minnie_orbits = ((Hashtbl.create ball15_length): (int,int list) Hashtbl.t);;

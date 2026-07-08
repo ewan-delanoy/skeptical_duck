@@ -638,8 +638,8 @@ module Private = struct
          " " ;; 
 
       let eval_large_grid_using_matrix gr large_i large_j =
-          let small_i =  List_again.find_index_of_in large_i [2;3;4;6;7;8;10;11;12]
-          and small_j =  List_again.find_index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
+          let small_i =  List_again.index_of_in large_i [2;3;4;6;7;8;10;11;12]
+          and small_j =  List_again.index_of_in large_j [2;3;4;6;7;8;10;11;12] in 
       if (small_i<0)||(small_j<0)
       then "*"
       else eval_small_grid_using_matrix_coordinates gr (small_i,small_j);;
