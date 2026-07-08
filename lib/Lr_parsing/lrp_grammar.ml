@@ -26,6 +26,12 @@ let terminals (G l) =
 
 end ;;
 
+let items gram =
+  let (G productions)=gram in 
+  let unordered = List.flatten (Image.image Lrp_item.items_from_production productions) in 
+  Lrp_item.sort gram unordered ;;
+
+
 let nonterminals = Private.nonterminals ;;
 let start_symbol (G l)= let (Prod(s,_)) = List.hd l in s ;; 
 let symbols gram = Private.str_merge (Private.terminals gram)  (Private.nonterminals gram) ;;

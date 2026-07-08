@@ -11,3 +11,5 @@ type production = Prod of string * string list ;;
 type grammar = G of production list ;;
 
 type item = Item of string * (string list) ;;
+
+type lr0_state = St of item list ;;
