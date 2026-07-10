@@ -8,7 +8,7 @@ Lrp is short for "LR Parsing"
 
 type production = Prod of string * string list ;;
 
-type grammar = G of production list ;;
+type grammar_without_registry = GWR of production list ;;
 
 type item = Item of string * (string list) ;;
 

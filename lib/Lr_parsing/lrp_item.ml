@@ -14,7 +14,7 @@ let production_from_item (Item(p,l)) = Prod(p,List.filter(fun x->x<>".") l) ;;
 
 let index_of_dot (Item(_p,l))= List_again.index_of_in "." l;;
 
-let index_of_production_in_grammar item (G productions) = 
+let index_of_production_in_grammar item (GWR productions) = 
   List_again.index_of_in (production_from_item item) productions ;;
 
 let order gram = ((fun item1 item2 ->
