@@ -15,16 +15,16 @@ let str_merge = Ordered.merge str_order ;;
 let str_setminus = Ordered.setminus str_order ;; 
 let str_sort = Ordered.sort str_order ;; 
 
-let nonterminals (GWR l)= str_sort (Image.image (fun (Prod(a,_))->a) l) ;;
+let nonterminals (BG l)= str_sort (Image.image (fun (Prod(a,_))->a) l) ;;
 
-let terminals (GWR l) =
+let terminals (BG l) =
    let temp = str_sort (List.flatten(Image.image (fun (Prod(_,b))->b) l)) in 
-   str_setminus temp (nonterminals (GWR l)) ;;
+   str_setminus temp (nonterminals (BG l)) ;;
    
 
  
 let descendants_for_one gram (Item(_p,l))= 
-  let (GWR productions)=gram in 
+  let (BG productions)=gram in 
   let n = List.length l 
   and j = List_again.index_of_in "." l in
   if j=n then [] else 
@@ -51,16 +51,16 @@ end ;;
 let closure = Private.closure ;;
 
 let items gram =
-  let (GWR productions)=gram in 
+  let (BG productions)=gram in 
   let unordered = List.flatten (Image.image Lrp_item.items_from_production productions) in 
   Lrp_item.sort gram unordered ;;
 
 
 let nonterminals = Private.nonterminals ;;
-let start_symbol (GWR l)= let (Prod(s,_)) = List.hd l in s ;; 
+let start_symbol (BG l)= let (Prod(s,_)) = List.hd l in s ;; 
 
 let starter_lr0_state gram =
-  let (GWR productions)=gram in 
+  let (BG productions)=gram in 
   closure gram [Lrp_item.first_item_from_production  (List.hd productions)];;
 
 let symbols gram = Private.str_merge (Private.terminals gram)  (Private.nonterminals gram) ;;
