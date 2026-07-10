@@ -21,5 +21,5 @@ type registry_for_lr0_states = Rg of ( lr0_state * ((string list) list) ) list ;
 type grammar = {
    core : bare_grammar ;
    mutable registry : registry_for_lr0_states ;
-   hahstbl_for_ghettoes : (int, registered_lr0_state) Hashtbl.t ;
+   hashtbl_for_ghettoes : (int * string, registered_lr0_state) Hashtbl.t ;
 } ;;
