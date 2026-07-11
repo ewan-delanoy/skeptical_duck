@@ -11,6 +11,13 @@ open Lrp_types ;;
 
 module Private = struct 
 
+   let str_order = Total_ordering.lex_for_strings ;;
+   let str_merge = Ordered.merge str_order ;; 
+   let str_setminus = Ordered.setminus str_order ;; 
+   let str_sort = Ordered.sort str_order ;; 
+
+
+
    let add_new_paths_to_lr0_state gram lr0_state paths_to_be_added =
    let new_registry = Lrp_registry.add_new_paths_to_lr0_state gram.registry lr0_state paths_to_be_added in 
    (gram.registry<- new_registry) ;;
@@ -78,7 +85,47 @@ let starter_rlr0_state gram =
 
 let all_lr0_states gram = ghetto_neighborhood gram [starter_rlr0_state gram] ;;
 
+module Emptiable_nonterminals = struct
 
+let initial_data gram =
+   let (BG prods1) = gram.core in 
+   let prods2= Image.image (fun (Prod(h,l))->(h,str_sort l)) prods1 in
+   let unordered_nonterminals = Image.image fst prods2 in 
+   let nonterminals = str_sort unordered_nonterminals in 
+   Image.image (fun h->(h,List.assoc h prods2)) nonterminals ;; 
+
+
+let pusher (simplified_productions,level) =
+    let next_simplified_productions = Image.image (fun (h,l)->
+        (h,str_setminus l level)
+      ) simplified_productions in 
+    let next_level = List.filter_map(fun (h,l)->if l=[] then Some h else None) next_simplified_productions in 
+    (next_simplified_productions,next_level)  ;;
+
+let rec iterator (preceding_pair,pair) =
+   let (_,preceding_level) = preceding_pair 
+   and (_,level) = pair in 
+   if List.length preceding_level = List.length level 
+   then level 
+   else iterator(pair,pusher pair) ;;   
+
+let all gram = 
+   match gram.emptiable_nonterminals with 
+   Some old_answer -> old_answer 
+   | None ->
+   let first_pair = (initial_data gram,[]) in 
+   let final_level = iterator (first_pair,pusher first_pair) in 
+   let symbols = Lrp_bare_grammar.symbols gram.core in 
+   let _ = (List.iter (fun x->
+     Hashtbl.add gram.hashtbl_for_emptiability x (List.mem x final_level)   
+   ) symbols;
+     gram.emptiable_nonterminals <- (Some final_level);
+   ) in 
+   final_level ;;
+
+
+
+end ;;
 
 
 end ;;   
@@ -87,14 +134,20 @@ let add_new_paths_to_lr0_state = Private.add_new_paths_to_lr0_state ;;
 
 let all_lr0_states = Private.all_lr0_states ;;
 
+let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
+
+let items gram = Lrp_bare_grammar.items gram.core ;; 
+
 let make l= {
    core = BG l ;
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
+   hashtbl_for_emptiability = Hashtbl.create 100;
+   emptiable_nonterminals = None ;
 } ;;
 
 
-let items gram = Lrp_bare_grammar.items gram.core ;; 
+
 let nonterminals gram = Lrp_bare_grammar.nonterminals gram.core;;
 
 let register_lr0_state = Private.register_lr0_state ;;
