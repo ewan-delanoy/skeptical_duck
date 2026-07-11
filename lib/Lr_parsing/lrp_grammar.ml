@@ -12,6 +12,8 @@ open Lrp_types ;;
 module Private = struct 
 
    let str_order = Total_ordering.lex_for_strings ;;
+   let str_insert = Ordered.insert str_order ;; 
+   let str_mem = Ordered.mem str_order ;; 
    let str_merge = Ordered.merge str_order ;; 
    let str_setminus = Ordered.setminus str_order ;; 
    let str_sort = Ordered.sort str_order ;; 
@@ -85,6 +87,15 @@ let starter_rlr0_state gram =
 
 let all_lr0_states gram = ghetto_neighborhood gram [starter_rlr0_state gram] ;;
 
+let get_terminals gram = 
+   match gram.terminals with 
+   Some old_answer -> old_answer 
+   | None -> 
+      let answer = Lrp_bare_grammar.terminals gram.core in 
+      let _ = (gram.terminals <- (Some answer)) in 
+      answer;;
+
+
 module Emptiable_nonterminals = struct
 
 let initial_data gram =
@@ -127,6 +138,49 @@ let all gram =
 
 end ;;
 
+module Furst_set = struct 
+
+(*
+
+We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) as follows :
+
+*)
+
+let elements_having_a_wholly_emptiable_left gram form =
+   (* It is assumed that gram.hashtbl_for_emptiability has already been filled *)
+   let rec tempf = (
+     fun (treated,to_be_treated) -> 
+      match to_be_treated with 
+      [] -> List.rev(treated)
+      |symb::other_symbs ->
+         if Hashtbl.find gram.hashtbl_for_emptiability symb 
+         then tempf(symb::treated,other_symbs)
+         else List.rev(symb::treated)  
+   ) in 
+   tempf([],form) ;; 
+
+let expand gram already_found_prefixes (older_heads,current_head) = 
+   let terminals = Lrp_bare_grammar.terminals gram.core in 
+   let updated_heads = str_insert current_head older_heads in 
+   let (BG productions) = gram.core in 
+   let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
+      if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
+   let candidates =  str_setminus (str_sort temp1) updated_heads in 
+   let (new_prefixes,to_be_treated_next) = List.partition (fun symb->str_mem symb terminals) candidates in 
+   (str_merge new_prefixes already_found_prefixes,updated_heads,to_be_treated_next) ;;
+
+let rec iterator gram (already_found_prefixes,to_be_treated) = 
+   match to_be_treated with 
+   [] -> already_found_prefixes 
+   |pair :: other_pairs ->
+     let (new_set_of_prefixes,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
+     let new_pairs = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
+     iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
+  
+let furst_set gram symb= iterator  gram ([],[[],symb]) ;;
+
+
+end ;;   
 
 end ;;   
 
@@ -144,6 +198,7 @@ let make l= {
    hashtbl_for_ghettoes = Hashtbl.create 100;
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
+   terminals = None ;
 } ;;
 
 
@@ -156,4 +211,4 @@ let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;;
 
 let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;; 
 let symbols gram = Lrp_bare_grammar.symbols gram.core ;; 
-let terminals gram = Lrp_bare_grammar.terminals gram.core;;
+let terminals = Private.get_terminals;;

@@ -24,4 +24,5 @@ type grammar = {
    hashtbl_for_ghettoes : (int * string, registered_lr0_state) Hashtbl.t ;
    hashtbl_for_emptiability : (string, bool) Hashtbl.t ;
    mutable emptiable_nonterminals : (string list) option ;
+   mutable terminals : (string list) option;
 } ;;
