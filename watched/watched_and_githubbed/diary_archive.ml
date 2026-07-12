@@ -22570,7 +22570,7 @@ let v6 = Image.image (
 ) pages_concerned ;;
 
 let compute_footnote_data triples = 
-   let temp1 = Three_parts.generic triples in 
+   let temp1 = Two_winged_bird_on_plank.generic triples in 
    List.rev_map (
     fun (before,center,after)->
        let (inner_idx,sol,is_beginning) = center in 
@@ -22885,7 +22885,7 @@ let main_image shed indices =
 
 let neighbors n l =
    let temp1 = List.rev_map(function (kleiz,x,dehou)->
-    (x,List.rev_append(kleiz)(dehou)))(Three_parts.generic l) 
+    (x,List.rev_append(kleiz)(dehou)))(Two_winged_bird_on_plank.generic l) 
    and outside_l = i_setminus (Int_range.range 1 n) l in 
    let temp2 = Image.image (
      fun (p,others)->
@@ -30077,7 +30077,7 @@ let all_productions = [
 ] ;;
 
 let items_from_production (Prod(p,l)) =
-  let temp = Three_parts.generic l in 
+  let temp = Two_winged_bird_on_plank.generic l in 
   let temp2 = List.rev_map (fun (left,center,right)->(List.rev left,center::right)) temp in 
   (Image.image (fun (left,right)->Item(p,left@("."::right))) temp2)@[Item(p,l@["."])] ;; 
 
@@ -30254,7 +30254,7 @@ let all_productions = [
 ] ;;
 
 let items_from_production (Prod(p,l)) =
-  let temp = Three_parts.generic l in 
+  let temp = Two_winged_bird_on_plank.generic l in 
   let temp2 = List.rev_map (fun (left,center,right)->(List.rev left,center::right)) temp in 
   (Image.image (fun (left,right)->Item(p,left@("."::right))) temp2)@[Item(p,l@["."])] ;; 
 

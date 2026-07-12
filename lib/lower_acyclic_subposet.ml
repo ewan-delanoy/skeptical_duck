@@ -96,7 +96,7 @@ let step coat w=
     else 
     (*see if we can close the cycle *)
     match List.find_opt(fun (_rev_left,x,_right)->Set_of_polys.mem x unclear_coatoms) 
-     (List.rev(Three_parts.generic w.between)) with
+     (List.rev(Two_winged_bird_on_plank.generic w.between)) with
      None->{
            w with 
           between = (

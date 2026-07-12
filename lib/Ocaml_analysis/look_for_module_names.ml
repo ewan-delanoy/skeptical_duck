@@ -44,7 +44,7 @@ let names_in_mlx_file ap=
   let temp1=indices_in_mlx_file ap in
   let text = Io.read_whole_file ap in 
   let temp2=Image.image (fun (_,(a,b,_))->String.sub text (a-1) (b-a+1) ) temp1 in
-  let temp3=Three_parts.generic temp2 in
+  let temp3=Two_winged_bird_on_plank.generic temp2 in
   let temp4=List.filter (fun (x,y,_z)->not(List.mem y x)) temp3 in
   let temp5=Image.image (fun (_x,y,_z)->Dfa_module.of_line 
       (String.uncapitalize_ascii  y)) temp4 in

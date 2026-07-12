@@ -57,7 +57,7 @@ let push_dots_one_symbol = Private.colleagues_for_several ;;
 let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
 
 let items_from_production (Prod(p,l)) =
-  let temp = Three_parts.generic l in 
+  let temp = Two_winged_bird_on_plank.generic l in 
   let temp2 = List.rev_map (fun (left,center,right)->(List.rev left,center::right)) temp in 
   (Image.image (fun (left,right)->Item(p,left@("."::right))) temp2)@[Item(p,l@["."])] ;; 
 

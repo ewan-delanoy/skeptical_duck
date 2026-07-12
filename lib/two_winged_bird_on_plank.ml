@@ -1,6 +1,6 @@
 (*
 
-#use"lib/three_parts.ml";;
+#use"lib/two_winged_bird_on_plank.ml";;
 
 *)
 
