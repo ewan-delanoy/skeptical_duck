@@ -12,13 +12,15 @@ open Lrp_types ;;
 module Private = struct 
 
    let str_order = Total_ordering.lex_for_strings ;;
+
+   let str_fold_merge = Ordered.fold_merge str_order ;; 
    let str_insert = Ordered.insert str_order ;; 
    let str_mem = Ordered.mem str_order ;; 
    let str_merge = Ordered.merge str_order ;; 
    let str_setminus = Ordered.setminus str_order ;; 
    let str_sort = Ordered.sort str_order ;; 
 
-
+   let endmarker = "Endmarker" ;;
 
    let add_new_paths_to_lr0_state gram lr0_state paths_to_be_added =
    let new_registry = Lrp_registry.add_new_paths_to_lr0_state gram.registry lr0_state paths_to_be_added in 
@@ -92,7 +94,9 @@ let get_terminals gram =
    Some old_answer -> old_answer 
    | None -> 
       let answer = Lrp_bare_grammar.terminals gram.core in 
-      let _ = (gram.terminals <- (Some answer)) in 
+      let _ = (gram.terminals <- (Some answer);
+      List.iter (fun terminal -> Hashtbl.add gram.hashtbl_for_furst_sets terminal [terminal]) answer
+      ) in 
       answer;;
 
 
@@ -142,7 +146,7 @@ module Furst_set = struct
 
 (*
 
-We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) as follows :
+We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) 
 
 *)
 
@@ -160,14 +164,20 @@ let elements_having_a_wholly_emptiable_left gram form =
    tempf([],form) ;; 
 
 let expand gram already_found_prefixes (older_heads,current_head) = 
-   let terminals = Lrp_bare_grammar.terminals gram.core in 
+   let terminals = get_terminals gram in 
    let updated_heads = str_insert current_head older_heads in 
    let (BG productions) = gram.core in 
    let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
       if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
    let candidates =  str_setminus (str_sort temp1) updated_heads in 
-   let (new_prefixes,to_be_treated_next) = List.partition (fun symb->str_mem symb terminals) candidates in 
-   (str_merge new_prefixes already_found_prefixes,updated_heads,to_be_treated_next) ;;
+   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb terminals) candidates in 
+   let using_precedent_computations = Image.image (fun symb->
+      (symb,Hashtbl.find_opt gram.hashtbl_for_furst_sets symb)) nonterminal_candidates in 
+   let (to_be_treated_next,already_treated)  = List.partition (fun (_,opt)->opt=None) 
+       using_precedent_computations in 
+   let new_prefixes2 = str_fold_merge  (Image.image (fun (_,opt)->Option.get opt) already_treated) in 
+   let new_prefixes = str_merge new_prefixes1 new_prefixes2 in 
+   (str_merge new_prefixes already_found_prefixes,updated_heads,Image.image fst to_be_treated_next) ;;
 
 let rec iterator gram (already_found_prefixes,to_be_treated) = 
    match to_be_treated with 
@@ -177,8 +187,30 @@ let rec iterator gram (already_found_prefixes,to_be_treated) =
      let new_pairs = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
      iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
   
-let furst_set gram symb= iterator  gram ([],[[],symb]) ;;
+let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;
 
+let furst_set gram symb = 
+  match Hashtbl.find_opt gram.hashtbl_for_furst_sets symb with 
+  Some old_answer -> old_answer 
+  | None ->
+   let new_answer = compute_furst_set_naively gram symb in 
+   let _ = Hashtbl.add gram.hashtbl_for_furst_sets symb new_answer in 
+   new_answer
+  ;;
+
+end ;;  
+
+module Follow_set = struct 
+
+Three_parts.select_center_element ;;
+
+(*
+
+let compute_naively gram symb =
+   let (BG productions) = gram.core in 
+   let temp1 = List.filter_map ()    
+
+*)
 
 end ;;   
 
@@ -190,6 +222,8 @@ let all_lr0_states = Private.all_lr0_states ;;
 
 let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
 
+let furst_set = Private.Furst_set.furst_set ;;
+
 let items gram = Lrp_bare_grammar.items gram.core ;; 
 
 let make l= {
@@ -199,6 +233,7 @@ let make l= {
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
    terminals = None ;
+   hashtbl_for_furst_sets = Hashtbl.create 100;
 } ;;
 
 
