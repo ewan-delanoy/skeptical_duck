@@ -1,6 +1,6 @@
 (*
 
-#use"lib/reconstruct_linear_poset.ml";;
+#use"lib/lower_acyclic_subposet.ml";;
 
 Start with an arbitrary relation R on a finite set L. Consider its transitive closure R'; then
 for (x,y) in R, we say that x is a coatom of y, and we denote by coat(y) the set of all coatoms of y.
