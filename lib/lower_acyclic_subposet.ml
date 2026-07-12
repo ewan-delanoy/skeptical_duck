@@ -130,7 +130,7 @@ let compute coat l=
     
 end ;;
 
-let reconstruct_linear_poset = Private.compute ;;
+let compute = Private.compute ;;
 
 
 (*

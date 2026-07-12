@@ -1020,7 +1020,7 @@ let find_acyclic_ordering unordered_l =
      str_intersect(Jvag_form.coatoms form) defined_names
   ) in  
   let (cycles,acyclic_ordering) = 
-     Lower_acyclic_subposet.reconstruct_linear_poset relative_coatoms defined_names in 
+     Lower_acyclic_subposet.compute relative_coatoms defined_names in 
   if cycles<>[]
   then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
   else       

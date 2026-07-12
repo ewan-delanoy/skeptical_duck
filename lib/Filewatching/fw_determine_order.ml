@@ -33,7 +33,7 @@ let compute_dependencies  l =
      let temp1 = lex_sort(Fw_module_details.used_modules  details) in 
      Ordered.intersect lex_order  modules_in_lex_order temp1
   )     in 
-  let (cycles,good_list) = Lower_acyclic_subposet.reconstruct_linear_poset coatoms_in_lex_order  
+  let (cycles,good_list) = Lower_acyclic_subposet.compute coatoms_in_lex_order  
     modules in 
   let _ = treat_circular_dependencies cycles in
   let coatoms = Memoized.make (fun mname ->
