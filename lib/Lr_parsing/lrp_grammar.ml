@@ -202,8 +202,6 @@ end ;;
 
 module Follow_set = struct 
 
-Three_parts.select_center_element ;;
-
 (*
 
 let compute_naively gram symb =
