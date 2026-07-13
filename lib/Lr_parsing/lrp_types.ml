@@ -26,4 +26,5 @@ type grammar = {
    mutable emptiable_nonterminals : (string list) option ;
    mutable terminals : (string list) option;
    hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
+   hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
 } ;;

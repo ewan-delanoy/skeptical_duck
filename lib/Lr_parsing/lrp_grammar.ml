@@ -20,7 +20,7 @@ module Private = struct
    let str_setminus = Ordered.setminus str_order ;; 
    let str_sort = Ordered.sort str_order ;; 
 
-   let endmarker = "Endmarker" ;;
+   let end_marker = "Endmarker" ;;
 
    let add_new_paths_to_lr0_state gram lr0_state paths_to_be_added =
    let new_registry = Lrp_registry.add_new_paths_to_lr0_state gram.registry lr0_state paths_to_be_added in 
@@ -189,7 +189,7 @@ let rec iterator gram (already_found_prefixes,to_be_treated) =
   
 let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;
 
-let furst_set gram symb = 
+let furst_set_for_symbol gram symb = 
   match Hashtbl.find_opt gram.hashtbl_for_furst_sets symb with 
   Some old_answer -> old_answer 
   | None ->
@@ -198,17 +198,44 @@ let furst_set gram symb =
    new_answer
   ;;
 
+let furst_set_for_form gram form = 
+    let symbols = elements_having_a_wholly_emptiable_left gram form in 
+    iterator  gram ([],Image.image(fun symb -> ([],symb)) symbols) ;;
+
+
+
 end ;;  
 
 module Follow_set = struct 
 
-(*
+   let completions_on_the_right_for_in_production symb (Prod(_a,b)) =
+      let temp1 = Two_winged_bird_on_plank.generic b in 
+      List.filter_map (
+        fun (_rev_left,center,right) ->
+          if center <> symb then None else 
+          Some right   
+      ) temp1 ;;
+
+    let completions_on_the_right_for_in_productions symb productions =
+     List.flatten (Image.image (completions_on_the_right_for_in_production symb) productions) ;;   
+
 
 let compute_naively gram symb =
    let (BG productions) = gram.core in 
-   let temp1 = List.filter_map ()    
+   let completions = completions_on_the_right_for_in_productions symb productions in 
+   let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
+   let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
+   str_fold_merge (rightmost_contribution::
+   (Image.image (Furst_set.furst_set_for_form gram) nonempty_completions)) ;;
 
-*)
+let follow_set gram symb = 
+  match Hashtbl.find_opt gram.hashtbl_for_follow_sets symb with 
+  Some old_answer -> old_answer 
+  | None ->
+   let new_answer = compute_naively gram symb in 
+   let _ = Hashtbl.add gram.hashtbl_for_follow_sets symb new_answer in 
+   new_answer
+  ;;
 
 end ;;   
 
@@ -220,7 +247,9 @@ let all_lr0_states = Private.all_lr0_states ;;
 
 let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
 
-let furst_set = Private.Furst_set.furst_set ;;
+let follow_set = Private.Follow_set.follow_set ;;
+
+let furst_set = Private.Furst_set.furst_set_for_symbol ;;
 
 let items gram = Lrp_bare_grammar.items gram.core ;; 
 
@@ -232,6 +261,7 @@ let make l= {
    emptiable_nonterminals = None ;
    terminals = None ;
    hashtbl_for_furst_sets = Hashtbl.create 100;
+   hashtbl_for_follow_sets = Hashtbl.create 100;
 } ;;
 
 
