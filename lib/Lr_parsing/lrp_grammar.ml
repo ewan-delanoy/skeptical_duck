@@ -266,10 +266,18 @@ module Simple_Lr = struct
     let terminals = get_terminals gram in 
     str_intersect terminals symbols_after_a_dot ;; 
 
-   (* 
+   
    let shifts_from_lr0_state gram lr0_state =
+      let idx = Lrp_registry.index_of_in lr0_state gram.registry  
+      and (St items) = lr0_state in 
       let terms = terminals_after_a_dot_in_lr0_state gram lr0_state in 
-   *)
+      Image.image (fun term->
+        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,items)) term in 
+        ((idx,term),Shift(new_idx))
+      ) terms ;;
+
+      
+   
 
 end ;;   
 

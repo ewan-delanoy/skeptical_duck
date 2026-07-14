@@ -52,6 +52,15 @@ let colleagues_for_several gram symb items=
 
 end ;;  
 
+let almost_finished_production_opt (Item(p,l)) =
+  match List.rev l with 
+  [] -> None 
+  |head_of_rev::tail_of_rev ->
+    if head_of_rev <> "."
+    then None  
+    else Some(Prod(p,List.rev tail_of_rev)) ;; 
+   
+
 let push_dots_one_symbol = Private.colleagues_for_several ;;
 
 let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
