@@ -28,6 +28,9 @@ let add_new_paths_to_lr0_state rgy lr0_state paths_to_be_added =
 
 let default = Rg([(St []),[]]) ;; 
 
+let index_of_in lr0_state (Rg l)=
+   (List_again.index_of_in lr0_state l)-2 ;;
+
 let register_lr0_state rgy lr0_state = 
   let (Rg old_registry_content) = rgy in 
   let (St items)=lr0_state in 

@@ -15,6 +15,7 @@ module Private = struct
 
    let str_fold_merge = Ordered.fold_merge str_order ;; 
    let str_insert = Ordered.insert str_order ;; 
+   let str_intersect = Ordered.intersect str_order ;; 
    let str_mem = Ordered.mem str_order ;; 
    let str_merge = Ordered.merge str_order ;; 
    let str_setminus = Ordered.setminus str_order ;; 
@@ -259,6 +260,16 @@ end ;;
 
 module Simple_Lr = struct 
 
+   let terminals_after_a_dot_in_lr0_state gram (St items)=
+    let symbols_after_a_dot = 
+      str_sort(Image.image (fun item->Lrp_item.symbol_after_dot item) items) in  
+    let terminals = get_terminals gram in 
+    str_intersect terminals symbols_after_a_dot ;; 
+
+   (* 
+   let shifts_from_lr0_state gram lr0_state =
+      let terms = terminals_after_a_dot_in_lr0_state gram lr0_state in 
+   *)
 
 end ;;   
 
