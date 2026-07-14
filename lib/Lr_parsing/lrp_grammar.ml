@@ -182,9 +182,15 @@ let expand gram already_found_prefixes (older_heads,current_head) =
 let rec iterator gram (already_found_prefixes,to_be_treated) = 
    match to_be_treated with 
    [] -> already_found_prefixes 
-   |pair :: other_pairs ->
-     let (new_set_of_prefixes,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
-     let new_pairs = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
+   |pair :: other_pairs -> 
+     let (new_set_of_prefixes,new_pairs) = (
+        match Hashtbl.find_opt gram.hashtbl_for_furst_sets (snd pair) with 
+        Some old_answer -> (str_merge old_answer already_found_prefixes,[])
+        |None -> 
+         let (new_set_of_prefixes2,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
+         let new_pairs2 = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
+         (new_set_of_prefixes2,new_pairs2)
+     )  in 
      iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
   
 let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;

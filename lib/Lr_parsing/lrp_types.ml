@@ -28,3 +28,9 @@ type grammar = {
    hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
    hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
 } ;;
+
+type action = 
+   Shift of int 
+  |Reduce of production 
+  |Accept 
+  |Error ;;
