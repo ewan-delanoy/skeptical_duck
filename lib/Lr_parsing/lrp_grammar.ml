@@ -99,6 +99,18 @@ let get_terminals gram =
       ) in 
       answer;;
 
+let make l= {
+   core = BG l ;
+   registry = Lrp_registry.default ;
+   hashtbl_for_ghettoes = Hashtbl.create 100;
+   hashtbl_for_emptiability = Hashtbl.create 100;
+   emptiable_nonterminals = None ;
+   terminals = None ;
+   hashtbl_for_furst_sets = Hashtbl.create 100;
+   hashtbl_for_follow_sets = Hashtbl.create 100;
+} ;;
+
+
 
 module Emptiable_nonterminals = struct
 
@@ -247,6 +259,10 @@ end ;;
 
 end ;;   
 
+let augment ~earlier_start ~new_name_for_old_start l=
+   let (BG core) = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start (BG l) in 
+   Private.make core ;;
+
 let add_new_paths_to_lr0_state = Private.add_new_paths_to_lr0_state ;;
 
 let all_lr0_states = Private.all_lr0_states ;;
@@ -259,16 +275,7 @@ let furst_set = Private.Furst_set.furst_set_for_symbol ;;
 
 let items gram = Lrp_bare_grammar.items gram.core ;; 
 
-let make l= {
-   core = BG l ;
-   registry = Lrp_registry.default ;
-   hashtbl_for_ghettoes = Hashtbl.create 100;
-   hashtbl_for_emptiability = Hashtbl.create 100;
-   emptiable_nonterminals = None ;
-   terminals = None ;
-   hashtbl_for_furst_sets = Hashtbl.create 100;
-   hashtbl_for_follow_sets = Hashtbl.create 100;
-} ;;
+let make = Private.make ;;
 
 
 
