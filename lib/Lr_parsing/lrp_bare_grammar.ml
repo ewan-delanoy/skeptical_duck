@@ -44,9 +44,25 @@ let rec towards_closure gram (whole,_treated,to_be_treated) =
 
 let closure gram items = towards_closure gram (items,[],items) ;;   
 
+let rename_in_symbol (old_name,new_name) symb = if symb = old_name then new_name else symb ;;
 
+let rename_in_production rep (Prod(a,b)) = 
+  let r = rename_in_symbol rep in (Prod(r a,Image.image r b)) ;;
+
+let rename_in_grammar rep (BG l) = BG(Image.image (rename_in_production rep) l) ;; 
+
+let start_symbol (BG l)= let (Prod(s,_)) = List.hd l in s ;; 
+
+let augment ~earlier_start ~new_name_for_old_start old_bg=
+  let old_start = start_symbol old_bg in 
+  let (BG l1) = rename_in_grammar (old_start,new_name_for_old_start) old_bg in 
+  BG((Prod(earlier_start,[new_name_for_old_start]))::l1) ;;
+
+    
 
 end ;;
+
+let augment = Private.augment ;;
 
 let closure = Private.closure ;;
 
@@ -57,7 +73,7 @@ let items gram =
 
 
 let nonterminals = Private.nonterminals ;;
-let start_symbol (BG l)= let (Prod(s,_)) = List.hd l in s ;; 
+let start_symbol = Private.start_symbol ;; 
 
 let starter_lr0_state gram =
   let (BG productions)=gram in 
