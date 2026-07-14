@@ -257,6 +257,11 @@ let follow_set gram symb =
 
 end ;;   
 
+module Simple_Lr = struct 
+
+
+end ;;   
+
 end ;;   
 
 let augment ~earlier_start ~new_name_for_old_start l=

@@ -69,3 +69,15 @@ let merge gram = Ordered.merge (Private.order gram);;
 let setminus gram = Ordered.setminus (Private.order gram) ;;
 let sort = Private.sort ;;
 
+let symbol_after_dot (Item(_,l)) =
+    let (_,_,right) = 
+      Option.get(List_again.find_and_remember_opt (fun s->s=".") l) in 
+      List.hd right ;;
+
+(*
+
+
+symbol_after_dot (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
+
+
+*)  
