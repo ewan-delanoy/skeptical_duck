@@ -38,6 +38,7 @@ type grammar = {
    core : bare_grammar ;
    mutable registry : registry_for_lr0_states ;
    hashtbl_for_ghettoes : (int * string, registered_lr0_state) Hashtbl.t ;
+   mutable all_lr0_states : (registered_lr0_state list) option; 
    hashtbl_for_emptiability : (string, bool) Hashtbl.t ;
    mutable emptiable_nonterminals : (string list) option ;
    mutable terminals : (string list) option;

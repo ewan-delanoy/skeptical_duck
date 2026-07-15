@@ -8,6 +8,7 @@ Lrp is short for "LR Parsing"
 
 open Lrp_types ;;
 
+exception Conflict_in_Lr_parser_exn ;;
 
 module Private = struct 
 
@@ -88,7 +89,16 @@ let starter_rlr0_state gram =
    answer;;
 ;;
 
-let all_lr0_states gram = ghetto_neighborhood gram [starter_rlr0_state gram] ;;
+let compute_all_lr0_states_naively gram = ghetto_neighborhood gram [starter_rlr0_state gram] ;;
+
+let all_lr0_states gram = 
+   match gram.all_lr0_states with 
+   Some old_answer -> old_answer 
+   | None -> 
+      let answer = compute_all_lr0_states_naively gram in 
+      let _ = (gram.all_lr0_states <- (Some answer)
+      ) in 
+      answer;;
 
 let get_terminals gram = 
    match gram.terminals with 
@@ -104,6 +114,7 @@ let make l= {
    core = BG l ;
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
+   all_lr0_states = None ;
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
    terminals = None ;
@@ -275,36 +286,111 @@ module Simple_Lr = struct
       let terms = terminals_after_a_dot_in_lr0_state gram lr0_state in 
       Image.image (fun term->
         let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,items)) term in 
-        ((idx,term),Shift(new_idx))
+        (term,Shift(new_idx))
       ) terms ;;
 
    let almost_finished_productions_in_lr0_state (St items)=
     List.filter_map (fun item->Lrp_item.almost_finished_production_opt item) items ;;    
    
    let reductions_from_lr0_state gram lr0_state =
-      let (Prod(early_start,_old_start)) = first_production gram 
-      and idx = Lrp_registry.index_of_in lr0_state gram.registry  in 
+      let (Prod(early_start,_old_start)) = first_production gram   in 
       let prods = almost_finished_productions_in_lr0_state lr0_state in 
       List.flatten(Image.image (fun production->
         let (Prod(p,_)) = production in 
         if p = early_start then [] else  
         let followers = Follow_set.follow_set gram p in 
-        Image.image (fun follower -> ((idx,follower),Reduce(production))) followers
+        Image.image (fun follower -> (follower,Reduce(production))) followers
       ) prods );; 
 
    let acceptations_from_lr0_state gram lr0_state =
       let (Prod(early_start,old_start)) = first_production gram 
-      and idx = Lrp_registry.index_of_in lr0_state gram.registry  
       and (St items) = lr0_state in 
       let the_item = Item(early_start,old_start@["."]) in 
       if List.mem the_item items 
-      then  [((idx,end_marker),Accept)]
+      then  [(end_marker,Accept)]
       else [] ;; 
      
-   let actions_form_lr0_state gram lr0_state =
+   let actions_from_lr0_state gram lr0_state =
       (shifts_from_lr0_state gram lr0_state)@
       (reductions_from_lr0_state gram lr0_state)@
       (acceptations_from_lr0_state gram lr0_state) ;; 
+  
+   let preliminary_data_for_simple_lr_actions gram =
+      let states = List.tl(all_lr0_states gram) 
+      and terminals = get_terminals gram in 
+      let base = Cartesian.product states terminals in 
+      let initial_data = List.filter_map (
+         fun pair ->
+            let (state,terminal) = pair in 
+            let (RSt(idx,items)) = state in 
+            let all_actions = actions_from_lr0_state gram (St(items)) in 
+            let suitable_actions = List.filter_map (
+            fun (symb,action)->if symb<>terminal then None else Some(action)
+            )  all_actions in 
+            if suitable_actions = []
+            then None    
+            else Some((idx,terminal),suitable_actions)
+      ) base in  
+      let (bad,good)=List.partition (fun (_pair,actions)->
+           List.length(actions)>1
+         ) initial_data in 
+      if bad<>[]
+      then (Some bad,None)
+      else 
+      let temp1 = Image.image (fun (pair,actions)->(pair,List.hd actions)) good in 
+      let m = List.length(states)-1 in 
+      let temp2 = Int_range.scale (fun idx->
+        (idx,List.filter_map(fun ((idx2,terminal),action)->
+          if idx2=idx then Some(terminal,action) else None
+         ) temp1)   
+      ) 0 m in 
+     (None,Some(temp2));;
+
+   let ref_for_conflicts_in_slr_parser = ref [] ;;
+
+   let data_for_simple_lr_actions gram = 
+      let (bad_opt,good_opt) = preliminary_data_for_simple_lr_actions gram in 
+      if bad_opt<>None
+      then let _ = (ref_for_conflicts_in_slr_parser:=(Option.get bad_opt)) in 
+           raise(Conflict_in_Lr_parser_exn)
+      else Option.get good_opt ;;     
+
+   let data_for_simple_lr_gotos gram = 
+      let states = List.tl(all_lr0_states gram) 
+      and nonterminals = Lrp_bare_grammar.nonterminals gram.core in 
+      let base = Cartesian.product states nonterminals in 
+      let initial_data = Image.image (
+         fun pair ->
+            let (state,nonterminal) = pair in 
+            let (RSt(idx,_items)) = state in 
+            let (RSt(new_idx,_new_items)) = compute_ghetto gram state nonterminal in 
+            (idx,(nonterminal,new_idx))
+      ) base in  
+      let m = List.length(states)-1 in 
+      Int_range.scale (fun idx->
+        (idx,List.filter_map(fun (idx2,pair)->
+          if idx2=idx then Some(pair) else None
+         ) initial_data)   
+      ) 0 m ;;
+
+    let compute_data_for_simple_lr_table_naively gram =
+      (
+          data_for_simple_lr_actions gram,
+          data_for_simple_lr_gotos gram
+      ) ;;
+
+    let data_for_simple_lr_table gram = 
+      match gram.data_for_simple_lr_table with 
+      Some old_answer -> old_answer 
+    | None ->
+    let new_answer = compute_data_for_simple_lr_table_naively gram in 
+    let _ = (gram.data_for_simple_lr_table <- Some new_answer) in 
+     new_answer ;;
+
+   let table gram =
+       let (l_actions,l_gotos) = data_for_simple_lr_table gram in 
+       Lrp_table.make l_actions l_gotos ;;
+
 
 end ;;   
 
@@ -320,6 +406,8 @@ let all_lr0_states = Private.all_lr0_states ;;
 
 let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
 
+let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
+
 let follow_set = Private.Follow_set.follow_set ;;
 
 let furst_set = Private.Furst_set.furst_set_for_symbol ;;
@@ -333,6 +421,8 @@ let make = Private.make ;;
 let nonterminals gram = Lrp_bare_grammar.nonterminals gram.core;;
 
 let register_lr0_state = Private.register_lr0_state ;;
+
+let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
 
 let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
