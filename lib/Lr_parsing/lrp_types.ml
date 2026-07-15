@@ -35,6 +35,8 @@ type action =
   |Accept ;;
 
 type lr_table = {
-   static_data :  int * ((string * action) list) list ;
-   getter : (int * string, action option) Hashtbl.t ;
+   action_data :  (int * ((string * action) list)) list ;
+   action_getter : (int * string, action option) Hashtbl.t ;
+   goto_data :  (int * ((string * int) list)) list ;
+   goto_getter : (int * string, int option) Hashtbl.t ;
 }  ;; 
