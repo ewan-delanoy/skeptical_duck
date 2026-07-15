@@ -276,7 +276,7 @@ module Simple_Lr = struct
 
    let terminals_after_a_dot_in_lr0_state gram (St items)=
     let symbols_after_a_dot = 
-      str_sort(Image.image (fun item->Lrp_item.symbol_after_dot item) items) in  
+      str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let terminals = get_terminals gram in 
     str_intersect terminals symbols_after_a_dot ;; 
 
@@ -359,12 +359,14 @@ module Simple_Lr = struct
       let states = List.tl(all_lr0_states gram) 
       and nonterminals = Lrp_bare_grammar.nonterminals gram.core in 
       let base = Cartesian.product states nonterminals in 
-      let initial_data = Image.image (
+      let initial_data = List.filter_map (
          fun pair ->
             let (state,nonterminal) = pair in 
             let (RSt(idx,_items)) = state in 
             let (RSt(new_idx,_new_items)) = compute_ghetto gram state nonterminal in 
-            (idx,(nonterminal,new_idx))
+            if new_idx>=0 
+            then Some(idx,(nonterminal,new_idx))
+            else None
       ) base in  
       let m = List.length(states)-1 in 
       Int_range.scale (fun idx->
