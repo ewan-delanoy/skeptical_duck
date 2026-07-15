@@ -18,17 +18,6 @@ type registered_lr0_state = RSt of int * (item list) ;;
 
 type registry_for_lr0_states = Rg of ( lr0_state * ((string list) list) ) list ;;
 
-type grammar = {
-   core : bare_grammar ;
-   mutable registry : registry_for_lr0_states ;
-   hashtbl_for_ghettoes : (int * string, registered_lr0_state) Hashtbl.t ;
-   hashtbl_for_emptiability : (string, bool) Hashtbl.t ;
-   mutable emptiable_nonterminals : (string list) option ;
-   mutable terminals : (string list) option;
-   hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
-   hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
-} ;;
-
 type action = 
    Shift of int 
   |Reduce of production 
@@ -40,3 +29,21 @@ type lr_table = {
    goto_data :  (int * ((string * int) list)) list ;
    goto_getter : (int * string, int option) Hashtbl.t ;
 }  ;; 
+
+type data_for_actions =  (int * (string * action) list) list ;;
+
+type data_for_gotos = (int * (string * int) list) list ;;
+
+type grammar = {
+   core : bare_grammar ;
+   mutable registry : registry_for_lr0_states ;
+   hashtbl_for_ghettoes : (int * string, registered_lr0_state) Hashtbl.t ;
+   hashtbl_for_emptiability : (string, bool) Hashtbl.t ;
+   mutable emptiable_nonterminals : (string list) option ;
+   mutable terminals : (string list) option;
+   hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
+   hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
+   mutable data_for_simple_lr_table : ( data_for_actions * data_for_gotos ) option ;
+} ;;
+
+

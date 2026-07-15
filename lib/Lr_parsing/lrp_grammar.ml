@@ -109,6 +109,7 @@ let make l= {
    terminals = None ;
    hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
+   data_for_simple_lr_table = None ;
 } ;;
 
 let first_production gram =
