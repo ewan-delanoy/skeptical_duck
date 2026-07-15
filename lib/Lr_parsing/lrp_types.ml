@@ -32,5 +32,9 @@ type grammar = {
 type action = 
    Shift of int 
   |Reduce of production 
-  |Accept 
-  |Error ;;
+  |Accept ;;
+
+type lr_table = {
+   static_data :  int * ((string * action) list) list ;
+   getter : (int * string, action option) Hashtbl.t ;
+}  ;; 

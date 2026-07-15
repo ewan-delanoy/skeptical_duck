@@ -111,6 +111,8 @@ let make l= {
    hashtbl_for_follow_sets = Hashtbl.create 100;
 } ;;
 
+let first_production gram =
+   let (BG l)=gram.core in List.hd l;;
 
 
 module Emptiable_nonterminals = struct
@@ -266,7 +268,6 @@ module Simple_Lr = struct
     let terminals = get_terminals gram in 
     str_intersect terminals symbols_after_a_dot ;; 
 
-   
    let shifts_from_lr0_state gram lr0_state =
       let idx = Lrp_registry.index_of_in lr0_state gram.registry  
       and (St items) = lr0_state in 
@@ -276,8 +277,33 @@ module Simple_Lr = struct
         ((idx,term),Shift(new_idx))
       ) terms ;;
 
-      
+   let almost_finished_productions_in_lr0_state (St items)=
+    List.filter_map (fun item->Lrp_item.almost_finished_production_opt item) items ;;    
    
+   let reductions_from_lr0_state gram lr0_state =
+      let (Prod(early_start,_old_start)) = first_production gram 
+      and idx = Lrp_registry.index_of_in lr0_state gram.registry  in 
+      let prods = almost_finished_productions_in_lr0_state lr0_state in 
+      List.flatten(Image.image (fun production->
+        let (Prod(p,_)) = production in 
+        if p = early_start then [] else  
+        let followers = Follow_set.follow_set gram p in 
+        Image.image (fun follower -> ((idx,follower),Reduce(production))) followers
+      ) prods );; 
+
+   let acceptations_from_lr0_state gram lr0_state =
+      let (Prod(early_start,old_start)) = first_production gram 
+      and idx = Lrp_registry.index_of_in lr0_state gram.registry  
+      and (St items) = lr0_state in 
+      let the_item = Item(early_start,old_start@["."]) in 
+      if List.mem the_item items 
+      then  [((idx,end_marker),Accept)]
+      else [] ;; 
+     
+   let actions_form_lr0_state gram lr0_state =
+      (shifts_from_lr0_state gram lr0_state)@
+      (reductions_from_lr0_state gram lr0_state)@
+      (acceptations_from_lr0_state gram lr0_state) ;; 
 
 end ;;   
 
