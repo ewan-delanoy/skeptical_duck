@@ -9,18 +9,18 @@ Lrp is short for "LR Parsing"
 open Lrp_types ;;
 
 
-let on_index names_for_states idx0=
+let on_index (Shn names_for_states) idx0=
  snd(List.find (fun (RSt(idx,_),_)->idx=idx0) names_for_states) ;;   
 
-let on_action names_for_states = function 
-  (Shift j)->  on_index names_for_states j 
+let on_action shn = function 
+  (Shift j)->  on_index shn j 
   |Reduce(Prod(a,b)) -> a^" -> "^(String.concat "" b) 
   |Accept -> "Accept" ;;
 
-let on_action_data names_for_states l =
+let on_action_data shn l =
    Image.image (fun (idx,transitions)->
-    (on_index names_for_states idx,Image.image (
-      fun (mover,result) -> (mover,on_action names_for_states result) 
+    (on_index shn idx,Image.image (
+      fun (mover,result) -> (mover,on_action shn result) 
     ) transitions)   
    ) l;;  
 

@@ -445,9 +445,11 @@ let compute_naively gram =
          let paths = List.assoc (St(items)) rgy in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
+      Shn(
       (List.nth temp0 0,"Death")::
       (List.nth temp0 1,"Birth")::
-      (List_again.rename_according_to_occurrence_rank temp2) ;;
+      (List_again.rename_according_to_occurrence_rank temp2)
+       ) ;;
 
 let usual_names_for_lr0_states gram = 
       match gram.usual_names_for_lr0_states with 
