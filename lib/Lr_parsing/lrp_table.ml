@@ -110,9 +110,21 @@ let simplified_version names_for_states tbl =
       simplified_display_for_goto_data names_for_states tbl.goto_data
    ) ;; 
 
+let simplified_version names_for_states tbl =
+   (
+      simplified_display_for_action_data names_for_states tbl.action_data,
+      simplified_display_for_goto_data names_for_states tbl.goto_data
+   ) ;; 
 
-
-
+let simplified_parsing_details names_for_states l =
+   Image.image (
+    fun (state_stack,symbol_stack,next_action) ->
+      (
+         Image.image (simplified_display_for_index names_for_states) state_stack,
+         symbol_stack,
+         simplified_display_for_action names_for_states next_action
+      )
+   ) l ;;
 
 end ;;   
 
@@ -131,4 +143,5 @@ let make l_action l_goto =
 let parsing_details tbl text_to_be_parsed=    
   Private.iterator tbl [Private.initial_configuration tbl text_to_be_parsed] ;;
 
+let simplified_parsing_details = Private.simplified_parsing_details ;;  
 let simplified_version = Private.simplified_version ;;  

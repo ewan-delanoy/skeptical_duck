@@ -122,25 +122,14 @@ let make l= {
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
+   usual_names_for_lr0_states = None ;
 } ;;
 
 let first_production gram =
    let (BG l)=gram.core in List.hd l;;
 
 
-   let usual_names_for_lr0_states gram = 
-      let (Rg rgy)=gram.registry 
-      and temp0 = all_lr0_states gram in 
-      let temp1 = List.tl(List.tl(temp0)) in 
-      let temp2 = Image.image (
-        fun state ->
-         let (RSt(_idx,items)) = state in 
-         let paths = List.assoc (St(items)) rgy in
-         (state,List.hd(List.rev(List.hd paths))) 
-      ) temp1 in 
-      (List.nth temp0 0,"Death")::
-      (List.nth temp0 1,"Birth")::
-      (List_again.rename_according_to_occurrence_rank temp2) ;;
+   
 
 module Emptiable_nonterminals = struct
 
@@ -297,13 +286,17 @@ module Follow_set = struct
      List.flatten (Image.image (completions_on_the_right_for_in_production symb) productions) ;;   
 
 
-let compute_naively gram symb =
+let direct_follow_set gram symb =
    let (BG productions) = gram.core in 
    let completions = completions_on_the_right_for_in_productions symb productions in 
    let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
    let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
    str_fold_merge (rightmost_contribution::
    (Image.image (Furst_set.furst_set_for_form gram) nonempty_completions)) ;;
+
+let compute_naively gram symb =
+   str_fold_merge (Image.image (direct_follow_set gram)(symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
+
 
 let follow_set gram symb = 
   match Hashtbl.find_opt gram.hashtbl_for_follow_sets symb with 
@@ -361,7 +354,7 @@ module Simple_Lr = struct
   
    let preliminary_data_for_simple_lr_actions gram =
       let states = List.tl(all_lr0_states gram) 
-      and terminals = get_terminals gram in 
+      and terminals = (get_terminals gram)@["Endmarker"] in 
       let base = Cartesian.product states terminals in 
       let initial_data = List.filter_map (
          fun pair ->
@@ -440,6 +433,32 @@ module Simple_Lr = struct
 
 end ;;   
 
+module Usual_names_for_Lr0_states = struct 
+
+let compute_naively gram = 
+      let (Rg rgy)=gram.registry 
+      and temp0 = all_lr0_states gram in 
+      let temp1 = List.tl(List.tl(temp0)) in 
+      let temp2 = Image.image (
+        fun state ->
+         let (RSt(_idx,items)) = state in 
+         let paths = List.assoc (St(items)) rgy in
+         (state,List.hd(List.rev(List.hd paths))) 
+      ) temp1 in 
+      (List.nth temp0 0,"Death")::
+      (List.nth temp0 1,"Birth")::
+      (List_again.rename_according_to_occurrence_rank temp2) ;;
+
+let usual_names_for_lr0_states gram = 
+      match gram.usual_names_for_lr0_states with 
+      Some old_answer -> old_answer 
+    | None ->
+    let new_answer = compute_naively gram in 
+    let _ = (gram.usual_names_for_lr0_states <- Some new_answer) in 
+     new_answer ;;
+
+end ;;   
+
 end ;;   
 
 let augment ~earlier_start ~new_name_for_old_start l=
@@ -478,4 +497,4 @@ let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;;
 let symbols gram = Lrp_bare_grammar.symbols gram.core ;; 
 let terminals = Private.get_terminals;;
 
-let usual_names_for_lr0_states = Private.usual_names_for_lr0_states ;;
+let usual_names_for_lr0_states = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_states ;;

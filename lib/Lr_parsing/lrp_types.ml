@@ -34,6 +34,8 @@ type data_for_actions =  (int * (string * action) list) list ;;
 
 type data_for_gotos = (int * (string * int) list) list ;;
 
+type shortnamer = Shn of (registered_lr0_state * string) list ;;
+
 type grammar = {
    core : bare_grammar ;
    mutable registry : registry_for_lr0_states ;
@@ -46,6 +48,7 @@ type grammar = {
    hashtbl_for_rightmost_ancestors : (string, string list) Hashtbl.t ;
    hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
    mutable data_for_simple_lr_table : ( data_for_actions * data_for_gotos ) option ;
+   mutable usual_names_for_lr0_states : ((registered_lr0_state * string) list) option;
 } ;;
 
 
