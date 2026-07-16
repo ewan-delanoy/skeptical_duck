@@ -119,6 +119,7 @@ let make l= {
    emptiable_nonterminals = None ;
    terminals = None ;
    hashtbl_for_furst_sets = Hashtbl.create 100;
+   hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
 } ;;
@@ -137,7 +138,9 @@ let first_production gram =
          let paths = List.assoc (St(items)) rgy in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
-      temp2 ;;
+      (List.nth temp0 0,"Death")::
+      (List.nth temp0 1,"Birth")::
+      (List_again.rename_according_to_occurrence_rank temp2) ;;
 
 module Emptiable_nonterminals = struct
 
@@ -250,6 +253,28 @@ let furst_set_for_form gram form =
 
 
 end ;;  
+
+module Rightmost_ancestors = struct 
+
+let direct_rightmost_ancestors gram symb =
+   let (BG productions) = gram.core in 
+   str_sort(List.filter_map (fun (Prod(a,b))->if List.hd(List.rev b)=symb then Some a else None)  productions) ;;
+
+let direct_rightmost_ancestors_for_several gram symbs =
+  str_fold_merge (Image.image (direct_rightmost_ancestors gram) symbs) ;;
+
+let rec helper gram (current_whole,to_be_treated) =
+   let possibly_new = direct_rightmost_ancestors_for_several gram to_be_treated in 
+   let really_new = str_setminus possibly_new current_whole in 
+   if really_new = []
+   then current_whole 
+   else helper gram (str_merge current_whole really_new,really_new) ;;   
+
+let compute_naively gram symb = helper gram ([],[symb]) ;;
+
+
+
+end ;;   
 
 module Follow_set = struct 
 

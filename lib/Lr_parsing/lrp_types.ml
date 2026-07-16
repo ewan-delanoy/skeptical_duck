@@ -43,6 +43,7 @@ type grammar = {
    mutable emptiable_nonterminals : (string list) option ;
    mutable terminals : (string list) option;
    hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
+   hashtbl_for_rightmost_ancestors : (string, string list) Hashtbl.t ;
    hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
    mutable data_for_simple_lr_table : ( data_for_actions * data_for_gotos ) option ;
 } ;;

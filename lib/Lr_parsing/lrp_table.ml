@@ -82,6 +82,37 @@ let rec iterator tbl steps =
       then steps   
       else iterator tbl (step tbl steps) ;;      
 
+let simplified_display_for_index names_for_states idx0=
+ snd(List.find (fun (RSt(idx,_),_)->idx=idx0) names_for_states) ;;   
+
+let simplified_display_for_action names_for_states = function 
+  (Shift j)->  simplified_display_for_index names_for_states j 
+  |Reduce(Prod(a,b)) -> a^" -> "^(String.concat "" b) 
+  |Accept -> "Accept" ;;
+
+let simplified_display_for_action_data names_for_states l =
+   Image.image (fun (idx,transitions)->
+    (simplified_display_for_index names_for_states idx,Image.image (
+      fun (mover,result) -> (mover,simplified_display_for_action names_for_states result) 
+    ) transitions)   
+   ) l;;  
+
+let simplified_display_for_goto_data names_for_states l =
+   Image.image (fun (idx,transitions)->
+    (simplified_display_for_index names_for_states idx,Image.image (
+      fun (mover,result) -> (mover,simplified_display_for_index names_for_states result) 
+    ) transitions)   
+   ) l;;     
+
+let simplified_version names_for_states tbl =
+   (
+      simplified_display_for_action_data names_for_states tbl.action_data,
+      simplified_display_for_goto_data names_for_states tbl.goto_data
+   ) ;; 
+
+
+
+
 
 end ;;   
 
@@ -99,3 +130,5 @@ let make l_action l_goto =
 
 let parsing_details tbl text_to_be_parsed=    
   Private.iterator tbl [Private.initial_configuration tbl text_to_be_parsed] ;;
+
+let simplified_version = Private.simplified_version ;;  
