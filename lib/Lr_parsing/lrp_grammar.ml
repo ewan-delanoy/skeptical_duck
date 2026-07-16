@@ -272,7 +272,14 @@ let rec helper gram (current_whole,to_be_treated) =
 
 let compute_naively gram symb = helper gram ([],[symb]) ;;
 
-
+let rightmost_ancestors gram symb = 
+  match Hashtbl.find_opt gram.hashtbl_for_rightmost_ancestors symb with 
+  Some old_answer -> old_answer 
+  | None ->
+   let new_answer = compute_naively gram symb in 
+   let _ = Hashtbl.add gram.hashtbl_for_rightmost_ancestors symb new_answer in 
+   new_answer
+  ;;
 
 end ;;   
 
@@ -460,6 +467,8 @@ let make = Private.make ;;
 let nonterminals gram = Lrp_bare_grammar.nonterminals gram.core;;
 
 let register_lr0_state = Private.register_lr0_state ;;
+
+let rightmost_ancestors = Private.Rightmost_ancestors.rightmost_ancestors ;;
 
 let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
 
