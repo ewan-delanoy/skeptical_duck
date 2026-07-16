@@ -127,6 +127,18 @@ let first_production gram =
    let (BG l)=gram.core in List.hd l;;
 
 
+   let usual_names_for_lr0_states gram = 
+      let (Rg rgy)=gram.registry 
+      and temp0 = all_lr0_states gram in 
+      let temp1 = List.tl(List.tl(temp0)) in 
+      let temp2 = Image.image (
+        fun state ->
+         let (RSt(_idx,items)) = state in 
+         let paths = List.assoc (St(items)) rgy in
+         (state,List.hd(List.rev(List.hd paths))) 
+      ) temp1 in 
+      temp2 ;;
+
 module Emptiable_nonterminals = struct
 
 let initial_data gram =
@@ -431,3 +443,5 @@ let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;;
 let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;; 
 let symbols gram = Lrp_bare_grammar.symbols gram.core ;; 
 let terminals = Private.get_terminals;;
+
+let usual_names_for_lr0_states = Private.usual_names_for_lr0_states ;;

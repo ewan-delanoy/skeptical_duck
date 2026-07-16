@@ -285,6 +285,29 @@ let rev_map f l=
   ) in
   tempf([],l);;
 
+ 
+let rename_according_to_occurrence_rank l =   
+  let indexed_l = Int_range.index_everything l in  
+  let nonunique_old_names = Image.image snd l in 
+  let old_names = nonredundant_version nonunique_old_names in 
+  let occurrences_for_old_names = Image.image (fun name ->(name,List.filter_map (fun (idx,pair)->
+   if snd(pair)=name then Some idx else None) indexed_l)) old_names in 
+  let compute_new_name = (fun (idx,(thing,old_name)) ->
+   let occs = List.assoc old_name occurrences_for_old_names in 
+   if List.length(occs)=1 then (thing,old_name) else 
+   let rank_among_occurrences = index_of_in idx occs in 
+   (thing,old_name^(string_of_int rank_among_occurrences))  
+   ) in
+  Image.image compute_new_name indexed_l ;;
+  
+
+(*
+
+rename_according_to_occurrence_rank (Image.image (fun x->(x,x)) ["A";"B";"C";"D";"B";"E";"F";"D";"E"]) ;;
+
+
+*)  
+
 let starts_with l1 l2 = 
    let (_common,_left,right) = Private.helper_for_common_initial_sublist ([],l1,l2) in 
   right=[];;
