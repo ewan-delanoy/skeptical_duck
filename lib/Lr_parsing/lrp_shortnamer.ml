@@ -36,13 +36,13 @@ let on_table names_for_states tbl =
       on_action_data names_for_states tbl.action_data,
       on_goto_data names_for_states tbl.goto_data
    ) ;; 
-
+ 
 
 let on_parsing_details names_for_states l =
-   Image.image (
+   List.rev_map (
     fun (state_stack,symbol_stack,next_action) ->
       (
-         Image.image (on_index names_for_states) state_stack,
+         List.rev_map (on_index names_for_states) state_stack,
          symbol_stack,
          on_action names_for_states next_action
       )

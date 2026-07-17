@@ -100,24 +100,18 @@ let all_lr0_states gram =
       ) in 
       answer;;
 
-let get_terminals gram = 
-   match gram.terminals with 
-   Some old_answer -> old_answer 
-   | None -> 
-      let answer = Lrp_bare_grammar.terminals gram.core in 
-      let _ = (gram.terminals <- (Some answer);
-      List.iter (fun terminal -> Hashtbl.add gram.hashtbl_for_furst_sets terminal [terminal]) answer
-      ) in 
-      answer;;
+
 
 let make l= {
    core = BG l ;
+   terminals = None ;
+   nonterminals = None ;
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_states = None ;
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
-   terminals = None ;
+   
    hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
@@ -129,6 +123,26 @@ let first_production gram =
    let (BG l)=gram.core in List.hd l;;
 
 
+let terminals gram = 
+   match gram.terminals with 
+   Some old_answer -> old_answer 
+   | None -> 
+      let answer = Lrp_bare_grammar.terminals gram.core in 
+      let _ = (
+          gram.terminals <- (Some answer);
+          List.iter (fun terminal -> Hashtbl.add gram.hashtbl_for_furst_sets terminal [terminal]) answer
+      ) in 
+      answer;;
+
+let nonterminals gram = 
+   match gram.nonterminals with 
+   Some old_answer -> old_answer 
+   | None -> 
+      let answer = Lrp_bare_grammar.nonterminals gram.core in 
+      let _ = (
+          gram.nonterminals <- (Some answer);
+      ) in 
+      answer;;
    
 
 module Emptiable_nonterminals = struct
@@ -195,13 +209,13 @@ let elements_having_a_wholly_emptiable_left gram form =
    tempf([],form) ;; 
 
 let expand gram already_found_prefixes (older_heads,current_head) = 
-   let terminals = get_terminals gram in 
+   let termies = terminals gram in 
    let updated_heads = str_insert current_head older_heads in 
    let (BG productions) = gram.core in 
    let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
       if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
    let candidates =  str_setminus (str_sort temp1) updated_heads in 
-   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb terminals) candidates in 
+   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb termies) candidates in 
    let using_precedent_computations = Image.image (fun symb->
       (symb,Hashtbl.find_opt gram.hashtbl_for_furst_sets symb)) nonterminal_candidates in 
    let (to_be_treated_next,already_treated)  = List.partition (fun (_,opt)->opt=None) 
@@ -314,8 +328,8 @@ module Simple_Lr = struct
    let terminals_after_a_dot_in_lr0_state gram (St items)=
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
-    let terminals = get_terminals gram in 
-    str_intersect terminals symbols_after_a_dot ;; 
+    let termies = terminals gram in 
+    str_intersect termies symbols_after_a_dot ;; 
 
    let shifts_from_lr0_state gram lr0_state =
       let idx = Lrp_registry.index_of_in lr0_state gram.registry  
@@ -354,8 +368,8 @@ module Simple_Lr = struct
   
    let preliminary_data_for_simple_lr_actions gram =
       let states = List.tl(all_lr0_states gram) 
-      and terminals = (get_terminals gram)@["Endmarker"] in 
-      let base = Cartesian.product states terminals in 
+      and termies = (terminals gram)@["Endmarker"] in 
+      let base = Cartesian.product states termies in 
       let initial_data = List.filter_map (
          fun pair ->
             let (state,terminal) = pair in 
@@ -394,7 +408,7 @@ module Simple_Lr = struct
 
    let data_for_simple_lr_gotos gram = 
       let states = List.tl(all_lr0_states gram) 
-      and nonterminals = Lrp_bare_grammar.nonterminals gram.core in 
+      and nonterminals = nonterminals gram  in 
       let base = Cartesian.product states nonterminals in 
       let initial_data = List.filter_map (
          fun pair ->
@@ -485,7 +499,7 @@ let make = Private.make ;;
 
 
 
-let nonterminals gram = Lrp_bare_grammar.nonterminals gram.core;;
+let nonterminals = Private.nonterminals ;;
 
 let register_lr0_state = Private.register_lr0_state ;;
 
@@ -497,6 +511,6 @@ let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;;
 
 let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;; 
 let symbols gram = Lrp_bare_grammar.symbols gram.core ;; 
-let terminals = Private.get_terminals;;
+let terminals = Private.terminals;;
 
 let usual_names_for_lr0_states = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_states ;;
