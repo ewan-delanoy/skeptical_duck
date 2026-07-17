@@ -64,10 +64,19 @@ let rlr0_state_merge = Ordered.merge rlr0_state_order ;;
 let rlr0_state_setminus = Ordered.setminus rlr0_state_order ;;
 let rlr0_state_sort = Ordered.sort rlr0_state_order ;;
 
+let all_symbols gram = 
+   match gram.symbols with 
+   Some old_answer -> old_answer 
+   | None -> 
+      let answer = Lrp_bare_grammar.symbols gram.core in 
+      let _ = (
+          gram.symbols <- (Some answer);
+      ) in 
+      answer;;
 
 
 let ghetto_neighbors_for_one gram rlr0_state = 
-   let all_symbols = Lrp_bare_grammar.symbols gram.core in 
+   let all_symbols = all_symbols gram in 
    rlr0_state_sort(Image.image (compute_ghetto gram rlr0_state) all_symbols) ;;
 
 let ghetto_neighbors_for_several gram lr0_states = rlr0_state_fold_merge
@@ -104,6 +113,7 @@ let all_lr0_states gram =
 
 let make l= {
    core = BG l ;
+   symbols = None ;
    terminals = None ;
    nonterminals = None ;
    registry = Lrp_registry.default ;
@@ -111,7 +121,6 @@ let make l= {
    all_lr0_states = None ;
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
-   
    hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
@@ -121,6 +130,8 @@ let make l= {
 
 let first_production gram =
    let (BG l)=gram.core in List.hd l;;
+
+
 
 
 let terminals gram = 
@@ -175,7 +186,7 @@ let all gram =
    | None ->
    let first_pair = (initial_data gram,[]) in 
    let final_level = iterator (first_pair,pusher first_pair) in 
-   let symbols = Lrp_bare_grammar.symbols gram.core in 
+   let symbols = all_symbols gram in 
    let _ = (List.iter (fun x->
      Hashtbl.add gram.hashtbl_for_emptiability x (List.mem x final_level)   
    ) symbols;
@@ -477,6 +488,8 @@ end ;;
 
 end ;;   
 
+let all_symbols = Private.all_symbols  ;; 
+
 let augment ~earlier_start ~new_name_for_old_start l=
    let (BG core) = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start (BG l) in 
    Private.make core ;;
@@ -510,7 +523,6 @@ let simple_lr_table gram = Private.Simple_Lr.table gram ;;
 let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
 let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;; 
-let symbols gram = Lrp_bare_grammar.symbols gram.core ;; 
 let terminals = Private.terminals;;
 
 let usual_names_for_lr0_states = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_states ;;
