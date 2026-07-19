@@ -12,6 +12,8 @@ type bare_grammar = BG of production list ;;
 
 type item = Item of string * (string list) ;;
 
+type lr0_atom = Atom of item ;;
+
 type lr0_molecule = St of item list ;;
 
 type registered_lr0_molecule = RSt of int * lr0_molecule ;;
