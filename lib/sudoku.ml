@@ -232,6 +232,12 @@ let expand_grids_at_cell l_gr cell =
 let expand_grids_at_cells l_gr l_cell = 
   List.fold_left expand_grids_at_cell l_gr l_cell  ;;     
 
+let unfillable_cells gr = 
+  let (G (l)) = gr in 
+  List.filter_map (
+    fun (cell,(poss,_is_old)) ->
+       if poss=[] then Some cell else None
+  ) l ;;  
 
 end ;;
 
@@ -271,6 +277,7 @@ let living_cells = Private.living_cells ;;
 
 let possibilities_at_cell = Private.possibilities_at_cell ;; 
 
+let unfillable_cells = Private.unfillable_cells ;;
 
 end ;;
 
@@ -673,13 +680,11 @@ let print_out_drill (fmt:Format.formatter) (Dr l)=
 
 end ;; 
 
-(* 
 
-open Sudoku ;; 
 
-#install_printer Display.print_out_grid ;;
-#install_printer Display.print_out_drill ;;
 
+
+(*
 
 let g0 = Grid.initialize_with 
 [
