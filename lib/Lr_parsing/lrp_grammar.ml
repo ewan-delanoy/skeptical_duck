@@ -33,8 +33,14 @@ module Private = struct
    let _ = (gram.registry<- new_registry) in  
    registered_state;; 
 
-   let ghetto_for_jterm gram (St items) symb = Lrp_bare_grammar.closure gram.core 
-(Lrp_item.push_dots_one_symbol gram.core symb items);;
+   let push_dots_one_symbol bare_gram symb lr0_molecule =
+      let (St old_atoms) = lr0_molecule in 
+      let old_items = Image.image (fun ( Atom  item)->item) old_atoms in
+      let new_items = Lrp_item.push_dots_one_symbol bare_gram symb old_items in 
+      new_items ;;
+
+   let ghetto_for_jterm gram lr0_molecule symb = Lrp_bare_grammar.closure gram.core 
+   (push_dots_one_symbol gram.core symb lr0_molecule);;
 
 let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
   let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 
@@ -336,7 +342,8 @@ end ;;
 
 module Simple_Lr = struct 
 
-   let terminals_after_a_dot_in_lr0_molecule gram (St items)=
+ let terminals_after_a_dot_in_lr0_molecule gram (St atoms)=
+    let items = Image.image (fun ( Atom  item) -> item) atoms in 
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let termies = terminals gram in 
@@ -350,7 +357,8 @@ module Simple_Lr = struct
         (term,Shift(new_idx))
       ) terms ;;
 
-   let almost_finished_productions_in_lr0_molecule (St items)=
+   let almost_finished_productions_in_lr0_molecule (St atoms)=
+    let items = Image.image (fun ( Atom  item) -> item) atoms in 
     List.filter_map (fun item->Lrp_item.almost_finished_production_opt item) items ;;    
    
    let reductions_from_lr0_molecule gram lr0_molecule =
@@ -365,7 +373,8 @@ module Simple_Lr = struct
 
    let acceptations_from_lr0_molecule gram lr0_molecule =
       let (Prod(early_start,old_start)) = first_production gram 
-      and (St items) = lr0_molecule in 
+     and (St atoms) = lr0_molecule in 
+      let items = Image.image (fun ( Atom  item) -> item) atoms in 
       let the_item = Item(early_start,old_start@["."]) in 
       if List.mem the_item items 
       then  [(end_marker,Accept)]

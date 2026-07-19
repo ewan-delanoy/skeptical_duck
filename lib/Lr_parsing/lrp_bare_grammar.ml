@@ -36,7 +36,7 @@ let descendants_for_several gram items = Lrp_item.fold_merge gram
    (Image.image (descendants_for_one gram) items) ;; 
 
 let rec towards_closure gram (whole,_treated,to_be_treated) = 
-  if to_be_treated = [] then St(whole) else 
+  if to_be_treated = [] then St(Image.image (fun item -> Atom  item) whole) else 
   let temp = descendants_for_several gram to_be_treated in 
   let new_whole = Lrp_item.merge gram temp whole 
   and yet_untreated = Lrp_item.setminus gram temp whole  in 

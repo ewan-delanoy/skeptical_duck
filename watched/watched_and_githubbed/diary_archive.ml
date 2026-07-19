@@ -48,7 +48,7 @@ let all_items = Lrp_grammar.items main_grammar ;;
 
 let all_lr0_states = Chronometer.it Lrp_grammar.all_lr0_molecules main_grammar ;;
 
-let u1 = Image.image (fun (RSt(k,St(items)))->(k,items)) (List.tl all_lr0_states) ;;
+let u1 = Image.image (fun (RSt(k,St(atoms)))->(k,Image.image (fun (Atom item)->item) atoms)) (List.tl all_lr0_states) ;;
 
 let u2 () = Lrp_item.display_indexed_item_sets u1 ;;
 

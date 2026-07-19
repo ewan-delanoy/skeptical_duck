@@ -12,14 +12,6 @@ type bare_grammar = BG of production list ;;
 
 type item = Item of string * (string list) ;;
 
-type lr0_atom = Atom of item ;;
-
-type lr0_molecule = St of item list ;;
-
-type registered_lr0_molecule = RSt of int * lr0_molecule ;;
-
-type registry_for_lr0_molecules = Rg of ( lr0_molecule * ((string list) list) ) list ;;
-
 type action = 
    Shift of int 
   |Reduce of production 
@@ -35,6 +27,17 @@ type lr_table = {
 type data_for_actions =  (int * (string * action) list) list ;;
 
 type data_for_gotos = (int * (string * int) list) list ;;
+
+
+type lr0_atom = Atom of item ;;
+
+type lr0_molecule = St of lr0_atom list ;; 
+
+type registered_lr0_molecule = RSt of int * lr0_molecule ;;
+
+type registry_for_lr0_molecules = Rg of ( lr0_molecule * ((string list) list) ) list ;;
+
+
 
 type shortnamer = Shn of (registered_lr0_molecule * string) list ;;
 
