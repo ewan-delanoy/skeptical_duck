@@ -680,7 +680,35 @@ let print_out_drill (fmt:Format.formatter) (Dr l)=
 
 end ;; 
 
+module Slow = struct 
 
+  exception Assign_exn of cell ;;
+
+  let assign grid cell v = 
+      let new_grid = Grid.assign grid cell v in 
+      let unfillables = Grid.unfillable_cells new_grid in 
+      if unfillables <> []
+      then raise(Assign_exn(List.hd unfillables)) 
+      else new_grid ;;  
+
+  exception Deduce_directly_exn of int list ;;    
+
+  let deduce_directly grid cell = 
+     let poss = Grid.possibilities_at_cell grid cell in 
+     if List.length(poss)<>1
+     then raise(Deduce_directly_exn(poss))
+     else assign grid cell (List.hd poss) ;; 
+
+   exception Deduce_indirectly_exn of cell list ;;    
+
+  let deduce_indirectly grid box v= 
+     let poss = Deduction.possibilities_for_value_holder grid (Indirect(box,v)) in 
+     if List.length(poss)<>1
+     then raise(Deduce_indirectly_exn(Image.image fst poss))
+     else assign grid (fst(List.hd poss)) v ;;    
+
+
+end ;;  
 
 
 
