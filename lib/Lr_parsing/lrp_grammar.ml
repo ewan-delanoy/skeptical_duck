@@ -24,26 +24,26 @@ module Private = struct
 
    let end_marker = "Endmarker" ;;
 
-   let add_new_paths_to_lr0_state gram lr0_state paths_to_be_added =
-   let new_registry = Lrp_registry.add_new_paths_to_lr0_state gram.registry lr0_state paths_to_be_added in 
+   let add_new_paths_to_lr0_molecule gram lr0_molecule paths_to_be_added =
+   let new_registry = Lrp_registry.add_new_paths_to_lr0_molecule gram.registry lr0_molecule paths_to_be_added in 
    (gram.registry<- new_registry) ;;
 
-   let register_lr0_state gram lr0_state = 
-   let (new_registry,registered_state) = Lrp_registry.register_lr0_state gram.registry lr0_state in 
+   let register_lr0_molecule gram lr0_molecule = 
+   let (new_registry,registered_state) = Lrp_registry.register_lr0_molecule gram.registry lr0_molecule in 
    let _ = (gram.registry<- new_registry) in  
    registered_state;; 
 
    let ghetto_for_jterm gram (St items) symb = Lrp_bare_grammar.closure gram.core 
 (Lrp_item.push_dots_one_symbol gram.core symb items);;
 
-let compute_ghetto_naively gram (RSt (_idx,old_lr0_state)) symb = 
-  let new_lr0_state = ghetto_for_jterm gram old_lr0_state symb in 
-  let new_rlr0_state = register_lr0_state gram new_lr0_state in 
+let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
+  let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 
+  let new_rlr0_molecule = register_lr0_molecule gram new_lr0_molecule in 
   let (Rg regy) = gram.registry in 
-  let older_paths = List.assoc old_lr0_state regy in 
+  let older_paths = List.assoc old_lr0_molecule regy in 
   let paths_to_be_added= Image.image (fun p->p@[symb]) older_paths in 
-  let _ = add_new_paths_to_lr0_state gram new_lr0_state paths_to_be_added in 
-  new_rlr0_state  
+  let _ = add_new_paths_to_lr0_molecule gram new_lr0_molecule paths_to_be_added in 
+  new_rlr0_molecule  
   ;;
 
 
@@ -57,11 +57,11 @@ let compute_ghetto gram rlr_state symb =
    new_answer
   ;;
 
-let rlr0_state_order = ((fun (RSt (i1,_))  (RSt (i2,_))->Total_ordering.for_integers i1 i2): registered_lr0_state Total_ordering_t.t) ;;
-let rlr0_state_fold_merge = Ordered.fold_merge rlr0_state_order ;;
-let rlr0_state_merge = Ordered.merge rlr0_state_order ;;
-let rlr0_state_setminus = Ordered.setminus rlr0_state_order ;;
-let rlr0_state_sort = Ordered.sort rlr0_state_order ;;
+let rlr0_molecule_order = ((fun (RSt (i1,_))  (RSt (i2,_))->Total_ordering.for_integers i1 i2): registered_lr0_molecule Total_ordering_t.t) ;;
+let rlr0_molecule_fold_merge = Ordered.fold_merge rlr0_molecule_order ;;
+let rlr0_molecule_merge = Ordered.merge rlr0_molecule_order ;;
+let rlr0_molecule_setminus = Ordered.setminus rlr0_molecule_order ;;
+let rlr0_molecule_sort = Ordered.sort rlr0_molecule_order ;;
 
 let all_symbols gram = 
    match gram.symbols with 
@@ -74,37 +74,37 @@ let all_symbols gram =
       answer;;
 
 
-let ghetto_neighbors_for_one gram rlr0_state = 
+let ghetto_neighbors_for_one gram rlr0_molecule = 
    let all_symbols = all_symbols gram in 
-   rlr0_state_sort(Image.image (compute_ghetto gram rlr0_state) all_symbols) ;;
+   rlr0_molecule_sort(Image.image (compute_ghetto gram rlr0_molecule) all_symbols) ;;
 
-let ghetto_neighbors_for_several gram lr0_states = rlr0_state_fold_merge
- (Image.image (ghetto_neighbors_for_one gram) lr0_states) ;;
+let ghetto_neighbors_for_several gram lr0_molecules = rlr0_molecule_fold_merge
+ (Image.image (ghetto_neighbors_for_one gram) lr0_molecules) ;;
 
 let rec towards_ghetto_neighborhood gram (whole,_treated,to_be_treated) = 
   if to_be_treated = [] then whole else 
   let temp = ghetto_neighbors_for_several gram to_be_treated in 
-  let new_whole = rlr0_state_merge temp whole 
-  and yet_untreated = rlr0_state_setminus temp whole  in 
+  let new_whole = rlr0_molecule_merge temp whole 
+  and yet_untreated = rlr0_molecule_setminus temp whole  in 
  towards_ghetto_neighborhood gram (new_whole,whole,yet_untreated) ;;
 
-let ghetto_neighborhood gram lr0_states = towards_ghetto_neighborhood gram (lr0_states,[],lr0_states) ;; 
+let ghetto_neighborhood gram lr0_molecules = towards_ghetto_neighborhood gram (lr0_molecules,[],lr0_molecules) ;; 
 
-let starter_rlr0_state gram = 
-   let starter_lr0_state = Lrp_bare_grammar.starter_lr0_state gram.core in
-   let answer = register_lr0_state gram starter_lr0_state in 
-   let _ = add_new_paths_to_lr0_state gram starter_lr0_state [[]] in 
+let starter_rlr0_molecule gram = 
+   let starter_lr0_molecule = Lrp_bare_grammar.starter_lr0_molecule gram.core in
+   let answer = register_lr0_molecule gram starter_lr0_molecule in 
+   let _ = add_new_paths_to_lr0_molecule gram starter_lr0_molecule [[]] in 
    answer;;
 ;;
 
-let compute_all_lr0_states_naively gram = ghetto_neighborhood gram [starter_rlr0_state gram] ;;
+let compute_all_lr0_molecules_naively gram = ghetto_neighborhood gram [starter_rlr0_molecule gram] ;;
 
-let all_lr0_states gram = 
-   match gram.all_lr0_states with 
+let all_lr0_molecules gram = 
+   match gram.all_lr0_molecules with 
    Some old_answer -> old_answer 
    | None -> 
-      let answer = compute_all_lr0_states_naively gram in 
-      let _ = (gram.all_lr0_states <- (Some answer)
+      let answer = compute_all_lr0_molecules_naively gram in 
+      let _ = (gram.all_lr0_molecules <- (Some answer)
       ) in 
       answer;;
 
@@ -117,14 +117,14 @@ let make l= {
    nonterminals = None ;
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
-   all_lr0_states = None ;
+   all_lr0_molecules = None ;
    hashtbl_for_emptiability = Hashtbl.create 100;
    emptiable_nonterminals = None ;
    hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
-   usual_names_for_lr0_states = None ;
+   usual_names_for_lr0_molecules = None ;
 } ;;
 
 let first_production gram =
@@ -336,26 +336,26 @@ end ;;
 
 module Simple_Lr = struct 
 
-   let terminals_after_a_dot_in_lr0_state gram (St items)=
+   let terminals_after_a_dot_in_lr0_molecule gram (St items)=
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let termies = terminals gram in 
     str_intersect termies symbols_after_a_dot ;; 
 
-   let shifts_from_lr0_state gram lr0_state =
-      let idx = Lrp_registry.index_of_in lr0_state gram.registry in 
-      let terms = terminals_after_a_dot_in_lr0_state gram lr0_state in 
+   let shifts_from_lr0_molecule gram lr0_molecule =
+      let idx = Lrp_registry.index_of_in lr0_molecule gram.registry in 
+      let terms = terminals_after_a_dot_in_lr0_molecule gram lr0_molecule in 
       Image.image (fun term->
-        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lr0_state)) term in 
+        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lr0_molecule)) term in 
         (term,Shift(new_idx))
       ) terms ;;
 
-   let almost_finished_productions_in_lr0_state (St items)=
+   let almost_finished_productions_in_lr0_molecule (St items)=
     List.filter_map (fun item->Lrp_item.almost_finished_production_opt item) items ;;    
    
-   let reductions_from_lr0_state gram lr0_state =
+   let reductions_from_lr0_molecule gram lr0_molecule =
       let (Prod(early_start,_old_start)) = first_production gram   in 
-      let prods = almost_finished_productions_in_lr0_state lr0_state in 
+      let prods = almost_finished_productions_in_lr0_molecule lr0_molecule in 
       List.flatten(Image.image (fun production->
         let (Prod(p,_)) = production in 
         if p = early_start then [] else  
@@ -363,28 +363,28 @@ module Simple_Lr = struct
         Image.image (fun follower -> (follower,Reduce(production))) followers
       ) prods );; 
 
-   let acceptations_from_lr0_state gram lr0_state =
+   let acceptations_from_lr0_molecule gram lr0_molecule =
       let (Prod(early_start,old_start)) = first_production gram 
-      and (St items) = lr0_state in 
+      and (St items) = lr0_molecule in 
       let the_item = Item(early_start,old_start@["."]) in 
       if List.mem the_item items 
       then  [(end_marker,Accept)]
       else [] ;; 
      
-   let actions_from_lr0_state gram lr0_state =
-      (shifts_from_lr0_state gram lr0_state)@
-      (reductions_from_lr0_state gram lr0_state)@
-      (acceptations_from_lr0_state gram lr0_state) ;; 
+   let actions_from_lr0_molecule gram lr0_molecule =
+      (shifts_from_lr0_molecule gram lr0_molecule)@
+      (reductions_from_lr0_molecule gram lr0_molecule)@
+      (acceptations_from_lr0_molecule gram lr0_molecule) ;; 
   
    let preliminary_data_for_simple_lr_actions gram =
-      let states = List.tl(all_lr0_states gram) 
+      let states = List.tl(all_lr0_molecules gram) 
       and termies = (terminals gram)@["Endmarker"] in 
       let base = Cartesian.product states termies in 
       let initial_data = List.filter_map (
          fun pair ->
             let (state,terminal) = pair in 
-            let (RSt(idx,lr0_state)) = state in 
-            let all_actions = actions_from_lr0_state gram (lr0_state) in 
+            let (RSt(idx,lr0_molecule)) = state in 
+            let all_actions = actions_from_lr0_molecule gram (lr0_molecule) in 
             let suitable_actions = List.filter_map (
             fun (symb,action)->if symb<>terminal then None else Some(action)
             )  all_actions in 
@@ -417,7 +417,7 @@ module Simple_Lr = struct
       else Option.get good_opt ;;     
 
    let data_for_simple_lr_gotos gram = 
-      let states = List.tl(all_lr0_states gram) 
+      let states = List.tl(all_lr0_molecules gram) 
       and nonterminals = nonterminals gram  in 
       let base = Cartesian.product states nonterminals in 
       let initial_data = List.filter_map (
@@ -461,12 +461,12 @@ module Usual_names_for_Lr0_states = struct
 
 let compute_naively gram = 
       let (Rg rgy)=gram.registry 
-      and temp0 = all_lr0_states gram in 
+      and temp0 = all_lr0_molecules gram in 
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
         fun state ->
-         let (RSt(_idx,lr0_state)) = state in 
-         let paths = List.assoc (lr0_state) rgy in
+         let (RSt(_idx,lr0_molecule)) = state in 
+         let paths = List.assoc (lr0_molecule) rgy in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
       Shn(
@@ -475,12 +475,12 @@ let compute_naively gram =
       (List_again.rename_according_to_occurrence_rank temp2)
        ) ;;
 
-let usual_names_for_lr0_states gram = 
-      match gram.usual_names_for_lr0_states with 
+let usual_names_for_lr0_molecules gram = 
+      match gram.usual_names_for_lr0_molecules with 
       Some old_answer -> old_answer 
     | None ->
     let new_answer = compute_naively gram in 
-    let _ = (gram.usual_names_for_lr0_states <- Some new_answer) in 
+    let _ = (gram.usual_names_for_lr0_molecules <- Some new_answer) in 
      new_answer ;;
 
 end ;;   
@@ -493,9 +493,9 @@ let augment ~earlier_start ~new_name_for_old_start l=
    let (BG core) = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start (BG l) in 
    Private.make core ;;
 
-let add_new_paths_to_lr0_state = Private.add_new_paths_to_lr0_state ;;
+let add_new_paths_to_lr0_molecule = Private.add_new_paths_to_lr0_molecule ;;
 
-let all_lr0_states = Private.all_lr0_states ;;
+let all_lr0_molecules = Private.all_lr0_molecules ;;
 
 let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
 
@@ -513,7 +513,7 @@ let make = Private.make ;;
 
 let nonterminals = Private.nonterminals ;;
 
-let register_lr0_state = Private.register_lr0_state ;;
+let register_lr0_molecule = Private.register_lr0_molecule ;;
 
 let rightmost_ancestors = Private.Rightmost_ancestors.rightmost_ancestors ;;
 
@@ -521,7 +521,7 @@ let simple_lr_table gram = Private.Simple_Lr.table gram ;;
 
 let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
-let starter_lr0_state gram = Lrp_bare_grammar.starter_lr0_state gram.core ;; 
+let starter_lr0_molecule gram = Lrp_bare_grammar.starter_lr0_molecule gram.core ;; 
 let terminals = Private.terminals;;
 
-let usual_names_for_lr0_states = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_states ;;
+let usual_names_for_lr0_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_molecules ;;

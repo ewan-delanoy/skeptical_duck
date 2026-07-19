@@ -46,13 +46,13 @@ let all_items = Lrp_grammar.items main_grammar ;;
 
 *)
 
-let all_lr0_states = Chronometer.it Lrp_grammar.all_lr0_states main_grammar ;;
+let all_lr0_states = Chronometer.it Lrp_grammar.all_lr0_molecules main_grammar ;;
 
 let u1 = Image.image (fun (RSt(k,St(items)))->(k,items)) (List.tl all_lr0_states) ;;
 
 let u2 () = Lrp_item.display_indexed_item_sets u1 ;;
 
-let names_for_states = Lrp_grammar.usual_names_for_lr0_states main_grammar ;;
+let names_for_states = Lrp_grammar.usual_names_for_lr0_molecules main_grammar ;;
 
 let slr_table = Lrp_grammar.simple_lr_table main_grammar ;;
 

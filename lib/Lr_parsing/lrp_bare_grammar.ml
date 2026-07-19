@@ -75,7 +75,7 @@ let items gram =
 let nonterminals = Private.nonterminals ;;
 let start_symbol = Private.start_symbol ;; 
 
-let starter_lr0_state gram =
+let starter_lr0_molecule gram =
   let (BG productions)=gram in 
   closure gram [Lrp_item.first_item_from_production  (List.hd productions)];;
 
