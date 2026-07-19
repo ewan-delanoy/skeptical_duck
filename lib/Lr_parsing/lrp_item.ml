@@ -50,6 +50,18 @@ let colleagues_for_several gram symb items=
   sort gram (List.filter_map (colleague_for_one symb) items) ;;
 
 
+let description_for_item (Item(p,l)) = p ^ " -> " ^ (String.concat "" l) ;;
+
+let description_for_items items=
+    String.concat "\n" (Image.image (fun item->(String.make 3 ' ')^(description_for_item item)) items) ;;
+
+let description_for_indexed_item_set (idx,items)=
+ (string_of_int idx)^": \n\n"^(description_for_items items) ;;
+ 
+ let description_for_indexed_item_sets l = 
+   "\n\n\n"^(String.concat "\n\n\n" (Image.image description_for_indexed_item_set l)) ;;
+   
+
 end ;;  
 
 let almost_finished_production_opt (Item(p,l)) =
@@ -60,6 +72,9 @@ let almost_finished_production_opt (Item(p,l)) =
     then None  
     else Some(Prod(p,List.rev tail_of_rev)) ;; 
    
+let display_indexed_item_sets l = 
+  print_string(Private.description_for_indexed_item_sets l);;
+
 
 let push_dots_one_symbol = Private.colleagues_for_several ;;
 

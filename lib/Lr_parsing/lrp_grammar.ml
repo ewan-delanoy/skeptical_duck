@@ -207,7 +207,8 @@ We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience)
 *)
 
 let elements_having_a_wholly_emptiable_left gram form =
-   (* It is assumed that gram.hashtbl_for_emptiability has already been filled *)
+   let _ = Emptiable_nonterminals.all gram in 
+   (* When we get here, gram.hashtbl_for_emptiability has already been filled *)
    let rec tempf = (
      fun (treated,to_be_treated) -> 
       match to_be_treated with 
