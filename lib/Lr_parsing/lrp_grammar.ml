@@ -36,8 +36,7 @@ module Private = struct
    let ghetto_for_jterm gram (St items) symb = Lrp_bare_grammar.closure gram.core 
 (Lrp_item.push_dots_one_symbol gram.core symb items);;
 
-let compute_ghetto_naively gram (RSt (_idx,items)) symb = 
-  let old_lr0_state = St items in 
+let compute_ghetto_naively gram (RSt (_idx,old_lr0_state)) symb = 
   let new_lr0_state = ghetto_for_jterm gram old_lr0_state symb in 
   let new_rlr0_state = register_lr0_state gram new_lr0_state in 
   let (Rg regy) = gram.registry in 
@@ -344,11 +343,10 @@ module Simple_Lr = struct
     str_intersect termies symbols_after_a_dot ;; 
 
    let shifts_from_lr0_state gram lr0_state =
-      let idx = Lrp_registry.index_of_in lr0_state gram.registry  
-      and (St items) = lr0_state in 
+      let idx = Lrp_registry.index_of_in lr0_state gram.registry in 
       let terms = terminals_after_a_dot_in_lr0_state gram lr0_state in 
       Image.image (fun term->
-        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,items)) term in 
+        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lr0_state)) term in 
         (term,Shift(new_idx))
       ) terms ;;
 
@@ -385,8 +383,8 @@ module Simple_Lr = struct
       let initial_data = List.filter_map (
          fun pair ->
             let (state,terminal) = pair in 
-            let (RSt(idx,items)) = state in 
-            let all_actions = actions_from_lr0_state gram (St(items)) in 
+            let (RSt(idx,lr0_state)) = state in 
+            let all_actions = actions_from_lr0_state gram (lr0_state) in 
             let suitable_actions = List.filter_map (
             fun (symb,action)->if symb<>terminal then None else Some(action)
             )  all_actions in 
@@ -467,8 +465,8 @@ let compute_naively gram =
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
         fun state ->
-         let (RSt(_idx,items)) = state in 
-         let paths = List.assoc (St(items)) rgy in
+         let (RSt(_idx,lr0_state)) = state in 
+         let paths = List.assoc (lr0_state) rgy in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
       Shn(

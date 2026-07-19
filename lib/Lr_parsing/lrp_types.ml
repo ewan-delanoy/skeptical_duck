@@ -14,7 +14,7 @@ type item = Item of string * (string list) ;;
 
 type lr0_state = St of item list ;;
 
-type registered_lr0_state = RSt of int * (item list) ;;
+type registered_lr0_state = RSt of int * lr0_state ;;
 
 type registry_for_lr0_states = Rg of ( lr0_state * ((string list) list) ) list ;;
 

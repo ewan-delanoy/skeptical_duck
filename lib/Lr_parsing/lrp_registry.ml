@@ -35,8 +35,8 @@ let register_lr0_state rgy lr0_state =
   let (Rg old_registry_content) = rgy in 
   let (St items)=lr0_state in 
   match List.find_index  (fun pair->fst(pair)=lr0_state) old_registry_content with 
-   Some old_index -> (rgy,RSt(old_index -1,items)) 
+   Some old_index -> (rgy,RSt(old_index -1,St(items))) 
    | None -> 
     let new_registry_content = old_registry_content @ [lr0_state,[]] in 
-    (Rg new_registry_content,RSt((List.length(new_registry_content)) -2,items));; 
+    (Rg new_registry_content,RSt((List.length(new_registry_content)) -2,St(items)));; 
   
