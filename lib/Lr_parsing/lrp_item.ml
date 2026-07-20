@@ -75,6 +75,7 @@ let almost_finished_production_opt (Item(p,l)) =
 let display_indexed_item_sets l = 
   print_string(Private.description_for_indexed_item_sets l);;
 
+let order = Private.order ;;   
 
 let push_dots_one_symbol = Private.colleagues_for_several ;;
 
