@@ -33,6 +33,20 @@ module Private = struct
    let _ = (gram.registry<- new_registry) in  
    registered_state;; 
 
+   let immediate_closure_for_several gram atoms = 
+      Ordered.fold_merge (Lrk_core_methods.order_on_atoms gram) 
+      (Image.image (Lrk_core_methods.immediate_closure gram) atoms) ;; 
+
+   let rec towards_closure gram (whole,_treated,to_be_treated) = 
+    if to_be_treated = [] then Lrk_core_methods.molecule(whole) else 
+    let temp = immediate_closure_for_several gram to_be_treated in 
+    let new_whole = Ordered.merge (Lrk_core_methods.order_on_atoms gram) temp whole 
+    and yet_untreated = Ordered.setminus (Lrk_core_methods.order_on_atoms gram) temp whole in   
+    towards_closure gram (new_whole,whole,yet_untreated) ;;
+
+   let closure gram items = towards_closure gram (items,[],items) ;;  
+
+
    let push_dots_one_symbol bare_gram symb lr0_molecule =
       let (St old_atoms) = lr0_molecule in 
       let old_items = Image.image (fun ( Atom  item)->item) old_atoms in

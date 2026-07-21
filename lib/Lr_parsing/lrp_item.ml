@@ -77,6 +77,8 @@ let display_indexed_item_sets l =
 
 let order = Private.order ;;   
 
+let push_dot_one_symbol = Private.colleague_for_one ;;
+
 let push_dots_one_symbol = Private.colleagues_for_several ;;
 
 let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
