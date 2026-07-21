@@ -109,8 +109,11 @@ let rec towards_ghetto_neighborhood gram (whole,_treated,to_be_treated) =
 
 let ghetto_neighborhood gram lr0_molecules = towards_ghetto_neighborhood gram (lr0_molecules,[],lr0_molecules) ;; 
 
+let starter_lr0_molecule bare_gram = 
+   closure bare_gram [Lrk_core_methods.starter_atom bare_gram];; 
+
 let starter_rlr0_molecule gram = 
-   let starter_lr0_molecule = Lrp_bare_grammar.starter_lr0_molecule gram.core in
+   let starter_lr0_molecule = starter_lr0_molecule gram.core in
    let answer = register_lr0_molecule gram starter_lr0_molecule in 
    let _ = add_new_paths_to_lr0_molecule gram starter_lr0_molecule [[]] in 
    answer;;
@@ -543,7 +546,6 @@ let simple_lr_table gram = Private.Simple_Lr.table gram ;;
 
 let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
-let starter_lr0_molecule gram = Lrp_bare_grammar.starter_lr0_molecule gram.core ;; 
 let terminals = Private.terminals;;
 
 let usual_names_for_lr0_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_molecules ;;
