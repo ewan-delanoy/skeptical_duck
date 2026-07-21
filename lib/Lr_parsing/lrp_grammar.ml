@@ -47,14 +47,23 @@ module Private = struct
    let closure gram items = towards_closure gram (items,[],items) ;;  
 
 
-   let push_dots_one_symbol bare_gram symb lr0_molecule =
+   let pppush_dots_one_symbol bare_gram symb lr0_molecule =
       let (St old_atoms) = lr0_molecule in 
       let old_items = Image.image (fun ( Atom  item)->item) old_atoms in
       let new_items = Lrp_item.push_dots_one_symbol bare_gram symb old_items in 
       new_items ;;
 
    let ghetto_for_jterm gram lr0_molecule symb = Lrp_bare_grammar.closure gram.core 
-   (push_dots_one_symbol gram.core symb lr0_molecule);;
+   (pppush_dots_one_symbol gram.core symb lr0_molecule);;
+
+   (* let pppush_dots_one_symbol bare_gram symb lr0_molecule =
+      let (St old_atoms) = lr0_molecule in 
+      let old_items = Image.image (fun ( Atom  item)->item) old_atoms in
+      let new_items = Lrp_item.push_dots_one_symbol bare_gram symb old_items in 
+      new_items ;;
+
+   let ghetto_for_jterm gram lr0_molecule symb p= closure gram.core 
+   (p gram.core symb lr0_molecule);; *)
 
 let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
   let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 

@@ -53,6 +53,8 @@ let final_state = () ;;
 
 end ;;
 
+let atoms_inside (St atoms)= atoms ;; 
+
 let immediate_closure = Private.immediate_closure ;;
 
 let item_component  = Private.item_component ;; 
