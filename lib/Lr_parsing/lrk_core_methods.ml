@@ -31,6 +31,11 @@ let immediate_closure gram (Atom(Item(_p,l)))=
   atm_sort gram (List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
   if p2=symb then Some(Atom(Lrp_item.first_item_from_production pr)) else None) productions);;
 
+let push_dot_one_symbol symb (Atom item) = 
+   Option.map (fun item->Atom item) (
+     Lrp_item.push_dot_one_symbol symb item 
+   );;
+
 (*
 let item_list_component (St items) = items ;;
 
@@ -55,3 +60,5 @@ let item_component  = Private.item_component ;;
 let molecule = Private.molecule ;;
 
 let order_on_atoms = Private.atm_order ;;
+
+let push_dot_one_symbol = Private.push_dot_one_symbol ;;
