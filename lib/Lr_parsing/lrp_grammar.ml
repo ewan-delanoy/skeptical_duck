@@ -46,24 +46,14 @@ module Private = struct
 
    let closure gram items = towards_closure gram (items,[],items) ;;  
 
+   let push_dots_one_symbol bare_gram symb lr0_molecule =
+      let old_atoms = Lrk_core_methods.atoms_inside lr0_molecule in 
+      let unordered_new_atoms = List.filter_map (Lrk_core_methods.push_dot_one_symbol symb) old_atoms in
+      let new_atoms = Ordered.sort (Lrk_core_methods.order_on_atoms bare_gram) unordered_new_atoms in 
+      Lrk_core_methods.molecule new_atoms ;;
 
-   let pppush_dots_one_symbol bare_gram symb lr0_molecule =
-      let (St old_atoms) = lr0_molecule in 
-      let old_items = Image.image (fun ( Atom  item)->item) old_atoms in
-      let new_items = Lrp_item.push_dots_one_symbol bare_gram symb old_items in 
-      new_items ;;
-
-   let ghetto_for_jterm gram lr0_molecule symb = Lrp_bare_grammar.closure gram.core 
-   (pppush_dots_one_symbol gram.core symb lr0_molecule);;
-
-   (* let pppush_dots_one_symbol bare_gram symb lr0_molecule =
-      let (St old_atoms) = lr0_molecule in 
-      let old_items = Image.image (fun ( Atom  item)->item) old_atoms in
-      let new_items = Lrp_item.push_dots_one_symbol bare_gram symb old_items in 
-      new_items ;;
-
-   let ghetto_for_jterm gram lr0_molecule symb p= closure gram.core 
-   (p gram.core symb lr0_molecule);; *)
+   let ghetto_for_jterm gram lr0_molecule symb = closure gram.core 
+   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram.core symb lr0_molecule));; 
 
 let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
   let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 

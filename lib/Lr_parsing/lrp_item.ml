@@ -92,6 +92,9 @@ let items_from_production (Prod(p,l)) =
 
 
 let fold_merge gram = Ordered.fold_merge (Private.order gram) ;;
+
+let last_item_from_production (Prod(p,l)) = Item(p,l@["."]);;
+
 let merge gram = Ordered.merge (Private.order gram);;
 let setminus gram = Ordered.setminus (Private.order gram) ;;
 let sort = Private.sort ;;
