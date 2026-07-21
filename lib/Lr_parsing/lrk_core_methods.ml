@@ -36,6 +36,14 @@ let push_dot_one_symbol symb (Atom item) =
      Lrp_item.push_dot_one_symbol symb item 
    );;
 
+let starter_atom bare_grammar = 
+  let (BG productions)=bare_grammar in 
+  Atom(Lrp_item.first_item_from_production  (List.hd productions));;
+
+let ender_atom bare_grammar = 
+  let (BG productions)=bare_grammar in 
+  Atom(Lrp_item.first_item_from_production  (List.hd productions));;  
+
 (*
 let item_list_component (St items) = items ;;
 
@@ -55,6 +63,8 @@ end ;;
 
 let atoms_inside (St atoms)= atoms ;; 
 
+let ender_atom = Private.ender_atom ;;
+
 let immediate_closure = Private.immediate_closure ;;
 
 let item_component  = Private.item_component ;; 
@@ -64,3 +74,6 @@ let molecule = Private.molecule ;;
 let order_on_atoms = Private.atm_order ;;
 
 let push_dot_one_symbol = Private.push_dot_one_symbol ;;
+
+let starter_atom = Private.starter_atom ;;
+
