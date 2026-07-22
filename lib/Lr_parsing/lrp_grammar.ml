@@ -128,7 +128,6 @@ let make_from_bare_grammar bg= {
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
-   hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
@@ -149,74 +148,7 @@ let nonterminals gram = Lrp_bare_grammar.terminals gram.core ;;
 let is_emptiable gram symb = Lrp_bare_grammar.is_emptiable gram.core symb ;;
 
 
-module Furst_set = struct 
 
-(*
-
-We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) 
-
-*)
-
-let elements_having_a_wholly_emptiable_left gram form =
-   let rec tempf = (
-     fun (treated,to_be_treated) -> 
-      match to_be_treated with 
-      [] -> List.rev(treated)
-      |symb::other_symbs ->
-         if is_emptiable gram symb 
-         then tempf(symb::treated,other_symbs)
-         else List.rev(symb::treated)  
-   ) in 
-   tempf([],form) ;; 
-
-let expand gram already_found_prefixes (older_heads,current_head) = 
-   let termies = terminals gram in 
-   let updated_heads = str_insert current_head older_heads in 
-   let productions = Lrp_bare_grammar.productions gram.core in 
-   let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
-      if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
-   let candidates =  str_setminus (str_sort temp1) updated_heads in 
-   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb termies) candidates in 
-   let using_precedent_computations = Image.image (fun symb->
-      (symb,Hashtbl.find_opt gram.hashtbl_for_furst_sets symb)) nonterminal_candidates in 
-   let (to_be_treated_next,already_treated)  = List.partition (fun (_,opt)->opt=None) 
-       using_precedent_computations in 
-   let new_prefixes2 = str_fold_merge  (Image.image (fun (_,opt)->Option.get opt) already_treated) in 
-   let new_prefixes = str_merge new_prefixes1 new_prefixes2 in 
-   (str_merge new_prefixes already_found_prefixes,updated_heads,Image.image fst to_be_treated_next) ;;
-
-let rec iterator gram (already_found_prefixes,to_be_treated) = 
-   match to_be_treated with 
-   [] -> already_found_prefixes 
-   |pair :: other_pairs -> 
-     let (new_set_of_prefixes,new_pairs) = (
-        match Hashtbl.find_opt gram.hashtbl_for_furst_sets (snd pair) with 
-        Some old_answer -> (str_merge old_answer already_found_prefixes,[])
-        |None -> 
-         let (new_set_of_prefixes2,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
-         let new_pairs2 = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
-         (new_set_of_prefixes2,new_pairs2)
-     )  in 
-     iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
-  
-let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;
-
-let furst_set_for_symbol gram symb = 
-  match Hashtbl.find_opt gram.hashtbl_for_furst_sets symb with 
-  Some old_answer -> old_answer 
-  | None ->
-   let new_answer = compute_furst_set_naively gram symb in 
-   let _ = Hashtbl.add gram.hashtbl_for_furst_sets symb new_answer in 
-   new_answer
-  ;;
-
-let furst_set_for_form gram form = 
-    let symbols = elements_having_a_wholly_emptiable_left gram form in 
-    iterator  gram ([],Image.image(fun symb -> ([],symb)) symbols) ;;
-
-
-
-end ;;  
 
 module Rightmost_ancestors = struct 
 
@@ -267,7 +199,7 @@ let direct_follow_set gram symb =
    let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
    let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
    str_fold_merge (rightmost_contribution::
-   (Image.image (Furst_set.furst_set_for_form gram) nonempty_completions)) ;;
+   (Image.image (Lrp_bare_grammar.furst_set_for_form gram.core) nonempty_completions)) ;;
 
 let compute_naively gram symb =
    str_fold_merge (Image.image (direct_follow_set gram)(symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
@@ -467,7 +399,7 @@ let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in
 
 let follow_set = Private.Follow_set.follow_set ;;
 
-let furst_set = Private.Furst_set.furst_set_for_symbol ;;
+let furst_set gram symb = Lrp_bare_grammar.furst_set_for_symbol gram.core symb;;
 
 let items gram = Lrp_bare_grammar.items gram.core ;; 
 
