@@ -35,7 +35,7 @@ let augment ~earlier_start ~new_name_for_old_start old_bg=
   let (BG l1) = rename_in_grammar (old_start,new_name_for_old_start) old_bg in 
   BG((Prod(earlier_start,[new_name_for_old_start]))::l1) ;;
 
-    
+let make prods = BG(Image.image (fun (a,b)->Prod(a,b)) prods) ;;       
 
 end ;;
 
@@ -47,7 +47,10 @@ let items gram =
   Lrp_item.sort gram unordered ;;
 
 
+let make = Private.make ;;   
 let nonterminals = Private.nonterminals ;;
+
+let productions (BG(prods)) = prods ;;
 let start_symbol = Private.start_symbol ;; 
 
 let symbols gram = Private.str_merge (Private.terminals gram)  (Private.nonterminals gram) ;;
