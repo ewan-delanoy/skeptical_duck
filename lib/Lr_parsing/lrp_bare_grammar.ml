@@ -30,12 +30,36 @@ let make_from_prods prods =
 let make prods = 
   make_from_prods (Image.image (fun (a,b)->Prod(a,b)) prods) ;;
 
-let nonterminals gram= str_sort (Image.image (fun (Prod(a,_))->a) (productions gram)) ;;
 
-let terminals gram =
-  let l = productions gram in 
+let memoize hashtbl f gram =
+   match Hashtbl.find_opt hashtbl gram.grammar_serial_number with 
+   Some old_answer -> old_answer 
+   | None -> 
+     let answer = f gram in 
+     let _ = Hashtbl.replace hashtbl gram.grammar_serial_number answer in 
+     answer ;;
+
+let compute_nonterminals_naively gram= 
+  str_sort (Image.image (fun (Prod(a,_))->a) (productions gram)) ;;
+
+let hashtbl_for_nonterminals = Hashtbl.create 100;;
+
+let nonterminals = memoize hashtbl_for_nonterminals compute_nonterminals_naively ;;
+
+let compute_terminals_naively gram= 
+   let l = productions gram in 
    let temp = str_sort (List.flatten(Image.image (fun (Prod(_,b))->b) l)) in 
-   str_setminus temp (nonterminals gram) ;;
+   str_setminus temp (nonterminals gram) ;; ;;
+
+let hashtbl_for_terminals = Hashtbl.create 100;;
+
+let terminals = memoize hashtbl_for_terminals compute_terminals_naively ;; 
+
+let compute_all_symbols_naively gram= str_merge (terminals gram)  (nonterminals gram);; 
+
+let hashtbl_for_all_symbols = Hashtbl.create 100;;
+
+let all_symbols = memoize hashtbl_for_all_symbols compute_all_symbols_naively ;; 
 
 let rename_in_symbol (old_name,new_name) symb = if symb = old_name then new_name else symb ;;
 
