@@ -48,7 +48,6 @@ type shortnamer = Shn of (registered_lr0_molecule * string) list ;;
 
 type grammar = {
    core : bare_grammar ;
-   mutable registry : registry_for_lr0_molecules ;
    hashtbl_for_ghettoes : (int * string, registered_lr0_molecule) Hashtbl.t ;
    mutable all_lr0_molecules : (registered_lr0_molecule list) option; 
    mutable data_for_simple_lr_table : ( data_for_actions * data_for_gotos ) option ;

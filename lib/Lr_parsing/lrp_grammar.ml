@@ -24,14 +24,61 @@ module Private = struct
 
    let end_marker = "Endmarker" ;;
 
+   module DirectRegistration = struct 
+
+   let path_order = Total_ordering.silex_compare Total_ordering.silex_for_strings ;;
+
+   let path_merge = Ordered.merge path_order ;;
+   let path_sort = Ordered.sort path_order ;;
+
+   let counter_for_registered_molecules = ref (0) ;;
+
+   let hashtbl_for_indices = Hashtbl.create 100 ;;
+   let hashtbl_for_paths = Hashtbl.create 100 ;;
+   
+   let get_index gram molecule=
+      match Hashtbl.find_opt hashtbl_for_indices (gram.core.grammar_serial_number,molecule) with 
+       Some old_idx -> old_idx
+      |None ->
+        let new_idx = (!counter_for_registered_molecules)-1 in 
+        let _ = (
+         counter_for_registered_molecules:=new_idx+2;
+         Hashtbl.replace hashtbl_for_indices (gram.core.grammar_serial_number,molecule) new_idx;
+         Hashtbl.replace hashtbl_for_paths (gram.core.grammar_serial_number,new_idx) [];
+      ) in  
+      new_idx ;;      
+      
+   let get_paths gram molecule=
+      let idx = get_index gram molecule in 
+      Hashtbl.find hashtbl_for_paths (gram.core.grammar_serial_number,idx) ;;
+
+   let add_paths gram molecule paths_to_be_added =
+       let idx = get_index gram molecule in 
+       let old_paths = Hashtbl.find hashtbl_for_paths (gram.core.grammar_serial_number,idx) in 
+       let new_paths = path_merge old_paths (path_sort paths_to_be_added) in 
+       Hashtbl.replace hashtbl_for_paths (gram.core.grammar_serial_number,idx) new_paths ;;
+     
+
+   end ;;   
+
+   module IndirectRegistration = struct 
+      
+   let get_index gram lrk_molecule = DirectRegistration.get_index gram (Lrk_core_methods.to_uniform_representation lrk_molecule) ;;
+
+   let get_paths gram lrk_molecule = DirectRegistration.get_paths gram (Lrk_core_methods.to_uniform_representation lrk_molecule) ;;
+   
+   let add_paths gram lrk_molecule paths_to_be_added =
+         DirectRegistration.add_paths gram (Lrk_core_methods.to_uniform_representation lrk_molecule) paths_to_be_added ;;
+
+   end ;;   
+   
+
    let add_new_paths_to_lr0_molecule gram lr0_molecule paths_to_be_added =
-   let new_registry = Lrp_registry.add_new_paths_to_lr0_molecule gram.registry lr0_molecule paths_to_be_added in 
-   (gram.registry<- new_registry) ;;
+     IndirectRegistration.add_paths gram lr0_molecule paths_to_be_added ;;
 
    let register_lr0_molecule gram lr0_molecule = 
-   let (new_registry,registered_state) = Lrp_registry.register_lr0_molecule gram.registry lr0_molecule in 
-   let _ = (gram.registry<- new_registry) in  
-   registered_state;; 
+     let idx = IndirectRegistration.get_index gram lr0_molecule in 
+     RSt(idx,lr0_molecule);; 
 
    let immediate_closure_for_several gram atoms = 
       Ordered.fold_merge (Lrk_core_methods.order_on_atoms gram) 
@@ -58,8 +105,7 @@ module Private = struct
 let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
   let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 
   let new_rlr0_molecule = register_lr0_molecule gram new_lr0_molecule in 
-  let (Rg regy) = gram.registry in 
-  let older_paths = List.assoc old_lr0_molecule regy in 
+  let older_paths = IndirectRegistration.get_paths gram old_lr0_molecule in 
   let paths_to_be_added= Image.image (fun p->p@[symb]) older_paths in 
   let _ = add_new_paths_to_lr0_molecule gram new_lr0_molecule paths_to_be_added in 
   new_rlr0_molecule  
@@ -125,7 +171,6 @@ let all_lr0_molecules gram =
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
    data_for_simple_lr_table = None ;
@@ -159,7 +204,7 @@ module Simple_Lr = struct
     str_intersect termies symbols_after_a_dot ;; 
 
    let shifts_from_lr0_molecule gram lr0_molecule =
-      let idx = Lrp_registry.index_of_in lr0_molecule gram.registry in 
+      let idx = IndirectRegistration.get_index gram lr0_molecule  in 
       let terms = terminals_after_a_dot_in_lr0_molecule gram lr0_molecule in 
       Image.image (fun term->
         let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lr0_molecule)) term in 
@@ -288,13 +333,12 @@ end ;;
 module Usual_names_for_Lr0_states = struct 
 
 let compute_naively gram = 
-      let (Rg rgy)=gram.registry 
-      and temp0 = all_lr0_molecules gram in 
+      let temp0 = all_lr0_molecules gram in 
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
         fun state ->
          let (RSt(_idx,lr0_molecule)) = state in 
-         let paths = List.assoc (lr0_molecule) rgy in
+         let paths = IndirectRegistration.get_paths gram lr0_molecule in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
       Shn(
