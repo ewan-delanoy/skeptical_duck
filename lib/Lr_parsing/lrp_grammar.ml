@@ -315,14 +315,10 @@ end ;;
 
 end ;;   
 
-let all_symbols = Private.all_symbols  ;; 
-
 let augment ~earlier_start ~new_name_for_old_start l=
   let old_gram = Lrp_bare_grammar.make l in 
   let new_gram = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start old_gram in 
   Private.make_from_bare_grammar new_gram ;;
-
-let add_new_paths_to_lr0_molecule = Private.add_new_paths_to_lr0_molecule ;;
 
 let all_lr0_molecules = Private.all_lr0_molecules ;;
 
@@ -331,22 +327,17 @@ let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in
 
 
 
-let furst_set gram symb = Lrp_bare_grammar.furst_set_for_symbol gram.core symb;;
-
-let items gram = Lrp_bare_grammar.items gram.core ;; 
-
 let make = Private.make ;;
 
 
 
-let nonterminals = Private.nonterminals ;;
 
-let register_lr0_molecule = Private.register_lr0_molecule ;;
+
 
 let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
 
 let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
-let terminals = Private.terminals;;
+
 
 let usual_names_for_lr0_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_molecules ;;
