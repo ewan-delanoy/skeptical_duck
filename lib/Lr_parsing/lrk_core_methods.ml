@@ -17,13 +17,13 @@ let molecule l = St(l) ;;
 let item_component (Atom(item)) = item ;; 
 
 let atm_order gram = ((fun (Atom item1) (Atom item2) ->
-    Lrp_item.order gram item1 item2 
+    Lrp_bare_grammar.order_on_items gram item1 item2 
 ): lr0_atom Total_ordering_t.t);;
 
 let atm_sort gram = Ordered.sort (atm_order gram) ;;
 
 let immediate_closure gram (Atom(Item(_p,l)))= 
-  let (BG productions)=gram in 
+  let productions =Lrp_bare_grammar.productions gram in 
   let n = List.length l 
   and j = List_again.index_of_in "." l in
   if j=n then [] else 
@@ -37,28 +37,12 @@ let push_dot_one_symbol symb (Atom item) =
    );;
 
 let starter_atom bare_grammar = 
-  let (BG productions)=bare_grammar in 
+  let productions =Lrp_bare_grammar.productions bare_grammar in 
   Atom(Lrp_item.first_item_from_production  (List.hd productions));;
 
 let ender_atom bare_grammar = 
-  let (BG productions)=bare_grammar in 
-  Atom(Lrp_item.first_item_from_production  (List.hd productions));;  
- 
-
-(*
-let item_list_component (St items) = items ;;
-
-let small_closure () = () ;;
-
-let push () _symb = () ;;
-
-let allowed_candidates_for_reduce () = () ;;
-
-let initial_state = () ;;
-
-let final_state = () ;; 
-*)
-
+  let productions =Lrp_bare_grammar.productions bare_grammar in 
+  Atom(Lrp_item.last_item_from_production  (List.hd productions));;  
 
 end ;;
 

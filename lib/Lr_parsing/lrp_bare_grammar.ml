@@ -15,42 +15,74 @@ let str_merge = Ordered.merge str_order ;;
 let str_setminus = Ordered.setminus str_order ;; 
 let str_sort = Ordered.sort str_order ;; 
 
-let nonterminals (BG l)= str_sort (Image.image (fun (Prod(a,_))->a) l) ;;
+let productions gram = gram.productions ;;
 
-let terminals (BG l) =
+let counter = ref(0) ;;
+
+let make_from_prods prods = 
+  let new_val = (!counter)+1 in 
+  let _ = (counter:=new_val) in 
+  {
+     grammar_serial_number = new_val ;
+     productions =  prods ; 
+  } ;;
+
+let make prods = 
+  make_from_prods (Image.image (fun (a,b)->Prod(a,b)) prods) ;;
+
+let nonterminals gram= str_sort (Image.image (fun (Prod(a,_))->a) (productions gram)) ;;
+
+let terminals gram =
+  let l = productions gram in 
    let temp = str_sort (List.flatten(Image.image (fun (Prod(_,b))->b) l)) in 
-   str_setminus temp (nonterminals (BG l)) ;;
+   str_setminus temp (nonterminals gram) ;;
 
 let rename_in_symbol (old_name,new_name) symb = if symb = old_name then new_name else symb ;;
 
 let rename_in_production rep (Prod(a,b)) = 
   let r = rename_in_symbol rep in (Prod(r a,Image.image r b)) ;;
 
-let rename_in_grammar rep (BG l) = BG(Image.image (rename_in_production rep) l) ;; 
+let rename_in_grammar rep gram =
+  let old_prods = productions gram in 
+  let new_prods = Image.image (rename_in_production rep) old_prods in 
+  make_from_prods new_prods ;; 
 
-let start_symbol (BG l)= let (Prod(s,_)) = List.hd l in s ;; 
+let start_symbol gram= let (Prod(s,_)) = List.hd (productions gram) in s ;; 
 
-let augment ~earlier_start ~new_name_for_old_start old_bg=
-  let old_start = start_symbol old_bg in 
-  let (BG l1) = rename_in_grammar (old_start,new_name_for_old_start) old_bg in 
-  BG((Prod(earlier_start,[new_name_for_old_start]))::l1) ;;
+let augment ~earlier_start ~new_name_for_old_start old_gram=
+  let old_start = start_symbol old_gram in 
+  let new_gram = rename_in_grammar (old_start,new_name_for_old_start) old_gram in 
+  let prods1 = productions new_gram in 
+  make_from_prods((Prod(earlier_start,[new_name_for_old_start]))::prods1) ;;
 
-let make prods = BG(Image.image (fun (a,b)->Prod(a,b)) prods) ;;       
+let index_of_production_in_grammar item gram =
+  let prods = productions gram in 
+  List_again.index_of_in (Lrp_item.production_from_item item) prods ;;
+
+let order_on_items gram = ((fun item1 item2 ->
+  let trial1 = Total_ordering.for_integers (Lrp_item.index_of_dot item1) (Lrp_item.index_of_dot item2) in 
+  if trial1<> Total_ordering_result_t.Equal then trial1 else 
+  Total_ordering.for_integers 
+    (index_of_production_in_grammar item1 gram) 
+      (index_of_production_in_grammar item2 gram)  
+): item Total_ordering_t.t);;       
 
 end ;;
 
 let augment = Private.augment ;;
 
 let items gram =
-  let (BG productions)=gram in 
-  let unordered = List.flatten (Image.image Lrp_item.items_from_production productions) in 
-  Lrp_item.sort gram unordered ;;
+  let prods = Private.productions gram in 
+  let unordered = List.flatten (Image.image Lrp_item.items_from_production prods) in 
+  Ordered.sort (Private.order_on_items gram) unordered ;;
 
 
-let make = Private.make ;;   
+let make = Private.make ;;  
+let make_from_prods = Private.make_from_prods ;;  
 let nonterminals = Private.nonterminals ;;
 
-let productions (BG(prods)) = prods ;;
+let order_on_items = Private.order_on_items ;;
+let productions = Private.productions ;;
 let start_symbol = Private.start_symbol ;; 
 
 let symbols gram = Private.str_merge (Private.terminals gram)  (Private.nonterminals gram) ;;

@@ -23,12 +23,12 @@ let all_productions = [
 *)
 
 let all_productions = [
-   Prod("Start",["S"]);
-   Prod("S",["L";"=";"R"]);
-   Prod("S",["R"]);
-   Prod("L",["*";"R"]);
-   Prod("L",["i"]);
-   Prod("R",["L"]);
+   ("Start",["S"]);
+   ("S",["L";"=";"R"]);
+   ("S",["R"]);
+   ("L",["*";"R"]);
+   ("L",["i"]);
+   ("R",["L"]);
 ] ;;
 
 let main_grammar = Lrp_grammar.make all_productions ;;

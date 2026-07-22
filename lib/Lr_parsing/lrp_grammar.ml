@@ -131,9 +131,8 @@ let all_lr0_molecules gram =
       answer;;
 
 
-
-let make l= {
-   core = BG l ;
+let make_from_bare_grammar bg= {
+   core = bg ;
    symbols = None ;
    terminals = None ;
    nonterminals = None ;
@@ -149,10 +148,10 @@ let make l= {
    usual_names_for_lr0_molecules = None ;
 } ;;
 
-let first_production gram =
-   let (BG l)=gram.core in List.hd l;;
 
+let make l= make_from_bare_grammar (Lrp_bare_grammar.make l);;
 
+let first_production gram = List.hd(Lrp_bare_grammar.productions gram.core);;
 
 
 let terminals gram = 
@@ -180,7 +179,7 @@ let nonterminals gram =
 module Emptiable_nonterminals = struct
 
 let initial_data gram =
-   let (BG prods1) = gram.core in 
+   let prods1 = Lrp_bare_grammar.productions gram.core in 
    let prods2= Image.image (fun (Prod(h,l))->(h,str_sort l)) prods1 in
    let unordered_nonterminals = Image.image fst prods2 in 
    let nonterminals = str_sort unordered_nonterminals in 
@@ -244,7 +243,7 @@ let elements_having_a_wholly_emptiable_left gram form =
 let expand gram already_found_prefixes (older_heads,current_head) = 
    let termies = terminals gram in 
    let updated_heads = str_insert current_head older_heads in 
-   let (BG productions) = gram.core in 
+   let productions = Lrp_bare_grammar.productions gram.core in 
    let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
       if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
    let candidates =  str_setminus (str_sort temp1) updated_heads in 
@@ -292,8 +291,8 @@ end ;;
 
 module Rightmost_ancestors = struct 
 
-let direct_rightmost_ancestors gram symb =
-   let (BG productions) = gram.core in 
+let direct_rightmost_ancestors gram symb = 
+   let productions = Lrp_bare_grammar.productions gram.core in 
    str_sort(List.filter_map (fun (Prod(a,b))->if List.hd(List.rev b)=symb then Some a else None)  productions) ;;
 
 let direct_rightmost_ancestors_for_several gram symbs =
@@ -334,7 +333,7 @@ module Follow_set = struct
 
 
 let direct_follow_set gram symb =
-   let (BG productions) = gram.core in 
+   let productions = Lrp_bare_grammar.productions gram.core in 
    let completions = completions_on_the_right_for_in_productions symb productions in 
    let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
    let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
@@ -375,7 +374,7 @@ module Simple_Lr = struct
       ) terms ;;
 
    let test_for_allowing_reduction gram _atom ~head_of_production ~terminal =
-      let (BG productions) = gram.core in 
+      let productions = Lrp_bare_grammar.productions gram.core in 
       let (Prod(early_start,_old_start)) = List.hd(productions)   in 
       if head_of_production = early_start then false else  
       List.mem terminal (Follow_set.follow_set gram head_of_production) ;;
@@ -526,8 +525,9 @@ end ;;
 let all_symbols = Private.all_symbols  ;; 
 
 let augment ~earlier_start ~new_name_for_old_start l=
-   let (BG core) = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start (BG l) in 
-   Private.make core ;;
+  let old_gram = Lrp_bare_grammar.make l in 
+  let new_gram = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start old_gram in 
+  Private.make_from_bare_grammar new_gram ;;
 
 let add_new_paths_to_lr0_molecule = Private.add_new_paths_to_lr0_molecule ;;
 

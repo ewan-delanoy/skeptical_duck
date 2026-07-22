@@ -8,7 +8,10 @@ Lrp is short for "LR Parsing"
 
 type production = Prod of string * string list ;;
 
-type bare_grammar = BG of production list ;;
+type bare_grammar = {
+  grammar_serial_number : int ;
+  productions : production list ; 
+} ;;
 
 type item = Item of string * (string list) ;;
 

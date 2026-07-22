@@ -14,16 +14,7 @@ let production_from_item (Item(p,l)) = Prod(p,List.filter(fun x->x<>".") l) ;;
 
 let index_of_dot (Item(_p,l))= List_again.index_of_in "." l;;
 
-let index_of_production_in_grammar item (BG productions) = 
-  List_again.index_of_in (production_from_item item) productions ;;
 
-let order gram = ((fun item1 item2 ->
-  let trial1 = Total_ordering.for_integers (index_of_dot item1) (index_of_dot item2) in 
-  if trial1<> Total_ordering_result_t.Equal then trial1 else 
-  Total_ordering.for_integers 
-    (index_of_production_in_grammar item1 gram) 
-      (index_of_production_in_grammar item2 gram)  
-): item Total_ordering_t.t);;
 
 let push_dot_one_symbol symb (Item(p,l))=
   let n = List.length l 
@@ -43,12 +34,6 @@ push_dot_one_symbol "3" (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
 push_dot_one_symbol "6" (Item("a",["1";"2";"3";"4";"5";".";"6"])) ;;
 
 *)  
-
-let sort gram = Ordered.sort (order gram);;
-
-let colleagues_for_several gram symb items=
-  sort gram (List.filter_map (push_dot_one_symbol symb) items) ;;
-
 
 let description_for_item (Item(p,l)) = p ^ " -> " ^ (String.concat "" l) ;;
 
@@ -75,11 +60,9 @@ let almost_finished_production_opt (Item(p,l)) =
 let display_indexed_item_sets l = 
   print_string(Private.description_for_indexed_item_sets l);;
 
-let order = Private.order ;;   
-
-let push_dot_one_symbol = Private.push_dot_one_symbol ;;
-
 let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
+
+let index_of_dot = Private.index_of_dot ;;   
 
 let items_from_production (Prod(p,l)) =
   let temp = Two_winged_bird_on_plank.generic l in 
@@ -88,14 +71,13 @@ let items_from_production (Prod(p,l)) =
 
 (* items_from_production (Prod("x",["1";"2";"3";"4"])) ;; *) 
 
-
-let fold_merge gram = Ordered.fold_merge (Private.order gram) ;;
-
 let last_item_from_production (Prod(p,l)) = Item(p,l@["."]);;
 
-let merge gram = Ordered.merge (Private.order gram);;
-let setminus gram = Ordered.setminus (Private.order gram) ;;
-let sort = Private.sort ;;
+let production_from_item = Private.production_from_item ;;
+let push_dot_one_symbol = Private.push_dot_one_symbol ;;
+
+
+
 
 let symbol_after_dot_opt (Item(_,l)) =
     let (_,_,right) = 
