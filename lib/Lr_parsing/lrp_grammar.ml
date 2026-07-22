@@ -128,7 +128,6 @@ let make_from_bare_grammar bg= {
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
-   hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
    usual_names_for_lr0_molecules = None ;
 } ;;
@@ -148,44 +147,6 @@ let is_emptiable gram symb = Lrp_bare_grammar.is_emptiable gram.core symb ;;
 
 
 
-
-module Follow_set = struct 
-
-   let completions_on_the_right_for_in_production symb (Prod(_a,b)) =
-      let temp1 = Two_winged_bird_on_plank.generic b in 
-      List.filter_map (
-        fun (_rev_left,center,right) ->
-          if center <> symb then None else 
-          Some right   
-      ) temp1 ;;
-
-    let completions_on_the_right_for_in_productions symb productions =
-     List.flatten (Image.image (completions_on_the_right_for_in_production symb) productions) ;;   
-
-
-let direct_follow_set gram symb =
-   let productions = Lrp_bare_grammar.productions gram.core in 
-   let completions = completions_on_the_right_for_in_productions symb productions in 
-   let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
-   let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
-   str_fold_merge (rightmost_contribution::
-   (Image.image (Lrp_bare_grammar.furst_set_for_form gram.core) nonempty_completions)) ;;
-
-let compute_naively gram symb =
-   str_fold_merge (Image.image (direct_follow_set gram)
-    (symb::(Lrp_bare_grammar.rightmost_ancestors gram.core symb))) ;;
-
-
-let follow_set gram symb = 
-  match Hashtbl.find_opt gram.hashtbl_for_follow_sets symb with 
-  Some old_answer -> old_answer 
-  | None ->
-   let new_answer = compute_naively gram symb in 
-   let _ = Hashtbl.add gram.hashtbl_for_follow_sets symb new_answer in 
-   new_answer
-  ;;
-
-end ;;   
 
 module Simple_Lr = struct 
 
@@ -209,7 +170,7 @@ module Simple_Lr = struct
       let productions = Lrp_bare_grammar.productions gram.core in 
       let (Prod(early_start,_old_start)) = List.hd(productions)   in 
       if head_of_production = early_start then false else  
-      List.mem terminal (Follow_set.follow_set gram head_of_production) ;;
+      List.mem terminal (Lrp_bare_grammar.follow_set gram.core head_of_production) ;;
 
    let reduction_from_terminal_and_atom_opt gram terminal atom =
       match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
@@ -368,7 +329,7 @@ let all_lr0_molecules = Private.all_lr0_molecules ;;
 
 let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
 
-let follow_set = Private.Follow_set.follow_set ;;
+
 
 let furst_set gram symb = Lrp_bare_grammar.furst_set_for_symbol gram.core symb;;
 
