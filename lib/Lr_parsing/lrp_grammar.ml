@@ -128,7 +128,6 @@ let make_from_bare_grammar bg= {
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
-   hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
    data_for_simple_lr_table = None ;
    usual_names_for_lr0_molecules = None ;
@@ -149,35 +148,6 @@ let is_emptiable gram symb = Lrp_bare_grammar.is_emptiable gram.core symb ;;
 
 
 
-
-module Rightmost_ancestors = struct 
-
-let direct_rightmost_ancestors gram symb = 
-   let productions = Lrp_bare_grammar.productions gram.core in 
-   str_sort(List.filter_map (fun (Prod(a,b))->if List.hd(List.rev b)=symb then Some a else None)  productions) ;;
-
-let direct_rightmost_ancestors_for_several gram symbs =
-  str_fold_merge (Image.image (direct_rightmost_ancestors gram) symbs) ;;
-
-let rec helper gram (current_whole,to_be_treated) =
-   let possibly_new = direct_rightmost_ancestors_for_several gram to_be_treated in 
-   let really_new = str_setminus possibly_new current_whole in 
-   if really_new = []
-   then current_whole 
-   else helper gram (str_merge current_whole really_new,really_new) ;;   
-
-let compute_naively gram symb = helper gram ([],[symb]) ;;
-
-let rightmost_ancestors gram symb = 
-  match Hashtbl.find_opt gram.hashtbl_for_rightmost_ancestors symb with 
-  Some old_answer -> old_answer 
-  | None ->
-   let new_answer = compute_naively gram symb in 
-   let _ = Hashtbl.add gram.hashtbl_for_rightmost_ancestors symb new_answer in 
-   new_answer
-  ;;
-
-end ;;   
 
 module Follow_set = struct 
 
@@ -202,7 +172,8 @@ let direct_follow_set gram symb =
    (Image.image (Lrp_bare_grammar.furst_set_for_form gram.core) nonempty_completions)) ;;
 
 let compute_naively gram symb =
-   str_fold_merge (Image.image (direct_follow_set gram)(symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
+   str_fold_merge (Image.image (direct_follow_set gram)
+    (symb::(Lrp_bare_grammar.rightmost_ancestors gram.core symb))) ;;
 
 
 let follow_set gram symb = 
@@ -410,8 +381,6 @@ let make = Private.make ;;
 let nonterminals = Private.nonterminals ;;
 
 let register_lr0_molecule = Private.register_lr0_molecule ;;
-
-let rightmost_ancestors = Private.Rightmost_ancestors.rightmost_ancestors ;;
 
 let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
 
