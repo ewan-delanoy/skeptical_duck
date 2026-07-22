@@ -11,6 +11,7 @@ open Lrp_types ;;
 module Private = struct 
 
 let str_order = Total_ordering.lex_for_strings ;;
+let str_mem = Ordered.mem str_order ;; 
 let str_merge = Ordered.merge str_order ;; 
 let str_setminus = Ordered.setminus str_order ;; 
 let str_sort = Ordered.sort str_order ;; 
@@ -91,10 +92,54 @@ let order_on_items gram = ((fun item1 item2 ->
       (index_of_production_in_grammar item2 gram)  
 ): item Total_ordering_t.t);;       
 
+module Emptiable_nonterminals = struct
+
+let initial_data gram =
+   let prods1 = productions gram in 
+   let prods2= Image.image (fun (Prod(h,l))->(h,str_sort l)) prods1 in
+   let unordered_nonterminals = Image.image fst prods2 in 
+   let nonterminals = str_sort unordered_nonterminals in 
+   Image.image (fun h->(h,List.assoc h prods2)) nonterminals ;; 
+
+
+let pusher (simplified_productions,level) =
+    let next_simplified_productions = Image.image (fun (h,l)->
+        (h,str_setminus l level)
+      ) simplified_productions in 
+    let next_level = List.filter_map(fun (h,l)->if l=[] then Some h else None) next_simplified_productions in 
+    (next_simplified_productions,next_level)  ;;
+
+let rec iterator (preceding_pair,pair) =
+   let (_,preceding_level) = preceding_pair 
+   and (_,level) = pair in 
+   if List.length preceding_level = List.length level 
+   then level 
+   else iterator(pair,pusher pair) ;;   
+
+let compute_emptiable_nonterminals_naively gram = 
+   let first_pair = (initial_data gram,[]) in 
+   let final_level = iterator (first_pair,pusher first_pair) in 
+   final_level ;;
+
+let hashtbl_for_emptiable_nonterminals = Hashtbl.create 100;;
+
+let emptiable_nonterminals = memoize hashtbl_for_emptiable_nonterminals compute_emptiable_nonterminals_naively ;; 
+
+let compute_is_emptiable_naively gram symb=str_mem symb (emptiable_nonterminals gram);; 
+    
+
+let hashtbl_for_is_emptiable = Hashtbl.create 100;;
+
+let is_emptiable = memoize hashtbl_for_is_emptiable compute_is_emptiable_naively ;; 
+
+end ;;
+
 end ;;
 
 let all_symbols = Private.all_symbols ;;
 let augment = Private.augment ;;
+
+let is_emptiable = Private.Emptiable_nonterminals.is_emptiable ;;
 
 let items gram =
   let prods = Private.productions gram in 
