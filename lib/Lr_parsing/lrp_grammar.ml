@@ -128,8 +128,6 @@ let make_from_bare_grammar bg= {
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
-   hashtbl_for_emptiability = Hashtbl.create 100;
-   emptiable_nonterminals = None ;
    hashtbl_for_furst_sets = Hashtbl.create 100;
    hashtbl_for_rightmost_ancestors = Hashtbl.create 100;
    hashtbl_for_follow_sets = Hashtbl.create 100;
@@ -148,48 +146,8 @@ let terminals gram = Lrp_bare_grammar.terminals gram.core ;;
 
 let nonterminals gram = Lrp_bare_grammar.terminals gram.core ;;
 
+let is_emptiable gram symb = Lrp_bare_grammar.is_emptiable gram.core symb ;;
 
-module Emptiable_nonterminals = struct
-
-let initial_data gram =
-   let prods1 = Lrp_bare_grammar.productions gram.core in 
-   let prods2= Image.image (fun (Prod(h,l))->(h,str_sort l)) prods1 in
-   let unordered_nonterminals = Image.image fst prods2 in 
-   let nonterminals = str_sort unordered_nonterminals in 
-   Image.image (fun h->(h,List.assoc h prods2)) nonterminals ;; 
-
-
-let pusher (simplified_productions,level) =
-    let next_simplified_productions = Image.image (fun (h,l)->
-        (h,str_setminus l level)
-      ) simplified_productions in 
-    let next_level = List.filter_map(fun (h,l)->if l=[] then Some h else None) next_simplified_productions in 
-    (next_simplified_productions,next_level)  ;;
-
-let rec iterator (preceding_pair,pair) =
-   let (_,preceding_level) = preceding_pair 
-   and (_,level) = pair in 
-   if List.length preceding_level = List.length level 
-   then level 
-   else iterator(pair,pusher pair) ;;   
-
-let all gram = 
-   match gram.emptiable_nonterminals with 
-   Some old_answer -> old_answer 
-   | None ->
-   let first_pair = (initial_data gram,[]) in 
-   let final_level = iterator (first_pair,pusher first_pair) in 
-   let symbols = all_symbols gram in 
-   let _ = (List.iter (fun x->
-     Hashtbl.add gram.hashtbl_for_emptiability x (List.mem x final_level)   
-   ) symbols;
-     gram.emptiable_nonterminals <- (Some final_level);
-   ) in 
-   final_level ;;
-
-
-
-end ;;
 
 module Furst_set = struct 
 
@@ -200,14 +158,12 @@ We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience)
 *)
 
 let elements_having_a_wholly_emptiable_left gram form =
-   let _ = Emptiable_nonterminals.all gram in 
-   (* When we get here, gram.hashtbl_for_emptiability has already been filled *)
    let rec tempf = (
      fun (treated,to_be_treated) -> 
       match to_be_treated with 
       [] -> List.rev(treated)
       |symb::other_symbs ->
-         if Hashtbl.find gram.hashtbl_for_emptiability symb 
+         if is_emptiable gram symb 
          then tempf(symb::treated,other_symbs)
          else List.rev(symb::treated)  
    ) in 
@@ -506,7 +462,6 @@ let add_new_paths_to_lr0_molecule = Private.add_new_paths_to_lr0_molecule ;;
 
 let all_lr0_molecules = Private.all_lr0_molecules ;;
 
-let emptiable_nonterminals = Private.Emptiable_nonterminals.all ;;
 
 let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
 

@@ -49,8 +49,6 @@ type grammar = {
    mutable registry : registry_for_lr0_molecules ;
    hashtbl_for_ghettoes : (int * string, registered_lr0_molecule) Hashtbl.t ;
    mutable all_lr0_molecules : (registered_lr0_molecule list) option; 
-   hashtbl_for_emptiability : (string, bool) Hashtbl.t ;
-   mutable emptiable_nonterminals : (string list) option ;
    hashtbl_for_furst_sets : (string, string list) Hashtbl.t ;
    hashtbl_for_rightmost_ancestors : (string, string list) Hashtbl.t ;
    hashtbl_for_follow_sets : (string, string list) Hashtbl.t ;
