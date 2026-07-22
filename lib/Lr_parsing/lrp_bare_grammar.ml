@@ -18,6 +18,8 @@ let str_merge = Ordered.merge str_order ;;
 let str_setminus = Ordered.setminus str_order ;; 
 let str_sort = Ordered.sort str_order ;; 
 
+let end_marker = "Endmarker" ;;
+
 let productions gram = gram.productions ;;
 
 let counter = ref(0) ;;
@@ -234,10 +236,45 @@ let rightmost_ancestors = memoize_univar hashtbl_for_rightmost_ancestors compute
 
 end ;;   
 
+module Follow_set = struct 
+
+   let completions_on_the_right_for_in_production symb (Prod(_a,b)) =
+      let temp1 = Two_winged_bird_on_plank.generic b in 
+      List.filter_map (
+        fun (_rev_left,center,right) ->
+          if center <> symb then None else 
+          Some right   
+      ) temp1 ;;
+
+    let completions_on_the_right_for_in_productions symb productions =
+     List.flatten (Image.image (completions_on_the_right_for_in_production symb) productions) ;;   
+
+
+let direct_follow_set gram symb =
+   let prods = productions gram in 
+   let completions = completions_on_the_right_for_in_productions symb prods in 
+   let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
+   let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
+   str_fold_merge (rightmost_contribution::
+   (Image.image (Furst_set.furst_set_for_form gram) nonempty_completions)) ;;
+
+let compute_follow_set_naively gram symb =
+   str_fold_merge (Image.image (direct_follow_set gram)
+    (symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
+
+let hashtbl_for_follow_set = Hashtbl.create 100;;
+
+let follow_set = memoize_univar hashtbl_for_follow_set compute_follow_set_naively ;; 
+
+end ;;   
+
+
 end ;;
 
 let all_symbols = Private.all_symbols ;;
 let augment = Private.augment ;;
+
+let follow_set = Private.Follow_set.follow_set ;;
 
 let furst_set_for_form = Private.Furst_set.furst_set_for_form ;;
 
