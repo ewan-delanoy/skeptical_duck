@@ -210,7 +210,29 @@ let furst_set_for_form gram form =
 
 end ;;  
 
+module Rightmost_ancestors = struct 
 
+let direct_rightmost_ancestors gram symb = 
+   let productions = productions gram in 
+   str_sort(List.filter_map (fun (Prod(a,b))->if List.hd(List.rev b)=symb then Some a else None)  productions) ;;
+
+let direct_rightmost_ancestors_for_several gram symbs =
+  str_fold_merge (Image.image (direct_rightmost_ancestors gram) symbs) ;;
+
+let rec helper gram (current_whole,to_be_treated) =
+   let possibly_new = direct_rightmost_ancestors_for_several gram to_be_treated in 
+   let really_new = str_setminus possibly_new current_whole in 
+   if really_new = []
+   then current_whole 
+   else helper gram (str_merge current_whole really_new,really_new) ;;   
+
+let compute_rightmost_ancestors_naively gram symb = helper gram ([],[symb]) ;;
+
+let hashtbl_for_rightmost_ancestors = Hashtbl.create 100;;
+
+let rightmost_ancestors = memoize_univar hashtbl_for_rightmost_ancestors compute_rightmost_ancestors_naively ;; 
+
+end ;;   
 
 end ;;
 
@@ -235,5 +257,7 @@ let nonterminals = Private.nonterminals ;;
 
 let order_on_items = Private.order_on_items ;;
 let productions = Private.productions ;;
+
+let rightmost_ancestors = Private.Rightmost_ancestors.rightmost_ancestors ;;
 let start_symbol = Private.start_symbol ;; 
 let terminals = Private.terminals ;;
