@@ -43,6 +43,7 @@ let starter_atom bare_grammar =
 let ender_atom bare_grammar = 
   let (BG productions)=bare_grammar in 
   Atom(Lrp_item.first_item_from_production  (List.hd productions));;  
+ 
 
 (*
 let item_list_component (St items) = items ;;

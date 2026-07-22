@@ -25,7 +25,7 @@ let order gram = ((fun item1 item2 ->
       (index_of_production_in_grammar item2 gram)  
 ): item Total_ordering_t.t);;
 
-let colleague_for_one symb (Item(p,l))=
+let push_dot_one_symbol symb (Item(p,l))=
   let n = List.length l 
   and j = List_again.index_of_in "." l in
   if j=n then None else 
@@ -38,16 +38,16 @@ let colleague_for_one symb (Item(p,l))=
 
 (*
 
-colleague_for_one "1" (Item("a",[".";"1";"2";"3";"4";"5";"6"])) ;;
-colleague_for_one "3" (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
-colleague_for_one "6" (Item("a",["1";"2";"3";"4";"5";".";"6"])) ;;
+push_dot_one_symbol "1" (Item("a",[".";"1";"2";"3";"4";"5";"6"])) ;;
+push_dot_one_symbol "3" (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
+push_dot_one_symbol "6" (Item("a",["1";"2";"3";"4";"5";".";"6"])) ;;
 
 *)  
 
 let sort gram = Ordered.sort (order gram);;
 
 let colleagues_for_several gram symb items=
-  sort gram (List.filter_map (colleague_for_one symb) items) ;;
+  sort gram (List.filter_map (push_dot_one_symbol symb) items) ;;
 
 
 let description_for_item (Item(p,l)) = p ^ " -> " ^ (String.concat "" l) ;;
@@ -77,9 +77,7 @@ let display_indexed_item_sets l =
 
 let order = Private.order ;;   
 
-let push_dot_one_symbol = Private.colleague_for_one ;;
-
-let push_dots_one_symbol = Private.colleagues_for_several ;;
+let push_dot_one_symbol = Private.push_dot_one_symbol ;;
 
 let first_item_from_production (Prod(p,l)) = Item(p,"."::l);;
 

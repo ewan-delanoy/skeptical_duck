@@ -358,8 +358,9 @@ end ;;
 
 module Simple_Lr = struct 
 
- let terminals_after_a_dot_in_lr0_molecule gram (St atoms)=
-    let items = Image.image (fun ( Atom  item) -> item) atoms in 
+ let terminals_after_a_dot_in_lr0_molecule gram lr0_molecule =
+    let atoms= Lrk_core_methods.atoms_inside lr0_molecule in 
+    let items = Image.image Lrk_core_methods.item_component atoms in 
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let termies = terminals gram in 
@@ -373,19 +374,29 @@ module Simple_Lr = struct
         (term,Shift(new_idx))
       ) terms ;;
 
-   let almost_finished_productions_in_lr0_molecule (St atoms)=
-    let items = Image.image (fun ( Atom  item) -> item) atoms in 
-    List.filter_map (fun item->Lrp_item.almost_finished_production_opt item) items ;;    
-   
-   let reductions_from_lr0_molecule gram lr0_molecule =
-      let (Prod(early_start,_old_start)) = first_production gram   in 
-      let prods = almost_finished_productions_in_lr0_molecule lr0_molecule in 
-      List.flatten(Image.image (fun production->
-        let (Prod(p,_)) = production in 
-        if p = early_start then [] else  
-        let followers = Follow_set.follow_set gram p in 
-        Image.image (fun follower -> (follower,Reduce(production))) followers
-      ) prods );; 
+   let test_for_allowing_reduction gram _atom ~head_of_production ~terminal =
+      let (BG productions) = gram.core in 
+      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
+      if head_of_production = early_start then false else  
+      List.mem terminal (Follow_set.follow_set gram head_of_production) ;;
+
+   let reduction_from_terminal_and_atom_opt gram terminal atom =
+      match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
+      None -> None
+      |Some(production) ->
+         let (Prod(head_of_production,_)) = production in 
+         if test_for_allowing_reduction gram atom ~head_of_production ~terminal 
+         then Some(terminal,Reduce(production))
+         else None;;  
+         
+   let reduction_from_molecule_and_terminal_opt gram lr0_molecule term = 
+      let atoms= Lrk_core_methods.atoms_inside lr0_molecule in 
+      List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
+
+   let reductions_from_lr0_molecule gram lr0_molecule = 
+      let termies = terminals gram in 
+      List.filter_map (reduction_from_molecule_and_terminal_opt gram lr0_molecule) termies ;;
+  
 
    let acceptations_from_lr0_molecule gram lr0_molecule =
       let (Prod(early_start,old_start)) = first_production gram 
