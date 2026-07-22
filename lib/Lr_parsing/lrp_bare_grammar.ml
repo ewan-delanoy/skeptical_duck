@@ -93,6 +93,7 @@ let order_on_items gram = ((fun item1 item2 ->
 
 end ;;
 
+let all_symbols = Private.all_symbols ;;
 let augment = Private.augment ;;
 
 let items gram =
@@ -108,6 +109,4 @@ let nonterminals = Private.nonterminals ;;
 let order_on_items = Private.order_on_items ;;
 let productions = Private.productions ;;
 let start_symbol = Private.start_symbol ;; 
-
-let symbols gram = Private.str_merge (Private.terminals gram)  (Private.nonterminals gram) ;;
 let terminals = Private.terminals ;;

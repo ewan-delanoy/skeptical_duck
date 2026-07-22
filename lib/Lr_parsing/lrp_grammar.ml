@@ -82,15 +82,7 @@ let rlr0_molecule_merge = Ordered.merge rlr0_molecule_order ;;
 let rlr0_molecule_setminus = Ordered.setminus rlr0_molecule_order ;;
 let rlr0_molecule_sort = Ordered.sort rlr0_molecule_order ;;
 
-let all_symbols gram = 
-   match gram.symbols with 
-   Some old_answer -> old_answer 
-   | None -> 
-      let answer = Lrp_bare_grammar.symbols gram.core in 
-      let _ = (
-          gram.symbols <- (Some answer);
-      ) in 
-      answer;;
+let all_symbols gram = Lrp_bare_grammar.all_symbols gram.core ;;
 
 
 let ghetto_neighbors_for_one gram rlr0_molecule = 
@@ -133,9 +125,6 @@ let all_lr0_molecules gram =
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   symbols = None ;
-   terminals = None ;
-   nonterminals = None ;
    registry = Lrp_registry.default ;
    hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
@@ -154,27 +143,11 @@ let make l= make_from_bare_grammar (Lrp_bare_grammar.make l);;
 let first_production gram = List.hd(Lrp_bare_grammar.productions gram.core);;
 
 
-let terminals gram = 
-   match gram.terminals with 
-   Some old_answer -> old_answer 
-   | None -> 
-      let answer = Lrp_bare_grammar.terminals gram.core in 
-      let _ = (
-          gram.terminals <- (Some answer);
-          List.iter (fun terminal -> Hashtbl.add gram.hashtbl_for_furst_sets terminal [terminal]) answer
-      ) in 
-      answer;;
-
-let nonterminals gram = 
-   match gram.nonterminals with 
-   Some old_answer -> old_answer 
-   | None -> 
-      let answer = Lrp_bare_grammar.nonterminals gram.core in 
-      let _ = (
-          gram.nonterminals <- (Some answer);
-      ) in 
-      answer;;
+let terminals gram = Lrp_bare_grammar.terminals gram.core ;;
    
+
+let nonterminals gram = Lrp_bare_grammar.terminals gram.core ;;
+
 
 module Emptiable_nonterminals = struct
 
