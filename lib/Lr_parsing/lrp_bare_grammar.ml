@@ -11,6 +11,8 @@ open Lrp_types ;;
 module Private = struct 
 
 let str_order = Total_ordering.lex_for_strings ;;
+let str_fold_merge = Ordered.fold_merge str_order ;;
+let str_insert = Ordered.insert str_order ;; 
 let str_mem = Ordered.mem str_order ;; 
 let str_merge = Ordered.merge str_order ;; 
 let str_setminus = Ordered.setminus str_order ;; 
@@ -32,7 +34,7 @@ let make prods =
   make_from_prods (Image.image (fun (a,b)->Prod(a,b)) prods) ;;
 
 
-let memoize hashtbl f gram =
+let memoize_constant hashtbl f gram =
    match Hashtbl.find_opt hashtbl gram.grammar_serial_number with 
    Some old_answer -> old_answer 
    | None -> 
@@ -40,12 +42,22 @@ let memoize hashtbl f gram =
      let _ = Hashtbl.replace hashtbl gram.grammar_serial_number answer in 
      answer ;;
 
+let memoize_univar hashtbl f gram var1=
+   match Hashtbl.find_opt hashtbl (gram.grammar_serial_number,var1) with 
+   Some old_answer -> old_answer 
+   | None -> 
+     let answer = f gram var1 in 
+     let _ = Hashtbl.replace hashtbl (gram.grammar_serial_number,var1) answer in 
+     answer ;;
+
+
+
 let compute_nonterminals_naively gram= 
   str_sort (Image.image (fun (Prod(a,_))->a) (productions gram)) ;;
 
 let hashtbl_for_nonterminals = Hashtbl.create 100;;
 
-let nonterminals = memoize hashtbl_for_nonterminals compute_nonterminals_naively ;;
+let nonterminals = memoize_constant hashtbl_for_nonterminals compute_nonterminals_naively ;;
 
 let compute_terminals_naively gram= 
    let l = productions gram in 
@@ -54,13 +66,13 @@ let compute_terminals_naively gram=
 
 let hashtbl_for_terminals = Hashtbl.create 100;;
 
-let terminals = memoize hashtbl_for_terminals compute_terminals_naively ;; 
+let terminals = memoize_constant hashtbl_for_terminals compute_terminals_naively ;; 
 
 let compute_all_symbols_naively gram= str_merge (terminals gram)  (nonterminals gram);; 
 
 let hashtbl_for_all_symbols = Hashtbl.create 100;;
 
-let all_symbols = memoize hashtbl_for_all_symbols compute_all_symbols_naively ;; 
+let all_symbols = memoize_constant hashtbl_for_all_symbols compute_all_symbols_naively ;; 
 
 let rename_in_symbol (old_name,new_name) symb = if symb = old_name then new_name else symb ;;
 
@@ -123,21 +135,91 @@ let compute_emptiable_nonterminals_naively gram =
 
 let hashtbl_for_emptiable_nonterminals = Hashtbl.create 100;;
 
-let emptiable_nonterminals = memoize hashtbl_for_emptiable_nonterminals compute_emptiable_nonterminals_naively ;; 
+let emptiable_nonterminals = memoize_constant hashtbl_for_emptiable_nonterminals compute_emptiable_nonterminals_naively ;; 
 
 let compute_is_emptiable_naively gram symb=str_mem symb (emptiable_nonterminals gram);; 
     
 
 let hashtbl_for_is_emptiable = Hashtbl.create 100;;
 
-let is_emptiable = memoize hashtbl_for_is_emptiable compute_is_emptiable_naively ;; 
+let is_emptiable = memoize_univar hashtbl_for_is_emptiable compute_is_emptiable_naively ;; 
 
 end ;;
+
+module Furst_set = struct 
+
+(*
+
+We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) 
+
+*)
+
+let elements_having_a_wholly_emptiable_left gram form =
+   let rec tempf = (
+     fun (treated,to_be_treated) -> 
+      match to_be_treated with 
+      [] -> List.rev(treated)
+      |symb::other_symbs ->
+         if Emptiable_nonterminals.is_emptiable gram symb 
+         then tempf(symb::treated,other_symbs)
+         else List.rev(symb::treated)  
+   ) in 
+   tempf([],form) ;; 
+
+let hashtbl_for_furst_set = Hashtbl.create 100;;
+
+let expand gram already_found_prefixes (older_heads,current_head) = 
+   let termies = terminals gram in 
+   let updated_heads = str_insert current_head older_heads in 
+   let productions =productions gram in 
+   let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
+      if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
+   let candidates =  str_setminus (str_sort temp1) updated_heads in 
+   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb termies) candidates in 
+   let using_precedent_computations = Image.image (fun symb->
+      (symb,Hashtbl.find_opt hashtbl_for_furst_set (gram.grammar_serial_number,symb))) nonterminal_candidates in 
+   let (to_be_treated_next,already_treated)  = List.partition (fun (_,opt)->opt=None) 
+       using_precedent_computations in 
+   let new_prefixes2 = str_fold_merge  (Image.image (fun (_,opt)->Option.get opt) already_treated) in 
+   let new_prefixes = str_merge new_prefixes1 new_prefixes2 in 
+   (str_merge new_prefixes already_found_prefixes,updated_heads,Image.image fst to_be_treated_next) ;;
+
+let rec iterator gram (already_found_prefixes,to_be_treated) = 
+   match to_be_treated with 
+   [] -> already_found_prefixes 
+   |pair :: other_pairs -> 
+     let (new_set_of_prefixes,new_pairs) = (
+        match Hashtbl.find_opt hashtbl_for_furst_set (gram.grammar_serial_number,snd pair) with 
+        Some old_answer -> (str_merge old_answer already_found_prefixes,[])
+        |None -> 
+         let (new_set_of_prefixes2,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
+         let new_pairs2 = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
+         (new_set_of_prefixes2,new_pairs2)
+     )  in 
+     iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
+  
+let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;
+
+let furst_set_for_symbol = memoize_univar hashtbl_for_furst_set compute_furst_set_naively ;; 
+
+let furst_set_for_form gram form = 
+    let symbols = elements_having_a_wholly_emptiable_left gram form in 
+    iterator  gram ([],Image.image(fun symb -> ([],symb)) symbols) ;;
+
+
+
+end ;;  
+
+
 
 end ;;
 
 let all_symbols = Private.all_symbols ;;
 let augment = Private.augment ;;
+
+let furst_set_for_form = Private.Furst_set.furst_set_for_form ;;
+
+let furst_set_for_symbol = Private.Furst_set.furst_set_for_symbol ;;
 
 let is_emptiable = Private.Emptiable_nonterminals.is_emptiable ;;
 
