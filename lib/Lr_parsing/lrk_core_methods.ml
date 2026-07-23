@@ -55,8 +55,6 @@ let immediate_closure = Private.immediate_closure ;;
 let item_component  = Private.item_component ;; 
 
 let molecule = Private.molecule ;;
-let of_uniform_representation (Lrm l) = St(Image.image (fun (item,_)->Atom item) l) ;;
-let to_uniform_representation (St l) = Lrm(Image.image (fun (Atom item)->(item,"")) l) ;;
 
 let order_on_atoms = Private.atm_order ;;
 
