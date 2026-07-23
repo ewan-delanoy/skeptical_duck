@@ -111,14 +111,16 @@ let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb =
   new_rlr0_molecule  
   ;;
 
+let hashtbl_for_ghettoes = Hashtbl.create 100 ;;
 
 let compute_ghetto gram rlr_state symb =
   let (RSt (idx,_items)) = rlr_state in  
-  match Hashtbl.find_opt gram.hashtbl_for_ghettoes (idx,symb) with 
+  let key = (gram.core.grammar_serial_number,idx,symb) in 
+  match Hashtbl.find_opt hashtbl_for_ghettoes key with 
   Some old_answer -> old_answer 
   | None ->
    let new_answer = compute_ghetto_naively gram rlr_state symb in 
-   let _ = Hashtbl.add gram.hashtbl_for_ghettoes (idx,symb) new_answer in 
+   let _ = Hashtbl.replace hashtbl_for_ghettoes key new_answer in 
    new_answer
   ;;
 
@@ -171,7 +173,6 @@ let all_lr0_molecules gram =
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   hashtbl_for_ghettoes = Hashtbl.create 100;
    all_lr0_molecules = None ;
    data_for_simple_lr_table = None ;
    usual_names_for_lr0_molecules = None ;
