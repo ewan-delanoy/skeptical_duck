@@ -274,6 +274,7 @@ end ;;
 let all_symbols = Private.all_symbols ;;
 let augment = Private.augment ;;
 
+let first_production gram = List.hd(Private.productions gram);;
 let follow_set = Private.Follow_set.follow_set ;;
 
 let furst_set_for_form = Private.Furst_set.furst_set_for_form ;;

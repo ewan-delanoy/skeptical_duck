@@ -8,7 +8,7 @@ Lrp is short for "LR Parsing"
 
 type production = Prod of string * string list ;;
 
-type bare_grammar = {
+type grammar = {
   grammar_serial_number : int ;
   productions : production list ; 
 } ;;
@@ -45,9 +45,5 @@ type registry_for_lr0_molecules = Rg of ( lr0_molecule * ((string list) list) ) 
 
 
 type shortnamer = Shn of (registered_lr0_molecule * string) list ;;
-
-type grammar = {
-   core : bare_grammar ;
-} ;;
 
 

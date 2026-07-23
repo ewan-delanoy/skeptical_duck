@@ -37,26 +37,26 @@ module Private = struct
    let hashtbl_for_paths = Hashtbl.create 100 ;;
    
    let get_index gram molecule=
-      match Hashtbl.find_opt hashtbl_for_indices (gram.core.grammar_serial_number,molecule) with 
+      match Hashtbl.find_opt hashtbl_for_indices (gram.grammar_serial_number,molecule) with 
        Some old_idx -> old_idx
       |None ->
         let new_idx = (!counter_for_registered_molecules)-1 in 
         let _ = (
          counter_for_registered_molecules:=new_idx+2;
-         Hashtbl.replace hashtbl_for_indices (gram.core.grammar_serial_number,molecule) new_idx;
-         Hashtbl.replace hashtbl_for_paths (gram.core.grammar_serial_number,new_idx) [];
+         Hashtbl.replace hashtbl_for_indices (gram.grammar_serial_number,molecule) new_idx;
+         Hashtbl.replace hashtbl_for_paths (gram.grammar_serial_number,new_idx) [];
       ) in  
       new_idx ;;      
       
    let get_paths gram molecule=
       let idx = get_index gram molecule in 
-      Hashtbl.find hashtbl_for_paths (gram.core.grammar_serial_number,idx) ;;
+      Hashtbl.find hashtbl_for_paths (gram.grammar_serial_number,idx) ;;
 
    let add_paths gram molecule paths_to_be_added =
        let idx = get_index gram molecule in 
-       let old_paths = Hashtbl.find hashtbl_for_paths (gram.core.grammar_serial_number,idx) in 
+       let old_paths = Hashtbl.find hashtbl_for_paths (gram.grammar_serial_number,idx) in 
        let new_paths = path_merge old_paths (path_sort paths_to_be_added) in 
-       Hashtbl.replace hashtbl_for_paths (gram.core.grammar_serial_number,idx) new_paths ;;
+       Hashtbl.replace hashtbl_for_paths (gram.grammar_serial_number,idx) new_paths ;;
      
 
    end ;;   
@@ -99,8 +99,8 @@ module Private = struct
       let new_atoms = Ordered.sort (Lrk_core_methods.order_on_atoms bare_gram) unordered_new_atoms in 
       Lrk_core_methods.molecule new_atoms ;;
 
-   let ghetto_for_jterm gram lr0_molecule symb = closure gram.core 
-   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram.core symb lr0_molecule));; 
+   let ghetto_for_jterm gram lr0_molecule symb = closure gram 
+   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram symb lr0_molecule));; 
 
 let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
   let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 
@@ -119,7 +119,7 @@ let hashtbl_for_ghettoes = Hashtbl.create 100 ;;
 
 let compute_ghetto gram rlr_state symb =
   let (RSt (idx,_items)) = rlr_state in  
-  let key = (gram.core.grammar_serial_number,idx,symb) in 
+  let key = (gram.grammar_serial_number,idx,symb) in 
   match Hashtbl.find_opt hashtbl_for_ghettoes key with 
   Some old_answer -> rglr_of_uniform_representation old_answer 
   | None ->
@@ -134,11 +134,9 @@ let rlr0_molecule_merge = Ordered.merge rlr0_molecule_order ;;
 let rlr0_molecule_setminus = Ordered.setminus rlr0_molecule_order ;;
 let rlr0_molecule_sort = Ordered.sort rlr0_molecule_order ;;
 
-let all_symbols gram = Lrp_grammar.all_symbols gram.core ;;
-
 
 let ghetto_neighbors_for_one gram rlr0_molecule = 
-   let all_symbols = all_symbols gram in 
+   let all_symbols = Lrp_grammar.all_symbols gram in 
    rlr0_molecule_sort(Image.image (compute_ghetto gram rlr0_molecule) all_symbols) ;;
 
 let ghetto_neighbors_for_several gram lr0_molecules = rlr0_molecule_fold_merge
@@ -157,7 +155,7 @@ let starter_lr0_molecule bare_gram =
    closure bare_gram [Lrk_core_methods.starter_atom bare_gram];; 
 
 let starter_rlr0_molecule gram = 
-   let starter_lr0_molecule = starter_lr0_molecule gram.core in
+   let starter_lr0_molecule = starter_lr0_molecule gram in
    let answer = register_lr0_molecule gram starter_lr0_molecule in 
    let _ = add_new_paths_to_lr0_molecule gram starter_lr0_molecule [[]] in 
    answer;;
@@ -173,7 +171,7 @@ let rglr_list_of_uniform_representation = Image.image rglr_of_uniform_representa
 
 
 let all_lr0_molecules gram =
-  let key = (gram.core.grammar_serial_number) in 
+  let key = (gram.grammar_serial_number) in 
   match Hashtbl.find_opt hashtbl_for_all_lr0_molecules key with 
   Some old_answer -> rglr_list_of_uniform_representation old_answer 
   | None ->
@@ -183,26 +181,6 @@ let all_lr0_molecules gram =
   ;;
 
 
-let make_from_bare_grammar bg= {
-   core = bg ;
-} ;;
-
-
-let make l= make_from_bare_grammar (Lrp_grammar.make l);;
-
-let first_production gram = List.hd(Lrp_grammar.productions gram.core);;
-
-
-let terminals gram = Lrp_grammar.terminals gram.core ;;
-   
-
-let nonterminals gram = Lrp_grammar.terminals gram.core ;;
-
-let is_emptiable gram symb = Lrp_grammar.is_emptiable gram.core symb ;;
-
-
-
-
 module Simple_Lr = struct 
 
  let terminals_after_a_dot_in_lr0_molecule gram lr0_molecule =
@@ -210,7 +188,7 @@ module Simple_Lr = struct
     let items = Image.image Lrk_core_methods.item_component atoms in 
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
-    let termies = terminals gram in 
+    let termies = Lrp_grammar.terminals gram in 
     str_intersect termies symbols_after_a_dot ;; 
 
    let shifts_from_lr0_molecule gram lr0_molecule =
@@ -222,10 +200,10 @@ module Simple_Lr = struct
       ) terms ;;
 
    let test_for_allowing_reduction gram _atom ~head_of_production ~terminal =
-      let productions = Lrp_grammar.productions gram.core in 
+      let productions = Lrp_grammar.productions gram in 
       let (Prod(early_start,_old_start)) = List.hd(productions)   in 
       if head_of_production = early_start then false else  
-      List.mem terminal (Lrp_grammar.follow_set gram.core head_of_production) ;;
+      List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
 
    let reduction_from_terminal_and_atom_opt gram terminal atom =
       match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
@@ -241,12 +219,12 @@ module Simple_Lr = struct
       List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
 
    let reductions_from_lr0_molecule gram lr0_molecule = 
-      let termies = terminals gram in 
+      let termies = Lrp_grammar.terminals gram in 
       List.filter_map (reduction_from_molecule_and_terminal_opt gram lr0_molecule) termies ;;
   
 
    let acceptations_from_lr0_molecule gram lr0_molecule =
-      let (Prod(early_start,old_start)) = first_production gram 
+      let (Prod(early_start,old_start)) = Lrp_grammar.first_production gram 
      and (St atoms) = lr0_molecule in 
       let items = Image.image (fun ( Atom  item) -> item) atoms in 
       let the_item = Item(early_start,old_start@["."]) in 
@@ -261,7 +239,7 @@ module Simple_Lr = struct
   
    let preliminary_data_for_simple_lr_actions gram =
       let states = List.tl(all_lr0_molecules gram) 
-      and termies = (terminals gram)@["Endmarker"] in 
+      and termies = (Lrp_grammar.terminals gram)@["Endmarker"] in 
       let base = Cartesian.product states termies in 
       let initial_data = List.filter_map (
          fun pair ->
@@ -301,7 +279,7 @@ module Simple_Lr = struct
 
    let data_for_simple_lr_gotos gram = 
       let states = List.tl(all_lr0_molecules gram) 
-      and nonterminals = nonterminals gram  in 
+      and nonterminals = Lrp_grammar.nonterminals gram  in 
       let base = Cartesian.product states nonterminals in 
       let initial_data = List.filter_map (
          fun pair ->
@@ -328,11 +306,11 @@ module Simple_Lr = struct
     let hashtbl_for_data_for_simple_lr_table = Hashtbl.create 100 ;;   
 
     let data_for_simple_lr_table gram = 
-      match Hashtbl.find_opt hashtbl_for_data_for_simple_lr_table gram.core.grammar_serial_number  with 
+      match Hashtbl.find_opt hashtbl_for_data_for_simple_lr_table gram.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
     let new_answer = compute_data_for_simple_lr_table_naively gram in 
-    let _ = (Hashtbl.replace hashtbl_for_data_for_simple_lr_table gram.core.grammar_serial_number new_answer) in 
+    let _ = (Hashtbl.replace hashtbl_for_data_for_simple_lr_table gram.grammar_serial_number new_answer) in 
      new_answer ;;
 
    let table gram =
@@ -362,11 +340,11 @@ let compute_usual_names_for_lr0_molecules_naively gram =
  let hashtbl_for_usual_names_for_lr0_molecules = Hashtbl.create 100 ;;   
 
     let usual_names_for_lr0_molecules gram = 
-      match Hashtbl.find_opt hashtbl_for_usual_names_for_lr0_molecules gram.core.grammar_serial_number  with 
+      match Hashtbl.find_opt hashtbl_for_usual_names_for_lr0_molecules gram.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
     let new_answer = compute_usual_names_for_lr0_molecules_naively gram in 
-    let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lr0_molecules gram.core.grammar_serial_number new_answer) in 
+    let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lr0_molecules gram.grammar_serial_number new_answer) in 
      new_answer ;;
 
 end ;;   
