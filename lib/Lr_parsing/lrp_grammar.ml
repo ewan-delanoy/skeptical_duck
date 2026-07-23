@@ -111,16 +111,20 @@ let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb =
   new_rlr0_molecule  
   ;;
 
+let rglr_to_uniform_representation (RSt(reg_idx,lr)) = (reg_idx,Lrk_core_methods.to_uniform_representation lr) ;; 
+
+let rglr_of_uniform_representation (reg_idx,uniform_rep)= (RSt(reg_idx,Lrk_core_methods.of_uniform_representation uniform_rep)) ;; 
+
 let hashtbl_for_ghettoes = Hashtbl.create 100 ;;
 
 let compute_ghetto gram rlr_state symb =
   let (RSt (idx,_items)) = rlr_state in  
   let key = (gram.core.grammar_serial_number,idx,symb) in 
   match Hashtbl.find_opt hashtbl_for_ghettoes key with 
-  Some old_answer -> old_answer 
+  Some old_answer -> rglr_of_uniform_representation old_answer 
   | None ->
    let new_answer = compute_ghetto_naively gram rlr_state symb in 
-   let _ = Hashtbl.replace hashtbl_for_ghettoes key new_answer in 
+   let _ = Hashtbl.replace hashtbl_for_ghettoes key (rglr_to_uniform_representation new_answer) in 
    new_answer
   ;;
 
@@ -161,19 +165,26 @@ let starter_rlr0_molecule gram =
 
 let compute_all_lr0_molecules_naively gram = ghetto_neighborhood gram [starter_rlr0_molecule gram] ;;
 
-let all_lr0_molecules gram = 
-   match gram.all_lr0_molecules with 
-   Some old_answer -> old_answer 
-   | None -> 
-      let answer = compute_all_lr0_molecules_naively gram in 
-      let _ = (gram.all_lr0_molecules <- (Some answer)
-      ) in 
-      answer;;
+let hashtbl_for_all_lr0_molecules = Hashtbl.create 100 ;;  
+
+let rglr_list_to_uniform_representation = Image.image rglr_to_uniform_representation ;; 
+
+let rglr_list_of_uniform_representation = Image.image rglr_of_uniform_representation ;;  ;; 
+
+
+let all_lr0_molecules gram =
+  let key = (gram.core.grammar_serial_number) in 
+  match Hashtbl.find_opt hashtbl_for_all_lr0_molecules key with 
+  Some old_answer -> rglr_list_of_uniform_representation old_answer 
+  | None ->
+   let new_answer = compute_all_lr0_molecules_naively gram in 
+   let _ = Hashtbl.replace hashtbl_for_all_lr0_molecules key (rglr_list_to_uniform_representation new_answer) in 
+   new_answer
+  ;;
 
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   all_lr0_molecules = None ;
    data_for_simple_lr_table = None ;
    usual_names_for_lr0_molecules = None ;
 } ;;
