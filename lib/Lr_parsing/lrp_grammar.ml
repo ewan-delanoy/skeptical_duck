@@ -12,7 +12,8 @@ module Private = struct
 
 let str_order = Total_ordering.lex_for_strings ;;
 let str_fold_merge = Ordered.fold_merge str_order ;;
-let str_insert = Ordered.insert str_order ;; 
+let str_insert = Ordered.insert str_order ;;
+let str_intersect = Ordered.intersect str_order ;; 
 let str_mem = Ordered.mem str_order ;; 
 let str_merge = Ordered.merge str_order ;; 
 let str_setminus = Ordered.setminus str_order ;; 
@@ -148,15 +149,11 @@ let is_emptiable = memoize_univar hashtbl_for_is_emptiable compute_is_emptiable_
 
 end ;;
 
-module Furst_set = struct 
+module Leftmost_descendants = struct
 
-(*
-
-We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) 
-
-*)
-
-let elements_having_a_wholly_emptiable_left gram form =
+(* Note that a non-terminal is always a leftmost descendant of itself *)   
+   
+let elements_having_a_wholly_emptiable_subform_on_their_left_side gram form =
    let rec tempf = (
      fun (treated,to_be_treated) -> 
       match to_be_treated with 
@@ -166,47 +163,57 @@ let elements_having_a_wholly_emptiable_left gram form =
          then tempf(symb::treated,other_symbs)
          else List.rev(symb::treated)  
    ) in 
-   tempf([],form) ;; 
+   tempf([],form) ;;    
+   
+let direct_leftmost_descendants gram symb =
+    let prods =productions gram in 
+    let unordered_descendants = List.flatten(Image.image (fun (Prod(a,b))->
+      if a<>symb then [] else
+      elements_having_a_wholly_emptiable_subform_on_their_left_side gram b) prods) in 
+    str_sort (symb::unordered_descendants);;
+
+let direct_leftmost_descendants_for_several gram symbs =
+  str_fold_merge (Image.image (direct_leftmost_descendants gram) symbs) ;;
+
+let rec helper gram (current_whole,to_be_treated) =
+   let possibly_new = direct_leftmost_descendants_for_several gram to_be_treated in 
+   let really_new = str_setminus possibly_new current_whole in 
+   if really_new = []
+   then current_whole 
+   else helper gram (str_merge current_whole really_new,really_new) ;;   
+
+let compute_leftmost_descendants_naively gram symb = helper gram ([],[symb]) ;;
+
+let hashtbl_for_leftmost_descendants = Hashtbl.create 100;;
+
+let leftmost_descendants = memoize_univar hashtbl_for_leftmost_descendants compute_leftmost_descendants_naively ;; 
+
+
+end ;;   
+
+module Furst_set = struct 
+
+(*
+
+We compute so-called "FIRST" sets (here renamed "Furst" sets for convenience) 
+
+*)
+
+
 
 let hashtbl_for_furst_set = Hashtbl.create 100;;
 
-let expand gram already_found_prefixes (older_heads,current_head) = 
-   let termies = terminals gram in 
-   let updated_heads = str_insert current_head older_heads in 
-   let productions =productions gram in 
-   let temp1 = List.flatten(List.filter_map (fun (Prod(a,b))->
-      if a<>current_head then None else Some( elements_having_a_wholly_emptiable_left gram b)) productions) in 
-   let candidates =  str_setminus (str_sort temp1) updated_heads in 
-   let (new_prefixes1,nonterminal_candidates) = List.partition (fun symb->str_mem symb termies) candidates in 
-   let using_precedent_computations = Image.image (fun symb->
-      (symb,Hashtbl.find_opt hashtbl_for_furst_set (gram.grammar_serial_number,symb))) nonterminal_candidates in 
-   let (to_be_treated_next,already_treated)  = List.partition (fun (_,opt)->opt=None) 
-       using_precedent_computations in 
-   let new_prefixes2 = str_fold_merge  (Image.image (fun (_,opt)->Option.get opt) already_treated) in 
-   let new_prefixes = str_merge new_prefixes1 new_prefixes2 in 
-   (str_merge new_prefixes already_found_prefixes,updated_heads,Image.image fst to_be_treated_next) ;;
 
-let rec iterator gram (already_found_prefixes,to_be_treated) = 
-   match to_be_treated with 
-   [] -> already_found_prefixes 
-   |pair :: other_pairs -> 
-     let (new_set_of_prefixes,new_pairs) = (
-        match Hashtbl.find_opt hashtbl_for_furst_set (gram.grammar_serial_number,snd pair) with 
-        Some old_answer -> (str_merge old_answer already_found_prefixes,[])
-        |None -> 
-         let (new_set_of_prefixes2,updated_heads,to_be_treated_next) = expand gram already_found_prefixes pair in 
-         let new_pairs2 = Image.image (fun candidate ->(updated_heads,candidate)) to_be_treated_next  in 
-         (new_set_of_prefixes2,new_pairs2)
-     )  in 
-     iterator gram (new_set_of_prefixes,new_pairs@other_pairs) ;;
   
-let compute_furst_set_naively gram symb= iterator  gram ([],[[],symb]) ;;
+let compute_furst_set_naively gram symb= 
+  str_intersect (terminals gram) (Leftmost_descendants.leftmost_descendants gram symb) ;;
 
 let furst_set_for_symbol = memoize_univar hashtbl_for_furst_set compute_furst_set_naively ;; 
 
 let furst_set_for_form gram form = 
-    let symbols = elements_having_a_wholly_emptiable_left gram form in 
-    iterator  gram ([],Image.image(fun symb -> ([],symb)) symbols) ;;
+    let usable_symbols = 
+      Leftmost_descendants.elements_having_a_wholly_emptiable_subform_on_their_left_side gram form in 
+    str_fold_merge (Image.image (furst_set_for_symbol gram) usable_symbols)  ;;
 
 
 

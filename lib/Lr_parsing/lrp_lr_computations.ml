@@ -62,12 +62,12 @@ module Private = struct
    end ;;   
    
 
-   let add_new_paths_to_lr0_molecule gram lr0_molecule paths_to_be_added =
-     Registration.add_paths gram lr0_molecule paths_to_be_added ;;
+   let add_new_paths_to_lrk_molecule gram lrk_molecule paths_to_be_added =
+     Registration.add_paths gram lrk_molecule paths_to_be_added ;;
 
-   let register_lr0_molecule gram lr0_molecule = 
-     let idx = Registration.get_index gram lr0_molecule in 
-     RSt(idx,lr0_molecule);; 
+   let register_lrk_molecule gram lrk_molecule = 
+     let idx = Registration.get_index gram lrk_molecule in 
+     RSt(idx,lrk_molecule);; 
 
    let immediate_closure_for_several gram atoms = 
       Ordered.fold_merge (Lrk_core_methods.order_on_atoms gram) 
@@ -82,22 +82,22 @@ module Private = struct
 
    let closure gram items = towards_closure gram (items,[],items) ;;  
 
-   let push_dots_one_symbol bare_gram symb lr0_molecule =
-      let old_atoms = Lrk_core_methods.atoms_inside lr0_molecule in 
+   let push_dots_one_symbol gram symb lrk_molecule =
+      let old_atoms = Lrk_core_methods.atoms_inside lrk_molecule in 
       let unordered_new_atoms = List.filter_map (Lrk_core_methods.push_dot_one_symbol symb) old_atoms in
-      let new_atoms = Ordered.sort (Lrk_core_methods.order_on_atoms bare_gram) unordered_new_atoms in 
+      let new_atoms = Ordered.sort (Lrk_core_methods.order_on_atoms gram) unordered_new_atoms in 
       Lrk_core_methods.molecule new_atoms ;;
 
-   let ghetto_for_jterm gram lr0_molecule symb = closure gram 
-   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram symb lr0_molecule));; 
+   let ghetto_for_jterm gram lrk_molecule symb = closure gram 
+   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram symb lrk_molecule));; 
 
-let compute_ghetto_naively gram (RSt (_idx,old_lr0_molecule)) symb = 
-  let new_lr0_molecule = ghetto_for_jterm gram old_lr0_molecule symb in 
-  let new_rlr0_molecule = register_lr0_molecule gram new_lr0_molecule in 
-  let older_paths = Registration.get_paths gram old_lr0_molecule in 
+let compute_ghetto_naively gram (RSt (_idx,old_lrk_molecule)) symb = 
+  let new_lrk_molecule = ghetto_for_jterm gram old_lrk_molecule symb in 
+  let new_rlrk_molecule = register_lrk_molecule gram new_lrk_molecule in 
+  let older_paths = Registration.get_paths gram old_lrk_molecule in 
   let paths_to_be_added= Image.image (fun p->p@[symb]) older_paths in 
-  let _ = add_new_paths_to_lr0_molecule gram new_lr0_molecule paths_to_be_added in 
-  new_rlr0_molecule  
+  let _ = add_new_paths_to_lrk_molecule gram new_lrk_molecule paths_to_be_added in 
+  new_rlrk_molecule  
   ;;
 
 let hashtbl_for_ghettoes = Hashtbl.create 100 ;;
@@ -113,119 +113,113 @@ let compute_ghetto gram rlr_state symb =
    new_answer
   ;;
 
-let rlr0_molecule_order = ((fun (RSt (i1,_))  (RSt (i2,_))->Total_ordering.for_integers i1 i2): registered_lr0_molecule Total_ordering_t.t) ;;
-let rlr0_molecule_fold_merge = Ordered.fold_merge rlr0_molecule_order ;;
-let rlr0_molecule_merge = Ordered.merge rlr0_molecule_order ;;
-let rlr0_molecule_setminus = Ordered.setminus rlr0_molecule_order ;;
-let rlr0_molecule_sort = Ordered.sort rlr0_molecule_order ;;
+let rlrk_molecule_order = ((fun (RSt (i1,_))  (RSt (i2,_))->Total_ordering.for_integers i1 i2): registered_lr0_molecule Total_ordering_t.t) ;;
+let rlrk_molecule_fold_merge = Ordered.fold_merge rlrk_molecule_order ;;
+let rlrk_molecule_merge = Ordered.merge rlrk_molecule_order ;;
+let rlrk_molecule_setminus = Ordered.setminus rlrk_molecule_order ;;
+let rlrk_molecule_sort = Ordered.sort rlrk_molecule_order ;;
 
 
-let ghetto_neighbors_for_one gram rlr0_molecule = 
+let ghetto_neighbors_for_one gram rlrk_molecule = 
    let all_symbols = Lrp_grammar.all_symbols gram in 
-   rlr0_molecule_sort(Image.image (compute_ghetto gram rlr0_molecule) all_symbols) ;;
+   rlrk_molecule_sort(Image.image (compute_ghetto gram rlrk_molecule) all_symbols) ;;
 
-let ghetto_neighbors_for_several gram lr0_molecules = rlr0_molecule_fold_merge
- (Image.image (ghetto_neighbors_for_one gram) lr0_molecules) ;;
+let ghetto_neighbors_for_several gram lrk_molecules = rlrk_molecule_fold_merge
+ (Image.image (ghetto_neighbors_for_one gram) lrk_molecules) ;;
 
 let rec towards_ghetto_neighborhood gram (whole,_treated,to_be_treated) = 
   if to_be_treated = [] then whole else 
   let temp = ghetto_neighbors_for_several gram to_be_treated in 
-  let new_whole = rlr0_molecule_merge temp whole 
-  and yet_untreated = rlr0_molecule_setminus temp whole  in 
+  let new_whole = rlrk_molecule_merge temp whole 
+  and yet_untreated = rlrk_molecule_setminus temp whole  in 
  towards_ghetto_neighborhood gram (new_whole,whole,yet_untreated) ;;
 
-let ghetto_neighborhood gram lr0_molecules = towards_ghetto_neighborhood gram (lr0_molecules,[],lr0_molecules) ;; 
+let ghetto_neighborhood gram lrk_molecules = towards_ghetto_neighborhood gram (lrk_molecules,[],lrk_molecules) ;; 
 
-let starter_lr0_molecule bare_gram = 
-   closure bare_gram [Lrk_core_methods.starter_atom bare_gram];; 
+let starter_lrk_molecule gram = 
+   closure gram [Lrk_core_methods.starter_atom gram];; 
 
-let starter_rlr0_molecule gram = 
-   let starter_lr0_molecule = starter_lr0_molecule gram in
-   let answer = register_lr0_molecule gram starter_lr0_molecule in 
-   let _ = add_new_paths_to_lr0_molecule gram starter_lr0_molecule [[]] in 
+let starter_rlrk_molecule gram = 
+   let starter_lrk_molecule = starter_lrk_molecule gram in
+   let answer = register_lrk_molecule gram starter_lrk_molecule in 
+   let _ = add_new_paths_to_lrk_molecule gram starter_lrk_molecule [[]] in 
    answer;;
 ;;
 
-let compute_all_lr0_molecules_naively gram = ghetto_neighborhood gram [starter_rlr0_molecule gram] ;;
+let compute_all_lrk_molecules_naively gram = 
+   let _ = (register_lrk_molecule gram Lrk_core_methods.empty_one) in 
+   let strtr=starter_rlrk_molecule gram in
+   ghetto_neighborhood gram [strtr] ;;
 
-let hashtbl_for_all_lr0_molecules = Hashtbl.create 100 ;;  
+let hashtbl_for_all_lrk_molecules = Hashtbl.create 100 ;;  
 
-let all_lr0_molecules gram =
+let all_lrk_molecules gram =
   let key = (gram.grammar_serial_number) in 
-  match Hashtbl.find_opt hashtbl_for_all_lr0_molecules key with 
+  match Hashtbl.find_opt hashtbl_for_all_lrk_molecules key with 
   Some old_answer -> old_answer 
   | None ->
-   let new_answer = compute_all_lr0_molecules_naively gram in 
-   let _ = Hashtbl.replace hashtbl_for_all_lr0_molecules key new_answer in 
+   let new_answer = compute_all_lrk_molecules_naively gram in 
+   let _ = Hashtbl.replace hashtbl_for_all_lrk_molecules key new_answer in 
    new_answer
   ;;
 
 
 module Simple_Lr = struct 
 
- let terminals_after_a_dot_in_lr0_molecule gram lr0_molecule =
-    let atoms= Lrk_core_methods.atoms_inside lr0_molecule in 
+ let terminals_after_a_dot_in_lrk_molecule gram lrk_molecule =
+    let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
     let items = Image.image Lrk_core_methods.item_component atoms in 
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let termies = Lrp_grammar.terminals gram in 
     str_intersect termies symbols_after_a_dot ;; 
 
-   let shifts_from_lr0_molecule gram lr0_molecule =
-      let idx = Registration.get_index gram lr0_molecule  in 
-      let terms = terminals_after_a_dot_in_lr0_molecule gram lr0_molecule in 
+   let shifts_from_lrk_molecule gram lrk_molecule =
+      let idx = Registration.get_index gram lrk_molecule  in 
+      let terms = terminals_after_a_dot_in_lrk_molecule gram lrk_molecule in 
       Image.image (fun term->
-        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lr0_molecule)) term in 
+        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lrk_molecule)) term in 
         (term,Shift(new_idx))
       ) terms ;;
-
-   let test_for_allowing_reduction gram _atom ~head_of_production ~terminal =
-      let productions = Lrp_grammar.productions gram in 
-      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
-      if head_of_production = early_start then false else  
-      List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
 
    let reduction_from_terminal_and_atom_opt gram terminal atom =
       match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
       None -> None
       |Some(production) ->
          let (Prod(head_of_production,_)) = production in 
-         if test_for_allowing_reduction gram atom ~head_of_production ~terminal 
+         if Lrk_core_methods.test_for_allowing_reduction gram atom ~head_of_production ~terminal 
          then Some(terminal,Reduce(production))
          else None;;  
          
-   let reduction_from_molecule_and_terminal_opt gram lr0_molecule term = 
-      let atoms= Lrk_core_methods.atoms_inside lr0_molecule in 
+   let reduction_from_molecule_and_terminal_opt gram lrk_molecule term = 
+      let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
       List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
 
-   let reductions_from_lr0_molecule gram lr0_molecule = 
+   let reductions_from_lrk_molecule gram lrk_molecule = 
       let termies = Lrp_grammar.terminals gram in 
-      List.filter_map (reduction_from_molecule_and_terminal_opt gram lr0_molecule) termies ;;
+      List.filter_map (reduction_from_molecule_and_terminal_opt gram lrk_molecule) termies ;;
   
 
-   let acceptations_from_lr0_molecule gram lr0_molecule =
-      let (Prod(early_start,old_start)) = Lrp_grammar.first_production gram 
-     and (St atoms) = lr0_molecule in 
-      let items = Image.image (fun ( Atom  item) -> item) atoms in 
-      let the_item = Item(early_start,old_start@["."]) in 
-      if List.mem the_item items 
+   let acceptations_from_lrk_molecule gram lrk_molecule =
+      let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
+      if List.mem (Lrk_core_methods.ender_atom gram) atoms 
       then  [(end_marker,Accept)]
       else [] ;; 
      
-   let actions_from_lr0_molecule gram lr0_molecule =
-      (shifts_from_lr0_molecule gram lr0_molecule)@
-      (reductions_from_lr0_molecule gram lr0_molecule)@
-      (acceptations_from_lr0_molecule gram lr0_molecule) ;; 
+   let actions_from_lrk_molecule gram lrk_molecule =
+      (shifts_from_lrk_molecule gram lrk_molecule)@
+      (reductions_from_lrk_molecule gram lrk_molecule)@
+      (acceptations_from_lrk_molecule gram lrk_molecule) ;; 
   
    let preliminary_data_for_simple_lr_actions gram =
-      let states = List.tl(all_lr0_molecules gram) 
+      let states = List.tl(all_lrk_molecules gram) 
       and termies = (Lrp_grammar.terminals gram)@["Endmarker"] in 
       let base = Cartesian.product states termies in 
       let initial_data = List.filter_map (
          fun pair ->
             let (state,terminal) = pair in 
-            let (RSt(idx,lr0_molecule)) = state in 
-            let all_actions = actions_from_lr0_molecule gram (lr0_molecule) in 
+            let (RSt(idx,lrk_molecule)) = state in 
+            let all_actions = actions_from_lrk_molecule gram (lrk_molecule) in 
             let suitable_actions = List.filter_map (
             fun (symb,action)->if symb<>terminal then None else Some(action)
             )  all_actions in 
@@ -258,7 +252,7 @@ module Simple_Lr = struct
       else Option.get good_opt ;;     
 
    let data_for_simple_lr_gotos gram = 
-      let states = List.tl(all_lr0_molecules gram) 
+      let states = List.tl(all_lrk_molecules gram) 
       and nonterminals = Lrp_grammar.nonterminals gram  in 
       let base = Cartesian.product states nonterminals in 
       let initial_data = List.filter_map (
@@ -302,13 +296,13 @@ end ;;
 
 module Usual_names_for_Lr0_states = struct 
 
-let compute_usual_names_for_lr0_molecules_naively gram = 
-      let temp0 = all_lr0_molecules gram in 
+let compute_usual_names_for_lrk_molecules_naively gram = 
+      let temp0 = all_lrk_molecules gram in 
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
         fun state ->
-         let (RSt(_idx,lr0_molecule)) = state in 
-         let paths = Registration.get_paths gram lr0_molecule in
+         let (RSt(_idx,lrk_molecule)) = state in 
+         let paths = Registration.get_paths gram lrk_molecule in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
       Shn(
@@ -317,14 +311,14 @@ let compute_usual_names_for_lr0_molecules_naively gram =
       (List_again.rename_according_to_occurrence_rank temp2)
        ) ;;
 
- let hashtbl_for_usual_names_for_lr0_molecules = Hashtbl.create 100 ;;   
+ let hashtbl_for_usual_names_for_lrk_molecules = Hashtbl.create 100 ;;   
 
-    let usual_names_for_lr0_molecules gram = 
-      match Hashtbl.find_opt hashtbl_for_usual_names_for_lr0_molecules gram.grammar_serial_number  with 
+    let usual_names_for_lrk_molecules gram = 
+      match Hashtbl.find_opt hashtbl_for_usual_names_for_lrk_molecules gram.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
-    let new_answer = compute_usual_names_for_lr0_molecules_naively gram in 
-    let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lr0_molecules gram.grammar_serial_number new_answer) in 
+    let new_answer = compute_usual_names_for_lrk_molecules_naively gram in 
+    let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lrk_molecules gram.grammar_serial_number new_answer) in 
      new_answer ;;
 
 end ;;   
@@ -332,7 +326,7 @@ end ;;
 end ;;   
 
 
-let all_lr0_molecules = Private.all_lr0_molecules ;;
+let all_lrk_molecules = Private.all_lrk_molecules ;;
 
 
 let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
@@ -345,4 +339,4 @@ let simple_lr_table gram = Private.Simple_Lr.table gram ;;
 
 
 
-let usual_names_for_lr0_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lr0_molecules ;;
+let usual_names_for_lrk_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules ;;

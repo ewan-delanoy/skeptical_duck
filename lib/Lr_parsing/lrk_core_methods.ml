@@ -12,41 +12,55 @@ open Lrp_types ;;
 
 module Private = struct 
 
+let atoms_inside (St atoms)= atoms ;; 
+
 let molecule l = St(l) ;;
 
-let item_component (Atom(item)) = item ;; 
+let item_component (Atom item) = item ;; 
 
-let atm_order gram = ((fun (Atom item1) (Atom item2) ->
-    Lrp_grammar.order_on_items gram item1 item2 
+let make_atom item = Atom item ;;
+
+let atm_order gram = ((fun atom1 atom2 ->
+    Lrp_grammar.order_on_items gram (item_component atom1) (item_component atom2)
 ): lr0_atom Total_ordering_t.t);;
 
 let atm_sort gram = Ordered.sort (atm_order gram) ;;
 
-let immediate_closure gram (Atom(Item(_p,l)))= 
+let immediate_closure gram atom =
+  let (Item(_p,l))= item_component atom in 
   let productions =Lrp_grammar.productions gram in 
   let n = List.length l 
   and j = List_again.index_of_in "." l in
   if j=n then [] else 
   let symb = List.nth l j in 
   atm_sort gram (List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
-  if p2=symb then Some(Atom(Lrp_item.first_item_from_production pr)) else None) productions);;
+  if p2=symb then Some(make_atom(Lrp_item.first_item_from_production pr)) else None) productions);;
 
-let push_dot_one_symbol symb (Atom item) = 
-   Option.map (fun item->Atom item) (
+let push_dot_one_symbol symb atom =
+  let item= item_component atom in 
+   Option.map make_atom (
      Lrp_item.push_dot_one_symbol symb item 
    );;
 
 let starter_atom bare_grammar = 
   let productions =Lrp_grammar.productions bare_grammar in 
-  Atom(Lrp_item.first_item_from_production  (List.hd productions));;
+  make_atom(Lrp_item.first_item_from_production  (List.hd productions));;
 
 let ender_atom bare_grammar = 
   let productions =Lrp_grammar.productions bare_grammar in 
-  Atom(Lrp_item.last_item_from_production  (List.hd productions));;  
+  make_atom(Lrp_item.last_item_from_production  (List.hd productions));;  
+
+ let test_for_allowing_reduction gram (_atom:lr0_atom) ~head_of_production ~terminal =
+      let productions = Lrp_grammar.productions gram in 
+      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
+      if head_of_production = early_start then false else  
+      List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
 
 end ;;
 
-let atoms_inside (St atoms)= atoms ;; 
+let atoms_inside = Private.atoms_inside ;; 
+
+let empty_one = Private.molecule [] ;;
 
 let ender_atom = Private.ender_atom ;;
 
@@ -61,4 +75,6 @@ let order_on_atoms = Private.atm_order ;;
 let push_dot_one_symbol = Private.push_dot_one_symbol ;;
 
 let starter_atom = Private.starter_atom ;;
+
+let test_for_allowing_reduction = Private.test_for_allowing_reduction ;;
 
