@@ -134,7 +134,7 @@ let rlr0_molecule_merge = Ordered.merge rlr0_molecule_order ;;
 let rlr0_molecule_setminus = Ordered.setminus rlr0_molecule_order ;;
 let rlr0_molecule_sort = Ordered.sort rlr0_molecule_order ;;
 
-let all_symbols gram = Lrp_bare_grammar.all_symbols gram.core ;;
+let all_symbols gram = Lrp_grammar.all_symbols gram.core ;;
 
 
 let ghetto_neighbors_for_one gram rlr0_molecule = 
@@ -188,17 +188,17 @@ let make_from_bare_grammar bg= {
 } ;;
 
 
-let make l= make_from_bare_grammar (Lrp_bare_grammar.make l);;
+let make l= make_from_bare_grammar (Lrp_grammar.make l);;
 
-let first_production gram = List.hd(Lrp_bare_grammar.productions gram.core);;
+let first_production gram = List.hd(Lrp_grammar.productions gram.core);;
 
 
-let terminals gram = Lrp_bare_grammar.terminals gram.core ;;
+let terminals gram = Lrp_grammar.terminals gram.core ;;
    
 
-let nonterminals gram = Lrp_bare_grammar.terminals gram.core ;;
+let nonterminals gram = Lrp_grammar.terminals gram.core ;;
 
-let is_emptiable gram symb = Lrp_bare_grammar.is_emptiable gram.core symb ;;
+let is_emptiable gram symb = Lrp_grammar.is_emptiable gram.core symb ;;
 
 
 
@@ -222,10 +222,10 @@ module Simple_Lr = struct
       ) terms ;;
 
    let test_for_allowing_reduction gram _atom ~head_of_production ~terminal =
-      let productions = Lrp_bare_grammar.productions gram.core in 
+      let productions = Lrp_grammar.productions gram.core in 
       let (Prod(early_start,_old_start)) = List.hd(productions)   in 
       if head_of_production = early_start then false else  
-      List.mem terminal (Lrp_bare_grammar.follow_set gram.core head_of_production) ;;
+      List.mem terminal (Lrp_grammar.follow_set gram.core head_of_production) ;;
 
    let reduction_from_terminal_and_atom_opt gram terminal atom =
       match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
