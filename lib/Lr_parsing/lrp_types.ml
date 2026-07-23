@@ -48,7 +48,6 @@ type shortnamer = Shn of (registered_lr0_molecule * string) list ;;
 
 type grammar = {
    core : bare_grammar ;
-   mutable usual_names_for_lr0_molecules : shortnamer option;
 } ;;
 
 

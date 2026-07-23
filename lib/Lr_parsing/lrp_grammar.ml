@@ -185,7 +185,6 @@ let all_lr0_molecules gram =
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   usual_names_for_lr0_molecules = None ;
 } ;;
 
 
@@ -345,7 +344,7 @@ end ;;
 
 module Usual_names_for_Lr0_states = struct 
 
-let compute_naively gram = 
+let compute_usual_names_for_lr0_molecules_naively gram = 
       let temp0 = all_lr0_molecules gram in 
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
@@ -360,12 +359,14 @@ let compute_naively gram =
       (List_again.rename_according_to_occurrence_rank temp2)
        ) ;;
 
-let usual_names_for_lr0_molecules gram = 
-      match gram.usual_names_for_lr0_molecules with 
+ let hashtbl_for_usual_names_for_lr0_molecules = Hashtbl.create 100 ;;   
+
+    let usual_names_for_lr0_molecules gram = 
+      match Hashtbl.find_opt hashtbl_for_usual_names_for_lr0_molecules gram.core.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
-    let new_answer = compute_naively gram in 
-    let _ = (gram.usual_names_for_lr0_molecules <- Some new_answer) in 
+    let new_answer = compute_usual_names_for_lr0_molecules_naively gram in 
+    let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lr0_molecules gram.core.grammar_serial_number new_answer) in 
      new_answer ;;
 
 end ;;   
@@ -377,12 +378,6 @@ let all_lr0_molecules = Private.all_lr0_molecules ;;
 
 
 let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
-
-
-
-let make = Private.make ;;
-
-
 
 
 
