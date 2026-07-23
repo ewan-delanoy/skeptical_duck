@@ -185,7 +185,6 @@ let all_lr0_molecules gram =
 
 let make_from_bare_grammar bg= {
    core = bg ;
-   data_for_simple_lr_table = None ;
    usual_names_for_lr0_molecules = None ;
 } ;;
 
@@ -327,12 +326,14 @@ module Simple_Lr = struct
           data_for_simple_lr_gotos gram
       ) ;;
 
+    let hashtbl_for_data_for_simple_lr_table = Hashtbl.create 100 ;;   
+
     let data_for_simple_lr_table gram = 
-      match gram.data_for_simple_lr_table with 
+      match Hashtbl.find_opt hashtbl_for_data_for_simple_lr_table gram.core.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
     let new_answer = compute_data_for_simple_lr_table_naively gram in 
-    let _ = (gram.data_for_simple_lr_table <- Some new_answer) in 
+    let _ = (Hashtbl.replace hashtbl_for_data_for_simple_lr_table gram.core.grammar_serial_number new_answer) in 
      new_answer ;;
 
    let table gram =
@@ -371,10 +372,6 @@ end ;;
 
 end ;;   
 
-let augment ~earlier_start ~new_name_for_old_start l=
-  let old_gram = Lrp_bare_grammar.make l in 
-  let new_gram = Lrp_bare_grammar.augment ~earlier_start ~new_name_for_old_start old_gram in 
-  Private.make_from_bare_grammar new_gram ;;
 
 let all_lr0_molecules = Private.all_lr0_molecules ;;
 
@@ -392,7 +389,6 @@ let make = Private.make ;;
 
 let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
 
-let start_symbol gram = Lrp_bare_grammar.start_symbol gram.core ;; 
 
 
 
