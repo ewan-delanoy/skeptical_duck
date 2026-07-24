@@ -305,7 +305,7 @@ let compute_usual_names_for_lrk_molecules_naively gram =
          let paths = Registration.get_paths gram lrk_molecule in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
-      Shn(
+      (
       (List.nth temp0 0,"Death")::
       (List.nth temp0 1,"Birth")::
       (List_again.rename_according_to_occurrence_rank temp2)
@@ -323,15 +323,74 @@ let compute_usual_names_for_lrk_molecules_naively gram =
 
 end ;;   
 
+module Shortnamer = struct 
+
+let on_index names_for_states idx0=
+ snd(List.find (fun (RSt(idx,_),_)->idx=idx0) names_for_states) ;;   
+
+let on_action names_for_states = function 
+  (Shift j)->  on_index names_for_states j 
+  |Reduce(Prod(a,b)) -> a^" -> "^(String.concat "" b) 
+  |Accept -> "Accept" ;;
+
+let on_action_data names_for_states l =
+   Image.image (fun (idx,transitions)->
+    (on_index names_for_states idx,Image.image (
+      fun (mover,result) -> (mover,on_action names_for_states result) 
+    ) transitions)   
+   ) l;;  
+
+let on_goto_data names_for_states l =
+   Image.image (fun (idx,transitions)->
+    (on_index names_for_states idx,Image.image (
+      fun (mover,result) -> (mover,on_index names_for_states result) 
+    ) transitions)   
+   ) l;;     
+
+let on_table names_for_states tbl =
+   (
+      on_action_data names_for_states tbl.action_data,
+      on_goto_data names_for_states tbl.goto_data
+   ) ;; 
+ 
+
+let on_parsing_details names_for_states l =
+   List.rev_map (
+    fun (state_stack,symbol_stack,next_action) ->
+      (
+         List.rev_map (on_index names_for_states) state_stack,
+         symbol_stack,
+         on_action names_for_states next_action
+      )
+   ) l ;;
+
+let on_conflict_element names_for_states ((idx,mover),actions)=
+  ((on_index names_for_states idx,mover),Image.image (on_action names_for_states) actions) ;;
+
+let on_conflicts  names_for_states elements = Image.image (on_conflict_element names_for_states)  elements ;;
+      
+
+end ;;   
+
 end ;;   
 
 
 let all_lrk_molecules = Private.all_lrk_molecules ;;
 
 
-let conflicts_in_simple_lr_parser () = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) ;;
+let conflicts_in_lr_parser gram = 
+   try (let _ =Private.Simple_Lr.table gram in []) with
+   _ -> 
+   let conflicts = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) in 
+   let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
+   Private.Shortnamer.on_conflicts names_for_states conflicts;;
 
 
+let parsing_details gram text_to_be_parsed = 
+   let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
+   let lr_table = Private.Simple_Lr.table gram in 
+   let parse_example = Lrp_table.parsing_details lr_table text_to_be_parsed in 
+   Private.Shortnamer.on_parsing_details names_for_states parse_example ;;   
 
 
 let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
