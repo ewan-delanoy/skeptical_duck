@@ -31,9 +31,7 @@ type lr0_atom = Atom of item ;;
 
 type lr0_molecule = St of lr0_atom list ;; 
 
-type registered_lr0_molecule = RSt of int * lr0_molecule ;;
 
-type registry_for_lr0_molecules = Rg of ( lr0_molecule * ((string list) list) ) list ;;
 
 
 

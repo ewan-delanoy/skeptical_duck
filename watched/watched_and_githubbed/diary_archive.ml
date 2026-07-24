@@ -7,6 +7,188 @@ module Snip261 = struct
 
 open Lrp_types ;;
 
+let all_productions2 = [
+   Prod("Start",["S"]);
+   Prod("S",["L";"=";"R"]);
+   Prod("S",["R"]);
+   Prod("L",["*";"R"]);
+   Prod("L",["i"]);
+   Prod("R",["L"]);
+] ;; 
+
+let main_grammar2 = Lrp_grammar.make_from_prods all_productions2 ;;
+
+let conf = Lrp_lr_computations.conflicts_in_lr_parser main_grammar2 ;;
+let all_productions1 = [
+   Prod("Start",["S"]);
+   Prod("S",["E"]);
+   Prod("E",["E";"+";"T"]);
+   Prod("E",["T"]);
+   Prod("T",["T";"*";"F"]);
+   Prod("T",["F"]);
+   Prod("F",["(";"E";")"]);
+   Prod("F",["i"]);
+] ;; 
+
+let main_grammar1 = Lrp_grammar.make_from_prods all_productions1 ;;
+
+let details1 = Lrp_lr_computations.parsing_details main_grammar1 ["i";"*";"i"] ;;
+
+
+(*
+module CPri = Lrp_lr_computations.Private ;;
+
+let names_for_states = CPri.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules main_grammar1 ;;
+
+let lr_table = CPri.Simple_Lr.table main_grammar1 ;;
+
+let parsing_details gram text_to_be_parsed = 
+   let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
+   let lr_table = Private.Simple_Lr.table gram in 
+   let parse_example = Lrp_table.parsing_details lr_table text_to_be_parsed in 
+   Private.Shortnamer.on_parsing_details names_for_states parse_example ;;   
+
+let names_for_states = Shn (Lrp_lr_computations.usual_names_for_lrk_molecules main_grammar1) ;;
+
+let slr_table1 = Lrp_lr_computations.simple_lr_table main_grammar1 ;;
+
+let (g1,g2) = Lrp_shortnamer.on_table names_for_states slr_table1 ;;
+
+let parse_example = Lrp_table.parsing_details slr_table1 ["i";"*";"i"] ;; 
+
+let readable_parse_example = Lrp_shortnamer.on_parsing_details names_for_states parse_example ;;
+
+
+
+let names_for_states = Lrp_lr_computations.usual_names_for_lrk_molecules main_grammar ;;
+
+let slr_table = Lrp_lr_computations.simple_lr_table main_grammar ;;
+
+let (g1,g2) = Lrp_shortnamer.on_table names_for_states slr_table ;;
+
+let parse_example = Lrp_table.parsing_details slr_table ["i";"*";"i"] ;; 
+
+let readable_parse_example = Lrp_shortnamer.on_parsing_details names_for_states parse_example ;;
+
+let see_conflicts ()= 
+   try (let _ =Lrp_lr_computations.simple_lr_table main_grammar in []) with
+   _ -> Lrp_lr_computations.conflicts_in_simple_lr_parser () ;;
+
+module TPri = Lrp_table.Private ;;
+
+let v0 = [TPri.initial_configuration slr_table ["i";"*";"i"]] ;;
+
+let ff = Memoized.small (TPri.step slr_table) v0 ;;
+
+let v4 = ff 4 ;;
+
+let (state_stack,symbol_stack,next_action) = List.hd v4 ;;
+
+let next_pair = (
+       match next_action with 
+      Accept -> raise Lrp_table.No_steps_after_acceptance_exn 
+      |Shift(j) -> (j::state_stack,List.tl symbol_stack)
+      |Reduce(Prod(aa,omega)) ->
+         let remaining_stack = List_again.long_tail (List.length omega) state_stack in 
+         let remaining_head = List.hd remaining_stack in 
+         let k = TPri.get_goto slr_table remaining_head aa in 
+         (k::remaining_stack,symbol_stack)) ;;
+
+         
+let bad3 = TPri.compute_next_action slr_table next_pair ;;
+
+let bad2 = TPri.step slr_table v4 ;;
+let bad1 = TPri.iterator slr_table v0 ;;
+
+
+Lrp_table.parsing_details ;;
+
+
+let (Shn inside_names_for_states) = names_for_states ;;
+
+let see_names = Image.image (fun (RSt(k,_),nm)->(k,nm)) inside_names_for_states ;;
+
+let (anna_registered_lr,anna_short_name) = (List.nth inside_names_for_states 5);;
+
+let (RSt(anna_idx,anna_lr)) = anna_registered_lr ;;
+
+let (St(anna_atoms)) = anna_lr ;;
+
+let anna_atom = List.hd anna_atoms ;;
+
+let bad0 = Lrp_lr_computations.Private.Simple_Lr.reductions_from_lrk_molecule 
+  main_grammar anna_lr ;;
+
+let bad1 = Lrp_lr_computations.Private.Simple_Lr.reduction_from_terminal_and_atom_opt 
+  main_grammar "Endmarker" anna_atom ;;
+
+let prod_opt=Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component anna_atom)  ;;
+
+let production = Option.get prod_opt ;;
+
+let (Prod(head_of_production,_)) = production ;;
+
+let bad2 = Lrk_core_methods.test_for_allowing_reduction main_grammar anna_atom ~head_of_production ~terminal:"*" ;; 
+
+let bad3 = Lrp_grammar.follow_set main_grammar head_of_production ;;
+
+module Ld = Lrp_grammar.Private.Leftmost_descendants ;;
+module Fus = Lrp_grammar.Private.Furst_set ;;
+module FS = Lrp_grammar.Private.Follow_set ;;
+module RA = Lrp_grammar.Private.Rightmost_ancestors ;;
+
+let see0 = Ld.leftmost_descendants main_grammar head_of_production ;;
+
+let see1 = FS.direct_follow_set main_grammar head_of_production ;;
+
+let see2 = RA.rightmost_ancestors main_grammar head_of_production ;;
+
+let see3 = FS.compute_follow_set_naively main_grammar head_of_production ;;
+
+let bad4 = FS.compute_follow_set_naively main_grammar "T" ;;
+
+let bad5 = FS.direct_follow_set main_grammar "T" ;;
+
+let prods = Lrp_grammar.productions main_grammar ;;
+
+let completions = FS.completions_on_the_right_for_in_productions "T" prods ;;
+
+let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions ;;
+
+let bad6 = Fus.furst_set_for_form main_grammar ["*"; "F"] ;;
+
+let usable_symbols = Ld.elements_having_a_wholly_emptiable_subform_on_their_left_side main_grammar ["*"; "F"] ;;
+
+let bad7 = Fus.furst_set_for_symbol main_grammar "*" ;;
+
+
+
+
+
+
+let compute_follow_set_naively gram symb =
+   str_fold_merge (Image.image (direct_follow_set gram)
+    (symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
+
+
+module Pri = Lrp_table.Private ;;
+
+let g1 = Lrp_lr_computations.Private.compute_ghetto_naively main_grammar (Rg)
+
+
+let v0 = Pri.initial_configuration tbl text_to_be_parsed
+
+let parsing_details tbl text_to_be_parsed=    
+  Private.iterator tbl [Private.initial_configuration tbl text_to_be_parsed] ;;
+
+let readable_parse_example = Lrp_shortnamer.on_parsing_details names_for_states parse_example ;;
+
+let see_conflicts = 
+   try (let _ =Lrp_grammar.simple_lr_table main_grammar in []) with
+   _ -> Lrp_grammar.conflicts_in_simple_lr_parser () ;;
+
+*)   
+
 
 end;;
 

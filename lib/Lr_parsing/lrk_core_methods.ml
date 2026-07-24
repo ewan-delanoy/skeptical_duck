@@ -10,19 +10,22 @@ Lrk here means LR(k), with k =0 or 1
 
 open Lrp_types ;;
 
+type atom = AAA of item ;;
+type molecule = MMM of atom list ;;
+
 module Private = struct 
 
-let atoms_inside (St atoms)= atoms ;; 
+let atoms_inside (MMM atoms)= atoms ;; 
 
-let molecule l = St(l) ;;
+let molecule l = MMM(l) ;;
 
-let item_component (Atom item) = item ;; 
+let item_component (AAA item) = item ;; 
 
-let make_atom item = Atom item ;;
+let make_atom item = AAA item ;;
 
 let atm_order gram = ((fun atom1 atom2 ->
     Lrp_grammar.order_on_items gram (item_component atom1) (item_component atom2)
-): lr0_atom Total_ordering_t.t);;
+): atom Total_ordering_t.t);;
 
 let atm_sort gram = Ordered.sort (atm_order gram) ;;
 
@@ -50,7 +53,7 @@ let ender_atom bare_grammar =
   let productions =Lrp_grammar.productions bare_grammar in 
   make_atom(Lrp_item.last_item_from_production  (List.hd productions));;  
 
- let test_for_allowing_reduction gram (_atom:lr0_atom) ~head_of_production ~terminal =
+ let test_for_allowing_reduction gram (_atom:atom) ~head_of_production ~terminal =
       let productions = Lrp_grammar.productions gram in 
       let (Prod(early_start,_old_start)) = List.hd(productions)   in 
       if head_of_production = early_start then false else  

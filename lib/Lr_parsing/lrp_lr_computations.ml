@@ -10,6 +10,26 @@ open Lrp_types ;;
 
 exception Conflict_in_Lr_parser_exn ;;
 
+module type LRK_SEED  =  
+sig
+    
+    type atom 
+    type molecule 
+    val atoms_inside : molecule -> atom list
+    val empty_one : molecule
+    val ender_atom : grammar -> atom
+    val immediate_closure : grammar -> atom -> atom list
+    val item_component : atom -> item
+    val molecule : atom list -> molecule
+    val order_on_atoms : grammar -> atom Total_ordering_t.t
+    val push_dot_one_symbol : string -> atom -> atom option
+    val starter_atom : grammar -> atom
+    val test_for_allowing_reduction : grammar -> atom -> head_of_production:string -> terminal:string -> bool
+end ;;
+
+module Make = functor(Seed:LRK_SEED) -> struct
+
+
 module Private = struct 
 
    let str_order = Total_ordering.lex_for_strings ;;
@@ -31,18 +51,24 @@ module Private = struct
    let path_merge = Ordered.merge path_order ;;
    let path_sort = Ordered.sort path_order ;;
 
-   let counter_for_registered_molecules = ref (0) ;;
+   let hashtbl_for_counting_registered_molecules = Hashtbl.create 100 ;;
 
    let hashtbl_for_indices = Hashtbl.create 100 ;;
    let hashtbl_for_paths = Hashtbl.create 100 ;;
    
+   let number_of_registered_molecules gram =
+      match Hashtbl.find_opt hashtbl_for_counting_registered_molecules gram.grammar_serial_number with 
+      Some old_count -> old_count 
+      |None -> let _ =(Hashtbl.replace hashtbl_for_counting_registered_molecules gram.grammar_serial_number 0) in 
+               0 ;;
+
    let get_index gram molecule=
       match Hashtbl.find_opt hashtbl_for_indices (gram.grammar_serial_number,molecule) with 
        Some old_idx -> old_idx
       |None ->
-        let new_idx = (!counter_for_registered_molecules)-1 in 
+        let new_idx = (number_of_registered_molecules gram)-1 in 
         let _ = (
-         counter_for_registered_molecules:=new_idx+2;
+         Hashtbl.replace hashtbl_for_counting_registered_molecules gram.grammar_serial_number (new_idx+2);
          Hashtbl.replace hashtbl_for_indices (gram.grammar_serial_number,molecule) new_idx;
          Hashtbl.replace hashtbl_for_paths (gram.grammar_serial_number,new_idx) [];
       ) in  
@@ -67,31 +93,31 @@ module Private = struct
 
    let register_lrk_molecule gram lrk_molecule = 
      let idx = Registration.get_index gram lrk_molecule in 
-     RSt(idx,lrk_molecule);; 
+     (idx,lrk_molecule);; 
 
    let immediate_closure_for_several gram atoms = 
-      Ordered.fold_merge (Lrk_core_methods.order_on_atoms gram) 
-      (Image.image (Lrk_core_methods.immediate_closure gram) atoms) ;; 
+      Ordered.fold_merge (Seed.order_on_atoms gram) 
+      (Image.image (Seed.immediate_closure gram) atoms) ;; 
 
    let rec towards_closure gram (whole,_treated,to_be_treated) = 
-    if to_be_treated = [] then Lrk_core_methods.molecule(whole) else 
+    if to_be_treated = [] then Seed.molecule(whole) else 
     let temp = immediate_closure_for_several gram to_be_treated in 
-    let new_whole = Ordered.merge (Lrk_core_methods.order_on_atoms gram) temp whole 
-    and yet_untreated = Ordered.setminus (Lrk_core_methods.order_on_atoms gram) temp whole in   
+    let new_whole = Ordered.merge (Seed.order_on_atoms gram) temp whole 
+    and yet_untreated = Ordered.setminus (Seed.order_on_atoms gram) temp whole in   
     towards_closure gram (new_whole,whole,yet_untreated) ;;
 
    let closure gram items = towards_closure gram (items,[],items) ;;  
 
    let push_dots_one_symbol gram symb lrk_molecule =
-      let old_atoms = Lrk_core_methods.atoms_inside lrk_molecule in 
-      let unordered_new_atoms = List.filter_map (Lrk_core_methods.push_dot_one_symbol symb) old_atoms in
-      let new_atoms = Ordered.sort (Lrk_core_methods.order_on_atoms gram) unordered_new_atoms in 
-      Lrk_core_methods.molecule new_atoms ;;
+      let old_atoms = Seed.atoms_inside lrk_molecule in 
+      let unordered_new_atoms = List.filter_map (Seed.push_dot_one_symbol symb) old_atoms in
+      let new_atoms = Ordered.sort (Seed.order_on_atoms gram) unordered_new_atoms in 
+      Seed.molecule new_atoms ;;
 
    let ghetto_for_jterm gram lrk_molecule symb = closure gram 
-   (Lrk_core_methods.atoms_inside(push_dots_one_symbol gram symb lrk_molecule));; 
+   (Seed.atoms_inside(push_dots_one_symbol gram symb lrk_molecule));; 
 
-let compute_ghetto_naively gram (RSt (_idx,old_lrk_molecule)) symb = 
+let compute_ghetto_naively gram ( (_idx,old_lrk_molecule)) symb = 
   let new_lrk_molecule = ghetto_for_jterm gram old_lrk_molecule symb in 
   let new_rlrk_molecule = register_lrk_molecule gram new_lrk_molecule in 
   let older_paths = Registration.get_paths gram old_lrk_molecule in 
@@ -103,7 +129,7 @@ let compute_ghetto_naively gram (RSt (_idx,old_lrk_molecule)) symb =
 let hashtbl_for_ghettoes = Hashtbl.create 100 ;;
 
 let compute_ghetto gram rlr_state symb =
-  let (RSt (idx,_items)) = rlr_state in  
+  let ( (idx,_items)) = rlr_state in  
   let key = (gram.grammar_serial_number,idx,symb) in 
   match Hashtbl.find_opt hashtbl_for_ghettoes key with 
   Some old_answer -> old_answer 
@@ -113,7 +139,7 @@ let compute_ghetto gram rlr_state symb =
    new_answer
   ;;
 
-let rlrk_molecule_order = ((fun (RSt (i1,_))  (RSt (i2,_))->Total_ordering.for_integers i1 i2): registered_lr0_molecule Total_ordering_t.t) ;;
+let rlrk_molecule_order = ((fun ( (i1,_))  ( (i2,_))->Total_ordering.for_integers i1 i2): (int * Seed.molecule)  Total_ordering_t.t) ;;
 let rlrk_molecule_fold_merge = Ordered.fold_merge rlrk_molecule_order ;;
 let rlrk_molecule_merge = Ordered.merge rlrk_molecule_order ;;
 let rlrk_molecule_setminus = Ordered.setminus rlrk_molecule_order ;;
@@ -137,7 +163,7 @@ let rec towards_ghetto_neighborhood gram (whole,_treated,to_be_treated) =
 let ghetto_neighborhood gram lrk_molecules = towards_ghetto_neighborhood gram (lrk_molecules,[],lrk_molecules) ;; 
 
 let starter_lrk_molecule gram = 
-   closure gram [Lrk_core_methods.starter_atom gram];; 
+   closure gram [Seed.starter_atom gram];; 
 
 let starter_rlrk_molecule gram = 
    let starter_lrk_molecule = starter_lrk_molecule gram in
@@ -147,7 +173,7 @@ let starter_rlrk_molecule gram =
 ;;
 
 let compute_all_lrk_molecules_naively gram = 
-   let _ = (register_lrk_molecule gram Lrk_core_methods.empty_one) in 
+   let _ = (register_lrk_molecule gram Seed.empty_one) in 
    let strtr=starter_rlrk_molecule gram in
    ghetto_neighborhood gram [strtr] ;;
 
@@ -167,8 +193,8 @@ let all_lrk_molecules gram =
 module Simple_Lr = struct 
 
  let terminals_after_a_dot_in_lrk_molecule gram lrk_molecule =
-    let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
-    let items = Image.image Lrk_core_methods.item_component atoms in 
+    let atoms= Seed.atoms_inside lrk_molecule in 
+    let items = Image.image Seed.item_component atoms in 
     let symbols_after_a_dot = 
       str_sort(List.filter_map Lrp_item.symbol_after_dot_opt items) in  
     let termies = Lrp_grammar.terminals gram in 
@@ -178,21 +204,21 @@ module Simple_Lr = struct
       let idx = Registration.get_index gram lrk_molecule  in 
       let terms = terminals_after_a_dot_in_lrk_molecule gram lrk_molecule in 
       Image.image (fun term->
-        let  (RSt(new_idx,_))= compute_ghetto gram (RSt(idx,lrk_molecule)) term in 
+        let  ((new_idx,_))= compute_ghetto gram ((idx,lrk_molecule)) term in 
         (term,Shift(new_idx))
       ) terms ;;
 
    let reduction_from_terminal_and_atom_opt gram terminal atom =
-      match Lrp_item.almost_finished_production_opt (Lrk_core_methods.item_component atom) with
+      match Lrp_item.almost_finished_production_opt (Seed.item_component atom) with
       None -> None
       |Some(production) ->
          let (Prod(head_of_production,_)) = production in 
-         if Lrk_core_methods.test_for_allowing_reduction gram atom ~head_of_production ~terminal 
+         if Seed.test_for_allowing_reduction gram atom ~head_of_production ~terminal 
          then Some(terminal,Reduce(production))
          else None;;  
          
    let reduction_from_molecule_and_terminal_opt gram lrk_molecule term = 
-      let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
+      let atoms= Seed.atoms_inside lrk_molecule in 
       List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
 
    let reductions_from_lrk_molecule gram lrk_molecule = 
@@ -201,8 +227,8 @@ module Simple_Lr = struct
   
 
    let acceptations_from_lrk_molecule gram lrk_molecule =
-      let atoms= Lrk_core_methods.atoms_inside lrk_molecule in 
-      if List.mem (Lrk_core_methods.ender_atom gram) atoms 
+      let atoms= Seed.atoms_inside lrk_molecule in 
+      if List.mem (Seed.ender_atom gram) atoms 
       then  [(end_marker,Accept)]
       else [] ;; 
      
@@ -218,7 +244,7 @@ module Simple_Lr = struct
       let initial_data = List.filter_map (
          fun pair ->
             let (state,terminal) = pair in 
-            let (RSt(idx,lrk_molecule)) = state in 
+            let ((idx,lrk_molecule)) = state in 
             let all_actions = actions_from_lrk_molecule gram (lrk_molecule) in 
             let suitable_actions = List.filter_map (
             fun (symb,action)->if symb<>terminal then None else Some(action)
@@ -258,8 +284,8 @@ module Simple_Lr = struct
       let initial_data = List.filter_map (
          fun pair ->
             let (state,nonterminal) = pair in 
-            let (RSt(idx,_items)) = state in 
-            let (RSt(new_idx,_new_items)) = compute_ghetto gram state nonterminal in 
+            let ((idx,_items)) = state in 
+            let ((new_idx,_new_items)) = compute_ghetto gram state nonterminal in 
             if new_idx>=0 
             then Some(idx,(nonterminal,new_idx))
             else None
@@ -301,7 +327,7 @@ let compute_usual_names_for_lrk_molecules_naively gram =
       let temp1 = List.tl(List.tl(temp0)) in 
       let temp2 = Image.image (
         fun state ->
-         let (RSt(_idx,lrk_molecule)) = state in 
+         let ((_idx,lrk_molecule)) = state in 
          let paths = Registration.get_paths gram lrk_molecule in
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
@@ -326,7 +352,7 @@ end ;;
 module Shortnamer = struct 
 
 let on_index names_for_states idx0=
- snd(List.find (fun (RSt(idx,_),_)->idx=idx0) names_for_states) ;;   
+ snd(List.find (fun ((idx,_),_)->idx=idx0) names_for_states) ;;   
 
 let on_action names_for_states = function 
   (Shift j)->  on_index names_for_states j 
@@ -399,3 +425,5 @@ let simple_lr_table gram = Private.Simple_Lr.table gram ;;
 
 
 let usual_names_for_lrk_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules ;;
+
+end ;;
