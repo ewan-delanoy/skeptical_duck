@@ -10,18 +10,18 @@ Lrk here means LR(k), with k =0 or 1
 
 open Lrp_types ;;
 
-type atom = AAA of item ;;
-type molecule = MMM of atom list ;;
+type atom = Atom of item ;;
+type molecule = Molecule of atom list ;;
 
 module Private = struct 
 
-let atoms_inside (MMM atoms)= atoms ;; 
+let atoms_inside (Molecule atoms)= atoms ;; 
 
-let molecule l = MMM(l) ;;
+let molecule l = Molecule(l) ;;
 
-let item_component (AAA item) = item ;; 
+let item_component (Atom item) = item ;; 
 
-let make_atom item = AAA item ;;
+let make_atom item = Atom item ;;
 
 let atm_order gram = ((fun atom1 atom2 ->
     Lrp_grammar.order_on_items gram (item_component atom1) (item_component atom2)

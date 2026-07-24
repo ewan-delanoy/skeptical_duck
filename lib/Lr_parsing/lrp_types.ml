@@ -27,11 +27,6 @@ type lr_table = {
    goto_getter : (int * string, int option) Hashtbl.t ;
 }  ;; 
 
-type lr0_atom = Atom of item ;;
-
-type lr0_molecule = St of lr0_atom list ;; 
-
-
 
 
 
