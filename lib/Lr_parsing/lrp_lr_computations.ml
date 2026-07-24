@@ -7,6 +7,7 @@ Lrp is short for "LR Parsing"
 *)
 
 open Lrp_types ;;
+open Lrp_constant ;;
 
 exception Conflict_in_Lr_parser_exn ;;
 
@@ -42,7 +43,6 @@ module Private = struct
    let str_setminus = Ordered.setminus str_order ;; 
    let str_sort = Ordered.sort str_order ;; 
 
-   let end_marker = "Endmarker" ;;
 
    module Registration = struct 
 
@@ -239,7 +239,7 @@ module Simple_Lr = struct
   
    let preliminary_data_for_simple_lr_actions gram =
       let states = List.tl(all_lrk_molecules gram) 
-      and termies = (Lrp_grammar.terminals gram)@["Endmarker"] in 
+      and termies = (Lrp_grammar.terminals gram)@[end_marker] in 
       let base = Cartesian.product states termies in 
       let initial_data = List.filter_map (
          fun pair ->

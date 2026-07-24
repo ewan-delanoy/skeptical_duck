@@ -7,6 +7,7 @@ Lrp is short for "LR Parsing"
 *)
 
 open Lrp_types ;;
+open Lrp_constant ;;
 
 exception Goto_error_exn of int * string ;;
 exception Transition_error_exn of int * string ;;
@@ -49,13 +50,13 @@ let get_goto tbl state_idx symb =
    None -> raise(Goto_error_exn(state_idx,symb))
    |Some(goto)->goto ;;
 
-let initial_configuration text_to_be_parsed = ([0],text_to_be_parsed@["Endmarker"]) ;;  
+let initial_configuration text_to_be_parsed = ([0],text_to_be_parsed@[end_marker]) ;;  
 
 let compute_next_action tbl (state_stack,symbol_stack) =
    (state_stack,symbol_stack,get_action tbl (List.hd state_stack) (List.hd symbol_stack)) ;;
 
 let initial_configuration tbl text_to_be_parsed = 
-   compute_next_action tbl ([0],text_to_be_parsed@["Endmarker"]) ;;     
+   compute_next_action tbl ([0],text_to_be_parsed@[end_marker]) ;;     
 
 let step tbl steps = 
    match steps with 

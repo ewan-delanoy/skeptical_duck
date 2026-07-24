@@ -7,6 +7,7 @@ Lrp is short for "LR Parsing"
 *)
 
 open Lrp_types ;;
+open Lrp_constant ;;
 
 module Private = struct 
 
@@ -18,8 +19,6 @@ let str_mem = Ordered.mem str_order ;;
 let str_merge = Ordered.merge str_order ;; 
 let str_setminus = Ordered.setminus str_order ;; 
 let str_sort = Ordered.sort str_order ;; 
-
-let end_marker = "Endmarker" ;;
 
 let productions gram = gram.productions ;;
 
