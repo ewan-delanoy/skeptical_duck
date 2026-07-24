@@ -4,7 +4,7 @@ Lrp is short for "LR Parsing"
 Lrk here means LR(k), with k =0 or 1
 
 
-#use"lib/Lr_parsing/lrk_core_methods.ml";;
+#use"lib/Lr_parsing/lr0_seed.ml";;
 
 *)
 
