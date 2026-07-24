@@ -196,7 +196,7 @@ module Simple_Lr = struct
       List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
 
    let reductions_from_lrk_molecule gram lrk_molecule = 
-      let termies = Lrp_grammar.terminals gram in 
+      let termies = str_insert end_marker (Lrp_grammar.terminals gram) in 
       List.filter_map (reduction_from_molecule_and_terminal_opt gram lrk_molecule) termies ;;
   
 
