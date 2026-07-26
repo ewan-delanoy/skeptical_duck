@@ -27,6 +27,41 @@ let make l_action l_goto =
      goto_data = l_goto ;
    } ;;
 
+let i_sort = Ordered.sort Total_ordering.for_integers ;;  
+let str_sort = Ordered.sort Total_ordering.lex_for_strings ;;  
+
+let from_pre_table_opt pre_tbl=
+   let (bad_actions,good_actions)=List.partition (fun (_pair,actions)->
+           List.length(actions)<>1
+   ) pre_tbl.action_pre_data 
+   and (bad_gotos,good_gotos)=List.partition (fun (_pair,gotos)->
+           List.length(gotos)<>1
+   ) pre_tbl.goto_pre_data in 
+   if (bad_actions<>[])||(bad_gotos<>[])
+   then (None,Some(bad_actions,bad_gotos))
+   else   
+   let actions1 = Image.image (fun (pair,actions)->(pair,List.hd actions)) good_actions 
+   and gotos1 = Image.image (fun (pair,actions)->(pair,List.hd actions)) good_gotos in 
+   let indices_from_actions = i_sort(Image.image (fun ((idx,_),_) -> idx) actions1) 
+   and indices_from_gotos = i_sort(Image.image (fun ((idx,_),_) -> idx) gotos1) in 
+   let action_data = Image.image (
+     fun idx -> 
+      let pairs = List.filter_map(fun ((idx2,mover),act) -> if idx2=idx then Some(mover,act) else None ) actions1 in
+      let movers =  str_sort(Image.image fst pairs) in 
+      (idx,Image.image (fun mover ->(mover,List.assoc mover pairs)) movers)
+   ) indices_from_actions 
+   and goto_data = Image.image (
+     fun idx -> 
+      let pairs = List.filter_map(fun ((idx2,mover),dest) -> if idx2=idx then Some(mover,dest) else None ) gotos1 in
+      let movers =  str_sort(Image.image fst pairs) in 
+      (idx,Image.image (fun mover ->(mover,List.assoc mover pairs)) movers)
+   ) indices_from_gotos 
+   in
+   (Some(make action_data goto_data),None) ;;   
+   
+
+   
+
 let hashtbl_for_actions = Hashtbl.create 100 ;;
  
 
@@ -102,9 +137,8 @@ let rec iterator tbl steps =
 
 end ;;   
 
-let get_action = Private.get_action ;;
 
-let get_goto = Private.get_goto ;;
+let from_pre_table_opt = Private.from_pre_table_opt ;;
 
 let make = Private.make ;;
 

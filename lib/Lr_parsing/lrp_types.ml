@@ -20,6 +20,11 @@ type action =
   |Reduce of production 
   |Accept ;;
 
+type lr_pre_table = {
+   action_pre_data :  ((int * string) * (action list)) list ;
+   goto_pre_data :    ((int * string) * (int list)) list ;
+}  ;; 
+
 type lr_table = {
    table_serial_number : int ;
    action_data :  (int * ((string * action) list)) list ;
