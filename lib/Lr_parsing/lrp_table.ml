@@ -24,12 +24,10 @@ let make l_action l_goto =
    {
      table_serial_number = new_val ;
      action_data = l_action ;
-     action_getter = Hashtbl.create 100;
      goto_data = l_goto ;
-     goto_getter = Hashtbl.create 100;
    } ;;
 
-
+let hashtbl_for_actions = Hashtbl.create 100 ;;
  
 
 let compute_action_naively tbl state_idx symb = 
@@ -38,16 +36,18 @@ let compute_action_naively tbl state_idx symb =
 
 let get_action tbl state_idx symb =
    let wrapped_answer = (
-   match Hashtbl.find_opt tbl.action_getter (state_idx,symb) with 
+   match Hashtbl.find_opt hashtbl_for_actions (tbl.table_serial_number,state_idx,symb) with 
    Some old_answer -> old_answer 
    |None ->
       let answer = compute_action_naively tbl state_idx symb in 
-      let _ = Hashtbl.add tbl.action_getter (state_idx,symb) answer in 
+      let _ = Hashtbl.replace hashtbl_for_actions (tbl.table_serial_number,state_idx,symb) answer in 
       answer 
    ) in 
    match wrapped_answer with 
    None -> raise(Transition_error_exn(state_idx,symb))
    |Some(action)->action ;;
+
+let hashtbl_for_gotos = Hashtbl.create 100 ;;   
 
 let compute_goto_naively tbl state_idx symb = 
    let temp = List.assoc state_idx tbl.goto_data  in 
@@ -55,11 +55,11 @@ let compute_goto_naively tbl state_idx symb =
 
 let get_goto tbl state_idx symb =
    let wrapped_answer = (
-   match Hashtbl.find_opt tbl.goto_getter (state_idx,symb) with 
+   match Hashtbl.find_opt hashtbl_for_gotos (tbl.table_serial_number,state_idx,symb) with 
    Some old_answer -> old_answer 
    |None ->
       let answer = compute_goto_naively tbl state_idx symb in 
-      let _ = Hashtbl.add tbl.goto_getter (state_idx,symb) answer in 
+      let _ = Hashtbl.replace hashtbl_for_gotos (tbl.table_serial_number,state_idx,symb) answer in 
       answer 
    ) in 
    match wrapped_answer with 
