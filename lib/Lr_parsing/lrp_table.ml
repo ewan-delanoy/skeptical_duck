@@ -16,6 +16,22 @@ exception Nothing_to_parse_exn ;;
 
 module Private = struct 
 
+let instance_counter = ref(0) ;;
+
+let make l_action l_goto =
+   let new_val = (!instance_counter)+1 in 
+   let _ = (instance_counter:=new_val) in    
+   {
+     table_serial_number = new_val ;
+     action_data = l_action ;
+     action_getter = Hashtbl.create 100;
+     goto_data = l_goto ;
+     goto_getter = Hashtbl.create 100;
+   } ;;
+
+
+ 
+
 let compute_action_naively tbl state_idx symb = 
    let temp = List.assoc state_idx tbl.action_data  in 
   List.assoc_opt symb temp ;;
@@ -90,13 +106,7 @@ let get_action = Private.get_action ;;
 
 let get_goto = Private.get_goto ;;
 
-let make l_action l_goto =
-   {
-     action_data = l_action ;
-     action_getter = Hashtbl.create 100;
-     goto_data = l_goto ;
-     goto_getter = Hashtbl.create 100;
-   } ;;
+let make = Private.make ;;
 
 let parsing_details tbl text_to_be_parsed=    
   Private.iterator tbl [Private.initial_configuration tbl text_to_be_parsed] ;;

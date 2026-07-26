@@ -21,6 +21,7 @@ type action =
   |Accept ;;
 
 type lr_table = {
+   table_serial_number : int ;
    action_data :  (int * ((string * action) list)) list ;
    action_getter : (int * string, action option) Hashtbl.t ;
    goto_data :  (int * ((string * int) list)) list ;

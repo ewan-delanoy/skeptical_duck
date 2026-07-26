@@ -8,7 +8,7 @@ Lrk here means LR(k), with k =0 or 1
 
 *)
 
-(*
+
 
 open Lrp_types ;;
 open Lrp_constant ;;
@@ -46,30 +46,34 @@ let immediate_closure gram atom =
   let symb = List.nth l j in 
   let incomplete_ender = List_again.long_tail (j+1) l 
   and a = lookahead_component atom in
-  let ender = (if a = )
-  let usable_productions = List.filter (fun (Prod(p,_))->p=symb) productions in 
-  atm_sort gram (List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
-  if p2=symb then Some(make_atom(Lrp_item.first_item_from_production pr)) else None) productions);;
+  let ender = incomplete_ender@[a] in 
+  let usable_lookaheads = Lrp_grammar.furst_set_for_form gram ender in 
+  let usable_items = List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
+  if p2=symb then Some(Lrp_item.first_item_from_production pr) else None) productions  in 
+  let product = Cartesian.product usable_items usable_lookaheads in 
+  atm_sort gram (Image.image (fun (item,lah)->make_atom item lah) product);;
 
 let push_dot_one_symbol symb atom =
-  let item= item_component atom in 
-   Option.map make_atom (
+  let item= item_component atom 
+  and lah = lookahead_component atom in 
+   Option.map (fun new_item ->make_atom new_item lah) (
      Lrp_item.push_dot_one_symbol symb item 
    );;
 
 let starter_atom bare_grammar = 
   let productions =Lrp_grammar.productions bare_grammar in 
-  make_atom(Lrp_item.first_item_from_production  (List.hd productions));;
+  make_atom(Lrp_item.first_item_from_production  (List.hd productions)) end_marker;;
 
 let ender_atom bare_grammar = 
   let productions =Lrp_grammar.productions bare_grammar in 
-  make_atom(Lrp_item.last_item_from_production  (List.hd productions));;  
+  make_atom(Lrp_item.last_item_from_production  (List.hd productions)) end_marker;;  
 
- let test_for_allowing_reduction gram (_atom:atom) ~head_of_production ~terminal =
-      let productions = Lrp_grammar.productions gram in 
-      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
-      if head_of_production = early_start then false else  
-      List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
+ let test_for_allowing_reduction (_gram:grammar) atom ~head_of_production ~terminal =
+  let comb = ref(String.length head_of_production) in 
+  let _ = (comb:=0) in 
+  terminal = lookahead_component atom ;;
+
+let visualize_atom (Atom(item,lah)) = (Lrp_item.visualize item)^" , "^lah ;;
 
 end ;;
 
@@ -93,4 +97,5 @@ let starter_atom = Private.starter_atom ;;
 
 let test_for_allowing_reduction = Private.test_for_allowing_reduction ;;
 
-*)
+let visualize_atom = Private.visualize_atom ;;
+

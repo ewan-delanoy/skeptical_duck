@@ -22,11 +22,11 @@ let str_sort = Ordered.sort str_order ;;
 
 let productions gram = gram.productions ;;
 
-let counter = ref(0) ;;
+let instance_counter = ref(0) ;;
 
 let make_from_prods prods = 
-  let new_val = (!counter)+1 in 
-  let _ = (counter:=new_val) in 
+  let new_val = (!instance_counter)+1 in 
+  let _ = (instance_counter:=new_val) in 
   {
      grammar_serial_number = new_val ;
      productions =  prods ; 
@@ -205,7 +205,8 @@ let hashtbl_for_furst_set = Hashtbl.create 100;;
 
   
 let compute_furst_set_naively gram symb= 
-  str_intersect (terminals gram) (Leftmost_descendants.leftmost_descendants gram symb) ;;
+  let termies = str_insert end_marker (terminals gram) in 
+  str_intersect termies (Leftmost_descendants.leftmost_descendants gram symb) ;;
 
 let furst_set_for_symbol = memoize_univar hashtbl_for_furst_set compute_furst_set_naively ;; 
 

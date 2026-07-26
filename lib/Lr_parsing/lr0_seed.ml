@@ -54,10 +54,10 @@ let ender_atom bare_grammar =
   make_atom(Lrp_item.last_item_from_production  (List.hd productions));;  
 
  let test_for_allowing_reduction gram (_atom:atom) ~head_of_production ~terminal =
-      let productions = Lrp_grammar.productions gram in 
-      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
-      if head_of_production = early_start then false else  
       List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
+
+let visualize_atom (Atom(item)) = Lrp_item.visualize item ;;
+
 
 end ;;
 
@@ -81,3 +81,4 @@ let starter_atom = Private.starter_atom ;;
 
 let test_for_allowing_reduction = Private.test_for_allowing_reduction ;;
 
+let visualize_atom = Private.visualize_atom ;;

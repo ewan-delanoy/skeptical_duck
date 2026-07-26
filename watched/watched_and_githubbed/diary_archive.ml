@@ -18,7 +18,6 @@ let all_productions2 = [
 
 let main_grammar2 = Lrp_grammar.make_from_prods all_productions2 ;;
 
-let conf = Lrp_lr_computations.conflicts_in_lr_parser main_grammar2 ;;
 let all_productions1 = [
    Prod("Start",["S"]);
    Prod("S",["E"]);
@@ -31,8 +30,6 @@ let all_productions1 = [
 ] ;; 
 
 let main_grammar1 = Lrp_grammar.make_from_prods all_productions1 ;;
-
-let details1 = Lrp_lr_computations.parsing_details main_grammar1 ["i";"*";"i"] ;;
 
 
 (*

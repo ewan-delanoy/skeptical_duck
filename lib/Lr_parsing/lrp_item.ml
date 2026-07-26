@@ -93,3 +93,5 @@ symbol_after_dot (Item("a",["1";"2";".";"3";"4";"5";"6"])) ;;
 
 
 *)  
+
+let visualize (Item(p,l)) = String.concat "" (p::" -> "::l) ;;

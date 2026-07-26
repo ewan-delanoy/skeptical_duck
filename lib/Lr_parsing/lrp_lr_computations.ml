@@ -26,6 +26,7 @@ sig
     val push_dot_one_symbol : string -> atom -> atom option
     val starter_atom : grammar -> atom
     val test_for_allowing_reduction : grammar -> atom -> head_of_production:string -> terminal:string -> bool
+    val visualize_atom : atom -> string
 end ;;
 
 module Make = functor(Seed:LRK_SEED) -> struct
@@ -190,7 +191,72 @@ let all_lrk_molecules gram =
   ;;
 
 
-module Simple_Lr = struct 
+module Pretty_printing = struct 
+
+let on_index names_for_states idx0=
+ snd(List.find (fun ((idx,_),_)->idx=idx0) names_for_states) ;;   
+
+let on_action names_for_states = function 
+  (Shift j)->  on_index names_for_states j 
+  |Reduce(Prod(a,b)) -> a^" -> "^(String.concat "" b) 
+  |Accept -> "Accept" ;;
+
+let on_action_transition names_for_states (symb,act) = 
+   symb^"\226\165\184 \226\157\170 "^(on_action names_for_states act)^" \226\157\171";;
+
+let on_action_transitions names_for_states l = 
+    String.concat "   " (Image.image (on_action_transition names_for_states) l);;   
+
+let on_action_indexed_pair names_for_states (idx,transitions) = 
+   (on_index names_for_states idx)^" : "^(on_action_transitions names_for_states transitions);;
+
+let on_action_data names_for_states l =
+   "Action table :\n\n"^
+   (String.concat "\n" (Image.image (on_action_indexed_pair names_for_states) l))
+  ;;  
+
+let on_goto_transition names_for_states (symb,state) = 
+   symb^"\226\165\184 \226\157\170 "^(on_index names_for_states state)^" \226\157\171";;
+
+let on_goto_transitions names_for_states l = 
+    String.concat "   " (Image.image (on_goto_transition names_for_states) l);;   
+
+let on_goto_indexed_pair names_for_states (idx,transitions) = 
+   (on_index names_for_states idx)^" : "^(on_goto_transitions names_for_states transitions);;
+
+let on_goto_data names_for_states l =
+   let effective_l = List.filter (fun (_idx,transitions)->transitions<>[]) l in 
+   "Goto table :\n\n"^
+   (String.concat "\n" (Image.image (on_goto_indexed_pair names_for_states) effective_l))
+  ;;  
+
+let on_table names_for_states tbl =
+   (on_action_data names_for_states tbl.action_data)^
+   "\n\n\n"^
+   (on_goto_data names_for_states tbl.goto_data)^
+   "\n\n\n" ;; 
+ 
+
+let on_parsing_details names_for_states l =
+   List.rev_map (
+    fun (state_stack,symbol_stack,next_action) ->
+      (
+         List.rev_map (on_index names_for_states) state_stack,
+         symbol_stack,
+         on_action names_for_states next_action
+      )
+   ) l ;;
+
+let on_conflict_element names_for_states ((idx,mover),actions)=
+  ((on_index names_for_states idx,mover),Image.image (on_action names_for_states) actions) ;;
+
+let on_conflicts  names_for_states elements = Image.image (on_conflict_element names_for_states)  elements ;;
+      
+
+end ;;   
+
+
+module Automaton_And_Table = struct 
 
  let terminals_after_a_dot_in_lrk_molecule gram lrk_molecule =
     let atoms= Seed.atoms_inside lrk_molecule in 
@@ -208,12 +274,18 @@ module Simple_Lr = struct
         (term,Shift(new_idx))
       ) terms ;;
 
+    let full_test_for_allowing_reduction gram atom ~head_of_production ~terminal =
+      let productions = Lrp_grammar.productions gram in 
+      let (Prod(early_start,_old_start)) = List.hd(productions)   in 
+      if head_of_production = early_start then false else  
+      Seed.test_for_allowing_reduction gram atom ~head_of_production ~terminal ;;   
+
    let reduction_from_terminal_and_atom_opt gram terminal atom =
       match Lrp_item.almost_finished_production_opt (Seed.item_component atom) with
       None -> None
       |Some(production) ->
          let (Prod(head_of_production,_)) = production in 
-         if Seed.test_for_allowing_reduction gram atom ~head_of_production ~terminal 
+         if full_test_for_allowing_reduction gram atom ~head_of_production ~terminal 
          then Some(terminal,Reduce(production))
          else None;;  
          
@@ -339,7 +411,7 @@ let compute_usual_names_for_lrk_molecules_naively gram =
 
  let hashtbl_for_usual_names_for_lrk_molecules = Hashtbl.create 100 ;;   
 
-    let usual_names_for_lrk_molecules gram = 
+    let usual_names_for_lrk_molecules_without_visualizing gram = 
       match Hashtbl.find_opt hashtbl_for_usual_names_for_lrk_molecules gram.grammar_serial_number  with 
       Some old_answer -> old_answer 
     | None ->
@@ -347,56 +419,24 @@ let compute_usual_names_for_lrk_molecules_naively gram =
     let _ = (Hashtbl.replace hashtbl_for_usual_names_for_lrk_molecules gram.grammar_serial_number new_answer) in 
      new_answer ;;
 
-end ;;   
-
-module Shortnamer = struct 
-
-let on_index names_for_states idx0=
- snd(List.find (fun ((idx,_),_)->idx=idx0) names_for_states) ;;   
-
-let on_action names_for_states = function 
-  (Shift j)->  on_index names_for_states j 
-  |Reduce(Prod(a,b)) -> a^" -> "^(String.concat "" b) 
-  |Accept -> "Accept" ;;
-
-let on_action_data names_for_states l =
-   Image.image (fun (idx,transitions)->
-    (on_index names_for_states idx,Image.image (
-      fun (mover,result) -> (mover,on_action names_for_states result) 
-    ) transitions)   
-   ) l;;  
-
-let on_goto_data names_for_states l =
-   Image.image (fun (idx,transitions)->
-    (on_index names_for_states idx,Image.image (
-      fun (mover,result) -> (mover,on_index names_for_states result) 
-    ) transitions)   
-   ) l;;     
-
-let on_table names_for_states tbl =
-   (
-      on_action_data names_for_states tbl.action_data,
-      on_goto_data names_for_states tbl.goto_data
-   ) ;; 
- 
-
-let on_parsing_details names_for_states l =
-   List.rev_map (
-    fun (state_stack,symbol_stack,next_action) ->
-      (
-         List.rev_map (on_index names_for_states) state_stack,
-         symbol_stack,
-         on_action names_for_states next_action
-      )
-   ) l ;;
-
-let on_conflict_element names_for_states ((idx,mover),actions)=
-  ((on_index names_for_states idx,mover),Image.image (on_action names_for_states) actions) ;;
-
-let on_conflicts  names_for_states elements = Image.image (on_conflict_element names_for_states)  elements ;;
+   let visualize_molecule molecule =
+      let atoms = Seed.atoms_inside molecule in 
+      "\n\n"^(String.concat "\n" (Image.image (fun atom-> (String.make 5 ' ')^(Seed.visualize_atom atom)) atoms))^"\n\n" ;;
       
+   let visualize_triple ((idx,molecule),surname) =
+       "State number "^(string_of_int idx)^", aka "^surname^":\n"^
+          (visualize_molecule molecule) ;;
+
+   let visualize_triples triples = String.concat "\n" (Image.image visualize_triple triples) ;;
+   
+   let usual_names_for_lrk_molecules gram =
+      let answer =usual_names_for_lrk_molecules_without_visualizing gram in 
+      let msg = visualize_triples answer in 
+      let _ = print_string ("\n\n"^msg^"\n\n") in 
+      answer;;
 
 end ;;   
+
 
 end ;;   
 
@@ -405,23 +445,25 @@ let all_lrk_molecules = Private.all_lrk_molecules ;;
 
 
 let conflicts_in_lr_parser gram = 
-   try (let _ =Private.Simple_Lr.table gram in []) with
+   try (let _ =Private.Automaton_And_Table.table gram in []) with
    _ -> 
-   let conflicts = (!(Private.Simple_Lr.ref_for_conflicts_in_slr_parser)) in 
+   let conflicts = (!(Private.Automaton_And_Table.ref_for_conflicts_in_slr_parser)) in 
    let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
-   Private.Shortnamer.on_conflicts names_for_states conflicts;;
+   Private.Pretty_printing.on_conflicts names_for_states conflicts;;
 
 
 let parsing_details gram text_to_be_parsed = 
    let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
-   let lr_table = Private.Simple_Lr.table gram in 
+   let lr_table = Private.Automaton_And_Table.table gram in 
    let parse_example = Lrp_table.parsing_details lr_table text_to_be_parsed in 
-   Private.Shortnamer.on_parsing_details names_for_states parse_example ;;   
+   Private.Pretty_printing.on_parsing_details names_for_states parse_example ;;   
 
 
-let simple_lr_table gram = Private.Simple_Lr.table gram ;; 
-
-
+let lr_table gram = 
+    let names_for_states = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules gram in 
+   let lr_table = Private.Automaton_And_Table.table gram in 
+   let _ = print_string(Private.Pretty_printing.on_table names_for_states lr_table) in 
+   lr_table ;;   
 
 
 let usual_names_for_lrk_molecules = Private.Usual_names_for_Lr0_states.usual_names_for_lrk_molecules ;;
