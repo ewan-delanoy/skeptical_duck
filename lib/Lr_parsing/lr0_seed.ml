@@ -73,6 +73,8 @@ let item_component  = Private.item_component ;;
 
 let molecule = Private.molecule ;;
 
+let name = "LR(0)" ;;
+
 let order_on_atoms = Private.atm_order ;;
 
 let push_dot_one_symbol = Private.push_dot_one_symbol ;;

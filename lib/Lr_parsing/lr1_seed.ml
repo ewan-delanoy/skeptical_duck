@@ -87,7 +87,11 @@ let immediate_closure = Private.immediate_closure ;;
 
 let item_component  = Private.item_component ;; 
 
+let lookahead_component  = Private.lookahead_component ;; 
+
 let molecule = Private.molecule ;;
+
+let name = "LR(1)" ;;
 
 let order_on_atoms = Private.atm_order ;;
 
