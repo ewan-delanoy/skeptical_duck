@@ -78,3 +78,10 @@ let on_both_conflicts names_for_states (action_conflicts,goto_conflicts) =
       
 
 end ;;   
+
+let on_action = Private.on_action ;;
+
+let on_both_conflicts = Private.on_both_conflicts ;;
+
+let on_index = Private.on_index ;;
+let on_table = Private.on_table ;;
