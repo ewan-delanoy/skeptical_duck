@@ -305,5 +305,7 @@ let order_on_items = Private.order_on_items ;;
 let productions = Private.productions ;;
 
 let rightmost_ancestors = Private.Rightmost_ancestors.rightmost_ancestors ;;
+
+let sons gram father = List.filter_map (fun (Prod(a,b))->if a=father then Some b else None ) (productions gram) ;;
 let start_symbol = Private.start_symbol ;; 
 let terminals = Private.terminals ;;
