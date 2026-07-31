@@ -295,6 +295,7 @@ let items gram =
   let unordered = List.flatten (Image.image Lrp_item.items_from_production prods) in 
   Ordered.sort (Private.order_on_items gram) unordered ;;
 
+let leftmost_descendants = Private.Leftmost_descendants.leftmost_descendants ;;
 
 let make = Private.make ;;  
 let make_from_prods = Private.make_from_prods ;;  

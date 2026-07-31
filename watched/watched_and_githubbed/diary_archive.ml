@@ -1,6 +1,81 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 262 : Using Lr parsing modules
+************************************************************************************************************************)
+module Snip262 = struct 
+
+open Lrp_types ;;
+open Lrp_constant ;;
+
+module Lr0_fruit = Lrp_lr_computations.Make(Lr0_seed) ;;
+module Lr1_fruit = Lrp_lr_computations.Make(Lr1_seed) ;;
+
+(*
+let all_productions1 = [
+   Prod("Start",["S"]);
+   Prod("S",["E"]);
+   Prod("E",["E";"+";"T"]);
+   Prod("E",["T"]);
+   Prod("T",["T";"*";"F"]);
+   Prod("T",["F"]);
+   Prod("F",["(";"E";")"]);
+   Prod("F",["i"]);
+] ;; 
+
+let grammar1 = Lrp_grammar.make_from_prods all_productions1 ;;
+
+
+let details_for_lr0 = Lr0Fruit.parsing_details grammar1 ["i";"*";"i"] ;;
+let details_for_lr1 = Lr1Fruit.parsing_details grammar1 ["i";"*";"i"] ;;
+
+let all_productions2 = [
+   Prod("Start",["S"]);
+   Prod("S",["L";"=";"R"]);
+   Prod("S",["R"]);
+   Prod("L",["*";"R"]);
+   Prod("L",["i"]);
+   Prod("R",["L"]);
+] ;; 
+
+let grammar2 = Lrp_grammar.make_from_prods all_productions2 ;;
+
+let conf = Lr0_fruit.table grammar2 ;;
+
+*)
+let all_productions3 = [
+   Prod("Start",["S"]);
+   Prod("S",["C";"C"]);
+   Prod("C",["c";"C"]);
+   Prod("C",["d"]);
+] ;; 
+
+let grammar3 = Lrp_grammar.make_from_prods all_productions3 ;;
+
+let lr0_table_for_grammar3 = Lr0_fruit.table grammar3 ;;
+let lr1_table_for_grammar3 = Lr1_fruit.table grammar3 ;;
+
+let lalr_table_for_grammar3 = Lrp_lalr_computations.table grammar3 ;;
+
+let all_productions4 = [
+   Prod("Start",["S"]);
+   Prod("S",["a";"A";"d"]);
+   Prod("S",["b";"B";"d"]);
+   Prod("S",["a";"B";"e"]);
+   Prod("S",["b";"A";"e"]);
+   Prod("A",["c"]);
+   Prod("B",["c"]);
+] ;; 
+
+let grammar4 = Lrp_grammar.make_from_prods all_productions4 ;;
+
+let lr0_table_for_grammar4 = Lr0_fruit.table grammar4 ;;
+let lr1_table_for_grammar4 = Lr1_fruit.table grammar4 ;;
+
+let lalr_table_for_grammar4 = Lrp_lalr_computations.table grammar4 ;;
+end;;
+
+(************************************************************************************************************************
  Entry 261 : Starting to use modules from the Lr_parsing package
 ************************************************************************************************************************)
 module Snip261 = struct 
