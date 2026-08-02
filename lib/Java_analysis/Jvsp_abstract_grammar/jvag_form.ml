@@ -94,13 +94,6 @@ let is_contained_in nm form = match form with
    |Synonym nm2 -> nm2 = nm ;;
 
 let molecular_content_opt = Private.molecular_content_opt ;;   
-let needs_extra_display form= match form with
-   Disjunction(_) 
-  |Concat(_) ->  true    
-  |Optional(_) 
-  |Molecular(_)    
-  |(Star _) 
-  |Synonym(_) -> false;;  
 
 let ocaml_name = function 
    Optional(nm) -> "Optional(\""^nm^"\")"

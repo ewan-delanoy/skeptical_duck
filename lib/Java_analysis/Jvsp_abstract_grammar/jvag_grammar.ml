@@ -89,15 +89,17 @@ let form_to_enhanced2_string gram form= match form with
   |(Star _) 
   |Synonym(_) -> Jvag_form.to_string form;;
 
+let form_to_enhanced3_string gram name form= 
+  "\n\n "^name^" = "^(Jvag_form.ocaml_name form)^"\n\n"^
+  (form_to_enhanced2_string gram form);;
+
 
 let get_and_display gram name =
    let form = get gram name in 
-   let _ = (
-      if Jvag_form.needs_extra_display form 
-      then let msg = "\n\n\n" ^ (form_to_enhanced2_string gram form) ^ "\n\n\n" in 
-           print_string msg;flush stdout
-   ) in 
+   let msg = "\n\n\n" ^ (form_to_enhanced3_string gram name form) ^ "\n\n\n" in 
+  let _ =(print_string msg;flush stdout) in 
    form ;;
+   
    
 let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
