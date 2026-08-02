@@ -114,14 +114,14 @@ let ocaml_name_of_local_modification lmod=
    "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
  |(Lm_reunite_star(index_in_disj,(length_before,length_after))) ->  
   "Lm_reunite_star("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"
- |(Lm_detect_optional(index_in_disj,(length_before,length_after))) ->  
-  "Lm_detect_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
+ |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) ->  
+  "Lm_reunite_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
  |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->
   "Lm_reunite_disjunction(("^(soi disj_range_start)^","^(soi disj_range_end)^"),"^(soi index_in_concat)^")"
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
   "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
- |(Lm_pumping_lemma(original_name,index_in_disj)) ->  
-   "Lm_pumping_lemma(\""^original_name^"\","^(soi index_in_disj)^")"
+ |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
+   "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
 ;;
@@ -470,17 +470,17 @@ let extract_main_name_from_pair_during_option_detection between1 between2 =
    if between2 = [] then extract_main_name_from_list_during_option_detection between1 else  
    None ;;
 
-exception Detect_optional_exn of (string list) * (string list) ;;   
+exception Reunite_optional_exn of (string list) * (string list) ;;   
 
-let detect_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
-  let (before,pivot1,almost_after) = extract_element_from_disjunction "detect_optional" forms index_in_disj in  
+let reunite_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
+  let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_optional" forms index_in_disj in  
   let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let chain1 = match_concat pivot1 ("index in disjunction",index_in_disj,"detect_optional") 
-  and chain2 = match_concat pivot2 ("index in disjunction",index_in_disj+1,"detect_optional") in
-  let (left,between,right) = uniform_two_sided_cutting ("detect_optional",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
+  let chain1 = match_concat pivot1 ("index in disjunction",index_in_disj,"reunite_optional") 
+  and chain2 = match_concat pivot2 ("index in disjunction",index_in_disj+1,"reunite_optional") in
+  let (left,between,right) = uniform_two_sided_cutting ("reunite_optional",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
   let between1 = List.nth between 0 and between2 = List.nth between 1 in 
   match extract_main_name_from_pair_during_option_detection between1 between2 with 
-  None -> raise (Detect_optional_exn(between1,between2))
+  None -> raise (Reunite_optional_exn(between1,between2))
   |Some(main_name) ->
    let final_form = Jvag_types.Optional main_name in 
    let (gram2,name_for_final_form) = register_if_needed gram final_form in 
@@ -502,14 +502,14 @@ let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) =
   let (gram2,name_for_final_form) = register_if_needed gram final_form in 
   (gram2,before @ [Jvag_types.Concat(before2@[name_for_final_form]@after2)]  @ after);;  
 
-exception Pumping_lemma_exn of string * string ;;
+exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
 
-let pumping_lemma (gram,forms) original_name index_in_disj = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "pumping_lemma" forms index_in_disj in  
-  let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"pumping_lemma") in
+let remove_left_recursive_line_in_disjunction (gram,forms) original_name index_in_disj = 
+  let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" forms index_in_disj in  
+  let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
   let (head,tail) = List_again.head_with_tail chain in 
   if head<>original_name 
-  then raise(Pumping_lemma_exn(original_name,head))
+  then raise(Remove_left_recursive_line_in_disjunction_exn(original_name,head))
   else 
   let (gram2,name_for_form1) = (
     if List.length(tail)=1 
@@ -549,14 +549,14 @@ let apply gf =function
    explode_molecule gf (index_in_disj,index_in_concat)
  |(Lm_reunite_star(index_in_disj,(length_before,length_after))) -> 
     reunite_star gf (index_in_disj,(length_before,length_after)) 
- |(Lm_detect_optional(index_in_disj,(length_before,length_after))) -> 
-    detect_optional gf (index_in_disj,(length_before,length_after)) 
+ |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) -> 
+    reunite_optional gf (index_in_disj,(length_before,length_after)) 
  |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
    reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat)
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
     implode_concat gf (index_in_disj,(range_start,range_end))
- |(Lm_pumping_lemma(original_name,index_in_disj)) ->   
-    pumping_lemma gf original_name index_in_disj 
+ |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
+    remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   
   ;;

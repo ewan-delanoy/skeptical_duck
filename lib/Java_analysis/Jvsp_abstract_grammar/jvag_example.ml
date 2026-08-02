@@ -460,7 +460,7 @@ let mods_for_import_declaration = [
 (Lm_reunite_star(1,(2,1)));
 (Lm_explode_molecule(2,4));
 (Lm_implode_molecule(2,(4,5)));
-(Lm_detect_optional(1,(3,1)));
+(Lm_reunite_optional(1,(3,1)));
 (Lm_implode_concat(1,(2,4)));
 
 (* Dealing with static imports *)
@@ -492,10 +492,10 @@ let mods_for_import_declaration = [
 let modifications_to_original_java_grammar = 
     [
 
-      Local("AmbiguousName",[Lm_pumping_lemma("AmbiguousName",2)]); 
-      Local("ModuleName",[Lm_pumping_lemma("ModuleName",2)]);
-      Local("PackageName",[Lm_pumping_lemma("PackageName",2)]);
-      Local("PackageOrTypeName",[Lm_pumping_lemma("PackageOrTypeName",2)]);
+      Local("AmbiguousName",[Lm_remove_left_recursive_line_in_disjunction("AmbiguousName",2)]); 
+      Local("ModuleName",[Lm_remove_left_recursive_line_in_disjunction("ModuleName",2)]);
+      Local("PackageName",[Lm_remove_left_recursive_line_in_disjunction("PackageName",2)]);
+      Local("PackageOrTypeName",[Lm_remove_left_recursive_line_in_disjunction("PackageOrTypeName",2)]);
       Local("ExpressionName",[Lm_reunite_star(1,(1,0))]);
       Remove_productions( [
       "AmbiguousName"; "CompoundAmbiguousName";  "ModuleName";
@@ -535,8 +535,8 @@ let modifications_to_original_java_grammar =
       Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
       Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
       Create_production("CoreUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
-      Local("UnannClassType",[Lm_pumping_lemma("UnannClassType",3)]);
-
+      Local("UnannClassType",[Lm_remove_left_recursive_line_in_disjunction("UnannClassType",3)]);
+      
       Local("TypeName",[
       Lm_collapse_synonym(1);Lm_expand_synonym(2,4);
       Lm_implode_molecule(2,(3,4)); Lm_reunite_star(1,(1,0)); 
