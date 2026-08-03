@@ -219,6 +219,13 @@ let create_new_pair pair (AL l) =
 
 exception Standardized_name_exn of string ;;   
 
+let dwarf_counter = ref(0) ;;
+
+let next_dwarf_value () =
+   let m =(!dwarf_counter)+1 in 
+   let _ = (dwarf_counter:=m) in 
+   string_of_int m ;;
+
 let standardized_name = function 
    Concat l -> "CCCCC"^(String.concat "NNNNN" l)^"TTTTT"
    |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
@@ -227,25 +234,36 @@ let standardized_name = function
    |Optional nm -> "Optional"^ nm
    |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
-let register_if_needed gram form = 
+let dwarfy_name ~suffix= function 
+    Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
+   |Star nm -> "Starred"^ nm
+   |Optional nm -> "Optional"^ nm
+   |Concat _ 
+   |Disjunction _ 
+   |Synonym _  -> 
+    let m =next_dwarf_value() in 
+    "Dwarf"^m^"_"^suffix ;; 
+
+
+let register_with_dwarfy_name_if_needed gram ~suffix form = 
    match name_for_form_opt gram form with 
   Some old_name ->(gram,old_name)
   |None -> 
-  let new_name = standardized_name form in 
+  let new_name = dwarfy_name ~suffix form in 
   if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
   let new_ag = replace_pair_or_add_if_absent (new_name,form) gram in  
   (new_ag,new_name) ;;  
 
-let rec helper_for_multiple_registration (treated,gram,to_be_treated) =
+let rec helper_for_multiple_registration (treated,gram,suffix,to_be_treated) =
   match to_be_treated with 
   [] -> (gram,List.rev treated)
   |form1 :: other_forms ->
-    let (gram1,name1) = register_if_needed gram form1 in 
-    helper_for_multiple_registration (name1::treated,gram1,other_forms)
+    let (gram1,name1) = register_with_dwarfy_name_if_needed gram ~suffix form1 in 
+    helper_for_multiple_registration (name1::treated,gram1,suffix,other_forms)
   ;;
 
-let register_several_if_needed gram forms = 
-      helper_for_multiple_registration ([],gram,forms) ;;
+let register_several_with_dwarfy_name_if_needed gram ~suffix forms = 
+      helper_for_multiple_registration ([],gram,suffix,forms) ;;
 
 
 module Local_Modification = struct 
@@ -407,7 +425,7 @@ let implode_molecule (gram,forms) (index_in_disj,(range_start,range_end)) =
   let tokens_between = match_moleculars forms_between ("index in range in concat","implode_molecule") in 
   let tokens = List.flatten tokens_between in 
   let molecular = Jvag_types.Molecular tokens in 
-  let (gram2,name_for_molecular) = register_if_needed gram molecular in 
+  let (gram2,name_for_molecular) = register_with_dwarfy_name_if_needed gram ~suffix:"" molecular in 
   (gram2,before @ [Jvag_types.Concat(before2@[name_for_molecular]@after2)]  @ after);;      
 
 let explode_molecule (gram,forms) (index_in_disj,index_in_concat) = 
@@ -417,7 +435,7 @@ let explode_molecule (gram,forms) (index_in_disj,index_in_concat) =
   let pivot2 = get gram pivot2_name in 
   let tokens = match_molecular pivot2 ("index in concat",index_in_concat,"explode_molecule") in
   let atoms = Image.image (fun tok->Jvag_types.Molecular [tok]) tokens in 
-  let (gram2,names_for_the_atoms) = register_several_if_needed gram atoms in 
+  let (gram2,names_for_the_atoms) = register_several_with_dwarfy_name_if_needed gram ~suffix:"" atoms in 
   (gram2,before @ [Jvag_types.Concat(before2@names_for_the_atoms@after2)]  @ after);;
 
 let extract_main_name_from_list_during_star_reuniting between =
@@ -490,7 +508,7 @@ let reunite_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
   None -> raise (Reunite_optional_exn(between1,between2))
   |Some(main_name) ->
    let final_form = Jvag_types.Optional main_name in 
-   let (gram2,name_for_final_form) = register_if_needed gram final_form in 
+   let (gram2,name_for_final_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
   (gram2,before @ [Jvag_types.Concat(left@[name_for_final_form]@right)]  @ after);;      
 
 let reunite_disjunction (gram,forms) ((disj_range_start,disj_range_end),index_in_concat) =
@@ -498,7 +516,7 @@ let reunite_disjunction (gram,forms) ((disj_range_start,disj_range_end),index_in
   let chains_between = match_concats forms_between ("index in range in disjunction","reunite_disjunction") in 
   let (left,centers,right) = uniform_extraction ("reunite_disjunction",disj_range_start,disj_range_end) chains_between index_in_concat in 
   let final_form = Jvag_types.Disjunction centers in 
-   let (gram2,name_for_final_form) = register_if_needed gram final_form in 
+   let (gram2,name_for_final_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
   (gram2,before @ [Jvag_types.Concat(left@[name_for_final_form]@right)]  @ after);;      
 
 let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) = 
@@ -506,7 +524,7 @@ let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) =
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"implode_concat") in
   let (before2,between2,after2) = extract_range_from_concat "implode_concat" chain (range_start,range_end) in 
   let final_form = Jvag_types.Concat between2 in 
-  let (gram2,name_for_final_form) = register_if_needed gram final_form in 
+  let (gram2,name_for_final_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
   (gram2,before @ [Jvag_types.Concat(before2@[name_for_final_form]@after2)]  @ after);;  
 
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
@@ -523,17 +541,17 @@ let remove_left_recursive_line_in_disjunction (gram,forms) original_name index_i
     then (gram,List.hd tail)
     else 
     let form1 = Jvag_types.Concat(tail) in  
-    register_if_needed gram form1 
+    register_with_dwarfy_name_if_needed gram ~suffix:"" form1 
   ) in  
   let form2 = Jvag_types.Star(name_for_form1) in 
-  let (gram3,name_for_form2) = register_if_needed gram2 form2 in 
-  let (gram4,names_for_others) = register_several_if_needed gram3 (before@after) in 
+  let (gram3,name_for_form2) = register_with_dwarfy_name_if_needed gram2 ~suffix:"" form2 in 
+  let (gram4,names_for_others) = register_several_with_dwarfy_name_if_needed gram3 ~suffix:"" (before@after) in 
   let (gram5,name_for_form3) = (
     if List.length(names_for_others)=1 
     then (gram4,List.hd names_for_others)
     else  
     let form3 = Jvag_types.Disjunction names_for_others in   
-    register_if_needed gram4 form3
+    register_with_dwarfy_name_if_needed gram4 ~suffix:"" form3
   ) in 
   (gram5,[Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
 
@@ -726,7 +744,7 @@ let apply_local_modifications gram name mods =
    let (gram2,end_form) = (
       if List.length(end_dis)=1
       then (end_gram,List.hd end_dis)
-      else let (temp_gram,end_names) = register_several_if_needed end_gram end_dis in 
+      else let (temp_gram,end_names) = register_several_with_dwarfy_name_if_needed end_gram ~suffix:name end_dis in 
            (temp_gram,Jvag_types.Disjunction end_names)     
    ) in   
    heavy_add_pair (name,end_form) gram2 ;;
