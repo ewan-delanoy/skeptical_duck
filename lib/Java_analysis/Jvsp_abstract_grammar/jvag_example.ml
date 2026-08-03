@@ -497,9 +497,6 @@ let modifications_to_original_java_grammar =
       Local("PackageName",[Lm_remove_left_recursive_line_in_disjunction("PackageName",2)]);
       Local("PackageOrTypeName",[Lm_remove_left_recursive_line_in_disjunction("PackageOrTypeName",2)]);
       Local("ExpressionName",[Lm_reunite_star(1,(1,0))]);
-      Remove_productions( [
-      "AmbiguousName"; "CompoundAmbiguousName";  "ModuleName";
-      "PackageName"; "PackageOrTypeName"]);
       (* Simplify the production rule for the import declaration*)
       Register_with_standardized_name (Optional("Static")) ;
       Register_with_standardized_name (Optional("MolecularDot_Times"));
@@ -509,9 +506,6 @@ let modifications_to_original_java_grammar =
       Create_production("ImportedContent",Disjunction(["NonstaticImportedContent";"StaticImportedContent"]));
 
       Local("ImportDeclaration",mods_for_import_declaration);
-      Remove_productions( ["SingleStaticImportDeclaration";
-      "SingleTypeImportDeclaration"; "StaticImportOnDemandDeclaration";
-      "TypeImportOnDemandDeclaration"]);
       (* Simplify the production rule for the class body declaration*)
       Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
       Expand_in_synonym("Block","InstanceInitializer");
@@ -534,20 +528,54 @@ let modifications_to_original_java_grammar =
 
       Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
       Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
-      Create_production("CoreUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
+      Create_production("UnextendedUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
       Local("UnannClassType",[Lm_remove_left_recursive_line_in_disjunction("UnannClassType",3)]);
-      
+
       Local("TypeName",[
       Lm_collapse_synonym(1);Lm_expand_synonym(2,4);
       Lm_implode_molecule(2,(3,4)); Lm_reunite_star(1,(1,0)); 
       ]);
      
+      Collapse_synonym_globally("InterfaceType");
+      Collapse_synonym_globally("ClassOrInterfaceType");
+      
+
+      Create_production("UnextendedClassType",Disjunction(["ShortClassType"; "UsualClassType"]));
+      Local("ClassType",[Lm_remove_left_recursive_line_in_disjunction("ClassType",3)]);
+
+
+      (*
+      Create_production("Dwarf1ArrayAccess",Concat(["Literal"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf2ArrayAccess",Concat(["ClassLiteral"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf3ArrayAccess",Concat(["This"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf4ArrayAccess",Concat(["UsingThisPrimaryNoNewArray"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf5ArrayAccess",Concat(["ParenthesedPrimaryNoNewArray"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf6ArrayAccess",Concat(["ClassInstanceCreationExpression"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf7ArrayAccess",Concat(["FieldAccess"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf8ArrayAccess",Concat(["ArrayAccess"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf9ArrayAccess",Concat(["MethodInvocation"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf10ArrayAccess",Concat(["MethodReference"; "Lb" ; "Expression" ; "Rb"]));
+      Create_production("Dwarf11ArrayAccess",Disjunction(["ShortArrayAccess" ;"Dwarf1ArrayAccess" ; "Dwarf2ArrayAccess" ; "Dwarf3ArrayAccess" ; "Dwarf4ArrayAccess" ; "Dwarf5ArrayAccess" ; "Dwarf6ArrayAccess" ; "Dwarf7ArrayAccess" ; "Dwarf9ArrayAccess" ; "Dwarf10ArrayAccess"]));
+      Create_production("Dwarf12ArrayAccessExtender",Concat(["Lb" ; "Expression" ; "Rb"]));
+      Create_production("StarredDwarf12ArrayAccessExtender",Star("Dwarf12ArrayAccessExtender"));
+      Local("ArrayAccess",[
+        Lm_expand_disjunction(2,1);
+        Lm_remove_left_recursive_line_in_disjunction("ArrayAccess",9);
+      ]); 
+      *)
+     
+
     ] ;;
 
-let java_grammar = 
+let java_grammar_with_some_unused_names = 
   
     Jvag_grammar.modify original_java_grammar 
      modifications_to_original_java_grammar ;;
+
+let (unused_names,java_grammar) = Jvag_grammar.Preliminary_normalizations.remove_unused_names 
+   java_grammar_with_some_unused_names ~exceptions:["OrdinaryCompilationUnit"];;
+  
+
  end ;;
 
 

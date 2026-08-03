@@ -9,8 +9,6 @@ open Jvag_types ;;
 exception Get_exn of string ;;
 exception Circularity of string * (string list) ;; 
 exception Name_already_in_use of string ;;
-exception Flatten_triangle_exn of string ;;
-exception Flatten_tetris1_exn of string ;;
 
 module Private = struct 
 
@@ -197,7 +195,7 @@ let differences (AL l1) (AL l2) =
   ) names in 
   List.filter (fun (_name,(opt1,opt2))->opt1<>opt2) data ;;
 
-let add_pair_naively pair (AL l) = 
+let replace_pair_or_add_if_absent pair (AL l) = 
   let (name,_form) = pair in 
   let new_l = (
     match List.assoc_opt name l with 
@@ -235,7 +233,7 @@ let register_if_needed gram form =
   |None -> 
   let new_name = standardized_name form in 
   if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
-  let new_ag = add_pair_naively (new_name,form) gram in  
+  let new_ag = replace_pair_or_add_if_absent (new_name,form) gram in  
   (new_ag,new_name) ;;  
 
 let rec helper_for_multiple_registration (treated,gram,to_be_treated) =
@@ -252,11 +250,8 @@ let register_several_if_needed gram forms =
 
 module Local_Modification = struct 
   
-let lm_get gram name = 
-  let form1 = get gram name in 
-  let l =Jvag_form.disjunction_content form1 in 
-  Image.image (get gram) l;;
 
+exception Lm_get_exn of form ;;
 exception Bad_index_exn of string * int * string ;;
 exception Bad_range_exn of string * int * int * string ;;
 exception Bad_form_exn of  string * int * string * form  * string ;;
@@ -264,6 +259,16 @@ exception Bad_sides_in_two_sided_cutting_exn of string * int * int * string * in
 exception Nonuniform_left_in_two_sided_cutting_exn of string * int * int * string * int * int * (string list) * (string list) * string ;;
 exception Nonuniform_right_in_two_sided_cutting_exn of string * int * int * string * int * int * (string list) * (string list) * string ;;
 exception Nonuniform_sizes_in_extraction_exn of string * int * int *  (string list) * (string list) * string ;;  
+
+let lm_get gram name = 
+  let form = get gram name in 
+  match get gram name with 
+  Disjunction(l) -> Image.image (get gram) l 
+  |Concat(_)->[form]
+  |Molecular  _
+  |Star _
+  |Optional _ 
+  |Synonym _ -> raise(Lm_get_exn(form));; 
 
 
 let match_concat form (text_for_index,index,caller_name)= 
@@ -586,7 +591,7 @@ let expand_grammar_using_concat data (AL l) =
 
 
 let heavy_add_pair pair gram = 
-  let gram2 = add_pair_naively pair gram in 
+  let gram2 = replace_pair_or_add_if_absent pair gram in 
   match snd pair with 
   (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
    |Disjunction _
@@ -620,13 +625,13 @@ let remove_productions to_be_removed (AL l) =
 
 let register_molecular token_types gram =
    let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
-   add_pair_naively (name,Molecular(token_types)) gram ;;
+   replace_pair_or_add_if_absent (name,Molecular(token_types)) gram ;;
 
 
 
 let register_with_standardized_name form gram= 
    let name = standardized_name form in 
-   add_pair_naively (name,form) gram ;;
+   replace_pair_or_add_if_absent (name,form) gram ;;
 
 
 
@@ -727,7 +732,7 @@ let apply_local_modifications gram name mods =
    heavy_add_pair (name,end_form) gram2 ;;
 
 let apply gram = function 
-   (Set_production(name,form)) -> add_pair_naively (name,form) gram 
+   (Set_production(name,form)) -> replace_pair_or_add_if_absent (name,form) gram 
   |Create_production(name,form) ->  create_new_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
@@ -1187,7 +1192,7 @@ let expand_grammar_using_concat data (AL l) =
   AL(Image.image (expand_pair_using_concat data) l);;
 
 let heavy_add_pair pair gram = 
-  let gram2 = add_pair_naively pair gram in 
+  let gram2 = replace_pair_or_add_if_absent pair gram in 
   let gram3 =(match snd pair with 
   (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
    |Disjunction _
@@ -1246,7 +1251,7 @@ let singleton = Private.Nonrecursive_grammar.singleton ;;
 
 end ;;  
 
-let add_pair_naively = Private.add_pair_naively ;;
+let replace_pair_or_add_if_absent = Private.replace_pair_or_add_if_absent ;;
 
 let check_disjunction_ladder = Private.check_disjunction_ladder ;; 
 let containing = Private.containing ;;

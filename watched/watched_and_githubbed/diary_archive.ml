@@ -1,6 +1,324 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 263 : Analizing possible prefixes for a Java expression
+************************************************************************************************************************)
+module Snip263 = struct 
+
+open Lrp_types ;;
+open Lrp_constant ;;
+open Jvag_types ;;
+
+let s_order = Total_ordering.lex_for_strings ;;
+
+let s_fold_merge = Ordered.fold_merge s_order ;;
+let s_mem = Ordered.mem s_order ;;
+let s_merge = Ordered.merge s_order ;;
+let s_setminus = Ordered.setminus s_order ;;
+let s_sort = Ordered.sort s_order ;;
+let sl_order = Total_ordering.lex_compare s_order ;;
+let sx_order = Total_ordering.product sl_order s_order ;;
+
+let (AL jg1) = Jvag_example.java_grammar ;;
+
+
+
+let to_pre_production_list (head,form)= match form with 
+   (Concat l) -> [head,l]    
+   |Disjunction l -> Image.image (fun x->head,[x]) l
+   |Molecular  l -> [(head,Image.image (Jvsp_util.code_for_tokentype_in_production_names) l)]
+   |Star nm -> [head,[];head,[nm;head]]
+   |Optional nm ->  [head,[];head,[nm]]
+   |Synonym nm -> [head,[nm]];; 
+
+let to_production_list pair = Image.image (fun (a,b)->Prod(a,b)) (to_pre_production_list pair);;   
+
+let jg2 = List.flatten(Image.image to_production_list jg1) ;;
+
+let jg3 = (Prod("Start",["OrdinaryCompilationUnit"])) :: jg2 ;;
+
+let jgrammar = Lrp_grammar.make_from_prods jg3 ;;
+
+(*
+
+module Lr0_fruit = Lrp_lr_computations.Make(Lr0_seed) ;;
+
+takes longer than 15 min.
+
+*)
+
+let j_nonterminals = Lrp_grammar.nonterminals jgrammar ;;
+let j_terminals = Lrp_grammar.terminals jgrammar ;;
+
+let is_a_terminal symb=s_mem symb j_terminals ;; 
+
+let j_all_symbols = Lrp_grammar.all_symbols jgrammar ;;
+
+let j_is_emptiable = Lrp_grammar.is_emptiable jgrammar ;;
+let comp1 = Explicit.image j_is_emptiable j_nonterminals ;;
+
+let j_leftmost_descendants = Lrp_grammar.leftmost_descendants jgrammar ;;
+
+let comp2 = Explicit.image j_leftmost_descendants j_all_symbols ;;
+
+let j_nonemptiable_descendants = Memoized.make (
+   fun symb -> List.filter (fun symb1->not(j_is_emptiable symb1))
+     (j_leftmost_descendants symb)
+) ;;
+
+let comp3 = Explicit.image j_nonemptiable_descendants j_all_symbols ;;
+
+let j_sons = Memoized.make(fun symb->
+   let old_version =Lrp_grammar.sons jgrammar symb in 
+   List.flatten (
+      Image.image (fun form->
+          if List.hd(form)="StarredAnnotation"
+          then let tail = List.tl form in 
+               [tail;"Annotation"::tail]
+          else [form]    
+      ) old_version
+   )   
+);; 
+
+let j_furst_set = Lrp_grammar.furst_set_for_form jgrammar ;; 
+
+let comp4 = Explicit.image (fun x->j_furst_set [x]) j_all_symbols ;;
+
+let whole = j_nonemptiable_descendants "Expression" ;;
+
+let u1 = Image.image (fun x->(x,j_sons x)) whole ;;
+
+let check_u1 = List.filter (fun (x,ll)->List.exists (fun l->j_is_emptiable(List.hd l)) ll) u1 ;;
+
+let hashtbl_for_f1 = Hashtbl.create 100 ;;
+
+let f1 symb = Hashtbl.find hashtbl_for_f1 symb ;;
+
+let deduced_f1 symb = 
+   let sons = j_sons symb in 
+   List.flatten(Image.image (fun l->
+     let (h,t) = List_again.head_with_tail l in 
+     let older_results = f1 h in 
+     Image.image (fun z->z@t) older_results   
+   ) sons) ;;
+
+let f1_for_terminal term = if term= "Identifier" then [["Identifier"]] else [] ;;
+
+let act1 () =List.iter (fun symb->Hashtbl.replace hashtbl_for_f1 symb (f1_for_terminal symb)) j_terminals ;;
+
+act1 () ;;
+
+let ref_for_spheres = ref ([j_terminals,f1_for_terminal]) ;;
+let ref_for_ball = ref(j_terminals) ;;
+let sphere_counter=ref(1) ;;
+
+let add_new_sphere new_level f1_on_new_level =
+   List.iter (fun symb->Hashtbl.replace hashtbl_for_f1 symb (f1_on_new_level symb)) new_level;
+   ref_for_spheres:=(!ref_for_spheres)@[new_level,f1_on_new_level];
+   ref_for_ball:=s_merge(!ref_for_ball) new_level;
+   sphere_counter:=(!sphere_counter)+1
+;;
+
+let belongs_to_next_easy_sphere symb =
+   let current_ball =(!ref_for_ball) in 
+   if s_mem symb current_ball then false else 
+   let sons = j_sons symb in 
+   List.for_all (function []->false |x::_->s_mem x current_ball) sons ;; 
+
+let next_easy_sphere () = List.filter belongs_to_next_easy_sphere whole ;;
+
+let add_next_sphere () =
+    let next_sphere = next_easy_sphere () in 
+    let _ = (
+      if next_sphere<>[]
+      then add_new_sphere next_sphere deduced_f1
+      ) in 
+    next_sphere ;;  
+
+let add_next_spheres () =
+   let walker=ref(add_next_sphere()) in 
+   let _=(while ((!walker)<>[]) do walker:=(add_next_sphere()) done) in 
+   !sphere_counter ;;
+
+
+(*
+The list below was initially obtained with
+let sphere2 = next_easy_sphere () ;;
+*)
+let sphere2 =
+["BasicCastExpression"; "BoolyClassLiteral";
+   "ExplicitCallToSuperFieldAccess"; "ExpressionName";
+   "ExpressionyMethodInvocation"; "ExpressionyMethodReference";
+   "FloatingPointType"; "HaddockArrayCreationExpression";
+   "HaddockClassInstanceCreationExpression"; "IntegralType";
+   "ListyLambdaParameters"; "Literal"; "MackerelArrayCreationExpression";
+   "MackerelClassInstanceCreationExpression"; "MappyCastExpression";
+   "MarkerAnnotation"; "MethodName"; "NonmappyCastExpression";
+   "NormalAnnotation"; "OtherSuperMethodInvocation";
+   "ParenthesedPrimaryNoNewArray"; "SalmonArrayCreationExpression";
+   "ShortArrayAccess"; "SingleElementAnnotation";
+   "SwitchedUnaryExpressionNotPlusMinus"; "ThisSuperMethodInvocation";
+   "ThisSuperMethodReference"; "TunaArrayCreationExpression"; "TypeIdentifier";
+   "TypeNameyMethodReference"; "TypeyMethodInvocation";
+   "UserDefinedClassLiteral"; "UsingComplUnaryExpressionNotPlusMinus";
+   "UsingDecrUnaryExpression"; "UsingIncrUnaryExpression";
+   "UsingMinusUnaryExpression"; "UsingNotUnaryExpressionNotPlusMinus";
+   "UsingPlusUnaryExpression"; "UsingThisPrimaryNoNewArray"; "UsualClassType"] ;;
+
+let act2 () = add_new_sphere sphere2 deduced_f1 ;; 
+
+act2 () ;;
+
+(*
+The list below was initially obtained with
+let sphere3 = next_easy_sphere () ;;
+*)
+let sphere3 =
+[
+   "Annotation"; "ArrayCreationExpression"; "BasicMethodInvocation";
+   "CastExpression"; "LambdaParameters"; "NumericType"
+] ;;
+
+let act3 () = add_new_sphere sphere3 deduced_f1 ;; 
+
+act3 () ;;
+
+(*
+The list below was initially obtained with
+let sphere4 = next_easy_sphere () ;;
+*)
+let sphere4 =
+[
+   "BoolyPrimitiveType"; "LambdaExpression"; "NumericClassLiteral";
+   "NumericyPrimitiveType"; "PlasticArrayType"; "ShortClassType";
+   "TypeVariable"
+] ;;
+
+let act4 () = add_new_sphere sphere4 deduced_f1 ;; 
+
+act4 () ;;
+
+(*
+The list below was initially obtained with
+let sphere5 = next_easy_sphere () ;;
+*)
+let sphere5 =
+[
+ "ClassLiteral"; "PrimitiveType"; "UnextendedClassType"  
+] ;;
+
+let act5 () = add_new_sphere sphere5 deduced_f1 ;; 
+
+act5 () ;;
+
+(*
+The list below was initially obtained with
+let sphere6 = next_easy_sphere () ;;
+*)
+let sphere6 =
+[
+   "ClassType"; "ClassTypeyMethodReference"; "GlassArrayType";
+   "PrimitiveArrayType"
+] ;;
+
+let act6 () = add_new_sphere sphere6 deduced_f1 ;; 
+
+act6 () ;;
+
+(*
+
+
+The list below was initially obtained with
+let sphere7 = next_easy_sphere () ;;
+
+*)
+
+let sphere7 =
+[
+   "ArrayType"
+] ;;
+
+let act7 () = add_new_sphere sphere7 deduced_f1 ;; 
+
+act7 () ;;
+
+(*
+The list below was initially obtained with
+let sphere8 = next_easy_sphere () ;;
+*)
+let sphere8 =
+[
+   "ArrayTypeyMethodReference"; "ReferenceType"
+] ;;
+
+let act8 () = add_new_sphere sphere8 deduced_f1 ;; 
+
+act8 () ;;
+
+(*
+The list below was initially obtained with
+let sphere9 = next_easy_sphere () ;;
+*)
+let sphere9 =
+[
+   "ReferenceTypeyMethodReference"
+] ;;
+
+let act9 () = add_new_sphere sphere9 deduced_f1 ;; 
+
+act9 () ;;
+
+(*
+(*
+The list below was initially obtained with
+let sphere10 = next_easy_sphere () ;;
+*)
+let sphere10 =
+[
+   
+] ;;
+
+let act10 () = add_new_sphere sphere10 deduced_f1 ;; 
+
+act10 () ;;
+*)
+
+
+
+(*
+let alive = s_setminus whole (!ref_for_ball) ;;
+
+let measure symb = s_setminus (s_sort(j_leftmost_descendants symb)) (s_sort(symb::(!ref_for_ball))) ;;
+
+let easiest_cases =
+   let temp = Image.image (fun symb -> (symb,measure symb)) alive in 
+   Min.minimize_it_with_care (fun pair->List.length(snd pair)) temp ;;
+
+*)   
+
+let z1 = j_sons "PrimaryNoNewArray" ;;
+
+(*
+open Jvag_types ;;
+
+let jg = Jvag_example.java_grammar ;;
+
+let see3 = Jvag_grammar.get_and_display jg "ArrayAccess" ;;
+
+let see4 = Jvag_grammar.get_and_display jg "LongClassType" ;;
+
+let form1 = Concat(["Dot";"StarredAnnotation";"TypeIdentifier";"OptionalTypeArguments"]) ;;
+
+let see5 = Jvag_grammar.name_for_form_opt jg form1 ;;
+
+let form2 = Disjunction(["ShortClassType";"UsualClassType"]) ;;
+
+let see6 = Jvag_grammar.name_for_form_opt jg form2 ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
  Entry 262 : Using Lr parsing modules
 ************************************************************************************************************************)
 module Snip262 = struct 
