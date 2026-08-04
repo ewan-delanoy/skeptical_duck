@@ -34,6 +34,25 @@ let rec iterator_for_common_initial_sublist (treated,to_be_treated) = match comm
    None -> (List.rev treated,to_be_treated)
    |Some a -> iterator_for_common_initial_sublist (a::treated, Image.image List.tl to_be_treated)
 
+let common_initial_sublist ll = iterator_for_common_initial_sublist ([],ll) ;;
+
+let common_final_sublist ll =
+   let (rev_common,rev_core)= common_initial_sublist (Image.image List.rev ll) in 
+   (Image.image List.rev rev_core,List.rev rev_common) ;;
+
+(*
+
+common_final_sublist [[7;1;2;3];[8;9;1;2;3];[10;11;12;1;2;3]] ;;
+
+*)   
+
+let two_sided_common_parts ll=
+  let (temp,right) = common_final_sublist ll in 
+  let (left,core) = common_initial_sublist temp in 
+  (left,core,right) ;; 
+
+
+
 let rec iterator_for_finding_and_remembering f (treated,to_be_treated) = 
   match to_be_treated with 
   [] -> None 
@@ -338,6 +357,15 @@ let sublist_with_indices l indices = Image.image (fun k->List.nth l (k-1)) indic
 
 (* sublist_with_indices  ["1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9"; "10"] [2;3;7] ;; *)
   
+
+let two_sided_common_parts = Private.two_sided_common_parts ;;
+
+(*
+
+two_sided_common_parts [[107;24;7;1;2;3];[107;24;8;9;1;2;3];[107;24;10;11;12;1;2;3]] ;;
+
+*)   
+
 let two_sided_cutting (length_before,length_after) l = 
    let (left,temp) = long_head_with_tail length_before l in 
    let (center,right)= long_tail_with_head temp length_after in 
