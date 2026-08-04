@@ -19,6 +19,21 @@ let rec helper_for_common_initial_sublist (treated,to_be_treated1,to_be_treated2
           else helper_for_common_initial_sublist (a1::treated,others1,others2)   
     ) ;;
 
+let common_head_opt lists =
+  match lists with 
+  [] -> None
+  | l1 :: _ ->
+   match l1 with 
+    [] -> None 
+    |a :: _ ->
+      if List.exists (function []->true |b::_->b<>a) lists 
+      then None 
+      else Some a  ;;
+      
+let rec iterator_for_common_initial_sublist (treated,to_be_treated) = match common_head_opt to_be_treated with 
+   None -> (List.rev treated,to_be_treated)
+   |Some a -> iterator_for_common_initial_sublist (a::treated, Image.image List.tl to_be_treated)
+
 let rec iterator_for_finding_and_remembering f (treated,to_be_treated) = 
   match to_be_treated with 
   [] -> None 
@@ -133,10 +148,10 @@ let assoc_right_opt y l =
 assoc_right_opt 3 (Int_range.scale (fun t->(t*t,t)) 1 7) ;;
 *)
 
-let common_initial_sublist l1 l2 = Private.helper_for_common_initial_sublist ([],l1,l2) ;;
+let common_initial_sublist ll = Private.iterator_for_common_initial_sublist ([],ll) ;;
 
 (*
-common_initial_sublist [1;2;3;7;8] [1;2;3;9] ;; 
+common_initial_sublist [[1;2;3;7;8];[1;2;3;9];[1;2;3;10;11]] ;; 
 *)
 
 let connected_fibers = Private.connected_fibers ;;

@@ -392,7 +392,7 @@ let uniform_extraction (caller_name,range_start,range_end) bars_to_be_cut index 
   uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut (index-1,n-index) in 
   (left0,Image.image List.hd centers,right0);;  
 
-let expand_disjunction (gram,forms) (index_in_disj,index_in_concat) =
+let expand_disjunction (gram,(_name,forms)) (index_in_disj,index_in_concat) =
   let (before,old_pivot,after) = extract_element_from_disjunction "expand_disjunction" forms index_in_disj in 
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"expand_disjunction") in 
   let (before2,pivot2_name,after2) = extract_element_from_concat "expand_disjunction" chain index_in_concat in  
@@ -401,7 +401,7 @@ let expand_disjunction (gram,forms) (index_in_disj,index_in_concat) =
   (gram,before @ (Image.image (fun elt->
       Jvag_types.Concat(before2@[elt]@after2)) inner_disjunction) @ after);;
 
-let expand_synonym (gram,forms) (index_in_disj,index_in_concat) =
+let expand_synonym (gram,(_name,forms)) (index_in_disj,index_in_concat) =
   let (before,old_pivot,after) = extract_element_from_disjunction "expand_synonym" forms index_in_disj in 
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"expand_synonym") in
   let (before2,pivot2_name,after2) = extract_element_from_concat "expand_synonym" chain index_in_concat in   
@@ -409,7 +409,7 @@ let expand_synonym (gram,forms) (index_in_disj,index_in_concat) =
   let older_synonym = match_synonym pivot2 ("index in concat",index_in_concat,"expand_synonym") in 
   (gram,before @ [Jvag_types.Concat(before2@[older_synonym]@after2)]  @ after);;
 
-let expand_concat (gram,forms) (index_in_disj,index_in_concat) =
+let expand_concat (gram,(_name,forms)) (index_in_disj,index_in_concat) =
   let (before,old_pivot,after) = extract_element_from_disjunction "expand_concat" forms index_in_disj in  
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"expand_concat") in
   let (before2,pivot2_name,after2) = extract_element_from_concat "expand_concat" chain index_in_concat in   
@@ -417,7 +417,7 @@ let expand_concat (gram,forms) (index_in_disj,index_in_concat) =
   let chain2 = match_concat pivot2 ("index in concat",index_in_concat,"expand_concat") in
   (gram,before @ [Jvag_types.Concat(before2@chain2@after2)]  @ after);;
 
-let implode_molecule (gram,forms) (index_in_disj,(range_start,range_end)) = 
+let implode_molecule (gram,(_name,forms)) (index_in_disj,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "implode_molecule" forms index_in_disj in  
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"implode_molecule") in
   let (before2,between2,after2) = extract_range_from_concat "implode_molecule" chain (range_start,range_end) in 
@@ -428,7 +428,7 @@ let implode_molecule (gram,forms) (index_in_disj,(range_start,range_end)) =
   let (gram2,name_for_molecular) = register_with_dwarfy_name_if_needed gram ~suffix:"" molecular in 
   (gram2,before @ [Jvag_types.Concat(before2@[name_for_molecular]@after2)]  @ after);;      
 
-let explode_molecule (gram,forms) (index_in_disj,index_in_concat) = 
+let explode_molecule (gram,(_name,forms)) (index_in_disj,index_in_concat) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "explode_molecule" forms index_in_disj in  
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"explode_molecule") in
   let (before2,pivot2_name,after2) = extract_element_from_concat "explode_molecule" chain index_in_concat in   
@@ -469,7 +469,7 @@ let deal_with_hard_case_in_star_reuniting gram (pivot1,chain1_opt) (pivot2,chain
   (Option.get chain1_opt,Option.get chain2_opt) ;;
 
 
-let reunite_star (gram,forms) (index_in_disj,(length_before,length_after)) = 
+let reunite_star (gram,(_name,forms)) (index_in_disj,(length_before,length_after)) = 
   let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_star" forms index_in_disj in  
   let (pivot2,after) = List_again.head_with_tail almost_after in 
   let chain1_opt = match_concat_opt pivot1 ("index in disjunction",index_in_disj,"reunite_star") 
@@ -497,7 +497,7 @@ let extract_main_name_from_pair_during_option_detection between1 between2 =
 
 exception Reunite_optional_exn of (string list) * (string list) ;;   
 
-let reunite_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
+let reunite_optional (gram,(_name,forms)) (index_in_disj,(length_before,length_after)) =
   let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_optional" forms index_in_disj in  
   let (pivot2,after) = List_again.head_with_tail almost_after in 
   let chain1 = match_concat pivot1 ("index in disjunction",index_in_disj,"reunite_optional") 
@@ -511,7 +511,7 @@ let reunite_optional (gram,forms) (index_in_disj,(length_before,length_after)) =
    let (gram2,name_for_final_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
   (gram2,before @ [Jvag_types.Concat(left@[name_for_final_form]@right)]  @ after);;      
 
-let reunite_disjunction (gram,forms) ((disj_range_start,disj_range_end),index_in_concat) =
+let reunite_disjunction (gram,(_name,forms)) ((disj_range_start,disj_range_end),index_in_concat) =
   let (before,forms_between,after)=extract_range_from_disjunction "reunite_disjunction" forms (disj_range_start,disj_range_end) in 
   let chains_between = match_concats forms_between ("index in range in disjunction","reunite_disjunction") in 
   let (left,centers,right) = uniform_extraction ("reunite_disjunction",disj_range_start,disj_range_end) chains_between index_in_concat in 
@@ -519,7 +519,7 @@ let reunite_disjunction (gram,forms) ((disj_range_start,disj_range_end),index_in
    let (gram2,name_for_final_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
   (gram2,before @ [Jvag_types.Concat(left@[name_for_final_form]@right)]  @ after);;      
 
-let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) = 
+let implode_concat (gram,(_name,forms)) (index_in_disj,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" forms index_in_disj in  
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"implode_concat") in
   let (before2,between2,after2) = extract_range_from_concat "implode_concat" chain (range_start,range_end) in 
@@ -529,7 +529,7 @@ let implode_concat (gram,forms) (index_in_disj,(range_start,range_end)) =
 
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
 
-let remove_left_recursive_line_in_disjunction (gram,forms) original_name index_in_disj = 
+let remove_left_recursive_line_in_disjunction (gram,(_name,forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" forms index_in_disj in  
   let chain = match_concat old_pivot ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
   let (head,tail) = List_again.head_with_tail chain in 
@@ -555,13 +555,15 @@ let remove_left_recursive_line_in_disjunction (gram,forms) original_name index_i
   ) in 
   (gram5,[Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
 
-let collapse_synonym (gram,forms) index_in_disj =
+let collapse_synonym (gram,(_name,forms)) index_in_disj =
   let (before,old_pivot,after) = extract_element_from_disjunction "collapse_synonym" forms index_in_disj in 
   let older_name = match_synonym old_pivot ("index in disjunction",index_in_disj,"collapse_synonym") in
   (gram,before @ [Jvag_types.Concat([older_name])]  @ after);;
 
 
-let apply gf =function 
+let apply name (gram,forms) modif=
+  let gf = (gram,(name,forms)) in 
+  match modif with 
  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
     expand_disjunction gf (index_in_disj,index_in_concat) 
  |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
@@ -587,7 +589,7 @@ let apply gf =function
   ;;
 
 
-let apply_several gf mods = List.fold_left apply gf mods ;;
+let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
 
 end ;;  
 
@@ -740,7 +742,7 @@ let csg_in_grammar newer_synonym gram =
 let apply_local_modifications gram name mods =
    let start_dis = Local_Modification.lm_get gram name in 
    let (end_gram,end_dis) =  
-     Local_Modification.apply_several (gram,start_dis) mods in 
+     Local_Modification.apply_several name (gram,start_dis) mods in 
    let (gram2,end_form) = (
       if List.length(end_dis)=1
       then (end_gram,List.hd end_dis)
@@ -1277,10 +1279,10 @@ let containing = Private.containing ;;
 let debug_bad_list_of_local_modifications gram name local_modifs=
   let orig = Private.Local_Modification.lm_get gram name in 
   let (count_before_bug,the_problematic_local_modif) = 
-    Tools_for_debugging.extract_from_fold_left Private.Local_Modification.apply (gram,orig) local_modifs in
+    Tools_for_debugging.extract_from_fold_left (Private.Local_Modification.apply name) (gram,orig) local_modifs in
   let local_modifs_before_bug = List_again.long_head count_before_bug local_modifs in 
   (count_before_bug,local_modifs_before_bug,
-  Private.Local_Modification.apply_several (gram,orig) local_modifs_before_bug,
+  (Private.Local_Modification.apply_several name) (gram,orig) local_modifs_before_bug,
   the_problematic_local_modif) ;;
 
 

@@ -1457,7 +1457,8 @@ let order_from_cuttings = ((fun s1 s2 ->
 let g3 = Ordered.sort Total_ordering.lex_for_strings g2 ;;
 
 
-let (g4,g5,g6) = List_again.common_initial_sublist g2 g3 ;;
+let (common,remains) = List_again.common_initial_sublist [g2;g3] ;;
+
 
 let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;  
    
@@ -1672,7 +1673,6 @@ module Snip242 = struct
 let g3 = Ordered.sort Total_ordering.lex_for_strings g2 ;;
 
 
-let (g4,g5,g6) = List_again.common_initial_sublist g2 g3 ;;
 
 let g7 = String.concat ";" (Image.image (fun x->x^"_T") g3);;
 
@@ -1878,7 +1878,8 @@ let next_state (provider,inds) old_state =
        else (pass_to_tail old_state,false)  
   |Molecular(toktypes) -> 
        let remaining = Jvsp_token_types_list.unveil old_state.consumable.remaining_list in 
-       let (common,left,right) = List_again.common_initial_sublist toktypes remaining in 
+        let (common,remains) = List_again.common_initial_sublist [toktypes;remaining] in 
+       let left = List.hd remains in 
        if left<>[]
        then raise(Blocked_state_exn(old_state))
        else let k = List.length common in 

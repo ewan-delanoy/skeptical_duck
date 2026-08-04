@@ -112,7 +112,8 @@ let step old_global =
         let name = Jvng_duplicated_name.name old_global.head in 
         let toktypes = Jvsp_util.token_type_sequence_from_codes_in_production_names name in 
         let remaining = Jvsp_token_types_list.unveil old_global.consumable.remaining_list in 
-       let (common,left,_right) = List_again.common_initial_sublist toktypes remaining in 
+       let (common,remains) = List_again.common_initial_sublist [toktypes;remaining] in 
+       let left = List.hd remains in 
        if left<>[]
        then raise(Blocked_state_exn(old_global))
        else let k = List.length common in 
