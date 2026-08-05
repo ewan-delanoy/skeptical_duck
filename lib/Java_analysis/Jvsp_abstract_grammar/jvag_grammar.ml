@@ -141,8 +141,6 @@ let ocaml_name_of_modification = function
   |Create_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")"   
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
-  |Register_with_standardized_name(form) -> "Register__with_standardized_name("^(
-    Jvag_form.ocaml_name form)^")"
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
   |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
@@ -235,14 +233,6 @@ let next_dwarf_value () =
    let m =(!dwarf_counter)+1 in 
    let _ = (dwarf_counter:=m) in 
    string_of_int m ;;
-
-let standardized_name = function 
-   Concat l -> "CCCCC"^(String.concat "NNNNN" l)^"TTTTT"
-   |Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
-   |Disjunction _ -> raise(Standardized_name_exn("Disjunction"))
-   |Star nm -> "Starred"^ nm
-   |Optional nm -> "Optional"^ nm
-   |Synonym _ -> raise(Standardized_name_exn("Synonym")) ;;  
 
 let dwarfy_name ~suffix= function 
     Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
@@ -684,12 +674,6 @@ let register_molecular token_types gram =
 
 
 
-let register_with_standardized_name form gram= 
-   let name = standardized_name form in 
-   replace_pair_or_add_if_absent (name,form) gram ;;
-
-
-
 let eid_in_dijsunction (contained,replacement) l = 
   Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
                                  fun nm -> if nm = contained then replacement else [nm]
@@ -790,7 +774,6 @@ let apply gram = function
   |Create_production(name,form) ->  create_new_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
-  |Register_with_standardized_name(form) -> register_with_standardized_name form gram 
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
   |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
@@ -1262,7 +1245,6 @@ let apply gram modification = match modification with
   |Create_production(_,_)
   |Rename(_,_) 
   |Remove_productions(_) 
-  |Register_with_standardized_name(_) 
   |Expand_in_disjunction(_,_) 
   |Expand_in_synonym(_,_) 
   |Collapse_synonym_locally(_,_) 
