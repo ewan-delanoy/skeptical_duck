@@ -33,7 +33,14 @@ let ocaml_name (AL l)=
 let get_opt (AL l) name = 
   match Jvsp_util.token_type_sequence_from_codes_in_production_names_opt name with 
   Some answer -> Some (Molecular answer) 
-  | None -> List.assoc_opt name l ;;
+  | None -> 
+    if String.starts_with name ~prefix:"Optional"
+    then Some(Optional(Cull_string.two_sided_cutting ("Optional","") name))  
+    else
+     if String.starts_with name ~prefix:"Starred"
+    then Some(Star(Cull_string.two_sided_cutting ("Starred","") name))  
+    else  
+    List.assoc_opt name l ;;
 
 let automatic_name_for_molecular_opt = function 
    (Molecular l) -> Some(Jvsp_util.code_for_tokentype_sequence_in_production_names l)
@@ -44,10 +51,13 @@ let automatic_name_for_molecular_opt = function
   |Synonym(_) -> None;;
 
 
-let name_for_form_opt (AL l) form = 
-  match automatic_name_for_molecular_opt form with 
-  Some code -> Some code
-  | None ->  List_again.assoc_right_opt  form l ;;
+let name_for_form_opt (AL l) form = match form with 
+  (Molecular l) -> Some(Jvsp_util.code_for_tokentype_sequence_in_production_names l)
+  |(Optional nm) -> Some("Optional"^nm) 
+  |(Star nm) -> Some("Starred"^nm)
+  |Disjunction(_) 
+  |Concat _ 
+  |Synonym _ -> List_again.assoc_right_opt  form l ;;
 
 let get gram name = match get_opt gram name  with 
   None -> raise(Get_exn(name))
