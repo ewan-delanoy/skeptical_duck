@@ -16,6 +16,9 @@ type form =
 
 type grammar = AL of (string * form) list ;; 
 
+type location_in_disjunction = I of int | N of string ;;
+
+
 type local_modification = 
    Lm_collapse_synonym of int 
        (*
