@@ -231,29 +231,59 @@ let create_new_pair pair (AL l) =
   AL(Ordered.sort order_on_pairs new_l);; 
  
 
-let dwarf_counter = ref(0) ;;
+module Dwarf_count = struct 
 
-let next_dwarf_value () =
-   let m =(!dwarf_counter)+1 in 
-   let _ = (dwarf_counter:=m) in 
-   string_of_int m ;;
+let i0 = int_of_char '0'
+and i9 = int_of_char '9' ;;
 
-let dwarfy_name ~suffix= function 
+let dwarf_marker = "Dwarf" ;;
+let dwarf_marker_length = String.length dwarf_marker ;;
+
+let dwarf_number_in_name name = 
+  if not(String.starts_with name ~prefix:dwarf_marker)
+  then 0 
+  else 
+  let n = String.length name in   
+  let last_digit_position =(
+  match String_find_char.from_inclusive_opt (fun c->
+    let i=int_of_char c in (i<i0)||(i>i9)
+  ) name (dwarf_marker_length+1) with 
+  None -> n 
+  |Some idx ->idx-1
+  )  in
+  int_of_string(Cull_string.interval name (dwarf_marker_length+1) last_digit_position) ;;   
+
+
+(* dwarf_number_in_name "Dwarf273abc" ;; *)
+
+let recompute_dwarf_count_from_scratch (AL l)=
+   snd(Max.maximize_it (fun (name,_)->dwarf_number_in_name name) l) ;;
+
+let dwarfy_name ~suffix dwarf_number= function 
     Molecular token_types  -> Jvsp_util.code_for_tokentype_sequence_in_production_names token_types
    |Star nm -> "Starred"^ nm
    |Optional nm -> "Optional"^ nm
    |Concat _ 
    |Disjunction _ 
-   |Synonym _  -> 
-    let m =next_dwarf_value() in 
-    "Dwarf"^m^"_"^suffix ;; 
+   |Synonym _  -> dwarf_marker^(string_of_int dwarf_number)^"_"^suffix ;; 
+
+end ;;  
+
+let dwarf_counter = ref(0) ;;
+
+let next_dwarf_value () =
+   let m =(!dwarf_counter)+1 in 
+   let _ = (dwarf_counter:=m) in 
+   m ;;
+
+let default_dwarfy_name ~suffix = Dwarf_count.dwarfy_name ~suffix (next_dwarf_value()) ;;
 
 
 let register_with_dwarfy_name_if_needed gram ~suffix form = 
    match name_for_form_opt gram form with 
   Some old_name ->(gram,old_name)
   |None -> 
-  let new_name = dwarfy_name ~suffix form in 
+  let new_name = default_dwarfy_name ~suffix form in 
   if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
   let new_ag = replace_pair_or_add_if_absent (new_name,form) gram in  
   (new_ag,new_name) ;;  
