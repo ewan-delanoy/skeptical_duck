@@ -269,6 +269,34 @@ let dwarfy_name ~suffix dwarf_number= function
 
 end ;;  
 
+module With_dwarf_count = struct
+  
+type t = WDC of int * grammar ;;
+
+let register_with_dwarfy_name_if_needed gram_with_dwc ~suffix form = 
+  let (WDC(old_dwarf_count,gram)) = gram_with_dwc in 
+   match name_for_form_opt gram form with 
+  Some old_name ->(gram_with_dwc,old_name)
+  |None -> 
+  let new_dwarf_count = old_dwarf_count +1 in 
+  let new_name = Dwarf_count.dwarfy_name ~suffix new_dwarf_count form in 
+  if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
+  let new_ag = replace_pair_or_add_if_absent (new_name,form) gram in  
+  (WDC(new_dwarf_count,new_ag),new_name) ;;  
+
+let rec helper_for_multiple_registration (treated,gram_with_dwc,suffix,to_be_treated) =
+  match to_be_treated with 
+  [] -> (gram_with_dwc,List.rev treated)
+  |form1 :: other_forms ->
+    let (gram1_with_dwc,name1) = register_with_dwarfy_name_if_needed gram_with_dwc ~suffix form1 in 
+    helper_for_multiple_registration (name1::treated,gram1_with_dwc,suffix,other_forms)
+  ;;
+
+let register_several_with_dwarfy_name_if_needed gram ~suffix forms = 
+      helper_for_multiple_registration ([],gram,suffix,forms) ;;  
+
+end ;; 
+
 let dwarf_counter = ref(0) ;;
 
 let next_dwarf_value () =
