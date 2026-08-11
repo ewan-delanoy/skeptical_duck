@@ -14,7 +14,7 @@ type form =
    |Synonym of string
   ;;
 
-type grammar = AL of (string * form) list ;; 
+type grammar = AL of  ((string * form) list) ;; 
 
 type location_in_disjunction = I of int | N of string ;;
 
@@ -88,7 +88,12 @@ type local_modification =
      original_name -> original_name A. The left recursion is removed in a standard way, by putting
      original_name = original_name' Starred(A).
    *)
-
+ |Lm_guantanamera of location_in_disjunction * location_in_disjunction
+   (*
+      guantanamera gf (lid_start,lid_end) collapses the lines in the range described
+     by (lid_start,lid_end) into a single line, by factoring left and right and mergeing all
+     the center elements into an Optional, a Star or a Disjunction.
+   *)
 ;;
 
 type modification = 

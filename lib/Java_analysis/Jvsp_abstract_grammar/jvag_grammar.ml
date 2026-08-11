@@ -21,6 +21,7 @@ module Private = struct
   let str_setminus = Ordered.setminus str_order ;;
   let str_sort = Ordered.sort str_order ;;
 
+
 let ocaml_name_of_sf (name,frm) =
     "(\""^name^"\","^(Jvag_form.ocaml_name frm)^")";;
 
@@ -108,6 +109,9 @@ let get_and_display gram name =
   let _ =(print_string msg;flush stdout) in 
    form ;;
    
+let ocaml_name_of_lid = function 
+  I(i)->"I "^(string_of_int i)
+  |N(s)->"N \""^s^"\"" ;;   
    
 let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
@@ -134,6 +138,8 @@ let ocaml_name_of_local_modification lmod=
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
+ |(Lm_guantanamera(lid_start,lid_end)) ->
+  "Lm_guantanamera("^(ocaml_name_of_lid lid_start)^","^(ocaml_name_of_lid lid_end)^")"   
 ;;
 
 let ocaml_name_of_modification = function 
@@ -223,9 +229,7 @@ let create_new_pair pair (AL l) =
     |Some _ -> raise(Name_is_not_new_exn(name))
   )  in 
   AL(Ordered.sort order_on_pairs new_l);; 
-
-
-exception Standardized_name_exn of string ;;   
+ 
 
 let dwarf_counter = ref(0) ;;
 
@@ -288,6 +292,15 @@ let lm_get gram name =
   |Optional _ 
   |Synonym _ -> raise(Lm_get_exn(form));; 
 
+let match_named_concat name form = 
+    match Jvag_form.concat_content_opt form with 
+  None -> [name]
+  |Some(chain)-> chain ;;  
+
+let match_named_concats named_forms = 
+   Image.image (fun (name,form)-> match_named_concat name form) named_forms;; 
+
+
 
 let match_concat form (text_for_index,index,caller_name)= 
     match Jvag_form.concat_content_opt form with 
@@ -321,6 +334,24 @@ let match_moleculars forms (text_for_index,caller_name)=
 let match_concat_opt form (text_for_index,index,caller_name)= 
    try (Some(match_concat form (text_for_index,index,caller_name))) with 
    _ -> None ;;
+
+exception Index_for_lid_exn of location_in_disjunction;;
+
+let index_for_lid indexed_forms lid = match lid with   
+  (I i)-> i
+  |N name -> match List.find_opt(fun (_,(nm,_)) ->nm=name) indexed_forms with 
+     None -> raise(Index_for_lid_exn(lid))
+     |Some(idx,_) -> idx
+   ;;
+
+let extract_lid_range_from_disjunction caller_name named_forms (lid_start,lid_end) =  
+  let indexed_forms = Int_range.index_everything named_forms in 
+  let range_start = index_for_lid indexed_forms lid_start 
+  and range_end =  index_for_lid indexed_forms lid_end 
+  and n=List.length(named_forms) in 
+   if (range_start<0)||(range_end<range_start)||(range_end>n)
+  then raise (Bad_range_exn("range in disjunction",range_start,range_end,caller_name))
+  else List_again.two_sided_cutting (range_start-1,n-range_end) named_forms ;;    
 
 let extract_element_from_disjunction caller_name named_forms index_in_disj = 
    if (index_in_disj<0)||(index_in_disj>List.length(named_forms))
@@ -586,6 +617,62 @@ let collapse_synonym (gram,(name,named_forms)) index_in_disj =
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
 
 
+exception Compute_lump_in_numerous_case_exn ;;
+
+let compute_lump_in_numerous_case possibly_large_centers = 
+  if List.exists (fun x->List.length(x)<>1) possibly_large_centers 
+  then raise Compute_lump_in_numerous_case_exn
+  else let centers = Image.image List.hd possibly_large_centers in 
+       Jvag_types.Disjunction centers ;; 
+
+
+exception Compute_lump_optional_for_concatenation_of_two_exn ;;
+let compute_lump_optional_for_concatenation_of_two a b =
+  if b="Starred"^a then Star(a) else 
+  if a="Starred"^b then Star(b) else
+  raise Compute_lump_optional_for_concatenation_of_two_exn ;;
+
+    
+
+exception Compute_lump_optional_for_a_concatenation_exn ;;
+let compute_lump_optional_for_a_concatenation l =
+    if List.length(l)=1 
+    then Optional(List.hd l)
+    else 
+    if List.length(l)=2
+    then compute_lump_optional_for_concatenation_of_two (List.nth l 0) (List.nth l 1)
+    else raise Compute_lump_optional_for_a_concatenation_exn ;;  
+
+exception Compute_lump_in_binary_case_exn ;;
+let compute_lump_in_binary_case possibly_large_centers = 
+   let l1 = List.nth  possibly_large_centers 0 
+   and l2 = List.nth  possibly_large_centers 1 in 
+   if l1=[] then compute_lump_optional_for_a_concatenation l2 else 
+   if l2=[] then compute_lump_optional_for_a_concatenation l1 else  
+   raise Compute_lump_in_binary_case_exn ;;
+
+
+exception Compute_lump_exn ;;
+
+let compute_lump possibly_large_centers = 
+  if List.length(possibly_large_centers)<2
+  then raise Compute_lump_exn
+  else 
+  if List.length(possibly_large_centers)>2
+  then compute_lump_in_numerous_case possibly_large_centers
+  else compute_lump_in_binary_case possibly_large_centers
+       
+
+let guantanamera (gram,(name,named_forms)) (lid_start,lid_end) = 
+  let (before,named_forms_between,after)=extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) in 
+  let chains_between = match_named_concats named_forms_between  in 
+  let (left,centers,right) = List_again.two_sided_common_parts chains_between  in 
+  let lump_form = compute_lump centers in 
+   let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in 
+  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
+  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
+  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;      
+
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
@@ -611,6 +698,8 @@ let apply name (gram,named_forms) modif=
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   
+  |(Lm_guantanamera(lid_start,lid_end)) ->
+    guantanamera gf  (lid_start,lid_end)  
   ;;
 
 

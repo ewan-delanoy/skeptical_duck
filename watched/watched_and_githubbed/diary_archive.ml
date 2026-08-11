@@ -1,6 +1,180 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 265 : Debugging session involving Jvag_grammar.Private.Local_Modification (II)
+************************************************************************************************************************)
+module Snip265 = struct 
+
+(* open Jvsp_types ;; *)
+open Jvag_types ;;
+
+
+let modernize_local_modification lmod = match lmod with 
+  (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
+    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
+ |(Lm_reunite_optional(index_in_disj,(_length_before,_length_after))) -> 
+    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1))  
+ |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
+   Lm_guantanamera (I (disj_range_start),I (disj_range_end))    
+ |(Lm_expand_disjunction(_,_)) 
+ |(Lm_expand_synonym(_,_))
+ |(Lm_expand_concat(_,_)) 
+ |(Lm_implode_molecule(_,_)) 
+ |(Lm_explode_molecule(_,_)) 
+ |(Lm_implode_concat(_,_)) 
+ |(Lm_remove_left_recursive_line_in_disjunction(_,_))
+ |(Lm_collapse_synonym(_)) 
+ |(Lm_guantanamera(_,_)) -> lmod ;; 
+ 
+let modernize_modification modif = match modif with  
+  Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
+  |_ -> modif
+;; 
+
+let flatten_modification modif = match modif with  
+  Local(name,mods)->  Image.image (fun lmod->Local(name,[lmod])) mods
+  |_ -> [modif];; 
+
+let flatten_modifications modifs = List.flatten (Image.image flatten_modification modifs) ;;
+
+module GPri =  Jvag_grammar.Private ;;
+module EPri =  Jvag_example.Private ;;
+module LM = GPri.Local_Modification ;;
+
+let old_modifs1 = flatten_modifications EPri.modifications_to_original_java_grammar ;;
+
+let jwun1 = Jvag_grammar.modify EPri.original_java_grammar old_modifs1 ;;
+
+let check_jwun1 = (jwun1 = EPri.java_grammar_with_some_unused_names) ;;
+
+
+let modernized_modifs = Image.image modernize_modification EPri.modifications_to_original_java_grammar ;;
+
+(*
+let modernized_java_grammar_with_some_unused_names = Jvag_grammar.modify EPri.original_java_grammar modernized_modifs;;
+
+let (unused_names,modernized_java_grammar) = Jvag_grammar.Preliminary_normalizations.remove_unused_names 
+   modernized_java_grammar_with_some_unused_names ~exceptions:["OrdinaryCompilationUnit"];;
+*)  
+
+
+let bad1 = Jvag_grammar.modify EPri.original_java_grammar modernized_modifs;;
+
+let (count_before_bug,modifs_before_bug,gram_just_before_bug,the_problematic_modif) 
+   = Jvag_grammar.debug_bad_list_of_modifications EPri.original_java_grammar modernized_modifs;;
+
+let (name_having_mods,mods) = (function (Local(a,b))->(a,b) |_->failwith("aaa")) the_problematic_modif ;;
+
+let start_dis = LM.lm_get gram_just_before_bug name_having_mods ;;
+
+let bad2 =  LM.apply_several name_having_mods (gram_just_before_bug,start_dis) mods ;;
+
+let  (count_before_bug2,local_modifs_before_bug2,
+  (gram_just_before_bug2,start_dis2),
+  the_problematic_local_modif) = Jvag_grammar.debug_bad_list_of_local_modifications 
+   gram_just_before_bug name_having_mods mods;;
+
+
+let check1 = (start_dis2 = LM.lm_get gram_just_before_bug2 name_having_mods );;
+
+let old_modifs1 = List_again.long_head 9 Jvag_example.Private.modifications_to_original_java_grammar ;;
+
+let groom1 =  Jvag_grammar.modify EPri.original_java_grammar old_modifs1 ;;
+
+let old_local_modifs2 = List_again.long_head 25 Jvag_example.Private.mods_for_import_declaration ;;
+
+let old_modif2 = Local(name_having_mods,old_local_modifs2) ;;
+let groom2 = Jvag_grammar.modify groom1 [old_modif2] ;;
+
+end;;
+
+(************************************************************************************************************************
+ Entry 264 : Debugging session involving Jvag_grammar.Private.Local_Modification
+************************************************************************************************************************)
+module Snip264 = struct 
+
+(* open Jvsp_types ;; *)
+open Jvag_types ;;
+
+
+let modernize_local_modification lmod = match lmod with 
+  (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
+    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
+ |(Lm_reunite_optional(index_in_disj,(_length_before,_length_after))) -> 
+    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1))  
+ |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
+   Lm_guantanamera (I (disj_range_start),I (disj_range_end))    
+ |(Lm_expand_disjunction(_,_)) 
+ |(Lm_expand_synonym(_,_))
+ |(Lm_expand_concat(_,_)) 
+ |(Lm_implode_molecule(_,_)) 
+ |(Lm_explode_molecule(_,_)) 
+ |(Lm_implode_concat(_,_)) 
+ |(Lm_remove_left_recursive_line_in_disjunction(_,_))
+ |(Lm_collapse_synonym(_)) 
+ |(Lm_guantanamera(_,_)) -> lmod ;; 
+ 
+let modernize_modification modif = match modif with  
+  Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
+  |_ -> modif
+;; 
+
+module GPri =  Jvag_grammar.Private ;;
+module EPri =  Jvag_example.Private ;;
+module LM = GPri.Local_Modification ;;
+let modernized_modifs = Image.image modernize_modification EPri.modifications_to_original_java_grammar ;;
+
+(*
+let modernized_java_grammar_with_some_unused_names = Jvag_grammar.modify EPri.original_java_grammar modernized_modifs;;
+
+let (unused_names,modernized_java_grammar) = Jvag_grammar.Preliminary_normalizations.remove_unused_names 
+   modernized_java_grammar_with_some_unused_names ~exceptions:["OrdinaryCompilationUnit"];;
+*)  
+
+
+let bad1 = Jvag_grammar.modify EPri.original_java_grammar modernized_modifs;;
+
+let (count_before_bug,modifs_before_bug,gram_just_before_bug,the_problematic_modif) 
+   = Jvag_grammar.debug_bad_list_of_modifications EPri.original_java_grammar modernized_modifs;;
+
+let (name_having_mods,mods) = (function (Local(a,b))->(a,b) |_->failwith("aaa")) the_problematic_modif ;;
+
+let start_dis = LM.lm_get gram_just_before_bug name_having_mods ;;
+
+let bad2 =  LM.apply_several name_having_mods (gram_just_before_bug,start_dis) mods ;;
+
+let the_mod = List.hd mods ;;
+
+let bad3 =  LM.apply name_having_mods (gram_just_before_bug,start_dis) the_mod ;;
+
+let (lid_start,lid_end) = (function (Lm_guantanamera(a,b))->(a,b) |_->failwith("aaa")) the_mod ;;
+
+let bad4 =  LM.guantanamera  (gram_just_before_bug,(name_having_mods,start_dis)) (lid_start,lid_end) ;;
+ 
+let (name,named_forms) = (name_having_mods,start_dis) ;;
+
+let (before,named_forms_between,after)=LM.extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) ;;
+
+let forms_between = Image.image snd named_forms_between ;;
+let chains_between = LM.match_concats forms_between ("index in range in disjunction","guantanamera") ;;
+
+(*
+let guantanamera (gram,(name,named_forms)) (lid_start,lid_end) = 
+  let (before,named_forms_between,after)=extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) in 
+  let forms_between = Image.image snd named_forms_between in 
+  let chains_between = match_concats forms_between ("index in range in disjunction","guantanamera") in 
+  let (left,centers,right) = List_again.two_sided_common_parts chains_between  in 
+  let lump_form = compute_lump centers in 
+   let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in 
+  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
+  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
+  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;   
+*)
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 263 : Analizing possible prefixes for a Java expression
 ************************************************************************************************************************)
 module Snip263 = struct 

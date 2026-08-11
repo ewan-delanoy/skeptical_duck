@@ -65,6 +65,7 @@ let concat_content_opt form = match form with
    |Optional _ 
    |Synonym _ -> None;;   
 
+
 let disjunction_content form = match form with 
    (Disjunction l) -> l    
    |Concat _
