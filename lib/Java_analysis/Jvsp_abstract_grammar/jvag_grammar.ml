@@ -1333,52 +1333,6 @@ let singleton provider origin =
 
 end ;;  
 
-module HeavyModify = struct 
-
-let expand_form_using_concat (name,chain) form = match form with
-  (Concat l) -> Concat(List.flatten(Image.image (fun name2->if name2=name then chain else [name2]) l))
-   |Disjunction _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> form;;   
-
-let expand_pair_using_concat data (name,form) =
-    (name,expand_form_using_concat data form) ;;
-
-let expand_grammar_using_concat data (AL l) =
-  AL(Image.image (expand_pair_using_concat data) l);;
-
-let heavy_add_pair pair gram = 
-  let gram2 = replace_pair_or_add_if_absent pair gram in 
-  let gram3 =(match snd pair with 
-  (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
-   |Disjunction _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> gram2) in 
-  Mergeable_token_sequences.merge_tl_sequences_in_grammar gram3;;   
-
-
-let apply gram modification = match modification with
-   (Set_production(name,form)) -> heavy_add_pair (name,form) gram 
-  |Create_production(_,_)
-  |Rename(_,_) 
-  |Remove_productions(_) 
-  |Expand_in_disjunction(_,_) 
-  |Expand_in_synonym(_,_) 
-  |Collapse_synonym_locally(_,_) 
-  |Collapse_synonym_globally(_) 
-  |Local(_,_)-> Modify.apply gram modification;;
- 
-
-let apply_several gram modifications = 
-   List.fold_left apply gram modifications ;;
-
-
-end ;;  
-
 end ;; 
 
 module Preliminary_normalizations = struct
@@ -1423,9 +1377,9 @@ let debug_bad_list_of_local_modifications gram name local_modifs=
 
 
 let debug_bad_list_of_modifications gram modifs=
-  let (count_before_bug,the_problematic_modif) = Tools_for_debugging.extract_from_fold_left Private.HeavyModify.apply gram modifs in 
+  let (count_before_bug,the_problematic_modif) = Tools_for_debugging.extract_from_fold_left Private.Modify.apply gram modifs in 
   let modifs_before_bug = List_again.long_head count_before_bug modifs in 
-  (count_before_bug,modifs_before_bug,Private.HeavyModify.apply_several gram modifs_before_bug,the_problematic_modif) ;;
+  (count_before_bug,modifs_before_bug,Private.Modify.apply_several gram modifs_before_bug,the_problematic_modif) ;;
 
 
 
@@ -1439,7 +1393,7 @@ let get_and_display = Private.get_and_display ;;
 let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;
 
-let modify = Private.HeavyModify.apply_several ;;
+let modify = Private.Modify.apply_several ;;
 let name_for_form_opt = Private.name_for_form_opt ;; 
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
