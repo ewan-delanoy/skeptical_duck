@@ -907,223 +907,111 @@ let apply_several gram modifications =
 
 end ;; 
 
-module Redundant_concats = struct
-let get_concat_content_opt = function 
-   (Concat cc) -> Some cc
-   |Molecular _
-   |Disjunction _ 
-   |Star _
-   |Optional _
-   |Synonym _ -> None ;;
-
-let concat_parts_inside_opt form = 
-    match form with
-    Concat l -> Some(l)
-   |Molecular _
-   |Disjunction _ 
-   |Star _
-   |Optional _
-   |Synonym _ -> None ;;
-
-let redundant_concats_inside gram (name,form) = 
-  match concat_parts_inside_opt form with
-  None -> None 
-  |Some l -> 
-    let culprits = List.filter_map (fun nm->
-      Option.map (fun inner_concat ->(nm,inner_concat))
-      (get_concat_content_opt(get gram nm))) l in 
-    if culprits<>[]  
-    then Some((name,l),culprits) 
-    else None;;
-
-let all_redundant_concats =Memoized.make (fun gram->
-  let (AL pairs) = gram in   
-  List.filter_map (redundant_concats_inside gram)  pairs);; 
-
-let replacements_by_name =Memoized.make (fun gram -> Image.image (
-  fun ((name,initial_list),culprits) -> 
-    let final_list = List.flatten(Image.image (fun nm->
-      match List.assoc_opt nm culprits with 
-      None -> [nm] 
-      |Some expansion -> expansion) initial_list) in 
-    (name,(initial_list,final_list))
-) (all_redundant_concats gram)) ;;  
-
-let names_involved_in_replacements = Memoized.make(fun gram -> 
-  str_sort (Image.image fst (replacements_by_name gram))) ;;
-
-let corrections_needed_for_redundant_concats = Memoized.make(fun gram -> Image.image (
-  fun (name,(_initial_list,final_list)) -> Set_production(name,Concat(final_list))
-) (replacements_by_name gram) );;  
-
-let display_corrections_needed_for_redundant_concats gram = 
-   let corrections = corrections_needed_for_redundant_concats gram in 
-   let _ = (
-     if corrections <> []
-     then let msg = "\n\n\n" ^ (ocaml_name_of_modification_list corrections) ^ "\n\n\n" in 
-          print_string msg;flush stdout  
-   ) in 
-   corrections;;  
-
-let remove_immediate_redundant_concats gram = 
-   Modify.apply_several gram (corrections_needed_for_redundant_concats gram) ;;
-
-end ;;
-
 module Mergeable_token_sequences = struct
 
-
-let find_realizing_pair_opt toktypes (name,form) = match form with  
-   (Molecular ac) -> if ac = toktypes then Some name else None
-   |Concat _
-   |Disjunction _ 
-   |Star _
-   |Optional _
-   |Synonym _ -> None ;;
-
-let find_realization_opt toktypes (AL l) = 
-    List.find_map (find_realizing_pair_opt toktypes) l ;;      
-   
-
-let mergeable_tl_subsequences_in_concat_list gram l= 
-   let temp1 = Image.image (get gram) l in 
-   let temp2 = List_again.connected_fibers Jvag_form.is_a_token_sequence temp1 in 
-   List.filter_map (
-    fun (_range,seq,is_a_tl_seq) ->
-      if is_a_tl_seq && (List.length(seq)>1)
-      then  Some (List.flatten(Image.image (fun z->Option.get(Jvag_form.molecular_content_opt z)) seq)) 
-      else None
-   ) temp2;;
-
-let mergeable_tl_subsequences_in_pair gram (name,form) = 
-   match form with
-    Concat l ->
-      let temp = mergeable_tl_subsequences_in_concat_list gram l in 
-      if temp = []
-      then None  
-      else Some((name,l),temp)
-   |Molecular _
-   |Disjunction _ 
-   |Star _
-   |Optional _
-   |Synonym _ -> None ;;
-
-
-let initial_complete_data_on_mergeable_tl_subsequences =Memoized.make (fun gram->
-  let (AL pairs) = gram in   
-  List.filter_map (mergeable_tl_subsequences_in_pair gram) pairs);; 
-
-let order_on_token_types = 
-  ((fun tt1 tt2 ->Total_ordering.lex_for_strings 
-     (Jvsp_util.ocaml_name_for_token_type tt1)
-      (Jvsp_util.ocaml_name_for_token_type tt2)
-     ) : 
-     Jvsp_types.token_type  Total_ordering_t.t );; 
-
-let order_on_tl_sequences = Total_ordering.silex_compare order_on_token_types ;; 
-
-let all_mergeable_tl_subsequences = Memoized.make(fun gram -> 
-  let temp1 = Image.image (fun (_,seqs)->seqs) (initial_complete_data_on_mergeable_tl_subsequences gram) in 
-  let temp2 = List.flatten temp1 in 
-  Ordered.sort order_on_tl_sequences temp2) ;;
-
-let data_to_start_naming_all_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  let temp1 = all_mergeable_tl_subsequences gram in 
-  let temp2 = Image.image(fun seq->(seq,find_realization_opt seq gram)) temp1 in 
-  let (found,not_found) = List.partition (fun (_,opt)->opt<>None) temp2 in 
-    (Image.image (fun (seq,opt)->(seq,Option.get opt)) found,
-     Image.image fst not_found 
-    )  
-  ) ;; 
-
-let namings_for_registered_mergeable_tl_sequences gram = fst(data_to_start_naming_all_mergeable_tl_sequences gram) ;;
-
-let namings_for_unregistered_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  Image.image(fun seq->(seq,Jvsp_util.code_for_tokentype_sequence_in_production_names seq)) 
-    (snd(data_to_start_naming_all_mergeable_tl_sequences gram))
-  ) ;; 
-  
-
-let namings_for_all_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  (namings_for_registered_mergeable_tl_sequences gram) @
-  (namings_for_unregistered_mergeable_tl_sequences gram)  
-) ;; 
-let names_involving_mergeable_tl_sequences = Memoized.make(fun gram -> 
-  str_sort (Image.image (fun ((name,_),_)->name) (initial_complete_data_on_mergeable_tl_subsequences gram))) ;;
-
-let data_for_merging_tl_sequences = Memoized.make(fun gram -> 
-  (names_involving_mergeable_tl_sequences gram,
-  namings_for_all_mergeable_tl_sequences gram
-  )
-  ) ;; 
-
-exception Merge_tl_sequence_in_concat_exn of Jvsp_types.token_type list;;
-
-let merge_tl_sequence_in_concat gram associator l = 
+let merge_tl_sequences_in_concat_perhaps gram l = 
   let temp1 = Image.image (fun nm->(nm,get gram nm)) l in 
   let temp2 = List_again.connected_fibers (fun (_,form)->Jvag_form.is_a_token_sequence form) temp1 in 
+  let watcher = ref(false) in 
   let temp3 = Image.image (
     fun (_range,segment,is_a_tl_segment) ->
       if is_a_tl_segment && (List.length(segment)>1)
-      then let seq = List.flatten(Image.image (fun (_,z)->Option.get(Jvag_form.molecular_content_opt z)) segment) in  
-           let seq_name_opt = List.assoc_opt seq associator in 
-           (
-             match seq_name_opt with 
-             None -> raise(Merge_tl_sequence_in_concat_exn(seq)) 
-             |Some name_seq -> [name_seq]
-           )
+      then let _= (watcher:=true) in
+           let seq = List.flatten(Image.image (fun (_,z)->Option.get(Jvag_form.molecular_content_opt z)) segment) in
+           let seq_name = Jvsp_util.code_for_tokentype_sequence_in_production_names seq in   
+           [seq_name]
       else Image.image fst segment
   ) temp2 in 
-  List.flatten temp3 ;; 
+  (List.flatten temp3,!watcher) ;; 
 
 
-let merge_tl_sequence_in_form gram associator form =
+let merge_tl_sequences_in_form_perhaps gram form =
   match form with
-    Concat l ->Concat (merge_tl_sequence_in_concat gram associator l)
+    Concat l ->
+          let (new_l,action_present)=merge_tl_sequences_in_concat_perhaps gram l in 
+            (Concat new_l,action_present)
    |Molecular _   
    |Disjunction _ 
    |Star _
    |Optional _
-   |Synonym _ -> form ;;
+   |Synonym _ -> (form,false) ;;
 
-let merge_tl_sequence_in_pair gram data_for_merging pair =
-    let (involved_names,associator) = data_for_merging in
+let merge_tl_sequences_in_pair_perhaps gram pair =
     let (name,form) = pair in 
-    if not(List.mem name involved_names)
-    then pair 
-    else (name, merge_tl_sequence_in_form gram associator form) ;; 
+    let (new_form,action_present)=merge_tl_sequences_in_form_perhaps gram form in 
+    ((name,new_form), action_present) ;; 
 
-let corrections_needed_for_merging_tl_sequences = Memoized.make(fun gram->
-   let data_for_merging = data_for_merging_tl_sequences gram 
-   and new_pairs = Image.image (fun (a,b)->Set_production(b,Molecular a)) (namings_for_unregistered_mergeable_tl_sequences gram) in 
-   let (involved_names,associator) = data_for_merging in  
-   let modified_old_pairs = Image.image(
-     fun name -> let old_form = get gram name in 
-     let new_form = merge_tl_sequence_in_form gram associator old_form in 
-     Set_production(name,new_form)
-   ) involved_names in 
-   (new_pairs,modified_old_pairs)
-) ;;
+let data_about_mergeing_tl_sequences_in_grammar gram =
+    let (AL l) = gram in 
+    let main = Image.image  (merge_tl_sequences_in_pair_perhaps gram) l in 
+    let new_gram = AL(Image.image fst main) 
+    and needed_modifications = List.filter_map (fun 
+      ((name,form),action_present) -> 
+        if action_present 
+        then Some(Set_production(name,form))
+        else None
+      ) main in 
+    (new_gram,needed_modifications );; 
 
-let display_corrections_needed_for_merging_tl_sequences gram = 
-   let (new_pairs,modified_old_pairs) = corrections_needed_for_merging_tl_sequences gram in 
-   let corrections = new_pairs@modified_old_pairs in 
-   let _ = (
-     if corrections <> []
-     then let msg = "\n\n\n" ^ (ocaml_name_of_modification_list corrections) ^ "\n\n\n" in 
-          print_string msg;flush stdout  
-   ) in 
-    (new_pairs,modified_old_pairs);;  
 
-let merge_tl_sequences_in_grammar gram = 
-  let (new_pairs,modified_old_pairs) = corrections_needed_for_merging_tl_sequences gram in 
-   Modify.apply_several gram (new_pairs @ modified_old_pairs) ;;
 
 
 end ;;   
 
 
-module Name_usage = struct 
+
+module Redundant_concats = struct
+
+(* old version ends here *)
+
+let remove_redundant_concats_in_concat_perhaps gram names = 
+  let temp1 = Image.image (fun name->(name,get gram name)) names in 
+  let watcher = ref(false) in 
+  let new_disjunction = List.flatten(Image.image (
+    fun  (name,form) ->
+      match Jvag_form.concat_content_opt form with 
+      None -> [name]
+      |Some l -> 
+         let _= (watcher:=true) in
+          l
+  ) temp1) in 
+  (new_disjunction,!watcher) ;; 
+
+
+let remove_redundant_concats_in_form_perhaps gram form =
+  match form with
+    Concat l ->
+          let (new_l,action_present)=remove_redundant_concats_in_concat_perhaps gram l in 
+            (Concat new_l,action_present)
+   |Molecular _   
+   |Disjunction _ 
+   |Star _
+   |Optional _
+   |Synonym _ -> (form,false) ;;
+
+let remove_redundant_concats_in_pair_perhaps gram pair =
+    let (name,form) = pair in 
+    let (new_form,action_present)=remove_redundant_concats_in_form_perhaps gram form in 
+    ((name,new_form), action_present) ;; 
+
+let data_about_removing_redundant_concats_in_grammar gram =
+    let (AL l) = gram in 
+    let main = Image.image  (remove_redundant_concats_in_pair_perhaps gram) l in 
+    let new_gram = AL(Image.image fst main) 
+    and needed_modifications = List.filter_map (fun 
+      ((name,form),action_present) -> 
+        if action_present 
+        then Some(Set_production(name,form))
+        else None
+      ) main in 
+    (new_gram,needed_modifications );; 
+
+
+end ;;
+
+
+
+module Unused_names = struct 
 
 let unordered_used_names_in_form form =
   match form with
@@ -1147,26 +1035,35 @@ let immediately_unused_names_in_grammar gram =
   str_setminus names (used_names_in_grammar gram) ;;  
 
 
-let remove_immediately_unused_names gram ~exceptions=
+let data_about_removing_immediately_unused_names_in_grammar gram ~exceptions=
   let unused_names = immediately_unused_names_in_grammar gram in 
   let to_be_removed =  str_setminus unused_names exceptions in 
   let (AL l)= gram in 
-  (to_be_removed,AL(List.filter (fun (name,_)->
-   not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l));;
+  (AL(List.filter (fun (name,_)->
+   not(Ordered.mem  Total_ordering.lex_for_strings name to_be_removed)) l),to_be_removed);;
 
-let rec helper_for_removing_unused_names exceptions (unused_names,gram1,gram2)=
-   if gram1 = gram2  
-   then (unused_names,gram1)
-   else let (new_unused_names,gram3) = remove_immediately_unused_names gram2 ~exceptions in 
-        helper_for_removing_unused_names exceptions (
-          str_merge unused_names new_unused_names,gram2,gram3) ;; 
-
-let remove_unused_names gram ~exceptions = 
-  let (first_unused_names,gram2) = remove_immediately_unused_names gram ~exceptions in 
-  helper_for_removing_unused_names exceptions 
-  (first_unused_names,gram,gram2) ;; 
 
 end ;;   
+
+module Sanitize = struct 
+
+let sanitize_superficially gram =
+  let (gram2,unused_names) = Unused_names.data_about_removing_immediately_unused_names_in_grammar 
+                                    gram ~exceptions:["OrdinaryCompilationUnit"] in 
+  let (gram3,mergeable_tokseqs) = Mergeable_token_sequences.data_about_mergeing_tl_sequences_in_grammar gram2 in 
+  let (gram4,redundant_concats) = Redundant_concats.data_about_removing_redundant_concats_in_grammar gram3 in 
+  ((unused_names,mergeable_tokseqs,redundant_concats),gram4) ;;
+
+let rec helper_for_sanitization (older_data,gram) =
+   let (new_data,new_gram) = sanitize_superficially gram in 
+   if new_data=([],[],[]) 
+   then (older_data,gram) 
+   else helper_for_sanitization (new_data::older_data,new_gram) ;;
+
+let sanitize_as_many_times_as_needed gram = helper_for_sanitization ([],gram) ;; 
+
+
+end ;;  
 
 module WriteParser = struct 
 
@@ -1335,24 +1232,6 @@ end ;;
 
 end ;; 
 
-module Preliminary_normalizations = struct
-
-let mergeable_token_sequences = 
-      Private.Mergeable_token_sequences.display_corrections_needed_for_merging_tl_sequences ;;
-let merge_token_sequences = 
-      Private.Mergeable_token_sequences.merge_tl_sequences_in_grammar ;;  
-      
-let redundant_concats = Private.Redundant_concats.display_corrections_needed_for_redundant_concats ;;
-let remove_immediate_redundant_concats = Private.Redundant_concats.remove_immediate_redundant_concats ;;
-
-let remove_unused_names = Private.Name_usage.remove_unused_names ;;
-
-let all gram = 
-  let (new_pairs,modified_old_pairs) = mergeable_token_sequences gram in 
-  (List.length(new_pairs),List.length(modified_old_pairs),List.length(redundant_concats gram),
- fst(remove_unused_names gram ~exceptions:["OrdinaryCompilationUnit"])) ;; 
-
-end ;;
 
 module Nonrecursive_grammar = struct 
 
@@ -1398,5 +1277,6 @@ let name_for_form_opt = Private.name_for_form_opt ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 
+let sanitize = Private.Sanitize.sanitize_as_many_times_as_needed ;;
 let singleton name form = AL [name,form] ;;     
 let write_parser = Private.WriteParser.write_prsrtxt ;;

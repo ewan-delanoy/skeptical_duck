@@ -327,20 +327,6 @@ let csg_in_grammar pair (WDC(old_dwarf_count,gram)) =
 
 end ;;
 
-module HeavyModify_Copy = struct  
-
-  let heavy_add_pair pair gram_with_dwc = 
-  let gram_with_dwc2 = Private_Copy.replace_pair_or_add_if_absent pair gram_with_dwc in 
-  match snd pair with 
-  (Concat l) -> let (WDC(dwarf_count,gram2)) = gram_with_dwc2 in 
-                WDC(dwarf_count,HeavyModify.expand_grammar_using_concat (fst pair,l) gram2)    
-   |Disjunction _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> gram_with_dwc;;  
-
-end ;;  
 
 
 end ;; 

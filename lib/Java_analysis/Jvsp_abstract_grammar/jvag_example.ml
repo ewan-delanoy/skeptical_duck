@@ -477,13 +477,9 @@ let modifications_to_original_java_grammar =
 
     ] ;;
 
-let java_grammar_with_some_unused_names = 
-  
-    Jvag_grammar.modify original_java_grammar 
-     modifications_to_original_java_grammar ;;
+let unsanitized_java_grammar = Jvag_grammar.modify original_java_grammar modifications_to_original_java_grammar ;;
 
-let (unused_names,java_grammar) = Jvag_grammar.Preliminary_normalizations.remove_unused_names 
-   java_grammar_with_some_unused_names ~exceptions:["OrdinaryCompilationUnit"];;
+let (sanitization_data,java_grammar) = Jvag_grammar.sanitize unsanitized_java_grammar;;
   
 
  end ;;
