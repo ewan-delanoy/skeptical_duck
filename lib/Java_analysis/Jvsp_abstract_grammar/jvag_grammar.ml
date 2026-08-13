@@ -271,37 +271,6 @@ end ;;
 
 
 
-let dwarf_counter = ref(0) ;;
-
-let next_dwarf_value () =
-   let m =(!dwarf_counter)+1 in 
-   let _ = (dwarf_counter:=m) in 
-   m ;;
-
-let default_dwarfy_name ~suffix = Dwarf_count.dwarfy_name ~suffix (next_dwarf_value()) ;;
-
-
-let register_with_dwarfy_name_if_needed gram ~suffix form = 
-   match name_for_form_opt gram form with 
-  Some old_name ->(gram,old_name)
-  |None -> 
-  let new_name = default_dwarfy_name ~suffix form in 
-  if get_opt gram new_name <> None then raise(Name_already_in_use(new_name)) else  
-  let new_ag = replace_pair_or_add_if_absent (new_name,form) gram in  
-  (new_ag,new_name) ;;  
-
-let rec helper_for_multiple_registration (treated,gram,suffix,to_be_treated) =
-  match to_be_treated with 
-  [] -> (gram,List.rev treated)
-  |form1 :: other_forms ->
-    let (gram1,name1) = register_with_dwarfy_name_if_needed gram ~suffix form1 in 
-    helper_for_multiple_registration (name1::treated,gram1,suffix,other_forms)
-  ;;
-
-let register_several_with_dwarfy_name_if_needed gram ~suffix forms = 
-      helper_for_multiple_registration ([],gram,suffix,forms) ;;
-
-
 module Local_Modification = struct 
   
 
@@ -455,61 +424,7 @@ let uniform_extraction (caller_name,range_start,range_end) bars_to_be_cut index 
   uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut (index-1,n-index) in 
   (left0,Image.image List.hd centers,right0);;  
 
-let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
-  let (before,old_pivot,after) = extract_element_from_disjunction "expand_disjunction" named_forms index_in_disj in 
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"expand_disjunction") in 
-  let (before2,pivot2_name,after2) = extract_element_from_concat "expand_disjunction" chain index_in_concat in  
-  let pivot2 = get gram pivot2_name in 
-  let inner_disjunction = match_disjunction pivot2 ("index in concat",index_in_concat,"expand_disjunction") in 
-  let new_elements = Image.image (fun elt-> Jvag_types.Concat(before2@[elt]@after2) ) inner_disjunction in 
-  let (gram2,names_for_new_elements) = register_several_with_dwarfy_name_if_needed gram ~suffix:name new_elements in 
-  let named_new_elements = List.combine names_for_new_elements new_elements in 
-  (gram2,before @ named_new_elements @ after);;
 
-let expand_synonym (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "expand_synonym" named_forms index_in_disj in 
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"expand_synonym") in
-  let (before2,pivot2_name,after2) = extract_element_from_concat "expand_synonym" chain index_in_concat in   
-  let pivot2 = get gram pivot2_name in 
-  let older_synonym = match_synonym pivot2 ("index in concat",index_in_concat,"expand_synonym") in 
-  let new_element = Jvag_types.Concat(before2@[older_synonym]@after2) in 
-  let (gram2,name_for_new_element) = register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-
-let expand_concat (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "expand_concat" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"expand_concat") in
-  let (before2,pivot2_name,after2) = extract_element_from_concat "expand_concat" chain index_in_concat in   
-  let pivot2 = get gram pivot2_name in 
-  let chain2 = match_concat pivot2 ("index in concat",index_in_concat,"expand_concat") in
-  let new_element = Jvag_types.Concat(before2@chain2@after2) in 
-  let (gram2,name_for_new_element) = register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-
-let implode_molecule (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "implode_molecule" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"implode_molecule") in
-  let (before2,between2,after2) = extract_range_from_concat "implode_molecule" chain (range_start,range_end) in 
-  let forms_between = Image.image(get gram) between2 in 
-  let tokens_between = match_moleculars forms_between ("index in range in concat","implode_molecule") in 
-  let tokens = List.flatten tokens_between in 
-  let molecular = Jvag_types.Molecular tokens in 
-  let (gram2,name_for_molecular) = register_with_dwarfy_name_if_needed gram ~suffix:"" molecular in 
-  let new_element = Jvag_types.Concat(before2@[name_for_molecular]@after2) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
-
-let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "explode_molecule" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"explode_molecule") in
-  let (before2,pivot2_name,after2) = extract_element_from_concat "explode_molecule" chain index_in_concat in   
-  let pivot2 = get gram pivot2_name in 
-  let tokens = match_molecular pivot2 ("index in concat",index_in_concat,"explode_molecule") in
-  let atoms = Image.image (fun tok->Jvag_types.Molecular [tok]) tokens in 
-  let (gram2,names_for_the_atoms) = register_several_with_dwarfy_name_if_needed gram ~suffix:"" atoms in 
-  let new_element = Jvag_types.Concat(before2@names_for_the_atoms@after2) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
 
 let extract_main_name_from_list_during_star_reuniting between =
    if List.length(between) <> 2 then None else 
@@ -542,26 +457,6 @@ let deal_with_hard_case_in_star_reuniting gram (pivot1,chain1_opt) (pivot2,chain
   (Option.get chain1_opt,Option.get chain2_opt) ;;
 
 
-let reunite_star (gram,(name,named_forms)) (index_in_disj,(length_before,length_after)) = 
-  let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_star" named_forms index_in_disj in  
-  let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let spivot1 = snd pivot1 and spivot2 = snd pivot2 in  
-  let chain1_opt = match_concat_opt (spivot1) ("index in disjunction",index_in_disj,"reunite_star") 
-  and chain2_opt = match_concat_opt (spivot2) ("index in disjunction",index_in_disj+1,"reunite_star") in
-  if (chain1_opt,chain2_opt) = (None,None) 
-  then raise(Both_are_nonconcats_in_reunite_star_exn(spivot1,spivot2))  
-  else 
-  let (chain1,chain2) = deal_with_hard_case_in_star_reuniting gram (spivot1,chain1_opt) (spivot2,chain2_opt) in 
-  let (left,between,right) = uniform_two_sided_cutting ("reunite_star",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
-  let between1 = List.nth between 0 and between2 = List.nth between 1 in 
-  match extract_main_name_from_pair_during_star_reuniting between1 between2 with 
-  None -> raise (Reunite_star_exn(between1,between2))
-  |Some(main_name) ->
-  let new_element = Jvag_types.Concat(left@["Starred"^main_name]@right) in 
-  let (gram2,name_for_new_element) = register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-        
-
 let extract_main_name_from_list_during_option_detection between =
    if List.length(between) <> 1 
    then None 
@@ -574,80 +469,7 @@ let extract_main_name_from_pair_during_option_detection between1 between2 =
 
 exception Reunite_optional_exn of (string list) * (string list) ;;   
 
-let reunite_optional (gram,(name,named_forms)) (index_in_disj,(length_before,length_after)) = 
-  let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_optional" named_forms index_in_disj in  
-  let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let spivot1 = snd pivot1 and spivot2 = snd pivot2 in  
-  let chain1 = match_concat spivot1 ("index in disjunction",index_in_disj,"reunite_optional") 
-  and chain2 = match_concat spivot2 ("index in disjunction",index_in_disj+1,"reunite_optional") in
-  let (left,between,right) = uniform_two_sided_cutting ("reunite_optional",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
-  let between1 = List.nth between 0 and between2 = List.nth between 1 in 
-  match extract_main_name_from_pair_during_option_detection between1 between2 with 
-  None -> raise (Reunite_optional_exn(between1,between2))
-  |Some(main_name) ->
-   let final_form = Jvag_types.Optional main_name in 
-   let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;   
-
-let reunite_disjunction (gram,(name,named_forms)) ((disj_range_start,disj_range_end),index_in_concat) = 
-  let (before,named_forms_between,after)=extract_range_from_disjunction "reunite_disjunction" named_forms (disj_range_start,disj_range_end) in 
-  let forms_between = Image.image snd named_forms_between in 
-  let chains_between = match_concats forms_between ("index in range in disjunction","reunite_disjunction") in 
-  let (left,centers,right) = uniform_extraction ("reunite_disjunction",disj_range_start,disj_range_end) chains_between index_in_concat in 
-  let final_form = Jvag_types.Disjunction centers in 
-   let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;     
-
-let implode_concat (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"implode_concat") in
-  let (before2,between2,after2) = extract_range_from_concat "implode_concat" chain (range_start,range_end) in 
-  let final_form = Jvag_types.Concat between2 in 
-  let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(before2@[name_for_intermediate_form]@after2) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;     
-
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
-
-let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
-  let (head,tail) = List_again.head_with_tail chain in 
-  if head<>original_name 
-  then raise(Remove_left_recursive_line_in_disjunction_exn(original_name,head))
-  else 
-  let (gram2,name_for_form1) = (
-    if List.length(tail)=1 
-    then (gram,List.hd tail)
-    else 
-    let form1 = Jvag_types.Concat(tail) in  
-    register_with_dwarfy_name_if_needed gram ~suffix:(name^"Extender") form1 
-  ) in  
-  let form2 = Jvag_types.Star(name_for_form1) in 
-  let (gram3,name_for_form2) = register_with_dwarfy_name_if_needed gram2 ~suffix:"" form2 in 
-  let other_forms = Image.image snd (before@after) in 
-  let (gram4,names_for_others) = register_several_with_dwarfy_name_if_needed gram3 ~suffix:"" other_forms in 
-  let (gram5,name_for_form3) = (
-    if List.length(names_for_others)=1 
-    then (gram4,List.hd names_for_others)
-    else  
-    let form3 = Jvag_types.Disjunction names_for_others in   
-    register_with_dwarfy_name_if_needed gram4 ~suffix:"" form3
-  ) in 
-  (gram5,[name,Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
-
-let collapse_synonym (gram,(name,named_forms)) index_in_disj = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "collapse_synonym" named_forms index_in_disj in 
-  let older_name = match_synonym (snd old_pivot) ("index in disjunction",index_in_disj,"collapse_synonym") in
-  let new_element = Jvag_types.Concat([older_name]) in 
-  let (gram2,name_for_new_element) = register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-
 
 exception Compute_lump_in_numerous_case_exn ;;
 
@@ -693,49 +515,6 @@ let compute_lump possibly_large_centers =
   if List.length(possibly_large_centers)>2
   then compute_lump_in_numerous_case possibly_large_centers
   else compute_lump_in_binary_case possibly_large_centers
-       
-
-let guantanamera (gram,(name,named_forms)) (lid_start,lid_end) = 
-  let (before,named_forms_between,after)=extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) in 
-  let chains_between = match_named_concats named_forms_between  in 
-  let (left,centers,right) = List_again.two_sided_common_parts chains_between  in 
-  let lump_form = compute_lump centers in 
-   let (gram2,name_for_intermediate_form) = register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;      
-
-let apply name (gram,named_forms) modif=
-  let gf = (gram,(name,named_forms)) in 
-  match modif with 
- (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
-    expand_disjunction gf (index_in_disj,index_in_concat) 
- |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
-   expand_synonym gf (index_in_disj,index_in_concat)
- |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
-   expand_concat gf (index_in_disj,index_in_concat)
- |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->
-   implode_molecule gf (index_in_disj,(range_start,range_end)) 
- |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
-   explode_molecule gf (index_in_disj,index_in_concat)
- |(Lm_reunite_star(index_in_disj,(length_before,length_after))) -> 
-    reunite_star gf (index_in_disj,(length_before,length_after)) 
- |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) -> 
-    reunite_optional gf (index_in_disj,(length_before,length_after)) 
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
-   reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat)
- |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
-    implode_concat gf (index_in_disj,(range_start,range_end))
- |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
-    remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
- |(Lm_collapse_synonym(index_in_disj)) ->
-    collapse_synonym gf index_in_disj   
-  |(Lm_guantanamera(lid_start,lid_end)) ->
-    guantanamera gf  (lid_start,lid_end)  
-  ;;
-
-
-let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
 
 end ;;  
 
@@ -878,32 +657,6 @@ let csg_in_grammar newer_synonym gram =
    let (AL l) = gram 
    and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
    AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
-
-let apply_local_modifications gram name mods =
-   let start_dis = Local_Modification.lm_get gram name in 
-   let (gram2,named_forms) =  
-     Local_Modification.apply_several name (gram,start_dis) mods in 
-   let final_form = (
-      if List.length(named_forms)=1
-      then snd(List.hd named_forms)
-      else Jvag_types.Disjunction (Image.image fst named_forms)    
-   ) in   
-   heavy_add_pair (name,final_form) gram2 ;;
-
-let apply gram = function 
-   (Set_production(name,form)) -> replace_pair_or_add_if_absent (name,form) gram 
-  |Create_production(name,form) ->  create_new_pair (name,form) gram 
-  |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
-  |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
-  |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
-  |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
-  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
-  |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
-  |Local(name,mods)->apply_local_modifications gram name mods;;
- 
-
-let apply_several gram modifications = 
-   List.fold_left apply gram modifications ;;
 
 end ;; 
 
@@ -1513,6 +1266,9 @@ end ;;
 
 module Modify_Copy = struct
   
+let heavy_add_pair pair  (WDC(old_dwarf_count,gram)) = 
+   WDC(old_dwarf_count,Modify.heavy_add_pair pair gram) ;;  
+
 let rename_on_grammar renaming_data (WDC(old_dwarf_count,gram)) = 
   let new_gram = Modify.rename_on_grammar renaming_data gram in 
   let (old_name,new_name) = renaming_data in 
@@ -1542,6 +1298,49 @@ let csl_in_grammar pair (WDC(old_dwarf_count,gram)) =
 let csg_in_grammar pair (WDC(old_dwarf_count,gram)) =
    WDC(old_dwarf_count,Modify.csg_in_grammar pair gram);; 
 
+let apply_local_modifications gram name mods =
+   let start_dis = Local_Modification_Copy.lm_get gram name in 
+   let (gram2,named_forms) =  
+     Local_Modification_Copy.apply_several name (gram,start_dis) mods in 
+   let final_form = (
+      if List.length(named_forms)=1
+      then snd(List.hd named_forms)
+      else Jvag_types.Disjunction (Image.image fst named_forms)    
+   ) in   
+   heavy_add_pair (name,final_form) gram2 ;;
+
+let apply gram = function 
+   (Set_production(name,form)) -> Private_Copy.replace_pair_or_add_if_absent (name,form) gram 
+  |Create_production(name,form) ->  Private_Copy.create_new_pair (name,form) gram 
+  |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
+  |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
+  |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
+  |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
+  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
+  |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
+  |Local(name,mods)->apply_local_modifications gram name mods;;
+ 
+
+let apply_several gram modifications = 
+   List.fold_left apply gram modifications ;;
+
+let debug_bad_list_of_local_modifications gram name local_modifs=
+  let orig = Local_Modification_Copy.lm_get gram name in 
+  let (count_before_bug,the_problematic_local_modif) = 
+    Tools_for_debugging.extract_from_fold_left (Local_Modification_Copy.apply name) (gram,orig) local_modifs in
+  let local_modifs_before_bug = List_again.long_head count_before_bug local_modifs in 
+  (count_before_bug,local_modifs_before_bug,
+  (Local_Modification_Copy.apply_several name) (gram,orig) local_modifs_before_bug,
+  the_problematic_local_modif) ;;
+
+
+let debug_bad_list_of_modifications gram modifs=
+  let (count_before_bug,the_problematic_modif) = Tools_for_debugging.extract_from_fold_left apply gram modifs in 
+  let modifs_before_bug = List_again.long_head count_before_bug modifs in 
+  (count_before_bug,modifs_before_bug,apply_several gram modifs_before_bug,the_problematic_modif) ;;
+
+
+
 end ;;
 
 
@@ -1564,20 +1363,19 @@ let check_disjunction_ladder = Private.check_disjunction_ladder ;;
 let containing = Private.containing ;;
 
 let debug_bad_list_of_local_modifications gram name local_modifs=
-  let orig = Private.Local_Modification.lm_get gram name in 
-  let (count_before_bug,the_problematic_local_modif) = 
-    Tools_for_debugging.extract_from_fold_left (Private.Local_Modification.apply name) (gram,orig) local_modifs in
-  let local_modifs_before_bug = List_again.long_head count_before_bug local_modifs in 
-  (count_before_bug,local_modifs_before_bug,
-  (Private.Local_Modification.apply_several name) (gram,orig) local_modifs_before_bug,
-  the_problematic_local_modif) ;;
+ let gram_with_dwc = Private.With_dwarf_count.make gram in 
+ let  (count_before_bug,local_modifs_before_bug,(gram_with_dwc_before_bug,dis_before_bug),the_problematic_local_modif) =
+    Private.With_dwarf_count.Modify_Copy.debug_bad_list_of_local_modifications gram_with_dwc name local_modifs in 
+ let (Private.With_dwarf_count.WDC(_,gram_before_bug)) = gram_with_dwc_before_bug in 
+ (count_before_bug,local_modifs_before_bug,(gram_before_bug,dis_before_bug),the_problematic_local_modif) ;;
 
 
 let debug_bad_list_of_modifications gram modifs=
-  let (count_before_bug,the_problematic_modif) = Tools_for_debugging.extract_from_fold_left Private.Modify.apply gram modifs in 
-  let modifs_before_bug = List_again.long_head count_before_bug modifs in 
-  (count_before_bug,modifs_before_bug,Private.Modify.apply_several gram modifs_before_bug,the_problematic_modif) ;;
-
+ let gram_with_dwc = Private.With_dwarf_count.make gram in 
+ let  (count_before_bug,modifs_before_bug,gram_with_dwc_before_bug,the_problematic_modif) =
+    Private.With_dwarf_count.Modify_Copy.debug_bad_list_of_modifications gram_with_dwc modifs in 
+ let (Private.With_dwarf_count.WDC(_,gram_before_bug)) = gram_with_dwc_before_bug in 
+ (count_before_bug,modifs_before_bug,gram_before_bug,the_problematic_modif) ;;
 
 
 let differences = Private.differences ;;
@@ -1590,7 +1388,12 @@ let get_and_display = Private.get_and_display ;;
 let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;
 
-let modify = Private.Modify.apply_several ;;
+let modify gram modifs = 
+  let gram_with_dwc = Private.With_dwarf_count.make gram in 
+  let  new_gram_with_dwc = Private.With_dwarf_count.Modify_Copy.apply_several gram_with_dwc modifs in 
+  let (Private.With_dwarf_count.WDC(_,new_gram)) = new_gram_with_dwc in 
+  new_gram ;;
+  
 let name_for_form_opt = Private.name_for_form_opt ;; 
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
