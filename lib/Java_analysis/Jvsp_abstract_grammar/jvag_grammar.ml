@@ -518,147 +518,6 @@ let compute_lump possibly_large_centers =
 
 end ;;  
 
-module Modify = struct
-  
-let expand_form_using_concat (name,chain) form = match form with
-  (Concat l) -> Concat(List.flatten(Image.image (fun name2->if name2=name then chain else [name2]) l))
-   |Disjunction _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> form;;   
-
-let expand_pair_using_concat data (name,form) =
-    (name,expand_form_using_concat data form) ;;
-
-let expand_grammar_using_concat data (AL l) =
-  AL(Image.image (expand_pair_using_concat data) l);;
-
-
-let heavy_add_pair pair gram = 
-  let gram2 = replace_pair_or_add_if_absent pair gram in 
-  match snd pair with 
-  (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
-   |Disjunction _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> gram2;;   
-
-let rename_on_name (old_name,new_name) name =
-  if name = old_name then new_name else name ;; 
-  
-let rename_on_form renaming_data form = 
-  let rename = rename_on_name renaming_data in 
-  match form with
-    Concat l -> Concat(Image.image rename l)
-   |Molecular _  -> form
-   |Disjunction l -> Disjunction(Image.image rename l) 
-   |Star nm -> Star (rename nm)
-   |Optional nm -> Optional (rename nm)
-   |Synonym nm -> Synonym (rename nm) ;;  
-
-let rename_on_pair renaming_data (name,form) =
-   (rename_on_name renaming_data name,rename_on_form renaming_data form) ;;    
-
-let rename_on_grammar renaming_data (AL l)=
- let unordered_new_l = Image.image (rename_on_pair renaming_data) l in 
-(AL (Ordered.sort order_on_pairs (unordered_new_l))) ;;
-
-let remove_productions to_be_removed (AL l) = 
-   AL(List.filter (fun (name,_)->not(List.mem name to_be_removed)) l) ;;
-
-let register_molecular token_types gram =
-   let name = Jvsp_util.code_for_tokentype_sequence_in_production_names token_types in 
-   replace_pair_or_add_if_absent (name,Molecular(token_types)) gram ;;
-
-
-
-let eid_in_dijsunction (contained,replacement) l = 
-  Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
-                                 fun nm -> if nm = contained then replacement else [nm]
-                            ) l))) ;;     
-
-let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
-   (Disjunction l) -> (if name=container 
-                            then eid_in_dijsunction (contained,replacement) l
-                            else form)     
-   |Concat _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> form;;   
-
-let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) ) ;;
-   
-let eid_in_grammar (contained,container) gram =
-   let (AL l) = gram 
-   and replacement = Jvag_form.disjunction_content (get gram contained) in 
-   AL(Image.image(eid_in_pair (contained,container,replacement)) l);;
-   
-exception Bad_substitution_in_synonym_exn of string * string ;;
-let eis_in_named_form (name_for_content,container,actual_content) (name,form) = match form with 
-   (Synonym name2_for_content) -> (if name=container 
-                   then if name_for_content <> name2_for_content 
-                         then raise(Bad_substitution_in_synonym_exn(name_for_content,name2_for_content)) 
-                         else actual_content
-                  else form)     
-   |Disjunction _
-   |Concat _
-   |Molecular  _
-   |Star _
-   |Optional _ -> form;;   
-
-let eis_in_pair triple (name,form) = (name,eis_in_named_form triple(name,form) ) ;;   
-let eis_in_grammar (name_for_content,container) gram =
-   let (AL l) = gram 
-   and actual_content = get gram name_for_content in 
-   AL(Image.image(eis_in_pair (name_for_content,container,actual_content)) l);;   
-
-let csg_in_form rep_pair form = 
-   let (newer_synonym,older_synonym)= rep_pair in 
-   let replacer = List_again.replace_if_proposed [rep_pair] in 
-   match form with 
-   (Synonym nm) -> Synonym(replacer nm)    
-   |Disjunction l ->
-        let new_l=(
-          if List.mem older_synonym l 
-          then List.filter (fun x->x<>newer_synonym) l
-          else Image.image replacer l) in 
-        if List.length(new_l)=1 
-        then Synonym older_synonym 
-        else Disjunction new_l    
-   |Concat l -> Concat(Image.image replacer l)
-   |Star nm -> Star(replacer nm)
-   |Optional nm -> Optional (replacer nm)
-   |Molecular  _ -> form;;   
-
-
-let csl_in_named_form (newer_synonym,container,older_synonym) (name,form) = 
-   if name <> container 
-   then form 
-   else csg_in_form (newer_synonym,older_synonym) form;;   
-
-let csl_in_pair triple (name,form) = (name,csl_in_named_form triple (name,form) ) ;; 
-
-
-let csl_in_grammar (newer_synonym,container) gram =
-   let (AL l) = gram 
-   and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
-   AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l);;
-
-let csg_in_pair_opt rep_pair (name,form) = 
-  if name = fst(rep_pair)
-  then None 
-  else Some(name,csg_in_form rep_pair form ) ;; 
-
-
-let csg_in_grammar newer_synonym gram =
-   let (AL l) = gram 
-   and older_synonym = Jvag_form.synonym_content(get gram newer_synonym) in 
-   AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l);;
-
-end ;; 
 
 module Mergeable_token_sequences = struct
 
@@ -1266,11 +1125,57 @@ end ;;
 
 module Modify_Copy = struct
   
+let expand_form_using_concat (name,chain) form = match form with
+  (Concat l) -> Concat(List.flatten(Image.image (fun name2->if name2=name then chain else [name2]) l))
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> form;;   
+
+let expand_pair_using_concat data (name,form) =
+    (name,expand_form_using_concat data form) ;;
+
+let expand_grammar_using_concat data (AL l) =
+  AL(Image.image (expand_pair_using_concat data) l);;
+
+
+let heavy_add_pair_on_bare_grammar pair gram = 
+  let gram2 = replace_pair_or_add_if_absent pair gram in 
+  match snd pair with 
+  (Concat l) -> expand_grammar_using_concat (fst pair,l) gram2    
+   |Disjunction _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> gram2;;   
+
 let heavy_add_pair pair  (WDC(old_dwarf_count,gram)) = 
-   WDC(old_dwarf_count,Modify.heavy_add_pair pair gram) ;;  
+   WDC(old_dwarf_count,heavy_add_pair_on_bare_grammar pair gram) ;;  
+
+let rename_on_name (old_name,new_name) name =
+  if name = old_name then new_name else name ;; 
+  
+let rename_on_form renaming_data form = 
+  let rename = rename_on_name renaming_data in 
+  match form with
+    Concat l -> Concat(Image.image rename l)
+   |Molecular _  -> form
+   |Disjunction l -> Disjunction(Image.image rename l) 
+   |Star nm -> Star (rename nm)
+   |Optional nm -> Optional (rename nm)
+   |Synonym nm -> Synonym (rename nm) ;;  
+
+let rename_on_pair renaming_data (name,form) =
+   (rename_on_name renaming_data name,rename_on_form renaming_data form) ;;    
+
+let rename_on_bare_grammar renaming_data (AL l)=
+ let unordered_new_l = Image.image (rename_on_pair renaming_data) l in 
+(AL (Ordered.sort order_on_pairs (unordered_new_l))) ;;
+
 
 let rename_on_grammar renaming_data (WDC(old_dwarf_count,gram)) = 
-  let new_gram = Modify.rename_on_grammar renaming_data gram in 
+  let new_gram = rename_on_bare_grammar renaming_data gram in 
   let (old_name,new_name) = renaming_data in 
   let old_v=Dwarf_count.dwarf_number_in_name old_name
   and new_v=Dwarf_count.dwarf_number_in_name new_name in 
@@ -1281,22 +1186,97 @@ let rename_on_grammar renaming_data (WDC(old_dwarf_count,gram)) =
   ) in 
   WDC(new_dwarf_count,new_gram) ;;
 
-let remove_productions to_be_removed (WDC(_old_dwarf_count,gram)) = 
-  let new_gram = Modify.remove_productions to_be_removed gram in 
-  make new_gram ;;
+let remove_productions to_be_removed gram_with_dwc =
+   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc in 
+   WDC(old_dwarf_count,AL(List.filter (fun (name,_)->not(List.mem name to_be_removed)) l)) ;;
 
 
-let eid_in_grammar pair (WDC(old_dwarf_count,gram)) =
-   WDC(old_dwarf_count,Modify.eid_in_grammar pair gram);;
+let eid_in_dijsunction (contained,replacement) l = 
+  Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
+                                 fun nm -> if nm = contained then replacement else [nm]
+                            ) l))) ;;     
+
+let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
+   (Disjunction l) -> (if name=container 
+                            then eid_in_dijsunction (contained,replacement) l
+                            else form)     
+   |Concat _
+   |Molecular  _
+   |Star _
+   |Optional _ 
+   |Synonym _ -> form;;   
+
+let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) ) ;;
    
-let eis_in_grammar pair (WDC(old_dwarf_count,gram)) =
-   WDC(old_dwarf_count,Modify.eis_in_grammar pair gram);;   
+let eid_in_grammar (contained,container) gram_with_dwc =
+   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
+   and replacement = Jvag_form.disjunction_content (Private_Copy.get gram_with_dwc contained) in 
+   WDC(old_dwarf_count,AL(Image.image(eid_in_pair (contained,container,replacement)) l));;
+    
+   
+exception Bad_substitution_in_synonym_exn of string * string ;;
+let eis_in_named_form (name_for_content,container,actual_content) (name,form) = match form with 
+   (Synonym name2_for_content) -> (if name=container 
+                   then if name_for_content <> name2_for_content 
+                         then raise(Bad_substitution_in_synonym_exn(name_for_content,name2_for_content)) 
+                         else actual_content
+                  else form)     
+   |Disjunction _
+   |Concat _
+   |Molecular  _
+   |Star _
+   |Optional _ -> form;;   
 
-let csl_in_grammar pair (WDC(old_dwarf_count,gram)) =
-   WDC(old_dwarf_count,Modify.csl_in_grammar pair gram);;    
+let eis_in_pair triple (name,form) = (name,eis_in_named_form triple(name,form) ) ;;   
+let eis_in_grammar (name_for_content,container) gram_with_dwc =
+   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
+   and actual_content = Private_Copy.get gram_with_dwc name_for_content in 
+   WDC(old_dwarf_count,AL(Image.image(eis_in_pair (name_for_content,container,actual_content)) l));;    
 
-let csg_in_grammar pair (WDC(old_dwarf_count,gram)) =
-   WDC(old_dwarf_count,Modify.csg_in_grammar pair gram);; 
+let csg_in_form rep_pair form = 
+   let (newer_synonym,older_synonym)= rep_pair in 
+   let replacer = List_again.replace_if_proposed [rep_pair] in 
+   match form with 
+   (Synonym nm) -> Synonym(replacer nm)    
+   |Disjunction l ->
+        let new_l=(
+          if List.mem older_synonym l 
+          then List.filter (fun x->x<>newer_synonym) l
+          else Image.image replacer l) in 
+        if List.length(new_l)=1 
+        then Synonym older_synonym 
+        else Disjunction new_l    
+   |Concat l -> Concat(Image.image replacer l)
+   |Star nm -> Star(replacer nm)
+   |Optional nm -> Optional (replacer nm)
+   |Molecular  _ -> form;;   
+
+
+let csl_in_named_form (newer_synonym,container,older_synonym) (name,form) = 
+   if name <> container 
+   then form 
+   else csg_in_form (newer_synonym,older_synonym) form;;   
+
+let csl_in_pair triple (name,form) = (name,csl_in_named_form triple (name,form) ) ;; 
+
+
+let csl_in_grammar (newer_synonym,container) gram_with_dwc =
+   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
+   and older_synonym = Jvag_form.synonym_content(Private_Copy.get gram_with_dwc newer_synonym) in 
+   WDC(old_dwarf_count,AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l));;
+
+
+let csg_in_pair_opt rep_pair (name,form) = 
+  if name = fst(rep_pair)
+  then None 
+  else Some(name,csg_in_form rep_pair form ) ;; 
+
+
+let csg_in_grammar newer_synonym gram_with_dwc =
+   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
+   and older_synonym = Jvag_form.synonym_content(Private_Copy.get gram_with_dwc newer_synonym) in 
+   WDC(old_dwarf_count,AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l));;   
+ 
 
 let apply_local_modifications gram name mods =
    let start_dis = Local_Modification_Copy.lm_get gram name in 
