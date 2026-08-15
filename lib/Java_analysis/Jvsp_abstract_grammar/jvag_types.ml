@@ -42,12 +42,6 @@ type local_modification =
        with a longer line, by expanding the element number index_in_concat (which must be a concatenation) in
        that line.
        *)
-  |Lm_explode_molecule of int * int 
-      (*
-       explode_molecule gf (index_in_disj,index_in_concat) replaces line number index_in_disj
-       with a longer line, by exploding the element number index_in_concat (which must be a molecule) in
-       that line.
-       *) 
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with

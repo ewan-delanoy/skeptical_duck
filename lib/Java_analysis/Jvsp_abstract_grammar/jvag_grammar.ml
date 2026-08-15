@@ -122,12 +122,12 @@ let ocaml_name_of_local_modification lmod=
     "Lm_expand_synonym("^(soi index_in_disj)^","^(soi index_in_concat)^")"
  |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
    "Lm_expand_concat("^(soi index_in_disj)^","^(soi index_in_concat)^")"
- |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
-   "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")"  
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
+ |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
+  "Lm_expand_point_in_line("^(ocaml_name_of_lid lid)^","^(soi index_in_concat)^")"
  |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) ->  
   "Lm_reunite_in_concatenation("^(ocaml_name_of_lid lid)^",("^(soi range_start)^","^(soi range_end)^"))"    
  |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
@@ -704,11 +704,6 @@ let match_synonym form (text_for_index,index,caller_name)=
   None -> raise (Bad_form_exn(text_for_index,index,"synonym expected",form,caller_name))
   |Some(older_synonym)-> older_synonym ;;  
 
-let match_molecular form (text_for_index,index,caller_name)= 
-    match Jvag_form.molecular_content_opt form with 
-  None -> raise (Bad_form_exn(text_for_index,index,"molecular expected",form,caller_name))
-  |Some(mol_content)-> mol_content ;;    
-
 exception Index_for_lid_exn of location_in_disjunction;;
 
 let index_for_lid indexed_forms lid = match lid with   
@@ -849,18 +844,6 @@ let expand_concat (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
   
 
-let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "explode_molecule" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"explode_molecule") in
-  let (before2,pivot2_name,after2) = extract_element_from_concat "explode_molecule" chain index_in_concat in   
-  let pivot2 = Common.get gram pivot2_name in 
-  let tokens = match_molecular pivot2 ("index in concat",index_in_concat,"explode_molecule") in
-  let atoms = Image.image (fun tok->Jvag_types.Molecular [tok]) tokens in 
-  let (gram2,names_for_the_atoms) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:"" atoms in 
-  let new_element = Jvag_types.Concat(before2@names_for_the_atoms@after2) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
-
 let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
   let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
@@ -948,12 +931,12 @@ let apply name (gram,named_forms) modif=
    expand_synonym gf (index_in_disj,index_in_concat)
  |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
    expand_concat gf (index_in_disj,index_in_concat)
- |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
-   explode_molecule gf (index_in_disj,index_in_concat)
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   
+  |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
+     expand_point_in_line gf (lid,index_in_concat)  
   |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) -> 
     reunite_in_concatenation gf  (lid,(range_start,range_end))  
   |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->

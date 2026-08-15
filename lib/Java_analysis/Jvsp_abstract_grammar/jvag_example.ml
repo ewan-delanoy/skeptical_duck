@@ -364,35 +364,35 @@ AL ([
 
 let local_mods_for_import_declaration = [
     (* Dealing with non-static imports *)
-   Lm_expand_disjunction(1,2);
-   Lm_expand_synonym(1,2);
-   Lm_expand_concat(2,2);
-   Lm_expand_synonym(2,5);
+   Lm_expand_point_in_line(I 1,2);
+   Lm_expand_point_in_line(I 1,2);
+   Lm_expand_point_in_line(I 2,2);
+   Lm_expand_point_in_line(I 2,5);
    Lm_reunite_in_concatenation(I 2,(4,5));
    Lm_reunite_in_disjunction(I 1,I 2);
-   Lm_explode_molecule(2,4);
+   Lm_expand_point_in_line(I 2,4);
    Lm_reunite_in_concatenation(I 2,(4,5));
    Lm_reunite_in_disjunction(I 1,I 2);
    Lm_reunite_in_concatenation(I 1,(2,4));
 
    (* Dealing with static imports *)
-   Lm_expand_disjunction(3,2);
-   Lm_expand_disjunction(2,2);
-   Lm_expand_concat(5,2);
-   Lm_expand_concat(3,2);
-   Lm_expand_synonym(5,5);
-   Lm_expand_synonym(4,2);
-   Lm_expand_synonym(3,5);
-   Lm_expand_synonym(2,2);
+   Lm_expand_point_in_line(I 3,2);
+   Lm_expand_point_in_line(I 2,2);
+   Lm_expand_point_in_line(I 5,2);
+   Lm_expand_point_in_line(I 3,2);
+   Lm_expand_point_in_line(I 5,5);
+   Lm_expand_point_in_line(I 4,2);
+   Lm_expand_point_in_line(I 3,5);
+   Lm_expand_point_in_line(I 2,2);
    Lm_reunite_in_concatenation(I 3,(4,5));
    Lm_reunite_in_disjunction(I 2,I 3);
-   Lm_explode_molecule(2,4);
-   Lm_explode_molecule(3,3);
-   Lm_explode_molecule(4,6);
+   Lm_expand_point_in_line(I 2,4);
+   Lm_expand_point_in_line(I 3,3);
+   Lm_expand_point_in_line(I 4,6);
    Lm_reunite_in_concatenation(I 4,(4,5));
    Lm_reunite_in_disjunction(I 3,I 4);
    Lm_reunite_in_disjunction(I 2,I 3);
-   Lm_explode_molecule(2,1);
+   Lm_expand_point_in_line(I 2,1);
    Lm_reunite_in_concatenation(I 2,(2,3)); (* because of token list merging rules*)
    Lm_reunite_in_concatenation(I 2,(2,5));
 
@@ -443,7 +443,7 @@ let modifications_to_original_java_grammar =
 
       Local("TypeName",[
       Lm_collapse_synonym(1);
-      Lm_expand_synonym(2,4);
+      Lm_expand_point_in_line(I 2,4);
       Lm_reunite_in_concatenation(I 2,(3,4)); 
       Lm_reunite_in_disjunction (I 1, I 2); 
       ]);
