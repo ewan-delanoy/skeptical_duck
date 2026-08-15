@@ -126,8 +126,6 @@ let ocaml_name_of_local_modification lmod=
   "Lm_implode_molecule("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))"
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
- |(Lm_reunite_star(index_in_disj,(length_before,length_after))) ->  
-  "Lm_reunite_star("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"
  |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) ->  
   "Lm_reunite_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
@@ -720,10 +718,6 @@ let match_moleculars forms (text_for_index,caller_name)=
    let indexed_forms = Int_range.index_everything forms in 
    Image.image (fun (index,form)-> match_molecular form (text_for_index,index,caller_name)) indexed_forms;;  
 
-let match_concat_opt form (text_for_index,index,caller_name)= 
-   try (Some(match_concat form (text_for_index,index,caller_name))) with 
-   _ -> None ;;
-
 exception Index_for_lid_exn of location_in_disjunction;;
 
 let index_for_lid indexed_forms lid = match lid with   
@@ -791,25 +785,6 @@ let uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut
   if right_mismatch_opt<>None 
   then raise(Nonuniform_right_in_two_sided_cutting_exn("range in disjunction",range_start,range_end,"sides",length_before,length_after,right0,Option.get right_mismatch_opt,caller_name))  
   else (left0,centers,right0)  ;; 
-
-
-let extract_main_name_from_list_during_star_reuniting between =
-   if List.length(between) <> 2 then None else 
-   let a = List.nth between 0 and b = List.nth between 1 in 
-   if b="Starred"^a then Some a else 
-   if a="Starred"^b then Some b else 
-   None;;
-
-
-let extract_main_name_from_pair_during_star_reuniting between1 between2 =
-   if between1 = [] then extract_main_name_from_list_during_star_reuniting between2 else 
-   if between2 = [] then extract_main_name_from_list_during_star_reuniting between1 else  
-   None ;;
-   
-
-exception Both_are_nonconcats_in_reunite_star_exn of form * form ;;   
-exception Reunite_star_exn of (string list) * (string list) ;;
-exception Misfit_in_reunite_star_exn of form * (string list) ;;
 
 
 
@@ -919,37 +894,7 @@ let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
   (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
 
-let deal_with_narrowed_case_in_star_reuniting gram pivot other_chain =
-  let common_name = List.hd other_chain in 
-  if Common.get gram common_name = pivot 
-  then ([common_name],other_chain)
-  else raise(Misfit_in_reunite_star_exn(pivot,other_chain));;    
 
-let deal_with_hard_case_in_star_reuniting gram (pivot1,chain1_opt) (pivot2,chain2_opt) =
-  (* we assume that chain1_opt and chain2_opt are not both equal to None *)
-  if chain1_opt = None then deal_with_narrowed_case_in_star_reuniting gram pivot1 (Option.get chain2_opt) else 
-  if chain2_opt = None then deal_with_narrowed_case_in_star_reuniting gram pivot2 (Option.get chain1_opt) else   
-  (Option.get chain1_opt,Option.get chain2_opt) ;;
-
-
-let reunite_star (gram,(name,named_forms)) (index_in_disj,(length_before,length_after)) = 
-  let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_star" named_forms index_in_disj in  
-  let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let spivot1 = snd pivot1 and spivot2 = snd pivot2 in  
-  let chain1_opt = match_concat_opt (spivot1) ("index in disjunction",index_in_disj,"reunite_star") 
-  and chain2_opt = match_concat_opt (spivot2) ("index in disjunction",index_in_disj+1,"reunite_star") in
-  if (chain1_opt,chain2_opt) = (None,None) 
-  then raise(Both_are_nonconcats_in_reunite_star_exn(spivot1,spivot2))  
-  else 
-  let (chain1,chain2) = deal_with_hard_case_in_star_reuniting gram (spivot1,chain1_opt) (spivot2,chain2_opt) in 
-  let (left,between,right) = uniform_two_sided_cutting ("reunite_star",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
-  let between1 = List.nth between 0 and between2 = List.nth between 1 in 
-  match extract_main_name_from_pair_during_star_reuniting between1 between2 with 
-  None -> raise (Reunite_star_exn(between1,between2))
-  |Some(main_name) ->
-  let new_element = Jvag_types.Concat(left@["Starred"^main_name]@right) in 
-  let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;  
 
 
 let reunite_optional (gram,(name,named_forms)) (index_in_disj,(length_before,length_after)) = 
@@ -1039,8 +984,6 @@ let apply name (gram,named_forms) modif=
    implode_molecule gf (index_in_disj,(range_start,range_end)) 
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    explode_molecule gf (index_in_disj,index_in_concat)
- |(Lm_reunite_star(index_in_disj,(length_before,length_after))) -> 
-    reunite_star gf (index_in_disj,(length_before,length_after)) 
  |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) -> 
     reunite_optional gf (index_in_disj,(length_before,length_after)) 
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   

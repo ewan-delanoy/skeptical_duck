@@ -67,13 +67,6 @@ type local_modification =
       with a shorter line, by replacing all the elements in the range defined by (range_start,range_end) inside
       that line with a single molecule. 
       *)
-  |Lm_reunite_star of int * (int * int)
-       (*
-        reunite_star gf (index_in_disj,(length_before,length_after)) checks that lines
-        number index_in_disj and index_in_disj+1 in the disjunction list are of
-        the form BA,B name Starred(name)A or B Starred(name) name A  (not necessarily in that order), and if so, merges them
-        into a single line BStarred(name)A. The length of B is length_before and the length of A is length_after.
-      *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
