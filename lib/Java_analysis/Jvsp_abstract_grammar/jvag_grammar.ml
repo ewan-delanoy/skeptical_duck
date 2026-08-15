@@ -835,6 +835,38 @@ let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original
   (gram5,[name,Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
 
 
+let remove_left_recursive_lines_in_disjunction (gram,(name,named_forms)) = 
+  let headed_forms = Image.image (fun pair ->
+     let (_name,form)=pair in 
+     (pair,List_again.head_with_tail(Jvag_form.concat_content form))
+  ) named_forms in 
+  let (recursive_lines,nonrecursive_lines) = List.partition (
+   fun (_pair,(h,_t)) -> h = name
+  ) headed_forms in 
+  let tails = Image.image (
+   fun (_pair,(_h,t)) -> Concat t
+  ) recursive_lines in 
+  let (gram2,names_for_tails) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:"" tails in 
+  let (gram3,name_for_extndr) = (
+    if List.length(names_for_tails)=1 
+    then (gram2,List.hd names_for_tails)
+    else 
+    let extndr = Jvag_types.Disjunction(names_for_tails) in  
+    Common.register_with_dwarfy_name_if_needed gram2 ~suffix:(name^"Extender") extndr 
+  ) in  
+  let names_for_nonrecursives = Image.image  (fun ((name,_),_) -> name ) nonrecursive_lines in 
+  let (gram4,name_for_core) = (
+    if List.length(names_for_nonrecursives)=1 
+    then (gram3,List.hd names_for_nonrecursives)
+    else 
+    let core = Jvag_types.Disjunction(names_for_nonrecursives) in  
+    Common.register_with_dwarfy_name_if_needed gram3 ~suffix:name core 
+  ) in  
+
+  (gram4,[name,Jvag_types.Concat([name_for_core;"Starred"^name_for_extndr])]) ;;
+
+
+
 let expand_lines_in_disjunction (gram,(_name,named_forms)) lids = 
   let indexed_forms = Int_range.index_everything named_forms in 
   let blocks = Image.image (

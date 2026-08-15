@@ -20,7 +20,8 @@ type location_in_disjunction = I of int | N of string ;;
 
 
 type local_modification = 
-  Lm_remove_left_recursive_line_in_disjunction of string * int 
+   Lm_remove_left_recursive_lines_in_disjunction
+  |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
      original_name key in the grammar (this value must be a disjunction, whose index_in_disjth element expands
