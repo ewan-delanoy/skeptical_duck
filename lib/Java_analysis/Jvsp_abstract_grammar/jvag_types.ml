@@ -25,13 +25,6 @@ type local_modification =
        collapse_synonym gf (index_in_disj) replaces the line located at index_in_disj 
         (chich must be a synonym form) with its older synonym according to the grammar rules.
        *)
-  |Lm_reunite_optional of int * (int * int)
-      (*
-        reunite_optional gf (index_in_disj,(length_before,length_after)) checks that lines
-        number index_in_disj and index_in_disj+1 in the disjunction list are of
-        the form BA,B name A (not necessarily in that order), and if so, merges them
-        into a single line BOptional(name)A. The length of B is length_before and the length of A is length_after.
-      *)
   |Lm_expand_disjunction of int * int 
        (*
        expand_disjunction gf (index_in_disj,index_in_concat) expands line number index_in_disj

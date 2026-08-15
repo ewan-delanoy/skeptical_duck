@@ -125,9 +125,7 @@ let ocaml_name_of_local_modification lmod=
  |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->  
   "Lm_implode_molecule("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))"
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
-   "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
- |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) ->  
-  "Lm_reunite_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
+   "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")"  
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
   "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
@@ -765,41 +763,6 @@ let extract_range_from_concat caller_name chain (range_start,range_end) =
   (before,List.rev rev_between,after) ;; 
 
 
-let uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut (length_before,length_after) = 
-  let total_length = length_before + length_after 
-  and min_length = Min.list(Image.image List.length bars_to_be_cut) in 
-  if (length_before<0)||(length_after<0)||(total_length>min_length)
-  then raise(Bad_sides_in_two_sided_cutting_exn("range in disjunction",range_start,range_end,"sides",length_before,length_after,caller_name))  
-  else 
-  let triples= Image.image (List_again.two_sided_cutting (length_before,length_after)) bars_to_be_cut in 
-  let left_parts = Image.image (fun (left,_,_)->left) triples 
-  and centers = Image.image (fun (_,center,_)->center) triples 
-  and right_parts = Image.image (fun (_,_,right)->right) triples in 
-  let left0 = List.hd left_parts 
-  and right0 = List.hd right_parts in 
-  let left_mismatch_opt = List.find_opt (fun l->l<>left0) left_parts in 
-  if left_mismatch_opt<>None 
-  then raise(Nonuniform_left_in_two_sided_cutting_exn("range in disjunction",range_start,range_end,"sides",length_before,length_after,left0,Option.get left_mismatch_opt,caller_name))  
-  else     
-  let right_mismatch_opt = List.find_opt (fun r->r<>right0) right_parts in 
-  if right_mismatch_opt<>None 
-  then raise(Nonuniform_right_in_two_sided_cutting_exn("range in disjunction",range_start,range_end,"sides",length_before,length_after,right0,Option.get right_mismatch_opt,caller_name))  
-  else (left0,centers,right0)  ;; 
-
-
-
-let extract_main_name_from_list_during_option_detection between =
-   if List.length(between) <> 1 
-   then None 
-   else Some(List.hd between);;
-
-let extract_main_name_from_pair_during_option_detection between1 between2 = 
-   if between1 = [] then extract_main_name_from_list_during_option_detection between2 else 
-   if between2 = [] then extract_main_name_from_list_during_option_detection between1 else  
-   None ;;
-
-exception Reunite_optional_exn of (string list) * (string list) ;;   
-
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
 
 exception Compute_lump_optional_for_concatenation_of_two_exn ;;
@@ -895,26 +858,6 @@ let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
 
 
-
-
-let reunite_optional (gram,(name,named_forms)) (index_in_disj,(length_before,length_after)) = 
-  let (before,pivot1,almost_after) = extract_element_from_disjunction "reunite_optional" named_forms index_in_disj in  
-  let (pivot2,after) = List_again.head_with_tail almost_after in 
-  let spivot1 = snd pivot1 and spivot2 = snd pivot2 in  
-  let chain1 = match_concat spivot1 ("index in disjunction",index_in_disj,"reunite_optional") 
-  and chain2 = match_concat spivot2 ("index in disjunction",index_in_disj+1,"reunite_optional") in
-  let (left,between,right) = uniform_two_sided_cutting ("reunite_optional",index_in_disj,index_in_disj+1) [chain1;chain2] (length_before,length_after) in 
-  let between1 = List.nth between 0 and between2 = List.nth between 1 in 
-  match extract_main_name_from_pair_during_option_detection between1 between2 with 
-  None -> raise (Reunite_optional_exn(between1,between2))
-  |Some(main_name) ->
-   let final_form = Jvag_types.Optional main_name in 
-   let (gram2,name_for_intermediate_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;   
-    
-
 let implode_concat (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" named_forms index_in_disj in  
   let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"implode_concat") in
@@ -984,8 +927,6 @@ let apply name (gram,named_forms) modif=
    implode_molecule gf (index_in_disj,(range_start,range_end)) 
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    explode_molecule gf (index_in_disj,index_in_concat)
- |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) -> 
-    reunite_optional gf (index_in_disj,(length_before,length_after)) 
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
     implode_concat gf (index_in_disj,(range_start,range_end))
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
