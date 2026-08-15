@@ -118,8 +118,6 @@ let ocaml_name_of_local_modification lmod=
   match lmod with 
   (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
     "Lm_expand_disjunction("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
- |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
-    "Lm_expand_synonym("^(soi index_in_disj)^","^(soi index_in_concat)^")"
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
@@ -821,16 +819,6 @@ let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat)
   let named_new_elements = List.combine names_for_new_elements new_elements in 
   (gram2,before @ named_new_elements @ after);;  
   
-let expand_synonym (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "expand_synonym" named_forms index_in_disj in 
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"expand_synonym") in
-  let (before2,pivot2_name,after2) = extract_element_from_concat "expand_synonym" chain index_in_concat in   
-  let pivot2 = Common.get gram pivot2_name in 
-  let older_synonym = match_synonym pivot2 ("index in concat",index_in_concat,"expand_synonym") in 
-  let new_element = Jvag_types.Concat(before2@[older_synonym]@after2) in 
-  let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-  
 
 let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
@@ -915,8 +903,6 @@ let apply name (gram,named_forms) modif=
   match modif with 
  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
     expand_disjunction gf (index_in_disj,index_in_concat) 
- |(Lm_expand_synonym(index_in_disj,index_in_concat)) ->
-   expand_synonym gf (index_in_disj,index_in_concat)
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->

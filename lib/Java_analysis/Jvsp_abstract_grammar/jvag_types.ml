@@ -31,11 +31,6 @@ type local_modification =
        into more lines, by expanding the element number index_in_concat (which must be a disjunction) in
        that line.
        *)
-  |Lm_expand_synonym of int * int 
-       (*
-       expand_synonym gf (index_in_disj,index_in_concat) replaces the element located at
-       (index_in_disj,index_in_concat) with its older synonym according to the grammar rules.
-       *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
