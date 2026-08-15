@@ -8,14 +8,8 @@ module Snip265 = struct
 (* open Jvsp_types ;; *)
 open Jvag_types ;;
 
-
-let modernize_local_modification lmod = match lmod with 
-  (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
- |(Lm_reunite_optional(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1))  
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
-   Lm_guantanamera (I (disj_range_start),I (disj_range_end))    
+(*
+let modernize_local_modification lmod = match lmod with   
  |(Lm_expand_disjunction(_,_)) 
  |(Lm_expand_synonym(_,_))
  |(Lm_expand_concat(_,_)) 
@@ -24,7 +18,10 @@ let modernize_local_modification lmod = match lmod with
  |(Lm_implode_concat(_,_)) 
  |(Lm_remove_left_recursive_line_in_disjunction(_,_))
  |(Lm_collapse_synonym(_)) 
- |(Lm_guantanamera(_,_)) -> lmod ;; 
+ |(Lm_reunite_in_disjunction(_,_)) -> lmod ;;
+*) 
+ 
+let modernize_local_modification x = x ;; 
  
 let modernize_modification modif = match modif with  
   Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
@@ -76,14 +73,8 @@ module Snip264 = struct
 (* open Jvsp_types ;; *)
 open Jvag_types ;;
 
-
-let modernize_local_modification lmod = match lmod with 
-  (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
- |(Lm_reunite_optional(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1))  
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
-   Lm_guantanamera (I (disj_range_start),I (disj_range_end))    
+(*
+let modernize_local_modification lmod = match lmod with     
  |(Lm_expand_disjunction(_,_)) 
  |(Lm_expand_synonym(_,_))
  |(Lm_expand_concat(_,_)) 
@@ -92,7 +83,10 @@ let modernize_local_modification lmod = match lmod with
  |(Lm_implode_concat(_,_)) 
  |(Lm_remove_left_recursive_line_in_disjunction(_,_))
  |(Lm_collapse_synonym(_)) 
- |(Lm_guantanamera(_,_)) -> lmod ;; 
+ |(Lm_reunite_in_disjunction(_,_)) -> lmod ;; 
+*)
+
+let modernize_local_modification x = x ;; 
  
 let modernize_modification modif = match modif with  
   Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
@@ -31046,7 +31040,7 @@ module Snip1 = struct
 
 open Jvag_types ;;
 
-
+(*
 let modernize_local_modification lmod = match lmod with 
   (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
     Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
@@ -31064,6 +31058,9 @@ let modernize_local_modification lmod = match lmod with
  |(Lm_collapse_synonym(_)) 
  |(Lm_guantanamera(_,_)) -> lmod ;; 
  
+*) 
+let modernize_local_modification x = x ;;
+
 let modernize_modification modif = match modif with  
   Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
   |_ -> modif

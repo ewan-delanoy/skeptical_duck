@@ -54,12 +54,6 @@ type local_modification =
       with a shorter line, by replacing all the elements in the range defined by (range_start,range_end) inside
       that line with a single concatenation form. 
       *)
-  |Lm_implode_molecule of int * (int * int)  
-      (*
-      implode_molecule gf (index_in_disj,(range_start,range_end)) replaces line number index_in_disj
-      with a shorter line, by replacing all the elements in the range defined by (range_start,range_end) inside
-      that line with a single molecule. 
-      *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
@@ -68,9 +62,15 @@ type local_modification =
      original_name -> original_name A. The left recursion is removed in a standard way, by putting
      original_name = original_name' Starred(A).
    *)
- |Lm_guantanamera of location_in_disjunction * location_in_disjunction
+ |Lm_reunite_in_concatenation of location_in_disjunction * (int * int)  
+      (*
+      implode_molecule gf (lid,(range_start,range_end)) replaces line defined lid
+      with a shorter line, by mergeing all
+     the elements all the elements in the range described by (range_start,range_end) into 
+     a Molecular or a Concat. *)  
+ |Lm_reunite_in_disjunction of location_in_disjunction * location_in_disjunction
    (*
-      guantanamera gf (lid_start,lid_end) collapses the lines in the range described
+      reunite_in_disjunction gf (lid_start,lid_end) collapses the lines in the range described
      by (lid_start,lid_end) into a single line, by factoring left and right and mergeing all
      the center elements into an Optional, a Star or a Disjunction.
    *)

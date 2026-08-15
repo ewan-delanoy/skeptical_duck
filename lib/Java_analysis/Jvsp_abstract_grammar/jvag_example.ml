@@ -368,12 +368,12 @@ let local_mods_for_import_declaration = [
    Lm_expand_synonym(1,2);
    Lm_expand_concat(2,2);
    Lm_expand_synonym(2,5);
-   Lm_implode_molecule(2,(4,5));
-   Lm_guantanamera(I 1,I 2);
+   Lm_reunite_in_concatenation(I 2,(4,5));
+   Lm_reunite_in_disjunction(I 1,I 2);
    Lm_explode_molecule(2,4);
-   Lm_implode_molecule(2,(4,5));
-   Lm_guantanamera(I 1,I 2);
-   Lm_implode_concat(1,(2,4));
+   Lm_reunite_in_concatenation(I 2,(4,5));
+   Lm_reunite_in_disjunction(I 1,I 2);
+   Lm_reunite_in_concatenation(I 1,(2,4));
 
    (* Dealing with static imports *)
    Lm_expand_disjunction(3,2);
@@ -384,20 +384,20 @@ let local_mods_for_import_declaration = [
    Lm_expand_synonym(4,2);
    Lm_expand_synonym(3,5);
    Lm_expand_synonym(2,2);
-   Lm_implode_molecule(3,(4,5));
-   Lm_guantanamera(I 2,I 3);
+   Lm_reunite_in_concatenation(I 3,(4,5));
+   Lm_reunite_in_disjunction(I 2,I 3);
    Lm_explode_molecule(2,4);
    Lm_explode_molecule(3,3);
    Lm_explode_molecule(4,6);
-   Lm_implode_molecule(4,(4,5));
-   Lm_guantanamera(I 3,I 4);
-   Lm_guantanamera(I 2,I 3);
+   Lm_reunite_in_concatenation(I 4,(4,5));
+   Lm_reunite_in_disjunction(I 3,I 4);
+   Lm_reunite_in_disjunction(I 2,I 3);
    Lm_explode_molecule(2,1);
-   Lm_implode_molecule(2,(2,3)); (* because of token list merging rules*)
-   Lm_implode_concat(2,(2,5));
+   Lm_reunite_in_concatenation(I 2,(2,3)); (* because of token list merging rules*)
+   Lm_reunite_in_concatenation(I 2,(2,5));
 
    (* Joining static with non-static *)
-   Lm_guantanamera(I 1,I 2);
+   Lm_reunite_in_disjunction(I 1,I 2);
 ]
 
 
@@ -408,7 +408,7 @@ let modifications_to_original_java_grammar =
       Local("ModuleName",[Lm_remove_left_recursive_line_in_disjunction("ModuleName",2)]);
       Local("PackageName",[Lm_remove_left_recursive_line_in_disjunction("PackageName",2)]);
       Local("PackageOrTypeName",[Lm_remove_left_recursive_line_in_disjunction("PackageOrTypeName",2)]);
-      Local("ExpressionName",[Lm_guantanamera (I 1, I 2)]);
+      Local("ExpressionName",[Lm_reunite_in_disjunction (I 1, I 2)]);
       (* Simplify the production rule for the import declaration*)
       Create_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
       Create_production("NonstaticImportedContent",Concat(["Identifier"; "StarredMolecularDot_Identifier";"OptionalMolecularDot_Times"]));
@@ -444,8 +444,8 @@ let modifications_to_original_java_grammar =
       Local("TypeName",[
       Lm_collapse_synonym(1);
       Lm_expand_synonym(2,4);
-      Lm_implode_molecule(2,(3,4)); 
-      Lm_guantanamera (I 1, I 2); 
+      Lm_reunite_in_concatenation(I 2,(3,4)); 
+      Lm_reunite_in_disjunction (I 1, I 2); 
       ]);
      
       Collapse_synonym_globally("InterfaceType");

@@ -122,8 +122,6 @@ let ocaml_name_of_local_modification lmod=
     "Lm_expand_synonym("^(soi index_in_disj)^","^(soi index_in_concat)^")"
  |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
    "Lm_expand_concat("^(soi index_in_disj)^","^(soi index_in_concat)^")"
- |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->  
-  "Lm_implode_molecule("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))"
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")"  
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
@@ -132,8 +130,10 @@ let ocaml_name_of_local_modification lmod=
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
- |(Lm_guantanamera(lid_start,lid_end)) ->
-  "Lm_guantanamera("^(ocaml_name_of_lid lid_start)^","^(ocaml_name_of_lid lid_end)^")"   
+ |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) ->  
+  "Lm_reunite_in_concatenation("^(ocaml_name_of_lid lid)^",("^(soi range_start)^","^(soi range_end)^"))"    
+ |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
+  "Lm_reunite_in_disjunction("^(ocaml_name_of_lid lid_start)^","^(ocaml_name_of_lid lid_end)^")"   
 ;;
 
 let ocaml_name_of_modification = function 
@@ -666,11 +666,7 @@ exception Lm_get_exn of form ;;
 exception Bad_index_exn of string * int * string ;;
 exception Bad_range_exn of string * int * int * string ;;
 exception Bad_form_exn of  string * int * string * form  * string ;;
-exception Bad_sides_in_two_sided_cutting_exn of string * int * int * string * int * int * string ;;
-exception Nonuniform_left_in_two_sided_cutting_exn of string * int * int * string * int * int * (string list) * (string list) * string ;;
-exception Nonuniform_right_in_two_sided_cutting_exn of string * int * int * string * int * int * (string list) * (string list) * string ;;
-exception Nonuniform_sizes_in_extraction_exn of string * int * int *  (string list) * (string list) * string ;;  
-
+exception Bad_lid_form_exn of  string * location_in_disjunction * string * form  * string ;;
 
 let lm_get gram name = 
   let form = Common.get gram name in 
@@ -690,7 +686,10 @@ let match_named_concat name form =
 let match_named_concats named_forms = 
    Image.image (fun (name,form)-> match_named_concat name form) named_forms;; 
 
-
+let match_lid_concat form (text_for_index,index,caller_name)= 
+    match Jvag_form.concat_content_opt form with 
+  None -> raise (Bad_lid_form_exn(text_for_index,index,"concat expected",form,caller_name))
+  |Some(chain)-> chain ;;
 
 let match_concat form (text_for_index,index,caller_name)= 
     match Jvag_form.concat_content_opt form with 
@@ -712,10 +711,6 @@ let match_molecular form (text_for_index,index,caller_name)=
   None -> raise (Bad_form_exn(text_for_index,index,"molecular expected",form,caller_name))
   |Some(mol_content)-> mol_content ;;    
 
-let match_moleculars forms (text_for_index,caller_name)= 
-   let indexed_forms = Int_range.index_everything forms in 
-   Image.image (fun (index,form)-> match_molecular form (text_for_index,index,caller_name)) indexed_forms;;  
-
 exception Index_for_lid_exn of location_in_disjunction;;
 
 let index_for_lid indexed_forms lid = match lid with   
@@ -724,6 +719,7 @@ let index_for_lid indexed_forms lid = match lid with
      None -> raise(Index_for_lid_exn(lid))
      |Some(idx,_) -> idx
    ;;
+   
 
 let extract_lid_range_from_disjunction caller_name named_forms (lid_start,lid_end) =  
   let indexed_forms = Int_range.index_everything named_forms in 
@@ -733,6 +729,10 @@ let extract_lid_range_from_disjunction caller_name named_forms (lid_start,lid_en
    if (range_start<0)||(range_end<range_start)||(range_end>n)
   then raise (Bad_range_exn("range in disjunction",range_start,range_end,caller_name))
   else List_again.two_sided_cutting (range_start-1,n-range_end) named_forms ;;    
+
+let extract_lid_from_disjunction caller_name named_forms lid =  
+  let (left,center,right) = extract_lid_range_from_disjunction caller_name named_forms (lid,lid) in 
+  (left,List.hd center,right) ;;  
 
 let extract_element_from_disjunction caller_name named_forms index_in_disj = 
    if (index_in_disj<0)||(index_in_disj>List.length(named_forms))
@@ -773,7 +773,7 @@ let compute_lump_optional_for_concatenation_of_two a b =
     
 
 exception Compute_lump_optional_for_a_concatenation_exn ;;
-let compute_lump_optional_for_a_concatenation l =
+let rewrite_optional_of_a_concatenation l =
     if List.length(l)=1 
     then Optional(List.hd l)
     else 
@@ -781,25 +781,33 @@ let compute_lump_optional_for_a_concatenation l =
     then compute_lump_optional_for_concatenation_of_two (List.nth l 0) (List.nth l 1)
     else raise Compute_lump_optional_for_a_concatenation_exn ;;  
 
-exception Compute_lump_in_binary_case_exn ;;
-let compute_lump_in_binary_case possibly_large_centers = 
+exception Compute_lump_in_disjunction_in_binary_case_exn ;;
+
+let compute_lump_in_disjunction_in_binary_case possibly_large_centers = 
    let l1 = List.nth  possibly_large_centers 0 
    and l2 = List.nth  possibly_large_centers 1 in 
-   if l1=[] then compute_lump_optional_for_a_concatenation l2 else 
-   if l2=[] then compute_lump_optional_for_a_concatenation l1 else  
-   raise Compute_lump_in_binary_case_exn ;;
+   if l1=[] then rewrite_optional_of_a_concatenation l2 else 
+   if l2=[] then rewrite_optional_of_a_concatenation l1 else  
+   raise Compute_lump_in_disjunction_in_binary_case_exn ;;
 
 
-exception Compute_lump_exn ;;
+exception Compute_lump_in_disjunction_exn ;;
 
-let compute_lump possibly_large_centers = 
+let compute_lump_in_disjunction possibly_large_centers = 
   if List.for_all (fun x->List.length(x)=1) possibly_large_centers 
   then let centers = Image.image List.hd possibly_large_centers in 
        Jvag_types.Disjunction centers
   else 
   if List.length(possibly_large_centers)<>2
-  then raise Compute_lump_exn
-  else compute_lump_in_binary_case possibly_large_centers
+  then raise Compute_lump_in_disjunction_exn
+  else compute_lump_in_disjunction_in_binary_case possibly_large_centers
+
+let compute_lump_in_concatenation names_between forms_between = 
+   let moleculars_opt = Image.image (Jvag_form.molecular_content_opt) forms_between in 
+   if List.for_all (fun opt->opt<>None) moleculars_opt
+   then Molecular(List.flatten(Image.image Option.get moleculars_opt))
+   else Concat names_between ;;
+
 
 let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   let (before,old_pivot,after) = extract_element_from_disjunction "expand_disjunction" named_forms index_in_disj in 
@@ -831,19 +839,7 @@ let expand_concat (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   let new_element = Jvag_types.Concat(before2@chain2@after2) in 
   let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;
-
-let implode_molecule (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "implode_molecule" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"implode_molecule") in
-  let (before2,between2,after2) = extract_range_from_concat "implode_molecule" chain (range_start,range_end) in 
-  let forms_between = Image.image(Common.get gram) between2 in 
-  let tokens_between = match_moleculars forms_between ("index in range in concat","implode_molecule") in 
-  let tokens = List.flatten tokens_between in 
-  let molecular = Jvag_types.Molecular tokens in 
-  let (gram2,name_for_molecular) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" molecular in 
-  let new_element = Jvag_types.Concat(before2@[name_for_molecular]@after2) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;  
+  
 
 let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "explode_molecule" named_forms index_in_disj in  
@@ -902,16 +898,26 @@ let collapse_synonym (gram,(name,named_forms)) index_in_disj =
   let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;  
 
+let reunite_in_concatenation (gram,(name,named_forms)) (lid,(range_start,range_end)) = 
+  let (before,old_pivot,after) = extract_lid_from_disjunction "reunite_in_concatenation" named_forms lid in  
+  let chain = match_lid_concat (snd old_pivot) ("index in disjunction",lid,"reunite_in_concatenation") in
+  let (names_before,names_between,names_after) = extract_range_from_concat "reunite_in_concatenation" chain (range_start,range_end) in 
+  let forms_between = Image.image(Common.get gram) names_between in 
+  let lump_form = compute_lump_in_concatenation names_between forms_between in 
+  let (gram2,name_for_lump_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in
+  let new_conc_in_disj = Jvag_types.Concat(names_before@[name_for_lump_form]@names_after) in 
+  let (gram3,name_for_new_conc_in_disj) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_conc_in_disj in 
+  (gram3,before @ [(name_for_new_conc_in_disj,new_conc_in_disj)]  @ after);;  
 
-let guantanamera (gram,(name,named_forms)) (lid_start,lid_end) = 
-  let (before,named_forms_between,after)=extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) in 
+let reunite_in_disjunction (gram,(name,named_forms)) (lid_start,lid_end) = 
+  let (before,named_forms_between,after)=extract_lid_range_from_disjunction "reunite_in_disjunction" named_forms (lid_start,lid_end) in 
   let chains_between = match_named_concats named_forms_between  in 
   let (left,centers,right) = List_again.two_sided_common_parts chains_between  in 
-  let lump_form = compute_lump centers in 
-   let (gram2,name_for_intermediate_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
+  let lump_form = compute_lump_in_disjunction centers in 
+   let (gram2,name_for_lump_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" lump_form in 
+  let new_conc_in_disj = Jvag_types.Concat(left@[name_for_lump_form]@right) in 
+  let (gram3,name_for_conc_in_disj) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_conc_in_disj in 
+  (gram3,before @ [(name_for_conc_in_disj,new_conc_in_disj)]  @ after);;
 
 
 let apply name (gram,named_forms) modif=
@@ -923,8 +929,6 @@ let apply name (gram,named_forms) modif=
    expand_synonym gf (index_in_disj,index_in_concat)
  |(Lm_expand_concat(index_in_disj,index_in_concat)) ->
    expand_concat gf (index_in_disj,index_in_concat)
- |(Lm_implode_molecule(index_in_disj,(range_start,range_end))) ->
-   implode_molecule gf (index_in_disj,(range_start,range_end)) 
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    explode_molecule gf (index_in_disj,index_in_concat)
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
@@ -933,8 +937,10 @@ let apply name (gram,named_forms) modif=
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   
-  |(Lm_guantanamera(lid_start,lid_end)) ->
-    guantanamera gf  (lid_start,lid_end)  
+  |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) -> 
+    reunite_in_concatenation gf  (lid,(range_start,range_end))  
+  |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
+    reunite_in_disjunction gf  (lid_start,lid_end)  
   ;;
 
 let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
