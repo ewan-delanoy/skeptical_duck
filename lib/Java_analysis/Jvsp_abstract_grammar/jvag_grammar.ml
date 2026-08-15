@@ -806,6 +806,16 @@ let compute_lump_in_concatenation names_between forms_between =
    then Molecular(List.flatten(Image.image Option.get moleculars_opt))
    else Concat names_between ;;
 
+exception Compute_lump_in_nondisjunction_point_expansion_exn of form ;;  
+
+let compute_lump_in_nondisjunction_point_expansion inner_pivot = 
+  match inner_pivot with 
+   Concat(l)->l
+  |Molecular(l)->Image.image (fun tok->Jvsp_util.code_for_tokentype_sequence_in_production_names [tok]) l
+  |Synonym (older_name)->[older_name]
+  |Star _
+  |Optional _ 
+  |Disjunction _ -> raise(Compute_lump_in_nondisjunction_point_expansion_exn(inner_pivot));; 
 
 let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   let (before,old_pivot,after) = extract_element_from_disjunction "expand_disjunction" named_forms index_in_disj in 
@@ -884,6 +894,28 @@ let collapse_synonym (gram,(name,named_forms)) index_in_disj =
   let new_element = Jvag_types.Concat([older_name]) in 
   let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;  
+
+let expand_nondisjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_pivot=
+  let lump = compute_lump_in_nondisjunction_point_expansion inner_pivot in 
+  let new_conc_in_disj = Jvag_types.Concat(names_before@lump@names_after) in 
+  let (gram2,name_for_new_conc_in_disj) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_conc_in_disj in 
+  (gram2,before @ [(name_for_new_conc_in_disj,new_conc_in_disj)]  @ after);;  
+
+let expand_disjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_disjunction=
+ let new_elements = Image.image (fun elt-> Jvag_types.Concat(names_before@[elt]@names_after) ) inner_disjunction in 
+ let (gram2,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:name new_elements in 
+ let named_new_elements = List.combine names_for_new_elements new_elements in 
+ (gram2,before @ named_new_elements @ after);;  
+
+let expand_point_in_line (gram,(name,named_forms)) (lid,index_in_concat) = 
+  let (before,outer_pivot,after) = extract_lid_from_disjunction "expand_point_in_line" named_forms lid in  
+  let chain = match_lid_concat (snd outer_pivot) ("index in disjunction",lid,"expand_point_in_line") in
+  let (names_before,name_there,names_after) = extract_element_from_concat "expand_concat" chain index_in_concat in   
+  let inner_pivot = Common.get gram name_there in 
+  match Jvag_form.disjunction_content_opt inner_pivot with 
+  None -> expand_nondisjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_pivot
+  |Some(l) -> expand_disjunction_point_in_line (gram,name) (before,after) (names_before,names_after) l;;
+  
 
 let reunite_in_concatenation (gram,(name,named_forms)) (lid,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_lid_from_disjunction "reunite_in_concatenation" named_forms lid in  
