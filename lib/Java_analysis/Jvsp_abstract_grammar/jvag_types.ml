@@ -33,7 +33,11 @@ type local_modification =
      original_name -> original_name A. The left recursion is removed in a standard way, by putting
      original_name = original_name' Starred(A).
    *)
-  |Lm_expand_point_in_line of location_in_disjunction * int
+  |Lm_expand_lines_in_disjunction of location_in_disjunction list
+      (* expand_lines_in_disjunction gf (lid,index_in_concat) expands all the lines defined by lids, replacing
+      each with one or several new lines. A replaced line must be a Synonym (in which case  it isreplaced
+      by a single line containing just the synonym) or a Disjunction(in which case it is expanded in the obvious way). *)
+   |Lm_expand_point_in_line of location_in_disjunction * int
       (* expand_point_in_line gf (lid,index_in_concat) expands the point at index index_in_concat
       of the line defined by lid. If this point is a Dijsunction, this line will be replaced by
       more lines. If this point is a Concat, a Synonym or a Molecule, it will be replaced by a longer line. *)  

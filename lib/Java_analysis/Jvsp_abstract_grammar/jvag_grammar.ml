@@ -120,7 +120,9 @@ let ocaml_name_of_local_modification lmod=
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
- |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
+ |(Lm_expand_lines_in_disjunction(lids)) ->  
+  "Lm_expand_lines_in_disjunction(["^(String.concat ";" (Image.image ocaml_name_of_lid lids))^"])"
+    |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
   "Lm_expand_point_in_line("^(ocaml_name_of_lid lid)^","^(soi index_in_concat)^")"
  |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) ->  
   "Lm_reunite_in_concatenation("^(ocaml_name_of_lid lid)^",("^(soi range_start)^","^(soi range_end)^"))"    
@@ -801,6 +803,17 @@ let compute_lump_in_nondisjunction_point_expansion inner_pivot =
   |Optional _ 
   |Disjunction _ -> raise(Compute_lump_in_nondisjunction_point_expansion_exn(inner_pivot));; 
 
+exception Expand_disjunction_or_synonym_exn of form ;;
+
+let expand_disjunction_or_synonym form= 
+  match form with 
+   Disjunction(l)->l 
+  |Synonym (older_name)->[older_name] 
+  |Concat(_)
+  |Molecular(_)
+  |Star _
+  |Optional _  -> raise(Expand_disjunction_or_synonym_exn(form));; 
+
 let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
   let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
@@ -834,6 +847,19 @@ let collapse_synonym (gram,(name,named_forms)) index_in_disj =
   let new_element = Jvag_types.Concat([older_name]) in 
   let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
   (gram2,before @ [(name_for_new_element,new_element)]  @ after);;  
+
+let expand_lines_in_disjunction (gram,(_name,named_forms)) lids = 
+  let indexed_forms = Int_range.index_everything named_forms in 
+  let blocks = Image.image (
+   fun (idx,(name,form))->
+    if (List.mem (I idx) lids)||(List.mem (I idx) lids)
+    then expand_disjunction_or_synonym form 
+    else [name]  
+  ) indexed_forms in 
+  let new_list_of_names = List_again.nonredundant_version(List.flatten blocks) in 
+  (gram,Image.image (fun nm->(nm,Common.get gram nm)) new_list_of_names);;
+  
+
 
 let expand_nondisjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_pivot=
   let lump = compute_lump_in_nondisjunction_point_expansion inner_pivot in 
@@ -886,6 +912,8 @@ let apply name (gram,named_forms) modif=
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   
+  |(Lm_expand_lines_in_disjunction(lids)) ->  
+     expand_lines_in_disjunction gf lids 
   |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
      expand_point_in_line gf (lid,index_in_concat)  
   |(Lm_reunite_in_concatenation(lid,(range_start,range_end))) -> 
