@@ -48,12 +48,6 @@ type local_modification =
        with a longer line, by exploding the element number index_in_concat (which must be a molecule) in
        that line.
        *) 
-  |Lm_implode_concat of int * (int * int)
-      (*
-      implode_concat gf (index_in_disj,(range_start,range_end)) replaces line number index_in_disj
-      with a shorter line, by replacing all the elements in the range defined by (range_start,range_end) inside
-      that line with a single concatenation form. 
-      *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with

@@ -124,8 +124,6 @@ let ocaml_name_of_local_modification lmod=
    "Lm_expand_concat("^(soi index_in_disj)^","^(soi index_in_concat)^")"
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    "Lm_explode_molecule("^(soi index_in_disj)^","^(soi index_in_concat)^")"  
- |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
-  "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
@@ -853,17 +851,6 @@ let explode_molecule (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
   let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
   (gram3,before @ [(name_for_new_element,new_element)]  @ after);;
 
-
-let implode_concat (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"implode_concat") in
-  let (before2,between2,after2) = extract_range_from_concat "implode_concat" chain (range_start,range_end) in 
-  let final_form = Jvag_types.Concat between2 in 
-  let (gram2,name_for_intermediate_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(before2@[name_for_intermediate_form]@after2) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;    
-
 let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
   let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
@@ -931,8 +918,6 @@ let apply name (gram,named_forms) modif=
    expand_concat gf (index_in_disj,index_in_concat)
  |(Lm_explode_molecule(index_in_disj,index_in_concat)) ->
    explode_molecule gf (index_in_disj,index_in_concat)
- |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
-    implode_concat gf (index_in_disj,(range_start,range_end))
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
