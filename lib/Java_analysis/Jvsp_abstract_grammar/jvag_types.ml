@@ -74,12 +74,6 @@ type local_modification =
         the form BA,B name Starred(name)A or B Starred(name) name A  (not necessarily in that order), and if so, merges them
         into a single line BStarred(name)A. The length of B is length_before and the length of A is length_after.
       *)
-  |Lm_reunite_disjunction of (int * int) * int
-     (*
-     reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat) collapses the lines in the range described
-     by (disj_range_start,disj_range_end) into a single line, after having checked that all those lines are identical 
-     except for element number index_in_concat. The replacing line then has a disjunction at index index_in_concat.
-     *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with

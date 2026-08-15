@@ -130,8 +130,6 @@ let ocaml_name_of_local_modification lmod=
   "Lm_reunite_star("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"
  |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) ->  
   "Lm_reunite_optional("^(soi index_in_disj)^",("^(soi length_before)^","^(soi length_after)^"))"  
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->
-  "Lm_reunite_disjunction(("^(soi disj_range_start)^","^(soi disj_range_end)^"),"^(soi index_in_concat)^")"
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->  
   "Lm_implode_concat("^(soi index_in_disj)^",("^(soi range_start)^","^(soi range_end)^"))" 
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
@@ -155,11 +153,20 @@ let ocaml_name_of_modification = function
      (Image.image ocaml_name_of_local_modification mods))^"])"
 ;;
 
+let ocaml_name_of_local_modification_list l = 
+  "[\n"^
+  (String.concat "\n" (Image.image (fun modif->"   "^(ocaml_name_of_local_modification modif)^";") l))^
+  "\n]" ;;
+     
+
 let ocaml_name_of_modification_list l = 
   "[\n"^
   (String.concat "\n" (Image.image (fun modif->"   "^(ocaml_name_of_modification modif)^";") l))^
   "\n]" ;;
      
+let display_local_modification_list l = print_string("\n\n\n"^(ocaml_name_of_local_modification_list l)^"\n\n\n");;  
+
+let display_modification_list l = print_string("\n\n\n"^(ocaml_name_of_modification_list l)^"\n\n\n");;  
 
 let order_on_pairs = Total_ordering.product str_order Jvag_form.order ;;
 
@@ -709,11 +716,6 @@ let match_molecular form (text_for_index,index,caller_name)=
   None -> raise (Bad_form_exn(text_for_index,index,"molecular expected",form,caller_name))
   |Some(mol_content)-> mol_content ;;    
 
-let match_concats forms (text_for_index,caller_name)= 
-   let indexed_forms = Int_range.index_everything forms in 
-   Image.image (fun (index,form)-> match_concat form (text_for_index,index,caller_name)) indexed_forms;; 
-
-
 let match_moleculars forms (text_for_index,caller_name)= 
    let indexed_forms = Int_range.index_everything forms in 
    Image.image (fun (index,form)-> match_molecular form (text_for_index,index,caller_name)) indexed_forms;;  
@@ -768,15 +770,6 @@ let extract_range_from_concat caller_name chain (range_start,range_end) =
   let (rev_between,after) = List_again.long_head_with_tail d temp in
   (before,List.rev rev_between,after) ;; 
 
-let extract_range_from_disjunction caller_name forms (range_start,range_end) =  
-   if (range_start<0)||(range_end<range_start)||(range_end>List.length(forms))
-  then raise (Bad_range_exn("range in disjunction",range_start,range_end,caller_name))
-  else
-  let (rev_before,temp) = List_again.long_head_with_tail (range_start-1) forms in 
-  let before = List.rev rev_before in 
-  let d = range_end - range_start +1 in 
-  let (rev_between,after) = List_again.long_head_with_tail d temp in
-  (before,List.rev rev_between,after) ;; 
 
 let uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut (length_before,length_after) = 
   let total_length = length_before + length_after 
@@ -798,18 +791,6 @@ let uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut
   if right_mismatch_opt<>None 
   then raise(Nonuniform_right_in_two_sided_cutting_exn("range in disjunction",range_start,range_end,"sides",length_before,length_after,right0,Option.get right_mismatch_opt,caller_name))  
   else (left0,centers,right0)  ;; 
-
-let uniform_extraction (caller_name,range_start,range_end) bars_to_be_cut index =
-  let bar0 = List.hd(bars_to_be_cut) in 
-  let n = List.length(bar0) in 
-  let bad_length_opt= List.find_opt (fun bar->List.length(bar)<>n) bars_to_be_cut in 
-  if bad_length_opt<>None 
-  then raise(Nonuniform_sizes_in_extraction_exn("range in disjunction",range_start,range_end,bar0,Option.get bad_length_opt,caller_name))  
-  else    
-  let (left0,centers,right0) =  
-  uniform_two_sided_cutting (caller_name,range_start,range_end) bars_to_be_cut (index-1,n-index) in 
-  (left0,Image.image List.hd centers,right0);;  
-
 
 
 let extract_main_name_from_list_during_star_reuniting between =
@@ -846,21 +827,11 @@ exception Reunite_optional_exn of (string list) * (string list) ;;
 
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
 
-exception Compute_lump_in_numerous_case_exn ;;
-
-let compute_lump_in_numerous_case possibly_large_centers = 
-  if List.exists (fun x->List.length(x)<>1) possibly_large_centers 
-  then raise Compute_lump_in_numerous_case_exn
-  else let centers = Image.image List.hd possibly_large_centers in 
-       Jvag_types.Disjunction centers ;; 
-
-
 exception Compute_lump_optional_for_concatenation_of_two_exn ;;
 let compute_lump_optional_for_concatenation_of_two a b =
   if b="Starred"^a then Star(a) else 
   if a="Starred"^b then Star(b) else
   raise Compute_lump_optional_for_concatenation_of_two_exn ;;
-
     
 
 exception Compute_lump_optional_for_a_concatenation_exn ;;
@@ -884,11 +855,12 @@ let compute_lump_in_binary_case possibly_large_centers =
 exception Compute_lump_exn ;;
 
 let compute_lump possibly_large_centers = 
-  if List.length(possibly_large_centers)<2
-  then raise Compute_lump_exn
+  if List.for_all (fun x->List.length(x)=1) possibly_large_centers 
+  then let centers = Image.image List.hd possibly_large_centers in 
+       Jvag_types.Disjunction centers
   else 
-  if List.length(possibly_large_centers)>2
-  then compute_lump_in_numerous_case possibly_large_centers
+  if List.length(possibly_large_centers)<>2
+  then raise Compute_lump_exn
   else compute_lump_in_binary_case possibly_large_centers
 
 let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
@@ -996,17 +968,7 @@ let reunite_optional (gram,(name,named_forms)) (index_in_disj,(length_before,len
   let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
   let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
   (gram3,before @ [(name_for_new_element,new_element)]  @ after);;   
-
-let reunite_disjunction (gram,(name,named_forms)) ((disj_range_start,disj_range_end),index_in_concat) = 
-  let (before,named_forms_between,after)= extract_range_from_disjunction "reunite_disjunction" named_forms (disj_range_start,disj_range_end) in 
-  let forms_between = Image.image snd named_forms_between in 
-  let chains_between = match_concats forms_between ("index in range in disjunction","reunite_disjunction") in 
-  let (left,centers,right) = uniform_extraction ("reunite_disjunction",disj_range_start,disj_range_end) chains_between index_in_concat in 
-  let final_form = Jvag_types.Disjunction centers in 
-   let (gram2,name_for_intermediate_form) = Common.register_with_dwarfy_name_if_needed gram ~suffix:"" final_form in 
-  let new_element = Jvag_types.Concat(left@[name_for_intermediate_form]@right) in 
-  let (gram3,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_element in 
-  (gram3,before @ [(name_for_new_element,new_element)]  @ after);;     
+    
 
 let implode_concat (gram,(name,named_forms)) (index_in_disj,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_element_from_disjunction "implode_concat" named_forms index_in_disj in  
@@ -1081,8 +1043,6 @@ let apply name (gram,named_forms) modif=
     reunite_star gf (index_in_disj,(length_before,length_after)) 
  |(Lm_reunite_optional(index_in_disj,(length_before,length_after))) -> 
     reunite_optional gf (index_in_disj,(length_before,length_after)) 
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
-   reunite_disjunction gf ((disj_range_start,disj_range_end),index_in_concat)
  |(Lm_implode_concat(index_in_disj,(range_start,range_end))) ->   
     implode_concat gf (index_in_disj,(range_start,range_end))
  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   

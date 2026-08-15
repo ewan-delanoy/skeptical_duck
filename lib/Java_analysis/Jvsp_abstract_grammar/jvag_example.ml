@@ -362,43 +362,43 @@ AL ([
 
 (* Java grammar ends here *)
 
-let mods_for_import_declaration = [
-  (* Dealing with non-static imports *)
-(Lm_expand_disjunction(1,2));
-(Lm_expand_synonym(1,2));
-(Lm_expand_concat(2,2));
-(Lm_expand_synonym(2,5));
-(Lm_implode_molecule(2,(4,5)));
-(Lm_reunite_star(1,(2,1)));
-(Lm_explode_molecule(2,4));
-(Lm_implode_molecule(2,(4,5)));
-(Lm_reunite_optional(1,(3,1)));
-(Lm_implode_concat(1,(2,4)));
+let local_mods_for_import_declaration = [
+    (* Dealing with non-static imports *)
+   Lm_expand_disjunction(1,2);
+   Lm_expand_synonym(1,2);
+   Lm_expand_concat(2,2);
+   Lm_expand_synonym(2,5);
+   Lm_implode_molecule(2,(4,5));
+   Lm_guantanamera(I 1,I 2);
+   Lm_explode_molecule(2,4);
+   Lm_implode_molecule(2,(4,5));
+   Lm_guantanamera(I 1,I 2);
+   Lm_implode_concat(1,(2,4));
 
-(* Dealing with static imports *)
-(Lm_expand_disjunction(3,2));
-(Lm_expand_disjunction(2,2));
-(Lm_expand_concat(5,2));
-(Lm_expand_concat(3,2));
-(Lm_expand_synonym(5,5));
-(Lm_expand_synonym(4,2));
-(Lm_expand_synonym(3,5));
-(Lm_expand_synonym(2,2));
-(Lm_implode_molecule(3,(4,5)));
-(Lm_reunite_star(2,(2,1)));
-(Lm_explode_molecule(2,4));
-(Lm_explode_molecule(3,3));
-(Lm_explode_molecule(4,6));
-(Lm_implode_molecule(4,(4,5)));
-(Lm_reunite_star(3,(2,3)));
-(Lm_reunite_disjunction((2,3),5));
-(Lm_explode_molecule(2,1));
-(Lm_implode_molecule(2,(2,3))); (* because of token list merging rules*)
-(Lm_implode_concat(2,(2,5)));
+   (* Dealing with static imports *)
+   Lm_expand_disjunction(3,2);
+   Lm_expand_disjunction(2,2);
+   Lm_expand_concat(5,2);
+   Lm_expand_concat(3,2);
+   Lm_expand_synonym(5,5);
+   Lm_expand_synonym(4,2);
+   Lm_expand_synonym(3,5);
+   Lm_expand_synonym(2,2);
+   Lm_implode_molecule(3,(4,5));
+   Lm_guantanamera(I 2,I 3);
+   Lm_explode_molecule(2,4);
+   Lm_explode_molecule(3,3);
+   Lm_explode_molecule(4,6);
+   Lm_implode_molecule(4,(4,5));
+   Lm_guantanamera(I 3,I 4);
+   Lm_guantanamera(I 2,I 3);
+   Lm_explode_molecule(2,1);
+   Lm_implode_molecule(2,(2,3)); (* because of token list merging rules*)
+   Lm_implode_concat(2,(2,5));
 
-(* Joining static with non-static *)
-(Lm_reunite_disjunction((1,2),2));
-] ;;
+   (* Joining static with non-static *)
+   Lm_guantanamera(I 1,I 2);
+]
 
 
 let modifications_to_original_java_grammar = 
@@ -408,14 +408,14 @@ let modifications_to_original_java_grammar =
       Local("ModuleName",[Lm_remove_left_recursive_line_in_disjunction("ModuleName",2)]);
       Local("PackageName",[Lm_remove_left_recursive_line_in_disjunction("PackageName",2)]);
       Local("PackageOrTypeName",[Lm_remove_left_recursive_line_in_disjunction("PackageOrTypeName",2)]);
-      Local("ExpressionName",[Lm_reunite_star(1,(1,0))]);
+      Local("ExpressionName",[Lm_guantanamera (I 1, I 2)]);
       (* Simplify the production rule for the import declaration*)
       Create_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
       Create_production("NonstaticImportedContent",Concat(["Identifier"; "StarredMolecularDot_Identifier";"OptionalMolecularDot_Times"]));
       Create_production("StaticImportedContent",Concat(["MolecularStatic_Identifier"; "StarredMolecularDot_Identifier"; "Dot";"IdOrWildcard"]));
       Create_production("ImportedContent",Disjunction(["NonstaticImportedContent";"StaticImportedContent"]));
 
-      Local("ImportDeclaration",mods_for_import_declaration);
+      Local("ImportDeclaration",local_mods_for_import_declaration);
       (* Simplify the production rule for the class body declaration*)
       Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
       Expand_in_synonym("Block","InstanceInitializer");
@@ -442,8 +442,10 @@ let modifications_to_original_java_grammar =
       Local("UnannClassType",[Lm_remove_left_recursive_line_in_disjunction("UnannClassType",3)]);
 
       Local("TypeName",[
-      Lm_collapse_synonym(1);Lm_expand_synonym(2,4);
-      Lm_implode_molecule(2,(3,4)); Lm_reunite_star(1,(1,0)); 
+      Lm_collapse_synonym(1);
+      Lm_expand_synonym(2,4);
+      Lm_implode_molecule(2,(3,4)); 
+      Lm_guantanamera (I 1, I 2); 
       ]);
      
       Collapse_synonym_globally("InterfaceType");
@@ -452,27 +454,6 @@ let modifications_to_original_java_grammar =
 
       Create_production("UnextendedClassType",Disjunction(["ShortClassType"; "UsualClassType"]));
       Local("ClassType",[Lm_remove_left_recursive_line_in_disjunction("ClassType",3)]);
-
-
-      (*
-      Create_production("Dwarf1ArrayAccess",Concat(["Literal"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf2ArrayAccess",Concat(["ClassLiteral"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf3ArrayAccess",Concat(["This"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf4ArrayAccess",Concat(["UsingThisPrimaryNoNewArray"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf5ArrayAccess",Concat(["ParenthesedPrimaryNoNewArray"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf6ArrayAccess",Concat(["ClassInstanceCreationExpression"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf7ArrayAccess",Concat(["FieldAccess"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf8ArrayAccess",Concat(["ArrayAccess"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf9ArrayAccess",Concat(["MethodInvocation"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf10ArrayAccess",Concat(["MethodReference"; "Lb" ; "Expression" ; "Rb"]));
-      Create_production("Dwarf11ArrayAccess",Disjunction(["ShortArrayAccess" ;"Dwarf1ArrayAccess" ; "Dwarf2ArrayAccess" ; "Dwarf3ArrayAccess" ; "Dwarf4ArrayAccess" ; "Dwarf5ArrayAccess" ; "Dwarf6ArrayAccess" ; "Dwarf7ArrayAccess" ; "Dwarf9ArrayAccess" ; "Dwarf10ArrayAccess"]));
-      Create_production("Dwarf12ArrayAccessExtender",Concat(["Lb" ; "Expression" ; "Rb"]));
-      Create_production("StarredDwarf12ArrayAccessExtender",Star("Dwarf12ArrayAccessExtender"));
-      Local("ArrayAccess",[
-        Lm_expand_disjunction(2,1);
-        Lm_remove_left_recursive_line_in_disjunction("ArrayAccess",9);
-      ]); 
-      *)
      
 
     ] ;;
