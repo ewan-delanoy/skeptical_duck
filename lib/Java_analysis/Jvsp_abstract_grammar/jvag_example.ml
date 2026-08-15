@@ -442,10 +442,10 @@ let modifications_to_original_java_grammar =
       Local("UnannClassType",[Lm_remove_left_recursive_line_in_disjunction("UnannClassType",3)]);
 
       Local("TypeName",[
-      Lm_collapse_synonym(1);
-      Lm_expand_point_in_line(I 2,4);
-      Lm_reunite_in_concatenation(I 2,(3,4)); 
-      Lm_reunite_in_disjunction (I 1, I 2); 
+       Lm_expand_lines_in_disjunction([I 1]);
+       Lm_expand_point_in_line(N"CompoundTypeName",4);
+       Lm_reunite_in_concatenation(I 2,(3,4));
+       Lm_reunite_in_disjunction(I 1,I 2);
       ]);
      
       Collapse_synonym_globally("InterfaceType");

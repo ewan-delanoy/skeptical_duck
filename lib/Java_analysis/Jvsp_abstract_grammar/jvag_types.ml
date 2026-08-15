@@ -20,12 +20,7 @@ type location_in_disjunction = I of int | N of string ;;
 
 
 type local_modification = 
-   Lm_collapse_synonym of int 
-       (*
-       collapse_synonym gf (index_in_disj) replaces the line located at index_in_disj 
-        (chich must be a synonym form) with its older synonym according to the grammar rules.
-       *)
-  |Lm_remove_left_recursive_line_in_disjunction of string * int 
+  Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
      original_name key in the grammar (this value must be a disjunction, whose index_in_disjth element expands
@@ -35,13 +30,13 @@ type local_modification =
    *)
   |Lm_expand_lines_in_disjunction of location_in_disjunction list
       (* expand_lines_in_disjunction gf (lid,index_in_concat) expands all the lines defined by lids, replacing
-      each with one or several new lines. A replaced line must be a Synonym (in which case  it isreplaced
+      each with one or several new lines. A replaced line must be a Synonym (in which case  it is replaced
       by a single line containing just the synonym) or a Disjunction(in which case it is expanded in the obvious way). *)
-   |Lm_expand_point_in_line of location_in_disjunction * int
+  |Lm_expand_point_in_line of location_in_disjunction * int
       (* expand_point_in_line gf (lid,index_in_concat) expands the point at index index_in_concat
       of the line defined by lid. If this point is a Dijsunction, this line will be replaced by
       more lines. If this point is a Concat, a Synonym or a Molecule, it will be replaced by a longer line. *)  
- |Lm_reunite_in_concatenation of location_in_disjunction * (int * int)  
+  |Lm_reunite_in_concatenation of location_in_disjunction * (int * int)  
       (*
       implode_molecule gf (lid,(range_start,range_end)) replaces line defined by lid
       with a shorter line, by mergeing all the elements all the elements in the range 

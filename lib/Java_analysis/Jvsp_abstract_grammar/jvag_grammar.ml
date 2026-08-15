@@ -117,9 +117,7 @@ let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
   match lmod with 
   (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
-   "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
- |(Lm_collapse_synonym(index_in_disj)) ->
-    "Lm_collapse_synonym("^(soi index_in_disj)^")"  
+   "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"  
  |(Lm_expand_lines_in_disjunction(lids)) ->  
   "Lm_expand_lines_in_disjunction(["^(String.concat ";" (Image.image ocaml_name_of_lid lids))^"])"
     |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
@@ -690,11 +688,6 @@ let match_concat form (text_for_index,index,caller_name)=
   None -> raise (Bad_form_exn(text_for_index,index,"concat expected",form,caller_name))
   |Some(chain)-> chain ;;
 
-let match_synonym form (text_for_index,index,caller_name)= 
-    match Jvag_form.synonym_content_opt form with 
-  None -> raise (Bad_form_exn(text_for_index,index,"synonym expected",form,caller_name))
-  |Some(older_synonym)-> older_synonym ;;  
-
 exception Index_for_lid_exn of location_in_disjunction;;
 
 let index_for_lid indexed_forms lid = match lid with   
@@ -841,12 +834,6 @@ let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original
   ) in 
   (gram5,[name,Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
 
-let collapse_synonym (gram,(name,named_forms)) index_in_disj = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "collapse_synonym" named_forms index_in_disj in 
-  let older_name = match_synonym (snd old_pivot) ("index in disjunction",index_in_disj,"collapse_synonym") in
-  let new_element = Jvag_types.Concat([older_name]) in 
-  let (gram2,name_for_new_element) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_element in 
-  (gram2,before @ [(name_for_new_element,new_element)]  @ after);;  
 
 let expand_lines_in_disjunction (gram,(_name,named_forms)) lids = 
   let indexed_forms = Int_range.index_everything named_forms in 
@@ -909,9 +896,7 @@ let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
   (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
-    remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
- |(Lm_collapse_synonym(index_in_disj)) ->
-    collapse_synonym gf index_in_disj   
+    remove_left_recursive_line_in_disjunction gf original_name index_in_disj   
   |(Lm_expand_lines_in_disjunction(lids)) ->  
      expand_lines_in_disjunction gf lids 
   |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
