@@ -116,9 +116,7 @@ let ocaml_name_of_lid = function
 let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
   match lmod with 
-  (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
-    "Lm_expand_disjunction("^(soi index_in_disj)^","^(soi index_in_concat)^")" 
- |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
+  (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"
  |(Lm_collapse_synonym(index_in_disj)) ->
     "Lm_collapse_synonym("^(soi index_in_disj)^")"  
@@ -690,11 +688,6 @@ let match_concat form (text_for_index,index,caller_name)=
   None -> raise (Bad_form_exn(text_for_index,index,"concat expected",form,caller_name))
   |Some(chain)-> chain ;;
 
-let match_disjunction form (text_for_index,index,caller_name)= 
-    match Jvag_form.disjunction_content_opt form with 
-  None -> raise (Bad_form_exn(text_for_index,index,"disjunction expected",form,caller_name))
-  |Some(cases)-> cases ;;
-
 let match_synonym form (text_for_index,index,caller_name)= 
     match Jvag_form.synonym_content_opt form with 
   None -> raise (Bad_form_exn(text_for_index,index,"synonym expected",form,caller_name))
@@ -808,18 +801,6 @@ let compute_lump_in_nondisjunction_point_expansion inner_pivot =
   |Optional _ 
   |Disjunction _ -> raise(Compute_lump_in_nondisjunction_point_expansion_exn(inner_pivot));; 
 
-let expand_disjunction (gram,(name,named_forms)) (index_in_disj,index_in_concat) =
-  let (before,old_pivot,after) = extract_element_from_disjunction "expand_disjunction" named_forms index_in_disj in 
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"expand_disjunction") in 
-  let (before2,pivot2_name,after2) = extract_element_from_concat "expand_disjunction" chain index_in_concat in  
-  let pivot2 = Common.get gram pivot2_name in 
-  let inner_disjunction = match_disjunction pivot2 ("index in concat",index_in_concat,"expand_disjunction") in 
-  let new_elements = Image.image (fun elt-> Jvag_types.Concat(before2@[elt]@after2) ) inner_disjunction in 
-  let (gram2,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:name new_elements in 
-  let named_new_elements = List.combine names_for_new_elements new_elements in 
-  (gram2,before @ named_new_elements @ after);;  
-  
-
 let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
   let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
   let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
@@ -901,9 +882,7 @@ let reunite_in_disjunction (gram,(name,named_forms)) (lid_start,lid_end) =
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
- (Lm_expand_disjunction(index_in_disj,index_in_concat)) ->
-    expand_disjunction gf (index_in_disj,index_in_concat) 
- |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
+  (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj 
  |(Lm_collapse_synonym(index_in_disj)) ->
     collapse_synonym gf index_in_disj   

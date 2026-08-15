@@ -25,12 +25,6 @@ type local_modification =
        collapse_synonym gf (index_in_disj) replaces the line located at index_in_disj 
         (chich must be a synonym form) with its older synonym according to the grammar rules.
        *)
-  |Lm_expand_disjunction of int * int 
-       (*
-       expand_disjunction gf (index_in_disj,index_in_concat) expands line number index_in_disj
-       into more lines, by expanding the element number index_in_concat (which must be a disjunction) in
-       that line.
-       *)
   |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
      remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
