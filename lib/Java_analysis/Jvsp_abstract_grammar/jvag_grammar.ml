@@ -135,7 +135,6 @@ let ocaml_name_of_modification = function
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
-  |Collapse_synonym_locally(newer_synonym,container) -> "Collapse_synonym_locally(\""^newer_synonym^"\",\""^container^"\")"
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
   |Local(name,mods)->  "Local(\""^name^"\",["^(String.concat ";" 
      (Image.image ocaml_name_of_local_modification mods))^"])"
@@ -830,11 +829,11 @@ let remove_left_recursive_lines_in_disjunction (gram,(name,named_forms)) =
 
 
 
-let expand_lines_in_disjunction (gram,(_name,named_forms)) lids = 
+let expand_lines_in_disjunction (gram,(_nahme,named_forms)) lids = 
   let indexed_forms = Int_range.index_everything named_forms in 
   let blocks = Image.image (
    fun (idx,(name,form))->
-    if (List.mem (I idx) lids)||(List.mem (I idx) lids)
+    if (List.mem (I idx) lids)||(List.mem (N name) lids)
     then expand_disjunction_or_synonym form 
     else [name]  
   ) indexed_forms in 
@@ -1035,20 +1034,6 @@ let csg_in_form rep_pair form =
    |Molecular  _ -> form;;   
 
 
-let csl_in_named_form (newer_synonym,container,older_synonym) (name,form) = 
-   if name <> container 
-   then form 
-   else csg_in_form (newer_synonym,older_synonym) form;;   
-
-let csl_in_pair triple (name,form) = (name,csl_in_named_form triple (name,form) ) ;; 
-
-
-let csl_in_grammar (newer_synonym,container) gram_with_dwc =
-   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
-   and older_synonym = Jvag_form.synonym_content(Common.get gram_with_dwc newer_synonym) in 
-   WDC(old_dwarf_count,AL(Image.image(csl_in_pair (newer_synonym,container,older_synonym)) l));;
-
-
 let csg_in_pair_opt rep_pair (name,form) = 
   if name = fst(rep_pair)
   then None 
@@ -1061,15 +1046,25 @@ let csg_in_grammar newer_synonym gram_with_dwc =
    WDC(old_dwarf_count,AL(List.filter_map(csg_in_pair_opt (newer_synonym,older_synonym)) l));;   
  
 
+exception Apply_local_modifications_exn of string * (local_modification list);;
+
 let apply_local_modifications gram name mods =
    let start_dis = Local_Modification.lm_get gram name in 
    let (gram2,named_forms) =  
      Local_Modification.apply_several name (gram,start_dis) mods in 
-   let final_form = (
-      if List.length(named_forms)=1
-      then snd(List.hd named_forms)
-      else Jvag_types.Disjunction (Image.image fst named_forms)    
-   ) in   
+     let final_form = (
+   if List.length(named_forms)>1
+   then Jvag_types.Disjunction (Image.image fst named_forms)
+   else   
+   let (other_name,other_form) = List.hd named_forms in 
+   if other_name<>name 
+   then Synonym other_name
+   else (* typically, one gets here when the content of the production
+           is reset by 'fiat', such as during a remove_left_recursive_lines operation
+         *)
+        other_form 
+     ) in 
+    
    add_pair_and_simplify_some_concats (name,final_form) gram2 ;;
 
 let apply gram = function 
@@ -1079,7 +1074,6 @@ let apply gram = function
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
   |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
-  |Collapse_synonym_locally(newer_synonym,container) -> csl_in_grammar (newer_synonym,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
   |Local(name,mods)->apply_local_modifications gram name mods;;
  

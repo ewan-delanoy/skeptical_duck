@@ -424,11 +424,13 @@ let modifications_to_original_java_grammar =
       Expand_in_disjunction("Annotation","ConstructorModifier");
       Expand_in_disjunction("Annotation","InterfaceModifier");
       Expand_in_disjunction("Annotation","MethodModifier");
-      Collapse_synonym_locally("UnannInterfaceType","UnannClassOrInterfaceType");
+      Local("UnannClassOrInterfaceType",[Lm_expand_lines_in_disjunction [N"UnannInterfaceType"]]);
+
       Collapse_synonym_globally("UnannClassOrInterfaceType");
       Expand_in_disjunction("UnannPrimitiveType","UnannType");
       Expand_in_disjunction("UnannReferenceType","UnannType");
-      Collapse_synonym_locally("UnannTypeVariable","UnannType");
+      Local("UnannType",[Lm_expand_lines_in_disjunction [N"UnannTypeVariable"]]);
+
       Expand_in_disjunction("NumericType","UnannType");
       Expand_in_disjunction("UnannClassType","UnannType");
       Expand_in_disjunction("UnannArrayType","UnannType");

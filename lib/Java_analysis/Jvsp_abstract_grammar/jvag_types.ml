@@ -57,7 +57,6 @@ type modification =
   |Remove_productions of string list
   |Expand_in_disjunction of string * string 
   |Expand_in_synonym of string * string
-  |Collapse_synonym_locally of string * string
   |Collapse_synonym_globally of string 
   |Local of string * (local_modification list) ;;
 
