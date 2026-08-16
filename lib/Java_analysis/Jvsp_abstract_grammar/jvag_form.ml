@@ -86,13 +86,16 @@ let disjunction_content_opt form = match form with
 
 let is_a_token_sequence form = ((Private.molecular_content_opt form)<>None) ;;
 
-let is_contained_in nm form = match form with
+let is_directly_contained_in nm form = match form with
     Concat l -> List.mem nm l
    |Molecular _ -> false
    |Disjunction l -> List.mem nm l
    |Star nm2 -> nm2 = nm
    |Optional nm2 -> nm2 = nm
    |Synonym nm2 -> nm2 = nm ;;
+
+let is_contained_in nm form =
+   List.exists (fun nm2->is_directly_contained_in nm2 form) [nm;"Optional"^nm;"Starred"^nm] ;;  
 
 let molecular_content_opt = Private.molecular_content_opt ;;   
 

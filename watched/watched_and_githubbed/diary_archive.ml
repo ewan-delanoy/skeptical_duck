@@ -1,6 +1,370 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 266 : Debugging session involving Jvag_grammar.Private.Local_Modification (IV)
+************************************************************************************************************************)
+module Snip266 = struct 
+
+open Jvag_types ;;
+
+module GPri =  Jvag_grammar.Private ;;
+module EPri =  Jvag_example.Private ;;
+module WDW = GPri.With_dwarf_count ;;
+module LM =WDW.Local_Modification ;;
+
+
+let g = Jvag_grammar.get_and_display ;;
+let gw (WDW.WDC(_,gram)) = g gram ;;
+
+let old_modifs =  EPri.modifications_to_original_java_grammar ;;
+
+let new_modifs = [
+
+
+      Local("AmbiguousName",[Lm_remove_left_recursive_lines_in_disjunction]); 
+      Local("ModuleName",[Lm_remove_left_recursive_lines_in_disjunction]);
+      Local("PackageName",[Lm_remove_left_recursive_lines_in_disjunction]);
+      Local("PackageOrTypeName",[Lm_remove_left_recursive_lines_in_disjunction]);
+      Local("ExpressionName",[Lm_reunite_in_disjunction (I 1, I 2)]);
+      (* Simplify the production rule for the import declaration*)
+      Create_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
+      Create_production("NonstaticImportedContent",Concat(["Identifier"; "StarredMolecularDot_Identifier";"OptionalMolecularDot_Times"]));
+      Create_production("StaticImportedContent",Concat(["MolecularStatic_Identifier"; "StarredMolecularDot_Identifier"; "Dot";"IdOrWildcard"]));
+      Create_production("ImportedContent",Disjunction(["NonstaticImportedContent";"StaticImportedContent"]));
+
+      Local("ImportDeclaration",EPri.local_mods_for_import_declaration);
+      (* Simplify the production rule for the class body declaration*)
+      Local("InstanceInitializer",[Lm_replace_self_with_older_synonym]);
+      Local("ClassBodyDeclaration",[Lm_expand_lines_in_disjunction([N"ClassMemberDeclaration";N"ClassDeclaration";N"InterfaceDeclaration"])]);
+      Local("ClassBodyDeclaration",[Lm_expand_lines_in_disjunction([N"ClassDeclaration";N"InterfaceDeclaration"])]);
+      
+      Local("ConstructorModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+      Local("InterfaceModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+      Local("MethodModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+
+      Local("UnannClassOrInterfaceType",[Lm_expand_lines_in_disjunction [N"UnannInterfaceType"]]);
+
+      Collapse_synonym_globally("UnannClassOrInterfaceType");
+
+      Local("UnannType",[Lm_expand_lines_in_disjunction([N"UnannPrimitiveType";N"UnannReferenceType"])]);
+
+      Local("UnannType",[Lm_expand_lines_in_disjunction [N"NumericType";N"UnannClassOrInterfaceType";N"UnannTypeVariable";N"UnannArrayType"]]);
+
+      Local("UnannType",[Lm_expand_lines_in_disjunction [N"IntegralType";N"FloatingPointType";N"UnannClassType"]]);
+
+      Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
+      Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
+      Create_production("UnextendedUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
+      Local("UnannClassType",[Lm_remove_left_recursive_lines_in_disjunction]);
+
+      Local("TypeName",[
+       Lm_expand_lines_in_disjunction([I 1]);
+       Lm_expand_point_in_line(N"CompoundTypeName",4);
+       Lm_reunite_in_concatenation(I 2,(3,4));
+       Lm_reunite_in_disjunction(I 1,I 2);
+      ]);
+     
+      Collapse_synonym_globally("InterfaceType");
+      Collapse_synonym_globally("ClassOrInterfaceType");
+      
+
+      Create_production("UnextendedClassType",Disjunction(["ShortClassType"; "UsualClassType"]));
+      Local("ClassType",[Lm_remove_left_recursive_lines_in_disjunction]);
+     
+
+
+] ;;
+
+
+let initial_gram = EPri.original_java_grammar ;;
+
+let old_gram = Jvag_grammar.modify initial_gram old_modifs ;;
+
+let new_gram = Jvag_grammar.modify initial_gram new_modifs ;;
+let see1 =  Jvag_grammar.differences old_gram new_gram ;;
+
+(*
+let modernize_local_modification lmod = match lmod with
+ |(Lm_expand_point_in_line(_,_)) 
+ |(Lm_reunite_in_concatenation(_,_))
+ |(Lm_reunite_in_disjunction(_,_))
+ |(Lm_expand_lines_in_disjunction(_))
+ |(Lm_remove_left_recursive_lines_in_disjunction)
+ |Lm_replace_self_with_older_synonym-> lmod ;;
+ 
+let modernize_modification modif = match modif with  
+  Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
+  |_ -> modif
+;; 
+
+ let modernize_modification modif = match List.assoc_opt modif [
+   
+   (*
+   Collapse_synonym_locally ("UnannInterfaceType", "UnannClassOrInterfaceType"),
+   Local("UnannClassOrInterfaceType",[Lm_expand_lines_in_disjunction [N"UnannInterfaceType"]]);
+
+   Collapse_synonym_locally ("UnannTypeVariable", "UnannType"),
+   Local("UnannType",[Lm_expand_lines_in_disjunction [N"UnannTypeVariable"]]);
+
+   (Expand_in_synonym("Block","InstanceInitializer"),
+    Local("InstanceInitializer",[Lm_replace_self_with_older_synonym]))
+
+   *)
+
+   
+
+] with 
+Some precomputed -> precomputed 
+| None -> modif ;; 
+
+let flatten_modification modif = match modif with  
+  Local(name,mods)->  Image.image (fun lmod->Local(name,[lmod])) mods
+  |_ -> [modif];; 
+
+let flatten_modifications modifs = List.flatten (Image.image flatten_modification modifs) ;;
+
+let apply_modification_opt gram modif =
+   try Some(Jvag_grammar.modify gram [modif]) with 
+   _ -> None ;;
+
+let common_result_opt gram modif1 modif2 =
+  let gram1_opt =  apply_modification_opt gram modif1
+  and gram2_opt =  apply_modification_opt gram modif2 in 
+  if (gram1_opt=None)||(gram2_opt=None)
+  then None 
+  else
+  let gram1 = Option.get gram1_opt 
+  and gram2 = Option.get gram2_opt in
+  if gram1=gram2
+  then Some gram1 
+  else None ;;    
+
+
+let rec helper_for_earliest_difference (gram,treated,to_be_treated) =
+  match to_be_treated with 
+  [] -> failwith("No difference found")
+  |(modif1,modif2) :: others->
+    match common_result_opt gram modif1 modif2 with 
+    None -> (List.rev treated,gram,(modif1,modif2))
+    |Some next_gram -> helper_for_earliest_difference (next_gram,(modif1,modif2) ::treated,others) ;;
+
+let earliest_difference gram modif_pairs = helper_for_earliest_difference (gram,[],modif_pairs) ;;
+
+module GPri =  Jvag_grammar.Private ;;
+module EPri =  Jvag_example.Private ;;
+module WDW = GPri.With_dwarf_count ;;
+module LM =WDW.Local_Modification ;;
+
+
+let g = Jvag_grammar.get_and_display ;;
+let gw (WDW.WDC(_,gram)) = g gram ;;
+
+let old_modifs1 = flatten_modifications EPri.modifications_to_original_java_grammar ;;
+let new_modifs1 = Image.image modernize_modification old_modifs1 ;;
+
+let old_with_new_modifs1 = List.combine old_modifs1 new_modifs1 ;;
+
+let (modifs_before1,gram1,(old_mood,new_mood)) = earliest_difference EPri.original_java_grammar old_with_new_modifs1 ;;
+
+*)
+
+(*
+let gram_with_dwc1 = WDW.make gram1 ;;
+
+let bad1 = WDW.Modify.apply gram_with_dwc1 new_mood ;;
+
+let (name,mods) = (function (Local(a,b))->(a,b) |_ ->failwith("eee")) new_mood ;;
+
+let bad2 = WDW.Modify.apply_local_modifications gram_with_dwc1 name mods ;;
+
+let start_dis = LM.lm_get gram_with_dwc1 name ;;
+
+let (gram_with_dwc2,named_forms) =  
+     LM.apply_several name (gram_with_dwc1,start_dis) mods ;;
+
+let apply_local_modifications gram name mods =
+   let start_dis = Local_Modification.lm_get gram name in 
+   let (gram2,named_forms) =  
+     Local_Modification.apply_several name (gram,start_dis) mods in 
+   let final_form = (
+      if List.length(named_forms)=1
+      then snd(List.hd named_forms)
+      else Jvag_types.Disjunction (Image.image fst named_forms)    
+   ) in   
+   add_pair_and_simplify_some_concats (name,final_form) gram2 ;;
+
+
+let bad3 = LM.apply_several name (gram_with_dwc1,start_dis) mods ;;
+
+let the_local_mod = List.hd mods ;;
+
+let bad4 = LM.apply name (gram_with_dwc1,start_dis) the_local_mod ;;
+
+let lids = (function (Lm_expand_lines_in_disjunction(a))->a |_ ->failwith("eee")) the_local_mod ;;
+
+
+let bad5 = LM.expand_lines_in_disjunction (gram_with_dwc1,(name,start_dis)) lids ;;
+
+let named_forms = start_dis ;;
+
+let expand_lines_in_disjunction (gram,(_name,named_forms)) lids = 
+  let indexed_forms = Int_range.index_everything named_forms in 
+  let blocks = Image.image (
+   fun (idx,(name,form))->
+    if (List.mem (I idx) lids)||(List.mem (I idx) lids)
+    then expand_disjunction_or_synonym form 
+    else [name]  
+  ) indexed_forms in 
+  let new_list_of_names = List_again.nonredundant_version(List.flatten blocks) in 
+  (gram,Image.image (fun nm->(nm,Common.get gram nm)) new_list_of_names);;
+
+
+*)
+
+(*
+
+
+let gram2 = Jvag_grammar.modify gram1 [old_mood] ;;
+
+let gram3 = Jvag_grammar.modify gram1 [new_mood] ;;
+
+let name = "UnannClassOrInterfaceType";;
+
+let see1 = Jvag_grammar.get_and_display gram1 name ;;
+
+let see2 = Jvag_grammar.get_and_display gram2 name ;;
+
+let see3 = Jvag_grammar.get_and_display gram3 name ;;
+
+*****************************************************************************************
+
+let new_lmods_for_import= Image.image modernize_local_modification old_lmods_for_import ;;
+
+let show_new_lmods = GPri.display_local_modification_list new_lmods_for_import ;;
+
+
+
+*******************************************************************************************
+
+let old_mods= EPri.modifications_to_original_java_grammar ;;
+
+let eis1 = Expand_in_synonym("Block","InstanceInitializer") ;;
+
+let i1 = List_again.index_of_in eis1 old_mods ;;
+
+let mods_before_eis1 = List_again.long_head (i1-1) old_mods ;;
+
+let grum1  = Jvag_grammar.modify EPri.original_java_grammar mods_before_eis1 ;;
+
+let grum2  = Jvag_grammar.modify grum1 [eis1] ;;
+
+let res1 = Jvag_grammar.differences grum1 grum2 ;;
+
+
+let csl1 =  (Collapse_synonym_locally("UnannInterfaceType","UnannClassOrInterfaceType"))
+
+let i1 = List_again.index_of_in csl1 old_mods ;;
+
+let mods_before_csl1 = List_again.long_head (i1-1) old_mods ;;
+
+let grum1  = Jvag_grammar.modify EPri.original_java_grammar mods_before_csl1 ;;
+
+let grum2  = Jvag_grammar.modify grum1 [csl1] ;;
+
+let res1 = Jvag_grammar.differences grum1 grum2 ;;
+
+
+
+let csl2 = Collapse_synonym_locally("UnannTypeVariable","UnannType");;
+
+let i2 = List_again.index_of_in csl2 old_mods ;;
+
+let mods_before_csl2 = List_again.long_head (i2-1) old_mods ;;
+
+let grum3  = Jvag_grammar.modify EPri.original_java_grammar mods_before_csl2 ;;
+
+let grum4  = Jvag_grammar.modify grum3 [csl2] ;;
+
+let res2 = Jvag_grammar.differences grum3 grum4 ;;
+
+****************************************************************
+
+
+
+let gram_with_dwc1 = WDW.make gram1 ;;
+
+let gram_with_dwc2 = WDW.Modify.apply gram_with_dwc1 old_mood ;;
+
+let gram_with_dwc3 = WDW.Modify.apply gram_with_dwc1 new_mood ;;
+
+let (WDW.WDC(_,bgram2)) = gram_with_dwc2 ;;
+
+let (WDW.WDC(_,bgram3)) = gram_with_dwc3 ;;
+
+let res2 = Jvag_grammar.differences bgram2 bgram3 ;;
+
+
+
+*****************************************************************************************
+
+let gram2 = Jvag_grammar.modify gram1 [old_mood] ;;
+
+let gram3 = Jvag_grammar.modify gram1 [new_mood] ;;
+
+let see1 = Jvag_grammar.get_and_display gram1 "ImportDeclaration" ;;
+
+let see2 = Jvag_grammar.get_and_display gram2 "ImportDeclaration" ;;
+
+let modify gram modifs = 
+  let gram_with_dwc = Private.With_dwarf_count.make gram in 
+  let  new_gram_with_dwc = Private.With_dwarf_count.Modify.apply_several gram_with_dwc modifs in 
+  let (Private.With_dwarf_count.WDC(_,new_gram)) = new_gram_with_dwc in 
+  new_gram ;;
+
+let h1 = hi modifs_before1 ;;
+
+let graham1 = gram1 ;;
+
+let graham2 = Jvag_grammar.modify graham1 [List.nth old_modifs1 h1] ;;
+
+let graham3 = Jvag_grammar.modify graham2 [List.nth old_modifs1 (h1+1)] ;;
+
+let graham4 = Jvag_grammar.modify graham3 [List.nth old_modifs1 (h1+2)] ;;
+
+let graham5 = Jvag_grammar.modify graham4 [List.nth old_modifs1 (h1+3)] ;;
+
+let gd = Jvag_grammar.get_and_display ;;
+
+let sg gram = gd gram "TypeName";;
+
+let gruhum1 = gram1 ;;
+
+let gruhum2 = Jvag_grammar.modify gruhum1 [Local("TypeName",[Lm_expand_lines_in_disjunction([I 1])])] ;;
+
+let gruhum3 = Jvag_grammar.modify gruhum2 [Local("TypeName",[Lm_expand_point_in_line(N"CompoundTypeName",4)])] ;;
+
+let gruhum4 = Jvag_grammar.modify gruhum3 [Local("TypeName",[Lm_reunite_in_concatenation(I 2,(3,4))])] ;;
+
+let gruhum5 = Jvag_grammar.modify gruhum4 [Local("TypeName",[Lm_reunite_in_disjunction(I 1,I 2)])] ;;
+
+let gruhum6 = Jvag_grammar.modify gruhum1 
+[
+Local("TypeName",[
+ Lm_expand_lines_in_disjunction([I 1]);
+ Lm_expand_point_in_line(N"CompoundTypeName",4);
+ Lm_reunite_in_concatenation(I 2,(3,4));
+ Lm_reunite_in_disjunction(I 1,I 2)
+]);
+
+] ;;
+
+*****************************************************************************************
+
+
+*)  
+end;;
+
+(************************************************************************************************************************
  Entry 265 : Debugging session involving Jvag_grammar.Private.Local_Modification (II)
 ************************************************************************************************************************)
 module Snip265 = struct 
@@ -31034,136 +31398,9 @@ let lr0_canonical_jtems = ghetto_neighborhood [starter_rjtem] ;;
 end;;
 
 (************************************************************************************************************************
- Entry 1 : Debugging session involving Jvag_grammar.Private.Local_Modification (III)
+ Entry 1 : Strange start
 ************************************************************************************************************************)
 module Snip1 = struct 
 
-open Jvag_types ;;
 
-(*
-let modernize_local_modification lmod = match lmod with 
-  (Lm_reunite_star(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1)) 
- |(Lm_reunite_optional(index_in_disj,(_length_before,_length_after))) -> 
-    Lm_guantanamera (I (index_in_disj),I (index_in_disj+1))  
- |(Lm_reunite_disjunction((disj_range_start,disj_range_end),index_in_concat)) ->  
-   Lm_guantanamera (I (disj_range_start),I (disj_range_end))    
- |(Lm_expand_disjunction(_,_)) 
- |(Lm_expand_synonym(_,_))
- |(Lm_expand_concat(_,_)) 
- |(Lm_implode_molecule(_,_)) 
- |(Lm_explode_molecule(_,_)) 
- |(Lm_implode_concat(_,_)) 
- |(Lm_remove_left_recursive_line_in_disjunction(_,_))
- |(Lm_collapse_synonym(_)) 
- |(Lm_guantanamera(_,_)) -> lmod ;; 
- 
-*) 
-let modernize_local_modification x = x ;;
-
-let modernize_modification modif = match modif with  
-  Local(name,mods)->  Local(name,Image.image modernize_local_modification mods)
-  |_ -> modif
-;; 
-
-let flatten_modification modif = match modif with  
-  Local(name,mods)->  Image.image (fun lmod->Local(name,[lmod])) mods
-  |_ -> [modif];; 
-
-let flatten_modifications modifs = List.flatten (Image.image flatten_modification modifs) ;;
-
-let apply_modification_opt gram modif =
-   try Some(Jvag_grammar.modify gram [modif]) with 
-   _ -> None ;;
-
-let common_result_opt gram modif1 modif2 =
-  let gram1_opt =  apply_modification_opt gram modif1
-  and gram2_opt =  apply_modification_opt gram modif2 in 
-  if (gram1_opt=None)||(gram2_opt=None)
-  then None 
-  else
-  let gram1 = Option.get gram1_opt 
-  and gram2 = Option.get gram2_opt in
-  if gram1=gram2
-  then Some gram1 
-  else None ;;    
-
-
-let rec helper_for_earliest_difference (gram,treated,to_be_treated) =
-  match to_be_treated with 
-  [] -> failwith("No difference found")
-  |(modif1,modif2) :: others->
-    match common_result_opt gram modif1 modif2 with 
-    None -> (List.rev treated,gram,(modif1,modif2))
-    |Some next_gram -> helper_for_earliest_difference (next_gram,(modif1,modif2) ::treated,others) ;;
-
-let earliest_difference gram modif_pairs = helper_for_earliest_difference (gram,[],modif_pairs) ;;
-
-module GPri =  Jvag_grammar.Private ;;
-module EPri =  Jvag_example.Private ;;
-module WDW = GPri.With_dwarf_count ;;
-module LM =WDW.Local_Modification ;;
-
-let old_modifs1 = flatten_modifications EPri.modifications_to_original_java_grammar ;;
-let new_modifs1 = Image.image modernize_modification old_modifs1 ;;
-
-let old_with_new_modifs1 = List.combine old_modifs1 new_modifs1 ;;
-
-let (modifs_before1,gram1,(old_mood,new_mood)) = earliest_difference EPri.original_java_grammar old_with_new_modifs1 ;;
-
-(*
-let gram_with_dwc1 = WDW.make gram1 ;;
-
-let gram_with_dwc2 = WDW.Modify.apply gram_with_dwc1 old_mood ;;
-
-let bad1 = WDW.Modify.apply gram_with_dwc1 new_mood ;;
-
-let (name,mods) = (function (Local(a,b))->(a,b) |_ ->failwith("eee")) new_mood ;;
-
-let bad2 = WDW.Modify.apply_local_modifications gram_with_dwc1 name mods ;;
-
-let start_dis = LM.lm_get gram_with_dwc1 name ;;
-
-let bad3 = LM.apply_several name (gram_with_dwc1,start_dis) mods ;;
-
-let the_local_mod = List.hd mods ;;
-
-let bad4 = LM.apply name (gram_with_dwc1,start_dis) the_local_mod ;;
-
-let (lid_start,lid_end) = (function (Lm_guantanamera(a,b))->(a,b) |_ ->failwith("eee")) the_local_mod ;;
-
-let bad4 = LM.guantanamera (gram_with_dwc1,(name,start_dis)) (lid_start,lid_end) ;;
-
-let named_forms = start_dis ;;
-
-let (before,named_forms_between,after)=LM.extract_lid_range_from_disjunction "guantanamera" named_forms (lid_start,lid_end) ;;
-let chains_between = LM.match_named_concats named_forms_between ;;
-
-let (left,centers,right) = List_again.two_sided_common_parts chains_between ;;
-
-let bad5 = LM.compute_lump centers ;;
-
-let possibly_large_centers = centers ;;
-
-let bad6 = LM.compute_lump_in_binary_case possibly_large_centers ;; 
-
-
-
-
-
-let gram2 = Jvag_grammar.modify gram1 [old_mood] ;;
-
-let bad1 = Jvag_grammar.modify gram1 [new_mood] ;;
-
-let see1 = Jvag_grammar.get_and_display gram1 "ImportDeclaration" ;;
-
-let see2 = Jvag_grammar.get_and_display gram2 "ImportDeclaration" ;;
-
-let modify gram modifs = 
-  let gram_with_dwc = Private.With_dwarf_count.make gram in 
-  let  new_gram_with_dwc = Private.With_dwarf_count.Modify.apply_several gram_with_dwc modifs in 
-  let (Private.With_dwarf_count.WDC(_,new_gram)) = new_gram_with_dwc in 
-  new_gram ;;
-
-*)  
 end;;
