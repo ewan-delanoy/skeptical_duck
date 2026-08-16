@@ -59,7 +59,6 @@ type modification =
   |Create_production of string * form  
   |Rename of string * string 
   |Remove_productions of string list
-  |Expand_in_disjunction of string * string 
   |Collapse_synonym_globally of string 
   |Local of string * (local_modification list) ;;
 

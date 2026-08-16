@@ -417,26 +417,23 @@ let modifications_to_original_java_grammar =
 
       Local("ImportDeclaration",local_mods_for_import_declaration);
       (* Simplify the production rule for the class body declaration*)
-      Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
       Local("InstanceInitializer",[Lm_replace_self_with_older_synonym]);
-      Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
-      Expand_in_disjunction("InterfaceDeclaration","ClassBodyDeclaration");
-      Expand_in_disjunction("Annotation","ConstructorModifier");
-      Expand_in_disjunction("Annotation","InterfaceModifier");
-      Expand_in_disjunction("Annotation","MethodModifier");
+      Local("ClassBodyDeclaration",[Lm_expand_lines_in_disjunction([N"ClassMemberDeclaration";N"ClassDeclaration";N"InterfaceDeclaration"])]);
+      Local("ClassBodyDeclaration",[Lm_expand_lines_in_disjunction([N"ClassDeclaration";N"InterfaceDeclaration"])]);
+      
+      Local("ConstructorModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+      Local("InterfaceModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+      Local("MethodModifier",[Lm_expand_lines_in_disjunction([N"Annotation"])]);
+
       Local("UnannClassOrInterfaceType",[Lm_expand_lines_in_disjunction [N"UnannInterfaceType"]]);
 
       Collapse_synonym_globally("UnannClassOrInterfaceType");
-      Expand_in_disjunction("UnannPrimitiveType","UnannType");
-      Expand_in_disjunction("UnannReferenceType","UnannType");
-      Local("UnannType",[Lm_expand_lines_in_disjunction [N"UnannTypeVariable"]]);
 
-      Expand_in_disjunction("NumericType","UnannType");
-      Expand_in_disjunction("UnannClassType","UnannType");
-      Expand_in_disjunction("UnannArrayType","UnannType");
-      Expand_in_disjunction("FloatingPointType","UnannType");
-      Expand_in_disjunction("IntegralType","UnannType");
-    
+      Local("UnannType",[Lm_expand_lines_in_disjunction([N"UnannPrimitiveType";N"UnannReferenceType"])]);
+
+      Local("UnannType",[Lm_expand_lines_in_disjunction [N"NumericType";N"UnannClassOrInterfaceType";N"UnannTypeVariable";N"UnannArrayType"]]);
+
+      Local("UnannType",[Lm_expand_lines_in_disjunction [N"IntegralType";N"FloatingPointType";N"UnannClassType"]]);
 
       Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
       Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));

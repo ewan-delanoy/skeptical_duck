@@ -135,7 +135,6 @@ let ocaml_name_of_modification = function
   |Create_production(name,form) -> "Set_production(\""^name^"\","^(Jvag_form.ocaml_name form)^")"   
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
-  |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
   |Local(name,mods)->  "Local(\""^name^"\",["^(String.concat ";" 
      (Image.image ocaml_name_of_local_modification mods))^"])"
@@ -987,28 +986,6 @@ let remove_productions to_be_removed gram_with_dwc =
    WDC(old_dwarf_count,AL(List.filter (fun (name,_)->not(List.mem name to_be_removed)) l)) ;;
 
 
-let eid_in_dijsunction (contained,replacement) l = 
-  Disjunction (List_again.nonredundant_version(List.flatten(Image.image(
-                                 fun nm -> if nm = contained then replacement else [nm]
-                            ) l))) ;;     
-
-let eid_in_named_form (contained,container,replacement) (name,form) = match form with 
-   (Disjunction l) -> (if name=container 
-                            then eid_in_dijsunction (contained,replacement) l
-                            else form)     
-   |Concat _
-   |Molecular  _
-   |Star _
-   |Optional _ 
-   |Synonym _ -> form;;   
-
-let eid_in_pair triple (name,form) = (name,eid_in_named_form triple(name,form) ) ;;
-   
-let eid_in_grammar (contained,container) gram_with_dwc =
-   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
-   and replacement = Jvag_form.disjunction_content (Common.get gram_with_dwc contained) in 
-   WDC(old_dwarf_count,AL(Image.image(eid_in_pair (contained,container,replacement)) l));;
-
 let csg_in_form rep_pair form = 
    let (newer_synonym,older_synonym)= rep_pair in 
    let replacer = List_again.replace_if_proposed [rep_pair] in 
@@ -1067,7 +1044,6 @@ let apply gram = function
   |Create_production(name,form) ->  Common.create_new_pair (name,form) gram 
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
-  |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
   |Local(name,mods)->apply_local_modifications gram name mods;;
  
