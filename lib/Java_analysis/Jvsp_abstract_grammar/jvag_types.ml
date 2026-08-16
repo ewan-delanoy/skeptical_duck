@@ -47,6 +47,10 @@ type local_modification =
      by (lid_start,lid_end) into a single line, by factoring left and right and mergeing all
      the center elements into an Optional, a Star or a Disjunction.
    *)
+  |Lm_replace_self_with_older_synonym
+   (*
+     one of the simplest operations in this type, only acts on Synonym-s.
+   *) 
 ;;
 
 
@@ -56,7 +60,6 @@ type modification =
   |Rename of string * string 
   |Remove_productions of string list
   |Expand_in_disjunction of string * string 
-  |Expand_in_synonym of string * string
   |Collapse_synonym_globally of string 
   |Local of string * (local_modification list) ;;
 

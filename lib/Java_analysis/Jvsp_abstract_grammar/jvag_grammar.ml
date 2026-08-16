@@ -126,6 +126,8 @@ let ocaml_name_of_local_modification lmod=
   "Lm_reunite_in_concatenation("^(ocaml_name_of_lid lid)^",("^(soi range_start)^","^(soi range_end)^"))"    
  |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
   "Lm_reunite_in_disjunction("^(ocaml_name_of_lid lid_start)^","^(ocaml_name_of_lid lid_end)^")"   
+ |Lm_replace_self_with_older_synonym ->  
+   "Lm_replace_self_with_older_synonym"  
 ;;
 
 let ocaml_name_of_modification = function 
@@ -134,7 +136,6 @@ let ocaml_name_of_modification = function
   |Rename(old_name,new_name) -> "Rename(\""^old_name^"\",\""^new_name^"\")"     
   |Remove_productions(l) -> "Remove_productions(["^(String.concat ";" (Image.image (fun s->"\""^s^"\"") l))^"])"   
   |Expand_in_disjunction(contained,container) -> "Expand_in_disjunction(\""^contained^"\",\""^container^"\")"
-  |Expand_in_synonym(name_for_content,container) -> "Expand_in_synonym(\""^name_for_content^"\",\""^container^"\")"
   |Collapse_synonym_globally(newer_synonym) -> "Collapse_synonym_globally(\""^newer_synonym^"\")" 
   |Local(name,mods)->  "Local(\""^name^"\",["^(String.concat ";" 
      (Image.image ocaml_name_of_local_modification mods))^"])"
@@ -663,11 +664,11 @@ let lm_get gram name =
   let form = Common.get gram name in 
   match form with 
   Disjunction(l) -> Image.image (fun nm->(nm,Common.get gram nm)) l 
-  |Concat(_)->[name,form]
+  |Concat(_)
+  |Synonym(_) ->[name,form]
   |Molecular  _
   |Star _
-  |Optional _ 
-  |Synonym _ -> raise(Lm_get_exn(form));;  
+  |Optional _ ->raise(Lm_get_exn(form));;  
   
 let match_named_concat name form = 
     match Jvag_form.concat_content_opt form with 
@@ -885,6 +886,17 @@ let reunite_in_disjunction (gram,(name,named_forms)) (lid_start,lid_end) =
   let (gram3,name_for_conc_in_disj) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:name new_conc_in_disj in 
   (gram3,before @ [(name_for_conc_in_disj,new_conc_in_disj)]  @ after);;
 
+exception Replace_self_with_older_synonym_exn of string * ((string * form) list) ;;
+
+let replace_self_with_older_synonym  (gram,(name,named_forms)) = 
+   if List.length(named_forms)<>1
+   then raise( Replace_self_with_older_synonym_exn(name,named_forms))
+   else
+   let (_,the_synonym_form) = List.hd named_forms in 
+   match Jvag_form.synonym_content_opt the_synonym_form with 
+   None -> raise( Replace_self_with_older_synonym_exn(name,named_forms))
+   |Some older_synonym ->
+    (gram,[name,Common.get gram older_synonym]) ;; 
 
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
@@ -899,6 +911,8 @@ let apply name (gram,named_forms) modif=
     reunite_in_concatenation gf  (lid,(range_start,range_end))  
   |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
     reunite_in_disjunction gf  (lid_start,lid_end)  
+  |Lm_replace_self_with_older_synonym ->
+    replace_self_with_older_synonym gf  
   ;;
 
 let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
@@ -994,26 +1008,6 @@ let eid_in_grammar (contained,container) gram_with_dwc =
    let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
    and replacement = Jvag_form.disjunction_content (Common.get gram_with_dwc contained) in 
    WDC(old_dwarf_count,AL(Image.image(eid_in_pair (contained,container,replacement)) l));;
-    
-   
-exception Bad_substitution_in_synonym_exn of string * string ;;
-let eis_in_named_form (name_for_content,container,actual_content) (name,form) = match form with 
-   (Synonym name2_for_content) -> (if name=container 
-                   then if name_for_content <> name2_for_content 
-                         then raise(Bad_substitution_in_synonym_exn(name_for_content,name2_for_content)) 
-                         else actual_content
-                  else form)     
-   |Disjunction _
-   |Concat _
-   |Molecular  _
-   |Star _
-   |Optional _ -> form;;   
-
-let eis_in_pair triple (name,form) = (name,eis_in_named_form triple(name,form) ) ;;   
-let eis_in_grammar (name_for_content,container) gram_with_dwc =
-   let (WDC(old_dwarf_count,AL l)) = gram_with_dwc 
-   and actual_content = Common.get gram_with_dwc name_for_content in 
-   WDC(old_dwarf_count,AL(Image.image(eis_in_pair (name_for_content,container,actual_content)) l));;    
 
 let csg_in_form rep_pair form = 
    let (newer_synonym,older_synonym)= rep_pair in 
@@ -1061,6 +1055,7 @@ let apply_local_modifications gram name mods =
    then Synonym other_name
    else (* typically, one gets here when the content of the production
            is reset by 'fiat', such as during a remove_left_recursive_lines operation
+           or an replace_self_with_older_synonym opration
          *)
         other_form 
      ) in 
@@ -1073,7 +1068,6 @@ let apply gram = function
   |Rename(old_name,new_name) -> rename_on_grammar (old_name,new_name) gram
   |Remove_productions(to_be_removed) -> remove_productions to_be_removed gram
   |Expand_in_disjunction(contained,container) -> eid_in_grammar (contained,container) gram
-  |Expand_in_synonym(name_for_content,container) -> eis_in_grammar (name_for_content,container) gram
   |Collapse_synonym_globally(newer_synonym) -> csg_in_grammar newer_synonym gram
   |Local(name,mods)->apply_local_modifications gram name mods;;
  

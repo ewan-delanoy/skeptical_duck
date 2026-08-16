@@ -418,7 +418,7 @@ let modifications_to_original_java_grammar =
       Local("ImportDeclaration",local_mods_for_import_declaration);
       (* Simplify the production rule for the class body declaration*)
       Expand_in_disjunction("ClassMemberDeclaration","ClassBodyDeclaration");
-      Expand_in_synonym("Block","InstanceInitializer");
+      Local("InstanceInitializer",[Lm_replace_self_with_older_synonym]);
       Expand_in_disjunction("ClassDeclaration","ClassBodyDeclaration");
       Expand_in_disjunction("InterfaceDeclaration","ClassBodyDeclaration");
       Expand_in_disjunction("Annotation","ConstructorModifier");
