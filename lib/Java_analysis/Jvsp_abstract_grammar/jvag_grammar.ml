@@ -116,7 +116,9 @@ let ocaml_name_of_lid = function
 let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
   match lmod with 
-  (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
+   Lm_remove_left_recursive_lines_in_disjunction ->  
+   "Lm_remove_left_recursive_lines_in_disjunction"  
+  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
    "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"  
  |(Lm_expand_lines_in_disjunction(lids)) ->  
   "Lm_expand_lines_in_disjunction(["^(String.concat ";" (Image.image ocaml_name_of_lid lids))^"])"
@@ -837,14 +839,17 @@ let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original
 
 let remove_left_recursive_lines_in_disjunction (gram,(name,named_forms)) = 
   let headed_forms = Image.image (fun pair ->
-     let (_name,form)=pair in 
-     (pair,List_again.head_with_tail(Jvag_form.concat_content form))
+     let (nm,form)=pair in 
+     (pair,List_again.head_with_tail(match_named_concat nm form))
   ) named_forms in 
   let (recursive_lines,nonrecursive_lines) = List.partition (
    fun (_pair,(h,_t)) -> h = name
   ) headed_forms in 
   let tails = Image.image (
-   fun (_pair,(_h,t)) -> Concat t
+   fun (_pair,(_h,t)) -> 
+    if List.length(t)=1
+    then Common.get gram (List.hd t) 
+    else Concat t
   ) recursive_lines in 
   let (gram2,names_for_tails) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:"" tails in 
   let (gram3,name_for_extndr) = (
@@ -927,7 +932,9 @@ let reunite_in_disjunction (gram,(name,named_forms)) (lid_start,lid_end) =
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
-  (Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
+   Lm_remove_left_recursive_lines_in_disjunction ->  
+    remove_left_recursive_lines_in_disjunction gf
+  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
     remove_left_recursive_line_in_disjunction gf original_name index_in_disj   
   |(Lm_expand_lines_in_disjunction(lids)) ->  
      expand_lines_in_disjunction gf lids 
