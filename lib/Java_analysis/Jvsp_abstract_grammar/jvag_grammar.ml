@@ -117,9 +117,7 @@ let ocaml_name_of_local_modification lmod=
   let soi =string_of_int in 
   match lmod with 
    Lm_remove_left_recursive_lines_in_disjunction ->  
-   "Lm_remove_left_recursive_lines_in_disjunction"  
-  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->  
-   "Lm_remove_left_recursive_line_in_disjunction(\""^original_name^"\","^(soi index_in_disj)^")"  
+   "Lm_remove_left_recursive_lines_in_disjunction"   
  |(Lm_expand_lines_in_disjunction(lids)) ->  
   "Lm_expand_lines_in_disjunction(["^(String.concat ";" (Image.image ocaml_name_of_lid lids))^"])"
     |(Lm_expand_point_in_line(lid,index_in_concat)) ->  
@@ -685,11 +683,6 @@ let match_lid_concat form (text_for_index,index,caller_name)=
   None -> raise (Bad_lid_form_exn(text_for_index,index,"concat expected",form,caller_name))
   |Some(chain)-> chain ;;
 
-let match_concat form (text_for_index,index,caller_name)= 
-    match Jvag_form.concat_content_opt form with 
-  None -> raise (Bad_form_exn(text_for_index,index,"concat expected",form,caller_name))
-  |Some(chain)-> chain ;;
-
 exception Index_for_lid_exn of location_in_disjunction;;
 
 let index_for_lid indexed_forms lid = match lid with   
@@ -713,14 +706,6 @@ let extract_lid_from_disjunction caller_name named_forms lid =
   let (left,center,right) = extract_lid_range_from_disjunction caller_name named_forms (lid,lid) in 
   (left,List.hd center,right) ;;  
 
-let extract_element_from_disjunction caller_name named_forms index_in_disj = 
-   if (index_in_disj<0)||(index_in_disj>List.length(named_forms))
-  then raise (Bad_index_exn("index in disjunction",index_in_disj,caller_name))
-  else
-  let (rev_before,temp) = List_again.long_head_with_tail (index_in_disj-1) named_forms in 
-  let before = List.rev rev_before in 
-  let (pivot,after) = List_again.head_with_tail temp in   
-  (before,pivot,after) ;;
 
 let extract_element_from_concat caller_name chain index_in_concat = 
    if (index_in_concat<0)||(index_in_concat>List.length(chain))
@@ -745,7 +730,7 @@ let extract_range_from_concat caller_name chain (range_start,range_end) =
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
 
 exception Compute_lump_optional_for_concatenation_of_two_exn ;;
-let compute_lump_optional_for_concatenation_of_two a b =
+let rewrite_optional_of_a_concatenation_of_two a b =
   if b="Starred"^a then Star(a) else 
   if a="Starred"^b then Star(b) else
   raise Compute_lump_optional_for_concatenation_of_two_exn ;;
@@ -757,7 +742,7 @@ let rewrite_optional_of_a_concatenation l =
     then Optional(List.hd l)
     else 
     if List.length(l)=2
-    then compute_lump_optional_for_concatenation_of_two (List.nth l 0) (List.nth l 1)
+    then rewrite_optional_of_a_concatenation_of_two (List.nth l 0) (List.nth l 1)
     else raise Compute_lump_optional_for_a_concatenation_exn ;;  
 
 exception Compute_lump_in_disjunction_in_binary_case_exn ;;
@@ -808,33 +793,6 @@ let expand_disjunction_or_synonym form=
   |Molecular(_)
   |Star _
   |Optional _  -> raise(Expand_disjunction_or_synonym_exn(form));; 
-
-let remove_left_recursive_line_in_disjunction (gram,(name,named_forms)) original_name index_in_disj = 
-  let (before,old_pivot,after) = extract_element_from_disjunction "remove_left_recursive_line_in_disjunction" named_forms index_in_disj in  
-  let chain = match_concat (snd old_pivot) ("index in disjunction",index_in_disj,"remove_left_recursive_line_in_disjunction") in
-  let (head,tail) = List_again.head_with_tail chain in 
-  if head<>original_name 
-  then raise(Remove_left_recursive_line_in_disjunction_exn(original_name,head))
-  else 
-  let (gram2,name_for_form1) = (
-    if List.length(tail)=1 
-    then (gram,List.hd tail)
-    else 
-    let form1 = Jvag_types.Concat(tail) in  
-    Common.register_with_dwarfy_name_if_needed gram ~suffix:(name^"Extender") form1 
-  ) in  
-  let form2 = Jvag_types.Star(name_for_form1) in 
-  let (gram3,name_for_form2) = Common.register_with_dwarfy_name_if_needed gram2 ~suffix:"" form2 in 
-  let other_forms = Image.image snd (before@after) in 
-  let (gram4,names_for_others) = Common.register_several_with_dwarfy_name_if_needed gram3 ~suffix:"" other_forms in 
-  let (gram5,name_for_form3) = (
-    if List.length(names_for_others)=1 
-    then (gram4,List.hd names_for_others)
-    else  
-    let form3 = Jvag_types.Disjunction names_for_others in   
-    Common.register_with_dwarfy_name_if_needed gram4 ~suffix:"" form3
-  ) in 
-  (gram5,[name,Jvag_types.Concat([name_for_form3;name_for_form2])]) ;;
 
 
 let remove_left_recursive_lines_in_disjunction (gram,(name,named_forms)) = 
@@ -933,9 +891,7 @@ let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
    Lm_remove_left_recursive_lines_in_disjunction ->  
-    remove_left_recursive_lines_in_disjunction gf
-  |(Lm_remove_left_recursive_line_in_disjunction(original_name,index_in_disj)) ->   
-    remove_left_recursive_line_in_disjunction gf original_name index_in_disj   
+    remove_left_recursive_lines_in_disjunction gf 
   |(Lm_expand_lines_in_disjunction(lids)) ->  
      expand_lines_in_disjunction gf lids 
   |(Lm_expand_point_in_line(lid,index_in_concat)) ->  

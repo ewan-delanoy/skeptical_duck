@@ -21,13 +21,12 @@ type location_in_disjunction = I of int | N of string ;;
 
 type local_modification = 
    Lm_remove_left_recursive_lines_in_disjunction
-  |Lm_remove_left_recursive_line_in_disjunction of string * int 
    (*
-     remove_left_recursive_line_in_disjunction gf original_name index_in_disj make a global transformation on the value associated with
-     original_name key in the grammar (this value must be a disjunction, whose index_in_disjth element expands
-     to a concatentaion starting with original_name, in other words a left recursion, of the form
-     original_name -> original_name A. The left recursion is removed in a standard way, by putting
-     original_name = original_name' Starred(A).
+     remove_left_recursive_lines_in_disjunction gf  make a global transformation on the value associated with
+     original_name key in the grammar (this value must be a disjunction, some of which are left recursions,
+     i.e. of the form original_name -> original_name Ak for 1<=k<=r). 
+     original_name -> original_name A. The left recursions are removed in a standard way, by putting
+     original_name = original_name' Starred(A1|A2|...|Ak).
    *)
   |Lm_expand_lines_in_disjunction of location_in_disjunction list
       (* expand_lines_in_disjunction gf (lid,index_in_concat) expands all the lines defined by lids, replacing

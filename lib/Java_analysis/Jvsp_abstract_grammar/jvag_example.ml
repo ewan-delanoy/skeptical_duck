@@ -404,10 +404,10 @@ let local_mods_for_import_declaration = [
 let modifications_to_original_java_grammar = 
     [
 
-      Local("AmbiguousName",[Lm_remove_left_recursive_line_in_disjunction("AmbiguousName",2)]); 
-      Local("ModuleName",[Lm_remove_left_recursive_line_in_disjunction("ModuleName",2)]);
-      Local("PackageName",[Lm_remove_left_recursive_line_in_disjunction("PackageName",2)]);
-      Local("PackageOrTypeName",[Lm_remove_left_recursive_line_in_disjunction("PackageOrTypeName",2)]);
+      Local("AmbiguousName",[Lm_remove_left_recursive_lines_in_disjunction]); 
+      Local("ModuleName",[Lm_remove_left_recursive_lines_in_disjunction]);
+      Local("PackageName",[Lm_remove_left_recursive_lines_in_disjunction]);
+      Local("PackageOrTypeName",[Lm_remove_left_recursive_lines_in_disjunction]);
       Local("ExpressionName",[Lm_reunite_in_disjunction (I 1, I 2)]);
       (* Simplify the production rule for the import declaration*)
       Create_production("IdOrWildcard",Disjunction(["Identifier";"Times"]));
@@ -439,7 +439,7 @@ let modifications_to_original_java_grammar =
       Create_production("UnannClassTypeExtender",Concat(["Dot";"StarredAnnotation"; "TypeIdentifier"; "OptionalTypeArguments"]));
       Create_production("StarredUnannClassTypeExtender",Star("UnannClassTypeExtender"));
       Create_production("UnextendedUnannClassType",Disjunction(["ShortUnannClassType"; "UsualClassType"]));
-      Local("UnannClassType",[Lm_remove_left_recursive_line_in_disjunction("UnannClassType",3)]);
+      Local("UnannClassType",[Lm_remove_left_recursive_lines_in_disjunction]);
 
       Local("TypeName",[
        Lm_expand_lines_in_disjunction([I 1]);
@@ -453,7 +453,7 @@ let modifications_to_original_java_grammar =
       
 
       Create_production("UnextendedClassType",Disjunction(["ShortClassType"; "UsualClassType"]));
-      Local("ClassType",[Lm_remove_left_recursive_line_in_disjunction("ClassType",3)]);
+      Local("ClassType",[Lm_remove_left_recursive_lines_in_disjunction]);
      
 
     ] ;;
