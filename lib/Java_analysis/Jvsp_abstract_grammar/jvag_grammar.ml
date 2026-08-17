@@ -835,29 +835,24 @@ let expand_lines_in_disjunction (gram,(_nahme,named_forms)) lids =
   let new_list_of_names = List_again.nonredundant_version(List.flatten blocks) in 
   (gram,Image.image (fun nm->(nm,Common.get gram nm)) new_list_of_names);;
   
-
-
-let expand_nondisjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_pivot=
-  let lump = compute_lump_in_nondisjunction_point_expansion inner_pivot in 
-  let new_conc_in_disj = Jvag_types.Concat(names_before@lump@names_after) in 
-  let (gram2,name_for_new_conc_in_disj) = Common.register_with_dwarfy_name_if_needed gram ~suffix:name new_conc_in_disj in 
-  (gram2,before @ [(name_for_new_conc_in_disj,new_conc_in_disj)]  @ after);;  
-
-let expand_disjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_disjunction=
- let new_elements = Image.image (fun elt-> Jvag_types.Concat(names_before@[elt]@names_after) ) inner_disjunction in 
- let (gram2,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:name new_elements in 
- let named_new_elements = List.combine names_for_new_elements new_elements in 
- (gram2,before @ named_new_elements @ after);;  
+let replacement_content_during_point_expansion (names_before,names_after) inner_pivot =
+   match Jvag_form.disjunction_content_opt inner_pivot with 
+  None -> let lump = compute_lump_in_nondisjunction_point_expansion inner_pivot in 
+          [Jvag_types.Concat(names_before@lump@names_after)]
+  |Some(inner_disjunction) -> 
+       Image.image (fun elt-> Jvag_types.Concat(names_before@[elt]@names_after) ) inner_disjunction;;
+  
 
 let expand_point_in_line (gram,(name,named_forms)) (lid,index_in_concat) = 
   let (before,outer_pivot,after) = extract_lid_from_disjunction "expand_point_in_line" named_forms lid in  
   let chain = match_lid_concat (snd outer_pivot) ("index in disjunction",lid,"expand_point_in_line") in
   let (names_before,name_there,names_after) = extract_element_from_concat "expand_concat" chain index_in_concat in   
   let inner_pivot = Common.get gram name_there in 
-  match Jvag_form.disjunction_content_opt inner_pivot with 
-  None -> expand_nondisjunction_point_in_line (gram,name) (before,after) (names_before,names_after) inner_pivot
-  |Some(l) -> expand_disjunction_point_in_line (gram,name) (before,after) (names_before,names_after) l;;
-  
+  let new_elements = replacement_content_during_point_expansion (names_before,names_after) inner_pivot in 
+  let (gram2,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed gram ~suffix:name new_elements in 
+  let named_new_elements = List.combine names_for_new_elements new_elements in 
+  (gram2,before @ named_new_elements @ after);;
+
 
 let reunite_in_concatenation (gram,(name,named_forms)) (lid,(range_start,range_end)) = 
   let (before,old_pivot,after) = extract_lid_from_disjunction "reunite_in_concatenation" named_forms lid in  
@@ -901,6 +896,7 @@ let permute_lines  (gram,(_name,named_forms)) ordering=
    else
    let permuted_named_forms = Image.image (fun k->List.nth named_forms (k-1)) ordering in 
    (gram,permuted_named_forms) ;; 
+
 
 
 let apply name (gram,named_forms) modif=
