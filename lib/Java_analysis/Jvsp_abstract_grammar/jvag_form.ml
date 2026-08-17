@@ -99,6 +99,15 @@ let is_contained_in nm form =
 
 let molecular_content_opt = Private.molecular_content_opt ;;   
 
+let number_of_items form = match form with 
+   (Disjunction l) -> (List.length l,"Disjunction")    
+   |Concat l -> (List.length l,"Concat")
+   |Molecular  l-> (List.length l,"Molecule")
+   |Star _
+   |Optional _ 
+   |Synonym _ -> (0,"");;   
+
+
 let ocaml_name = function 
    Optional(nm) -> "Optional(\""^nm^"\")"
   |Molecular(l) -> "Molecular(["^(String.concat ";" (Image.image Jvsp_util.ocaml_name_for_token_type l))^"])"

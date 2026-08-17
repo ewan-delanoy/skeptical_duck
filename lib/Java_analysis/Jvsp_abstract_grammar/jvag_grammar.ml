@@ -98,8 +98,14 @@ let form_to_enhanced2_string gram form= match form with
   |(Star _) 
   |Synonym(_) -> Jvag_form.to_string form;;
 
+let message_about_number_of_items form =
+  let (n,name) = Jvag_form.number_of_items form in 
+  if n=0 then "" else 
+  (string_of_int n)^" items in "^name^"\n\n";;  
+
 let form_to_enhanced3_string gram name form= 
   "\n\n "^name^" = "^(Jvag_form.ocaml_name form)^"\n\n"^
+  (message_about_number_of_items form)^
   (form_to_enhanced2_string gram form);;
 
 
