@@ -1127,6 +1127,12 @@ let name_for_form_opt = Private.name_for_form_opt ;;
 let ocaml_name = Private.ocaml_name ;;
 let order_on_pairs = Private.order_on_pairs ;;
 
+(* This is a registered printer : print_out *)
+
+let print_out (fmt:Format.formatter) (AL l)=
+   Format.fprintf fmt "@[%s@]" ("("^(string_of_int(List.length l))^" productions)");;
+
+
 let sanitize = Private.Sanitize.sanitize_as_many_times_as_needed ;;
 let singleton name form = AL [name,form] ;;     
 let write_parser = Private.WriteParser.write_prsrtxt ;;
