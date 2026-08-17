@@ -127,7 +127,9 @@ let ocaml_name_of_local_modification lmod=
  |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
   "Lm_reunite_in_disjunction("^(ocaml_name_of_lid lid_start)^","^(ocaml_name_of_lid lid_end)^")"   
  |Lm_replace_self_with_older_synonym ->  
-   "Lm_replace_self_with_older_synonym"  
+   "Lm_replace_self_with_older_synonym" 
+ |(Lm_permute_lines(ordering)) ->  
+  "Lm_permute_lines(["^(String.concat ";" (Image.image string_of_int ordering))^"])"   
 ;;
 
 let ocaml_name_of_modification = function 
@@ -371,26 +373,13 @@ end ;;
 
 module Unused_names = struct 
 
-let unordered_used_names_in_form form =
-  match form with
-    Concat l -> l
-   |Molecular _  -> [] 
-   |Disjunction l -> l 
-   |Star nm -> [nm]
-   |Optional nm -> [nm]
-   |Synonym nm -> [nm] ;;
 
-let used_names_in_form form =
-   str_sort (unordered_used_names_in_form form) ;;
-
-let used_names_in_grammar (AL l)=
-  let temp = Image.image (fun (_,form)->used_names_in_form form) l in 
-  str_fold_merge temp ;;
   
 let immediately_unused_names_in_grammar gram =
   let (AL l)= gram in
-  let names = Image.image fst l in 
-  str_setminus names (used_names_in_grammar gram) ;;  
+  let all_names = Image.image fst l in 
+  List.filter (fun name->List.for_all (fun (_,form)->not(Jvag_form.is_contained_in name form)) l) all_names ;;
+   ;;  
 
 
 let data_about_removing_immediately_unused_names_in_grammar gram ~exceptions=
@@ -897,6 +886,17 @@ let replace_self_with_older_synonym  (gram,(name,named_forms)) =
    |Some older_synonym ->
     (gram,[name,Common.get gram older_synonym]) ;; 
 
+exception Permute_lines_exn of ((string * form) list)*(int list) ;;
+
+let permute_lines  (gram,(_name,named_forms)) ordering= 
+   let n = List.length ordering in  
+   if List.length(named_forms)<>n
+   then raise(  Permute_lines_exn(named_forms,ordering))
+   else
+   let permuted_named_forms = Image.image (fun k->List.nth named_forms (k-1)) ordering in 
+   (gram,permuted_named_forms) ;; 
+
+
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
   match modif with 
@@ -911,7 +911,9 @@ let apply name (gram,named_forms) modif=
   |(Lm_reunite_in_disjunction(lid_start,lid_end)) ->
     reunite_in_disjunction gf  (lid_start,lid_end)  
   |Lm_replace_self_with_older_synonym ->
-    replace_self_with_older_synonym gf  
+    replace_self_with_older_synonym gf 
+  |Lm_permute_lines ordering ->
+    permute_lines gf ordering    
   ;;
 
 let apply_several name gf mods = List.fold_left (apply name) gf mods ;;

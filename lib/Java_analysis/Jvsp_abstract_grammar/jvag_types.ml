@@ -51,6 +51,12 @@ type local_modification =
    (*
      one of the simplest operations in this type, only acts on Synonym-s.
    *) 
+  |Lm_permute_lines of (int list)
+   (*
+    if the original ordering of the lines is [l(1),l(2),...l,l(n)] and
+    the argument of this constructor is [i(1),...,i(n)], the new ordering is
+    [l(i(1)),...,l(i(n))]
+   *)
 ;;
 
 
