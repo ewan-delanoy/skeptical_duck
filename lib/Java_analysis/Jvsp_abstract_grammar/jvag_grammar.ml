@@ -114,7 +114,27 @@ let get_and_display gram name =
    let msg = "\n\n\n" ^ (form_to_enhanced3_string gram name form) ^ "\n\n\n" in 
   let _ =(print_string msg;flush stdout) in 
    form ;;
-   
+
+let forced_concat gram name =
+  match get gram name with 
+  Concat(l) -> l
+  |Disjunction(_) 
+  |Synonym(_) 
+  |Molecular  _
+  |Star _
+  |Optional _ -> [name];;     
+
+let forced_disjunction_of_concats gram name = 
+  match get gram name with 
+  Disjunction(dis) -> Image.image (forced_concat gram) dis 
+  |Concat(conc) -> [conc]
+  |Molecular  _ 
+  |Synonym(_) 
+  |Star _
+  |Optional _ -> [[name]];;  
+
+
+
 let ocaml_name_of_lid = function 
   I(i)->"I "^(string_of_int i)
   |N(s)->"N \""^s^"\"" ;;   
@@ -135,7 +155,9 @@ let ocaml_name_of_local_modification lmod=
  |Lm_replace_self_with_older_synonym ->  
    "Lm_replace_self_with_older_synonym" 
  |(Lm_permute_lines(ordering)) ->  
-  "Lm_permute_lines(["^(String.concat ";" (Image.image string_of_int ordering))^"])"   
+  "Lm_permute_lines(["^(String.concat ";" (Image.image string_of_int ordering))^"])"
+ |(Lm_expand_heads_at_lines(line_indices)) ->  
+  "Lm_expand_heads_at_lines(["^(String.concat ";" (Image.image string_of_int line_indices))^"])"     
 ;;
 
 let ocaml_name_of_modification = function 
@@ -897,7 +919,25 @@ let permute_lines  (gram,(_name,named_forms)) ordering=
    let permuted_named_forms = Image.image (fun k->List.nth named_forms (k-1)) ordering in 
    (gram,permuted_named_forms) ;; 
 
-
+let expand_heads_at_lines (gram,(global_name,named_forms)) line_indices = 
+  let gram_ref = ref(gram) in 
+  let indexed_forms = Int_range.index_everything named_forms in 
+  let new_blocks = Image.image (
+    fun (idx,(name,form))->
+      if not(List.mem idx line_indices) then [name,form] else 
+      let old_gram = !gram_ref in 
+      let (inner_pivot_name,rest_of_form)=(
+        match Jvag_form.concat_content_opt form with 
+         None -> (name,[])
+        |(Some l)->List_again.head_with_tail(l)
+      ) in 
+      let inner_pivot = Common.get gram inner_pivot_name in 
+      let new_elements = replacement_content_during_point_expansion ([],rest_of_form) inner_pivot in 
+      let (new_gram,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed old_gram ~suffix:global_name new_elements in 
+      let _ = (gram_ref:=new_gram) in 
+      List.combine names_for_new_elements new_elements 
+  ) indexed_forms in 
+  (!gram_ref,List.flatten new_blocks);;
 
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
@@ -915,7 +955,9 @@ let apply name (gram,named_forms) modif=
   |Lm_replace_self_with_older_synonym ->
     replace_self_with_older_synonym gf 
   |Lm_permute_lines ordering ->
-    permute_lines gf ordering    
+    permute_lines gf ordering  
+  |(Lm_expand_heads_at_lines(line_indices)) ->  
+     expand_heads_at_lines gf line_indices    
   ;;
 
 let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
@@ -1112,9 +1154,10 @@ let debug_bad_list_of_modifications gram modifs=
 let differences = Private.differences ;;
 let extract_at_names = Private.WriteParser.extract_at_names ;;
 let get = Private.get ;;
-
-let get_opt = Private.get_opt ;;
 let get_and_display = Private.get_and_display ;;
+let get_opt = Private.get_opt ;;
+
+let get_simplified_version = Private.forced_disjunction_of_concats ;;
 
 let just_below = Private.just_below ;;
 let lower_interval_below = Private.lower_interval_below ;;

@@ -57,6 +57,10 @@ type local_modification =
     the argument of this constructor is [i(1),...,i(n)], the new ordering is
     [l(i(1)),...,l(i(n))]
    *)
+  |Lm_expand_heads_at_lines of (int list) 
+  (*
+    The argument list is a list of line indices.
+  *)
 ;;
 
 
