@@ -919,12 +919,19 @@ let permute_lines  (gram,(_name,named_forms)) ordering=
    let permuted_named_forms = Image.image (fun k->List.nth named_forms (k-1)) ordering in 
    (gram,permuted_named_forms) ;; 
 
+let ref_for_block_sizes = ref [] ;;
+
 let expand_heads_at_lines (gram,(global_name,named_forms)) line_indices = 
-  let gram_ref = ref(gram) in 
+  let gram_ref = ref(gram) 
+  and _ = (ref_for_block_sizes:=[])in 
   let indexed_forms = Int_range.index_everything named_forms in 
   let new_blocks = Image.image (
     fun (idx,(name,form))->
-      if not(List.mem idx line_indices) then [name,form] else 
+      let old_accu = (!ref_for_block_sizes) in 
+      if not(List.mem idx line_indices) 
+      then let _ = (ref_for_block_sizes:=0::(old_accu)) in 
+           [name,form] 
+      else 
       let old_gram = !gram_ref in 
       let (inner_pivot_name,rest_of_form)=(
         match Jvag_form.concat_content_opt form with 
@@ -934,9 +941,12 @@ let expand_heads_at_lines (gram,(global_name,named_forms)) line_indices =
       let inner_pivot = Common.get gram inner_pivot_name in 
       let new_elements = replacement_content_during_point_expansion ([],rest_of_form) inner_pivot in 
       let (new_gram,names_for_new_elements) = Common.register_several_with_dwarfy_name_if_needed old_gram ~suffix:global_name new_elements in 
-      let _ = (gram_ref:=new_gram) in 
+      let _ = (
+        ref_for_block_sizes:=(List.length new_elements)::(old_accu);
+        gram_ref:=new_gram) in 
       List.combine names_for_new_elements new_elements 
   ) indexed_forms in 
+  let _ = (ref_for_block_sizes:=List.rev(!ref_for_block_sizes)) in 
   (!gram_ref,List.flatten new_blocks);;
 
 let apply name (gram,named_forms) modif=
@@ -1127,6 +1137,13 @@ module Nonrecursive_grammar = struct
 
 let get = Private.Nonrecursive_grammar.get_from_nonrecursive_grammar ;;  
 let singleton = Private.Nonrecursive_grammar.singleton ;;
+
+end ;;  
+
+module Temporary_Storage = struct 
+
+let block_sizes_during_last_expansion_of_line_heads () =
+  (!(Private.With_dwarf_count.Local_Modification.ref_for_block_sizes));;
 
 end ;;  
 
