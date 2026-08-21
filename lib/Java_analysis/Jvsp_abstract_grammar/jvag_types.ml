@@ -101,5 +101,8 @@ type rake_config = {
 type rake = {
   config : rake_config ;
   current_grammar : grammar ;
-  current_expansion : (string list * string list) list
-}
+  terminal_forms : (string list * string list) list ;
+  expandables : (string list * string list) list ;
+  inner_left_recursions : (string list * string list) list ;
+  outer_left_recursions : (string list * string list) list ;
+} ;;
