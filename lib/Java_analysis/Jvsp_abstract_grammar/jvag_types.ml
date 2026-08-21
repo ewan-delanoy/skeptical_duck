@@ -90,4 +90,16 @@ type link =
    |Synonym_L
   ;;
 
-type thumbnail = Tn of (string list) list ;;
+type thumbnail = Tn of (string list) list ;;  
+
+type rake_config = {
+   main_name : string ;
+   irreducibles : string list ;
+   original_grammar : grammar
+} ;;
+
+type rake = {
+  config : rake_config ;
+  current_grammar : grammar ;
+  current_expansion : (string list * string list) list
+}
