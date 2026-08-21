@@ -61,6 +61,11 @@ type local_modification =
   (*
     The argument list is a list of line indices.
   *)
+  |Lm_expand_all_disjunctions
+  (*
+    Expands all the disjunctions and sub-disjunctions recursively. In the uses we
+    make of it, the fully expanded results will be a list of concats.
+  *)
 ;;
 
 

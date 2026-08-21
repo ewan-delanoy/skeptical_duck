@@ -157,7 +157,9 @@ let ocaml_name_of_local_modification lmod=
  |(Lm_permute_lines(ordering)) ->  
   "Lm_permute_lines(["^(String.concat ";" (Image.image string_of_int ordering))^"])"
  |(Lm_expand_heads_at_lines(line_indices)) ->  
-  "Lm_expand_heads_at_lines(["^(String.concat ";" (Image.image string_of_int line_indices))^"])"     
+  "Lm_expand_heads_at_lines(["^(String.concat ";" (Image.image string_of_int line_indices))^"])"  
+ |Lm_expand_all_disjunctions ->  
+   "Lm_expand_all_disjunctions"     
 ;;
 
 let ocaml_name_of_modification = function 
@@ -929,7 +931,7 @@ let expand_heads_at_lines (gram,(global_name,named_forms)) line_indices =
     fun (idx,(name,form))->
       let old_accu = (!ref_for_block_sizes) in 
       if not(List.mem idx line_indices) 
-      then let _ = (ref_for_block_sizes:=0::(old_accu)) in 
+      then let _ = (ref_for_block_sizes:=1::(old_accu)) in 
            [name,form] 
       else 
       let old_gram = !gram_ref in 
@@ -948,6 +950,20 @@ let expand_heads_at_lines (gram,(global_name,named_forms)) line_indices =
   ) indexed_forms in 
   let _ = (ref_for_block_sizes:=List.rev(!ref_for_block_sizes)) in 
   (!gram_ref,List.flatten new_blocks);;
+
+let rec helper_for_alldis_expansion gram (treated,to_be_treated) = match to_be_treated with 
+  [] -> List.rev treated 
+  |(name,form)::others ->
+    match Jvag_form.disjunction_content_opt form with 
+    None -> helper_for_alldis_expansion gram (name::treated,others)
+    |Some parts -> 
+      let new_data = Image.image (fun part->(part,Common.get gram part)) parts in 
+      helper_for_alldis_expansion gram (treated,new_data@others) ;;
+
+let expand_all_disjunctions (gram,(global_name,named_forms)) =
+    let fully_expanded = helper_for_alldis_expansion gram ([],named_forms) in 
+    (gram,[global_name,Disjunction(fully_expanded)]) ;;
+
 
 let apply name (gram,named_forms) modif=
   let gf = (gram,(name,named_forms)) in 
@@ -968,6 +984,8 @@ let apply name (gram,named_forms) modif=
     permute_lines gf ordering  
   |(Lm_expand_heads_at_lines(line_indices)) ->  
      expand_heads_at_lines gf line_indices    
+  |Lm_expand_all_disjunctions ->  
+     expand_all_disjunctions gf   
   ;;
 
 let apply_several name gf mods = List.fold_left (apply name) gf mods ;;
