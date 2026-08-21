@@ -90,8 +90,6 @@ type link =
    |Synonym_L
   ;;
 
-type thumbnail = Tn of (string list) list ;;  
-
 type rake_config = {
    main_name : string ;
    irreducibles : string list ;
