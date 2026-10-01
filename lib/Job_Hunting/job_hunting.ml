@@ -5,99 +5,60 @@
 
 *)
 
-module Private = struct 
+exception Uneven_list of (int * int) ;;
+exception Bad_effective_date_format of int ;;
 
-let comma = Naive_parser_example.fixed_string "," ;;
-let postponed_comma = Naive_parser.postpone comma ;;
+module Private = struct
 
+let extremal_line_indices l =
+   (fst(List.hd l),fst(List.hd(List.rev l))) ;;  
+ 
+let convert_even_sized_list_to_list_of_pairs l =
+  let m = List.length l in 
+  if (m mod 2)<>0
+  then raise(Uneven_list(extremal_line_indices l))
+  else 
+    let nt = (fun j->List.nth l (j-1)) in 
+    Int_range.scale (fun k-> (nt(2*k-1),nt(2*k)))  1 (m/2);; 
 
-let short_company_name = 
-  Naive_parser.heavy_map (fun text idx data->
-    let (_,(new_idx,_)) = data in 
-    Cull_string.interval text idx (new_idx-1)
-  )
-  (Naive_parser.concat2 
-    Naive_parser_example.uppercase_character postponed_comma) ;;
-  
-(*
+let get_effective_date_for_pair default_date (line_idx,company_name)=
+  match Substring.leftmost_index_of_in_from_opt "(g: " company_name 1 with 
+  None -> default_date  
+  |Some (t) ->
+     let yearless = Jh_date.yearless_parser default_date.Jh_date_t.year in 
+     match Naive_parser.try_parse_at_index yearless company_name (t+4) with 
+     None -> raise(Bad_effective_date_format(line_idx))
+     |Some(effective_date,_) -> effective_date
 
-Naive_parser.try_parse_at_index short_company_name "Marcia baila, 567" 1 ;;
-Naive_parser.try_parse_at_index short_company_name "1Marcia baila, 567" 2 ;;
-
-*)
-
-let linebreak = Naive_parser_example.fixed_string "\n" ;;
-
-let company_name = Naive_parser.map snd 
-(Naive_parser.concat2 linebreak short_company_name) ;;
-
-let postponed_company_name = Naive_parser.postpone company_name ;;
-
-(*
-
-Naive_parser.try_parse_at_index postponed_company_name "123\nMarcia baila, 45\nShe did it, 7777\nThiis is the way ," 1 ;;
-
-
-*)
-
-let company_names = Naive_parser.concat_star_of_postponed_with_stopper 
-   company_name Jh_date.parser ;;
-
-(*
-
-Naive_parser.try_parse_at_index company_names 
-  "123\nMarcia baila, 45\nShe did it, 1/2/23\nThiis is the way ," 1 ;;
-
-
-*)
-
-let dated_item = 
-  Naive_parser.concat2 Jh_date.parser company_names ;;
-
-(*
-
-Naive_parser.try_parse_at_index dated_item 
-  "45/67/98\nMarcia baila, 45\nShe did it, 1/2/23\nThiis is the way ," 1 ;;
-
-*)
-
-let postponed_dated_item = Naive_parser.postpone dated_item ;;
-
-let star_of_dated_items = Naive_parser.star dated_item ;;
-
-let dated_items = 
-  Naive_parser.map (
-    fun ((_,one),several) -> one :: several
-  ) (Naive_parser.concat2
-  postponed_dated_item star_of_dated_items) ;;
-
-(*
-
-Naive_parser.try_parse_at_index dated_items 
-  "45/67/98\nMarcia baila, 45\nShe did it, 1/2/23\nThiis is the way ," 1 ;;
-
-Naive_parser.try_parse_at_index dated_items 
-  ("45/67/98\nMarcia baila, 45\nShe did it, 1/2/23\nThiis is the way , aaa"^
-   "84/56/79\nTara baila, 45\nI did it, 12/3/20\nThiis is the way , bbb") 1 ;;  
-
-*)
-
-
+let extract_company_name company_data = 
+    match Cull_string.before_and_after "," company_data with 
+    None -> company_data
+    |Some(before,_after) -> before ;; 
 
 let order_on_dated_items = 
-  Total_ordering.product Jh_date.order Total_ordering.lex_for_strings ;;
+  Total_ordering.product Jh_date.order Total_ordering.lex_for_strings ;;    
 
 let read_list text = 
-   match Naive_parser.try_parse_at_index dated_items text 1 with 
-   None -> []
-   |(Some (l,_)) ->
-     let temp1 = Image.image (fun (date,names)->Image.image (fun name->(date,name)) names) l in 
-     let temp2 = List.flatten temp1 in 
-     let temp3 = Ordered.sort order_on_dated_items temp2 in 
-     let temp4 = List.rev_map (
-       fun (date,name) -> (name,(date,Jh_date.number_of_days_between (Jh_date.today ()) date))
-     ) temp3 in 
-     temp4 ;;
+  let indexed_lines = Lines_in_text.indexed_lines text in 
+   let nonempty_lines = List.filter (fun (_line_idx,line)->line<>"") indexed_lines in 
+  let temp1 = Image.image (fun (line_idx,line)->
+    ((line_idx,line),Naive_parser.try_parse_at_index Jh_date.parser line 1)) nonempty_lines in 
+  let (_chaotic_beginning_of_list,normalized_end_of_list) = List_again.leaders_and_followers 
+   (fun (_,date_at_beginning_opt) -> date_at_beginning_opt<>None)
+  temp1 in
+  let temp2 = Image.image (fun (leader,followers)->
+    (fst(Option.get(snd leader)),Image.image fst followers)  
+  ) normalized_end_of_list in 
+  let temp3 = Image.image (
+    fun (official_date,followers)->
+    (official_date,convert_even_sized_list_to_list_of_pairs followers)
+  ) temp2 in 
+  let unordered = List.flatten(Image.image (
+  fun  (official_date,jas)-> Image.image (fun (company_data,_)->
+    (get_effective_date_for_pair official_date company_data,
+    extract_company_name (snd company_data))) jas
+  ) temp3) in 
+  Ordered.sort order_on_dated_items unordered;;
 
 let recompute_usual_list_from_scratch () = 
   let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") in 
@@ -114,49 +75,17 @@ let usual_list () =
       ref_for_usual_list:=Some(new_answer);
       new_answer ;;
 
-let analize l =
-   let ul =usual_list () in 
-   let temp1 = Image.image (
-    fun name -> (name,List.assoc_opt name ul)
-   ) l in 
-   let (good_ones1,bad_ones1) = List.partition (
-    fun (_,opt) -> opt = None
-   ) temp1 in 
-   let good_ones2 = Image.image fst good_ones1 in 
-   let bad_ones2 = Image.image (fun (name,opt)->(fst(Option.get opt),name))  bad_ones1 in 
-   let bad_ones3 = Ordered.sort order_on_dated_items bad_ones2 in 
-   let bad_ones4 = Image.image (
-       fun (date,name) -> (name,(date,Jh_date.number_of_days_between date (Jh_date.today ())))
-     ) bad_ones3 in 
-   (good_ones2,bad_ones4) ;;  
 
+let all_companies () = Ordered.sort Total_ordering.lex_for_strings (Image.image snd (usual_list())) ;;
 
-  (*
-let z1 = recompute_usual_list_from_scratch () ;;
+let three_months_duration = 30+2*31 ;;
 
-  let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") ;;
-  let text = Io.read_whole_file ap ;;
+let recent_companies () =
+  let all_job_applications = usual_list() in 
+  let recent_job_applications = List.filter (fun (date,_company_name)->
+    (Jh_date.number_of_days_between (Jh_date.today ()) date) <= three_months_duration
+  ) all_job_applications in 
+  let answer = Ordered.sort Total_ordering.lex_for_strings (Image.image snd recent_job_applications) in 
+  (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
 
-  let z2 = Naive_parser.try_parse_at_index dated_items text 1 ;;
-
-  let (_,guilty_index) = Option.get z2 ;;
-
-  let itv = Cull_string.interval text (guilty_index-10) (guilty_index+500) ;;
-
-  let z3 = Cull_string.cobeginning (guilty_index-1) text ;;
-
-  let z4 = Naive_parser.try_parse_at_index dated_item z3 1;;
-
-  let (z5,i1) = Option.get(Naive_parser.try_parse_at_index Jh_date.parser z3 1);;
-
-  let z6 = Naive_parser.try_parse_at_index company_names z3 i1 ;;
-
-  let z7 = Naive_parser.try_parse_at_index company_name z3 (i1+1) ;;
-
-  let z8 = Naive_parser.try_parse_at_index short_company_name z3 (i1+2) ;;
-
-*)  
-
-end ;;  
-
-let analize = Private.analize ;;
+  end ;;  
