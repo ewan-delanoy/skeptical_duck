@@ -89,3 +89,5 @@ let recent_companies () =
   (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
 
   end ;;  
+
+let recent_companies = Private.recent_companies ;;  
