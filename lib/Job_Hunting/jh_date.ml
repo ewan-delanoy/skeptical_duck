@@ -121,6 +121,20 @@ let date_ending = Naive_parser.map
      |Some(i2)->100*i1+i2
  ) number_with_two_digits_possibly_doubled ;;
  
+let raw_yearless = Naive_parser.concat2 one_or_two_digits_followed_by_slash one_or_two_digits ;;
+
+let yearless y = Naive_parser_t.NP(fun
+  text idx  ->
+   match Naive_parser.try_parse_at_index raw_yearless text idx with 
+  None -> None 
+  |Some((d,m),final_idx)-> 
+     Some({Jh_date_t.day=d; month=m; year=y},final_idx)
+) ;;
+
+   (*     
+Naive_parser.try_parse_at_index (yearless 2025) "2/11" 1 ;;
+Naive_parser.try_parse_at_index (yearless 2025) "12/7abc" 1 ;;
+*)
 
 
 exception Unfinished_date of int * (int * int) * int ;;
@@ -164,3 +178,5 @@ let order = Private.order ;;
 let parser = Private.parser ;;
 
 let today = Private.today ;;
+
+let yearless_parser = Private.yearless ;;

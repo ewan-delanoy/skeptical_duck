@@ -1,6 +1,865 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 272 : some failed ideas to analize French departements
+************************************************************************************************************************)
+module Snip272 = struct 
+
+open Departements ;;
+
+
+let tf1 ll = restricted_neighborhood_for_name_set (List.flatten ll) ;;
+
+let x_levels = [
+  [62;59];
+  [76;80;2;8];
+  [50;14;27;60;51;55;54;57;67];
+  [78;95;77];
+  [61;92;75;93];
+  [94];
+  [29;22;53];
+  [56;44;49;41;45;89;21;70;90];
+  [37;18;58;39;25];
+  [85;79;86;36;71;39];
+  [17;87;23;1;74];
+  [16;63];
+  [33;24;19;15;43;7;38;73];
+  [40;47;46;26;5];
+  [82;12;30;84;4;6];
+  [32;81;34;13;83];
+  [64;65;31;11];
+  [9;66];
+] ;;
+
+let y_levels = [
+  [29];
+  [22;56];
+  [50;39;44;85];
+  [14;61;53;49;79;17;33;40;64];
+  [72;16;17;32;65];
+  [76;27;37;86;87;24;47;82;31;9];
+  [28;41;36;];
+  [62;80;60;95;78;91;45;23;19;];
+  [];
+  [];
+  [];
+  [];
+  [];
+  [];
+  [];
+  [];
+  [];
+  [];
+] ;;
+
+
+
+let level1 = ["Pas-de-Calais";"Nord"] ;;
+
+let level2 = ["Seine-Maritime";"Somme";"Oise";"Aisne"; "Ardennes"] ;;
+
+let level3 = ["Manche";"Calvados"; "Eure"; "Val-d'Oise"; "Seine-et-Marne"; "Marne"; "Meuse"; "Meurthe-et-Moselle" ; "Moselle";"Bas-Rhin" ] ;;
+
+let level4 = [
+  "Finistère";"Côtes-d'Armor";"Morbihan";"Ille-et-Vilaine";"Mayenne";
+  "Orne";"Eure-et-Loir";"Yvelines";"Hauts-de-Seine";"Paris";
+  "Seine-Saint-Denis"; "Val-de-Marne";"Essonne";"Loiret";"Yonne";
+  "Aube";  "Haute-Marne";"Vosges";  "Haut-Rhin"];;
+
+let level5 = [ 
+   "Loire-Atlantique"; "Maine-et-Loire"; "Sarthe"; "Loir-et-Cher";  "Cher";
+    "Nièvre"; "Côte-d'Or";  "Haute-Saône";  "Territoire de Belfort"] ;;
+
+let level6 = [
+   "Vendée";"Deux-Sèvres";"Vienne"; "Indre-et-Loire"; "Indre";
+   "Creuse"; "Allier";"Saône-et-Loire"; "Jura";"Doubs"; 
+] ;;
+
+let level7 = [
+   "Charente-Maritime"; "Charente"; "Haute-Vienne";  "Corrèze"; "Puy-de-Dôme";
+   "Loire"; "Rhône"; "Ain";  "Haute-Savoie"
+] ;;
+
+let level8 = [
+   "Gironde"; "Dordogne"; "Lot"; "Cantal";  "Haute-Loire";  "Ardèche"; "Dr\195\180me"; "Isère"; 
+   "Savoie"
+] ;;
+
+let level9 = [
+   "Landes"; "Lot-et-Garonne"; "Tarn-et-Garonne"; "Aveyron"; "Lozère";
+   "Gard"; "Vaucluse"; "Alpes-de-Haute-Provence"; "Hautes-Alpes";   
+    
+] ;;
+
+let level10 = [
+   "Pyrénées-Atlantiques"; "Gers"; "Haute-Garonne"; "Tarn"; "Hérault"; 
+   "Bouches-du-Rhône"; "Var";"Alpes-Maritimes";    
+] ;;
+
+let level11 = [
+      "Hautes-Pyrénées"; "Ariège"; "Aude"; 
+] ;;
+
+let level12 = [
+      "Pyrénées-Orientales"
+] ;;
+
+let levels = [level12;level11;level10;level9;level8;level7;level6;level5;level4;level3;level2;level1] ;;
+
+let level k = List.nth (List.rev levels) (k-1) ;;
+
+let res = tf1 levels ;;
+
+let vlevel1 = ["Finistère"] ;;
+
+let vlevel2 = ["Côtes-d'Armor"; "Morbihan"] ;;
+
+let vlevel3 = ["Ille-et-Vilaine"; "Loire-Atlantique";"Vendée"] ;;
+
+let vlevel4 = ["Manche"; "Mayenne"; "Maine-et-Loire";  "Deux-Sèvres"; "Charente-Maritime"; "Gironde";"Landes";"Pyrénées-Atlantiques"] ;;
+
+let vlevel5 = [
+  "Calvados"; "Orne"; "Sarthe"; "Indre-et-Loire";
+  "Vienne"; "Charente"; "Dordogne"; "Lot-et-Garonne"; "Gers"; "Hautes-Pyrénées";  
+] ;;
+
+let vlevel6 = [
+  "Seine-Maritime"; "Eure"; "Eure-et-Loir";  "Loir-et-Cher"; "Indre"; 
+  "Haute-Vienne"; "Creuse"; "Corrèze";  "Lot";  "Tarn-et-Garonne"; "Haute-Garonne"; "Ariège"
+] ;;
+
+let vlevel7 = [
+   "Pas-de-Calais"; "Somme"; "Oise";"Val-d'Oise";"Yvelines";
+   "Hauts-de-Seine";"Seine-Saint-Denis";"Paris";"Val-de-Marne";"Essonne"; 
+   "Seine-et-Marne";"Loiret";"Cher"; "Allier";"Puy-de-Dôme";
+   "Aveyron"; "Cantal"; "Tarn";"Hérault";"Aude";   
+    "Pyrénées-Orientales";   
+] ;;
+
+let vlevel8 = [
+    "Nord"; "Aisne"; "Marne"; "Aube"; "Yonne"; 
+   "Nièvre";  "Saône-et-Loire"; "Loire"; "Haute-Loire";
+   "Lozère"; "Gard";
+] ;;
+
+let vlevel9 = [
+   "Ardennes";"Meuse";"Haute-Marne";"Côte-d'Or";
+   "Jura"; "Ain"; "Rhône"; "Isère"; "Ardèche";  "Dr\195\180me";   
+   "Vaucluse"; "Bouches-du-Rhône"
+] ;;
+
+let vlevel10 = [
+ "Moselle"; "Meurthe-et-Moselle"; "Vosges"; "Haute-Saône"; "Doubs"; 
+"Haute-Savoie";"Savoie";"Hautes-Alpes"; "Alpes-de-Haute-Provence"; "Var"; 
+] ;;
+
+let vlevel11 = [
+   "Bas-Rhin"; "Haut-Rhin"; "Territoire de Belfort"; "Alpes-Maritimes";
+] ;;
+
+let vlevels = [vlevel11;vlevel10;vlevel9;vlevel8;vlevel7;vlevel6;vlevel5;vlevel4;vlevel3;vlevel2;vlevel1] ;;
+
+let vlevel k = List.nth (List.rev vlevels) (k-1) ;;
+
+let res2 = tf1 vlevels ;;
+
+let vlevel = [
+
+] ;;
+
+
+
+let upper_bilevel k =
+    if k = 1 then [] else 
+    touched_points_in_named_bipartite_junction (level (k-1)) (level k) ;;
+
+let lower_bilevel k =
+    if k = 12 then [] else 
+    touched_points_in_named_bipartite_junction (level (k+1)) (level k) ;;    
+
+let z k = zoom_on_bipartite_relations_between_name_sets (lower_bilevel k) (upper_bilevel (k+1)) ;;
+
+let oz k = zoom_on_bipartite_relations_between_name_sets (level k) (level (k+1)) ;;
+
+let v1 = List.flatten (Int_range.scale z 1 11) ;;
+
+let v2 = List.filter (fun (i,l)->let a=List.hd(l) and b=List.hd(List.rev l) in l<>Int_range.range a b) v1;;
+
+let zz k = (List.length(lower_bilevel k),List.length(upper_bilevel (k+1)),z k) ;;
+
+let extract_on_both_sides k=
+  let whole1 = Int_range.index_everything (level k) in 
+  let whole2 = Image.image (fun (a,b)->(b,a)) whole1 in 
+  let lower = lower_bilevel k and upper = upper_bilevel k in 
+  let i_lower =  Image.image (fun x->List.assoc x whole2)  lower 
+  and i_upper =  Image.image (fun x->List.assoc x whole2)  upper in 
+  (
+   List.length(whole1), 
+    (i_setminus i_lower i_upper,i_intersect i_lower i_upper,i_setminus i_upper i_lower)
+  ) ;;
+
+let internals k = indexed_inner_relations (level k) ;;
+
+let li1 = [
+  62;59;
+  76;80;2;8;
+  50;14;27;60;51;55;54;57;67;
+  78;95;77;
+  61;92;75;93;
+  94;
+  29;22;53;
+  56;44;49;41;45;89;21;70;90;
+  37;18;58;39;25;
+  85;79;86;36;71;39;
+  17;87;23;1;74;
+  16;63;
+  33;24;19;15;43;7;38;73;
+  40;47;46;26;5;
+  82;12;30;84;4;6;
+  32;81;34;13;83;
+  64;65;31;11;
+  9;66;
+]
+
+(*
+
+let w1 = Int_uple.list_of_fourtuples 95 ;;
+
+let is_a_k4 (x1,x2,x3,x4) = 
+  let pairs = Uple.list_of_pairs [x1;x2;x3;x4] in 
+  List.for_all (fun (i,j)->touches i j) pairs ;;
+
+
+let w2 = Explicit.filter is_a_k4 w1 ;;
+
+let w3 = Image.image (fun (x1,x2,x3,x4)->[x1;x2;x3;x4]) w2 ;;
+
+let w4 = Image.image (Image.image name) w3 ;;
+
+let u1 = List.filter (fun (x,y)->x<=95) unordered_neighborhoods ;;
+let u2 = Image.image (fun (x,y)->(x,i_sort(List.filter(fun t->t<=95) y))) u1 ;;
+let unordered_u3 = Image.image (fun (x,y)->(List.length y,x)) u2 ;;
+
+let u3 = i2_sort unordered_u3 ;;
+
+let u4 = List.rev(List.tl u3) ;;
+
+let u5 = Image.image (fun (x,y)->name y) u4 ;;
+
+
+let relations_in_set = 
+
+let usual_relations_in_line_element l=
+  let temp1 = List_again.universal_delta_list l in 
+  i2_sort(Image.image (fun (ni,nj)->edge_from_named_pair ni nj) temp1) ;; 
+
+let usual_relations_in_line (L ll)=
+  let part1 =  i2_fold_merge (Image.image usual_relations_in_line_element ll) in 
+  let temp1 =  List_again.universal_delta_list ll in 
+  let temp2 
+
+  *)
+end;;
+
+(************************************************************************************************************************
+ Entry 271 : lists related to some MySQL data
+************************************************************************************************************************)
+module Snip271 = struct 
+
+(*
+let i_order = Total_ordering.for_integers ;; 
+
+let i_sort = Ordered.sort i_order ;; 
+
+
+
+let ap1 = Absolute_path.of_string(home ^ "/Downloads/Recover_lost_data/history.txt");;
+
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let lines1 = Lines_in_text.lines text1 ;;
+
+let lines2 = List_again.long_tail 9 lines1 ;;
+
+let u1 = Image.image (fun line->
+   let n = String.length line in 
+   let k_opt = String_find_char.backwards_from_inclusive_opt (fun c->c='\t') line n in 
+   let k = Option.get k_opt in 
+   Cull_string.interval line (k+1) n 
+) lines2 ;;
+
+let u2 = "     "^(String.concat "," u1)^"     ";;
+*)
+
+let topics_to_be_recreated = [
+   1439 (* Summa Theologica in French *);
+   1440 (* Martyrs d'Orange *);
+   1441 (* m Catéchisme de perservérance de Mgr Gaume *);
+   1628 (* m Missel de Dom Gaspar Lefebvre *);
+   1629 (* m Méditations pour tous les jours de l'année *);
+   1630 (* Prière intercession S. Anne *);
+   1632 (* m Cantiques *);
+   1633 (* m Sermons en Vidéo (youtube) de L'Abbé Zins *);
+   1635 (* Miracle de la Marne *);
+   1637 (* m Chapelet du précieux sang  *);
+   1639 (* Minute de silence *);
+   1640 (* m Vidéos sur Gloria.tv *);
+   1641 (* m Livres catholiques numerisés en ligne *);
+   1642 (* m Conférences Vidéo (youtube) de L'Abbé Zins *);
+   1653 (* m CATECHISM OF PERSEVERANCE *);
+   1654 (* m Summa Theologica - Thomas Aquinas *);
+   1660 (* Medjugorje *);
+   1665 (* m Vidéos de Arkeos.tv *);
+   1679 (* m Blogue du Petit Sacristain  *);
+   1693 (* Elevations à Saint Joseph *);
+   1694 (* Grand tentation du contre-révolutionnaire *);
+   1739 (* Priere mariage malheureux *);
+   1740 (* Father Thomas Roussel *);
+   1746 (* Priere dans les tentations *);
+   1747 (* m Reliques *);
+   1776 (* Messe *);
+   1783 (* LA PRIÈRE DE PIE X À LA SAINTE VIERGE  *);
+   1810 (* Textes du R.P. Jean-Joseph Surin *);
+   1811 (* Le Combat Spirituel - Laurent Scupoli *);
+   1867 (* Purgatory *);
+   1868 (* Sight of hell *);
+   1875 (* Cupertino *);
+] ;;
+
+let posts_to_be_recreated = [
+   18113 (* Summa Theologica in French *);
+   18116 (* Martyrs d'Orange *);
+   18117 (* Catéchisme de perservérance de Mgr Gaume *);
+   20960 (* Missel de Dom Gaspar Lefebvre *);
+   20961 (* Méditations pour tous les jours de l'année *);
+   20962 (* Prière intercession S. Anne *);
+   20963 (* Gaspar -> 12e Dim. Ap. Pent. *);
+   20964 (* Cantiques -> Itron Varia Rostren *);
+   20965 (* Sermons en Vidéo (youtube) de L'Abbé Zins *);
+   20966 (* Gaspar -> S. Joachim *);
+   20967 (* Miracle de la Marne *);
+   20968 (* Cantiques -> Chez nous soyez reine *);
+   20969 (* Prières au précieux sang -> 1 *);
+   20970 (* Prières au précieux sang -> 2 *);
+   20971 (* Minute de silence *);
+   20972 (* Vidéos sur Gloria.tv -> Jésus-Christ a enduré *);
+   20973 (* Livres catholiques numerisés en ligne -> S. Jérôme par Cavallera *);
+   20974 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 1 *);
+   20975 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 2 *);
+   20976 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 3 *);
+   20977 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 4 *);
+   20978 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 5 *);
+   20979 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 6 *);
+   20981 (* Méditations -> 12 sem. Ap. Pent. *);
+   20982 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Lamentations 7 *);
+   20984 (* Prières au précieux sang -> 3 *);
+   20985 (* Catéchisme de perservérance de Mgr Gaume -> 7e leçon *);
+   20986 (* CATECHISM OF PERSEVERANCE *);
+   20987 (* Summa Theologica - Thomas Aquinas -> On the cause of sin *);
+   20988 (* Prières au précieux sang -> 3 adarre *);
+   20989 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Expression trompeuse *);
+   20990 (* Méditations -> 12 sem. Ap. Pent. *);
+   20991 (* Catéchisme de perservérance de Mgr Gaume -> 3e partie, 8e leçon *);
+   20993 (* CATECHISM OF PERSEVERANCE -> CHAPTER 14 *);
+   20994 (* Medjugorje *);
+   20995 (* Summa Theologica - Thomas Aquinas -> Evil habits *);
+   20996 (* Livres catholiques numerisés en ligne -> CL Faucher, Sainte Enfance *);
+   20997 (* Prières au précieux sang -> 4 *);
+   20998 (* Conférences Vidéo (youtube) de L'Abbé Zins -> LHR, Grand Monarque *);
+   20999 (* Vidéos de Arkeos.tv -> Prise de Samarie *);
+   21000 (* Méditations -> 12 sem. Ap. Pent. *);
+   21001 (* Catéchisme de perservérance de Mgr Gaume -> 8e leçon *);
+   21002 (* CATECHISM OF PERSEVERANCE -> CHAPTER 15 *);
+   21004 (* Summa Theologica - Thomas Aquinas -> External causes *);
+   21005 (* Livres catholiques numerisés en ligne -> Pénitent breton *);
+   21007 (* Prières au précieux sang -> 5 *);
+   21008 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Chronologie, Grand Monarque *);
+   21009 (* Vidéos de Arkeos.tv -> La guerre silencieuse *);
+   21010 (* Méditations -> 12 sem. Ap. Pent. *);
+   21011 (* Prières au précieux sang -> 5 *);
+   21013 (* Catéchisme de perservérance de Mgr Gaume -> 10e leçon *);
+   21014 (* CATECHISM OF PERSEVERANCE -> CHAPTER 17 *);
+   21016 (* Summa Theologica - Thomas Aquinas -> As regards the devil *);
+   21017 (* Blogue du Petit Sacristain  *);
+   21018 (* Livres catholiques numerisés en ligne -> Texte grec Liturgie Chrysostome *);
+   21019 (* Livres catholiques numerisés en ligne -> Hist. S. Hildegarde *);
+   21020 (* Vidéos sur Gloria.tv -> Centurion Romain *);
+   21021 (* Livres catholiques numerisés en ligne -> Nicolazic *);
+   21022 (* Livres catholiques numerisés en ligne -> Culte & Patronage S. Anne *);
+   21023 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Algérie *);
+   21024 (* Méditations -> 12 sem. Ap. Pent. *);
+   21025 (* Prières au précieux sang -> 6 *);
+   21026 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Débat Ab. Célier *);
+   21027 (* Vidéos de Arkeos.tv -> Ponce Pilate *);
+   21028 (* Catéchisme de perservérance de Mgr Gaume -> 11e leçon *);
+   21029 (* CATECHISM OF PERSEVERANCE -> CHAPTER 17 *);
+   21031 (* Summa Theologica - Thomas Aquinas -> The part of man *);
+   21032 (* Elevations à Saint Joseph *);
+   21033 (* Grande tentation du contre-révolutionnaire *);
+   21035 (* Prières au précieux sang -> 7 *);
+   21036 (* Conférences Vidéo (youtube) de L'Abbé Zins -> 50 ans de recul *);
+   21037 (* Méditations -> 12 sem. Ap. Pent. *);
+   21038 (* Vidéos de Arkeos.tv -> Ninive *);
+   21040 (* Catéchisme de perservérance de Mgr Gaume -> 12e leçon *);
+   21041 (* CATECHISM OF PERSEVERANCE -> CHAPTER 18 *);
+   21042 (* Summa Theologica - Thomas Aquinas -> Original sin *);
+   21043 (* Méditations -> 13 sem. Ap. Pent. *);
+   21044 (* Missel de Dom Gaspar Lefebvre -> 13 sem. Ap. Pent. *);
+   21045 (* Sermons en Vidéo (youtube) de L'Abbé Zins -> 13 dim. Ap. Pent. *);
+   21046 (* Prières au précieux sang -> 8 *);
+   21047 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Praxis Lefebvrisme 1 *);
+   21048 (* Vidéos de Arkeos.tv -> Obelisque noir *);
+   21049 (* Méditations -> 13 sem. Ap. Pent. *);
+   21050 (* Catéchisme de perservérance de Mgr Gaume -> 13e leçon *);
+   21053 (* CATECHISM OF PERSEVERANCE -> CHAPTER 19 *);
+   21054 (* Summa Theologica - Thomas Aquinas -> Subject of original sin *);
+   21056 (* Prières au précieux sang -> 9 *);
+   21058 (* Vidéos de Arkeos.tv -> Sodome *);
+   21059 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Praxis Lefebvrisme 2 *);
+   21060 (* Méditations -> 13 sem. Ap. Pent. *);
+   21063 (* Prières au précieux sang -> 10 *);
+   21064 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Praxis Lefebvrisme 3 *);
+   21065 (* Vidéos de Arkeos.tv -> Lettre impériale *);
+   21066 (* Méditations -> 13 sem. Ap. Pent. *);
+   21070 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Tissier de Mallerais 1 *);
+   21071 (* Vidéos de Arkeos.tv -> Sénakherib *);
+   21072 (* Prières au précieux sang -> 11 *);
+   21073 (* Méditations -> 13 sem. Ap. Pent. *);
+   21074 (* Prières au précieux sang -> 12 *);
+   21075 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Tissier de Mallerais 2 *);
+   21077 (* Vidéos de Arkeos.tv -> Tunnel d'Ezéchias *);
+   21079 (* Méditations -> 13 sem. Ap. Pent. *);
+   21080 (* Blogue du Petit Sacristain -> S. Augustin *);
+   21081 (* Blogue du Petit Sacristain -> Litanie S. Augustin *);
+   21082 (* Blogue du Petit Sacristain -> Prière S. Augustin *);
+   21084 (* Méditations -> 13 sem. Ap. Pent. *);
+   21085 (* Prières au précieux sang -> 13 *);
+   21086 (* Vidéos de Arkeos.tv -> Prise Babylone *);
+   21087 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 1 *);
+   21089 (* Méditations -> 14 sem. Ap. Pent. *);
+   21090 (* Sermons en Vidéo (youtube) de L'Abbé Zins ->  14 sem. Ap. Pent. *);
+   21091 (* Missel de Dom Gaspar Lefebvre -> 14 sem. Ap. Pent. *);
+   21092 (* Priere mariage malheureux *);
+   21093 (* Father Thomas Roussel *);
+   21096 (* Prières au précieux sang -> 14 *);
+   21097 (* Méditations -> 14 sem. Ap. Pent. *);
+   21098 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 2 *);
+   21099 (* Vidéos de Arkeos.tv -> Hittites *);
+   21100 (* Priere dans les tentations *);
+   21101 (* Reliques -> Doigt de S. Jean Baptiste *);
+   21102 (* Reliques -> Crane de S. Jean Baptiste *);
+   21104 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 3 *);
+   21105 (* Vidéos de Arkeos.tv -> 3 Vestiges *);
+   21106 (* Méditations -> 14 sem. Ap. Pent. *);
+   21108 (* Prières au précieux sang -> 15 *);
+   21110 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 4 *);
+   21111 (* Méditations -> 14 sem. Ap. Pent. *);
+   21113 (* Méditations -> 14 sem. Ap. Pent. *);
+   21114 (* Méditations -> 14 sem. Ap. Pent. *);
+   21115 (* Prières au précieux sang -> 16 *);
+   21117 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 5 *);
+   21118 (* Vidéos de Arkeos.tv -> Roi Sargon *);
+   21119 (* Blogue du Petit Sacristain -> Neuvaine à S. Pie X *);
+   21120 (* Blogue du Petit Sacristain -> Litanie Pie X *);
+   21121 (* Livres catholiques numerisés en ligne -> Catéchisme de S. Pie X *);
+   21122 (* Catéchisme de perservérance de Mgr Gaume -> 14e leçon *);
+   21123 (* Prières au précieux sang -> 17 *);
+   21125 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 6 *);
+   21126 (* Vidéos de Arkeos.tv -> Alphabet *);
+   21128 (* Méditations -> 14 sem. Ap. Pent. *);
+   21129 (* Méditations -> 14 sem. Ap. Pent. *);
+   21130 (* Catéchisme de perservérance de Mgr Gaume -> 15e leçon *);
+   21131 (* Prières au précieux sang -> 18 *);
+   21133 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Usurpation Saint-Siège 7 *);
+   21134 (* Sermons en Vidéo (youtube) de L'Abbé Zins ->  15 sem. Ap. Pent. *);
+   21135 (* Méditations -> 15 sem. Ap. Pent. *);
+   21136 (* Missel de Dom Gaspar Lefebvre -> 15 sem. Ap. Pent. *);
+   21137 (* Prières au précieux sang -> 19 *);
+   21138 (* Messe *);
+   21139 (* Catéchisme de perservérance de Mgr Gaume -> 16e leçon *);
+   21140 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Indéfectibilité 1 *);
+   21141 (* Vidéos de Arkeos.tv -> Royaume de David *);
+   21143 (* Méditations -> 15 sem. Ap. Pent. *);
+   21144 (* Prières au précieux sang -> 20 *);
+   21145 (* Summa Theologica - Thomas Aquinas -> Evil habits *);
+   21146 (* LA PRIÈRE DE PIE X À LA SAINTE VIERGE  *);
+   21147 (* Sermons en Vidéo (youtube) de L'Abbé Zins ->  Epitre 11 sem. Ap. Pent.  *);
+   21150 (* Prières au précieux sang -> 20 *);
+   21151 (* Catéchisme de perservérance de Mgr Gaume -> 17e leçon *);
+   21152 (* Méditations -> 8 sept., nativité *);
+   21153 (* Sermons en Vidéo (youtube) de L'Abbé Zins ->  Nativité *);
+   21154 (* Missel de Dom Gaspar Lefebvre -> Nativité *);
+   21155 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Indéfectibilité 2 *);
+   21156 (* Summa Theologica - Thomas Aquinas -> Effects of sin *);
+   21157 (* Cantiques -> Nativité *);
+   21158 (* Cantiques -> Triomphe Ave *);
+   21159 (* Blogue du Petit Sacristain -> Pioche  *);
+   21160 (* Vidéos de Arkeos.tv -> Livre de Daniel *);
+   21162 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Indéfectibilité 3 *);
+   21163 (* Vidéos de Arkeos.tv -> Royaume de Salomon *);
+   21164 (* Méditations -> 15 sem. Ap. Pent. *);
+   21166 (* Prières au précieux sang -> 21 *);
+   21167 (* Catéchisme de perservérance de Mgr Gaume -> 18e leçon *);
+   21168 (* Summa Theologica - Thomas Aquinas -> stain of sin *);
+   21169 (* Livres catholiques numerisés en ligne -> Sybilles *);
+   21170 (* Livres catholiques numerisés en ligne -> Didascalie *);
+   21172 (* Méditations -> 15 sem. Ap. Pent. *);
+   21173 (* Catéchisme de perservérance de Mgr Gaume -> 19e leçon *);
+   21174 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Indéfectibilité 4 *);
+   21175 (* Vidéos de Arkeos.tv -> Temple de Jerusalem *);
+   21177 (* Summa Theologica - Thomas Aquinas -> debt of punishement *);
+   21179 (* Prières au précieux sang -> 22 *);
+   21180 (* Textes du R.P. Jean-Joseph Surin *);
+   21182 (* Le Combat Spirituel - Laurent Scupoli *);
+   21184 (* Vidéos de Arkeos.tv -> Moïse *);
+   21185 (* Textes du R.P. Jean-Joseph Surin -> Saintes Pratiques *);
+   21186 (* Prières au précieux sang -> 23 *);
+   21187 (* Catéchisme de perservérance de Mgr Gaume -> 20e leçon *);
+   21188 (* Summa Theologica - Thomas Aquinas -> venial sin *);
+   21189 (* CATECHISM OF PERSEVERANCE -> CHAPTER 20 *);
+   21194 (* Textes du R.P. Jean-Joseph Surin -> Simplicité *);
+   21195 (* Méditations -> 15 sem. Ap. Pent. *);
+   21196 (* Méditations -> 15 sem. Ap. Pent. *);
+   21197 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Martyrs Espagnols *);
+   21198 (* Vidéos de Arkeos.tv -> Moïse 2 *);
+   21199 (* Livres catholiques numerisés en ligne -> Sales 1 *);
+   21201 (* Summa Theologica - Thomas Aquinas -> venial sin in itself *);
+   21202 (* Méditations -> 16 sem. Ap. Pent. *);
+   21203 (* Sermons en Vidéo (youtube) de L'Abbé Zins -> 16 sem. Ap. Pent. *);
+   21204 (* Missel de Dom Gaspar Lefebvre ->  16 sem. Ap. Pent. *);
+   21205 (* Vidéos de Arkeos.tv -> Historicité Christ *);
+   21206 (* Textes du R.P. Jean-Joseph Surin -> Réparation de l'intérieur *);
+   21207 (* Prières au précieux sang -> 24 *);
+   21208 (* Catéchisme de perservérance de Mgr Gaume -> 21e leçon *);
+   21209 (* CATECHISM OF PERSEVERANCE -> CHAPTER 21 *);
+   21210 (* Livres catholiques numerisés en ligne -> Sales 2 *);
+   21211 (* Méditations -> 16 sem. Ap. Pent. *);
+   21212 (* Vidéos de Arkeos.tv -> Exode 1 *);
+   21213 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Fouthèse 1 *);
+   21215 (* CATECHISM OF PERSEVERANCE -> CHAPTER 22 *);
+   21218 (* Méditations -> 16 sem. Ap. Pent. *);
+   21219 (* Vidéos de Arkeos.tv -> Exode 2 *);
+   21220 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Fouthèse 2 *);
+   21222 (* Catéchisme de perservérance de Mgr Gaume -> 22e leçon *);
+   21223 (* Textes du R.P. Jean-Joseph Surin -> Sagesse *);
+   21225 (* Prières au précieux sang -> 25 *);
+   21226 (* Summa Theologica - Thomas Aquinas -> essence of law *);
+   21229 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Fouthèse 3 *);
+   21230 (* Textes du R.P. Jean-Joseph Surin -> Vérité *);
+   21231 (* Cantiques -> Stabat Mater *);
+   21232 (* Méditations -> 16 sem. Ap. Pent. *);
+   21233 (* Vidéos sur Gloria.tv -> Evolution ou Création *);
+   21234 (* Textes du R.P. Jean-Joseph Surin -> Peines d'esprit *);
+   21235 (* Méditations -> 16 sem. Ap. Pent. *);
+   21237 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Christiade 1 *);
+   21238 (* Prières au précieux sang -> 26 *);
+   21239 (* Blogue du Petit Sacristain -> Bernard & Hildegarde *);
+   21240 (* Blogue du Petit Sacristain -> Livre oeuvres divines *);
+   21241 (* Blogue du Petit Sacristain -> Mort de S. Hildegarde *);
+   21242 (* Blogue du Petit Sacristain -> Miracles de S. Hildegarde *);
+   21243 (* Blogue du Petit Sacristain -> Prophéties de S. Hildegarde *);
+   21244 (* Blogue du Petit Sacristain -> Visions de S. Hildegarde *);
+   21245 (* Blogue du Petit Sacristain -> Combat de S. Hildegarde *);
+   21246 (* Livres catholiques numerisés en ligne -> Histoire de S. Hildegarde *);
+   21247 (* Catéchisme de perservérance de Mgr Gaume -> 23e leçon *);
+   21248 (* CATECHISM OF PERSEVERANCE -> CHAPTER 23 *);
+   21249 (* Summa Theologica - Thomas Aquinas -> kinds of law  *);
+   21250 (* Livres catholiques numerisés en ligne -> Sales 4 *);
+   21251 (* Purgatory *);
+   21252 (* Sight of hell *);
+   21254 (* Méditations -> 16 sem. Ap. Pent. *);
+   21255 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Christiade 2 *);
+   21256 (* Vidéos sur Gloria.tv -> Evolution ou Création 2 *);
+   21257 (* Livres catholiques numerisés en ligne -> Sales 5 *);
+   21258 (* Textes du R.P. Jean-Joseph Surin -> Volonté de Dieu *);
+   21259 (* Prières au précieux sang -> 27 *);
+   21261 (* Cupertino *);
+   21262 (* Textes du R.P. Jean-Joseph Surin -> Conseils évangéliques *);
+   21264 (* Méditations -> 16 sem. Ap. Pent. *);
+   21265 (* Conférences Vidéo (youtube) de L'Abbé Zins -> Christiade 3 *);
+   21266 (* Vidéos sur Gloria.tv -> Evolution ou Création 3 *);
+
+] ;;
+
+let fruitful_topics = [
+   1441 (* m Catéchisme de perservérance de Mgr Gaume *);
+   1628 (* m Missel de Dom Gaspar Lefebvre *);
+   1629 (* m Méditations pour tous les jours de l'année *);
+   1632 (* m Cantiques *);
+   1633 (* m Sermons en Vidéo (youtube) de L'Abbé Zins *);
+   1637 (* m Prières au précieux sang  *);
+   1640 (* m Vidéos sur Gloria.tv *);
+   1641 (* m Livres catholiques numerisés en ligne *);
+   1642 (* m Conférences Vidéo (youtube) de L'Abbé Zins *);
+   1653 (* m CATECHISM OF PERSEVERANCE *);
+   1654 (* m Summa Theologica - Thomas Aquinas *);
+   1665 (* m Vidéos de Arkeos.tv *);
+   1679 (* m Blogue du Petit Sacristain  *);
+   1747 (* m Reliques *);
+   1810 (* m Textes du R.P. Jean-Joseph Surin *);
+   1811 (* m Le Combat Spirituel - Laurent Scupoli *);
+] ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 270 : reading and writing lists to files
+************************************************************************************************************************)
+module Snip270 = struct 
+
+let li1 = [18113; 18116; 18117; 20960; 20961; 20962; 20963; 20964; 20965; 20966; 20967; 20968; 20969; 20970; 20971; 
+20972; 20973; 20974; 20975; 20976; 20977; 20978; 20979; 20981; 20982; 20984; 20985; 20986; 20987; 20988; 20989; 
+20990; 20991; 20993; 20994; 20995; 20996; 20997; 20998; 20999; 21000; 21001; 21002; 21004; 21005; 21007; 21008; 
+21009; 21010; 21011; 21013; 21014; 21016; 21017; 21018; 21019; 21020; 21021; 21022; 21023; 21024; 21025; 21026; 
+21027; 21028; 21029; 21031; 21032; 21033; 21035; 21036; 21037; 21038; 21040; 21041; 21042; 21043; 21044; 21045; 
+21046; 21047; 21048; 21049; 21050; 21053; 21054; 21056; 21058; 21059; 21060; 21063; 21064; 21065; 21066; 21070; 
+21071; 21072; 21073; 21074; 21075; 21077; 21079; 21080; 21081; 21082; 21084; 21085; 21086; 21087; 21089; 21090; 
+21091; 21092; 21093; 21096; 21097; 21098; 21099; 21100; 21101; 21102; 21104; 21105; 21106; 21108; 21110; 21111; 
+21113; 21114; 21115; 21117; 21118; 21119; 21120; 21121; 21122; 21123; 21125; 21126; 21128; 21129; 21130; 21131; 
+21133; 21134; 21135; 21136; 21137; 21138; 21139; 21140; 21141; 21143; 21144; 21145; 21146; 21147; 21150; 21151; 
+21152; 21153; 21154; 21155; 21156; 21157; 21158; 21159; 21160; 21162; 21163; 21164; 21166; 21167; 21168; 21169; 
+21170; 21172; 21173; 21174; 21175; 21177; 21179; 21180; 21182; 21184; 21185; 21186; 21187; 21188; 21189; 21194; 
+21195; 21196; 21197; 21198; 21199; 21201; 21202; 21203; 21204; 21205; 21206; 21207; 21208; 21209; 21210; 21211; 
+21212; 21213; 21215; 21218; 21219; 21220; 21222; 21223; 21225; 21226; 21229; 21230; 21231; 21232; 21233; 21234; 
+21235; 21237; 21238; 21239; 21240; 21241; 21242; 21243; 21244; 21245; 21246; 21247; 21248; 21249; 21250; 21251; 
+21252; 21254; 21255; 21256; 21257; 21258; 21259; 21261; 21262; 21264; 21265; 21266];;
+
+let li2 = List_again.long_tail 15 li1 ;;
+
+let li3 = Image.image (fun i->"   "^(string_of_int i)^" (*  *);") li2;;
+
+let li4 = "\n"^(String.concat "\n" li3)^"\n" ;;
+
+let li5 = Arithmetic_list.decompose_into_connected_components li2 ;;
+
+
+let ap2 = Absolute_path.of_string(home ^ "/Teuliou/OCaml/skeptical_duck/watched/watched_not_githubbed/ham.ml");;
+
+
+let text2 = Io.read_whole_file ap2 ;;
+
+let text3 = Lines_in_text.interval text2 327 341 ;;
+
+let lines3 = Lines_in_text.lines text3 ;;
+
+let li6 = Image.image (
+  fun line -> 
+    let p = Option.get(Substring.leftmost_index_of_in_from_opt " *)" line 1) in 
+    (int_of_string(Cull_string.interval line 4 7),Cull_string.interval line 14 (p-1))
+) lines3 ;;
+
+let li7 = Image.image (
+  fun (k,nm)->"<a href=\"https://versionexperimentale.larchange.org/viewtopic.php?t="^(string_of_int k)^"\"> "^nm^" </a><br>"
+) li6 ;; 
+
+let li8 = "\n\n\n" ^ (String.concat "\n" li7) ^ "\n\n\n";;
+
+let li6 = Image.image (
+  fun line -> 
+    let p = Option.get(Substring.leftmost_index_of_in_from_opt " *)" line 1) in 
+    (int_of_string(Cull_string.interval line 4 7),Cull_string.interval line 14 (p-1))
+) lines3 ;;
+
+let li7 = Image.image (
+  fun (k,nm)->"[url=\"https://versionexperimentale.larchange.org/viewtopic.php?t="^(string_of_int k)^"\"] "^nm^" [/url]"
+) li6 ;; 
+
+let li8 = "\n\n\n" ^ (String.concat "\n" li7) ^ "\n\n\n";;
+
+end;;
+
+(************************************************************************************************************************
+ Entry 269 : Partial parsing of a Java file
+************************************************************************************************************************)
+module Snip269 = struct 
+
+module T = Jvsp_types ;;
+open Jvag_types ;;
+open Jvng_types ;;
+
+
+
+open Jvag_grammar ;;
+
+let current_gram = Jvag_example.java_grammar ;;
+let g = Jvag_grammar.get_and_display current_gram ;;
+
+let h = Jvag_grammar.get_and_display Jvag_example.Private.original_java_grammar ;;
+
+let ocn = Jvag_form.ocaml_name ;;
+
+let jl = Java_lexer.parse ;;
+
+let c name = Jvag_grammar.containing name current_gram ;;
+
+let cdl = Jvag_grammar.check_disjunction_ladder current_gram ;;
+
+let text1 = rf ("~/Teuliou/Java_Hub/expanded_jars/Spring_boot_4_0_5/org/springframework/"^
+"boot/SpringApplication.java") ;;
+
+let parsed_text1 = Java_lexer.parse text1 ;;
+let all_toktypes1 = Jvsp_util.extract_nonpassive_token_types parsed_text1 ;;
+
+let starter =
+   Jvng_global_analizer.make 
+      current_gram "OrdinaryCompilationUnit"
+       Jvng_battery_example.example  all_toktypes1 ;; 
+
+let ff = Memoized.small Jvng_global_analizer.step starter ;;
+
+
+let db ( )= Tools_for_debugging.extract_from_iteration Jvng_global_analizer.step starter ;;
+
+let st = snd(db()) ;;
+
+let ug = let h = Jvng_duplicated_name.to_string st.head in (h,g h) ;;
+
+
+let fmg k = (ff k).Jvng_types.managed_grammar ;;
+
+
+
+
+(*
+
+#use"watched/watched_not_githubbed/ham.ml";;
+
+db () ;;
+
+let see_problem = Jvng_global_analizer.step st ;;
+
+let z1 = Jvsp_token_types_list.unveil(st.consumable.remaining_list) ;;
+
+*)
+
+end;;
+
+(************************************************************************************************************************
+ Entry 268 : Parse some java files in a given directory
+************************************************************************************************************************)
+module Snip268 = struct 
+
+
+let s_dir = "~/Teuliou/Java_Hub/expanded_jars/";;
+let u1 = Unix_again.quick_beheaded_complete_ls "~/Teuliou/Java_Hub/expanded_jars/";;
+let u2 = List.filter (fun fn->String.ends_with fn ~suffix:".java") u1 ;;
+
+let u3 = Explicit.image (fun fn ->
+  let txt = Io.read_whole_file (Absolute_path.of_string(s_dir^fn)) in 
+  let short_path = Cull_string.two_sided_cutting ("",".java") fn in 
+  let pair=(short_path,txt) in 
+  (String.length txt,pair)) u2 ;;
+
+let adhoc_order = Total_ordering.product Total_ordering.for_integers Total_ordering.standard ;;
+
+let u4 = Ordered.sort adhoc_order u3 ;;
+
+let u5 = List.rev u4 ;;
+
+let (_,(ap1,text1)) = List.hd u5 ;;
+
+let parsed_text1 = Java_lexer.parse text1 ;;
+
+let (ap2,text2) = List.assoc 50621 u5 ;;
+
+let parsed_text2 = Java_lexer.parse text2 ;;
+
+let check1 txt parsed_txt =
+   let temp1 = Image.image (
+    fun ptok ->
+      let tok = ptok.Jvsp_types.tok 
+      and i = ptok.Jvsp_types.start
+      and j = ptok.Jvsp_types.endd in 
+      (ptok,(Jvsp_util.token_to_string tok,Cull_string.interval txt i j))
+   ) parsed_txt in 
+   List.filter (fun (_,(x,y))->(x<>y)) temp1 ;;
+
+let c1 = check1 text1 parsed_text1 ;;
+let c2 = check1 text2 parsed_text2 ;;
+
+let rewritten_text_from_parsed_text parsed_txt=  
+   let temp1 = Image.image (
+    fun ptok ->Jvsp_util.token_to_string (ptok.Jvsp_types.tok)
+   ) parsed_txt in 
+   (String.concat "" temp1) ;;
+
+
+let check2 txt parsed_txt =
+   let temp1 = Image.image (
+    fun ptok ->Jvsp_util.token_to_string (ptok.Jvsp_types.tok)
+   ) parsed_txt in 
+   (String.concat "" temp1)=txt ;;
+
+let c3 = check2 text1 parsed_text1 ;;
+let c4 = check2 text2 parsed_text2 ;;
+
+let indexed_text1 = Int_range.index_everything parsed_text1 ;;
+
+let tt1 = Image.image (fun (idx,postok)->
+  let tok = postok.Jvsp_types.tok in 
+  (idx,postok,Jvsp_util.get_token_type tok)   
+) indexed_text1 ;;
+
+let active_in_tt1 = List.filter (fun (idx,_,tok_type)->not(List.mem tok_type Jvsp_util.passive_token_types)) tt1 ;;
+
+
+
+
+(*
+
+
+let temp = Image.image (
+    fun ptok ->Jvsp_util.token_to_string (ptok.Jvsp_types.tok)
+   ) parsed_text1 ;;
+
+let other_text1 =String.concat "" temp;;
+
+let m1 = String.length text1 ;;
+let om1 = String.length other_text1 ;;
+
+let see1_opt = Strung.leftmost_difference text1 other_text1 ;;  
+let see1 = Option.get see1 ;;
+
+let u1 = Int_range.range 1 (min m1 om1) ;;
+let u2 = Explicit.filter (fun k->(Strung.get))
+
+let see1 = List.find_opt (fun (_,(_,text)) -> Substring.is_a_substring_of "\"\"\"" text) u5 ;;
+
+let see2 = (50621,
+"Spring_context_7_0_6/org/springframework/context/annotation/ConfigurationClassPostProcessor");;
+
+let text = 
+  "x=\"\"\" Peggy said : \"Hello\". Then she said : \"This is the first time I've done this\\\"\"\"\";";;
+
+
+Java_lexer.parse text;;
+let guilty_index = 33602 ;;
+let snippet1 = Cull_string.interval text1 (guilty_index-10) (guilty_index+200) ;;
+
+let substr= "or wildcards in @PropertySource locations. Please manually" ;;
+let li1 = Substring.occurrences_of_in substr text2 ;;
+let lines = Lines_in_text.indexed_lines text2 ;;
+let (line_nbr,the_line) = List.find (fun (_,line)->Substring.is_a_substring_of substr line) lines ;;
+
+*)
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 267 :   use Lines_in_text.remove_interval_in_file
+************************************************************************************************************************)
+module Snip267 = struct 
+
+  let ap1 = Absolute_path.of_string 
+"~/Teuliou/LaTeX/Brouilhedou/Remasterised/Giot/Workshop/example_page.tex";;
+
+Lines_in_text.remove_interval_in_file ap1 19 330;; 
+Lines_in_text.remove_interval_in_file ap1 1243 3318;; 
+
+end;;
+
+(************************************************************************************************************************
  Entry 266 : Debugging session involving Jvag_grammar.Private.Local_Modification (IV)
 ************************************************************************************************************************)
 module Snip266 = struct 
@@ -13037,6 +13896,8 @@ module Snip179 = struct
 
   let ap1 = Absolute_path.of_string "~/Downloads/Arno" ;; 
   
+  let ap1 = Absolute_path.of_string "~/Pictures/Screenshots/Graet" ;;
+
   let s_dir1 =  Absolute_path.to_string ap1 ;;
   let dir1 = Directory_name.of_string s_dir1 ;;  
   
@@ -13054,7 +13915,7 @@ module Snip179 = struct
   
   let act2 () = 
     Coherent_pdf.many_pngs_one_pdf 
-    dir1 ~outputfile_name:"diglok" ;;
+    dir1 ~outputfile_name:"diechu" ;;
     
 
 
@@ -15401,52 +16262,265 @@ Lines_in_text.remove_interval_in_file part3_ap 15 10583;;
 end;;
 
 (************************************************************************************************************************
- Entry 156 : Use the tesseract command on many files
+ Entry 156 : Use the tesseract command on many files (most automatic version, crudest output)
 ************************************************************************************************************************)
 module Snip156 = struct 
 
-
 let dir1 = home ^ "/Downloads/Tess/" ;;
 
+let usual_dir = Sys.getcwd () ;;
+let go_to_dir1 () = Sys.chdir dir1 ;;
+
+let ap1 = Absolute_path.of_string (dir1^"la_epoca_presente.pdf") ;;
+
+let n1 = Coherent_pdf.number_of_pages_in_pdf ap1 ;;
+
+let command_for_page_extraction k= 
+  let sk = string_of_int k in 
+  ["cpdf la_epoca_presente.pdf "^sk^"-"^sk^" -o p"^sk^".pdf";
+   "convert p"^sk^".pdf p"^sk^".png";
+   "rm p"^sk^".pdf";
+  ] ;;
+
+let commands_for_page_extraction = List.flatten (
+   Int_range.scale command_for_page_extraction 1 n1
+) ;;
+
+let extract_pages () = 
+   let _ = Sys.chdir dir1 in 
+   let res = Unix_command.conditional_multiple_uc commands_for_page_extraction in 
+   let _ = Sys.chdir usual_dir in 
+   res ;;
 
 let u1 = Unix_again.quick_beheaded_complete_ls dir1 ;;
 
 let u2 = List.filter (fun fn->String.ends_with ~suffix:".png" fn ) u1 ;; 
 
-let commands = Image.image (
-  fun fn ->
-    let base = Cull_string.coending 4 fn in 
-    "tesseract "^fn^" "^base^" "^
-    "-l spa --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
-) u2 ;; 
+let command_for_tesseracting k= 
+  let sk = string_of_int k in 
+  [
+   "tesseract  p"^sk^".png p"^sk^" -l spa --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
+  ] ;;
 
-let go_to_dir1 () = Sys.chdir dir1 ;;
+let commands_for_tesseracting = List.flatten (
+   Int_range.scale command_for_tesseracting 1 n1
+) ;;
 
-let execute_commands () = 
-   Explicit.image Sys.command commands ;; 
+let tesseract_it_all () = 
+   let _ = Sys.chdir dir1 in 
+   let res = Unix_command.conditional_multiple_uc commands_for_tesseracting in 
+   let _ = Sys.chdir usual_dir in 
+   res ;;
 
-let u3 = Int_range.scale (fun k->
-  let s_ap = home ^ "/Downloads/Tess/q" ^(string_of_int k)^".txt" in 
+let extracted_texts = Int_range.scale (fun k->
+  let s_ap = home ^ "/Downloads/Tess/p" ^(string_of_int k)^".txt" in 
   let ap = Absolute_path.of_string s_ap in 
-  Io.read_whole_file ap
-  ) 0 23 ;;   
+  "\n\n%\n%Page "^(string_of_int k)^"\n%\n\n\n"^(Io.read_whole_file ap)
+  ) 1 n1 ;;   
 
-let u4 = String.concat "\n\n\n" u3 ;;  
+let full_text = String.concat "" extracted_texts ;;  
 
-let s_last_ap = home ^ "/Downloads/Tess/full_index.txt" ;;
+let s_last_ap = home ^ "/Downloads/Tess/la_epoca_presente_raw_ocr.txt" ;;
 
 let last_ap = Absolute_path.create_file_if_absent s_last_ap ;;
 
-Io.overwrite_with last_ap u4 ;;
+Io.overwrite_with last_ap full_text ;;
 
 end;;
 
 (************************************************************************************************************************
- Entry 155 : Last use of Cee modules
+ Entry 155 : Use the tesseract command on many files (hands-on version)
 ************************************************************************************************************************)
 module Snip155 = struct 
 
+let i_order = Total_ordering.for_integers ;; 
 
+let i_sort = Ordered.sort i_order ;; 
+let dir1 = home ^ "/Downloads/Tess/" ;;
+
+let usual_dir = Sys.getcwd () ;;
+let go_to_dir1 () = Sys.chdir dir1 ;;
+
+let parse_png_filename_opt fn = 
+  if 
+     not((String.starts_with ~prefix:"p" fn )
+     &&(String.ends_with ~suffix:".png" fn ))
+  then None 
+  else
+    int_of_string_opt(Cull_string.two_sided_cutting ("p",".png") fn)   ;;
+
+let command_for_tesseracting k= 
+  let sk = string_of_int k in 
+  [
+   "tesseract  p"^sk^".png p"^sk^" -l spa --tessdata-dir /usr/share/tesseract-ocr/5/tessdata/"
+  ] ;;
+
+let first_nonblank_in_text_opt text =
+  Option.map (fun k->String.get text (k-1))
+  (String_find_char.from_inclusive_opt (fun c->not(List.mem c [' ';'\n';'\r';'\t'])) text 1) ;;
+   
+(*
+first_nonblank_in_text_opt "\n \r Marcia baila" ;;
+*)
+  
+let snippet_starts_with_capitalized_letter text =
+  match first_nonblank_in_text_opt text with 
+  None -> false 
+  |Some c->let i = int_of_char c in (65<=i)&&(i<=90) ;;
+
+let extract_next_paragraph first_snippet other_snippets = 
+  match List_again.find_and_remember_opt snippet_starts_with_capitalized_letter other_snippets with 
+  None -> (String.concat "\n" (first_snippet::other_snippets),[])
+  |Some(before,next_starter,after) ->
+     (String.concat "\n" (first_snippet::before),next_starter::after) ;;
+
+let rec helper_for_paragraph_formation (treated,to_be_treated) = match to_be_treated with 
+  [] -> List.rev treated 
+  |first_snippet::other_snippets->
+    let (next_paragraph,remaining_snippets) = extract_next_paragraph first_snippet other_snippets in 
+    helper_for_paragraph_formation (next_paragraph::treated,remaining_snippets) ;;
+
+let form_paragraphs_according_to_first_letter snippets= 
+  (* the rule is that a snippet is considered as the start of a new paragraph
+     when it starts with a capitalized letter
+  *)
+  helper_for_paragraph_formation ([],snippets) ;; 
+
+(*
+form_paragraphs_according_to_first_letter ["According to John,";"it was a close shave";"Let us go.";"early";"Lent"] ;;
+*)
+
+let join_two_lines line1 line2 = 
+  if String.ends_with line1 ~suffix:"-"
+  then (Cull_string.two_sided_cutting ("","-") line1)^line2
+  else line1^" "^line2 ;;   
+
+let guillemot = "\194\171";;
+
+let remove_redundant_guillemots lines =
+    let temp = List_again.universal_delta_list lines in 
+    (List.hd lines)::(Image.image (fun (line1,line2)->
+      if (Substring.is_a_substring_of guillemot line1)
+          &&(String.starts_with line2 ~prefix:guillemot)
+      then Cull_string.two_sided_cutting (guillemot,"") line2
+      else line2 
+    )  temp) ;;
+
+let make_paragraph_one_lined_and_without_redundant_guillemots paragraph =
+   let lines = Lines_in_text.lines paragraph in 
+   let lines_without_rgs = remove_redundant_guillemots lines in
+   List.fold_left join_two_lines "" lines_without_rgs ;;
+
+
+let form_one_lined_paragraphs snippets=
+  let paragraphs = form_paragraphs_according_to_first_letter snippets in 
+  Image.image  make_paragraph_one_lined_and_without_redundant_guillemots paragraphs ;;
+
+
+let all_files = Unix_again.quick_beheaded_complete_ls dir1 ;;
+
+
+let compound_indices = i_sort(List.filter_map parse_png_filename_opt all_files) ;; 
+
+let page_numbers = i_sort (Image.image (fun k->k/10) compound_indices) ;;
+
+
+let commands_for_tesseracting = List.flatten (
+   Image.image command_for_tesseracting compound_indices
+) ;;
+
+let tesseract_it_all () = 
+   let _ = Sys.chdir dir1 in 
+   let res = Unix_command.conditional_multiple_uc commands_for_tesseracting in 
+   let _ = Sys.chdir usual_dir in 
+   res ;;
+
+let extract_text_at_page_number page_nbr =
+  let compounds=List.filter (fun k->(k/10)=page_nbr) compound_indices in 
+  let subtexts = Image.image (
+    fun k->
+      let s_ap = home ^ "/Downloads/Tess/p" ^(string_of_int k)^".txt" in 
+      let ap = Absolute_path.of_string s_ap in 
+      Io.read_whole_file ap
+  ) compounds in 
+  "\n\n%\n% Page "^(string_of_int page_nbr)^"\n%\n\n\n"^(String.concat "\n\n" (form_one_lined_paragraphs subtexts))^"\n" ;;
+
+let extracted_texts = Image.image extract_text_at_page_number page_numbers;;   
+
+let full_text = String.concat "" extracted_texts ;;  
+
+let s_last_ap = home ^ "/Downloads/Tess/la_epoca_presente_raw_ocr.txt" ;;
+
+let last_ap = Absolute_path.create_file_if_absent s_last_ap ;;
+
+Io.overwrite_with last_ap full_text ;;
+
+
+
+let ap1 = Absolute_path.of_string(home ^ "/Teuliou/html_files/Translations/Second_building_site/la_epoca_presente_spanish.txt");;
+
+(*
+let text1 = Io.read_whole_file ap1 ;;
+
+let text2 = Lines_in_text.interval text1 355 700 ;;
+
+let u1 = Int_range.index_everything (Strung.explode text2) ;;
+
+let u2 = Image.image (fun pair->
+  let (idx,c) = pair in 
+  if c<>'.' then (pair,None) else 
+  let k_opt = String_find_char.from_inclusive_opt (fun c->not(List.mem c [' ';'\n';'\r';'\t';])) text2 (idx+1) in 
+  let k = Option.get k_opt in 
+  (pair,Some(k,String.get text2 (k-1)))
+  ) u1 ;;
+
+let u3 = List.filter_map snd u2;;
+
+let u4 = Image.image (fun (pair,opt)->
+  match opt with 
+  None ->String.make 1 (snd pair)
+  |Some(k,next_char)->
+     let i = int_of_char next_char in 
+     if ((65<=i)&&(i<=90))||(i=171)
+     then String.make 1 (snd pair) 
+     else ""
+  ) u2 ;;
+
+let text3 = String.concat "" u4 ;;
+
+let text4 = Lines_in_text.modify_interval_inside_text (fun _->text3) text1 355 700 ;;
+
+let act1 () = Io.overwrite_with ap1 text4 ;;
+
+*)
+
+let text1 = Io.read_whole_file ap1 ;;
+
+let interval_start = 369 ;;
+
+let interval_end = 697 ;; 
+
+let text2 = Lines_in_text.interval text1 interval_start interval_end ;;
+
+let u1 = Strung.explode text2 ;;
+
+let u2 = List_again.connected_fibers (fun c->List.mem c [' ';'\r';'\t']) u1 ;;
+
+
+let u3 = Image.image (fun ((i,j),chars,is_a_blank)->
+   if not is_a_blank then Strung.implode chars else 
+   if ((Strung.get text2 (i-1))<>'\n') 
+      && ((Strung.get text2 (j+1))<>'\n')
+   then " "
+   else Strung.implode chars    
+  ) u2 ;;
+
+
+let text3 = String.concat "" u3 ;;
+
+let text4 = Lines_in_text.modify_interval_inside_text (fun _->text3) text1 interval_start interval_end ;;
+
+let act2 () = Io.overwrite_with ap1 text4 ;;
 end;;
 
 (************************************************************************************************************************

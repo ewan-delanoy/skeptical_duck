@@ -4,6 +4,8 @@
 
 *)
 
+exception No_leader_found_exn ;; 
+
 module Private = struct
 
 let rec helper_for_common_initial_sublist (treated,to_be_treated1,to_be_treated2) =
@@ -158,6 +160,24 @@ let find_rightmost_pattern_and_remember_opt f items =
     (List.rev rev_left,item,List.rev rev_right)) (find_pattern_and_remember_opt f (List.rev items))  ;;
 
 
+let rec helper_for_computing_leaders_and_followers f (treated,current_pair) =
+    let (current_leader,after_current_leader) = current_pair in 
+    match find_and_remember_opt f after_current_leader with 
+    None -> List.rev ( (current_leader,after_current_leader)::treated)
+    |Some(before_next_leader,next_leader,after_next_leader) ->
+        let next_treated= (current_leader,before_next_leader) :: treated 
+        and next_pair = (next_leader,after_next_leader) in 
+        helper_for_computing_leaders_and_followers f (next_treated,next_pair) ;;
+
+
+
+let leaders_and_followers f l=
+   match find_and_remember_opt f l with 
+    None -> raise No_leader_found_exn
+    |Some(before_first_leader,first_leader,after_first_leader) ->
+        (before_first_leader, helper_for_computing_leaders_and_followers f ([],(first_leader,after_first_leader))) ;;
+
+
 end ;;    
 
 let assoc_right_opt y l = 
@@ -244,6 +264,14 @@ let index_of_in_opt x ll=
 let interval = Private.interval ;;
 
 (* interval (Int_range.range 1 7) 2 5 ;; *)
+
+let leaders_and_followers = Private.leaders_and_followers ;;
+
+(*
+
+leaders_and_followers (fun x->List.mem x [4;9;16;25]) (Int_range.range 1 30) ;;
+
+*)
 
 exception Long_head_with_tail_exn of int*int;;
 
