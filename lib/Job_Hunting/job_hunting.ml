@@ -88,6 +88,19 @@ let recent_companies () =
   let answer = Ordered.sort Total_ordering.lex_for_strings (Image.image snd recent_job_applications) in 
   (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
 
+let available_again () =
+  let all_job_applications = usual_list() in 
+  let older_job_applications = List.filter (fun (date,_company_name)->
+    (Jh_date.number_of_days_between (Jh_date.today ()) date) > three_months_duration
+  ) all_job_applications in 
+  let pre_answer = Ordered.sort Total_ordering.lex_for_strings (Image.image snd older_job_applications) in 
+  let answer = Ordered.setminus Total_ordering.lex_for_strings pre_answer (fst(recent_companies())) in 
+  (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
+
+
+
   end ;;  
+
+let available_again () = Private.available_again ;;  
 
 let recent_companies = Private.recent_companies ;;  
