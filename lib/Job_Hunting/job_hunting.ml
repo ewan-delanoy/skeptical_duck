@@ -101,6 +101,8 @@ let available_again () =
 
   end ;;  
 
-let available_again () = Private.available_again ;;  
+let available_again = Private.available_again ;;  
 
 let recent_companies = Private.recent_companies ;;  
+
+let usual () = (fst(available_again()),snd(recent_companies())) ;;

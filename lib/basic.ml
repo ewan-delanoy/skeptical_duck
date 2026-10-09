@@ -31,6 +31,14 @@ let display_message msg =
     flush stdout
   ;;
 
+let rec helper_for_horner_algorithm x accu coeffs = match coeffs with 
+   [] -> accu 
+   |a::other_coeffs -> helper_for_horner_algorithm x (a+x*accu) other_coeffs ;;
+
+(*
+helper_for_horner_algorithm 10 0 [6;7;8] ;;
+*)
+
 end ;;  
 
 let announce cmd = Private.display_message (cmd ^ " ...") ;;
@@ -59,6 +67,19 @@ let frac_floor a b=
       then Private.frac_floor_for_positive_denominator a b
       else Private.frac_floor_for_positive_denominator (-a) (-b);;  
 
+let horner_algorithm coeffs x = Private.helper_for_horner_algorithm x 0 coeffs;;
+
+(*
+
+horner_algorithm [7;8;0;1] 10 ;;
+
+*)
+
+let rec largest_in_range_satisfying_opt (a,b) f =
+   if a>b then None else 
+   if f b then Some b else 
+   largest_in_range_satisfying_opt (a,b-1) f;;     
+
 let power a b = Private.helper_for_power (a,b,1) ;;
 
 let sign x=if x<0 then -1 else if x=0 then 0 else 1;;
@@ -68,7 +89,3 @@ let rec smallest_in_range_satisfying_opt (a,b) f =
    if f a then Some a else 
    smallest_in_range_satisfying_opt (a+1,b) f;;  
 
-let rec largest_in_range_satisfying_opt (a,b) f =
-   if a>b then None else 
-   if f b then Some b else 
-   largest_in_range_satisfying_opt (a,b-1) f;;     
