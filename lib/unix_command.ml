@@ -59,6 +59,11 @@ let uc s=
    then hardcore_uc s
    else mild_uc s;;
 
+let displayable_uc display_mode s=
+   if display_mode 
+   then let _ = Basic.display_message s in uc s 
+   else uc s;;
+
 let debug_individual_uc (j,s) =
     let msg = "Trying command number "^(string_of_int j)^" : "^s^"\n" in 
     let _=(print_string msg;flush stdout) in
@@ -94,10 +99,10 @@ end;;
 
 let cd dirname = (Private.prefix_for_changing_directories)^dirname;;
 
-let rec conditional_multiple_uc commands=match commands with
+let rec conditional_multiple_uc ?(display_mode=false) commands=match commands with
   []->true
   |cmd1::other_commands ->
-    if (Private.uc cmd1)=0
+    if (Private.displayable_uc display_mode cmd1)=0
     then conditional_multiple_uc other_commands 
     else false;;
            
