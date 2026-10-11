@@ -172,7 +172,10 @@ let parse_command_parameters parameters =
             let q=(n/3)-1 in 
             Fix_several(get 2,Int_range.scale (fun k->(int_of_string(get (3*k)),
             (parse_time(get (3*k+1)),parse_time(get (3*k+2))) )) 1 q) 
-   else if (n mod 2)<>0
+   else if n = 4 
+        then Usual(get 1,[0,(parse_time(get 2),parse_time(get 3))])
+        else 
+        if (n mod 2)<>0
         then denounce ("Wrong number of arguments for usual mode. Try ventilate -help for more information.")  
         else 
             let q=(n/2)-1 in 
