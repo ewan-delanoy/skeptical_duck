@@ -103,7 +103,7 @@ let rec conditional_multiple_uc ?(display_mode=false) commands=match commands wi
   []->true
   |cmd1::other_commands ->
     if (Private.displayable_uc display_mode cmd1)=0
-    then conditional_multiple_uc other_commands 
+    then conditional_multiple_uc ~display_mode other_commands 
     else false;;
            
 let debug_multiple_uc l = Private.helper_for_debug_multiple_uc (1,l);;           

@@ -143,6 +143,10 @@ let commands_for_fixing old_dir movie_name indexed_time_ranges =
      "/Downloads/Video_recording/Step2_Shortened/"^ (name_for_part movie_name idx)) indexed_time_ranges 
    )
    @
+   [
+     "cd "^(Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step1_Raw";
+   ]
+   @ 
     (commands_for_multiple_extraction movie_name indexed_time_ranges)
    @
     (commands_for_reaggregation reaggregation_needed movie_name)
