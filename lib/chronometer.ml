@@ -51,6 +51,7 @@ let rewrite_duration x=
  let duration_of_last_computation ()=
   (print_string(rewrite_duration (!timer));flush stdout);;
    
+  
    
  let  it f x=
   let t0=Unix.time() in
