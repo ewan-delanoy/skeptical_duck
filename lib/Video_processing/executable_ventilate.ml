@@ -53,6 +53,25 @@ parse_time "2h5m50s" ;;
 
 *)
 
+let nonzero_quantity_followed_by_unit (x,unit) = if x=0 then "" else (string_of_int x)^unit ;;
+
+let text_for_time time = 
+   let (h,time_m) = (time/3600,time mod 3600) in
+   let (m,s) = (time_m/60,time_m mod 60) in 
+   let parts = Image.image nonzero_quantity_followed_by_unit [h,"h";m,"m";s,"s"] in 
+   String.concat "" parts;;
+
+(*
+
+text_for_time 7550 ;;
+
+*)
+
+let text_for_times times = String.concat ", " (Image.image text_for_time times) ;;
+
+
+
+
 let name_for_raw_version movie_name       = movie_name^"_raw.mp4" ;;
 let name_for_part movie_name idx= 
   if idx=0
@@ -75,18 +94,19 @@ let commands_for_multiple_extraction movie_name indexed_time_ranges =
           commands_for_single_extraction movie_name    
    ) indexed_time_ranges);;
 
-(*   
+
 let commands_for_preparing_inspection_of_cuts reaggregation_needed movie_name indexed_time_ranges = 
    if not reaggregation_needed 
    then []
    else   
    let range_lengths = Image.image (fun (_,(t_start,t_end))->t_end-t_start) indexed_time_ranges in
-   let n = List.length range_lengths in  
-   let cut_times =  Int_range
-   ["print_outside \"The cut on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
-   "Two seconds before, this gives : "^(text_for__times anticipated_cut_times)^"\""];;
-*)
+   let cut_times =  Arithmetic_list.cumulative_sums range_lengths in 
+   let anticipated_cut_times = Image.image (fun t->t-2) cut_times in 
+   ["print_outside \"The cuts on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
+   "Two seconds before, this gives : "^(text_for_times anticipated_cut_times)^"\""];;
 
+
+Arithmetic_list.delta ;;
 
 let maximum_number_of_parts = 20 ;;
 
@@ -133,6 +153,8 @@ let commands_for_usual_case old_dir movie_name indexed_time_ranges =
     (commands_for_reaggregation reaggregation_needed movie_name)
    @
     (commands_for_compression old_dir movie_name)
+   @
+   (commands_for_preparing_inspection_of_cuts reaggregation_needed movie_name indexed_time_ranges) 
 ;;
 
 let commands_for_single_cleanup movie_name =
