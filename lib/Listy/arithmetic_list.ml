@@ -86,6 +86,14 @@ let is_connected = function
   [] -> true 
   |i :: others -> helper_for_connectedness_test i others ;;
 
+
+let rec helper_for_cumulative_sums (treated,to_be_treated)=match to_be_treated with 
+  [] -> treated 
+  |x::others -> helper_for_cumulative_sums (x::(Image.image (fun t->x+t) treated),others) ;;
+
+let cumulative_sums l = helper_for_cumulative_sums ([],List.rev l) ;;
+
+
 end ;;
 
 
@@ -107,6 +115,14 @@ complement_union_of_ranges [3,7;9,20] 30;;
 complement_union_of_ranges [1,7;9,20] 30;;
 complement_union_of_ranges [1,7;9,30] 30;;
 complement_union_of_ranges [1,7;8,30] 30;;
+
+*)
+
+let cumulative_sums = Private.cumulative_sums ;;
+
+(*
+
+cumulative_sums [7;20;400;5000] ;;
 
 *)
 

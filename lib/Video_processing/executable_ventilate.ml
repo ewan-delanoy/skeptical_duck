@@ -75,6 +75,19 @@ let commands_for_multiple_extraction movie_name indexed_time_ranges =
           commands_for_single_extraction movie_name    
    ) indexed_time_ranges);;
 
+(*   
+let commands_for_preparing_inspection_of_cuts reaggregation_needed movie_name indexed_time_ranges = 
+   if not reaggregation_needed 
+   then []
+   else   
+   let range_lengths = Image.image (fun (_,(t_start,t_end))->t_end-t_start) indexed_time_ranges in
+   let n = List.length range_lengths in  
+   let cut_times =  Int_range
+   ["print_outside \"The cut on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
+   "Two seconds before, this gives : "^(text_for__times anticipated_cut_times)^"\""];;
+*)
+
+
 let maximum_number_of_parts = 20 ;;
 
 let commands_for_reaggregation reaggregation_needed movie_name =
@@ -152,6 +165,7 @@ let commands_for_fixing old_dir movie_name indexed_time_ranges =
     (commands_for_reaggregation reaggregation_needed movie_name)
    @
     (commands_for_compression old_dir movie_name)
+
 ;;
 
 
@@ -186,22 +200,32 @@ let parse_command_parameters parameters =
             Usual(get 1,Int_range.scale (fun k->(k,
             (parse_time(get (2*k)),parse_time(get (2*k+1))) )) 1 q) ;;
 
-let commands_for_use_case_opt old_dir = function 
-   Clean (movie_names) -> Some(commands_for_cleanup movie_names)
-  |Fix_one (movie_name,t_start,t_end) -> Some(commands_for_fixing old_dir movie_name [0,(t_start,t_end)])
-  |Fix_several (movie_name,indexed_time_ranges) -> Some(commands_for_fixing old_dir movie_name indexed_time_ranges)
-  |Usual (movie_name,indexed_time_ranges) -> Some(commands_for_usual_case old_dir movie_name indexed_time_ranges)
-  |Help -> None  ;;
+let commands_for_use_case old_dir = function 
+   Clean (movie_names) -> commands_for_cleanup movie_names
+  |Fix_one (movie_name,t_start,t_end) -> commands_for_fixing old_dir movie_name [0,(t_start,t_end)]
+  |Fix_several (movie_name,indexed_time_ranges) -> commands_for_fixing old_dir movie_name indexed_time_ranges
+  |Usual (movie_name,indexed_time_ranges) -> commands_for_usual_case old_dir movie_name indexed_time_ranges
+  |Help -> ["print_outside "^summary_of_options] ;;
+
+let use_case_might_be_long = function 
+   Clean (_) | Help -> false
+  |Fix_one (_,_,_) 
+  |Fix_several (_,_) 
+  |Usual (_,_) -> true ;;
 
 (* this function is for debugging purposes *)
 let commands_from_parameters old_dir parameters= 
-    Option.get(commands_for_use_case_opt old_dir (parse_command_parameters parameters)) ;;
+    commands_for_use_case old_dir (parse_command_parameters parameters) ;;
 
 let main args = 
-   match commands_for_use_case_opt (Sys.getcwd()) (parse_command_parameters args) with 
-   None -> Basic.display_message summary_of_options 
-   |Some commands ->
-   let _ = Chronometer.it (Unix_command.conditional_multiple_uc ~display_mode:true) commands  in 
+   let use_case = parse_command_parameters args in 
+   let commands = commands_for_use_case (Sys.getcwd()) use_case in
+   let _ = 
+      (if use_case_might_be_long use_case 
+       then  Chronometer.it (Unix_command.conditional_multiple_uc ~display_mode:true) commands 
+       else  Unix_command.conditional_multiple_uc ~display_mode:true commands
+      )
+      in 
    ();;
 
 end ;;
