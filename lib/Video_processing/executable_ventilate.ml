@@ -105,12 +105,29 @@ let commands_for_preparing_inspection_of_cuts reaggregation_needed movie_name in
    ["print_outside \"The cuts on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
    "Two seconds before, this gives : "^(text_for_times anticipated_cut_times)^"\""];;
 
-
-Arithmetic_list.delta ;;
-
 let maximum_number_of_parts = 20 ;;
 
-let commands_for_reaggregation reaggregation_needed movie_name =
+let commands_for_reaggregation_from_known_parts reaggregation_needed movie_name indexed_time_ranges=
+   if not reaggregation_needed 
+   then []
+   else   
+   let dir = (Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step2_Shortened/" in 
+   let unjoined_parts = Image.image (
+      fun (idx,_) -> 
+         let part_name = name_for_part movie_name idx in 
+        "\"$PWD/"^(part_name)^"\""
+   ) indexed_time_ranges in  
+   let parts = String.concat " " unjoined_parts in 
+   [
+      "cd "^dir;
+      "printf \"file '%s'\n\" " ^parts^ "  > /tmp/concat_"^movie_name^".txt";
+      "ffmpeg -f concat -safe 0 -i /tmp/concat_"^movie_name^".txt -c copy "^(name_for_part movie_name 0);
+      "rm /tmp/concat_"^movie_name^".txt"
+   ]
+   ;;
+
+
+let commands_for_reaggregation_from_unknown_parts reaggregation_needed movie_name =
    if not reaggregation_needed 
    then []
    else   
@@ -150,7 +167,7 @@ let commands_for_usual_case old_dir movie_name indexed_time_ranges =
    @
     (commands_for_multiple_extraction movie_name indexed_time_ranges)
    @
-    (commands_for_reaggregation reaggregation_needed movie_name)
+    (commands_for_reaggregation_from_known_parts reaggregation_needed movie_name indexed_time_ranges)
    @
     (commands_for_compression old_dir movie_name)
    @
@@ -184,7 +201,7 @@ let commands_for_fixing old_dir movie_name indexed_time_ranges =
    @ 
     (commands_for_multiple_extraction movie_name indexed_time_ranges)
    @
-    (commands_for_reaggregation reaggregation_needed movie_name)
+    (commands_for_reaggregation_from_unknown_parts reaggregation_needed movie_name)
    @
     (commands_for_compression old_dir movie_name)
 
