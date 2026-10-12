@@ -15,6 +15,7 @@ module Private = struct
 let prefix_for_changing_directories         = "cd ";;
 let prefix_for_replacing_patterns           = "rp ";;
 let prefix_for_reverse_replacing_patterns   = "rvp ";;
+let prefix_for_printing_text   = "print_outside ";;
 
 let accu=ref([]:string list);;
 let remember_commands_mode=ref(false);;
@@ -23,7 +24,8 @@ let hardcore_mode=ref(false);;
 let command cmd=
    let cd_prefix =prefix_for_changing_directories 
    and rp_prefix =prefix_for_replacing_patterns 
-   and rvp_prefix =prefix_for_reverse_replacing_patterns in 
+   and rvp_prefix =prefix_for_reverse_replacing_patterns 
+   and pt_prefix =prefix_for_printing_text in 
    if String.starts_with ~prefix:cd_prefix cmd 
    then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
    else 
@@ -33,6 +35,9 @@ let command cmd=
    if String.starts_with ~prefix:rvp_prefix cmd 
    then let  _= Compact_replacer.reverse_execute(Cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
    else 
+   if String.starts_with ~prefix:pt_prefix cmd 
+   then let  _= (print_string("\n"^(Cull_string.cobeginning (String.length pt_prefix) cmd));flush stdout) in 0 
+   else    
    Sys.command cmd;;
 
 
