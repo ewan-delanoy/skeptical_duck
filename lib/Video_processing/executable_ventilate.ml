@@ -10,6 +10,7 @@ module Private = struct
 
 type use_case =
    Clean of string list
+  |Empty 
   |Fix_one of string * int * int
   |Fix_several of string * ((int * (int * int)) list)
   |Help
@@ -20,6 +21,7 @@ let summary_of_options = String.concat "\n" [
   "Possible formats : ";
   "ventilate movieName start1 end1 ... startn endn (n>=1) ";
   "ventilate -clean movieName1 movieName2 ... movieNamen (n>=1)";
+  "ventilate -empty";
   "ventilate -help";
   "ventilate -fix movieName start end";
   "ventilate -fix movieName index1 start1 end1 indexn startn endn (n>=2)";
@@ -101,9 +103,9 @@ let commands_for_preparing_inspection_of_cuts reaggregation_needed movie_name in
    else   
    let range_lengths = Image.image (fun (_,(t_start,t_end))->t_end-t_start) indexed_time_ranges in
    let cut_times =  Arithmetic_list.cumulative_sums range_lengths in 
-   let anticipated_cut_times = Image.image (fun t->t-2) cut_times in 
-   ["print_outside \"The cuts on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
-   "Two seconds before, this gives : "^(text_for_times anticipated_cut_times)^"\""];;
+   let anticipated_cut_times = Image.image (fun t->t-4) cut_times in 
+   ["print_outside The cuts on file "^(name_for_compressed_version movie_name)^" will be located at : "^(text_for_times cut_times)^"\n"^
+   "Four seconds before, this gives : "^(text_for_times anticipated_cut_times)^"\n"];;
 
 let maximum_number_of_parts = 20 ;;
 
@@ -184,6 +186,14 @@ let commands_for_single_cleanup movie_name =
 
 let commands_for_cleanup movie_names=List.flatten(Image.image commands_for_single_cleanup  movie_names) ;;  
 
+let commands_for_emptying =
+ [
+     "rm -f "^(Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step3_Compressed/*.mp4"^
+                                    " /Downloads/Video_recording/Step2_Shortened/*.mp4"^ 
+                                    " /Downloads/Video_recording/Step1_Raw/*.mp4"
+ ] 
+;;
+
 let commands_for_fixing old_dir movie_name indexed_time_ranges =
    let reaggregation_needed = (fst(List.hd(indexed_time_ranges))>0) in 
    [
@@ -217,6 +227,7 @@ let parse_command_parameters parameters =
    else       
    let option_name = Array.get parameters 1 in 
    if option_name = "-help" then Help else 
+   if option_name = "-empty" then Empty else 
    if option_name = "-clean" then Clean(Int_range.scale (Array.get parameters) 2 (n-1)) else 
    let get = (fun t->Array.get parameters t) in   
    if option_name = "-fix" 
@@ -241,13 +252,14 @@ let parse_command_parameters parameters =
 
 let commands_for_use_case old_dir = function 
    Clean (movie_names) -> commands_for_cleanup movie_names
+  |Empty -> commands_for_emptying 
   |Fix_one (movie_name,t_start,t_end) -> commands_for_fixing old_dir movie_name [0,(t_start,t_end)]
   |Fix_several (movie_name,indexed_time_ranges) -> commands_for_fixing old_dir movie_name indexed_time_ranges
   |Usual (movie_name,indexed_time_ranges) -> commands_for_usual_case old_dir movie_name indexed_time_ranges
   |Help -> ["print_outside "^summary_of_options] ;;
 
 let use_case_might_be_long = function 
-   Clean (_) | Help -> false
+   Clean (_) | Empty | Help -> false
   |Fix_one (_,_,_) 
   |Fix_several (_,_) 
   |Usual (_,_) -> true ;;
