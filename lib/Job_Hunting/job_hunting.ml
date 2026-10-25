@@ -83,25 +83,53 @@ let three_months_duration = 30+2*31 ;;
 let recent_companies () =
   let all_job_applications = usual_list() in 
   let recent_job_applications = List.filter (fun (date,_company_name)->
-    (Jh_date.number_of_days_between (Jh_date.today ()) date) <= three_months_duration
+    (Jh_date.number_of_days_between date (Jh_date.today ()) ) <= three_months_duration
   ) all_job_applications in 
   let answer = Ordered.sort Total_ordering.lex_for_strings (Image.image snd recent_job_applications) in 
   (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
 
+
+let remove_isolated_companies l =
+  let all_job_applications = usual_list() in 
+  let (isolated,not_isolated) = List.partition (
+    fun company_name ->
+      let temp = List.filter (
+        fun (_,company_name2)->company_name2=company_name
+      ) all_job_applications in 
+      List.length(temp)=1
+  ) l in
+  (not_isolated,List.length isolated);;
+
 let available_again () =
   let all_job_applications = usual_list() in 
   let older_job_applications = List.filter (fun (date,_company_name)->
-    (Jh_date.number_of_days_between (Jh_date.today ()) date) > three_months_duration
+    (Jh_date.number_of_days_between date (Jh_date.today ())) > three_months_duration
   ) all_job_applications in 
   let pre_answer = Ordered.sort Total_ordering.lex_for_strings (Image.image snd older_job_applications) in 
-  let answer = Ordered.setminus Total_ordering.lex_for_strings pre_answer (fst(recent_companies())) in 
-  (answer,(fun c->List.filter (fun s->(String.get s 0)=c) answer));;
+  let all_newly_available = Ordered.setminus Total_ordering.lex_for_strings pre_answer (fst(recent_companies())) in
+  (remove_isolated_companies all_newly_available,(fun c->List.filter (fun s->(String.get s 0)=c) all_newly_available));;
 
-
+let available_later () =
+  let all_job_applications = usual_list() in 
+  let recent_job_applications = List.filter (fun (date,_company_name)->
+    (Jh_date.number_of_days_between date (Jh_date.today ())) <= three_months_duration
+  ) all_job_applications in 
+  let recent_companies = Ordered.sort Total_ordering.lex_for_strings (Image.image snd recent_job_applications) in 
+  let recent_nonisolated_companies = fst(remove_isolated_companies recent_companies) in 
+  let recent_nonisolated_companies_with_their_dates= Image.image ( 
+    fun company_name ->
+      let applications_for_this_company = List.filter(fun (_,company_name2)->company_name2=company_name) recent_job_applications in 
+      List.hd(List.rev applications_for_this_company)
+  ) recent_nonisolated_companies in
+  let temp1 = Ordered.sort order_on_dated_items recent_nonisolated_companies_with_their_dates in 
+  let temp2 = List_again.long_head 10 temp1 in 
+  Image.image (fun (date,company_name) -> (company_name,Jh_date.number_of_days_between date (Jh_date.today ()))) temp2;;
 
   end ;;  
 
 let available_again = Private.available_again ;;  
+
+let available_later = Private.available_later ;;  
 
 let recent_companies = Private.recent_companies ;;  
 

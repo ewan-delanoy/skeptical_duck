@@ -188,9 +188,8 @@ let commands_for_cleanup movie_names=List.flatten(Image.image commands_for_singl
 
 let commands_for_emptying =
  [
-     "rm -f "^(Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step3_Compressed/*.mp4"^
-                                    " /Downloads/Video_recording/Step2_Shortened/*.mp4"^ 
-                                    " /Downloads/Video_recording/Step1_Raw/*.mp4"
+     "rm -f "^(Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step2_Shortened/*.mp4"^ 
+          " "^(Sys.getenv "HOME") ^ "/Downloads/Video_recording/Step1_Raw/*.mp4"
  ] 
 ;;
 

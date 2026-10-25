@@ -1,6 +1,41 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 273 :    Exploring the contents of an outside  disk
+************************************************************************************************************************)
+module Snip273 = struct 
+   
+let g1 = Unix_again.quick_beheaded_complete_ls "/media/ewandelanoy/disk" ;;
+
+let found_g1 = ["AVF_INFO/PRV00001.BIN"; "AVF_INFO/AVIN0001.INP"; "AVF_INFO/AVIN0001.BNP";
+   "AVF_INFO/AVIN0001.INT"; "AVF_INFO/"; "PRIVATE/M4ROOT/STATUS.BIN";
+   "PRIVATE/M4ROOT/MEDIAPRO.XML"; "PRIVATE/M4ROOT/GENERAL/";
+   "PRIVATE/M4ROOT/THMBNL/"; "PRIVATE/M4ROOT/SUB/"; "PRIVATE/M4ROOT/CLIP/";
+   "PRIVATE/M4ROOT/"; "PRIVATE/AVCHD/BDMV/STREAM/";
+   "PRIVATE/AVCHD/BDMV/CLIPINF/"; "PRIVATE/AVCHD/BDMV/PLAYLIST/";
+   "PRIVATE/AVCHD/BDMV/INDEX.BDM"; "PRIVATE/AVCHD/BDMV/MOVIEOBJ.BDM";
+   "PRIVATE/AVCHD/BDMV/"; "PRIVATE/AVCHD/"; "PRIVATE/SONY/SONYCARD.IND";
+   "PRIVATE/SONY/"; "PRIVATE/"; ""] ;;
+
+
+let g2 = Unix_again.quick_beheaded_complete_ls "/media/ewandelanoy/disk" ;;
+
+let found_g2 = ["MP_ROOT/100ANV01/"; "MP_ROOT/"; "DCIM/100MSDCF/"; "DCIM/";
+   "AVF_INFO/PRV00001.BIN"; "AVF_INFO/AVIN0001.INP"; "AVF_INFO/AVIN0001.BNP";
+   "AVF_INFO/AVIN0001.INT"; "AVF_INFO/"; "PRIVATE/M4ROOT/STATUS.BIN";
+   "PRIVATE/M4ROOT/MEDIAPRO.XML"; "PRIVATE/M4ROOT/GENERAL/";
+   "PRIVATE/M4ROOT/THMBNL/"; "PRIVATE/M4ROOT/SUB/"; "PRIVATE/M4ROOT/CLIP/";
+   "PRIVATE/M4ROOT/"; "PRIVATE/AVCHD/BDMV/STREAM/";
+   "PRIVATE/AVCHD/BDMV/CLIPINF/"; "PRIVATE/AVCHD/BDMV/PLAYLIST/00000.MPL";
+   "PRIVATE/AVCHD/BDMV/PLAYLIST/"; "PRIVATE/AVCHD/BDMV/INDEX.BDM";
+   "PRIVATE/AVCHD/BDMV/MOVIEOBJ.BDM"; "PRIVATE/AVCHD/BDMV/"; "PRIVATE/AVCHD/";
+   "PRIVATE/SONY/SONYCARD.IND"; "PRIVATE/SONY/"; "PRIVATE/"; ""] ;;
+
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 272 : some failed ideas to analize French departements
 ************************************************************************************************************************)
 module Snip272 = struct 
