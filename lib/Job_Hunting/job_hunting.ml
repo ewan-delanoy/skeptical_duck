@@ -145,6 +145,9 @@ let available_later_ordered_by_date () =
     remaining_before_release >= 0
   ) all_job_applications ;;
 
+let available_later_ordered_by_company_name () =
+     reorder_by_company_name( available_later_ordered_by_date()) ;;
+
 let display_line_pair ((_,line1),(_,line2))= line1^"\n"^line2;;  
 
 let display_dated_item date line_pairs = 
@@ -160,6 +163,7 @@ end ;;
 
 let all_ordered_by_company_name = Private.initial_list_ordered_by_company_name ;;
 
+let available_later_ordered_by_company_name = Private.available_later_ordered_by_company_name ;;
 let available_now_ordered_by_company_name = Private.available_now_ordered_by_company_name ;;  
 
 let available_later_ordered_by_date = Private.available_later_ordered_by_date ;;  
