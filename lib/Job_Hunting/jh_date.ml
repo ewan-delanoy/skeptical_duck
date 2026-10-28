@@ -186,6 +186,12 @@ let three_months_later d =
   else {d with Jh_date_t.year=(d.Jh_date_t.year)+1;Jh_date_t.month=new_m-12} ;;  
 
 
+let to_string dt= 
+ let d=string_of_int(dt.Jh_date_t.month)
+ and m=string_of_int(dt.Jh_date_t.month)
+ and y=string_of_int(dt.Jh_date_t.year) in
+ d^"/"^m^"/"^y;;
+
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
@@ -194,6 +200,8 @@ let order = Private.order ;;
 let parser = Private.parser ;;
 
 let three_months_later = Private.three_months_later ;;
+
+let to_string = Private.to_string ;;
 let today = Private.today ;;
 
 let yearless_parser = Private.yearless ;;

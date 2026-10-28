@@ -52,7 +52,7 @@ let rec helper_towards_unique_dates_for_each_company (treated,to_be_treated)= ma
 let shorten_list_to_have_unique_dates_for_each_company l = 
   helper_towards_unique_dates_for_each_company ([],List.rev l) ;;
 
-let read_list text = 
+let extract_list_of_dated_items text = 
   let indexed_lines = Lines_in_text.indexed_lines text in 
    let nonempty_lines = List.filter (fun (_line_idx,line)->line<>"") indexed_lines in 
   let temp1 = Image.image (fun (line_idx,line)->
@@ -63,22 +63,35 @@ let read_list text =
   let temp2 = Image.image (fun (leader,followers)->
     (fst(Option.get(snd leader)),Image.image fst followers)  
   ) normalized_end_of_list in 
-  let temp3 = Image.image (
+  Image.image (
     fun (official_date,followers)->
     (official_date,convert_even_sized_list_to_list_of_pairs followers)
-  ) temp2 in 
+  ) temp2 ;;
+
+let ref_for_current_list_of_dated_items = ref None ;;
+
+let current_list_of_dated_items () = 
+    match !ref_for_current_list_of_dated_items with 
+   (Some old_answer) -> old_answer 
+    |None ->
+       let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") in 
+      let text = Io.read_whole_file ap in 
+      let new_answer = extract_list_of_dated_items text in 
+      ref_for_current_list_of_dated_items:=Some(new_answer);
+      new_answer ;;
+
+let compute_effective_dates_and_shorten dated_items = 
   let unordered = List.flatten(Image.image (
   fun  (official_date,jas)-> Image.image (fun (company_data,_)->
     (get_effective_date_for_pair official_date company_data,
     extract_company_name (snd company_data))) jas
-  ) temp3) in 
+  ) dated_items) in 
   let all_pairs = Ordered.sort order_on_dated_items unordered in 
   shorten_list_to_have_unique_dates_for_each_company all_pairs ;;
 
 let recompute_initial_list_from_scratch () = 
-  let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") in 
-  let text = Io.read_whole_file ap in 
-  read_list text ;;
+  let dated_items = current_list_of_dated_items () in 
+  compute_effective_dates_and_shorten dated_items ;;
 
 let ref_for_initial_list = ref None ;;
 
@@ -121,6 +134,10 @@ let available_later_ordered_by_date () =
   List.filter (fun (_date,(_company_name,_has_multiple_applications,remaining_before_release))->
     remaining_before_release >= 0
   ) all_job_applications ;;
+
+(*
+let display_dated_item (date,line_pairs) =
+*)
 
 
   end ;;  
