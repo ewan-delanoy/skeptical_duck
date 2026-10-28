@@ -7,6 +7,16 @@
 
 module Private = struct 
 
+let to_triple d = (d.Jh_date_t.year,d.Jh_date_t.month,d.Jh_date_t.day) ;;
+let i_order = Total_ordering.for_integers ;;
+
+let order_on_triples = Total_ordering.triple_product i_order i_order i_order ;;
+    
+
+let order =((fun date1 date2 ->
+  order_on_triples (to_triple date1) (to_triple date2)
+) : Jh_date_t.t Total_ordering_t.t);;  
+
 let is_a_leap_year  year = 
   if (year mod 4)<>0 then false else 
   if (year mod 400)=0 then true else   
@@ -39,7 +49,7 @@ let number_of_days_in_year_range year_min year_max =
     for year = year_min to year_max do accu:=(!accu) +  (number_of_days_in_year year) done;
     !accu ;;
 
-let number_of_days_between date1 date2 = 
+let number_of_days_between_in_usual_case date1 date2 = 
    let first_year = date1.Jh_date_t.year 
    and first_month = date1.Jh_date_t.month 
    and first_day = date1.Jh_date_t.day 
@@ -60,6 +70,13 @@ let number_of_days_between date1 date2 =
         ) 
    else  
    end_of_first_month + end_of_first_year + year_diff + beginning_of_last_year + beginning_of_last_month ;;
+
+let number_of_days_between date1 date2 = 
+  match order date1 date2 with 
+   Total_ordering_result_t.Lower -> number_of_days_between_in_usual_case date1 date2
+   |Total_ordering_result_t.Equal -> 0 
+   |Total_ordering_result_t.Greater ->(-(number_of_days_between_in_usual_case date2 date1)) ;;
+
 
 let digit_followed_by_optional_digit = 
   let d= Naive_parser_example.digit in
@@ -160,15 +177,7 @@ let today () =
    let gm = Unix.localtime (Unix.time()) in 
    {Jh_date_t.day=gm.Unix.tm_mday; month=gm.Unix.tm_mon+1; year=gm.Unix.tm_year+1900} ;;
 
-let to_triple d = (d.Jh_date_t.year,d.Jh_date_t.month,d.Jh_date_t.day) ;;
-let i_order = Total_ordering.for_integers ;;
 
-let order_on_triples = Total_ordering.triple_product i_order i_order i_order ;;
-    
-
-let order =((fun date1 date2 ->
-  order_on_triples (to_triple date1) (to_triple date2)
-) : Jh_date_t.t Total_ordering_t.t);;  
 
 let three_months_later d =
   let new_m=(d.Jh_date_t.month)+3 in

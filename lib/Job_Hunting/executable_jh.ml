@@ -17,14 +17,30 @@ let write_days k =
 let watcher = ref true ;;
 
 let all_data () =   
-   let ((nonisolated_ones,nbr_of_isolated),selector) = Job_hunting.usual () 
-   and pairs = Job_hunting.available_later () in 
-   let lines = Image.image (fun (company_name,nbr_of_days)->company_name^" ( "^(write_days nbr_of_days)^" )") pairs in 
-  let msg_for_available_ones = "The following "^(string_of_int(List.length nonisolated_ones))^" companies are currently available : \n\n"^
-   (String.concat ", " nonisolated_ones)^"\n\n"^
-   "In addition to those non-isolated companies, "^(string_of_int(nbr_of_isolated))^" isolated companies are also available."
+   let available_now = Job_hunting.available_now_ordered_by_company_name () in 
+   let (available_and_not_isolated,available_and_isolated) = List.partition (
+      fun (_company_name,(_date,has_multiple_applications,_remaining_before_release))-> 
+          has_multiple_applications
+   ) available_now in 
+   let names_for_nonisolated = Image.image (
+       fun (company_name,(_date,_has_multiple_applications,_remaining_before_release))-> company_name
+   ) available_and_not_isolated in
+   let all_company_names = Image.image (
+       fun (company_name,(_date,_has_multiple_applications,_remaining_before_release))-> company_name
+   ) (Job_hunting.all_ordered_by_company_name()) in 
+   let selector = (fun c->List.filter(fun company_name->String.get company_name 0=c) all_company_names) in 
+   let available_later = List.filter (
+     fun (_date,(_company_name,has_multiple_applications,_remaining_before_release))->has_multiple_applications
+   ) (Job_hunting.available_later_ordered_by_date()) in 
+   let ten_earliest = List_again.long_head 10 available_later in 
+   let lines = Image.image (fun 
+      (_date,(company_name,_has_multiple_applications,remaining_before_release))->
+      company_name^" ( "^(write_days remaining_before_release)^" )") ten_earliest in 
+  let msg_for_available_ones = "The following "^(string_of_int(List.length names_for_nonisolated))^" companies are currently available : \n\n"^
+   (String.concat ", " names_for_nonisolated)^"\n\n"^
+   "In addition to those non-isolated companies, "^(string_of_int(List.length(available_and_isolated)))^" isolated companies are also available."
   and  msg_for_releasable_ones = 
-  "The following companies will be released soon : \n"^
+  "The following companies will be released soon : \n\n"^
   (String.concat "\n" lines)
   and react_to_input=(fun s->
     let c=String.get s 0 in 
