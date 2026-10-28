@@ -14,18 +14,21 @@ let write_days k =
    if k=1 then "in 1 day" else    
    "in "^(string_of_int k)^" days" ;;
    
+let watcher = ref true ;;
+
 let all_data () =   
    let ((nonisolated_ones,nbr_of_isolated),selector) = Job_hunting.usual () 
    and pairs = Job_hunting.available_later () in 
    let lines = Image.image (fun (company_name,nbr_of_days)->company_name^" ( "^(write_days nbr_of_days)^" )") pairs in 
-  let msg_for_available_ones = "The following "^(string_of_int(List.length nonisolated_ones))^" companies are currently available : \n"^
+  let msg_for_available_ones = "The following "^(string_of_int(List.length nonisolated_ones))^" companies are currently available : \n\n"^
    (String.concat ", " nonisolated_ones)^"\n\n"^
-   (string_of_int(nbr_of_isolated))^" isolated companies are also available."
+   "In addition to those non-isolated companies, "^(string_of_int(nbr_of_isolated))^" isolated companies are also available."
   and  msg_for_releasable_ones = 
   "The following companies will be released soon : \n"^
   (String.concat "\n" lines)
   and react_to_input=(fun s->
     let c=String.get s 0 in 
+    if c='q' then let _=(watcher:=false) in "" else
     let selected = selector c in 
     if selected = []
     then "\nThere are no company names starting with this letter."
@@ -37,7 +40,7 @@ let all_data () =
 let main _args = 
    let (initial_ann,react_to_input) = all_data () in 
    let _ = Basic.announce initial_ann in 
-   while true do
+   while !watcher do
       Basic.announce (react_to_input(read_line()))  
    done;;
 

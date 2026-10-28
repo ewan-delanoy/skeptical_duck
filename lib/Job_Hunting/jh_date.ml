@@ -170,6 +170,13 @@ let order =((fun date1 date2 ->
   order_on_triples (to_triple date1) (to_triple date2)
 ) : Jh_date_t.t Total_ordering_t.t);;  
 
+let three_months_later d =
+  let new_m=(d.Jh_date_t.month)+3 in
+  if new_m<=12
+  then {d with Jh_date_t.month=new_m}
+  else {d with Jh_date_t.year=(d.Jh_date_t.year)+1;Jh_date_t.month=new_m-12} ;;  
+
+
 end ;;  
 
 let  number_of_days_between = Private.number_of_days_between ;; 
@@ -177,6 +184,7 @@ let  number_of_days_between = Private.number_of_days_between ;;
 let order = Private.order ;;
 let parser = Private.parser ;;
 
+let three_months_later = Private.three_months_later ;;
 let today = Private.today ;;
 
 let yearless_parser = Private.yearless ;;
