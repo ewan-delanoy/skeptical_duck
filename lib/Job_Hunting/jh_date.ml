@@ -187,7 +187,7 @@ let three_months_later d =
 
 
 let to_string dt= 
- let d=string_of_int(dt.Jh_date_t.month)
+ let d=string_of_int(dt.Jh_date_t.day)
  and m=string_of_int(dt.Jh_date_t.month)
  and y=string_of_int(dt.Jh_date_t.year) in
  d^"/"^m^"/"^y;;

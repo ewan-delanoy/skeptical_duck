@@ -135,16 +135,22 @@ let available_later_ordered_by_date () =
     remaining_before_release >= 0
   ) all_job_applications ;;
 
-(*
-let display_dated_item (date,line_pairs) =
-*)
+let display_line_pair ((_,line1),(_,line2))= line1^"\n"^line2;;  
 
+let display_dated_item date line_pairs = 
+  "Data for today, "^(Jh_date.to_string date)^" :\n\n"^
+  (String.concat "\n\n" (Image.image display_line_pair line_pairs)) ;;
 
-  end ;;  
+let data_for_today () =
+   let today = Jh_date.today () in 
+   let line_pairs = List.assoc today (current_list_of_dated_items()) in 
+   display_dated_item today line_pairs ;;
+
+end ;;  
 
 let all_ordered_by_company_name = Private.initial_list_ordered_by_company_name ;;
 
 let available_now_ordered_by_company_name = Private.available_now_ordered_by_company_name ;;  
 
 let available_later_ordered_by_date = Private.available_later_ordered_by_date ;;  
-
+let data_for_today = Private.data_for_today  ;;
