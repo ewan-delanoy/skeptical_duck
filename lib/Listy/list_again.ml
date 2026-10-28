@@ -177,6 +177,37 @@ let leaders_and_followers f l=
     |Some(before_first_leader,first_leader,after_first_leader) ->
         (before_first_leader, helper_for_computing_leaders_and_followers f ([],(first_leader,after_first_leader))) ;;
 
+let rec inner_helper_for_filtering_and_remembering f x_false x_true (treated,to_be_treated) = match to_be_treated with 
+  []->(List.rev treated,(Some x_false,Some x_true))
+  |z::others ->
+     if f z 
+     then inner_helper_for_filtering_and_remembering f x_false x_true (z::treated,others) 
+     else inner_helper_for_filtering_and_remembering f x_false x_true (treated,others) ;;
+
+let rec helper1_for_filtering_and_remembering f x_true (treated,to_be_treated) = match to_be_treated with 
+  []->(List.rev treated,(None,Some x_true))
+  |y::others ->
+     if f y 
+     then helper1_for_filtering_and_remembering f x_true (y::treated,others) 
+     else inner_helper_for_filtering_and_remembering f y x_true (treated,others) ;;
+   
+
+let rec helper2_for_filtering_and_remembering f x_false (treated,to_be_treated) = match to_be_treated with 
+  []->(List.rev treated,(Some x_false,None))
+  |y::others ->
+     if f y 
+     then inner_helper_for_filtering_and_remembering f x_false y (y::treated,others)
+     else helper2_for_filtering_and_remembering f x_false (treated,others) ;;     
+
+
+let filter_and_remember f l = match l with 
+  [] ->([],(None,None))
+  |x::others ->
+     if f x 
+     then helper1_for_filtering_and_remembering f x ([],others) 
+     else helper2_for_filtering_and_remembering f x ([],others) ;;
+   
+
 
 end ;;    
 
@@ -197,6 +228,17 @@ let connected_fibers = Private.connected_fibers ;;
 (*
 connected_fibers (fun x->int_of_float(floor(sqrt(float_of_int x)))) (Int_range.range 1 50) ;;
 *)
+
+let filter_and_remember = Private.filter_and_remember ;;
+
+(*
+
+filter_and_remember (fun x->x<60) (Int_range.range 1 50) ;;
+filter_and_remember (fun x->x>60) (Int_range.range 1 50) ;;
+filter_and_remember (fun x->x<10) (Int_range.range 1 50) ;;
+
+*)
+
 
 let find_and_remember_opt = Private.find_and_remember_opt ;;
 

@@ -38,6 +38,16 @@ let extract_company_name company_data =
 let order_on_dated_items = 
   Total_ordering.product Jh_date.order Total_ordering.lex_for_strings ;;    
 
+let rec helper_towards_unique_dates_for_each_company (treated,to_be_treated)= match to_be_treated with 
+  [] -> treated 
+  | pair :: other_pairs ->
+      let (_date,company_name) = pair in 
+      helper_towards_unique_dates_for_each_company
+      (pair::treated,List.filter (fun p->snd(p)<>company_name) other_pairs) ;;
+
+let shorten_list_to_have_unique_dates_for_each_company l = 
+  helper_towards_unique_dates_for_each_company ([],List.rev l) ;;
+
 let read_list text = 
   let indexed_lines = Lines_in_text.indexed_lines text in 
    let nonempty_lines = List.filter (fun (_line_idx,line)->line<>"") indexed_lines in 
@@ -58,7 +68,12 @@ let read_list text =
     (get_effective_date_for_pair official_date company_data,
     extract_company_name (snd company_data))) jas
   ) temp3) in 
-  Ordered.sort order_on_dated_items unordered;;
+  let all_pairs = Ordered.sort order_on_dated_items unordered in 
+  (*
+  let one_date_for_each_company = shorten_list_to_have_unique_dates_for_each_company all_pairs in 
+  one_date_for_each_company
+  *)
+  all_pairs;;
 
 let recompute_usual_list_from_scratch () = 
   let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") in 
