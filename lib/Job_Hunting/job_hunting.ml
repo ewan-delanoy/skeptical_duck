@@ -38,16 +38,26 @@ let extract_company_name company_data =
 let order_on_dated_items = 
   Total_ordering.product Jh_date.order Total_ordering.lex_for_strings ;;    
 
-let rec helper_towards_unique_dates_for_each_company (treated,to_be_treated)= match to_be_treated with 
-  [] -> treated 
-  | pair :: other_pairs ->
+exception Pusher_towards_unique_dates_for_each_company_exn ;;
+
+let pusher_towards_unique_dates_for_each_company (treated,to_be_treated)= match to_be_treated with 
+  [] -> raise Pusher_towards_unique_dates_for_each_company_exn
+  | pair :: other_pairs -> 
       let (date,company_name) = pair in 
-      let (filtered_list,(opt_counterexample,_opt_example)) = List_again.filter_and_remember (fun p->snd(p)<>company_name) other_pairs in 
+      let (filtered_list,(opt_counterexample,_opt_example)) = 
+        List_again.filter_and_remember (fun p->snd(p)<>company_name) other_pairs in 
       let has_multiple_applications = (opt_counterexample<>None) in 
       let translated_date = Jh_date.three_months_later date in 
       let remaining_before_release = Jh_date.number_of_days_between (Jh_date.today()) translated_date in 
-      helper_towards_unique_dates_for_each_company
       ((date,(company_name,has_multiple_applications,remaining_before_release))::treated,filtered_list) ;;
+
+let rec helper_towards_unique_dates_for_each_company pair =
+  let (treated,to_be_treated)= pair in 
+  match to_be_treated with 
+  [] -> treated 
+  | _ ->
+      helper_towards_unique_dates_for_each_company
+      (pusher_towards_unique_dates_for_each_company pair) ;;
 
 let shorten_list_to_have_unique_dates_for_each_company l = 
   helper_towards_unique_dates_for_each_company ([],List.rev l) ;;

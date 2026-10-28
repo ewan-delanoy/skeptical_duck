@@ -204,8 +204,8 @@ let filter_and_remember f l = match l with
   [] ->([],(None,None))
   |x::others ->
      if f x 
-     then helper1_for_filtering_and_remembering f x ([],others) 
-     else helper2_for_filtering_and_remembering f x ([],others) ;;
+     then helper1_for_filtering_and_remembering f x ([x],others) 
+     else helper2_for_filtering_and_remembering f x ([x],others) ;;
    
 
 
