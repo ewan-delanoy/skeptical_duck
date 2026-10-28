@@ -26,10 +26,10 @@ let all_data () =
    let names_for_nonisolated = Image.image (
        fun (company_name,(_date,_has_multiple_applications,_remaining_before_release))-> company_name
    ) available_and_not_isolated in
-   let all_company_names = Image.image (
+   let avl_company_names = Image.image (
        fun (company_name,(_date,_has_multiple_applications,_remaining_before_release))-> company_name
-   ) (Job_hunting.all_ordered_by_company_name()) in 
-   let selector = (fun c->List.filter(fun company_name->String.get company_name 0=c) all_company_names) in 
+   ) (Job_hunting.available_later_ordered_by_company_name()) in 
+   let selector = (fun c->List.filter(fun company_name->String.get company_name 0=c) avl_company_names) in 
    let available_later = List.filter (
      fun (_date,(_company_name,has_multiple_applications,_remaining_before_release))->has_multiple_applications
    ) (Job_hunting.available_later_ordered_by_date()) in 

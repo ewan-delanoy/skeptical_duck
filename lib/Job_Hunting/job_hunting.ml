@@ -161,10 +161,10 @@ let data_for_today () =
 
 end ;;  
 
-let all_ordered_by_company_name = Private.initial_list_ordered_by_company_name ;;
 
 let available_later_ordered_by_company_name = Private.available_later_ordered_by_company_name ;;
+let available_later_ordered_by_date = Private.available_later_ordered_by_date ;; 
 let available_now_ordered_by_company_name = Private.available_now_ordered_by_company_name ;;  
 
-let available_later_ordered_by_date = Private.available_later_ordered_by_date ;;  
+ 
 let data_for_today = Private.data_for_today  ;;
