@@ -135,14 +135,14 @@ let initial_list_ordered_by_company_name () =
 let available_now_ordered_by_company_name () =
    let all_job_applications = initial_list_ordered_by_company_name() in 
   List.filter (fun (_company_name,(_date,_has_multiple_applications,remaining_before_release))->
-    remaining_before_release < 0
+    remaining_before_release <= 0
   ) all_job_applications ;;
    
 
 let available_later_ordered_by_date () =
   let all_job_applications = initial_list_ordered_by_date() in 
   List.filter (fun (_date,(_company_name,_has_multiple_applications,remaining_before_release))->
-    remaining_before_release >= 0
+    remaining_before_release > 0
   ) all_job_applications ;;
 
 let available_later_ordered_by_company_name () =

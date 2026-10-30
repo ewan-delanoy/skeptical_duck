@@ -1,6 +1,378 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 276 : Musings on permutations & divisibility (II)
+************************************************************************************************************************)
+module Snip276 = struct 
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = List.filter (fun (start,len)->(len>=2)&&(start+len<=small_n+1) ) 
+(Cartesian.square(Int_range.range 1 small_n));;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (itv_start,len) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and total_sum = Basic.fold_sum sub_perm in 
+   if (total_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+
+let sphere0 = [identity] ;;
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus all_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let the_rebel = List.hd(remaining 11) ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let best_directions perms = 
+   let temp1 = Image.image (fun perm->(perm,reductions perm)) perms in 
+   Max.maximize_it_with_care (fun direction->
+     List.length(List.filter (fun p->List.mem direction(snd p)) temp1)
+   ) all_directions ;;
+ 
+
+
+
+let generic_check (x1,direction,x2) = List.for_all (fun perm->il_mem (direct_son perm direction) x2) x1 ;;
+
+let generic_checks l=List.for_all generic_check l ;; 
+
+let best1 = best_directions (List.tl nice_permutations) ;;
+
+let (dead1,alive1) = List.partition (fun perm->List.mem (1,7) (reductions perm)) nice_permutations ;;
+let pre_level1 = il_sort(Image.image (fun x->direct_son x (1,7)) dead1) ;;
+let level1 = il_merge pre_level1 alive1 ;;
+
+let best2 = best_directions level1 ;;
+
+let (dead2,alive2) = List.partition (fun perm->List.mem (4,3) (reductions perm)) level1 ;;
+let pre_level2 = il_sort(Image.image (fun x->direct_son x (4,3)) dead2) ;;
+let level2 = il_merge pre_level2 alive2 ;;
+
+let best3 = best_directions level2 ;;
+
+let (dead3,alive3) = List.partition (fun perm->List.mem (1,4) (reductions perm)) level2 ;;
+let pre_level3 = il_sort(Image.image (fun x->direct_son x (1,4)) dead3) ;;
+let level3 = il_merge pre_level3 alive3 ;;
+
+let best4 = best_directions level3 ;;
+
+let (dead4,alive4) = List.partition (fun perm->List.mem (3,3) (reductions perm)) level3 ;;
+let pre_level4 = il_sort(Image.image (fun x->direct_son x (3,3)) dead4) ;;
+let level4 = il_merge pre_level4 alive4 ;;
+
+let best5 = best_directions level4 ;;
+
+let (dead5,alive5) = List.partition (fun perm->List.mem (1,3) (reductions perm)) level4 ;;
+let pre_level5 = il_sort(Image.image (fun x->direct_son x (1,3)) dead5) ;;
+let level5 = il_merge pre_level5 alive5 ;;
+
+let best6 = best_directions level5 ;;
+
+let (dead6,alive6) = List.partition (fun perm->List.mem (3,5) (reductions perm)) level5 ;;
+let pre_level6 = il_sort(Image.image (fun x->direct_son x (3,5)) dead6) ;;
+let level6 = il_merge pre_level6 alive6 ;;
+
+let best7 = best_directions level6 ;;
+
+let (dead7,alive7) = List.partition (fun perm->List.mem (3,4) (reductions perm)) level6 ;;
+let pre_level7 = il_sort(Image.image (fun x->direct_son x (3,4)) dead7) ;;
+let level7 = il_merge pre_level7 alive7 ;;
+
+let best8 = best_directions level7 ;;
+
+let (dead8,alive8) = List.partition (fun perm->List.mem (1,5) (reductions perm)) level7 ;;
+let pre_level8 = il_sort(Image.image (fun x->direct_son x (1,5)) dead8) ;;
+let level8 = il_merge pre_level8 alive8 ;;
+
+let best9 = best_directions level8 ;;
+
+let (dead9,alive9) = List.partition (fun perm->List.mem (1,7) (reductions perm)) level8 ;;
+let pre_level9 = il_sort(Image.image (fun x->direct_son x (1,7)) dead9) ;;
+let level9 = il_merge pre_level9 alive9 ;;
+
+let best10 = best_directions level9 ;;
+
+let (dead10,alive10) = List.partition (fun perm->List.mem (5,3) (reductions perm)) level9 ;;
+let pre_level10 = il_sort(Image.image (fun x->direct_son x (5,3)) dead10) ;;
+let level10 = il_merge pre_level10 alive10 ;;
+
+let best11 = best_directions level10 ;;
+
+let (dead11,alive11) = List.partition (fun perm->List.mem (1,6) (reductions perm)) level10 ;;
+let pre_level11 = il_sort(Image.image (fun x->direct_son x (1,6)) dead11) ;;
+let level11 = il_merge pre_level11 alive11 ;;
+
+
+let check1 = generic_checks [dead1,(1,7),level1;dead2,(4,3),level2;dead3,(1,4),level3] ;;
+
+(*
+
+let (parm3,outside_parm3) = List.partition (fun perm->il_mem (direct_son perm (1,7)) block1 ) outside_block1 ;;
+
+let (parm2,parm1) = List.partition (fun perm->il_mem (direct_son perm (1,7)) parm3 ) outside_parm3 ;;
+
+let (parm1_again,empty1) = List.partition (fun perm->il_mem (direct_son perm (1,7)) parm2 ) parm1 ;;
+
+let check1 = generic_checks [parm1,(1,7),parm2;parm2,(1,7),parm3;parm3,(1,7),block1] ;;
+
+let u3 = Explicit.image (fun perm->(perm,reductions perm)) (List.tl block1) ;;
+
+let u4 = Image.image (fun direction->
+  (direction,List.length(List.filter (fun p->List.mem direction(snd p)) u3))
+  ) all_directions ;;
+
+let maximize_over_u4 = Max.maximize_it_with_care snd u4 ;;  
+
+
+let (outside_block2,block2) = List.partition (fun perm->List.mem (1,4) (reductions perm)) block1 ;;
+let residue1 = Image.image (fun perm->direct_son perm (1,4)) outside_block2 ;; 
+
+let (finished1,residue2) = List.partition (fun perm->il_mem perm block2) residue1 ;;
+
+
+
+let (perms5,outside_perms5) = List.partition (fun perm->il_mem (direct_son perm (1,4)) perms3) outside_perms3 ;;
+
+let (perms7,outside_perms7) = List.partition (fun perm->il_mem (direct_son perm (1,4)) perms5) outside_perms5 ;;
+
+let (perms9,outside_perms9) = List.partition (fun perm->il_mem (direct_son perm (1,4)) perms7) outside_perms7 ;;
+
+
+let th1 = [1; 2; 7; 4; 3; 6; 5] ;;
+
+let th2 = direct_son th1 (1,4) ;;
+
+let th3 = direct_son th2 (1,4) ;;
+
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 275 : Musings on permutations & divisibility
+************************************************************************************************************************)
+module Snip275 = struct 
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = List.filter (fun (start,len)->(len>=2)&&(start+len<=small_n+1) ) 
+(Cartesian.square(Int_range.range 1 small_n));;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (itv_start,len) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and total_sum = Basic.fold_sum sub_perm in 
+   if (total_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+
+let sphere0 = [identity] ;;
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus all_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let the_rebel = List.hd(remaining 11) ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+let measure = Memoized.make(fun p->List.length(get_path p)) ;;
+
+let u1 = Cartesian.square(Int_range.range 1 small_n) ;;
+
+let u2 = Explicit.image (
+  fun (i,j)->
+    let temp = List.filter (fun perm->List.nth perm (i-1)=j) nice_permutations in 
+    ((i,j),snd(Max.maximize_it measure temp))
+) u1 ;;
+
+let min_over_u2 = Min.minimize_it_with_care snd u2 ;;
+
+let perms1 = List.filter (fun perm->List.nth perm 6=6) nice_permutations ;;
+
+
+let u3 = Cartesian.product(Int_range.range 1 6) [1; 2; 3; 4; 5; 7];;
+
+let u4 = Explicit.image (
+  fun (i,j)->
+    let temp = List.filter (fun perm->List.nth perm (i-1)=j) perms1 in 
+    ((i,j),snd(Max.maximize_it measure temp))
+) u3 ;;
+
+let min_over_u4 = Min.minimize_it_with_care snd u4 ;;
+
+let perms2 = List.filter (fun perm->List.nth perm 5=4) perms1 ;;
+
+let u5 = Cartesian.product(Int_range.range 1 5) [1; 2; 3;  5; 7];; ;;
+
+let u6 = Explicit.image (
+  fun (i,j)->
+    let temp = List.filter (fun perm->List.nth perm (i-1)=j) perms2 in 
+    ((i,j),snd(Max.maximize_it measure temp))
+) u5 ;;
+
+let min_over_u6 = Min.minimize_it_with_care snd u6 ;;
+
+let perms3 = List.filter (fun perm->List.nth perm 4=3) perms2 ;;
+
+let u7 = Cartesian.product(Int_range.range 1 4) [1; 2;  5; 7];; ;;
+
+let u8 = Explicit.image (
+  fun (i,j)->
+    let temp = List.filter (fun perm->List.nth perm (i-1)=j) perms3 in 
+    ((i,j),snd(Max.maximize_it measure temp))
+) u7 ;;
+
+let min_over_u8 = Min.minimize_it_with_care snd u8 ;;
+
+let perms3 = List.filter (fun perm->List.nth perm 4=3) perms2 ;;
+
+let u7 = Cartesian.product(Int_range.range 1 4) [1; 2;  5; 7];; ;;
+
+let u8 = Explicit.image (
+  fun (i,j)->
+    let temp = List.filter (fun perm->List.nth perm (i-1)=j) perms3 in 
+    ((i,j),snd(Max.maximize_it measure temp))
+) u7 ;;
+
+let min_over_u8 = Min.minimize_it_with_care snd u8 ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 274 : texify a raw text
+************************************************************************************************************************)
+module Snip274 = struct 
+
+
+
+
+
+let ap = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/Giot/Workshop/p98_v1.txt" ;;
+
+let text = Io.read_whole_file ap ;;
+
+let lines = Lines_in_text.lines text ;;
+
+let last_line = List.hd(List.rev lines) ;;
+
+
+let u1 = List_again.universal_delta_list lines ;;
+
+let u2 = (Image.image(fun (line1,line2) -> 
+  if line1="" then "" else 
+  if line2="" then line1^"\\newline" else line1^"\\linebreak" ) u1) @ [last_line] ;;
+
+let text2 = String.concat "\n" u2 ;;  
+
+let ap2 = Absolute_path.of_string "~/Teuliou/LaTeX/Brouilhedou/Remasterised/Giot/Workshop/p98_v2.txt" ;;
+let act1 () = Io.overwrite_with ap2 text2;;
+end;;
+
+(************************************************************************************************************************
  Entry 273 :    Exploring the contents of an outside  disk
 ************************************************************************************************************************)
 module Snip273 = struct 
