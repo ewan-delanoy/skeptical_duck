@@ -11,5 +11,3 @@ type variable_definition =
    |Sum of variable_name * variable_name 
    |Substract of variable_name * variable_name
    |Dot of float * variable_name ;;
-
-type environment = DE of (variable_name * (variable_definition * float)) list ;; 
