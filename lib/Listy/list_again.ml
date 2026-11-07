@@ -326,6 +326,12 @@ let long_head_with_tail r l=
             |a::others->tempf(j-1,a::kleiz,others)
         ) in
         tempf(r,[],l);;
+
+(*
+
+long_head_with_tail 3 (Int_range.range 1 7);;
+
+*)        
     
 let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with_tail(r)(l)));;
     

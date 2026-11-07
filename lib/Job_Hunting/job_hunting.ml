@@ -150,14 +150,19 @@ let available_later_ordered_by_company_name () =
 
 let display_line_pair ((_,line1),(_,line2))= line1^"\n"^line2;;  
 
-let display_dated_item date line_pairs = 
-  "Data for today, "^(Jh_date.to_string date)^" :\n\n"^
+let display_optional_line_pairs = function 
+  None -> "No data found for today (perhaps it's the weekend ?)" 
+ |Some line_pairs ->
   (String.concat "\n\n" (Image.image display_line_pair line_pairs)) ;;
+
+let display_dated_item date line_pairs_opt = 
+  "Data for today, "^(Jh_date.to_string date)^" :\n\n"^
+  (display_optional_line_pairs line_pairs_opt) ;;
 
 let data_for_today () =
    let today = Jh_date.today () in 
-   let line_pairs = List.assoc today (current_list_of_dated_items()) in 
-   display_dated_item today line_pairs ;;
+   let line_pairs_opt = List.assoc_opt today (current_list_of_dated_items()) in 
+   display_dated_item today line_pairs_opt ;;
 
 end ;;  
 

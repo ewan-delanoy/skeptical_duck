@@ -1,6 +1,2861 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
 (************************************************************************************************************************
+ Entry 282 : Musings on permutations & divisibility (VIII)
+************************************************************************************************************************)
+module Snip282 = struct 
+
+type direction = D of int * int ;;
+
+type mutazila_pattern = Mz of int list * (int list list) ;;
+
+type mutazila_result =
+    Common_solution of direction list 
+   |Branching of (int*int) list ;;
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_intersect = Ordered.intersect i_order ;;
+
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and partial_sum = Basic.fold_sum sub_perm in 
+   if (partial_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) (List.length perm))))  ;;
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let rec helper_for_grandson_opt (walker,to_be_treated) = match to_be_treated with 
+  [] -> Some walker 
+  |dir::other_dirs ->
+      match direct_son_opt walker dir with 
+      None -> None 
+      |Some new_walker -> helper_for_grandson_opt (new_walker,other_dirs) ;;
+
+let grandson_opt perm dirs = helper_for_grandson_opt (perm,dirs) ;;
+
+let complexity perm = 
+   let n = List.length perm in 
+   let k = List_again.index_of_in n perm in 
+   if k=n then 0 else k ;;
+   
+let permutations_of_degree_and_exact_complexity = Memoized.make(fun (n,c)->
+  let whole = Permutation.iii n in 
+  List.filter (fun perm->complexity perm=c) whole
+) ;;    
+
+let permutations_of_degree_and_complexity_lower_or_equal_to = Memoized.make(fun (n,c)->
+  let whole = Permutation.iii n in 
+  List.filter (fun perm->(complexity perm)<=c) whole
+) ;;  
+
+module Path = struct 
+
+let needed_width dirs = snd(Max.maximize_it (fun (D(i,j))->i+j-1) dirs) ;;
+
+let translate k dirs = Image.image (fun (D(i,j))->D(i+k,j)) dirs ;;
+
+end ;;  
+
+module type GROUNDLIKE = sig 
+   val size : int 
+   val complexity: int
+end ;;
+
+module MakeComputer = functor (Ground:GROUNDLIKE) -> struct 
+
+  let all_directions = 
+    let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=Ground.size+1) ) 
+    (Cartesian.square(Int_range.range 1 Ground.size)) in 
+    Image.image (fun (i,j)->D(j,i)) temp;;
+
+  let all_permutations = Permutation.iii Ground.size ;;
+
+  let starting_point = permutations_of_degree_and_exact_complexity (Ground.size,Ground.complexity) ;;
+
+  let goal =    
+    if Ground.size = 5 
+    then [Int_range.range 1 Ground.size]  
+    else permutations_of_degree_and_complexity_lower_or_equal_to (Ground.size,Ground.complexity-1) ;;
+
+  let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+  let identity = Int_range.range 1 Ground.size ;;
+
+  let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+  let unsafe_get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+  let sphere0 = goal ;;
+
+   List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+   let ball0 = sphere0 ;;
+   let remaining0=il_setminus all_permutations ball0 ;;
+
+  let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(unsafe_get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus all_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+  ) ;;
+
+  let sphere k = (fun (s,b,r)->s)(sbr k);;
+  let ball k = (fun (s,b,r)->b)(sbr k);;
+  let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+  let rec helper_for_computing_all_spheres k =
+     if List.length(remaining k)=List.length(remaining (k+1)) 
+     then k 
+     else helper_for_computing_all_spheres (k+1) ;;
+  
+  let number_of_spheres = helper_for_computing_all_spheres 0 ;;
+
+  let measure = Memoized.make(fun perm ->
+    match Hashtbl.find_opt hashtbl_for_path perm with 
+    None -> 1000000
+    |Some(path) -> List.length path ) ;;
+
+  let (rebels,followers) = List.partition (fun perm->Hashtbl.find_opt hashtbl_for_path perm=None) starting_point ;;  
+
+  let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+  ) ;;
+
+  let rec helper_for_canonical_path (treated,walker) =
+   if measure walker = 0 
+   then (List.rev_map fst ((walker,D(0,0))::treated),List.rev_map snd treated)
+   else 
+   let dir = List.hd(reductions walker) in 
+   let next_walker =  direct_son walker dir in 
+   helper_for_canonical_path ((walker,dir)::treated,next_walker) ;;
+
+
+  let canonical_path = Memoized.make(fun perm -> snd(helper_for_canonical_path ([],perm)) );; 
+  
+  let all_canonical_paths = Image.image (fun perm->(perm,canonical_path perm)) followers ;;
+
+
+end ;;
+
+
+module Htmlify = struct 
+
+let d_direction (D(itv_start,len)) =
+    let itv_end = itv_start+len-1 in 
+    (string_of_int itv_start)^".."^(string_of_int itv_end) ;;     
+
+let d_directions dirs =
+  "Apply <i>RM</i>("^(String.concat "," (Image.image d_direction dirs))^")."
+
+let d_branch (vaal,indicated_idx) =
+  "If <i>x</i>="^(string_of_int vaal)^", use Step "^(string_of_int indicated_idx)^".";;
+
+let d_branches idx cases = 
+   "Let x =&sigma;("^(string_of_int idx)^"). "^(String.concat " ")(Image.image d_branch cases);;
+
+let d_pattern idx = function 
+  Common_solution(dirs) -> d_directions dirs  
+   |Branching cases -> d_branches idx cases ;;
+
+let d_prefix prefix = 
+   if prefix = []
+   then "is any permutation"
+   else "starts with "^(String.concat "" (Image.image string_of_int prefix)) ;;
+
+let d_triple (prefix,(idx,mz)) =
+   "<b>Step "^(string_of_int idx)^".</b> If &sigma; "^(d_prefix prefix)^
+   ", then the main theorem holds for &sigma;. Proof : "^
+   (d_pattern (1+List.length prefix) mz)
+
+let d_triples l = 
+  "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>7</title>\n</head>\n<body>\n"^
+  "\n\n\n"^(String.concat "\n<br>\n" (Image.image d_triple l))^"\n\n</body>\n\n</html>\n\n\n" ;;
+
+end ;;  
+
+module Latexify = struct 
+
+let d_direction (D(itv_start,len)) =
+    let itv_end = itv_start+len-1 in 
+    (string_of_int itv_start)^".."^(string_of_int itv_end) ;;     
+
+let d_directions dirs =
+  "apply $RM("^(String.concat "," (Image.image d_direction dirs))^")$"
+
+let d_pair (perm,dirs) =
+   "When $\\sigma$ = "^
+   (String.concat "" (Image.image string_of_int perm))^", "^(d_directions dirs)^"." ;;
+  
+
+let d_pairs l = "\n\n\n"^(String.concat "\n" (Image.image d_pair l))^"\n\n\n" ;;
+
+end ;;
+
+(*
+module Ground_7_1 = struct let size=7 and complexity=1 end ;;
+module Computer_7_1 = MakeComputer(Ground_7_1) ;;
+let visible_7_1 = (Computer_7_1.number_of_spheres,Computer_7_1.rebels) ;;
+*)
+
+module Ground_7_2 = struct let size=7 and complexity=2 end ;;
+module Computer_7_2 = MakeComputer(Ground_7_2) ;;
+let visible_7_2 = (Computer_7_2.number_of_spheres,Computer_7_2.rebels) ;;
+
+module Ground_7_3 = struct let size=7 and complexity=3 end ;;
+module Computer_7_3 = MakeComputer(Ground_7_3) ;;
+let visible_7_3 = (Computer_7_3.number_of_spheres,Computer_7_3.rebels) ;;
+
+module Ground_7_4 = struct let size=7 and complexity=4 end ;;
+module Computer_7_4 = MakeComputer(Ground_7_4) ;;
+let visible_7_4 = (Computer_7_4.number_of_spheres,Computer_7_4.rebels) ;;
+
+
+module Ground_7_5 = struct let size=7 and complexity=5 end ;;
+module Computer_7_5 = MakeComputer(Ground_7_5) ;;
+let visible_7_5 = (Computer_7_5.number_of_spheres,Computer_7_5.rebels) ;;
+
+
+module Ground_7_6 = struct let size=7 and complexity=6 end ;;
+module Computer_7_6 = MakeComputer(Ground_7_6) ;;
+let visible_7_6 = (Computer_7_6.number_of_spheres,Computer_7_6.rebels) ;;
+
+
+module Ground_6_1 = struct let size=6 and complexity=1 end ;;
+module Computer_6_1 = MakeComputer(Ground_6_1) ;;
+let visible_6_1 = (Computer_6_1.number_of_spheres,Computer_6_1.rebels) ;;
+
+
+module Ground_6_2 = struct let size=6 and complexity=2 end ;;
+module Computer_6_2 = MakeComputer(Ground_6_2) ;;
+let visible_6_2 = (Computer_6_2.number_of_spheres,Computer_6_2.rebels) ;;
+
+module Ground_6_3 = struct let size=6 and complexity=3 end ;;
+module Computer_6_3 = MakeComputer(Ground_6_3) ;;
+let visible_6_3 = (Computer_6_3.number_of_spheres,Computer_6_3.rebels) ;;
+
+module Ground_6_4 = struct let size=6 and complexity=4 end ;;
+module Computer_6_4 = MakeComputer(Ground_6_4) ;;
+let visible_6_4 = (Computer_6_4.number_of_spheres,Computer_6_4.rebels) ;;
+
+
+module Ground_6_5 = struct let size=6 and complexity=5 end ;;
+module Computer_6_5 = MakeComputer(Ground_6_5) ;;
+let visible_6_5 = (Computer_6_5.number_of_spheres,Computer_6_5.rebels) ;;
+
+module Ground_5_0 = struct let size=5 and complexity=0 end ;;
+module Computer_5_0 = MakeComputer(Ground_5_0) ;;
+let visible_5_0 = (Computer_5_0.number_of_spheres,Computer_5_0.rebels) ;;
+
+
+module Ground_5_1 = struct let size=5 and complexity=1 end ;;
+module Computer_5_1 = MakeComputer(Ground_5_1) ;;
+let visible_5_1 = (Computer_5_1.number_of_spheres,Computer_5_1.rebels) ;;
+
+
+module Ground_5_2 = struct let size=5 and complexity=2 end ;;
+module Computer_5_2 = MakeComputer(Ground_5_2) ;;
+let visible_5_2 = (Computer_5_2.number_of_spheres,Computer_5_2.rebels) ;;
+
+module Ground_5_3 = struct let size=5 and complexity=3 end ;;
+module Computer_5_3 = MakeComputer(Ground_5_3) ;;
+let visible_5_3 = (Computer_5_3.number_of_spheres,Computer_5_3.rebels) ;;
+
+module Ground_5_4 = struct let size=5 and complexity=4 end ;;
+module Computer_5_4 = MakeComputer(Ground_5_4) ;;
+let visible_5_4 = (Computer_5_4.number_of_spheres,Computer_5_4.rebels) ;;
+
+(*
+module Ground_4_1 = struct let size=4 and complexity=1 end ;;
+module Computer_4_1 = MakeComputer(Ground_4_1) ;;
+let visible_4_1 = (Computer_4_1.number_of_spheres,Computer_4_1.rebels) ;;
+*)
+
+module Ground_4_2 = struct let size=4 and complexity=2 end ;;
+module Computer_4_2 = MakeComputer(Ground_4_2) ;;
+let visible_4_2 = (Computer_4_2.number_of_spheres,Computer_4_2.rebels) ;;
+
+module Ground_4_3 = struct let size=4 and complexity=3 end ;;
+module Computer_4_3 = MakeComputer(Ground_4_3) ;;
+let visible_4_3 = (Computer_4_3.number_of_spheres,Computer_4_3.rebels) ;;
+
+
+let paths7 = List.flatten [Computer_7_2.all_canonical_paths;Computer_7_3.all_canonical_paths;
+Computer_7_4.all_canonical_paths;Computer_7_5.all_canonical_paths;Computer_7_6.all_canonical_paths;];;
+
+let paths6 = List.flatten [Computer_6_1.all_canonical_paths;Computer_6_2.all_canonical_paths;Computer_6_3.all_canonical_paths;
+Computer_6_4.all_canonical_paths;Computer_6_5.all_canonical_paths];;
+
+let paths5 = List.flatten [Computer_5_0.all_canonical_paths;Computer_5_2.all_canonical_paths;Computer_5_3.all_canonical_paths;
+Computer_5_4.all_canonical_paths;];;
+
+let paths4 = List.flatten [Computer_4_2.all_canonical_paths;Computer_4_3.all_canonical_paths];;
+
+let text4 = Latexify.d_pairs paths4 ;;
+end;;
+
+(************************************************************************************************************************
+ Entry 281 : Musings on permutations & divisibility (VII)
+************************************************************************************************************************)
+module Snip281 = struct 
+
+type direction = D of int * int ;;
+
+type element_in_ashari_pattern = 
+     I of int 
+    |Modular of int * int ;;
+
+type ashari_pattern = Ash of element_in_ashari_pattern list ;;    
+
+type mutazila_pattern = Mz of int list * (int list list) ;;
+
+type mutazila_result =
+    Common_solution of direction list 
+   |Branching of (int*int) list ;;
+let i_order = Total_ordering.for_integers ;;
+
+let i_intersect = Ordered.intersect i_order ;;
+
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = 
+  let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=small_n+1) ) 
+  (Cartesian.square(Int_range.range 1 small_n)) in 
+  Image.image (fun (i,j)->D(j,i)) temp;;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and partial_sum = Basic.fold_sum sub_perm in 
+   if (partial_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let rec helper_for_grandson_opt (walker,to_be_treated) = match to_be_treated with 
+  [] -> Some walker 
+  |dir::other_dirs ->
+      match direct_son_opt walker dir with 
+      None -> None 
+      |Some new_walker -> helper_for_grandson_opt (new_walker,other_dirs) ;;
+
+let grandson_opt perm dirs = helper_for_grandson_opt (perm,dirs) ;;
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+let the_rebel = [6; 4; 7; 3; 5; 2; 1] ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+module Generic = struct 
+
+let direct_son l (D(i_start,j)) = 
+  let i_end = (i_start-1)+j in 
+  let (before,subpatt,after) = List_again.two_sided_cutting (i_start-1,(List.length l)-i_end) l in 
+  let (a1,other_as) = List_again.head_with_tail subpatt in 
+  before@(other_as@[a1])@after ;;
+
+let rec helper_for_multiple_application (treated,walker,to_be_treated) =
+  match to_be_treated with 
+  [] ->(List.rev treated,walker)
+  | dir :: other_dirs ->
+   let next_walker =  direct_son walker dir in 
+   helper_for_multiple_application ((walker,dir,next_walker)::treated,next_walker,other_dirs) ;;
+
+
+let apply_several l dirs = helper_for_multiple_application ([],l,dirs) ;;  
+
+(*
+
+apply_several (Int_range.range 1 10) [D (4, 2); D (1, 4)] ;;
+
+*)
+
+end ;;  
+
+
+
+module Ashari_element = struct 
+
+   module Private = struct 
+
+   let add_int i = function 
+     Modular(a,b)->Modular((i+a) mod b,b)
+     |I(j)->I(i+j) ;; 
+
+   let add_modular a1 b1 = function 
+     Modular(a2,b2)->
+        let g = Gcd.gcd b1 b2 in 
+        Modular((a1+a2) mod g,g)
+     |I(j)->Modular((a1+j) mod b1,b1) ;; 
+
+   let add elt = function 
+       Modular(a,b)->add_modular a b elt
+     |I(i)->add_int i elt ;; 
+
+   end ;; 
+
+  let divides q = function 
+    Modular(a,b)->(a mod q=0)&&(b mod q=0)
+     |I(i)->i mod q=0 ;; 
+
+  let fold_sum l = List.fold_left Private.add (I 0) l ;;
+
+  let int_value_opt = function
+    Modular(_,_) -> None 
+    | I(i)->Some i ;;
+
+  let test_compatibility (elt,k) = match elt with
+    Modular(a,b) -> (k-a) mod b =0
+    | I(i)-> k=i ;;  
+  
+
+end ;;  
+
+
+module Ashari_pattern = struct 
+
+module Private = struct
+
+let turn_whole_opt patt= 
+  match patt with 
+  [] -> None 
+  | wrapped_a1 :: other_as -> 
+     match Ashari_element.int_value_opt wrapped_a1 with 
+     None -> None 
+     |Some a1 -> 
+        if Ashari_element.divides a1 (Ashari_element.fold_sum other_as)
+        then Some(other_as@[wrapped_a1])  
+        else None ;;
+
+let turn_opt (Ash patt) (D(i_start,j)) = 
+  let i_end = (i_start-1)+j in 
+  let (before,subpatt,after) = List_again.two_sided_cutting (i_start-1,(List.length patt)-i_end) patt in 
+    Option.map (fun turned->Ash(before@turned@after)) (turn_whole_opt subpatt) ;;
+
+let rec turn_several_opt ash l=
+  match l with 
+  [] -> Some ash 
+  |d::other_ds -> 
+     match turn_opt ash d with 
+     None -> None
+     |Some new_ash ->turn_several_opt new_ash other_ds ;; 
+
+let rec helper_for_partial_turn (treated_triples,walker,to_be_treated) = match to_be_treated with 
+  [] ->(List.rev treated_triples,walker,[])
+  |dir :: other_dirs -> 
+      match turn_opt walker dir with 
+     None -> (List.rev treated_triples,walker,to_be_treated)
+     |Some new_walker -> helper_for_partial_turn ((walker,dir,new_walker)::treated_triples,new_walker,other_dirs) ;;
+
+let turn_some ash l =   helper_for_partial_turn ([],ash,l) ;;     
+
+end ;;        
+
+let turn_several_opt = Private.turn_several_opt ;;
+
+let test_compatibility_at_index (Ash ash) perm k=
+   let r=(List.length perm)-(k-1)-(List.length ash) in 
+   if r<0 then false else 
+   let (_,subperm,_) = List_again.two_sided_cutting  (k-1,r) perm in 
+   let temp = List.combine ash subperm in 
+   List.for_all (Ashari_element.test_compatibility) temp ;;
+   
+let test_compatibility_at_some_index ash_patt perm =
+   let (Ash ash) = ash_patt in 
+   let m=(List.length perm)+1-(List.length ash) in 
+   List.exists (test_compatibility_at_index ash_patt perm ) (Int_range.range 1 m) ;;   
+
+
+end ;;  
+
+module Path = struct 
+
+let needed_width dirs = snd(Max.maximize_it (fun (D(i,j))->i+j-1) dirs) ;;
+
+let translate k dirs = Image.image (fun (D(i,j))->D(i+k,j)) dirs ;;
+
+end ;;  
+
+module Reconstruct = struct 
+
+
+
+let optional_modular_relations_from_action indexed (D(i,j)) =
+  let modulus = snd(List.nth indexed (i-1)) in 
+    let pairs = Int_range.scale (fun k->
+     let (idx,vaal) = List.nth indexed (k-1) in 
+     (idx,(vaal mod modulus,modulus))
+    ) (i+1) (i+j-1) in 
+    Int_range.scale (fun t->
+      List.assoc_opt t pairs  
+    ) 1 (List.length indexed);;  
+   
+let combine_optional_modular_relations omrs = 
+  let nonempty_omrs = List.filter_map (fun opt->opt) omrs in 
+  if nonempty_omrs=[]
+  then None 
+  else Some(Gcd.combine_congruences nonempty_omrs);;   
+
+
+exception Fugitive_exn of int * int ;;
+
+let reconstruct total_perm dirs =
+  let w = Path.needed_width dirs in 
+  let perm = List_again.long_head w total_perm in 
+  let indexed_perm = Int_range.index_everything perm in
+  let triples = fst(Generic.apply_several indexed_perm dirs) in 
+  let all_modular_relations = Image.image (fun (in_patt,dir,_out_patt) ->optional_modular_relations_from_action in_patt dir) triples in 
+  let optional_modular_relations_per_index = Int_range.scale (fun k->
+    let omrs = Image.image (fun l->List.nth l (k-1)) all_modular_relations in 
+    combine_optional_modular_relations omrs
+  ) 1 w in 
+  let indexed_optional_modular_relations = List.combine indexed_perm optional_modular_relations_per_index in 
+  let pivots = Image.image (fun (in_patt,D(i,j),_out_patt) ->List.nth in_patt (i-1)) triples in 
+  let final_in_pattern = Ash(Image.image (
+    fun ((idx,elt),modular_rel_opt) ->
+       if elt = small_n then I small_n else 
+       match List.assoc_opt idx pivots with 
+       (Some pivot) -> I pivot
+       |None ->
+         match modular_rel_opt with 
+         None -> (* in this case, there is no constraint at all on the element *)
+                  Modular(0,1)
+         |Some(a,b)->Modular(a,b)
+  ) indexed_optional_modular_relations) in 
+  (final_in_pattern,dirs,Option.get(Ashari_pattern.turn_several_opt final_in_pattern dirs)) ;;
+
+end ;;  
+
+module type GROUNDLIKE = sig val ground: (int list) list end ;;
+
+module MakeComputer = functor (Ground:GROUNDLIKE) -> struct 
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+let sphere0 = Ground.ground ;;
+
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus nice_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let computation = remaining 11;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let rec helper_for_canonical_path (treated,walker) =
+   if measure walker = 0 
+   then (List.rev_map fst ((walker,D(0,0))::treated),List.rev_map snd treated)
+   else 
+   let dir = List.hd(reductions walker) in 
+   let next_walker =  direct_son walker dir in 
+   helper_for_canonical_path ((walker,dir)::treated,next_walker) ;;
+
+
+let canonical_path perm = helper_for_canonical_path ([],perm) ;;  
+
+let find_next_triple_opt base triples = 
+   let irreducibles = List.filter (fun x->
+     List.for_all (fun (ash,_,_)->not(Ashari_pattern.test_compatibility_at_some_index ash x)) triples  
+   ) base in 
+   if irreducibles=[] then None else 
+   let header = List.hd irreducibles in 
+   let path = canonical_path header in 
+   Some(Reconstruct.reconstruct header (snd path)) ;;
+
+
+let rec helper_for_finding_all_triples base treated = 
+   match find_next_triple_opt base treated with 
+   None -> List.rev treated 
+   |Some new_triple -> helper_for_finding_all_triples base (new_triple::treated) ;;
+    
+let find_all_triples base previous_triples= helper_for_finding_all_triples base (List.rev previous_triples) ;;
+
+end ;;
+
+module Display = struct 
+
+let d_direction (D(i,j))= 
+  let si = string_of_int i 
+  and sj = string_of_int j in 
+  "D("^si^","^sj^")" ;;
+
+let d_direction_list l= "["^(String.concat ";" (Image.image d_direction l))^"]" ;;
+
+let d_ashari_element = function 
+  (I i)->"I "^(string_of_int i)^"" 
+  |Modular(a,b) -> "Modular("^(string_of_int a)^","^(string_of_int b)^")" ;;
+
+let d_ashari_pattern (Ash l)= "Ash(["^(String.concat ";" (Image.image d_ashari_element l))^"])" ;;
+
+let d_triple (ash1,dirs,ash2)="("^(d_ashari_pattern ash1)^","^(d_direction_list dirs)^","^(d_ashari_pattern ash2)^")";;  
+
+let d_triple_list l="[\n\n"^(String.concat ";\n" (Image.image d_triple l))^"\n\n]";;  
+
+end ;;  
+
+module Latexify = struct 
+
+let d_direction (D(itv_start,len)) =
+    let itv_end = itv_start+len-1 in 
+    (string_of_int itv_start)^".."^(string_of_int itv_end) ;;     
+
+let d_directions dirs =
+  "Apply $RM("^(String.concat "," (Image.image d_direction dirs))^")$."
+
+let d_branch (vaal,indicated_idx) =
+  "If $x="^(string_of_int vaal)^"$, use Step "^(string_of_int indicated_idx)^".";;
+
+let d_branches idx cases = 
+   "Let $x =\\sigma("^(string_of_int idx)^")$. "^(String.concat " ")(Image.image d_branch cases);;
+
+let d_pattern idx = function 
+  Common_solution(dirs) -> d_directions dirs  
+   |Branching cases -> d_branches idx cases ;;
+
+let d_triple (prefix,(idx,mz)) =
+   "**Step "^(string_of_int idx)^".** If $\\sigma$ starts with "^
+   (String.concat "" (Image.image string_of_int prefix))^", then the main theorem holds for $\\sigma$. Proof : "^
+   (d_pattern (1+List.length prefix) mz)
+
+let d_triples l = "\n\n\n"^(String.concat "\n\n\n" (Image.image d_triple l))^"\n\n\n" ;;
+
+end ;;  
+
+module Htmlify = struct 
+
+let d_direction (D(itv_start,len)) =
+    let itv_end = itv_start+len-1 in 
+    (string_of_int itv_start)^".."^(string_of_int itv_end) ;;     
+
+let d_directions dirs =
+  "Apply <i>RM</i>("^(String.concat "," (Image.image d_direction dirs))^")."
+
+let d_branch (vaal,indicated_idx) =
+  "If <i>x</i>="^(string_of_int vaal)^", use Step "^(string_of_int indicated_idx)^".";;
+
+let d_branches idx cases = 
+   "Let x =&sigma;("^(string_of_int idx)^"). "^(String.concat " ")(Image.image d_branch cases);;
+
+let d_pattern idx = function 
+  Common_solution(dirs) -> d_directions dirs  
+   |Branching cases -> d_branches idx cases ;;
+
+let d_prefix prefix = 
+   if prefix = []
+   then "is any permutation"
+   else "starts with "^(String.concat "" (Image.image string_of_int prefix)) ;;
+
+let d_triple (prefix,(idx,mz)) =
+   "<b>Step "^(string_of_int idx)^".</b> If &sigma; "^(d_prefix prefix)^
+   ", then the main theorem holds for &sigma;. Proof : "^
+   (d_pattern (1+List.length prefix) mz)
+
+let d_triples l = 
+  "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>7</title>\n</head>\n<body>\n"^
+  "\n\n\n"^(String.concat "\n<br>\n" (Image.image d_triple l))^"</body>\n</html>\n\n\n" ;;
+
+end ;;  
+
+exception Bad_action_items of (ashari_pattern * (direction list) * ashari_pattern) list ;;
+
+let check_list_of_actions l=
+  let bad_items = List.filter (
+    fun (in_patt,dirs,out_patt)->
+       (Ashari_pattern.turn_several_opt in_patt dirs)<>Some out_patt
+  ) l in 
+  if bad_items<>[]
+  then raise(Bad_action_items(bad_items))
+  else l ;;  
+
+let all_reductions = check_list_of_actions
+[
+
+(Ash([I 1;I 7]),[D(1,2)],Ash([I 7;I 1]));
+(Ash([I 2;I 7;Modular(1,2)]),[D(1,3)],Ash([I 7;Modular(1,2);I 2]));
+(Ash([I 2;I 7;Modular(0,2);Modular(1,2)]),[D(1,4)],Ash([I 7;Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 2;I 7;Modular(0,2);Modular(0,2);Modular(1,2)]),[D(1,5)],Ash([I 7;Modular(0,2);Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 3;I 7;I 1;Modular(-1,3)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(1,3)]),[D(1,4)],Ash([I 7;Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);I 2;Modular(4,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(4,6);I 3;I 2]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(1,3)]),[D(1,5)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;I 1;Modular(0,3);Modular(-1,3)]),[D(3,3);D(1,4)],Ash([I 7;Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(2,3)]),[D(1,3)],Ash([I 7;Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(-1,3)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(0,3);Modular(-1,3)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(2,3)]),[D(1,5)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);I 1;Modular(-1,3)]),[D(4,2);D(1,4)],Ash([I 7;Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(1,3)]),[D(1,5)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;Modular(0,3);Modular(2,3)]),[D(1,4)],Ash([I 7;Modular(0,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 4;I 7;Modular(1,4)]),[D(1,3)],Ash([I 7;Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(2,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(3,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(3,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(2,4);Modular(3,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(2,4);Modular(3,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(2,4)]),[D(1,5)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(3,4)]),[D(1,4)],Ash([I 7;Modular(2,4);Modular(3,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(2,4);Modular(1,4)]),[D(1,5)],Ash([I 7;Modular(2,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(2,4);Modular(3,4);Modular(1,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(2,4);Modular(3,4);Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(2,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(1,4)]),[D(1,5)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(2,4)]),[D(1,4)],Ash([I 7;Modular(3,4);Modular(2,4);I 4]));
+(Ash([I 5;I 7;Modular(1,5);Modular(2,5)]),[D(1,4)],Ash([I 7;Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-2,5)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(2,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(3,5)]),[D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(1,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-1,5);Modular(-4,5);Modular(-2,5)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-1,5);Modular(-4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 1;Modular(-4,5);Modular(-3,5)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-4,5);Modular(-3,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);I 3;Modular(2,15);Modular(-11,15)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(2,15);Modular(-11,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);I 3;Modular(-11,15);Modular(2,15)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(-11,15);Modular(2,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);Modular(4,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(4,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-4,5);Modular(-1,5);Modular(-2,5)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-4,5);Modular(-1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(2,5);Modular(1,5)]),[D(1,4)],Ash([I 7;Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(1,2)]),[D(3,3);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(0,2);Modular(1,2)]),[D(3,4);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(0,2);Modular(0,2);Modular(1,2)]),[D(3,5);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(0,2);Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 5;I 7;Modular(2,5);Modular(4,5);Modular(1,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(3,10);Modular(1,10)]),[D(3,4);D(1,5)],Ash([I 7;Modular(4,10);Modular(3,10);Modular(1,10);I 5;I 2]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(3,10);Modular(6,10);Modular(1,2)]),[D(3,5);D(1,5)],Ash([I 7;Modular(4,10);Modular(3,10);Modular(6,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(6,10);Modular(3,10);Modular(1,2)]),[D(3,5);D(1,5)],Ash([I 7;Modular(4,10);Modular(6,10);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;Modular(3,5)]),[D(1,3)],Ash([I 7;Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(2,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(3,5)]),[D(1,5)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(1,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 1;Modular(-4,5);Modular(-2,5)]),[D(4,3);D(1,5)],Ash([I 7;Modular(4,5);Modular(-4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(4,5);Modular(2,5);Modular(1,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 2;Modular(3,10);Modular(1,10)]),[D(4,3);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,10);Modular(1,10);I 5;I 2]));
+(Ash([I 5;I 7;Modular(4,5);I 2;Modular(3,10);Modular(6,10);Modular(1,2)]),[D(4,4);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,10);Modular(6,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 4;Modular(2,20);Modular(-14,20)]),[D(3,3);D(1,4)],Ash([I 7;Modular(2,20);Modular(-14,20);I 5;I 4]));
+(Ash([I 5;I 7;Modular(4,5);Modular(3,5);Modular(1,5)]),[D(1,5)],Ash([I 7;Modular(4,5);Modular(3,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 3;Modular(2,15);Modular(1,15);Modular(-9,15)]),[D(4,4);D(1,6)],Ash([I 7;Modular(4,5);Modular(2,15);Modular(1,15);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(3,5);I 2;Modular(6,10)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,5);Modular(6,10);I 5;I 2]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);I 1;Modular(-2,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 4;Modular(-14,20);Modular(2,20)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-14,20);Modular(2,20);I 5;I 4]));
+(Ash([I 5;I 7;Modular(1,5);I 1;Modular(-3,5)]),[D(4,2);D(1,4)],Ash([I 7;Modular(1,5);Modular(-3,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);I 1;Modular(-1,5);Modular(-2,5)]),[D(4,3);D(1,5)],Ash([I 7;Modular(1,5);Modular(-1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 6;Modular(3,30);Modular(1,6);Modular(2,6)]),[D(3,4);D(1,3)],Ash([I 7;Modular(3,30);I 5;Modular(1,6);Modular(2,6);I 6]));
+(Ash([I 5;I 7;Modular(1,5);Modular(3,5);I 1;Modular(-1,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,5);Modular(3,5);Modular(-1,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);I 3;Modular(2,15);Modular(1,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(1,5);Modular(2,15);I 5;Modular(1,3);I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(3,5);Modular(4,5)]),[D(1,5)],Ash([I 7;Modular(1,5);Modular(3,5);Modular(4,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);I 1;Modular(-2,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);I 2;Modular(3,10);Modular(1,2)]),[D(5,3);D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 6;I 7;I 1;Modular(-4,6);Modular(-3,6)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-4,6);Modular(-3,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(1,6);I 2;Modular(-2,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;I 2]));
+(Ash([I 6;I 7;Modular(1,6);Modular(2,6);Modular(5,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(2,6);Modular(5,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 1;Modular(-4,6);Modular(-1,6);Modular(-2,6)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-4,6);Modular(-1,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;I 1;Modular(-3,6);Modular(-4,6)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-3,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(1,6);I 3;Modular(-2,6);Modular(2,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(1,6);Modular(3,6);Modular(5,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(3,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 1;I 3;Modular(-1,6)]),[D(3,3);D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(1,6);Modular(4,6)]),[D(1,4)],Ash([I 7;Modular(1,6);Modular(4,6);I 6]));
+(Ash([I 6;I 7;Modular(1,6);Modular(5,6);Modular(2,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(5,6);Modular(2,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 1;Modular(-1,6)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-3,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(2,6);Modular(-3,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(1,6);I 4;Modular(3,12);Modular(5,12)]),[D(5,3);D(1,6)],Ash([I 7;Modular(2,6);Modular(1,6);Modular(3,12);Modular(5,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-2,6);Modular(-1,6)]),[D(4,3);D(1,5)],Ash([I 7;Modular(2,6);Modular(-2,6);Modular(-1,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(1,6);Modular(5,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(1,6);Modular(5,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-1,6);Modular(-2,6)]),[D(4,3);D(1,5)],Ash([I 7;Modular(2,6);Modular(-1,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(3,6)]),[D(1,4)],Ash([I 7;Modular(2,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 2;Modular(-2,6);Modular(1,6);Modular(1,2)]),[D(3,4);D(1,4)],Ash([I 7;Modular(-2,6);Modular(1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(2,6);I 4;Modular(3,12);Modular(1,4)]),[D(4,3);D(1,4)],Ash([I 7;Modular(2,6);Modular(3,12);I 6;Modular(1,4);I 4]));
+(Ash([I 6;I 7;Modular(2,6);Modular(4,6);Modular(5,6)]),[D(1,5)],Ash([I 7;Modular(2,6);Modular(4,6);Modular(5,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(1,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(1,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);I 1;Modular(-2,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(3,6);Modular(1,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(3,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;I 2;Modular(-1,6);Modular(1,2)]),[D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(4,6)]),[D(1,5)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(4,6);I 6]));
+(Ash([I 6;I 7;Modular(3,6);I 1;Modular(-4,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(3,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;I 3;Modular(1,6);Modular(-2,6);Modular(2,3);Modular(2,3)]),[D(3,5);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(1,6);Modular(5,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(1,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 3;I 1;Modular(-1,6)]),[D(4,2);D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(2,6)]),[D(1,4)],Ash([I 7;Modular(3,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(1,12);Modular(2,12);Modular(5,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(1,12);Modular(2,12);Modular(5,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(1,12);Modular(5,12);Modular(2,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(1,12);Modular(5,12);Modular(2,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(2,12);Modular(1,4);Modular(1,4)]),[D(4,4);D(1,4)],Ash([I 7;Modular(3,6);Modular(2,12);I 6;Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(5,12);Modular(1,12);Modular(2,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(5,12);Modular(1,12);Modular(2,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(5,12);Modular(2,12);Modular(1,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(5,12);Modular(2,12);Modular(1,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);Modular(5,6);Modular(1,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(5,6);Modular(1,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 3;Modular(-1,6);Modular(1,3)]),[D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(5,6);Modular(2,6);Modular(1,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(5,6);Modular(2,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;I 3;Modular(-1,6);Modular(2,3);Modular(1,3);Modular(1,3)]),[D(3,5);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(2,3);Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(1,6)]),[D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;Modular(4,6);I 2;Modular(1,6);Modular(1,2)]),[D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);I 3;I 1;Modular(-1,6)]),[D(6,2);D(5,3);D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);I 3;Modular(-1,6);Modular(1,3)]),[D(5,3);D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(-1,6);I 6;Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);Modular(5,6)]),[D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(5,6);I 6]));
+(Ash([I 6;I 7;Modular(4,6);I 3;Modular(1,6);Modular(2,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);I 3;I 2;Modular(1,6)]),[D(4,3);D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;I 3;I 2]));
+(Ash([I 6;I 7;I 4;I 3;Modular(2,12)]),[D(2,3);D(3,3);D(2,4);D(1,4)],Ash([I 7;Modular(2,12);I 3;I 6;I 4]));
+(Ash([I 6;I 7;I 4;I 3;Modular(5,12)]),[D(3,3);D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;I 4;I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(5,6);I 1;Modular(-4,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,6);Modular(5,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;I 4;Modular(5,12);I 1;Modular(-1,4)]),[D(5,2);D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;Modular(-1,4);I 4;I 1]));
+(Ash([I 6;I 7;Modular(4,6);Modular(5,6);Modular(2,6)]),[D(1,5)],Ash([I 7;Modular(4,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 4;Modular(5,12);Modular(3,4)]),[D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;Modular(3,4);I 4]));
+(Ash([I 6;I 7;Modular(5,6)]),[D(1,3)],Ash([I 7;Modular(5,6);I 6]));
+(Ash([I 1;Modular(0,1);I 7]),[D(1,3)],Ash([Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);I 7]),[D(1,3)],Ash([Modular(1,2);I 7;I 2]));
+(Ash([I 2;Modular(0,2);I 7;Modular(1,2)]),[D(1,4)],Ash([Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);I 7;Modular(0,2);Modular(1,2)]),[D(1,5)],Ash([Modular(0,2);I 7;Modular(0,2);Modular(1,2);I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 7;Modular(2,7);Modular(1,7);Modular(5,7);Modular(6,7)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(2,7);Modular(1,7);Modular(5,7);Modular(6,7);I 7]));
+(Ash([I 3;Modular(1,3);I 7;Modular(2,3);Modular(2,3)]),[D(1,5)],Ash([Modular(1,3);I 7;Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;Modular(1,3);I 7;Modular(0,3);Modular(1,3)]),[D(1,5)],Ash([Modular(1,3);I 7;Modular(0,3);Modular(1,3);I 3]));
+(Ash([Modular(0,1);Modular(0,1);I 7;Modular(6,7);Modular(5,7);Modular(1,7);Modular(2,7)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(6,7);Modular(5,7);Modular(1,7);Modular(2,7);I 7]));
+(Ash([I 4;Modular(1,4);I 7]),[D(1,3)],Ash([Modular(1,4);I 7;I 4]));
+(Ash([I 5;Modular(3,5);I 7]),[D(1,3)],Ash([Modular(3,5);I 7;I 5]));
+(Ash([Modular(0,1);I 4;I 7;Modular(2,4);I 1;Modular(-1,4)]),[D(5,2);D(2,4)],Ash([Modular(0,1);I 7;Modular(2,4);Modular(-1,4);I 4;I 1]));
+(Ash([Modular(0,1);I 4;I 7;I 2;Modular(-2,4);Modular(-1,4);Modular(1,2)]),[D(4,4);D(2,4)],Ash([Modular(0,1);I 7;Modular(-2,4);Modular(-1,4);I 4;Modular(1,2);I 2]));
+(Ash([I 5;Modular(4,5);I 7;Modular(3,5);Modular(1,5)]),[D(1,5)],Ash([Modular(4,5);I 7;Modular(3,5);Modular(1,5);I 5]));
+(Ash([Modular(0,1);I 4;I 7;Modular(2,4);I 2;Modular(-1,4);Modular(1,2)]),[D(5,3);D(2,4)],Ash([Modular(0,1);I 7;Modular(2,4);Modular(-1,4);I 4;Modular(1,2);I 2]));
+(Ash([I 5;Modular(1,5);I 7;Modular(2,5)]),[D(1,4)],Ash([Modular(1,5);I 7;Modular(2,5);I 5]));
+(Ash([I 5;Modular(1,5);I 7;Modular(3,5);I 1;Modular(-1,5)]),[D(5,2);D(1,5)],Ash([Modular(1,5);I 7;Modular(3,5);Modular(-1,5);I 5;I 1]));
+(Ash([I 5;Modular(1,5);I 7;Modular(3,5);Modular(4,5)]),[D(1,5)],Ash([Modular(1,5);I 7;Modular(3,5);Modular(4,5);I 5]));
+(Ash([I 5;Modular(1,5);I 7;Modular(4,5);I 2;Modular(3,10);Modular(1,2)]),[D(5,3);D(1,5)],Ash([Modular(1,5);I 7;Modular(4,5);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 6;Modular(4,6);I 7;Modular(2,6);I 1;Modular(-1,6)]),[D(5,2);D(1,5)],Ash([Modular(4,6);I 7;Modular(2,6);Modular(-1,6);I 6;I 1]));
+(Ash([I 6;Modular(4,6);I 7;Modular(2,6);Modular(5,6)]),[D(1,5)],Ash([Modular(4,6);I 7;Modular(2,6);Modular(5,6);I 6]));
+(Ash([Modular(0,1);I 4;I 7;Modular(3,4);I 1;Modular(-2,4)]),[D(5,2);D(2,4)],Ash([Modular(0,1);I 7;Modular(3,4);Modular(-2,4);I 4;I 1]));
+(Ash([I 6;Modular(5,6);I 7]),[D(1,3)],Ash([Modular(5,6);I 7;I 6]));
+(Ash([Modular(0,1);I 3;Modular(2,3);I 7]),[D(2,3)],Ash([Modular(0,1);Modular(2,3);I 7;I 3]));
+(Ash([I 1;Modular(0,1);Modular(0,1);I 7]),[D(1,4)],Ash([Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);Modular(0,2);I 7]),[D(1,4)],Ash([Modular(1,2);Modular(0,2);I 7;I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);I 7]),[D(1,4)],Ash([Modular(0,2);Modular(1,2);I 7;I 2]));
+(Ash([I 3;Modular(1,3);Modular(0,3);I 7;Modular(1,3)]),[D(1,5)],Ash([Modular(1,3);Modular(0,3);I 7;Modular(1,3);I 3]));
+(Ash([Modular(0,1);I 4;Modular(2,4);I 7;Modular(2,4);Modular(1,4)]),[D(2,5)],Ash([Modular(0,1);Modular(2,4);I 7;Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 3;Modular(2,3);Modular(0,3);I 7]),[D(1,4)],Ash([Modular(2,3);Modular(0,3);I 7;I 3]));
+(Ash([I 4;Modular(3,4);Modular(2,4);I 7]),[D(1,4)],Ash([Modular(3,4);Modular(2,4);I 7;I 4]));
+(Ash([Modular(0,1);I 3;Modular(0,3);I 7;Modular(2,3)]),[D(2,4)],Ash([Modular(0,1);Modular(0,3);I 7;Modular(2,3);I 3]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(4,7);Modular(2,7);Modular(1,7)]),[D(4,4)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(4,7);Modular(2,7);Modular(1,7);I 7]));
+(Ash([Modular(0,1);I 3;Modular(1,3);I 7;Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(2,5)],Ash([Modular(0,1);Modular(1,3);I 7;Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);I 7;Modular(3,4)]),[D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);I 7;Modular(3,4);I 4]));
+(Ash([I 1;Modular(0,1);Modular(0,1);Modular(0,1);I 7]),[D(1,5)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(6,7);Modular(1,7)]),[D(5,3)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);Modular(6,7);Modular(1,7);I 7]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(0,2);I 7]),[D(1,5)],Ash([Modular(0,2);Modular(1,2);Modular(0,2);I 7;I 2]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(1,7);Modular(6,7)]),[D(5,3)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);Modular(1,7);Modular(6,7);I 7]));
+(Ash([I 2;Modular(1,2);Modular(0,2);Modular(0,2);I 7]),[D(1,5)],Ash([Modular(1,2);Modular(0,2);Modular(0,2);I 7;I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 5;Modular(1,5);I 7;I 1;Modular(-3,5)]),[D(6,2);D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(1,5);I 7;Modular(-3,5);I 5;I 1]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);I 7;Modular(1,4);Modular(2,4)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);I 7;Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 3;Modular(2,3);Modular(0,3);Modular(1,3);I 7;Modular(2,3)]),[D(1,6)],Ash([Modular(2,3);Modular(0,3);Modular(1,3);I 7;Modular(2,3);I 3]));
+(Ash([Modular(0,1);I 6;Modular(5,6);Modular(4,6);I 7;Modular(2,6)]),[D(2,5)],Ash([Modular(0,1);Modular(5,6);Modular(4,6);I 7;Modular(2,6);I 6]));
+(Ash([I 4;Modular(1,4);Modular(3,4);Modular(2,4);I 7;Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([Modular(1,4);Modular(3,4);Modular(2,4);I 7;Modular(1,4);Modular(2,4);I 4]));
+(Ash([Modular(0,1);I 2;Modular(0,2);Modular(0,2);I 7;Modular(1,2)]),[D(2,5)],Ash([Modular(0,1);Modular(0,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 5;Modular(3,5);Modular(1,5);Modular(4,5);I 7]),[D(1,5)],Ash([Modular(3,5);Modular(1,5);Modular(4,5);I 7;I 5]));
+(Ash([I 5;Modular(1,5);Modular(3,5);Modular(4,5);I 7]),[D(1,5)],Ash([Modular(1,5);Modular(3,5);Modular(4,5);I 7;I 5]));
+(Ash([Modular(0,1);I 3;Modular(2,3);Modular(1,3);I 7;Modular(2,3)]),[D(2,5)],Ash([Modular(0,1);Modular(2,3);Modular(1,3);I 7;Modular(2,3);I 3]));
+(Ash([I 6;I 5;Modular(3,30);Modular(4,30);I 7]),[D(1,4);D(1,5)],Ash([Modular(3,30);Modular(4,30);I 6;I 7;I 5]));
+(Ash([I 1;Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7]),[D(1,6)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);Modular(0,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(1,2);Modular(0,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(1,2);Modular(1,2);Modular(0,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(1,2);Modular(1,2);Modular(0,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(0,2);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(0,2);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);Modular(3,4);I 7]),[D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);Modular(3,4);I 7;I 4]));
+(Ash([Modular(0,1);I 5;Modular(1,5);Modular(4,5);Modular(3,5);I 7]),[D(2,5)],Ash([Modular(0,1);Modular(1,5);Modular(4,5);Modular(3,5);I 7;I 5]));
+(Ash([Modular(0,1);I 2;Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(2,6)],Ash([Modular(0,1);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);I 2;Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2)]),[D(2,6)],Ash([Modular(0,1);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);I 2;Modular(0,2);Modular(0,2);Modular(1,2);I 7]),[D(2,5)],Ash([Modular(0,1);Modular(0,2);Modular(0,2);Modular(1,2);I 7;I 2]))
+
+] ;;
+
+let all_vectors =Image.image (fun (_,dirs,_)->dirs) all_reductions ;;
+
+let candidates = List.filter (fun perm->
+   let k = List_again.index_of_in 7 perm in 
+   not(List.mem k [1;7])
+  ) nice_permutations ;; 
+
+let complexity perm = let k = List_again.index_of_in 7 perm in if k=7 then 0 else k ;;
+
+let solution_from_vector_opt perm path=
+   let w= Path.needed_width path in 
+   List.find_map (fun k->
+    let new_path = Path.translate k path in 
+    match grandson_opt perm new_path with 
+    None ->None 
+    |Some new_perm ->
+       if complexity(new_perm)<complexity(perm)
+       then Some(new_path)
+       else None
+  ) (Int_range.range 0 (7-w)) ;;   
+
+let solution = Memoized.make (fun perm->Option.get(List.find_map (solution_from_vector_opt perm) all_vectors)) ;;  
+
+let comp1 = Explicit.image solution candidates ;;
+
+module Mutazila = struct 
+
+let prefix (Mz(pref,_)) = pref ;;
+
+let extract (Mz(prefix,representatives)) a =
+    Mz(prefix@[a],List.filter_map(fun x->if List.hd(x)=a then Some(List.tl x) else None) representatives) ;; 
+
+let rec split mz=
+   let (Mz(prefix,representatives)) = mz in 
+   let coords = i_sort(Image.image List.hd representatives) in 
+   if List.length(coords)=1
+   then split (Mz(prefix@[List.hd coords],Image.image List.tl representatives))
+   else Image.image(fun a->(a,extract mz a)) coords ;;
+
+
+end ;;  
+
+let unique_solution_for_all_opt (Mz(prefix,representatives)) =
+   let temp = Image.image (fun y->solution(prefix@y)) representatives in 
+   let sol = List.hd temp in 
+   if List.for_all (fun sol2->sol2=sol) temp
+   then Some sol 
+   else None ;;  
+
+let rec towards_attribution (memory_size,memory,to_be_treated) = match to_be_treated with 
+  [] -> List.rev memory
+  |mz :: other_mzs ->
+    let pref = Mutazila.prefix mz in 
+    match List.assoc_opt pref memory with 
+    Some old_answer -> towards_attribution (memory_size,memory,other_mzs)
+    |None ->
+      match unique_solution_for_all_opt mz with 
+       Some sol -> towards_attribution (memory_size+1,(pref,(memory_size+1,Common_solution sol))::memory,to_be_treated)
+       |None ->  
+          let sons = Mutazila.split mz in 
+          let temp = Image.image (fun (a,mz2)->(a,(mz2,List.assoc_opt (Mutazila.prefix mz2) memory))) sons in 
+          let (bad,good) = List.partition (fun (_,(_,opt))->opt=None) temp in
+          if bad=[]
+          then let new_val=Branching(Image.image (fun (a,(_mz2,opt)) -> let (mz2_idx,_)=Option.get opt in (a,mz2_idx) ) good) in 
+               towards_attribution (memory_size+1,(pref,(memory_size+1,new_val))::memory,to_be_treated) 
+          else let additional_work = Image.image (fun (_,(mz2,_)) -> mz2) bad in 
+               towards_attribution (memory_size,memory,additional_work@to_be_treated) ;;
+
+             
+let comp2 = towards_attribution (0,[],[Mz([],candidates)]) ;;
+
+let main_text = Latexify.d_triples comp2 ;;
+
+let ap1 = Absolute_path.of_string "~/Teuliou/Bash_scripts/example_maath.txt" ;;
+
+let ap2 = Absolute_path.of_string "~/Teuliou/Bash_scripts/Long_html_pages/explain7.html" ;;
+let act1 () = Io.append_string_to_file main_text ap1 ;;
+
+let act2 () = Io.overwrite_with ap2 (Htmlify.d_triples comp2)  ;;
+
+end;;
+
+(************************************************************************************************************************
+ Entry 280 : Musings on permutations & divisibility (VI)
+************************************************************************************************************************)
+module Snip280 = struct 
+
+type direction = D of int * int ;;
+
+type element_in_ashari_pattern = 
+     I of int 
+    |Modular of int * int ;;
+
+type ashari_pattern = Ash of element_in_ashari_pattern list ;;     
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_intersect = Ordered.intersect i_order ;;
+
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = 
+  let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=small_n+1) ) 
+  (Cartesian.square(Int_range.range 1 small_n)) in 
+  Image.image (fun (i,j)->D(j,i)) temp;;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and partial_sum = Basic.fold_sum sub_perm in 
+   if (partial_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+let the_rebel = [6; 4; 7; 3; 5; 2; 1] ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+module Generic = struct 
+
+let direct_son l (D(i_start,j)) = 
+  let i_end = (i_start-1)+j in 
+  let (before,subpatt,after) = List_again.two_sided_cutting (i_start-1,(List.length l)-i_end) l in 
+  let (a1,other_as) = List_again.head_with_tail subpatt in 
+  before@(other_as@[a1])@after ;;
+
+let rec helper_for_multiple_application (treated,walker,to_be_treated) =
+  match to_be_treated with 
+  [] ->(List.rev treated,walker)
+  | dir :: other_dirs ->
+   let next_walker =  direct_son walker dir in 
+   helper_for_multiple_application ((walker,dir,next_walker)::treated,next_walker,other_dirs) ;;
+
+
+let apply_several l dirs = helper_for_multiple_application ([],l,dirs) ;;  
+
+(*
+
+apply_several (Int_range.range 1 10) [D (4, 2); D (1, 4)] ;;
+
+*)
+
+end ;;  
+
+
+
+module Ashari_element = struct 
+
+   module Private = struct 
+
+   let add_int i = function 
+     Modular(a,b)->Modular((i+a) mod b,b)
+     |I(j)->I(i+j) ;; 
+
+   let add_modular a1 b1 = function 
+     Modular(a2,b2)->
+        let g = Gcd.gcd b1 b2 in 
+        Modular((a1+a2) mod g,g)
+     |I(j)->Modular((a1+j) mod b1,b1) ;; 
+
+   let add elt = function 
+       Modular(a,b)->add_modular a b elt
+     |I(i)->add_int i elt ;; 
+
+   end ;; 
+
+  let divides q = function 
+    Modular(a,b)->(a mod q=0)&&(b mod q=0)
+     |I(i)->i mod q=0 ;; 
+
+  let fold_sum l = List.fold_left Private.add (I 0) l ;;
+
+  let int_value_opt = function
+    Modular(_,_) -> None 
+    | I(i)->Some i ;;
+
+  let test_compatibility (elt,k) = match elt with
+    Modular(a,b) -> (k-a) mod b =0
+    | I(i)-> k=i ;;  
+  
+
+end ;;  
+
+
+module Ashari_pattern = struct 
+
+module Private = struct
+
+let turn_whole_opt patt= 
+  match patt with 
+  [] -> None 
+  | wrapped_a1 :: other_as -> 
+     match Ashari_element.int_value_opt wrapped_a1 with 
+     None -> None 
+     |Some a1 -> 
+        if Ashari_element.divides a1 (Ashari_element.fold_sum other_as)
+        then Some(other_as@[wrapped_a1])  
+        else None ;;
+
+let turn_opt (Ash patt) (D(i_start,j)) = 
+  let i_end = (i_start-1)+j in 
+  let (before,subpatt,after) = List_again.two_sided_cutting (i_start-1,(List.length patt)-i_end) patt in 
+    Option.map (fun turned->Ash(before@turned@after)) (turn_whole_opt subpatt) ;;
+
+let rec turn_several_opt ash l=
+  match l with 
+  [] -> Some ash 
+  |d::other_ds -> 
+     match turn_opt ash d with 
+     None -> None
+     |Some new_ash ->turn_several_opt new_ash other_ds ;; 
+
+let rec helper_for_partial_turn (treated_triples,walker,to_be_treated) = match to_be_treated with 
+  [] ->(List.rev treated_triples,walker,[])
+  |dir :: other_dirs -> 
+      match turn_opt walker dir with 
+     None -> (List.rev treated_triples,walker,to_be_treated)
+     |Some new_walker -> helper_for_partial_turn ((walker,dir,new_walker)::treated_triples,new_walker,other_dirs) ;;
+
+let turn_some ash l =   helper_for_partial_turn ([],ash,l) ;;     
+
+end ;;        
+
+let turn_several_opt = Private.turn_several_opt ;;
+
+let test_compatibility_at_index (Ash ash) perm k=
+   let r=(List.length perm)-(k-1)-(List.length ash) in 
+   if r<0 then false else 
+   let (_,subperm,_) = List_again.two_sided_cutting  (k-1,r) perm in 
+   let temp = List.combine ash subperm in 
+   List.for_all (Ashari_element.test_compatibility) temp ;;
+   
+let test_compatibility_at_some_index ash_patt perm =
+   let (Ash ash) = ash_patt in 
+   let m=(List.length perm)+1-(List.length ash) in 
+   List.exists (test_compatibility_at_index ash_patt perm ) (Int_range.range 1 m) ;;   
+
+end ;;  
+
+module Reconstruct = struct 
+
+let needed_width dirs = snd(Max.maximize_it (fun (D(i,j))->i+j-1) dirs) ;;
+
+let optional_modular_relations_from_action indexed (D(i,j)) =
+  let modulus = snd(List.nth indexed (i-1)) in 
+    let pairs = Int_range.scale (fun k->
+     let (idx,vaal) = List.nth indexed (k-1) in 
+     (idx,(vaal mod modulus,modulus))
+    ) (i+1) (i+j-1) in 
+    Int_range.scale (fun t->
+      List.assoc_opt t pairs  
+    ) 1 (List.length indexed);;  
+   
+let combine_optional_modular_relations omrs = 
+  let nonempty_omrs = List.filter_map (fun opt->opt) omrs in 
+  if nonempty_omrs=[]
+  then None 
+  else Some(Gcd.combine_congruences nonempty_omrs);;   
+
+
+exception Fugitive_exn of int * int ;;
+
+let reconstruct total_perm dirs =
+  let w = needed_width dirs in 
+  let perm = List_again.long_head w total_perm in 
+  let indexed_perm = Int_range.index_everything perm in
+  let triples = fst(Generic.apply_several indexed_perm dirs) in 
+  let all_modular_relations = Image.image (fun (in_patt,dir,_out_patt) ->optional_modular_relations_from_action in_patt dir) triples in 
+  let optional_modular_relations_per_index = Int_range.scale (fun k->
+    let omrs = Image.image (fun l->List.nth l (k-1)) all_modular_relations in 
+    combine_optional_modular_relations omrs
+  ) 1 w in 
+  let indexed_optional_modular_relations = List.combine indexed_perm optional_modular_relations_per_index in 
+  let pivots = Image.image (fun (in_patt,D(i,j),_out_patt) ->List.nth in_patt (i-1)) triples in 
+  let final_in_pattern = Ash(Image.image (
+    fun ((idx,elt),modular_rel_opt) ->
+       if elt = small_n then I small_n else 
+       match List.assoc_opt idx pivots with 
+       (Some pivot) -> I pivot
+       |None ->
+         match modular_rel_opt with 
+         None -> (* in this case, there is no constraint at all on the element *)
+                  Modular(0,1)
+         |Some(a,b)->Modular(a,b)
+  ) indexed_optional_modular_relations) in 
+  (final_in_pattern,dirs,Option.get(Ashari_pattern.turn_several_opt final_in_pattern dirs)) ;;
+
+end ;;  
+
+module type GROUNDLIKE = sig val ground: (int list) list end ;;
+
+module MakeComputer = functor (Ground:GROUNDLIKE) -> struct 
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+let sphere0 = Ground.ground ;;
+
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus nice_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let computation = remaining 11;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let rec helper_for_canonical_path (treated,walker) =
+   if measure walker = 0 
+   then (List.rev_map fst ((walker,D(0,0))::treated),List.rev_map snd treated)
+   else 
+   let dir = List.hd(reductions walker) in 
+   let next_walker =  direct_son walker dir in 
+   helper_for_canonical_path ((walker,dir)::treated,next_walker) ;;
+
+
+let canonical_path perm = helper_for_canonical_path ([],perm) ;;  
+
+let find_next_triple_opt base triples = 
+   let irreducibles = List.filter (fun x->
+     List.for_all (fun (ash,_,_)->not(Ashari_pattern.test_compatibility_at_some_index ash x)) triples  
+   ) base in 
+   if irreducibles=[] then None else 
+   let header = List.hd irreducibles in 
+   let path = canonical_path header in 
+   Some(Reconstruct.reconstruct header (snd path)) ;;
+
+
+let rec helper_for_finding_all_triples base treated = 
+   match find_next_triple_opt base treated with 
+   None -> List.rev treated 
+   |Some new_triple -> helper_for_finding_all_triples base (new_triple::treated) ;;
+    
+let find_all_triples base previous_triples= helper_for_finding_all_triples base (List.rev previous_triples) ;;
+
+end ;;
+
+module Display = struct 
+
+let d_direction (D(i,j))= 
+  let si = string_of_int i 
+  and sj = string_of_int j in 
+  "D("^si^","^sj^")" ;;
+
+let d_direction_list l= "["^(String.concat ";" (Image.image d_direction l))^"]" ;;
+
+let d_ashari_element = function 
+  (I i)->"I "^(string_of_int i)^"" 
+  |Modular(a,b) -> "Modular("^(string_of_int a)^","^(string_of_int b)^")" ;;
+
+let d_ashari_pattern (Ash l)= "Ash(["^(String.concat ";" (Image.image d_ashari_element l))^"])" ;;
+
+let d_triple (ash1,dirs,ash2)="("^(d_ashari_pattern ash1)^","^(d_direction_list dirs)^","^(d_ashari_pattern ash2)^")";;  
+
+let d_triple_list l="[\n\n"^(String.concat ";\n" (Image.image d_triple l))^"\n\n]";;  
+
+end ;;  
+
+
+exception Bad_action_items of (ashari_pattern * (direction list) * ashari_pattern) list ;;
+
+let check_list_of_actions l=
+  let bad_items = List.filter (
+    fun (in_patt,dirs,out_patt)->
+       (Ashari_pattern.turn_several_opt in_patt dirs)<>Some out_patt
+  ) l in 
+  if bad_items<>[]
+  then raise(Bad_action_items(bad_items))
+  else l ;;  
+
+let all_reductions = check_list_of_actions
+[
+
+(Ash([I 1;I 7]),[D(1,2)],Ash([I 7;I 1]));
+(Ash([I 2;I 7;Modular(1,2)]),[D(1,3)],Ash([I 7;Modular(1,2);I 2]));
+(Ash([I 2;I 7;Modular(0,2);Modular(1,2)]),[D(1,4)],Ash([I 7;Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 2;I 7;Modular(0,2);Modular(0,2);Modular(1,2)]),[D(1,5)],Ash([I 7;Modular(0,2);Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 3;I 7;I 1;Modular(-1,3)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(1,3)]),[D(1,4)],Ash([I 7;Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);I 2;Modular(4,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(4,6);I 3;I 2]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(1,3)]),[D(1,5)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;I 1;Modular(0,3);Modular(-1,3)]),[D(3,3);D(1,4)],Ash([I 7;Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(2,3)]),[D(1,3)],Ash([I 7;Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(-1,3)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(0,3);Modular(-1,3)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(2,3)]),[D(1,5)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);I 1;Modular(-1,3)]),[D(4,2);D(1,4)],Ash([I 7;Modular(0,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(1,3)]),[D(1,5)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 3;I 7;Modular(0,3);Modular(2,3)]),[D(1,4)],Ash([I 7;Modular(0,3);Modular(2,3);I 3]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(1,6)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([I 3;I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(2,3)]),[D(1,6)],Ash([I 7;Modular(0,3);Modular(1,3);Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 4;I 7;Modular(1,4)]),[D(1,3)],Ash([I 7;Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(2,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(3,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(3,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(3,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(2,4);Modular(3,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(1,4);Modular(2,4);Modular(3,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(1,4);Modular(2,4)]),[D(1,5)],Ash([I 7;Modular(2,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(3,4)]),[D(1,4)],Ash([I 7;Modular(2,4);Modular(3,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(2,4);Modular(1,4)]),[D(1,5)],Ash([I 7;Modular(2,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(2,4);Modular(2,4);Modular(3,4);Modular(1,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(2,4);Modular(2,4);Modular(3,4);Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(2,4);Modular(1,4)]),[D(1,7)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(2,4);Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(1,4);Modular(1,4)]),[D(1,5)],Ash([I 7;Modular(3,4);Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 4;I 7;Modular(3,4);Modular(2,4)]),[D(1,4)],Ash([I 7;Modular(3,4);Modular(2,4);I 4]));
+(Ash([I 5;I 7;Modular(1,5);Modular(2,5)]),[D(1,4)],Ash([I 7;Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-2,5)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(2,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(3,5)]),[D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);Modular(1,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-1,5);Modular(-4,5);Modular(-2,5)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-1,5);Modular(-4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 1;Modular(-4,5);Modular(-3,5)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-4,5);Modular(-3,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);I 3;Modular(2,15);Modular(-11,15)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(2,15);Modular(-11,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);I 3;Modular(-11,15);Modular(2,15)]),[D(5,3);D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(-11,15);Modular(2,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(1,5);Modular(4,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(1,5);Modular(1,5);Modular(4,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;I 1;Modular(-4,5);Modular(-1,5);Modular(-2,5)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-4,5);Modular(-1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(2,5);Modular(1,5)]),[D(1,4)],Ash([I 7;Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(1,2)]),[D(3,3);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(0,2);Modular(1,2)]),[D(3,4);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(3,10);Modular(0,2);Modular(0,2);Modular(1,2)]),[D(3,5);D(1,3)],Ash([I 7;Modular(3,10);I 5;Modular(0,2);Modular(0,2);Modular(1,2);I 2]));
+(Ash([I 5;I 7;Modular(2,5);Modular(4,5);Modular(1,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(2,5);Modular(4,5);Modular(1,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(3,10);Modular(1,10)]),[D(3,4);D(1,5)],Ash([I 7;Modular(4,10);Modular(3,10);Modular(1,10);I 5;I 2]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(3,10);Modular(6,10);Modular(1,2)]),[D(3,5);D(1,5)],Ash([I 7;Modular(4,10);Modular(3,10);Modular(6,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 2;Modular(4,10);Modular(6,10);Modular(3,10);Modular(1,2)]),[D(3,5);D(1,5)],Ash([I 7;Modular(4,10);Modular(6,10);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;Modular(3,5)]),[D(1,3)],Ash([I 7;Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(2,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(2,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(3,5)]),[D(1,5)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(3,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);Modular(1,5);Modular(2,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(1,5);Modular(2,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 1;Modular(-4,5);Modular(-2,5)]),[D(4,3);D(1,5)],Ash([I 7;Modular(4,5);Modular(-4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(4,5);Modular(2,5);Modular(1,5);I 3;Modular(-9,15)]),[D(6,2);D(1,6)],Ash([I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(1,5)]),[D(1,6)],Ash([I 7;Modular(4,5);Modular(2,5);Modular(1,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 2;Modular(3,10);Modular(1,10)]),[D(4,3);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,10);Modular(1,10);I 5;I 2]));
+(Ash([I 5;I 7;Modular(4,5);I 2;Modular(3,10);Modular(6,10);Modular(1,2)]),[D(4,4);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,10);Modular(6,10);I 5;Modular(1,2);I 2]));
+(Ash([I 5;I 7;I 4;Modular(2,20);Modular(-14,20)]),[D(3,3);D(1,4)],Ash([I 7;Modular(2,20);Modular(-14,20);I 5;I 4]));
+(Ash([I 5;I 7;Modular(4,5);Modular(3,5);Modular(1,5)]),[D(1,5)],Ash([I 7;Modular(4,5);Modular(3,5);Modular(1,5);I 5]));
+(Ash([I 5;I 7;Modular(4,5);I 3;Modular(2,15);Modular(1,15);Modular(-9,15)]),[D(4,4);D(1,6)],Ash([I 7;Modular(4,5);Modular(2,15);Modular(1,15);Modular(-9,15);I 5;I 3]));
+(Ash([I 5;I 7;Modular(4,5);Modular(3,5);I 2;Modular(6,10)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,5);Modular(3,5);Modular(6,10);I 5;I 2]));
+(Ash([I 5;I 7;Modular(4,5);Modular(1,5);I 1;Modular(-2,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,5);Modular(1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 4;Modular(-14,20);Modular(2,20)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-14,20);Modular(2,20);I 5;I 4]));
+(Ash([I 5;I 7;Modular(1,5);I 1;Modular(-3,5)]),[D(4,2);D(1,4)],Ash([I 7;Modular(1,5);Modular(-3,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);I 1;Modular(-1,5);Modular(-2,5)]),[D(4,3);D(1,5)],Ash([I 7;Modular(1,5);Modular(-1,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;I 6;Modular(3,30);Modular(1,6);Modular(2,6)]),[D(3,4);D(1,3)],Ash([I 7;Modular(3,30);I 5;Modular(1,6);Modular(2,6);I 6]));
+(Ash([I 5;I 7;Modular(1,5);Modular(3,5);I 1;Modular(-1,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,5);Modular(3,5);Modular(-1,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);I 3;Modular(2,15);Modular(1,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(1,5);Modular(2,15);I 5;Modular(1,3);I 3]));
+(Ash([I 5;I 7;Modular(1,5);Modular(3,5);Modular(4,5)]),[D(1,5)],Ash([I 7;Modular(1,5);Modular(3,5);Modular(4,5);I 5]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);I 1;Modular(-2,5)]),[D(5,2);D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(-2,5);I 5;I 1]));
+(Ash([I 5;I 7;Modular(1,5);Modular(4,5);I 2;Modular(3,10);Modular(1,2)]),[D(5,3);D(1,5)],Ash([I 7;Modular(1,5);Modular(4,5);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 6;I 7;I 1;Modular(-4,6);Modular(-3,6)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-4,6);Modular(-3,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(1,6);I 2;Modular(-2,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;I 2]));
+(Ash([I 6;I 7;Modular(1,6);Modular(2,6);Modular(5,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(2,6);Modular(5,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 1;Modular(-4,6);Modular(-1,6);Modular(-2,6)]),[D(3,4);D(1,5)],Ash([I 7;Modular(-4,6);Modular(-1,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;I 1;Modular(-3,6);Modular(-4,6)]),[D(3,3);D(1,4)],Ash([I 7;Modular(-3,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(1,6);I 3;Modular(-2,6);Modular(2,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(1,6);Modular(3,6);Modular(5,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(3,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 1;I 3;Modular(-1,6)]),[D(3,3);D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(1,6);Modular(4,6)]),[D(1,4)],Ash([I 7;Modular(1,6);Modular(4,6);I 6]));
+(Ash([I 6;I 7;Modular(1,6);Modular(5,6);Modular(2,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(1,6);Modular(5,6);Modular(2,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 1;Modular(-1,6)]),[D(3,2);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-3,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(2,6);Modular(-3,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(1,6);I 4;Modular(3,12);Modular(5,12)]),[D(5,3);D(1,6)],Ash([I 7;Modular(2,6);Modular(1,6);Modular(3,12);Modular(5,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-2,6);Modular(-1,6)]),[D(4,3);D(1,5)],Ash([I 7;Modular(2,6);Modular(-2,6);Modular(-1,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(1,6);Modular(5,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(1,6);Modular(5,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);I 1;Modular(-1,6);Modular(-2,6)]),[D(4,3);D(1,5)],Ash([I 7;Modular(2,6);Modular(-1,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(3,6)]),[D(1,4)],Ash([I 7;Modular(2,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;I 2;Modular(-2,6);Modular(1,6);Modular(1,2)]),[D(3,4);D(1,4)],Ash([I 7;Modular(-2,6);Modular(1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(2,6);I 4;Modular(3,12);Modular(1,4)]),[D(4,3);D(1,4)],Ash([I 7;Modular(2,6);Modular(3,12);I 6;Modular(1,4);I 4]));
+(Ash([I 6;I 7;Modular(2,6);Modular(4,6);Modular(5,6)]),[D(1,5)],Ash([I 7;Modular(2,6);Modular(4,6);Modular(5,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(1,6);Modular(3,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(1,6);Modular(3,6);I 6]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);I 1;Modular(-2,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(-2,6);I 6;I 1]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(3,6);Modular(1,6)]),[D(1,6)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(3,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;I 2;Modular(-1,6);Modular(1,2)]),[D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(2,6);Modular(5,6);Modular(4,6)]),[D(1,5)],Ash([I 7;Modular(2,6);Modular(5,6);Modular(4,6);I 6]));
+(Ash([I 6;I 7;Modular(3,6);I 1;Modular(-4,6)]),[D(4,2);D(1,4)],Ash([I 7;Modular(3,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;I 3;Modular(1,6);Modular(-2,6);Modular(2,3);Modular(2,3)]),[D(3,5);D(1,4)],Ash([I 7;Modular(1,6);Modular(-2,6);I 6;Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(1,6);Modular(5,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(1,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 3;I 1;Modular(-1,6)]),[D(4,2);D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(2,6)]),[D(1,4)],Ash([I 7;Modular(3,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(1,12);Modular(2,12);Modular(5,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(1,12);Modular(2,12);Modular(5,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(1,12);Modular(5,12);Modular(2,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(1,12);Modular(5,12);Modular(2,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(2,12);Modular(1,4);Modular(1,4)]),[D(4,4);D(1,4)],Ash([I 7;Modular(3,6);Modular(2,12);I 6;Modular(1,4);Modular(1,4);I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(5,12);Modular(1,12);Modular(2,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(5,12);Modular(1,12);Modular(2,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);I 4;Modular(5,12);Modular(2,12);Modular(1,12)]),[D(4,4);D(1,6)],Ash([I 7;Modular(3,6);Modular(5,12);Modular(2,12);Modular(1,12);I 6;I 4]));
+(Ash([I 6;I 7;Modular(3,6);Modular(5,6);Modular(1,6);Modular(2,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(5,6);Modular(1,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 3;Modular(-1,6);Modular(1,3)]),[D(3,3);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(3,6);Modular(5,6);Modular(2,6);Modular(1,6)]),[D(1,6)],Ash([I 7;Modular(3,6);Modular(5,6);Modular(2,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;I 3;Modular(-1,6);Modular(2,3);Modular(1,3);Modular(1,3)]),[D(3,5);D(1,3)],Ash([I 7;Modular(-1,6);I 6;Modular(2,3);Modular(1,3);Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(1,6)]),[D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6]));
+(Ash([I 6;I 7;Modular(4,6);I 2;Modular(1,6);Modular(1,2)]),[D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;Modular(1,2);I 2]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);I 3;I 1;Modular(-1,6)]),[D(6,2);D(5,3);D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(-1,6);I 6;I 1;I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);I 3;Modular(-1,6);Modular(1,3)]),[D(5,3);D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(-1,6);I 6;Modular(1,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(2,6);Modular(5,6)]),[D(1,5)],Ash([I 7;Modular(4,6);Modular(2,6);Modular(5,6);I 6]));
+(Ash([I 6;I 7;Modular(4,6);I 3;Modular(1,6);Modular(2,3)]),[D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;Modular(2,3);I 3]));
+(Ash([I 6;I 7;Modular(4,6);I 3;I 2;Modular(1,6)]),[D(4,3);D(4,3);D(1,4)],Ash([I 7;Modular(4,6);Modular(1,6);I 6;I 3;I 2]));
+(Ash([I 6;I 7;I 4;I 3;Modular(2,12)]),[D(2,3);D(3,3);D(2,4);D(1,4)],Ash([I 7;Modular(2,12);I 3;I 6;I 4]));
+(Ash([I 6;I 7;I 4;I 3;Modular(5,12)]),[D(3,3);D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;I 4;I 3]));
+(Ash([I 6;I 7;Modular(4,6);Modular(5,6);I 1;Modular(-4,6)]),[D(5,2);D(1,5)],Ash([I 7;Modular(4,6);Modular(5,6);Modular(-4,6);I 6;I 1]));
+(Ash([I 6;I 7;I 4;Modular(5,12);I 1;Modular(-1,4)]),[D(5,2);D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;Modular(-1,4);I 4;I 1]));
+(Ash([I 6;I 7;Modular(4,6);Modular(5,6);Modular(2,6)]),[D(1,5)],Ash([I 7;Modular(4,6);Modular(5,6);Modular(2,6);I 6]));
+(Ash([I 6;I 7;I 4;Modular(5,12);Modular(3,4)]),[D(3,3);D(1,3)],Ash([I 7;Modular(5,12);I 6;Modular(3,4);I 4]));
+(Ash([I 6;I 7;Modular(5,6)]),[D(1,3)],Ash([I 7;Modular(5,6);I 6]));
+(Ash([I 1;Modular(0,1);I 7]),[D(1,3)],Ash([Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);I 7]),[D(1,3)],Ash([Modular(1,2);I 7;I 2]));
+(Ash([I 2;Modular(0,2);I 7;Modular(1,2)]),[D(1,4)],Ash([Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);I 7;Modular(0,2);Modular(1,2)]),[D(1,5)],Ash([Modular(0,2);I 7;Modular(0,2);Modular(1,2);I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 7;Modular(2,7);Modular(1,7);Modular(5,7);Modular(6,7)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(2,7);Modular(1,7);Modular(5,7);Modular(6,7);I 7]));
+(Ash([I 3;Modular(1,3);I 7;Modular(2,3);Modular(2,3)]),[D(1,5)],Ash([Modular(1,3);I 7;Modular(2,3);Modular(2,3);I 3]));
+(Ash([I 3;Modular(1,3);I 7;Modular(0,3);Modular(1,3)]),[D(1,5)],Ash([Modular(1,3);I 7;Modular(0,3);Modular(1,3);I 3]));
+(Ash([Modular(0,1);Modular(0,1);I 7;Modular(6,7);Modular(5,7);Modular(1,7);Modular(2,7)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(6,7);Modular(5,7);Modular(1,7);Modular(2,7);I 7]));
+(Ash([I 4;Modular(1,4);I 7]),[D(1,3)],Ash([Modular(1,4);I 7;I 4]));
+(Ash([I 5;Modular(3,5);I 7]),[D(1,3)],Ash([Modular(3,5);I 7;I 5]));
+(Ash([Modular(0,1);I 4;I 7;Modular(2,4);I 1;Modular(-1,4)]),[D(5,2);D(2,4)],Ash([Modular(0,1);I 7;Modular(2,4);Modular(-1,4);I 4;I 1]));
+(Ash([Modular(0,1);I 4;I 7;I 2;Modular(-2,4);Modular(-1,4);Modular(1,2)]),[D(4,4);D(2,4)],Ash([Modular(0,1);I 7;Modular(-2,4);Modular(-1,4);I 4;Modular(1,2);I 2]));
+(Ash([I 5;Modular(4,5);I 7;Modular(3,5);Modular(1,5)]),[D(1,5)],Ash([Modular(4,5);I 7;Modular(3,5);Modular(1,5);I 5]));
+(Ash([Modular(0,1);I 4;I 7;Modular(2,4);I 2;Modular(-1,4);Modular(1,2)]),[D(5,3);D(2,4)],Ash([Modular(0,1);I 7;Modular(2,4);Modular(-1,4);I 4;Modular(1,2);I 2]));
+(Ash([I 5;Modular(1,5);I 7;Modular(2,5)]),[D(1,4)],Ash([Modular(1,5);I 7;Modular(2,5);I 5]));
+(Ash([I 5;Modular(1,5);I 7;Modular(3,5);I 1;Modular(-1,5)]),[D(5,2);D(1,5)],Ash([Modular(1,5);I 7;Modular(3,5);Modular(-1,5);I 5;I 1]));
+(Ash([I 5;Modular(1,5);I 7;Modular(3,5);Modular(4,5)]),[D(1,5)],Ash([Modular(1,5);I 7;Modular(3,5);Modular(4,5);I 5]));
+(Ash([I 5;Modular(1,5);I 7;Modular(4,5);I 2;Modular(3,10);Modular(1,2)]),[D(5,3);D(1,5)],Ash([Modular(1,5);I 7;Modular(4,5);Modular(3,10);I 5;Modular(1,2);I 2]));
+(Ash([I 6;Modular(4,6);I 7;Modular(2,6);I 1;Modular(-1,6)]),[D(5,2);D(1,5)],Ash([Modular(4,6);I 7;Modular(2,6);Modular(-1,6);I 6;I 1]));
+(Ash([I 6;Modular(4,6);I 7;Modular(2,6);Modular(5,6)]),[D(1,5)],Ash([Modular(4,6);I 7;Modular(2,6);Modular(5,6);I 6]));
+(Ash([Modular(0,1);I 4;I 7;Modular(3,4);I 1;Modular(-2,4)]),[D(5,2);D(2,4)],Ash([Modular(0,1);I 7;Modular(3,4);Modular(-2,4);I 4;I 1]));
+(Ash([I 6;Modular(5,6);I 7]),[D(1,3)],Ash([Modular(5,6);I 7;I 6]));
+(Ash([Modular(0,1);I 3;Modular(2,3);I 7]),[D(2,3)],Ash([Modular(0,1);Modular(2,3);I 7;I 3]));
+(Ash([I 1;Modular(0,1);Modular(0,1);I 7]),[D(1,4)],Ash([Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);Modular(0,2);I 7]),[D(1,4)],Ash([Modular(1,2);Modular(0,2);I 7;I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);I 7]),[D(1,4)],Ash([Modular(0,2);Modular(1,2);I 7;I 2]));
+(Ash([I 3;Modular(1,3);Modular(0,3);I 7;Modular(1,3)]),[D(1,5)],Ash([Modular(1,3);Modular(0,3);I 7;Modular(1,3);I 3]));
+(Ash([Modular(0,1);I 4;Modular(2,4);I 7;Modular(2,4);Modular(1,4)]),[D(2,5)],Ash([Modular(0,1);Modular(2,4);I 7;Modular(2,4);Modular(1,4);I 4]));
+(Ash([I 3;Modular(2,3);Modular(0,3);I 7]),[D(1,4)],Ash([Modular(2,3);Modular(0,3);I 7;I 3]));
+(Ash([I 4;Modular(3,4);Modular(2,4);I 7]),[D(1,4)],Ash([Modular(3,4);Modular(2,4);I 7;I 4]));
+(Ash([Modular(0,1);I 3;Modular(0,3);I 7;Modular(2,3)]),[D(2,4)],Ash([Modular(0,1);Modular(0,3);I 7;Modular(2,3);I 3]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(4,7);Modular(2,7);Modular(1,7)]),[D(4,4)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(4,7);Modular(2,7);Modular(1,7);I 7]));
+(Ash([Modular(0,1);I 3;Modular(1,3);I 7;Modular(2,3);I 1;Modular(-1,3)]),[D(6,2);D(2,5)],Ash([Modular(0,1);Modular(1,3);I 7;Modular(2,3);Modular(-1,3);I 3;I 1]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);I 7;Modular(3,4)]),[D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);I 7;Modular(3,4);I 4]));
+(Ash([I 1;Modular(0,1);Modular(0,1);Modular(0,1);I 7]),[D(1,5)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(6,7);Modular(1,7)]),[D(5,3)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);Modular(6,7);Modular(1,7);I 7]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(0,2);I 7]),[D(1,5)],Ash([Modular(0,2);Modular(1,2);Modular(0,2);I 7;I 2]));
+(Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;Modular(1,7);Modular(6,7)]),[D(5,3)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);Modular(1,7);Modular(6,7);I 7]));
+(Ash([I 2;Modular(1,2);Modular(0,2);Modular(0,2);I 7]),[D(1,5)],Ash([Modular(1,2);Modular(0,2);Modular(0,2);I 7;I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 5;Modular(1,5);I 7;I 1;Modular(-3,5)]),[D(6,2);D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(1,5);I 7;Modular(-3,5);I 5;I 1]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);I 7;Modular(1,4);Modular(2,4)]),[D(3,5)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);I 7;Modular(1,4);Modular(2,4);I 4]));
+(Ash([I 3;Modular(2,3);Modular(0,3);Modular(1,3);I 7;Modular(2,3)]),[D(1,6)],Ash([Modular(2,3);Modular(0,3);Modular(1,3);I 7;Modular(2,3);I 3]));
+(Ash([Modular(0,1);I 6;Modular(5,6);Modular(4,6);I 7;Modular(2,6)]),[D(2,5)],Ash([Modular(0,1);Modular(5,6);Modular(4,6);I 7;Modular(2,6);I 6]));
+(Ash([I 4;Modular(1,4);Modular(3,4);Modular(2,4);I 7;Modular(1,4);Modular(2,4)]),[D(1,7)],Ash([Modular(1,4);Modular(3,4);Modular(2,4);I 7;Modular(1,4);Modular(2,4);I 4]));
+(Ash([Modular(0,1);I 2;Modular(0,2);Modular(0,2);I 7;Modular(1,2)]),[D(2,5)],Ash([Modular(0,1);Modular(0,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 5;Modular(3,5);Modular(1,5);Modular(4,5);I 7]),[D(1,5)],Ash([Modular(3,5);Modular(1,5);Modular(4,5);I 7;I 5]));
+(Ash([I 5;Modular(1,5);Modular(3,5);Modular(4,5);I 7]),[D(1,5)],Ash([Modular(1,5);Modular(3,5);Modular(4,5);I 7;I 5]));
+(Ash([Modular(0,1);I 3;Modular(2,3);Modular(1,3);I 7;Modular(2,3)]),[D(2,5)],Ash([Modular(0,1);Modular(2,3);Modular(1,3);I 7;Modular(2,3);I 3]));
+(Ash([I 6;I 5;Modular(3,30);Modular(4,30);I 7]),[D(1,4);D(1,5)],Ash([Modular(3,30);Modular(4,30);I 6;I 7;I 5]));
+(Ash([I 1;Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7]),[D(1,6)],Ash([Modular(0,1);Modular(0,1);Modular(0,1);Modular(0,1);I 7;I 1]));
+(Ash([I 2;Modular(1,2);Modular(0,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(1,2);Modular(0,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(1,2);Modular(1,2);Modular(0,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(1,2);Modular(1,2);Modular(0,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(0,2);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([I 2;Modular(0,2);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2)]),[D(1,7)],Ash([Modular(0,2);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);Modular(0,1);I 4;Modular(2,4);Modular(3,4);I 7]),[D(3,4)],Ash([Modular(0,1);Modular(0,1);Modular(2,4);Modular(3,4);I 7;I 4]));
+(Ash([Modular(0,1);I 5;Modular(1,5);Modular(4,5);Modular(3,5);I 7]),[D(2,5)],Ash([Modular(0,1);Modular(1,5);Modular(4,5);Modular(3,5);I 7;I 5]));
+(Ash([Modular(0,1);I 2;Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2)]),[D(2,6)],Ash([Modular(0,1);Modular(1,2);Modular(1,2);Modular(0,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);I 2;Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2)]),[D(2,6)],Ash([Modular(0,1);Modular(1,2);Modular(0,2);Modular(1,2);I 7;Modular(1,2);I 2]));
+(Ash([Modular(0,1);I 2;Modular(0,2);Modular(0,2);Modular(1,2);I 7]),[D(2,5)],Ash([Modular(0,1);Modular(0,2);Modular(0,2);Modular(1,2);I 7;I 2]))
+
+] ;;
+
+
+
+
+(*
+let base1 = List.filter (fun l->List.nth l 1=7) nice_permutations ;;
+let ground1 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;6])  nice_permutations ;;
+
+module Ground1 = struct let ground=ground1 end ;;
+
+module Computer1 = MakeComputer (Ground1) ;;
+
+let comp1 = Computer1.find_all_triples base1 [];;
+
+let base2 = List.filter (fun l->List.nth l 2=7) nice_permutations ;;
+let ground2 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;1;6])  nice_permutations ;;
+
+module Ground2 = struct let ground=ground2 end ;;
+
+module Computer2 = MakeComputer (Ground2) ;;
+
+let comp2 = Computer2.find_all_triples base2 comp1 ;;
+
+
+
+
+
+
+
+
+
+let base2 = List.filter (fun l->List.nth l 2=7) nice_permutations ;;
+let ground2 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;1;6])  nice_permutations ;;
+
+module Ground2 = struct let ground=ground2 end ;;
+
+module Computer2 = MakeComputer (Ground2) ;;
+
+let comp2 = Computer2.find_all_triples base2 comp1 ;;
+
+let base3 = List.filter (fun l->List.nth l 3=7) nice_permutations ;;
+let ground3 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;1;2;6])  nice_permutations ;;
+
+module Ground3 = struct let ground=ground3 end ;;
+
+module Computer3 = MakeComputer (Ground3) ;;
+
+let comp3 = Computer3.find_all_triples base3 comp2 ;;
+
+let base4 = List.filter (fun l->List.nth l 4=7) nice_permutations ;;
+let ground4 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;1;2;3;6])  nice_permutations ;;
+
+module Ground4 = struct let ground=ground4 end ;;
+
+module Computer4 = MakeComputer (Ground4) ;;
+
+let comp4 = Computer4.find_all_triples base4 comp3 ;;
+
+let base5 = List.filter (fun l->List.nth l 5=7) nice_permutations ;;
+let ground5 = List.filter (fun l->List.exists (fun k->List.nth l k=7) [0;1;2;3;4;6])  nice_permutations ;;
+
+module Ground5 = struct let ground=ground5 end ;;
+
+module Computer5 = MakeComputer (Ground5) ;;
+
+let comp5 = Computer5.find_all_triples base5 comp4 ;;
+
+
+let z1 = d_triple_list comp5 ;;
+
+ let z2= "\n\n\n" ^ z1 ^ "\n\n\n" ;;
+
+Io.append_string_to_file z2 (Absolute_path.of_string "watched/watched_not_githubbed/ham.ml");;
+
+
+exception Pusher_exn ;;
+
+let rec pusher_for_finding_all_triples treated = 
+   match Computer1.find_next_triple_opt base1 treated with 
+   None -> raise Pusher_exn 
+   |Some new_triple -> (new_triple::treated) ;;
+
+let ff = Memoized.small pusher_for_finding_all_triples [] ;; 
+
+let triples1=ff 6 ;;
+
+let bad1 = Computer1.find_next_triple_opt base1 triples1 ;;
+
+
+let irreducibles = List.filter (fun x->
+     List.for_all (fun (ash,_,_)->not(Ashari_pattern.test_compatibility_at_some_index ash x)) triples1  
+) base1 ;;
+let header = List.hd irreducibles ;;
+let path = Computer1.canonical_path header ;; 
+
+let total_perm = header ;;
+
+let dirs = snd path ;;
+
+let total_perm = [1; 4; 7; 2; 5; 3; 6] ;;
+
+let dirs = [D (1, 3)] ;;
+
+
+let bad2 = Reconstruct.reconstruct total_perm dirs ;;
+
+let w = Reconstruct.needed_width dirs ;;
+let perm = List_again.long_head w total_perm ;;
+  
+let indexed_perm = Int_range.index_everything perm ;;
+
+let triples = fst(Generic.apply_several indexed_perm dirs) ;;
+
+let all_modular_relations = Image.image (fun (in_patt,dir,_out_patt) ->
+  Reconstruct.optional_modular_relations_from_action in_patt dir) triples ;;
+
+let optional_modular_relations_per_index = Int_range.scale (fun k->
+    let omrs = Image.image (fun l->List.nth l (k-1)) all_modular_relations in 
+    Reconstruct.combine_optional_modular_relations omrs
+) 1 w ;; 
+
+let indexed_optional_modular_relations = List.combine indexed_perm optional_modular_relations_per_index ;;
+
+let pivots = Image.image (fun (in_patt,D(i,j),_out_patt) ->List.nth in_patt (i-1)) triples ;;
+let final_in_pattern = Ash(Image.image (
+    fun ((idx,elt),modular_rel_opt) ->
+       if elt = small_n then I small_n else 
+       match List.assoc_opt idx pivots with 
+       (Some pivot) -> I pivot
+       |None ->
+         match modular_rel_opt with 
+         None -> 
+                 raise(Reconstruct.Fugitive_exn(idx,elt))
+         |Some(a,b)->Modular(a,b)
+) indexed_optional_modular_relations) ;;
+  
+let bad3= Ashari_pattern.turn_several_opt final_in_pattern dirs ;;
+
+let bad4= Ashari_pattern.Private.turn_some final_in_pattern dirs ;;
+
+let proposed_list_of_actions =  [
+   (Ash [I 1;I 7],[D(1,2)],Ash [I 7;I 1]);
+   (Ash [I 2;I 7;Modular(1,2)],[D(1,3)],Ash [I 7;Modular(1,2);I 2]);
+   (Ash [I 2;I 7;Modular(0,2);Modular(1,2)],[D(1,4)],Ash [I 7;Modular(0,2);Modular(1,2);I 2]);
+   (Ash [I 2;I 7;Modular(0,2);Modular(0,2);Modular(1,2)],[D(1,5)],Ash [I 7;Modular(0,2);Modular(0,2);Modular(1,2);I 2]);
+   (Ash [I 3;I 7;I 1;Modular(2,3)],[D(3,2);D(1,3)],Ash [I 7;Modular(2,3);I 3;I 1]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(1,3)],[D(1,4)],Ash [I 7;Modular(1,3);Modular(1,3);I 3]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(0,3);I 2;Modular(4,12)],[D(5,2);D(1,5)],Ash [I 7;Modular(1,3);Modular(0,3);Modular(4,12);I 3;I 2]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3)],[D(1,6)],Ash [I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3);I 3]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(0,3);Modular(1,3)],[D(1,5)],Ash [I 7;Modular(1,3);Modular(0,3);Modular(1,3);I 3]);
+   (Ash [I 3;I 7;I 1;Modular(0,3);Modular(2,3)],[D(3,3);D(1,4)],Ash [I 7;Modular(0,3);Modular(2,3);I 3;I 1]);
+   (Ash [I 3;I 7;Modular(2,3)],[D(1,3)],Ash [I 7;Modular(2,3);I 3]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(2,3)],[D(5,2);D(1,5)],Ash [I 7;Modular(1,3);Modular(2,3);Modular(2,3);I 3;I 1]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(2,3);I 1;Modular(0,3);Modular(2,3)],[D(5,3);D(1,6)],Ash [I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3);I 3;I 1]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(2,3);Modular(2,3)],[D(1,5)],Ash [I 7;Modular(1,3);Modular(2,3);Modular(2,3);I 3]); 
+   (Ash [I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);I 1;Modular(2,3)],[D(6,2);D(1,6)],Ash [I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3);I 3;I 1]);
+   (Ash [I 3;I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3)],[D(1,6)],Ash [I 7;Modular(1,3);Modular(2,3);Modular(0,3);Modular(2,3);I 3]); 
+   (Ash [I 3;I 7;Modular(1,3);Modular(0,3);Modular(2,3);I 1;Modular(2,3)],[D(6,2);D(1,6)],Ash [I 7;Modular(1,3);Modular(0,3);Modular(2,3);Modular(2,3);I 3;I 1]);
+] ;;
+
+let main_list_of_actions = check_list_of_actions proposed_list_of_actions ;;
+
+
+
+let irreducibles1 = List.filter (fun x->
+  List.for_all (fun (ash,_,_)->not(Ashari_pattern.test_compatibility_at_some_index ash x)) main_list_of_actions  
+) base1 ;;
+
+let header1 = List.hd irreducibles1 ;;
+
+let path1 = Computer1.canonical_path header1 ;;
+
+let reco1 = Reconstruct.reconstruct header1 (snd path1) ;;
+
+
+let tr1 = (Ash [I 3; I 7; Modular (1, 3); Modular (0, 3); I 2; Modular (4, 12)],
+   [D (5, 2); D (1, 5)],
+   Ash [I 7; Modular (1, 3); Modular (0, 3); Modular (4, 12); I 3; I 2]) ;;
+
+let (ash1,dirs1,ash2) = tr1 ;;
+
+Ashari_pattern.Private.turn_some ash1 dirs1 ;;
+
+
+
+
+let ash = Ash [I 3;I 7;I 1;Modular(2,3)] ;;
+
+let dir = D(3,2) ;;
+
+let bad1 = Ashari_pattern.Private.turn_opt ash dir ;;
+
+let ash2 = Ash [I 1;Modular(2,3)] ;;
+
+let (Ash patt) = ash2 ;;
+
+let bad2 = Ashari_pattern.Private.turn_whole_opt patt ;;
+
+let (wrapped_a1,other_as) = List_again.head_with_tail patt ;;
+
+let a1 = Option.get(Ashari_element.int_value_opt wrapped_a1) ;;
+
+let fs = Ashari_element.fold_sum other_as ;;
+
+let turn_whole_opt patt= 
+  match patt with 
+  [] -> None 
+  | wrapped_a1 :: other_as -> 
+     match Ashari_element.int_value_opt wrapped_a1 with 
+     None -> None 
+     |Some a1 -> 
+        if Ashari_element.divides a1 (Ashari_element.fold_sum other_as)
+        then Some(other_as@[wrapped_a1])  
+        else None ;;
+
+*)        
+end;;
+
+(************************************************************************************************************************
+ Entry 279 : Musings on permutations & divisibility (V)
+************************************************************************************************************************)
+module Snip279 = struct 
+
+type pattern = Patt of int list ;;
+
+type direction = D of int * int ;;
+
+type statement =
+    Tr of pattern * direction * pattern 
+   |Union of pattern * (pattern list) ;; 
+
+type statement_inside_drum =
+   Tr_indr of  direction * int 
+   |Union_indr of  (int list) ;; 
+
+type drum = Dr of (pattern * (statement_inside_drum option)) list ;;
+
+let i_order = Total_ordering.for_integers ;;
+
+let i_intersect = Ordered.intersect i_order ;;
+
+let i_setminus = Ordered.setminus i_order ;;
+let i_sort = Ordered.sort i_order ;;
+
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = 
+  let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=small_n+1) ) 
+  (Cartesian.square(Int_range.range 1 small_n)) in 
+  Image.image (fun (i,j)->D(j,i)) temp;;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and partial_sum = Basic.fold_sum sub_perm in 
+   if (partial_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+let the_rebel = [6; 4; 7; 3; 5; 2; 1] ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+
+ 
+
+module Pattern = struct 
+
+let check_inclusion (Patt patt1) (Patt patt2) =
+  let temp = List.combine patt1 patt2 in 
+  List.for_all (fun (t1,t2)->(t1=t2)||(t2=0) ) temp ;;
+
+let complicated_compatibility_condition patt sub_patt = 
+  let (last,rev_patt_before_last)=List_again.head_with_tail (List.rev sub_patt) in 
+  if last<>0 then false else 
+  if List.exists(fun x->x=0) rev_patt_before_last then false else  
+  let already_reached = i_sort patt in  
+  let not_reached_yet = i_setminus (Int_range.range 1 small_n) already_reached in 
+  let a1=List.hd sub_patt 
+  and leftmost_sum = Basic.fold_sum sub_patt in 
+  List.for_all (fun j->((leftmost_sum+j) mod a1)=0 ) not_reached_yet 
+ ;; 
+
+(*
+
+complicated_compatibility_condition [3; 7; 4; 5; 1; 0; 0] [4; 5; 1; 0] ;;
+
+*)
+
+
+let compatibility_condition itv_start itv_end patt sub_patt = 
+  if complicated_compatibility_condition patt sub_patt then true else
+  let (a1,other_as) = List_again.head_with_tail sub_patt 
+  and partial_sum = Basic.fold_sum sub_patt in 
+  if a1<1 then false else 
+  if a1=1 then true else
+  if List.for_all (fun x->x>0)  other_as
+  then (partial_sum mod a1)=0
+  else 
+  if itv_end<>small_n then false else 
+  let total_sum=(small_n*(small_n+1))/2 
+  and leftmost_sum = Basic.fold_sum (List_again.long_head itv_start patt) in 
+  ((total_sum-leftmost_sum) mod a1)=0
+ ;; 
+
+let direct_son_opt (Patt patt) (D(itv_start,len))=  
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval patt i j) in 
+   let sub_patt = itv_in_p itv_start itv_end in 
+   if not(compatibility_condition itv_start itv_end patt sub_patt)
+   then None 
+   else let (a1,other_as) = List_again.head_with_tail sub_patt in
+        Some(Patt((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n))))  ;;
+
+
+let direct_son patt dir = Option.get(direct_son_opt patt dir) ;;
+
+let check_transition (in_patt,direction,out_patt)=
+  match direct_son_opt in_patt direction with 
+  None -> false
+   |(Some medium_patt) -> check_inclusion medium_patt out_patt ;;  
+
+
+let check_transitions l = List.filter (fun t->not(check_transition t)) l ;; 
+
+let duality_condition perm (Patt patt)=
+   let temp = List.combine patt perm in 
+  List.for_all (fun (t1,t2)->(t1=0)||(t1=t2) ) temp ;;
+  
+let realizers patterns =
+  List.filter (fun perm->List.exists (duality_condition perm) patterns) nice_permutations ;;
+   
+let check_union (pattern1,patterns)=
+   let set1 = realizers [pattern1] 
+   and set2 = realizers patterns in
+   il_setminus set1 set2 = [] ;;
+   
+let check_statement = function 
+  (Tr(in_patt,direction,out_patt)) -> check_transition (in_patt,direction,out_patt)
+  |(Union(pattern1,patterns)) ->  check_union (pattern1,patterns);;
+
+let check_statements l = List.filter (fun t->not(check_statement t)) l ;;   
+
+end ;;  
+
+module type SEEDLIKE = sig val seeds: pattern list end ;;
+
+module Grower = functor (Seed:SEEDLIKE) -> struct 
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+let sphere0 = Pattern.realizers Seed.seeds ;;
+
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus nice_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let computation = remaining 11;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let reductions_for_last_in_path perm =
+   let path = get_path perm in 
+   let last_in_path = (
+     if List.length(path)=1 
+     then perm 
+     else List.nth (List.rev path) 1
+   ) in 
+   ((perm,last_in_path),reductions last_in_path) ;;
+
+let data_for_next_pattern patt =
+    let effective_perms = il_setminus (Pattern.realizers [patt]) sphere0 in 
+    let temp1 = Image.image reductions_for_last_in_path effective_perms in 
+    let (_,good_dirs)=Max.maximize_it_with_care 
+    (fun dir->List.length(List.filter(fun (_,dirs)->List.mem dir dirs) temp1))
+    all_directions in
+    let chosen_dir = List.hd good_dirs in 
+    (chosen_dir,
+     List.filter_map (fun (pair,dirs)->
+      if List.mem chosen_dir dirs  
+      then Some pair 
+      else None  
+    ) temp1,
+    temp1) ;;
+
+
+end ;;
+
+module Drum = struct 
+
+let all_patterns (Dr l) = Image.image fst l ;;  
+
+let nth_pattern (Dr l) k= fst(List.nth l (k-1)) ;;
+
+let check_item drum (patt,stmt_opt) = match stmt_opt with 
+  None -> true 
+  |Some(stmt) -> match stmt with 
+     Tr_indr(dir,k)->Pattern.check_transition (patt,dir,nth_pattern drum k)
+   |Union_indr(indices)->Pattern.check_union (patt,Image.image (nth_pattern drum) indices) ;; 
+
+
+let check drum = let (Dr l)=drum in List.filter (fun item->not(check_item drum item)) l;;   
+
+exception Bad_drum of (pattern * (statement_inside_drum option)) list;;
+
+let define l = 
+    let drum = Dr l in 
+    let bad_items = check drum in 
+    if bad_items=[] 
+    then drum 
+    else raise(Bad_drum(bad_items)) ;;
+
+let indices drum perm=     
+ let temp = Int_range.index_everything (all_patterns drum) in 
+ List.filter_map (fun (idx,patt)->if Pattern.duality_condition perm patt then Some idx else None ) temp ;;
+
+
+end ;;  
+
+let main_drum = Drum.define [
+   (*   1 *) (Patt [0;0;0;0;0;0;7],None);
+   (*   2 *) (Patt [7;0;0;0;0;0;0],Some(Tr_indr(D(1,7),1)));
+   (*   3 *) (Patt [1;7;0;0;0;0;0],Some(Tr_indr(D(1,2),2)));
+   (*   4 *) (Patt [2;7;0;0;0;0;0],Some(Tr_indr(D(1,7),2)));
+
+   (*   5 *) (Patt [3;7;2;0;0;0;0],Some(Tr_indr(D(1,3),2))); 
+   (*   6 *) (Patt [3;7;5;0;0;0;0],Some(Tr_indr(D(1,3),2)));
+   (*   7 *) (Patt [3;7;6;2;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*   8 *) (Patt [3;7;6;5;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*   9 *) (Patt [3;7;6;1;2;0;0],Some(Tr_indr(D(4,2),7)));
+   (*  10 *) (Patt [3;7;6;1;4;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  11 *) (Patt [3;7;6;1;5;0;0],Some(Tr_indr(D(4,2),8)));
+   (*  12 *) (Patt [3;7;6;1;0;0;0],Some(Union_indr([9;10;11])));
+   (*  13 *) (Patt [3;7;6;4;1;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  14 *) (Patt [3;7;6;4;2;0;0],Some(Tr_indr(D(4,4),7)));
+   (*  15 *) (Patt [3;7;6;4;5;0;0],Some(Tr_indr(D(4,4),8)));
+   (*  16 *) (Patt [3;7;6;4;0;0;0],Some(Union_indr([13;14;15])));
+   (*  17 *) (Patt [3;7;6;0;0;0;0],Some(Union_indr([7;8;12;16]))); 
+   (*  18 *) (Patt [3;7;4;1;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  19 *) (Patt [3;7;4;5;1;0;0],Some(Tr_indr(D(3,4),6)));
+   (*  20 *) (Patt [3;7;4;5;2;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  21 *) (Patt [3;7;4;5;6;1;0],Some(Tr_indr(D(3,4),6)));
+   (*  22 *) (Patt [3;7;4;5;6;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  23 *) (Patt [3;7;4;5;6;0;0],Some(Union_indr([21;22]))); 
+   (*  24 *) (Patt [3;7;4;5;0;0;0],Some(Union_indr([19;20;23])));
+   (*  25 *) (Patt [3;7;4;6;1;0;0],Some(Tr_indr(D(1,5),2))); 
+   (*  26 *) (Patt [3;7;4;6;2;0;0],Some(Tr_indr(D(3,3),17))); 
+   (*  27 *) (Patt [3;7;4;6;5;1;0],Some(Tr_indr(D(3,4),17)));
+   (*  28 *) (Patt [3;7;4;6;5;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  29 *) (Patt [3;7;4;6;5;0;0],Some(Union_indr([27;28])));
+   (*  30 *) (Patt [3;7;4;6;0;0;0],Some(Union_indr([25;26;29])));
+   (*  31 *) (Patt [3;7;4;2;5;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  32 *) (Patt [3;7;4;2;6;0;0],Some(Tr_indr(D(4,2),30)));
+   (*  33 *) (Patt [3;7;4;2;1;5;0],Some(Tr_indr(D(5,2),31)));
+   (*  34 *) (Patt [3;7;4;2;1;6;0],Some(Tr_indr(D(5,2),32)));
+   (*  35 *) (Patt [3;7;4;2;1;0;0],Some(Union_indr([33;34])));
+   (*  36 *) (Patt [3;7;4;2;0;0;0],Some(Union_indr([31;32;35])));
+   (*  37 *) (Patt [3;7;4;0;0;0;0],Some(Union_indr([18;24;30;36])));
+   (*  38 *) (Patt [3;7;1;2;0;0;0],Some(Tr_indr(D(3,2),5)));
+   (*  39 *) (Patt [3;7;1;4;0;0;0],Some(Tr_indr(D(3,2),37)));
+   (*  40 *) (Patt [3;7;1;5;0;0;0],Some(Tr_indr(D(3,2),6)));
+   (*  41 *) (Patt [3;7;1;6;0;0;0],Some(Tr_indr(D(3,2),17)));
+   (*  42 *) (Patt [3;7;1;0;0;0;0],Some(Union_indr([38;39;40;41])));
+   (*  43 *) (Patt [3;7;0;0;0;0;0],Some(Union_indr([5;6;17;37;42])));
+   (*  44 *) (Patt [4;7;0;0;0;0;0],Some(Tr_indr(D(1,7),2)));
+
+   (*  45 *) (Patt [5;7;3;0;0;0;0],Some(Tr_indr(D(1,3),2)));
+   (*  46 *) (Patt [5;7;1;2;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  47 *) (Patt [5;7;4;1;2;0;0],Some(Tr_indr(D(3,5),46)));
+   (*  48 *) (Patt [5;7;1;4;2;0;0],Some(Tr_indr(D(3,2),47)));
+   (*  49 *) (Patt [5;7;1;4;3;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  50 *) (Patt [5;7;1;4;6;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  51 *) (Patt [5;7;4;6;3;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  52 *) (Patt [5;7;1;4;6;3;0],Some(Tr_indr(D(3,4),51)));
+   (*  53 *) (Patt [5;7;1;4;6;0;0],Some(Union_indr([50;52])));
+   (*  54 *) (Patt [5;7;1;4;0;0;0],Some(Union_indr([48;49;53])));
+   (*  55 *) (Patt [5;7;6;1;2;3;0],Some(Tr_indr(D(3,4),46)));
+   (*  56 *) (Patt [5;7;1;6;2;3;0],Some(Tr_indr(D(3,2),55)));
+   (*  57 *) (Patt [5;7;6;3;1;2;0],Some(Tr_indr(D(3,4),45)));
+   (*  58 *) (Patt [5;7;6;3;4;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  59 *) (Patt [5;7;6;4;3;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  60 *) (Patt [5;7;1;3;0;0;0],Some(Tr_indr(D(3,2),45)));
+   (*  61 *) (Patt [5;7;1;6;2;4;0],Some(Tr_indr(D(1,6),2)));
+   (*  62 *) (Patt [5;7;1;6;2;0;0],Some(Union_indr([56;61])));
+   (*  63 *) (Patt [5;7;1;6;3;2;0],Some(Tr_indr(D(3,3),57)));
+   (*  64 *) (Patt [5;7;1;6;3;4;0],Some(Tr_indr(D(3,4),58)));
+   (*  65 *) (Patt [5;7;1;6;3;0;0],Some(Union_indr([63;64])));
+   (*  66 *) (Patt [5;7;1;6;4;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  67 *) (Patt [5;7;1;6;4;3;0],Some(Tr_indr(D(3,4),59)));
+   (*  68 *) (Patt [5;7;1;6;4;0;0],Some(Union_indr([66;67])));
+   (*  69 *) (Patt [5;7;1;6;0;0;0],Some(Union_indr([62;65;68])));
+   (*  70 *) (Patt [5;7;1;0;0;0;0],Some(Union_indr([46;54;60;69]))); 
+   (*  71 *) (Patt [5;7;4;1;3;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  72 *) (Patt [5;7;4;3;1;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  73 *) (Patt [5;7;2;1;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  74 *) (Patt [5;7;2;3;0;0;0],Some(Tr_indr(D(3,5),45)));
+   (*  75 *) (Patt [5;7;2;4;1;3;0],Some(Tr_indr(D(3,4),71)));
+   (*  76 *) (Patt [5;7;2;4;1;6;0],Some(Tr_indr(D(1,6),2)));
+   (*  77 *) (Patt [5;7;2;4;1;0;0],Some(Union_indr([75;76])));
+   (*  78 *) (Patt [5;7;2;4;3;1;0],Some(Tr_indr(D(3,4),72)));
+   (*  79 *) (Patt [5;7;2;4;6;3;1],Some(Tr_indr(D(3,5),51)));
+   (*  80 *) (Patt [5;7;2;4;3;6;1],Some(Tr_indr(D(5,2),79)));
+   (*  81 *) (Patt [5;7;2;4;3;0;0],Some(Union_indr([78;80])));
+   (*  82 *) (Patt [5;7;2;4;6;1;3],Some(Tr_indr(D(6,2),79)));
+   (*  83 *) (Patt [5;7;2;4;6;0;0],Some(Union_indr([79;82])));
+   (*  84 *) (Patt [5;7;2;4;0;0;0],Some(Union_indr([77;81;83])));
+   (*  85 *) (Patt [5;7;2;6;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  86 *) (Patt [5;7;2;0;0;0;0],Some(Union_indr([73;74;84;85])));
+   (*  87 *) (Patt [5;7;4;1;0;0;0],Some(Tr_indr(D(3,5),70)));
+   (*  88 *) (Patt [5;7;4;2;1;3;0],Some(Tr_indr(D(4,3),87)));
+   (*  89 *) (Patt [5;7;4;2;1;6;0],Some(Tr_indr(D(1,6),2)));
+   (*  90 *) (Patt [5;7;4;2;1;0;0],Some(Union_indr([88;89])));
+   (*  91 *) (Patt [5;7;4;2;3;0;0],Some(Tr_indr(D(3,5),74)));
+   (*  92 *) (Patt [5;7;4;2;6;0;0],Some(Tr_indr(D(3,3),86)));
+   (*  93 *) (Patt [5;7;4;2;0;0;0],Some(Union_indr([90;91;92])));
+   (*  94 *) (Patt [5;7;4;3;2;1;0],Some(Tr_indr(D(4,3),93)));
+   (*  95 *) (Patt [5;7;4;3;2;6;0],Some(Tr_indr(D(4,4),93)));
+   (*  96 *) (Patt [5;7;4;3;2;0;0],Some(Union_indr([94;95])));
+   (*  97 *) (Patt [5;7;4;3;6;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  98 *) (Patt [5;7;4;3;0;0;0],Some(Union_indr([72;96;97])));
+   (*  99 *) (Patt [5;7;4;6;1;2;0],Some(Tr_indr(D(1,6),2)));
+   (* 100 *) (Patt [5;7;4;6;1;3;0],Some(Tr_indr(D(5,2),51)));
+   (* 101 *) (Patt [5;7;4;6;1;0;0],Some(Union_indr([99;100])));
+   (* 102 *) (Patt [5;7;4;6;2;1;0],Some(Tr_indr(D(1,6),2)));
+   (* 103 *) (Patt [5;7;4;6;2;3;0],Some(Tr_indr(D(5,3),51)));
+   (* 104 *) (Patt [5;7;4;6;2;0;0],Some(Union_indr([102;103])));
+   (* 105 *) (Patt [5;7;4;6;0;0;0],Some(Union_indr([51;101;104])));
+   (* 106 *) (Patt [5;7;4;0;0;0;0],Some(Union_indr([87;93;98;105])));
+] ;; 
+
+
+
+
+module Seed1 = struct let seeds = Drum.all_patterns main_drum end ;;
+
+module Fruit1 = Grower (Seed1) ;;
+
+let fm = Fruit1.measure ;;
+  
+let rr = Fruit1.reductions ;;
+
+let mr x =(fm x,rr x) ;;
+let work1 = Patt [5;7;4;0;0;0;0] ;;
+let domain = il_setminus (Pattern.realizers [work1]) Fruit1.sphere0 ;;
+
+let nontrivial = List.filter (fun x->Fruit1.measure(x)>1) domain ;;
+let shadow perm =
+    let reds = Fruit1.reductions perm in 
+    let followers = Image.image (fun red->Option.get(direct_son_opt perm red)) reds in 
+    followers ;;
+
+
+let sea = if domain=[] then ([],(-48,[])) else let h= (List.hd domain) in (h, mr h) ;;
+
+let kopfe = List.hd(snd(snd(sea))) ;;
+let after_kopfe = direct_son (fst sea) kopfe ;;
+
+let indices_for_after_kopfe = Drum.indices main_drum after_kopfe ;;
+  
+
+(*
+let proj_of_shadow perm =
+    let followers = shadow perm in 
+    let unordered = Image.image (fun l->List.nth l 2) followers in 
+    i_sort unordered ;;
+
+let w1 = Image.image (fun x->(x,proj_of_shadow x)) nontrivial ;;    
+
+let w2 = List.filter (fun (x,y)->i_intersect y [1;3]=[]) w1 ;;
+
+let part1 = List.filter (fun (x,l)->List.nth x 2=1) w2 ;;
+
+let part2 = List.filter (fun (x,l)->List.nth x 2=2) w2 ;;
+
+let part3 = List.filter (fun (x,l)->List.nth x 2=4) w2 ;;
+
+let part4 = List.filter (fun (x,l)->List.nth x 2=6) w2 ;;
+
+
+let see = (fun x->if x=[] then ([],(-48,[])) else let h= fst(List.hd x) in (h, mr h)) part3 ;;
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 278 : Musings on permutations & divisibility (IV)
+************************************************************************************************************************)
+module Snip278 = struct 
+
+type pattern = Patt of int list ;;
+
+type direction = D of int * int ;;
+
+type statement =
+    Tr of pattern * direction * pattern 
+   |Union of pattern * (pattern list) ;; 
+
+type statement_inside_drum =
+   Tr_indr of  direction * int 
+   |Union_indr of  (int list) ;; 
+
+type drum = Dr of (pattern * (statement_inside_drum option)) list ;;
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = 
+  let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=small_n+1) ) 
+  (Cartesian.square(Int_range.range 1 small_n)) in 
+  Image.image (fun (i,j)->D(j,i)) temp;;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and total_sum = Basic.fold_sum sub_perm in 
+   if (total_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+(*
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+
+let sphere0 = List.filter (fun perm->(List.nth perm 0=7)||(List.nth perm 6=7)) all_permutations ;;
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus all_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let hr k = List.length(remaining k);;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let best_directions perms = 
+   let temp1 = Image.image (fun perm->(perm,reductions perm)) perms in 
+   Max.maximize_it_with_care (fun direction->
+     List.length(List.filter (fun p->List.mem direction(snd p)) temp1)
+   ) all_directions ;;
+
+let the_rebel = List.hd(remaining 11) ;;
+
+let generic_check (x1,direction,x2) = List.for_all (fun perm->il_mem (direct_son perm direction) x2) x1 ;;
+
+let generic_checks l=List.for_all generic_check l ;; 
+
+*)
+
+let the_rebel = [6; 4; 7; 3; 5; 2; 1] ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+
+ 
+
+module Pattern = struct 
+
+let check_inclusion (Patt patt1) (Patt patt2) =
+  let temp = List.combine patt1 patt2 in 
+  List.for_all (fun (t1,t2)->(t1=t2)||(t2=0) ) temp ;;
+
+let compatibility_condition itv_end sub_patt =
+  let (a1,other_as) = List_again.head_with_tail sub_patt 
+  and total_sum = Basic.fold_sum sub_patt in 
+  if a1<1 then false else 
+  if a1=1 then true else
+  if List.for_all (fun x->x>0)  other_as
+  then (total_sum mod a1)=0
+  else 
+  if itv_end<>small_n then false else 
+  let maximal_sum=(small_n*(small_n+1))/2 in 
+  (maximal_sum mod a1)=0
+ ;; 
+
+let direct_son_opt (Patt patt) (D(itv_start,len))=  
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval patt i j) in 
+   let sub_patt = itv_in_p itv_start itv_end in 
+   if not(compatibility_condition itv_end sub_patt)
+   then None 
+   else let (a1,other_as) = List_again.head_with_tail sub_patt in
+        Some(Patt((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n))))  ;;
+
+
+let check_transition (in_patt,direction,out_patt)=
+  match direct_son_opt in_patt direction with 
+  None -> false
+   |(Some medium_patt) -> check_inclusion medium_patt out_patt ;;  
+
+
+let check_transitions l = List.filter (fun t->not(check_transition t)) l ;; 
+
+let duality_condition perm (Patt patt)=
+   let temp = List.combine patt perm in 
+  List.for_all (fun (t1,t2)->(t1=0)||(t1=t2) ) temp ;;
+  
+let realizers patterns =
+  List.filter (fun perm->List.exists (duality_condition perm) patterns) nice_permutations ;;
+   
+let check_union (pattern1,patterns)=
+   let set1 = realizers [pattern1] 
+   and set2 = realizers patterns in
+   il_setminus set1 set2 = [] ;;
+   
+let check_statement = function 
+  (Tr(in_patt,direction,out_patt)) -> check_transition (in_patt,direction,out_patt)
+  |(Union(pattern1,patterns)) ->  check_union (pattern1,patterns);;
+
+let check_statements l = List.filter (fun t->not(check_statement t)) l ;;   
+
+end ;;  
+
+module type SEEDLIKE = sig val seeds: pattern list end ;;
+
+module Grower = functor (Seed:SEEDLIKE) -> struct 
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+let sphere0 = Pattern.realizers Seed.seeds ;;
+
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus nice_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let computation = remaining 11;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let reductions_for_last_in_path perm =
+   let path = get_path perm in 
+   let last_in_path = (
+     if List.length(path)=1 
+     then perm 
+     else List.nth (List.rev path) 1
+   ) in 
+   ((perm,last_in_path),reductions last_in_path) ;;
+
+let data_for_next_pattern patt =
+    let effective_perms = il_setminus (Pattern.realizers [patt]) sphere0 in 
+    let temp1 = Image.image reductions_for_last_in_path effective_perms in 
+    let (_,good_dirs)=Max.maximize_it_with_care 
+    (fun dir->List.length(List.filter(fun (_,dirs)->List.mem dir dirs) temp1))
+    all_directions in
+    let chosen_dir = List.hd good_dirs in 
+    (chosen_dir,
+     List.filter_map (fun (pair,dirs)->
+      if List.mem chosen_dir dirs  
+      then Some pair 
+      else None  
+    ) temp1,
+    temp1) ;;
+
+
+end ;;
+
+module Drum = struct 
+
+let all_patterns (Dr l) = Image.image fst l ;;  
+
+let nth_pattern (Dr l) k= fst(List.nth l (k-1)) ;;
+
+let check_item drum (patt,stmt_opt) = match stmt_opt with 
+  None -> true 
+  |Some(stmt) -> match stmt with 
+     Tr_indr(dir,k)->Pattern.check_transition (patt,dir,nth_pattern drum k)
+   |Union_indr(indices)->Pattern.check_union (patt,Image.image (nth_pattern drum) indices) ;; 
+
+
+let check drum = let (Dr l)=drum in List.filter (fun item->not(check_item drum item)) l;;   
+
+exception Bad_drum of (pattern * (statement_inside_drum option)) list;;
+
+let define l = 
+    let drum = Dr l in 
+    let bad_items = check drum in 
+    if bad_items=[] 
+    then drum 
+    else raise(Bad_drum(bad_items)) ;;
+
+end ;;  
+
+let main_drum = Drum.define [
+   (*   1 *) (Patt [0;0;0;0;0;0;7],None);
+   (*   2 *) (Patt [7;0;0;0;0;0;0],Some(Tr_indr(D(1,7),1)));
+   (*   3 *) (Patt [1;7;0;0;0;0;0],Some(Tr_indr(D(1,2),2)));
+   (*   4 *) (Patt [2;7;0;0;0;0;0],Some(Tr_indr(D(1,7),2)));
+
+   (*   5 *) (Patt [3;7;1;2;5;0;0],Some(Tr_indr(D(1,5),2)));
+   (*   6 *) (Patt [3;7;1;2;6;5;0],Some(Tr_indr(D(1,6),2)));
+   (*   7 *) (Patt [3;7;1;4;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*   8 *) (Patt [3;7;1;5;2;0;0],Some(Tr_indr(D(1,5),2)));
+   (*   9 *) (Patt [3;7;1;5;6;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  10 *) (Patt [3;7;1;6;2;5;0],Some(Tr_indr(D(1,6),2)));
+   (*  11 *) (Patt [3;7;1;6;4;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  12 *) (Patt [3;7;1;6;5;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  13 *) (Patt [3;7;2;0;0;0;0],Some(Tr_indr(D(1,3),2)));
+   (*  14 *) (Patt [3;7;4;1;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  15 *) (Patt [3;7;4;2;5;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  16 *) (Patt [3;7;4;2;6;5;0],Some(Tr_indr(D(1,6),2)));
+   (*  17 *) (Patt [3;7;4;5;2;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  18 *) (Patt [3;7;4;5;6;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  19 *) (Patt [3;7;4;6;1;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  20 *) (Patt [3;7;4;6;2;5;0],Some(Tr_indr(D(1,6),2)));
+   (*  21 *) (Patt [3;7;4;6;5;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  22 *) (Patt [3;7;5;0;0;0;0],Some(Tr_indr(D(1,3),2)));
+   (*  23 *) (Patt [3;7;6;1;2;5;0],Some(Tr_indr(D(1,6),2)));
+   (*  24 *) (Patt [3;7;6;1;4;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  25 *) (Patt [3;7;6;1;5;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  26 *) (Patt [3;7;6;2;0;0;0],Some(Tr_indr(D(1,4),2)));
+   (*  27 *) (Patt [3;7;6;4;1;0;0],Some(Tr_indr(D(1,5),2)));
+   (*  28 *) (Patt [3;7;6;4;2;5;0],Some(Tr_indr(D(1,6),2)));
+   (*  29 *) (Patt [3;7;6;4;5;2;0],Some(Tr_indr(D(1,6),2)));
+   (*  30 *) (Patt [3;7;6;5;0;0;0],Some(Tr_indr(D(1,4),2)));
+
+] ;; 
+
+
+let work1 = Patt [3;7;0;0;0;0;0] ;;
+
+module Seed1 = struct let seeds = Drum.all_patterns main_drum end ;;
+
+module Fruit1 = Grower (Seed1) ;;
+
+let domain = il_setminus (Pattern.realizers [work1]) Fruit1.sphere0 ;;
+
+let see1 = Max.maximize_it_with_care Fruit1.measure domain ;;
+(*
+let v1 = List.filter (fun x->Fruit1.measure(x)=1) domain ;;
+
+let v2 = Image.image (fun x->(x,List.hd(Fruit1.reductions x))) v1 ;;
+
+let v3 = Image.image (fun (x,D(i,j))->(x,(i,j)) ) v2 ;;
+
+let check_v3 = List.filter (fun (x,(i,j))->i<>1) v3;;
+
+let zeroes n=  Int_range.scale (fun _->0) 1 n ;;
+
+let v4 = Image.image (fun (x,(i,j))->((List_again.long_head j x)@(zeroes (small_n-j)),(i,j) )) v3 ;;
+
+let haddock_order = Total_ordering.product Total_ordering.silex_for_intlists Total_ordering.standard ;;
+
+let v5 = Ordered.sort haddock_order v4 ;;
+
+let v6 = Int_range.index_everything v5 ;;
+
+let v7 = Image.image (fun (idx,(l,(i,j))) -> (idx+4,(l,(i,j)))) v6 ;;
+
+let write_index idx = 
+  Strung.insert_repetitive_offset_on_the_left ' ' 3 (string_of_int idx) ;;
+
+let write_list l = "["^(String.concat ";" (Image.image string_of_int l))^"]";;
+
+let write_item (idx,(l,(i,j))) =
+  let si=string_of_int i 
+  and sj=string_of_int j in   
+"   (* "^(write_index idx)^" *) (Patt "^(write_list l)^",Some(Tr_indr(D("^si^","^sj^"),2)));" ;; 
+
+let write_items items = String.concat "\n" (Image.image write_item items) ;;
+
+let v8 = "\n\n\n"^(write_items v7)^"\n\n\n" ;;
+
+let act1 () = print_string v8 ;;
+
+*)
+end;;
+
+(************************************************************************************************************************
+ Entry 277 : Musings on permutations & divisibility (III)
+************************************************************************************************************************)
+module Snip277 = struct 
+
+type pattern = Patt of int list ;;
+
+type direction = D of int * int ;;
+
+type statement =
+    Tr of pattern * direction * pattern 
+   |Union of pattern * (pattern list) ;; 
+
+let il_order = Total_ordering.silex_for_intlists ;;
+
+let il_mem = Ordered.mem il_order ;;
+let il_merge = Ordered.merge il_order ;;
+let il_setminus = Ordered.setminus il_order ;;
+let il_sort = Ordered.sort il_order ;;
+
+let small_n = 7 ;;
+
+let all_directions = 
+  let temp = List.filter (fun (len,start)->(len>=2)&&(start+len<=small_n+1) ) 
+  (Cartesian.square(Int_range.range 1 small_n)) in 
+  Image.image (fun (i,j)->D(j,i)) temp;;
+
+let all_permutations = Permutation.iii small_n ;;
+
+let direct_son_opt perm (D(itv_start,len)) =
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval perm i j) in 
+   let sub_perm = itv_in_p itv_start itv_end in 
+   let (a1,other_as) = List_again.head_with_tail sub_perm 
+   and total_sum = Basic.fold_sum sub_perm in 
+   if (total_sum mod a1)<>0
+   then None 
+   else Some((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n)))  ;;
+
+
+let direct_son perm direction = Option.get(direct_son_opt perm direction) ;; 
+
+let direct_sons =Memoized.make (fun perm ->
+  List.filter_map (direct_son_opt perm) all_directions) ;;
+
+let identity = Int_range.range 1 small_n ;;
+
+(*
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+
+let sphere0 = List.filter (fun perm->(List.nth perm 0=7)||(List.nth perm 6=7)) all_permutations ;;
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus all_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let hr k = List.length(remaining k);;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let best_directions perms = 
+   let temp1 = Image.image (fun perm->(perm,reductions perm)) perms in 
+   Max.maximize_it_with_care (fun direction->
+     List.length(List.filter (fun p->List.mem direction(snd p)) temp1)
+   ) all_directions ;;
+
+let the_rebel = List.hd(remaining 11) ;;
+
+let generic_check (x1,direction,x2) = List.for_all (fun perm->il_mem (direct_son perm direction) x2) x1 ;;
+
+let generic_checks l=List.for_all generic_check l ;; 
+
+*)
+
+let the_rebel = [6; 4; 7; 3; 5; 2; 1] ;;
+
+let nice_permutations = List.filter (fun x->x<>the_rebel) all_permutations ;;
+
+
+ 
+
+module Pattern = struct 
+
+let check_inclusion (Patt patt1) (Patt patt2) =
+  let temp = List.combine patt1 patt2 in 
+  List.for_all (fun (t1,t2)->(t1=t2)||(t2=0) ) temp ;;
+
+let compatibility_condition itv_end sub_patt =
+  let (a1,other_as) = List_again.head_with_tail sub_patt 
+  and total_sum = Basic.fold_sum sub_patt in 
+  if a1<1 then false else 
+  if List.for_all (fun x->x>0)  other_as
+  then (total_sum mod a1)=0
+  else 
+  if itv_end<>small_n then false else 
+  let maximal_sum=(small_n*(small_n+1))/2 in 
+  let adjusted_sum=maximal_sum-total_sum in 
+  (adjusted_sum mod a1)=0
+ ;; 
+
+let direct_son_opt (Patt patt) (D(itv_start,len))=  
+   let itv_end = itv_start-1+len in 
+   let itv_in_p = (fun i j->List_again.interval patt i j) in 
+   let sub_patt = itv_in_p itv_start itv_end in 
+   if not(compatibility_condition itv_end sub_patt)
+   then None 
+   else let (a1,other_as) = List_again.head_with_tail sub_patt in
+        Some(Patt((itv_in_p 1 (itv_start-1))@other_as@(a1::(itv_in_p (itv_end+1) small_n))))  ;;
+
+
+let check_transition (in_patt,direction,out_patt)=
+  match direct_son_opt in_patt direction with 
+  None -> false
+   |(Some medium_patt) -> check_inclusion medium_patt out_patt ;;  
+
+
+let check_transitions l = List.filter (fun t->not(check_transition t)) l ;; 
+
+let duality_condition perm (Patt patt)=
+   let temp = List.combine patt perm in 
+  List.for_all (fun (t1,t2)->(t1=0)||(t1=t2) ) temp ;;
+  
+let realizers patterns =
+  List.filter (fun perm->List.exists (duality_condition perm) patterns) nice_permutations ;;
+   
+let check_union (pattern1,patterns)=
+   let set1 = realizers [pattern1] 
+   and set2 = realizers patterns in
+   il_setminus set1 set2 = [] ;;
+   
+let check_statement = function 
+  (Tr(in_patt,direction,out_patt)) -> check_transition (in_patt,direction,out_patt)
+  |(Union(pattern1,patterns)) ->  check_union (pattern1,patterns);;
+
+let check_statements l = List.filter (fun t->not(check_statement t)) l ;;   
+
+end ;;  
+
+module type SEEDLIKE = sig val seeds: pattern list end ;;
+
+module Grower = functor (Seed:SEEDLIKE) -> struct 
+
+let hashtbl_for_path =((Hashtbl.create 5040):(int list,int list list) Hashtbl.t) ;;
+
+let get_path x = Hashtbl.find hashtbl_for_path x ;;
+
+let sphere0 = Pattern.realizers Seed.seeds ;;
+
+List.iter (fun x->Hashtbl.add hashtbl_for_path x []) sphere0 ;;
+let ball0 = sphere0 ;;
+let remaining0=il_setminus all_permutations ball0 ;;
+
+let sbr = Memoized.recursive(fun old_f k->
+   if k=0
+   then (sphere0,ball0,remaining0) 
+   else
+   let (old_sphere,old_ball,old_remaining) = old_f (k-1) in  
+   let towards_next_sphere = List.filter_map (fun x->
+    Option.map(fun y->(x,y)) (List.find_opt(fun y->List.mem y old_ball)(direct_sons x))  
+   ) old_remaining in 
+   let _ = List.iter (fun (x,y)->Hashtbl.add hashtbl_for_path x (y::(get_path y))) towards_next_sphere in 
+   let next_sphere = Image.image fst towards_next_sphere in 
+   let next_ball = il_merge old_ball next_sphere in 
+   let next_remaining=il_setminus nice_permutations next_ball in  
+   (next_sphere,next_ball,next_remaining) 
+) ;;
+
+let sphere k = (fun (s,b,r)->s)(sbr k);;
+let ball k = (fun (s,b,r)->b)(sbr k);;
+let remaining k = (fun (s,b,r)->r)(sbr k);;
+
+let computation = remaining 11;;
+
+let measure = Memoized.make(fun p->
+  if p=the_rebel then 1000000 else 
+  List.length(get_path p)) ;;
+
+let reductions = Memoized.make(fun perm->
+     List.filter_map (fun direction->
+      match direct_son_opt perm direction with 
+      None -> None 
+      |(Some perm2) ->
+        if measure(perm2)<measure(perm)
+        then Some(direction)
+        else None
+      ) all_directions
+) ;;
+
+let reductions_for_last_in_path perm =
+   let path = get_path perm in 
+   let last_in_path = (
+     if List.length(path)=1 
+     then perm 
+     else List.nth (List.rev path) 1
+   ) in 
+   ((perm,last_in_path),reductions last_in_path) ;;
+
+let data_for_next_pattern patt =
+    let effective_perms = il_setminus (Pattern.realizers [patt]) sphere0 in 
+    let temp1 = Image.image reductions_for_last_in_path effective_perms in 
+    let (_,good_dirs)=Max.maximize_it_with_care 
+    (fun dir->List.length(List.filter(fun (_,dirs)->List.mem dir dirs) temp1))
+    all_directions in
+    let chosen_dir = List.hd good_dirs in 
+    (chosen_dir,
+     List.filter_map (fun (pair,dirs)->
+      if List.mem chosen_dir dirs  
+      then Some pair 
+      else None  
+    ) temp1,
+    temp1) ;;
+
+
+end ;;
+
+
+
+let patt0 = Patt [0;0;0;0;0;0;7] ;;
+let patt1 = Patt [7;0;0;0;0;0;0] ;;
+let patt2 = Patt [1;7;0;0;0;0;0] ;;
+let patt3 = Patt [2;7;1;0;0;0;0] ;;
+let patt4 = Patt [2;7;3;0;0;0;0] ;;
+let patt5 = Patt [2;7;5;0;0;0;0] ;;
+
+let check1 = Pattern.check_statements [
+  Tr(patt1,D(1,7),patt0);
+  Tr(patt2,D(1,2),patt1);
+  Tr(patt3,D(1,3),patt1);
+  Tr(patt4,D(1,3),patt1);
+  Tr(patt5,D(1,3),patt1);
+] ;;
+
+let work1 = Patt [0;7;0;0;0;0;0] ;;
+
+module Seed1 = struct let seeds = [patt0;patt1;patt2;patt3;patt4;patt5] end ;;
+
+module Fruit1 = Grower (Seed1) ;;
+
+let res1 = Fruit1.data_for_next_pattern work1 ;;
+
+(*
+
+module Seed1 = struct let seeds = [patt0;patt1] end ;;
+
+*)    
+end;;
+
+(************************************************************************************************************************
  Entry 276 : Musings on permutations & divisibility (II)
 ************************************************************************************************************************)
 module Snip276 = struct 
