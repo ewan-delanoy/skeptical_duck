@@ -110,10 +110,10 @@ let write_value_defn  defn = match defn with
 
 
 let write_value_definition (vn,(vdefn,new_val)) = 
-    "\\pgfmathsetmacro{\\"^(write_variable_name vn)^"}{"^(write_value_defn vdefn)^"} % "^(write_float new_val) ;;
+    "\\pgfmathsetmacro{"^(write_variable_name vn)^"}{"^(write_value_defn vdefn)^"} % "^(write_float new_val) ;;
 
 let write_value_definitions l =
-    String.concat "\n" (Image.image write_value_definition l) ;; 
+    String.concat "\n" (List.rev_map write_value_definition l) ;; 
 
 let write_point (point_name,UP((vn1,vn2),(fl1,fl2))) = 
     "\\coordinate ("^point_name^") at ("
@@ -123,7 +123,7 @@ let write_point (point_name,UP((vn1,vn2),(fl1,fl2))) =
     ^(write_float fl2)^")" ;;
 
 let write_points l =
-    String.concat "\n" (Image.image write_point l) ;; 
+    String.concat "\n" (List.rev_map write_point l) ;; 
 
 
     
