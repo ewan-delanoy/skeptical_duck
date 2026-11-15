@@ -43,19 +43,20 @@ type 'a t = G of ug_index * ('a list) * (('a * 'a) list) * ((int * 'a) list);;
 
 module Inner = struct 
 
-type inner_t = IG of ug_index * (int list) * ((int * int) list) ;;
+type inner_t = IG of ug_index * (Set_of_integers_t.t) * ((int * int) list) ;;
 
 let repository = ref ([]: inner_t list) ;;
 
 let i_order = Total_ordering.for_integers ;;
 
-let i_fold_merge = Ordered.fold_merge i_order ;;
-let i_insert = Ordered.insert i_order ;;
-let i_intersect = Ordered.intersect i_order ;;
-let i_mem = Ordered.mem i_order ;;
-let i_merge = Ordered.merge i_order ;;
-let i_setminus = Ordered.setminus i_order ;;
-let i_sort = Ordered.sort i_order ;;
+let i_fold_merge = Set_of_integers.fold_merge ;;
+let i_insert = Set_of_integers.insert ;;
+let i_intersect = Set_of_integers.intersect ;;
+let i_mem = Set_of_integers.mem ;;
+let i_merge = Set_of_integers.merge ;;
+let i_setminus = Set_of_integers.setminus ;;
+let i_sort = Set_of_integers.sort ;;
+
 
 let memoize0 hashtbl f ug =
   let (IG(UGI(idx),_,_)) = ug in 
@@ -273,3 +274,4 @@ include Private.Constrained ;;
 *)
 
 let make_from_indexation_and_neighbors _x _y= () ;;
+
