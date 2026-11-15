@@ -26,7 +26,7 @@ end ;;
 
 let divide itv unordered_points=
   let (Rational_interval_t.I(a,b)) = itv in 
-  let points = Ordered.sort Zirath.Q.order unordered_points in 
+  let points = Ordered.to_list(Ordered.sort Zirath.Q.order unordered_points) in 
   let good_points = List.filter (fun x->Private.mem x itv) points in 
   let all_points = a :: (good_points@[b]) in 
   let pairs = List_again.universal_delta_list all_points in 

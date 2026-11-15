@@ -37,7 +37,7 @@ let check_for_overlapping_intervals indexed_lines pairs =
         Ordered.sort Total_ordering.standard  
          [i1_open;i2_close;i3_open;i4_close] in
       let passage =
-        String.concat "\n" (Image.image
+        String.concat "\n" (Ordered.image
            (fun idx->List.assoc idx indexed_lines) indices_in_order
         ) in 
       let msg = "\n\n\nOffending passage :\n\n\n"^passage^"\n\n\n" in 

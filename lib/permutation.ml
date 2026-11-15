@@ -132,7 +132,7 @@ module Private = struct
               Total_ordering.standard Total_ordering.standard 
        and temp1 = Image.image (fun cycle->(List.hd cycle,cycle)) cycles in 
        let temp2 = Ordered.sort order_for_pairs temp1 in 
-       Image.image snd temp2 ;;
+       Ordered.image snd temp2 ;;
 
    let rec helper_for_cycle_decomposition (walker_perm,treated)=
       match find_cycle_inside walker_perm with 
@@ -192,7 +192,7 @@ module Private = struct
 
    let cyclic_subgroup perm =
        let w = order perm in 
-       if w=1 then [perm] else
+       if w=1 then Ordered.singleton perm else
        let walker = ref (perm,[]) in 
        let _ =for _=1 to w do
          let (to_be_treated,treated) = (!walker) in 
@@ -221,7 +221,7 @@ module Private = struct
    let il_sort = Ordered.sort il_order ;;
 
    let pusher_for_generated_subgroup l (whole,to_be_treated) =
-      let temp1 = Cartesian.product to_be_treated l in
+      let temp1 = Cartesian.product (Ordered.to_list to_be_treated) l in
       let unordered_temp2 = Image.image (fun (x,y)->product x y) temp1 in 
       let temp2 = il_sort unordered_temp2 in 
       let new_elements = il_setminus temp2 whole in 
@@ -229,14 +229,14 @@ module Private = struct
       (new_whole,new_elements) ;;
 
    let rec iterator_for_generated_subgroup l walker =
-       if snd walker = []
+       if Ordered.to_list(snd walker) = []
        then fst walker
        else iterator_for_generated_subgroup l 
         (pusher_for_generated_subgroup l walker);;  
 
    let generated_subgroup l = 
-      let id = i_fold_merge(Image.image i_sort l) in 
-       iterator_for_generated_subgroup l ([id],[id]) ;; 
+      let id = Ordered.to_list(i_fold_merge(Image.image i_sort l)) in 
+       iterator_for_generated_subgroup l (Ordered.singleton id,Ordered.singleton id) ;; 
 
    let nonnegative_power = 
       Memoized.recursive(fun old_f (sigma,k) ->
@@ -301,7 +301,7 @@ let inverse = Private.inverse ;;
 let order = Private.order ;;      
 
 let permutations l =
-      let initial_item = Ordered.sort Total_ordering.standard l in 
+      let initial_item = Ordered.to_list(Ordered.sort Total_ordering.standard l) in 
       Private.helper_for_enumeration (initial_item,[]);;   
    
 let power = Private.power ;;      

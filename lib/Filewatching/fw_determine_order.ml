@@ -31,7 +31,7 @@ let compute_dependencies  l =
   let coatoms_in_lex_order = Memoized.make (fun mname ->
      let details = List.assoc mname  l in 
      let temp1 = lex_sort(Fw_module_details.used_modules  details) in 
-     Ordered.intersect lex_order  modules_in_lex_order temp1
+     Ordered.to_list(Ordered.intersect lex_order  modules_in_lex_order temp1)
   )     in 
   let (cycles,good_list) = Lower_acyclic_subposet.compute coatoms_in_lex_order  
     modules in 
@@ -39,7 +39,7 @@ let compute_dependencies  l =
   let coatoms = Memoized.make (fun mname ->
     let old_order = coatoms_in_lex_order mname in 
     List.filter_map (fun (mn,_)->
-       if Ordered.mem lex_order mn old_order 
+       if Ordered.mem lex_order mn (Ordered.safe_set lex_order old_order) 
        then Some mn 
        else None  
       ) good_list

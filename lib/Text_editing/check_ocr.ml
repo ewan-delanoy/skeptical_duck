@@ -50,14 +50,15 @@ let seek_substring_at_index substr text idx =
 
 
 let message_for_int_range_completeness_check unordered_numbers =
-    let numbers = Ordered.sort Total_ordering.for_integers unordered_numbers in 
+    let ordered_numbers = Ordered.sort Total_ordering.for_integers unordered_numbers in 
+    let numbers = Ordered.to_list ordered_numbers in 
     let vmin = List.hd numbers and vmax = List.hd (List.rev numbers) in 
-    let full_range = Int_range.range vmin vmax in 
-    let missing_numbers = Ordered.setminus Total_ordering.for_integers full_range numbers in 
+    let full_range = Ordered.sort Total_ordering.for_integers (Int_range.range vmin vmax) in 
+    let missing_numbers = Ordered.setminus Total_ordering.for_integers full_range ordered_numbers in 
     let range_descr = "Range "^(string_of_int vmin)^"-"^(string_of_int vmax) in 
-    if missing_numbers = []
+    if Ordered.to_list missing_numbers = []
     then range_descr^" is complete.\n"
-    else let missing_descr = String.concat "," (Image.image string_of_int missing_numbers) in 
+    else let missing_descr = String.concat "," (Ordered.image string_of_int missing_numbers) in 
          "The following pages are missing in "^range_descr^": "^missing_descr^"\n" ;;
 
 let check_range_completeness unordered_numbers = 
@@ -186,8 +187,8 @@ let footnote_inconsistencies numbered_pages =
        let (unordered_refs,unordered_notes) = collect_phpbb_footnotes page_content in 
        let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
        and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
-       let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
-       and notes_without_refs = Ordered.setminus Total_ordering.for_integers notes refs in  
+       let refs_without_notes = Ordered.to_list(Ordered.setminus Total_ordering.for_integers refs notes) 
+       and notes_without_refs = Ordered.to_list(Ordered.setminus Total_ordering.for_integers notes refs) in  
        if (refs_without_notes,notes_without_refs)=([],[])
        then None 
        else Some(page_number,refs_without_notes,notes_without_refs)   
@@ -246,8 +247,8 @@ let footnote_inconsistencies numbered_pages =
        let (unordered_refs,unordered_notes) = collect_footnotes page_content in 
        let refs = Ordered.sort Total_ordering.for_integers  unordered_refs 
        and notes = Ordered.sort Total_ordering.for_integers  unordered_notes in 
-       let refs_without_notes = Ordered.setminus Total_ordering.for_integers refs notes 
-       and notes_without_refs = Ordered.setminus Total_ordering.for_integers notes refs in  
+       let refs_without_notes = Ordered.to_list(Ordered.setminus Total_ordering.for_integers refs notes) 
+       and notes_without_refs = Ordered.to_list(Ordered.setminus Total_ordering.for_integers notes refs) in  
        if (refs_without_notes,notes_without_refs)=([],[])
        then None 
        else Some(page_number,refs_without_notes,notes_without_refs)   

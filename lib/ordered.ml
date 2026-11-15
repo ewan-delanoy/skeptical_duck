@@ -1,13 +1,21 @@
 (*
  
-#use"lib/ordered.ml";;
+#use"lib/tordered.ml";;
 
 *)
 
+exception Empty_intersection_undefined;;    
 exception The_empty_set_has_no_min ;; 
 exception The_empty_set_has_no_max ;; 
 
+type 'a ordered_list = Se of 'a list ;;
+
 module Private = struct 
+
+   let to_list (Se l)= l ;;
+   
+   let unsafe_of_list l = Se l ;;
+
 
   let intersect (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=(function (u,v,accu)->
@@ -164,33 +172,6 @@ module Private = struct
   let select_minimal_elements_for_inclusion tr ll=
          helper2_for_minimal_elements_selection tr ([],ll) ;;
     
-  
-  end;;
-  
-  
-  let diff (cmpr: 'a Total_ordering_t.t) =
-            let rec tempf=(fun
-              (treated_bc,treated_b,treated_c,to_be_treated1,to_be_treated2)->
-                match to_be_treated1 with
-                []->(treated_bc,treated_b,List.rev_append treated_c to_be_treated2)
-                |(a1,b1)::others1->
-                (
-                  match to_be_treated2 with
-                []->(treated_bc,List.rev_append treated_b to_be_treated1,treated_c)     
-                |(a2,c2)::others2->
-                  (
-                    match cmpr a1 a2 with
-                    Total_ordering_result_t.Lower->
-                      tempf(treated_bc,(a1,b1)::treated_b,treated_c,others1,to_be_treated2)
-                    |Total_ordering_result_t.Greater->
-                    tempf(treated_bc,treated_b,(a2,c2)::treated_c,to_be_treated1,others2)
-                    |Total_ordering_result_t.Equal->
-                    tempf((a1,b1,c2)::treated_bc,treated_b,treated_c,others1,others2)  
-                  )
-                )      
-            ) in
-            tempf;;   
-  
   let does_not_intersect (cmpr:'a Total_ordering_t.t) ox oy=
       let rec tempf=(function (u,v)->
           if (u=[])||(v=[]) then true else
@@ -201,33 +182,24 @@ module Private = struct
           |Total_ordering_result_t.Equal->false
           |Total_ordering_result_t.Greater->tempf(u,yv)
       ) in
-      tempf(ox,oy);;
-  
-  exception Empty_intersection_undefined;;    
-  
+      tempf(ox,oy);;     
+      
   let fold_intersect cmpr=function
      []->raise(Empty_intersection_undefined)
-    |a::b->List.fold_left(Private.intersect cmpr)(a)(b);;
-  
+    |a::b->List.fold_left(intersect cmpr)(a)(b);;
+
   let fold_merge cmpr l=
      let rec tempf=(function
         (already_treated,to_be_treated)->match to_be_treated with 
         []->already_treated
-        |a::b->tempf(Private.merge cmpr a already_treated,b)
+        |a::b->tempf(merge cmpr a already_treated,b)
      ) in 
-     tempf([],l);;    
-  
-  let insert cmpr x oy=Private.merge cmpr [x] oy;; 
-  
-  let intersect = Private.intersect;;
+     tempf([],l);;  
+
+  let insert cmpr x oy=merge cmpr [x] oy;; 
   
   let intersects cmpr ox oy = not(does_not_intersect cmpr ox oy);;
-  
-  let is_included_in = Private.is_included_in ;;
-  
-  let length_preserving_sort = Private.length_preserving_sort ;;
 
-  let max = Private.max ;; 
   let mem (cmpr:'a Total_ordering_t.t) x ol=
      let rec tempf=(function
       []->false
@@ -238,24 +210,84 @@ module Private = struct
      )  in
      tempf ol;;   
 
-  let merge = Private.merge;;
+  let outsert cmpr x oy=setminus cmpr oy [x];;
   
-  let min = Private.min ;; 
-
-  let outsert cmpr x oy=Private.setminus cmpr oy [x];;
-  
-  let safe_set cmpr ox=if Private.is_increasing(cmpr)(ox) 
+  let safe_set cmpr ox=if is_increasing(cmpr)(ox) 
                        then ox 
-                       else Private.sort cmpr ox;;
-  
-  let select_minimal_elements_for_inclusion = Private.select_minimal_elements_for_inclusion;;
-  
-  let setminus = Private.setminus;;
-  
-  let sort = Private.sort;;
+                       else sort cmpr ox;;   
 
   let symmetric_difference cmpr x y =
-    merge cmpr (setminus cmpr x y) (setminus cmpr y x) ;;
+    merge cmpr (setminus cmpr x y) (setminus cmpr y x) ;;                     
+
+  end;;
+  
+  module Forget_order_After = struct 
+
+  let sort cmpr x= Private.sort cmpr x;;
+
+  end ;;  
+  
+  let does_not_intersect cmpr ox oy = 
+     Private.does_not_intersect cmpr (Private.to_list ox) (Private.to_list oy);;
+  
+  let empty_set = Private.unsafe_of_list [] ;;
+
+  
+  let filter f ox = Private.unsafe_of_list(List.filter f (Private.to_list ox));;
+
+  let filter_map f ox = List.filter_map f (Private.to_list ox);;
+
+  let fold_intersect cmpr oll = 
+     Private.unsafe_of_list(Private.fold_intersect cmpr (Image.image Private.to_list oll));;   
+  
+  let fold_merge cmpr oll = 
+     Private.unsafe_of_list(Private.fold_merge cmpr (Image.image Private.to_list oll));;     
+  
+  let image f ox = Image.image f (Private.to_list ox) ;;   
+
+  let insert cmpr x oy=Private.unsafe_of_list(Private.insert cmpr x (Private.to_list oy));; 
+  
+  let intersect cmpr ox oy= 
+  Private.unsafe_of_list(Private.intersect cmpr (Private.to_list ox) (Private.to_list oy));;
+  
+  let intersects cmpr ox oy = 
+    Private.intersects cmpr (Private.to_list ox) (Private.to_list oy);;
+  let is_included_in cmpr ox oy = 
+    Private.is_included_in cmpr (Private.to_list ox) (Private.to_list oy);;
+
+  let length ox = List.length (Private.to_list ox) ;;
+
+  let length_preserving_sort 
+     cmpr ox = Private.unsafe_of_list(Private.length_preserving_sort cmpr (Private.to_list ox) );;
+
+  let max cmpr ox = Private.max cmpr (Private.to_list ox);; 
+  let mem cmpr x oy= Private.mem cmpr x (Private.to_list oy);;   
+
+  let merge cmpr ox oy= 
+  Private.unsafe_of_list(Private.merge cmpr (Private.to_list ox) (Private.to_list oy));;
   
   
+  let min cmpr ox = Private.min cmpr (Private.to_list ox);; 
+
+  let outsert cmpr x oy=Private.unsafe_of_list(Private.outsert cmpr x (Private.to_list oy));; 
+  
+  let safe_set cmpr x=Private.unsafe_of_list(Private.safe_set cmpr x);;
+  
+  let select_minimal_elements_for_inclusion cmpr oll= 
+   let temp = Image.image Private.to_list oll in 
+   Image.image Private.unsafe_of_list (Private.select_minimal_elements_for_inclusion cmpr temp);;
+  
+  let setminus cmpr ox oy= 
+  Private.unsafe_of_list(Private.setminus cmpr (Private.to_list ox) (Private.to_list oy));;
+  
+  let singleton x = Private.unsafe_of_list [x] ;;
+
+  let sort cmpr x= Private.unsafe_of_list(Private.sort cmpr x);;
+
+  let symmetric_difference cmpr ox oy =
+    Private.unsafe_of_list(Private.symmetric_difference cmpr (Private.to_list ox) (Private.to_list oy));;
+
+  let tl ox = Private.unsafe_of_list(List.tl (Private.to_list ox));;   
+
+  let to_list = Private.to_list ;; 
   

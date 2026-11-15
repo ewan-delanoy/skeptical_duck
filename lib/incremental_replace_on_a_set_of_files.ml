@@ -22,7 +22,7 @@ let the_replacement_datafile = ref None ;;
 let the_markers = ref None ;; 
 
 let the_receiving_files = ref [] ;;
-let the_replacements = ref [] ;;
+let the_replacements = ref (Ordered.safe_set rep_order []) ;;
 
 let get_replacements_datafile () = match (!the_replacement_datafile) with 
    Some answer -> answer 
@@ -33,7 +33,7 @@ let get_markers () = match (!the_markers) with
    | None -> raise (Markers_undefined) ;;    
 
 let persist_onto_datafile () = 
-    let reps_in_ocamlese = ocamlese_for_replist (!the_replacements) in 
+    let reps_in_ocamlese = ocamlese_for_replist (Ordered.to_list(!the_replacements)) in 
     Replace_inside.overwrite_between_markers_inside_file
       ~overwriter:reps_in_ocamlese (get_markers()) (get_replacements_datafile ()) ;;
 
@@ -51,7 +51,7 @@ let apply_all () =
        fun file -> 
        Replace_inside.replace_several_inside_file
        ~display_number_of_matches:true 
-       ~silent_on_ambiguity:true (!the_replacements) file
+       ~silent_on_ambiguity:true (Ordered.to_list(!the_replacements)) file
     ) (!the_receiving_files) ;; 
 
 let add_new_replacement new_rep=      

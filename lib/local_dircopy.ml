@@ -92,7 +92,7 @@ let redundancies ldc =
       Ordered.sort Total_ordering.lex_for_strings 
        (Image.image snd common_base) in 
    let temp2 =
-   Image.image (fun s->(s,List.filter_map(fun (idx,t)->
+   Ordered.image (fun s->(s,List.filter_map(fun (idx,t)->
       if t=s then Some idx else None   
    ) common_base) ) nonredundant_filenames in 
    let redundant_filenames =List.filter (fun (_s,indices)->(List.length indices)>1) temp2 in 
@@ -100,14 +100,15 @@ let redundancies ldc =
       Ordered.sort Total_ordering.for_integers 
        (Image.image fst common_base) in 
    let temp2 =
-   Image.image (fun idx->(idx,List.filter_map(fun (idx2,t)->
+   Ordered.image (fun idx->(idx,List.filter_map(fun (idx2,t)->
       if idx2=idx then Some t else None   
    ) common_base) ) nonredundant_indices in 
    let redundant_indices =List.filter (fun (_idx,names)->
    (List.length names)>1) temp2 in  
-   let n = List.hd(List.rev nonredundant_indices) in 
+   let n = List.hd(List.rev (Ordered.to_list nonredundant_indices)) in 
+   let whole = Ordered.sort Total_ordering.for_integers  (Int_range.range 1 n) in 
    let missing_indices = Ordered.setminus
-     Total_ordering.for_integers (Int_range.range 1 n) 
+     Total_ordering.for_integers whole
        nonredundant_indices in
    (n,missing_indices,redundant_indices,redundant_filenames);; 
 
@@ -116,7 +117,7 @@ let ordered_filenames ldc =
      (Cull_string.cobeginning (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s,s) ) (remote_files ldc) in 
    let temp1 = Image.image fst temp0 in 
    let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
-   Image.image (fun s->List.assoc s temp0 ) temp2;; 
+   Ordered.image (fun s->List.assoc s temp0 ) temp2;; 
 
 let ordered_filenames_without_their_prefixed_indices ldc = 
    let temp1 = Image.image (fun s ->
@@ -169,7 +170,7 @@ let transfer_commands ldc =
    let (redundant_dated_files,new_dated_files) = 
       detect_redundant_dated_files ldc all_dated_files in 
    let temp1 = Ordered.sort order_for_dated_files new_dated_files in 
-   let temp2 = Image.image snd temp1 in 
+   let temp2 = Ordered.image snd temp1 in 
    let n = List.length (remote_files ldc) in 
    let temp3 = Int_range.index_everything temp2 in 
    let temp4 = Image.image (fun (idx,fn) ->

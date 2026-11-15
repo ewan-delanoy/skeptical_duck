@@ -19,7 +19,7 @@ sig
     val atoms_inside : molecule -> atom list
     val empty_one : molecule
     val ender_atom : grammar -> atom
-    val immediate_closure : grammar -> atom -> atom list
+    val immediate_closure : grammar -> atom -> atom Ordered.ordered_list
     val item_component : atom -> item
     val molecule : atom list -> molecule
     val name : string
@@ -83,8 +83,8 @@ module Private = struct
    let add_paths gram molecule paths_to_be_added =
        let idx = get_index gram molecule in 
        let old_paths = Hashtbl.find hashtbl_for_paths (gram.grammar_serial_number,idx) in 
-       let new_paths = path_merge old_paths (path_sort paths_to_be_added) in 
-       Hashtbl.replace hashtbl_for_paths (gram.grammar_serial_number,idx) new_paths ;;
+       let new_paths = path_merge (path_sort old_paths) (path_sort paths_to_be_added) in 
+       Hashtbl.replace hashtbl_for_paths (gram.grammar_serial_number,idx) (Ordered.to_list new_paths) ;;
      
 
    end ;;   
@@ -99,22 +99,26 @@ module Private = struct
 
    let immediate_closure_for_several gram atoms = 
       Ordered.fold_merge (Seed.order_on_atoms gram) 
-      (Image.image (Seed.immediate_closure gram) atoms) ;; 
+      (Image.image (fun atm->
+      (Seed.immediate_closure gram atm)) atoms) ;; 
 
    let rec towards_closure gram (whole,_treated,to_be_treated) = 
-    if to_be_treated = [] then Seed.molecule(whole) else 
-    let temp = immediate_closure_for_several gram to_be_treated in 
+    let l_to_be_treated = Ordered.to_list to_be_treated in 
+    if l_to_be_treated = [] then Seed.molecule(Ordered.to_list whole) else 
+    let temp = immediate_closure_for_several gram l_to_be_treated in 
     let new_whole = Ordered.merge (Seed.order_on_atoms gram) temp whole 
     and yet_untreated = Ordered.setminus (Seed.order_on_atoms gram) temp whole in   
     towards_closure gram (new_whole,whole,yet_untreated) ;;
 
-   let closure gram items = towards_closure gram (items,[],items) ;;  
+   let closure gram unordered_items = 
+      let items = Ordered.sort (Seed.order_on_atoms gram) unordered_items in 
+      towards_closure gram (items,Ordered.empty_set,items) ;;  
 
    let push_dots_one_symbol gram symb lrk_molecule =
       let old_atoms = Seed.atoms_inside lrk_molecule in 
       let unordered_new_atoms = List.filter_map (Seed.push_dot_one_symbol symb) old_atoms in
       let new_atoms = Ordered.sort (Seed.order_on_atoms gram) unordered_new_atoms in 
-      Seed.molecule new_atoms ;;
+      Seed.molecule (Ordered.to_list new_atoms) ;;
 
    let ghetto_for_jterm gram lrk_molecule symb = closure gram 
    (Seed.atoms_inside(push_dots_one_symbol gram symb lrk_molecule));; 
@@ -150,7 +154,7 @@ let rlrk_molecule_sort = Ordered.sort rlrk_molecule_order ;;
 
 let ghetto_neighbors_for_one gram rlrk_molecule = 
    let all_symbols = Lrp_grammar.all_symbols gram in 
-   rlrk_molecule_sort(Image.image (compute_ghetto gram rlrk_molecule) all_symbols) ;;
+   rlrk_molecule_sort(Ordered.image (compute_ghetto gram rlrk_molecule) all_symbols) ;;
 
 let ghetto_neighbors_for_several gram lrk_molecules = rlrk_molecule_fold_merge
  (Image.image (ghetto_neighbors_for_one gram) lrk_molecules) ;;
@@ -160,9 +164,10 @@ let rec towards_ghetto_neighborhood gram (whole,_treated,to_be_treated) =
   let temp = ghetto_neighbors_for_several gram to_be_treated in 
   let new_whole = rlrk_molecule_merge temp whole 
   and yet_untreated = rlrk_molecule_setminus temp whole  in 
- towards_ghetto_neighborhood gram (new_whole,whole,yet_untreated) ;;
+ towards_ghetto_neighborhood gram (new_whole,whole,Ordered.to_list yet_untreated) ;;
 
-let ghetto_neighborhood gram lrk_molecules = towards_ghetto_neighborhood gram (lrk_molecules,[],lrk_molecules) ;; 
+let ghetto_neighborhood gram lrk_molecules = towards_ghetto_neighborhood gram 
+  (rlrk_molecule_sort lrk_molecules,Ordered.empty_set,lrk_molecules) ;; 
 
 let starter_lrk_molecule gram = 
    closure gram [Seed.starter_atom gram];; 
@@ -227,7 +232,8 @@ module Usual_names_for_States = struct
 
 let compute_usual_names_for_lrk_molecules_naively gram = 
       let temp0 = all_indexed_lrk_molecules gram in 
-      let temp1 = List.tl(List.tl(temp0)) in 
+      let l_temp0 = Ordered.to_list temp0 in 
+      let temp1 = List.tl(List.tl(l_temp0)) in 
       let temp2 = Image.image (
         fun state ->
          let ((_idx,lrk_molecule)) = state in 
@@ -235,8 +241,8 @@ let compute_usual_names_for_lrk_molecules_naively gram =
          (state,List.hd(List.rev(List.hd paths))) 
       ) temp1 in 
       (
-      (List.nth temp0 0,"Death")::
-      (List.nth temp0 1,"Birth")::
+      (List.nth l_temp0 0,"Death")::
+      (List.nth l_temp0 1,"Birth")::
       (List_again.rename_according_to_occurrence_rank temp2)
        ) ;;
 
@@ -274,7 +280,7 @@ module Table = struct
    let shifts_from_lrk_molecule gram lrk_molecule =
       let idx = Registration.get_index gram lrk_molecule  in 
       let terms = terminals_after_a_dot_in_lrk_molecule gram lrk_molecule in 
-      Image.image (fun term->
+      Ordered.image (fun term->
         let  ((new_idx,_))= compute_ghetto gram ((idx,lrk_molecule)) term in 
         (term,Shift(new_idx))
       ) terms ;;
@@ -299,7 +305,7 @@ module Table = struct
       List.find_map (reduction_from_terminal_and_atom_opt gram term) atoms;;  
 
    let reductions_from_lrk_molecule gram lrk_molecule = 
-      let termies = str_insert end_marker (Lrp_grammar.terminals gram) in 
+      let termies = Ordered.to_list(str_insert end_marker (Lrp_grammar.terminals gram)) in 
       List.filter_map (reduction_from_molecule_and_terminal_opt gram lrk_molecule) termies ;;
   
 
@@ -322,15 +328,15 @@ module Table = struct
          if results=[]
          then None 
          else Some((idx,term),results)
-      ) termies ;;
+      ) (Ordered.to_list termies) ;;
 
    let all_action_pairs gram =
-      let indexed_molecules = List.tl(all_indexed_lrk_molecules gram)  in 
+      let indexed_molecules = List.tl(Ordered.to_list(all_indexed_lrk_molecules gram))  in 
       List.flatten(Image.image (action_pairs_from_indexed_lrk_molecule gram) indexed_molecules );;
 
    let all_goto_pairs gram = 
-      let states = List.tl(all_indexed_lrk_molecules gram) 
-      and nonterminals = Lrp_grammar.nonterminals gram  in 
+      let states = List.tl(Ordered.to_list(all_indexed_lrk_molecules gram)) 
+      and nonterminals = Ordered.to_list(Lrp_grammar.nonterminals gram)  in 
       let base = Cartesian.product states nonterminals in 
       List.filter_map (
          fun pair ->

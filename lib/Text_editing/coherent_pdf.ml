@@ -207,7 +207,7 @@ module Pqyz = struct
     ) temp2 in 
     let page_numbers = i_sort unordered_page_numbers in 
     let components = Arithmetic_list.decompose_into_connected_components
-    page_numbers  in 
+    (Ordered.to_list page_numbers)  in 
     let _ = (
        if ((List.length components)>1)
        then raise (Disconnected components) 
@@ -239,7 +239,7 @@ let analize_dir  prefix dir =
     let temp1 = Unix_again.beheaded_simple_ls dir in 
     let unordered_page_numbers = List.filter_map (analize_filename prefix) temp1 in 
     let page_numbers = i_sort unordered_page_numbers in 
-    Arithmetic_list.decompose_into_connected_components page_numbers  ;;
+    Arithmetic_list.decompose_into_connected_components (Ordered.to_list page_numbers)  ;;
   
 
 end ;;  
@@ -549,7 +549,7 @@ module Command = struct
     let (_,_,_,found_files) = Private.Pqyz.analize_dir_for_many_pngs_one_pdf dir in 
     let changing_files = List.filter (fun fn->not(String.starts_with fn ~prefix:"p")) found_files in 
     let ordered_files = Ordered.sort Total_ordering.lex_for_strings changing_files in 
-    Image.image (
+    Ordered.image (
       fun fn -> "mv "^fn^" "^(Private.Pqyz.pqyz_renamed_version fn)
     ) ordered_files ;;       
 

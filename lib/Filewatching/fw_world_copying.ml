@@ -20,7 +20,7 @@ module Private = struct
                Fwc_with_modular_infrastructure.ancestors_for_module fw nm
          ) step2_modules)  in 
          let list_of_modules_with_nonstandard_ordering = 
-                   Ordered.sort Total_ordering.standard 
+                   Ordered.Forget_order_After.sort Total_ordering.standard 
                    (modules_above@step2_modules) in 
          List.filter 
             (fun eless-> List.mem (Dfn_endingless.to_module eless) 
@@ -37,7 +37,7 @@ module Private = struct
             compute_all_needed_elesses fw needed_modules needed_subdirs
          ) in 
          let all_needed_subdirs = 
-            Ordered.sort Total_ordering.standard 
+            Ordered.Forget_order_After.sort Total_ordering.standard 
                   (Image.image Dfn_endingless.to_subdirectory all_needed_elesses) 
          and all_needed_modules = 
                   Image.image Dfn_endingless.to_module all_needed_elesses in      
@@ -104,7 +104,7 @@ module Private = struct
         and s_new_root=Dfa_root.connectable_to_subpath destination 
         and s_git_root=Dfa_root.connectable_to_subpath git_dir in
         let unordered_subdirs = Image.image Dfn_rootless.to_subdirectory rootlesses in  
-        let needed_subdirs = Ordered.sort Total_ordering.standard unordered_subdirs in 
+        let needed_subdirs = Ordered.to_list(Ordered.sort Total_ordering.standard unordered_subdirs) in 
         let dir_commands1 = Image.image (
           fun subdir ->"mkdir -p "^s_new_root^(Dfa_subdirectory.without_trailing_slash subdir)
         ) needed_subdirs 

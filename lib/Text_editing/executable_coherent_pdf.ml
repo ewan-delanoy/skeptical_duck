@@ -27,7 +27,7 @@ let find_rectifications_in_directory dir prefix =
            |Some i->Some(i,remove_pdf_suffix fn)   
    ) files in
    let indices = Ordered.sort Total_ordering.for_integers (Image.image fst unordered_pairs) in 
-   Image.image (fun i->(i,List.assoc i unordered_pairs)) indices ;;
+   Ordered.image (fun i->(i,List.assoc i unordered_pairs)) indices ;;
 
 let find_file dir filename = 
    try Absolute_path.of_string (dir^"/"^filename) with 

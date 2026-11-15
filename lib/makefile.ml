@@ -322,7 +322,7 @@ todv_decompose "When $(shell the) ${saints}\t\t${go} marching $(in) ..." ;;
 
 let compute_unexpanded_targets mkf = 
    let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.targets ) mkf.rules) in 
-   Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
+   Ordered.to_list(Ordered.sort Total_ordering.lex_for_strings tgts1) ;;
 
 let unexpanded_targets mkf_ref = 
    let old_mkf = (!mkf_ref) in 
@@ -336,7 +336,7 @@ let unexpanded_targets mkf_ref =
 
 let compute_unexpanded_prerequisites mkf = 
    let tgts1 = List.flatten (Image.image (fun ru -> ru.Makefile_t.prerequisites ) mkf.rules) in 
-   Ordered.sort Total_ordering.lex_for_strings tgts1 ;;
+   Ordered.to_list(Ordered.sort Total_ordering.lex_for_strings tgts1) ;;
     
 let unexpanded_prerequisites mkf_ref = 
    let old_mkf = (!mkf_ref) in 
@@ -350,7 +350,7 @@ let unexpanded_prerequisites mkf_ref =
 let compute_unexpanded_variables mkf = 
          let vars1 = Image.image (fun va -> va.Makefile_t.variable_name ) mkf.assignments in 
          let vars = Ordered.sort Total_ordering.lex_for_strings vars1 in 
-         Image.image (fun v->(v,todv_decompose(single_value mkf ~variable_name:v))) vars ;;
+         Ordered.image (fun v->(v,todv_decompose(single_value mkf ~variable_name:v))) vars ;;
 
 let unexpanded_variables mkf_ref = 
    let old_mkf = (!mkf_ref) in 
@@ -548,7 +548,7 @@ let all_involved_variables mkf_ref =
    let temp2 = (Image.image todv_decompose temp1)
      @(Image.image snd (unexpanded_variables mkf_ref)) in 
    let temp3 = Image.image involved_variables_in_todv_list temp2 in 
-   Ordered.fold_merge Total_ordering.lex_for_strings temp3 ;;
+   Ordered.to_list(Ordered.fold_merge Total_ordering.lex_for_strings temp3) ;;
 
 let unknown_variables mkf_ref =
    let uv = unexpanded_variables mkf_ref in 

@@ -4,6 +4,7 @@
 
 *)
 
+(*
 module Private =struct 
 
 module type INTERFACE = sig 
@@ -12,15 +13,21 @@ module type INTERFACE = sig
 
     val all_vertices : 'a t -> 'a list
     val connected_components : 'a t -> 'a list list
-    val extract_cycle : 'a t -> int list -> 'a list
+    val edges : 'a t -> ('a * 'a) list
+    val extract_cycle : 'a t -> 'a list -> 'a list
     val make : 'a list -> ('a * 'a) list -> 'a t
     val make_from_indexation_and_neighbors :
       (int * 'a) list -> (int * int list) list -> (int * 'a) t
-    val remove_edges : 'a t -> 'a list -> 'a t  
+    val merge_group_of_vertices : 'a t -> 'a list -> 'a -> 'a t  
+    val neighbors : 'a t -> 'a -> 'a list
+    val rename_vertices : 'a t -> ('a -> 'b) -> 'b t
+    val remove_edges : 'a t -> ('a * 'a) list -> 'a t
+    val remove_vertices : 'a t -> 'a list -> 'a t  
     val restrict : 'a t -> 'a list -> 'a t
     val set_level_neighborhood : 'a t -> 'a list -> 'a list
+    val split_vertex : 'a t -> original:'a -> 'a -> 'a -> 'a t
     val vertices_with_degree_at_least_three :
-      'a t -> int list -> ('a * 'a list) list
+      'a t -> 'a list -> ('a * 'a list) list
 
 
 end ;;  
@@ -29,7 +36,7 @@ module Unconstrained = struct
 
 type ug_index = UGI of int ;;
 
-type 'a t = G of ug_index * ('a list) * (('a * 'a) list) ;; 
+type 'a t = G of ug_index * ('a list) * (('a * 'a) list) * ((int * 'a) list);; 
 
  
 
@@ -111,7 +118,8 @@ let touches iug v1 v2 = i_mem v2 (neighbors iug v1);;
 let hashtbl_for_induced_neighborhoods = (Hashtbl.create 100:(int*(int list), (int*(int list)) list) Hashtbl.t) ;;
 
 let unmemoized_induced_neighborhoods iug vertices =
-   Image.image (fun x->(x,i_intersect (neighbors iug x) vertices)) vertices ;;
+   let sorted_vertices = i_sort vertices in 
+   Image.image (fun x->(x,i_intersect (neighbors iug x) sorted_vertices)) vertices ;;
 
 
 let induced_neighborhoods = memoize1 hashtbl_for_induced_neighborhoods unmemoized_induced_neighborhoods ;; 
@@ -141,7 +149,7 @@ let register (vertices,edges) =
    let _ = (repository:=(!repository)@[new_inner_graph]) in 
    idx ;;
 
-let image (G(UGI(idx),_,_)) = List.nth (!repository) (idx-1) ;;   
+let image (G(UGI(idx),_,_,_)) = List.nth (!repository) (idx-1) ;;   
 
 let set_level_neighborhood iug domain = i_setminus (neighbors_for_several iug domain) domain ;;
 
@@ -152,61 +160,107 @@ let make vertices edges =
   let get_idx = (fun x->List_again.index_of_in x vertices) in 
   let renamed_edges = Image.image (fun (a,b)->(get_idx a,get_idx b)) edges in 
   let new_idx = Inner.register (Int_range.range 1 m,renamed_edges) in 
-  G(UGI(new_idx),vertices,edges) ;; 
+  G(UGI(new_idx),vertices,edges,Int_range.index_everything vertices) ;; 
   
-let make_from_indexation_and_neighbors vertices i_neighbors = 
-  let i_vertices = Image.image fst vertices 
+let make_from_indexation_and_neighbors indexed_vertices i_neighbors = 
+  let i_vertices = Image.image fst indexed_vertices 
   and i_edges = List.flatten(Image.image(fun (x,nx)->Image.image(fun y->(x,y)) nx) i_neighbors) in  
   let new_idx = Inner.register (i_vertices,i_edges) in 
-  let indexed_form = (fun idx->(idx,List.assoc idx vertices)) in 
+  let indexed_form = (fun idx->(idx,List.assoc idx indexed_vertices)) in 
   let reconstructed_edges = Image.image (fun (a,b)->(indexed_form a,indexed_form b)) i_edges in 
-  G(UGI(new_idx),vertices,reconstructed_edges) ;;   
+  G(UGI(new_idx),indexed_vertices,reconstructed_edges,Image.image (fun (idx,v)->(idx,(idx,v))) indexed_vertices) ;;   
+
+let vertex_of_inner_index (G(_,_,_,associator)) k = List.assoc k associator ;;
+
+let vertex_to_inner_index (G(_,_,_,associator)) v = Option.get(List_again.assoc_right_opt v associator) ;;
 
 let connected_components ug = 
    let iug = Inner.image ug in 
    let i_connected_components = Inner.connected_components iug in 
-   let (G(_,vertices,_)) = ug in 
-   Image.image (Image.image (fun k->List.nth vertices (k-1))) i_connected_components;;
+   Image.image (Image.image (vertex_of_inner_index ug)) i_connected_components;;
 
 let vertices_with_degree_at_least_three ug domain= 
    let iug = Inner.image ug in 
-   let i_solutions = Inner.vertices_with_degree_at_least_three iug domain in 
-   let (G(_,vertices,_)) = ug in
-   let g = (fun k->List.nth vertices (k-1)) in  
+   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_solutions = Inner.vertices_with_degree_at_least_three iug i_domain in 
+   let g = vertex_of_inner_index ug  in  
    (Image.image (fun (k,nk)->(g k,Image.image g nk))) i_solutions;;
 
 let extract_cycle ug domain= 
    let iug = Inner.image ug in 
-   let i_solutions = Inner.extract_cycle iug domain in 
-   let (G(_,vertices,_)) = ug in
-   let g = (fun k->List.nth vertices (k-1)) in  
+   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_solutions = Inner.extract_cycle iug i_domain in 
+   let g = vertex_of_inner_index ug  in  
    Image.image g i_solutions;;
 
 let restrict old_ug domain= 
-   let (G(_,old_vertices,old_edges)) = old_ug in
+   let (G(_,old_vertices,old_edges,_)) = old_ug in
    let tester = (fun x->List.mem x domain) in 
    let new_vertices = List.filter tester old_vertices
    and new_edges =  List.filter (fun (x,y)->(tester x)&&(tester y)) old_edges in 
    make new_vertices new_edges;;
 
-let remove_edges old_ug domain= 
-   let (G(_,old_vertices,old_edges)) = old_ug in
+let remove_vertices old_ug domain= 
+   let (G(_,old_vertices,old_edges,_)) = old_ug in
    let tester = (fun x->not(List.mem x domain)) in 
    let new_vertices = List.filter tester old_vertices
    and new_edges =  List.filter (fun (x,y)->(tester x)&&(tester y)) old_edges in 
    make new_vertices new_edges;;   
 
+let split_vertex old_ug ~original:x x1 x2= 
+   let (G(_,old_vertices,old_edges,_)) = old_ug in
+   let new_vertices = List.flatten(Image.image (fun t->if t=x then [x1;x2] else [t]) old_vertices)
+   and new_edges =  (x1,x2)::(List.flatten(Image.image (fun (a,b)->
+     if a=x then [x1,b;x2,b] else 
+     if b=x then [a,x1;a,x2] else 
+     [a,b]) old_edges)) in 
+   make new_vertices new_edges;;   
+
+let remove_edges old_ug edges_to_be_removed= 
+   let (G(_,vertices,old_edges,_)) = old_ug in
+   let new_edges =  List.filter (fun (x,y)->
+      not((List.mem (x,y) edges_to_be_removed)||(List.mem (y,x) edges_to_be_removed))
+    ) old_edges in 
+   make vertices new_edges;;      
+
+let rename_vertices old_ug f= 
+   let (G(_,old_vertices,old_edges,_)) = old_ug in
+   let new_vertices = Image.image f old_vertices
+   and new_edges =  Image.image (fun (x,y)->(f x,f y)) old_edges in 
+   make new_vertices new_edges;;      
+
 let set_level_neighborhood ug domain= 
-   let iug = Inner.image ug 
-   and (G(_,vertices,_)) = ug in 
-   let i_domain = Image.image (fun x->List_again.index_of_in x vertices) domain in 
+   let iug = Inner.image ug  in 
+   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
    let i_solutions = Inner.set_level_neighborhood iug i_domain in 
-   let (G(_,vertices,_)) = ug in
-   let g = (fun k->List.nth vertices (k-1)) in  
+   let g = vertex_of_inner_index ug  in 
    Image.image g i_solutions;;
 
 
-let all_vertices (G(_,vs,_)) = vs ;;
+let all_vertices (G(_,vs,_,_)) = vs ;;
+
+let merge_group_of_vertices ug group representative= 
+   let (G(_,old_vertices,old_edges,_)) = ug in 
+   let transform = (fun x-> if List.mem x group then representative else x) in 
+   let new_vertices = List.filter (
+     fun x->if List.mem x group then x=representative else true
+   ) old_vertices 
+   and new_edges = List.filter_map (
+     fun (a,b)->
+       let new_a=transform a and new_b=transform b in 
+       if new_a=new_b then None else Some(new_a,new_b)
+   ) old_edges in 
+  make new_vertices new_edges;;
+
+
+let neighbors ug v= 
+   let iug = Inner.image ug in 
+   let v_idx = vertex_to_inner_index ug v in
+   let i_neighbors = Inner.neighbors iug v_idx in 
+   let g = vertex_of_inner_index ug  in 
+   Image.image g i_neighbors ;;
+   
+let edges (G(_,_,old_edges,_))= old_edges ;; 
 
 end ;;   
 
@@ -215,3 +269,7 @@ module Constrained = (Unconstrained:INTERFACE) ;;
 end ;;
 
 include Private.Constrained ;;
+
+*)
+
+let make_from_indexation_and_neighbors _x _y= () ;;

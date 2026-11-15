@@ -69,8 +69,8 @@ let lalr_to_usual = function
   |(LALR_Reduce prod) ->  Reduce prod 
   |LALR_Accept -> Accept ;;  
 
-let unveil_action_data l = Image.image (fun ((LR0 j,mover),l2)->((j,mover),Image.image lalr_to_usual l2)) l;; 
-let unveil_goto_data l = Image.image (fun ((LR0 j,mover),l2)->((j,mover),Image.image (fun (LR0 i)->i) l2)) l;; 
+let unveil_action_data l = Image.image (fun ((LR0 j,mover),l2)->((j,mover),Ordered.image lalr_to_usual l2)) l;; 
+let unveil_goto_data l = Image.image (fun ((LR0 j,mover),l2)->((j,mover),Ordered.image (fun (LR0 i)->i) l2)) l;; 
 
 end ;;   
 
@@ -102,7 +102,7 @@ let order_on_lalr_actions= ((fun action1 action2 ->
 
 let raw_lr0_cores = 
    Image.image (fun (idx,molecule)->(AdjustTypes.declare_as_lr0 idx,molecule))
-   (List.tl(Lr0_fruit.all_indexed_lrk_molecules current_grammar));; 
+   (List.tl(Ordered.to_list(Lr0_fruit.all_indexed_lrk_molecules current_grammar)));; 
 
 let indices_for_lr0_cores = Image.image (fun (lr0_idx,molecule)->
 (Image.image  Lr0_seed.item_component (Lr0_seed.atoms_inside molecule),lr0_idx)  
@@ -110,7 +110,7 @@ let indices_for_lr0_cores = Image.image (fun (lr0_idx,molecule)->
 
 let raw_lr1_states = 
    Image.image (fun (idx,molecule)->(AdjustTypes.declare_as_lr1 idx,molecule))
-   (List.tl(Lr1_fruit.all_indexed_lrk_molecules current_grammar)) ;;
+   (List.tl(Ordered.to_list(Lr1_fruit.all_indexed_lrk_molecules current_grammar))) ;;
 
 
 let lr1_states = Image.image (fun (idx,molecule)->
@@ -121,7 +121,7 @@ let lr1_states = Image.image (fun (idx,molecule)->
 let cores_for_lr1_states = Image.image (
   fun (idx,lr1_atoms) ->
    let unordered_lr0_core = Image.image fst lr1_atoms in 
-   let lr0_core = Ordered.sort (Lrp_grammar.order_on_items current_grammar) unordered_lr0_core in 
+   let lr0_core = Ordered.Forget_order_After.sort (Lrp_grammar.order_on_items current_grammar) unordered_lr0_core in 
    (idx,List.assoc lr0_core indices_for_lr0_cores)
 ) lr1_states ;;
 
@@ -158,7 +158,7 @@ let contribution_of_lr1_index_to_lalr_actions lr1_index =
 
 let contribution_of_lr0_index_to_lalr_actions lr0_index =
    let temp = List.flatten (Image.image (contribution_of_lr1_index_to_lalr_actions) (lr1_indices_of_lr0_index lr0_index)) in 
-   List.filter_map (fun term->
+   Ordered.filter_map (fun term->
     let outlets = List.filter_map (fun (term2,action)->if term2=term then Some action else None) temp in 
     if outlets = []
     then None 
@@ -178,7 +178,7 @@ let contribution_of_lr1_index_to_lalr_gotos lr1_index =
 
 let contribution_of_lr0_index_to_lalr_gotos lr0_index =
    let temp = List.flatten (Image.image (contribution_of_lr1_index_to_lalr_gotos) (lr1_indices_of_lr0_index lr0_index)) in 
-   List.filter_map (fun nonterm->
+   Ordered.filter_map (fun nonterm->
     let outlets = List.filter_map (fun (nonterm2,destination)->if nonterm2=nonterm then Some destination else None) temp in 
     if outlets = []
     then None 

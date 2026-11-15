@@ -241,7 +241,7 @@ let extract_file_with_prefix prefix fn =
   Common.read_number_starting_at fn (String.length(prefix)+1) ;;
 
 let extract_files_with_prefix files prefix =
-  let temp = Common.i_sort(List.filter_map (extract_file_with_prefix prefix) files) in 
+  let temp = Ordered.to_list(Common.i_sort(List.filter_map (extract_file_with_prefix prefix) files)) in 
   if temp=[] then None else
   let temp2 = Arithmetic_list.decompose_into_connected_components temp in 
   if List.length(temp2)>1 

@@ -42,7 +42,7 @@ let immediate_closure gram atom =
   let productions =Lrp_grammar.productions gram in 
   let n = List.length l 
   and j = List_again.index_of_in "." l in
-  if j=n then [] else 
+  if j=n then atm_sort gram [] else 
   let symb = List.nth l j in 
   let incomplete_ender = List_again.long_tail (j+1) l 
   and a = lookahead_component atom in
@@ -50,7 +50,7 @@ let immediate_closure gram atom =
   let usable_lookaheads = Lrp_grammar.furst_set_for_form gram ender in 
   let usable_items = List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
   if p2=symb then Some(Lrp_item.first_item_from_production pr) else None) productions  in 
-  let product = Cartesian.product usable_items usable_lookaheads in 
+  let product = Cartesian.product usable_items (Ordered.to_list usable_lookaheads) in 
   atm_sort gram (Image.image (fun (item,lah)->make_atom item lah) product);;
 
 let push_dot_one_symbol symb atom =

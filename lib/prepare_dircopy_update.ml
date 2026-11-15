@@ -97,7 +97,7 @@ let commands_for_update (source_dir,destination_dir) diff=
      else None 
     )
    created_ones in
-   let temp3=Ordered.sort Total_ordering.silex_for_strings temp2 in
+   let temp3=Ordered.Forget_order_After.sort Total_ordering.silex_for_strings temp2 in
    let s_source=Dfa_root.connectable_to_subpath source_dir in
    let temp4=Image.image(
       fun rl->

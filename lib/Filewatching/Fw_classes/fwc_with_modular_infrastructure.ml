@@ -116,8 +116,8 @@ module Private = struct
     else
     let printers_before = lfs_sort unordered_printers_before 
     and printers_after = lfs_sort unordered_printers_after in 
-    let deleted_regs = lfs_setminus printers_before printers_after 
-    and created_regs = lfs_setminus printers_after printers_after in 
+    let deleted_regs = Ordered.to_list(lfs_setminus printers_before printers_after) 
+    and created_regs = Ordered.to_list(lfs_setminus printers_after printers_after) in 
     (announce_change_on_registered_printers deleted_regs "unregistered";
     announce_change_on_registered_printers created_regs "registered") ;;         
 
@@ -310,7 +310,7 @@ let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
  let temp3=List.flatten temp2 in
  let temp4=Image.image fst temp3 in 
  let temp5=Ordered.sort Total_ordering.lex_for_strings temp4 in
- Image.image (
+ Ordered.image (
     fun x->(x,List.filter_map(
       fun (y,ap)->if y=x then Some(ap) else None
     ) temp3)

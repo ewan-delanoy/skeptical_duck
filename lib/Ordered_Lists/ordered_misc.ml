@@ -56,16 +56,17 @@ module Private = struct
          else helper_for_int_upwards_filter (f,treated,others) ;;    
 
   let naive_minimal_elts_in_int_upwards_filter f base =
-    let pb = power_set_for_intset base in 
+    let pre_pb = power_set_for_intset base in 
+    let pb = Ordered.image (Ordered.safe_set Total_ordering.for_integers) pre_pb in 
     helper_for_int_upwards_filter (f,[],pb) ;;     
 
   let minimal_elts_in_int_upwards_filter f base =
-     let indispensable_ones = List.filter (
+     let indispensable_ones = Ordered.filter (
        fun x->(not(f(Ordered.outsert oi x base)))
      ) base in 
      let dispensable_ones = Ordered.setminus oi base indispensable_ones in 
      let pullbacked_f = (fun y->f(Ordered.merge oi indispensable_ones y)) in 
-     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f dispensable_ones in 
+     let temp1 = naive_minimal_elts_in_int_upwards_filter pullbacked_f (Ordered.to_list dispensable_ones) in 
      Image.image (Ordered.merge oi indispensable_ones) temp1 ;;
 
   (*   
@@ -76,17 +77,17 @@ module Private = struct
 
   let minimal_elts_in_upwards_filter f base =
      let get_one = (fun k->List.nth base (k-1)) in 
-     let get_several = Image.image get_one in 
+     let get_several = Ordered.image get_one in 
      let n = List.length base 
      and normalized_f = (fun indices ->f(get_several indices)) in 
-     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Int_range.range 1 n) in 
+     let temp1 = minimal_elts_in_int_upwards_filter normalized_f (Ordered.safe_set oi (Int_range.range 1 n)) in 
      Image.image get_several temp1 ;;
 
 let commonest_elements ord ll = 
       let temp1 = Ordered.fold_merge ord ll in 
       let (_,temp2) = Max.maximize_it_with_care (
         fun y->List.length(List.filter (Ordered.mem ord y) ll)
-      ) temp1 in 
+      ) (Ordered.to_list temp1) in 
       temp2;; 
 
 
@@ -100,19 +101,19 @@ let rec helper_for_greedy_transversal (history,treated,to_be_treated) =
      List.filter (fun x->not(Ordered.mem oi a x)) to_be_treated) ;;  
 
  let greedy_transversal ll =
-  helper_for_greedy_transversal ([],[],ll) ;;
+  helper_for_greedy_transversal ([],Ordered.empty_set,ll) ;;
    
 let generated_algebra_for_two ord x y = 
   let setminus = Ordered.setminus ord 
   and intersect = Ordered.intersect ord in 
-  List.filter (fun z->z<>[])
+  List.filter (fun z->Ordered.to_list z<>[])
     [setminus x y;intersect x y;setminus y x] ;;
 
 let rec find_atom intersect candidate testers = 
   match List.find_map ( 
     fun x -> 
       let y = intersect x candidate in 
-      if (y<>[])&&(y<>candidate)
+      if (Ordered.to_list y<>[])&&(y<>candidate)
       then Some y 
       else None  
   ) testers with
@@ -130,7 +131,7 @@ let rec helper_for_generated_algebra
     let to_be_treated2 = List.filter_map (
       fun x -> 
         let y = setminus x new_atom in 
-        if y<>[]
+        if Ordered.to_list y<>[]
         then Some y 
         else None  
     ) to_be_treated in 
@@ -140,9 +141,9 @@ let rec helper_for_generated_algebra
 let generated_algebra ord l = 
   let intersect = Ordered.intersect ord 
   and setminus = Ordered.setminus ord in 
+  let temp = helper_for_generated_algebra (intersect,setminus) ([],l) in
   Ordered.sort (Total_ordering.silex_compare ord)(
-  helper_for_generated_algebra 
-    (intersect,setminus) ([],l)) ;; 
+  Image.image Ordered.to_list temp) ;; 
 
 (*
 
@@ -173,7 +174,7 @@ let minimal_transversals l=
   match l with 
   [] -> []
   | a:: others ->
-    let starter = Image.image (fun x->[x]) a in    
+    let starter = Image.image (fun x->Ordered.singleton x) a in    
   Private.helper_for_minimal_transversals (starter,others) ;;  
   
 
@@ -201,7 +202,7 @@ let translate_at_level_two ll translation=
 let underline_new_elements ord old_set possibly_new_elts =
   let new_elts = Ordered.setminus ord possibly_new_elts old_set in 
   let new_whole = Ordered.merge ord old_set new_elts in 
-  let temp1 = Image.image (fun x->(x,List.mem x new_elts)) new_whole in 
+  let temp1 = Ordered.image (fun x->(x,Ordered.mem ord x new_elts)) new_whole in 
   let temp2 = Hurried.connected_components snd temp1 in 
   Image.image (fun part -> (Image.image fst part,snd(List.hd part)) ) temp2;;
 

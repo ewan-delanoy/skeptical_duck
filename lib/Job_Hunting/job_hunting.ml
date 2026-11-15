@@ -97,7 +97,7 @@ let compute_effective_dates_and_shorten dated_items =
     extract_company_name (snd company_data))) jas
   ) dated_items) in 
   let all_pairs = Ordered.sort order_on_dated_items unordered in 
-  shorten_list_to_have_unique_dates_for_each_company all_pairs ;;
+  shorten_list_to_have_unique_dates_for_each_company (Ordered.to_list all_pairs) ;;
 
 let recompute_initial_list_from_scratch () = 
   let dated_items = current_list_of_dated_items () in 
@@ -118,7 +118,7 @@ let reorder_by_company_name l =
      let companies = Ordered.sort Total_ordering.lex_for_strings (Image.image 
    (fun (_date,(company_name,_has_multiple_applications,_remaining_before_release))
    ->company_name) l) in 
-     Image.image (fun company_name->
+     Ordered.image (fun company_name->
      Option.get(List.find_map (
        fun (date,(company_name2,has_multiple_applications,remaining_before_release)) ->
         if company_name2 = company_name 

@@ -76,13 +76,13 @@ let all_h_or_c_files snap =
   | None ->
     let src = Directory_name.connectable_to_subpath (source snap) in
       let temp1 = Unix_again.quick_beheaded_complete_ls src in
-      let answer =  str_sort
+      let answer =  Ordered.to_list(str_sort
         (List.filter
            (fun fn ->
              List.exists
                (fun edg -> String.ends_with fn ~suffix:edg)
                [ ".h"; ".c"; ".macros" ])
-           temp1) in 
+           temp1)) in 
     let _ = Hashtbl.add hashtbl_for_all_h_or_c_files snap answer in 
       answer ;; 
 let hashtbl_for_separate_commands = 
@@ -107,10 +107,10 @@ let separate_commands snap =
        match Hashtbl.find_opt hashtbl_for_directly_compiled_files snap with 
       (Some old_answer) -> old_answer 
       | None ->
-      let answer = str_sort
+      let answer = Ordered.to_list(str_sort
         (Image.image
            Cee_compilation_command.short_name_from_separate
-           (separate_commands snap)) in 
+           (separate_commands snap))) in 
       let _ = Hashtbl.add hashtbl_for_directly_compiled_files snap answer in 
       answer ;; 
 

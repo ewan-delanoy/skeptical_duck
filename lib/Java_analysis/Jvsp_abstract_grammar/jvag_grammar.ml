@@ -18,7 +18,9 @@ module Private = struct
   let str_intersect= Ordered.intersect str_order ;;
   let str_mem= Ordered.mem str_order ;;
   let str_merge= Ordered.merge str_order ;;
+  let str_safe_set = Ordered.safe_set str_order ;;
   let str_setminus = Ordered.setminus str_order ;;
+  let str_singleton = Ordered.singleton  ;;
   let str_sort = Ordered.sort str_order ;;
 
 
@@ -196,15 +198,15 @@ let containing nm (AL l) = List.filter(is_contained_in_pair nm) l;;
 
 
 let rec helper_for_lower_interval_below (gram,treated,to_be_treated) = 
-  match to_be_treated with 
+  match Ordered.to_list to_be_treated with 
   [] -> treated 
   |name :: other_names ->
      let coats = Jvag_form.coatoms (get gram name) in 
      let new_coats = str_setminus coats treated in 
-     helper_for_lower_interval_below (gram,str_insert name treated,str_merge new_coats other_names) 
+     helper_for_lower_interval_below (gram,str_insert name treated,str_merge new_coats (str_safe_set other_names)) 
   ;;
 
-let lower_interval_below gram name = helper_for_lower_interval_below (gram,[name],[name]) ;;
+let lower_interval_below gram name = helper_for_lower_interval_below (gram,str_singleton name,str_singleton name) ;;
 
 let just_below gram name = (Jvag_form.unordered_coatoms (get gram name)) ;;
 
@@ -229,8 +231,8 @@ let check_disjunction_ladder gram ladder =
    List.iter (test_disjunction_ladder_link gram) temp1 ;;
 
 let differences (AL l1) (AL l2) =
-  let names = str_merge (Image.image fst l1) (Image.image fst l2) in 
-  let data = Image.image (
+  let names = str_merge (str_safe_set(Image.image fst l1)) (str_safe_set(Image.image fst l2)) in 
+  let data = Ordered.image (
     fun name ->(name,(List.assoc_opt name l1,List.assoc_opt name l2))
   ) names in 
   List.filter (fun (_name,(opt1,opt2))->opt1<>opt2) data ;;
@@ -243,7 +245,7 @@ let replace_pair_or_add_if_absent pair (AL l) =
     |Some _ -> Image.image (fun pair2->
       if (fst pair2)=name then pair else pair2 ) l
   )  in 
-  AL(Ordered.sort order_on_pairs new_l);; 
+  AL(Ordered.to_list(Ordered.sort order_on_pairs new_l));; 
 
 exception Name_is_not_new_exn of string ;;
 
@@ -254,7 +256,7 @@ let create_new_pair pair (AL l) =
     None -> pair :: l 
     |Some _ -> raise(Name_is_not_new_exn(name))
   )  in 
-  AL(Ordered.sort order_on_pairs new_l);; 
+  AL(Ordered.to_list(Ordered.sort order_on_pairs new_l));; 
  
 
 module Dwarf_count = struct 
@@ -407,8 +409,8 @@ module Unused_names = struct
   
 let immediately_unused_names_in_grammar gram =
   let (AL l)= gram in
-  let all_names = Image.image fst l in 
-  List.filter (fun name->List.for_all (fun (_,form)->not(Jvag_form.is_contained_in name form)) l) all_names ;;
+  let all_names = str_safe_set(Image.image fst l) in 
+  Ordered.filter (fun name->List.for_all (fun (_,form)->not(Jvag_form.is_contained_in name form)) l) all_names ;;
    ;;  
 
 
@@ -426,14 +428,15 @@ module Sanitize = struct
 
 let sanitize_superficially gram =
   let (gram2,unused_names) = Unused_names.data_about_removing_immediately_unused_names_in_grammar 
-                                    gram ~exceptions:["OrdinaryCompilationUnit"] in 
+                                    gram ~exceptions:(Ordered.singleton "OrdinaryCompilationUnit") in 
   let (gram3,mergeable_tokseqs) = Mergeable_token_sequences.data_about_mergeing_tl_sequences_in_grammar gram2 in 
   let (gram4,redundant_concats) = Redundant_concats.data_about_removing_redundant_concats_in_grammar gram3 in 
   ((unused_names,mergeable_tokseqs,redundant_concats),gram4) ;;
 
 let rec helper_for_sanitization (older_data,gram) =
    let (new_data,new_gram) = sanitize_superficially gram in 
-   if new_data=([],[],[]) 
+   let (nd1,nd2,nd3) = new_data in 
+   if (Ordered.to_list nd1,nd2,nd3)=([],[],[]) 
    then (older_data,gram) 
    else helper_for_sanitization (new_data::older_data,new_gram) ;;
 
@@ -450,22 +453,23 @@ module WriteParser = struct
 exception Find_acyclic_ordering_exn of string * (string list list) ;;
 
 let find_acyclic_ordering unordered_l =
-  let l = Ordered.sort order_on_pairs unordered_l in  
+  let ordered_l = Ordered.sort order_on_pairs unordered_l in  
+  let l = Ordered.to_list ordered_l in 
   let defined_names = str_sort(Image.image fst l) 
   and referenced_names = str_fold_merge(Image.image (fun (_,form)->Jvag_form.coatoms form) l) in 
   let undefined_names = str_setminus referenced_names defined_names in 
   let relative_coatoms = Memoized.make(fun name ->
      let form = List.assoc name l in 
-     str_intersect(Jvag_form.coatoms form) defined_names
+     Ordered.to_list(str_intersect(Jvag_form.coatoms form) defined_names)
   ) in  
   let (cycles,acyclic_ordering) = 
-     Lower_acyclic_subposet.compute relative_coatoms defined_names in 
+     Lower_acyclic_subposet.compute relative_coatoms (Ordered.to_list defined_names) in 
   if cycles<>[]
   then raise(Find_acyclic_ordering_exn("Cycles found : ",cycles)) 
   else       
   let defined_names_in_acylic_order = Image.image fst acyclic_ordering in 
   let (ghosts,nonghosts) = List.partition (fun name->relative_coatoms name=[]) defined_names_in_acylic_order in 
-  let part1 = Image.image (fun name -> (name,None)) undefined_names
+  let part1 = Ordered.image (fun name -> (name,None)) undefined_names
   and part2 = Image.image (fun name -> (name,List.assoc_opt name l)) (ghosts@nonghosts) in 
   part1 @ part2 ;; 
 
@@ -578,9 +582,11 @@ let insert_new old_grammar son son_form =
     then raise(Circularity(son,father::ancestry))
     else     
     let new_item = (son,(son_form,father::ancestry)) in   
+    let old_sons_and_fathers = Ordered.safe_set order_on_string_pairs old_grammar.sons_and_fathers 
+    and old_productions = Ordered.safe_set order_on_nrg_pairs old_grammar.productions in 
   {
-   sons_and_fathers  = Ordered.insert order_on_string_pairs (son,father) old_grammar.sons_and_fathers;
-   productions = Ordered.insert order_on_nrg_pairs new_item old_grammar.productions;
+   sons_and_fathers  = Ordered.to_list(Ordered.insert order_on_string_pairs (son,father) old_sons_and_fathers);
+   productions = Ordered.to_list(Ordered.insert order_on_nrg_pairs new_item old_productions);
   };; 
 
 
@@ -655,7 +661,7 @@ let replace_pair_or_add_if_absent pair (WDC(old_dwarf_count,AL l)) =
     then old_dwarf_count 
     else max old_dwarf_count (Dwarf_count.dwarf_number_in_name name)  
   ) in
-  WDC(new_dwarf_count,AL(Ordered.sort order_on_pairs new_l));; 
+  WDC(new_dwarf_count,AL(Ordered.to_list(Ordered.sort order_on_pairs new_l)));; 
 
 
 let create_new_pair pair (WDC(old_dwarf_count,AL l)) = 
@@ -666,7 +672,7 @@ let create_new_pair pair (WDC(old_dwarf_count,AL l)) =
     |Some _ -> raise(Name_is_not_new_exn(name))
   )  
   and new_dwarf_count = max old_dwarf_count (Dwarf_count.dwarf_number_in_name name) in 
-  WDC(new_dwarf_count,AL(Ordered.sort order_on_pairs new_l));; 
+  WDC(new_dwarf_count,AL(Ordered.to_list(Ordered.sort order_on_pairs new_l)));; 
 
 end ;;
 
@@ -1040,7 +1046,7 @@ let rename_on_pair renaming_data (name,form) =
 
 let rename_on_bare_grammar renaming_data (AL l)=
  let unordered_new_l = Image.image (rename_on_pair renaming_data) l in 
-(AL (Ordered.sort order_on_pairs (unordered_new_l))) ;;
+(AL (Ordered.to_list(Ordered.sort order_on_pairs (unordered_new_l)))) ;;
 
 
 let rename_on_grammar renaming_data (WDC(old_dwarf_count,gram)) = 

@@ -21,13 +21,16 @@ let i_order = Total_ordering.for_integers ;;
 
 let i_is_included_in = Ordered.is_included_in i_order ;;
 let i_max = Ordered.max i_order ;;
+let i_safe_set = Ordered.safe_set i_order ;;
 
 let i_setminus = Ordered.setminus i_order ;;
+let i_to_list = Ordered.to_list ;;
 
 let il_order = Total_ordering.silex_for_intlists ;;
 
 let il_fold_merge = Ordered.fold_merge il_order ;;
 let il_merge = Ordered.merge il_order ;;
+let il_safe_set = Ordered.safe_set il_order ;;
 let il_sort = Ordered.sort il_order ;;
 
 module Constraint = struct 
@@ -36,15 +39,15 @@ exception Shift_exn of int list list ;;
 
 module Private = struct
 let constructor ll = 
-   let temp1 = il_sort ll in 
-   C(Ordered_misc.minimal_elts_wrt_inclusion temp1) ;;
+   let temp1 = Ordered.image (Ordered.safe_set Total_ordering.for_integers) (il_sort ll) in 
+   C(Image.image Ordered.to_list(Ordered_misc.minimal_elts_wrt_inclusion temp1)) ;;
 
 
 
 let max (C ll) = 
   if ll = [] then (-1) else
   if ll = [[]] then 0 else  
-  Max.list (Image.image i_max ll) ;;
+  Max.list (Image.image (fun x->i_max(Ordered.safe_set Total_ordering.for_integers x)) ll) ;;
 
 let order = (( fun cstr1 cstr2 ->
   let trial1 = Total_ordering.for_integers (max cstr1) (max cstr2) in 
@@ -75,17 +78,18 @@ let complements w l =
   (Image.image (complements_for_individual w) l) ;;
 
 let force w forced_subset (C ll) =
-   let base = il_merge (complements w forced_subset) ll in 
+   let base = il_merge (complements w forced_subset) (il_safe_set ll) in 
    let cleaned_base = List.filter_map (
-     fun z ->
-      let reduced_z = i_setminus z forced_subset in 
-      if reduced_z = [] then None else Some reduced_z
-   ) base in 
+     fun unordered_z ->
+      let z = i_safe_set unordered_z in 
+      let reduced_z = i_setminus z (i_safe_set forced_subset) in 
+      if i_to_list reduced_z = [] then None else Some (Ordered.to_list reduced_z)
+   ) (Ordered.to_list base) in 
    constructor cleaned_base ;;
 
 let remove removed_subset (C ll) =
    C(List.filter (
-    fun z -> not(i_is_included_in removed_subset z)
+    fun z -> not(i_is_included_in removed_subset (i_safe_set z))
    ) ll) ;;
 
 let shift (C ll) =
@@ -93,7 +97,7 @@ let shift (C ll) =
    then raise(Shift_exn(ll))
    else  C(Image.image (Image.image(fun t->t-1)) ll);;
    
-let son cstr = shift(remove [1] cstr);;
+let son cstr = shift(remove (Ordered.singleton 1) cstr);;
 
 let daughter_opt w cstr = 
   let (C ll) = cstr in 
@@ -117,10 +121,10 @@ let rec helper_for_generating_tribe (w,whole_so_far,to_be_treated) =
    let new_descendants = 
       Ordered.setminus order candidates whole_so_far in 
    helper_for_generating_tribe (w,
-    Ordered.merge order whole_so_far new_descendants,new_descendants) ;;
+    Ordered.merge order whole_so_far new_descendants,Ordered.to_list new_descendants) ;;
 
 let generated_tribe w l_cstr = 
-   helper_for_generating_tribe (w,l_cstr,l_cstr) ;;
+   helper_for_generating_tribe (w,l_cstr,Ordered.to_list l_cstr) ;;
 
 
 
@@ -174,9 +178,10 @@ let ref_for_unregistered_cases = ref ([]: (width * constraint_t) list)  ;;
 let ref_for_precomputed = ref ([]:(( width * constraint_t ) * (int -> int)) list) ;;
 
 let log_case w cstr =
+   let old_val = Ordered.safe_set order_on_cases (!ref_for_unregistered_cases) in 
+   let ordered_new_val = Ordered.insert order_on_cases (w,cstr) old_val in 
    (ref_for_unregistered_cases:=
-     Ordered.insert order_on_cases (w,cstr)
-      (!ref_for_unregistered_cases)
+     Ordered.to_list ordered_new_val
    ) ;;
 
 let main = Memoized.recursive(

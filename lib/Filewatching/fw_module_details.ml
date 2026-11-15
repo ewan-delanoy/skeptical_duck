@@ -130,7 +130,7 @@ let compute_details_from_acolytes_list_for_one_module l=
    ) in
    let all_coatoms_in_order = Ordered.sort lex_order all_coatoms in 
    {
-      Fw_module_details_t.used_modules = all_coatoms_in_order ;
+      Fw_module_details_t.used_modules = Ordered.to_list all_coatoms_in_order ;
       used_libraries = Fw_file_details.used_libraries principal_details ;
       registered_printers = Fw_file_details.registered_printers principal_details ;
       subdirectory = principal_subdir ;

@@ -34,10 +34,11 @@ let immediate_closure gram atom =
   let productions =Lrp_grammar.productions gram in 
   let n = List.length l 
   and j = List_again.index_of_in "." l in
-  if j=n then [] else 
+  if j=n then atm_sort gram [] else 
   let symb = List.nth l j in 
-  atm_sort gram (List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
-  if p2=symb then Some(make_atom(Lrp_item.first_item_from_production pr)) else None) productions);;
+  let unsorted = List.filter_map ( fun pr->let (Prod(p2,_))=pr in 
+  if p2=symb then Some(make_atom(Lrp_item.first_item_from_production pr)) else None) productions in 
+  atm_sort gram unsorted;;
 
 let push_dot_one_symbol symb atom =
   let item= item_component atom in 
@@ -54,7 +55,7 @@ let ender_atom bare_grammar =
   make_atom(Lrp_item.last_item_from_production  (List.hd productions));;  
 
  let test_for_allowing_reduction gram (_atom:atom) ~head_of_production ~terminal =
-      List.mem terminal (Lrp_grammar.follow_set gram head_of_production) ;;
+      List.mem terminal (Ordered.to_list(Lrp_grammar.follow_set gram head_of_production)) ;;
 
 let visualize_atom (Atom(item)) = Lrp_item.visualize item ;;
 

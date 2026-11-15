@@ -4,7 +4,9 @@
 
 *)
 
-let tr = ((fun x->Set_of_strings_t.S(x)),(fun (Set_of_strings_t.S(x))->x),Total_ordering.silex_for_strings);;
+let tr = 
+  let order = Total_ordering.silex_for_strings in 
+  ((fun x->Set_of_strings_t.S(Ordered.to_list x)),(fun (Set_of_strings_t.S(x))->Ordered.safe_set order x),order);;
 
 
 let forget_order x= Functor_for_sets.forget_order tr x;;

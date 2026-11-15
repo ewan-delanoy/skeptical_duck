@@ -106,8 +106,8 @@ module Private = struct
  
   let compute_closest_order old_order new_details= 
     let modules_in_old_order = Image.image fst old_order in 
-    let details_in_old_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
-      new_details modules_in_old_order in 
+    let details_in_old_order = Ordered.to_list(Ordered_misc.reorder_list_of_pairs_using_list_of_singles
+      new_details modules_in_old_order) in 
     Fw_determine_order.main  details_in_old_order ;;
 
   let compute_new_details_in_stable_case new_fw_dets old_details data_on_changes= 
@@ -208,7 +208,7 @@ let order deps_ref=
     let new_needed_dirs = Image.image (
       fun (mn,(_,ancestors)) ->
       let temp1 = Image.image subdir_at_module (mn::ancestors) in 
-      (mn,Ordered.sort Total_ordering.standard temp1)
+      (mn,Ordered.to_list(Ordered.sort Total_ordering.standard temp1))
     ) (old_deps.Fw_modular_infrastructure_t.order) in 
     Setter.needed_dirs deps_ref new_needed_dirs;;
 
@@ -221,16 +221,16 @@ let order deps_ref=
     let new_needed_libs = Image.image (
      fun (mn,(_,ancestors)) ->
       let temp1 = List.flatten(Image.image needed_libs_at_module (mn::ancestors)) in 
-      (mn,Ordered.sort Total_ordering.standard temp1)
+      (mn,Ordered.to_list(Ordered.sort Total_ordering.standard temp1))
     ) (old_deps.Fw_modular_infrastructure_t.order)  in 
     Setter.needed_libs deps_ref new_needed_libs;;
   let all_subdirectories deps_ref= 
     let old_deps=(!deps_ref) in  
     let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
-    let new_subdirectories = Ordered.sort Total_ordering.standard (Image.image (
+    let new_subdirectories = Ordered.to_list(Ordered.sort Total_ordering.standard (Image.image (
       fun (_,details_on_mn) ->
       Fw_module_details.subdirectory(details_on_mn)
-    ) details)  in 
+    ) details))  in 
     Setter.all_subdirectories deps_ref new_subdirectories;;
 
  let registered_printers deps_ref= 
@@ -366,15 +366,16 @@ let order deps_ref=
  let old_order =  ((!deps_ref).Fw_modular_infrastructure_t.order) in 
  let novel_details = List_again.long_tail (List.length old_order) new_details in
  let novel_modules_in_order = Image.image fst (Fw_determine_order.main novel_details) in 
- let novel_details_in_order = Ordered_misc.reorder_list_of_pairs_using_list_of_singles
-     novel_details novel_modules_in_order in 
+ let novel_details_in_order = Ordered.to_list(Ordered_misc.reorder_list_of_pairs_using_list_of_singles
+     novel_details novel_modules_in_order) in 
  let new_order = Fw_determine_order.compute_coatoms_and_ancestors_in_small_extension
       old_order novel_details_in_order in 
   let old_subdirectories = ((!deps_ref).Fw_modular_infrastructure_t.all_subdirectories) in 
  let (_,novelties) = extra in 
  let possibly_new = Ordered.sort Total_ordering.standard 
    (Image.image (fun (rl,_)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
- let new_subdirectories = Ordered.merge Total_ordering.standard possibly_new old_subdirectories in 
+ let new_subdirectories = Ordered.to_list(Ordered.merge Total_ordering.standard possibly_new 
+  (Ordered.safe_set Total_ordering.standard old_subdirectories)) in 
   (
   Setter.modularized_details deps_ref new_details;
   Setter.order deps_ref new_order;

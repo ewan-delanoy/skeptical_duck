@@ -4,7 +4,9 @@
 
 *)
 
-let tr = ((fun x->Set_of_poly_pairs_t.S(x)),(fun (Set_of_poly_pairs_t.S(x))->x),Total_ordering.standard2);;
+let tr = 
+  let order = Total_ordering.standard2 in 
+  ((fun x->Set_of_poly_pairs_t.S(Ordered.to_list x)),(fun (Set_of_poly_pairs_t.S(x))->Ordered.safe_set order x),order);;
 
 let empty_set = Functor_for_sets.empty_set tr ;;
 let fold_merge l= Functor_for_sets.fold_merge tr l;;

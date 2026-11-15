@@ -44,17 +44,17 @@ let from_pre_table_opt pre_tbl=
    and gotos1 = Image.image (fun (pair,actions)->(pair,List.hd actions)) good_gotos in 
    let indices_from_actions = i_sort(Image.image (fun ((idx,_),_) -> idx) actions1) 
    and indices_from_gotos = i_sort(Image.image (fun ((idx,_),_) -> idx) gotos1) in 
-   let action_data = Image.image (
+   let action_data = Ordered.image (
      fun idx -> 
       let pairs = List.filter_map(fun ((idx2,mover),act) -> if idx2=idx then Some(mover,act) else None ) actions1 in
       let movers =  str_sort(Image.image fst pairs) in 
-      (idx,Image.image (fun mover ->(mover,List.assoc mover pairs)) movers)
+      (idx,Ordered.image (fun mover ->(mover,List.assoc mover pairs)) movers)
    ) indices_from_actions 
-   and goto_data = Image.image (
+   and goto_data = Ordered.image (
      fun idx -> 
       let pairs = List.filter_map(fun ((idx2,mover),dest) -> if idx2=idx then Some(mover,dest) else None ) gotos1 in
       let movers =  str_sort(Image.image fst pairs) in 
-      (idx,Image.image (fun mover ->(mover,List.assoc mover pairs)) movers)
+      (idx,Ordered.image (fun mover ->(mover,List.assoc mover pairs)) movers)
    ) indices_from_gotos 
    in
    (Some(make action_data goto_data),None) ;;   

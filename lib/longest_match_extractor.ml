@@ -6,13 +6,13 @@ Works only with a small list of words.
 
 *)
 
+let subwords_in_order word = 
+    Ordered.safe_set Total_ordering.lex_for_strings (Int_range.scale (
+       fun k->String.sub word 0 k
+     ) 1 (String.length word)) ;;
 
 let compute_all_prefixes words = 
-   let temp1 = [""] ::(Image.image (fun word->
-     Int_range.scale (
-       fun k->String.sub word 0 k
-     ) 1 (String.length word)
-  ) words) in 
+   let temp1 = (Ordered.singleton "")::(Image.image subwords_in_order words) in 
   Ordered.fold_merge 
        Total_ordering.lex_for_strings temp1 ;;	 
 
@@ -32,10 +32,10 @@ let rec index_among_prefixes_opt s l =
 
 
 let make original_list_of_words = 
-  let words = Ordered.sort 
-	   Total_ordering.lex_for_strings original_list_of_words in  
-  let prefixes = compute_all_prefixes words 
-  and alphabet = compute_alphabet words in 
+  let words = Ordered.to_list(Ordered.sort 
+	   Total_ordering.lex_for_strings original_list_of_words) in  
+  let prefixes = Ordered.to_list(compute_all_prefixes words) 
+  and alphabet = Ordered.to_list(compute_alphabet words) in 
   let indexed_prefixes = Int_range.index_everything prefixes in    
   let index_among_prefixes_opt =(fun s -> 
     index_among_prefixes_opt s indexed_prefixes) in  
@@ -48,7 +48,7 @@ let make original_list_of_words =
      Image.image (fun (idx,s) 
       -> 
        let s_is_inside = 
-          Ordered.mem Total_ordering.lex_for_strings s words in  
+          List.mem s words in  
        (idx,(s_is_inside,List.filter_map (inner_fan s) alphabet))
    ) indexed_prefixes );; 
 

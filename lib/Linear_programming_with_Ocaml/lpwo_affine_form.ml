@@ -8,7 +8,7 @@ module Private = struct
 
 let constructor l =
    let unordered_vars = Image.image snd l in 
-   let ordered_vars = Ordered.sort Lpwo_variable.order unordered_vars in 
+   let ordered_vars = Ordered.to_list(Ordered.sort Lpwo_variable.order unordered_vars) in 
    Lpwo_affine_form_t.F( List.filter_map (
      fun v -> 
       let coeffs = List.filter_map (fun (lamb,v2)->

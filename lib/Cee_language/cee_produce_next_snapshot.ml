@@ -238,8 +238,8 @@ let hashtbl_for_used_header_files =
       (Some old_answer) -> old_answer 
       | None ->
       let exact_incl_locations = exact_inclusion_locations snap in
-      let answer = extract_header_files_from_several_includer_data snap
-          exact_incl_locations in 
+      let answer = Ordered.to_list(extract_header_files_from_several_includer_data snap
+          exact_incl_locations) in 
       let _ = Hashtbl.add hashtbl_for_used_header_files 
        (Cee_snapshot.parameters snap) answer in 
       answer ;; 
@@ -256,9 +256,9 @@ let hashtbl_for_used_header_files =
         Directory_name.connectable_to_subpath (Cee_snapshot.destination snap) in
 
       let needed_header_files = used_header_files snap in 
-      let answer = str_sort(Image.image (
+      let answer = Ordered.to_list(str_sort(Image.image (
         fun fn -> s_dest_dir^"header_files"^(Cull_string.before_rightmost fn '/')
-     ) needed_header_files) in 
+     ) needed_header_files)) in 
 
       let _ = Hashtbl.add hashtbl_for_needed_header_dirs 
        (Cee_snapshot.parameters snap) answer in 

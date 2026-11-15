@@ -20,7 +20,7 @@ let order_for_pairs = ((
    (Jvng_duplicated_name.t * ancestry_data) Total_ordering_t.t
 ) ;; 
 let insert_in_ancestry_manager (AM l) pair =
-    AM(Ordered.insert order_for_pairs pair l);;
+    AM(Ordered.to_list(Ordered.insert order_for_pairs pair (Ordered.safe_set order_for_pairs l)));;
 
 let insert_several_in_ancestry_manager man pairs =
    List.fold_left insert_in_ancestry_manager man pairs ;;
@@ -100,7 +100,7 @@ let make src origin =
      fun (idx,coatom) -> (coatom, { ancestry = [first_dname] ; position_in_birth_list = idx }) 
    ) indexed_first_coatoms in 
    let first_pairs = (first_dname,first_data) :: pairs_from_coatoms in 
-   let first_manager = AM (Ordered.sort order_for_pairs first_pairs) in 
+   let first_manager = AM (Ordered.to_list(Ordered.sort order_for_pairs first_pairs)) in 
    {
       source =src;   
       receiver = first_nonrec_grammar ;

@@ -18,8 +18,8 @@ let indices_in_four_parts cfg leaves =
   let (unordered_inner_left_recursions,nonrecursions) = List.partition (fun (_idx,(path,_form))->
     List.mem (List.hd path) (List.tl path)
     ) temp1 in     
-  let pivots_for_inner_left_recursions=str_sort(
-    Image.image(fun (_idx,(path,_form))->List.hd path) unordered_inner_left_recursions) in 
+  let pivots_for_inner_left_recursions=Ordered.to_list(str_sort(
+    Image.image(fun (_idx,(path,_form))->List.hd path) unordered_inner_left_recursions)) in 
   let inner_left_recursions = List.flatten (Image.image (
     fun pivot -> List.filter (fun (_idx,(path,_form))->(List.hd path)=pivot) temp1
   ) pivots_for_inner_left_recursions)   in

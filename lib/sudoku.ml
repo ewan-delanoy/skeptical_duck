@@ -14,7 +14,7 @@ type box =
    |Square of int ;; 
 
 type grid = G of 
-  (cell * ((int list) * bool)) list;;
+  (cell * ((int Ordered.ordered_list) * bool)) list;;
 
 type value_holder =
     Simple of cell
@@ -159,7 +159,7 @@ exception Repeated_assignment_exn of cell ;;
 module Private = struct
 
 let origin = 
-  let small_base = Int_range.range 1 9 in 
+  let small_base = i_sort(Int_range.range 1 9) in 
   G(
   Image.image (fun cell->(cell,(small_base,false))) Cell.all) ;;
 
@@ -175,7 +175,7 @@ let uncurried_assign gr (cell,v) =
    let (G (l)) = gr in 
    let possibilities = possibilities_at_cell gr cell  in 
    let is_old = cell_is_already_assigned gr cell   in 
-   if (not(List.mem v possibilities))
+   if (not(i_mem v possibilities))
    then raise(Assign_exn(cell))
    else 
    if is_old
@@ -183,7 +183,7 @@ let uncurried_assign gr (cell,v) =
    else  
    let new_l = Image.image (
      fun (cell2,(poss,is_old))->
-        if cell2=cell then (cell2,([v],true)) else 
+        if cell2=cell then (cell2,(i_sort [v],true)) else 
         if Cell.test_for_neighborhood cell cell2 
         then (cell2,(i_outsert v poss,is_old))
         else (cell2,(poss,is_old))       
@@ -197,7 +197,7 @@ let cells_with_fewest_possibilities gr =
        if is_old then None else 
         Some(cell,possibilities_at_cell gr cell)
   ) l in 
-  Min.minimize_it_with_care (fun (_cell,poss)->List.length poss) temp1 ;;
+  Min.minimize_it_with_care (fun (_cell,poss)->Ordered.length poss) temp1 ;;
 
 let assign_several gr assignments = 
      List.fold_left  uncurried_assign gr assignments ;; 
@@ -208,14 +208,14 @@ let assign_several_opt gr assignments =
    | Repeated_assignment_exn _ -> None ;; 
 
 let freedom_left (G(l)) =
-  List.length(List.filter (fun (_cell,(vals,_))->List.length(vals)>1) l) ;;
+  List.length(List.filter (fun (_cell,(vals,_))->Ordered.length(vals)>1) l) ;;
 
 let living_cells gr =
   let (G(l)) = gr in 
   List.filter_map (fun (cell,(_vals,is_old))->
     if is_old then None else 
     let poss = possibilities_at_cell gr cell in    
-    if List.length(poss)>1
+    if Ordered.length(poss)>1
     then Some cell  
     else None  ) l ;;
 
@@ -224,7 +224,7 @@ let expand_grid_at_cell cell gr =
    let (_,is_old) = List.assoc cell l in 
    if is_old then [gr] else
    let poss = possibilities_at_cell gr cell in 
-   Image.image (fun v->uncurried_assign gr (cell,v)) poss;;
+   Ordered.image (fun v->uncurried_assign gr (cell,v)) poss;;
 
 let expand_grids_at_cell l_gr cell =
    List.flatten (Image.image (expand_grid_at_cell cell) l_gr) ;;   
@@ -236,7 +236,7 @@ let unfillable_cells gr =
   let (G (l)) = gr in 
   List.filter_map (
     fun (cell,(poss,_is_old)) ->
-       if poss=[] then Some cell else None
+       if Ordered.to_list poss=[] then Some cell else None
   ) l ;;  
 
 end ;;
@@ -265,7 +265,7 @@ let freedom_left = Private.freedom_left ;;
 
 let horizontal_summary (G(l)) = List.filter_map 
   (fun (cell,(poss,is_old)) ->
-      if is_old then Some(cell,List.hd poss) else None 
+      if is_old then Some(cell,List.hd (Ordered.to_list poss)) else None 
    ) l;;
 
 let initialize_with l =
@@ -305,8 +305,8 @@ let immediate_simple_deductions gr =
   let (G (l))=gr in 
    List.filter_map (fun (cell,(_poss,is_old))->
      let poss = Grid.possibilities_at_cell gr cell in 
-    if (List.length(poss)=1)&&(not is_old)
-    then Some(cell,List.hd poss)
+    if (Ordered.length(poss)=1)&&(not is_old)
+    then Some(cell,List.hd (Ordered.to_list poss))
     else  None) l ;;  
 
 let immediate_indirect_deductions gr = 
@@ -328,7 +328,7 @@ let immediate_deductions gr =
 let possibilities_at_indirect_cell gr (bx,v) =
    let candidates = Box.content bx in 
    List.filter (
-     fun cell -> List.mem v (Grid.possibilities_at_cell gr cell)
+     fun cell -> i_mem v (Grid.possibilities_at_cell gr cell)
    ) candidates ;;
 
 
@@ -336,7 +336,7 @@ end ;;
   
 let immediate_deductions = Private.immediate_deductions ;;
 let possibilities_for_value_holder gr = function 
-  (Simple(cell)) -> Image.image (fun v->(cell,v))
+  (Simple(cell)) -> Ordered.image (fun v->(cell,v))
      (Grid.possibilities_at_cell gr cell) 
   |Indirect(bx,v) -> 
      Image.image (fun cell->(cell,v))
@@ -357,7 +357,7 @@ Rake means collect all immediate deductions
 let rake gr = 
   let (G(l)) = gr in 
    let impossibilities = List.filter_map (fun (cell,(vals,_is_old))->
-       if vals=[] then Some cell else None
+       if Ordered.to_list vals=[] then Some cell else None
     ) l in 
    if impossibilities<>[]
    then Obstruction(Unassignable_cells(impossibilities))
@@ -462,10 +462,10 @@ let fixed_cells grids domain =
   let finished_grids = List.filter_map apply_rake grids in 
   List.filter_map (fun cell ->
      let temp2 = Image.image (
-       fun gr -> i_sort (Grid.possibilities_at_cell gr cell)
+       fun gr -> Grid.possibilities_at_cell gr cell
      ) finished_grids in 
      let whole = i_fold_merge temp2 in 
-     if List.length(whole)=1
+     if Ordered.length(whole)=1
      then Some cell 
      else None 
   ) domain ;;
@@ -528,7 +528,7 @@ let assign (Dr(l)) cell v =
   else  
   let old_grid = old_elt.current_state in 
   let poss = Grid.possibilities_at_cell old_grid cell in 
-  if not(List.mem v poss)
+  if not(i_mem v poss)
   then raise(Impossible_extension(cell,v))  
   else
   let new_grid = Grid.assign old_grid cell v in 
@@ -639,9 +639,9 @@ module Private = struct
       let eval_small_grid_using_matrix_coordinates gr (i,j) = 
          let cell = Cell.from_matrix_coordinates i j in 
          let (poss,is_old) = Grid.assoc gr cell in 
-         let m = List.length poss in 
+         let m = Ordered.length poss in 
          if m = 0 then String.make 1 (!display_for_unassignable_cell) else 
-         if (m = 1)&&is_old then  string_of_int(List.hd poss) else
+         if (m = 1)&&is_old then  string_of_int(List.hd (Ordered.to_list poss)) else
          " " ;; 
 
       let eval_large_grid_using_matrix gr large_i large_j =
@@ -691,13 +691,13 @@ module Slow = struct
       then raise(Assign_exn(List.hd unfillables)) 
       else new_grid ;;  
 
-  exception Deduce_directly_exn of int list ;;    
+  exception Deduce_directly_exn of int Ordered.ordered_list ;;    
 
   let deduce_directly grid cell = 
      let poss = Grid.possibilities_at_cell grid cell in 
-     if List.length(poss)<>1
+     if Ordered.length(poss)<>1
      then raise(Deduce_directly_exn(poss))
-     else assign grid cell (List.hd poss) ;; 
+     else assign grid cell (List.hd (Ordered.to_list poss)) ;; 
 
    exception Deduce_indirectly_exn of cell list ;;    
 

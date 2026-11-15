@@ -21,7 +21,7 @@ module Modify = struct
     None -> pair :: l 
     |Some _ -> raise(Add_pair_fearfully_exn(fst pair))
   )  in 
-  AL(Ordered.sort order_on_pairs new_l);; 
+  AL(Ordered.to_list(Ordered.sort order_on_pairs new_l));; 
 
   
 

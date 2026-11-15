@@ -112,7 +112,7 @@ let initial_data gram =
    let prods1 = productions gram in 
    let prods2= Image.image (fun (Prod(h,l))->(h,str_sort l)) prods1 in
    let unordered_nonterminals = Image.image fst prods2 in 
-   let nonterminals = str_sort unordered_nonterminals in 
+   let nonterminals = Ordered.to_list(str_sort unordered_nonterminals) in 
    Image.image (fun h->(h,List.assoc h prods2)) nonterminals ;; 
 
 
@@ -120,18 +120,18 @@ let pusher (simplified_productions,level) =
     let next_simplified_productions = Image.image (fun (h,l)->
         (h,str_setminus l level)
       ) simplified_productions in 
-    let next_level = List.filter_map(fun (h,l)->if l=[] then Some h else None) next_simplified_productions in 
-    (next_simplified_productions,next_level)  ;;
+    let next_level = List.filter_map(fun (h,l)->if Ordered.to_list l=[] then Some h else None) next_simplified_productions in 
+    (next_simplified_productions,str_sort next_level)  ;;
 
 let rec iterator (preceding_pair,pair) =
    let (_,preceding_level) = preceding_pair 
    and (_,level) = pair in 
-   if List.length preceding_level = List.length level 
+   if List.length (Ordered.to_list preceding_level) = List.length (Ordered.to_list preceding_level)
    then level 
    else iterator(pair,pusher pair) ;;   
 
 let compute_emptiable_nonterminals_naively gram = 
-   let first_pair = (initial_data gram,[]) in 
+   let first_pair = (initial_data gram,str_sort []) in 
    let final_level = iterator (first_pair,pusher first_pair) in 
    final_level ;;
 
@@ -175,13 +175,13 @@ let direct_leftmost_descendants_for_several gram symbs =
   str_fold_merge (Image.image (direct_leftmost_descendants gram) symbs) ;;
 
 let rec helper gram (current_whole,to_be_treated) =
-   let possibly_new = direct_leftmost_descendants_for_several gram to_be_treated in 
+   let possibly_new = direct_leftmost_descendants_for_several gram (Ordered.to_list to_be_treated) in 
    let really_new = str_setminus possibly_new current_whole in 
-   if really_new = []
+   if Ordered.to_list really_new = []
    then current_whole 
    else helper gram (str_merge current_whole really_new,really_new) ;;   
 
-let compute_leftmost_descendants_naively gram symb = helper gram ([],[symb]) ;;
+let compute_leftmost_descendants_naively gram symb = helper gram (str_sort[],str_sort[symb]) ;;
 
 let hashtbl_for_leftmost_descendants = Hashtbl.create 100;;
 
@@ -229,13 +229,13 @@ let direct_rightmost_ancestors_for_several gram symbs =
   str_fold_merge (Image.image (direct_rightmost_ancestors gram) symbs) ;;
 
 let rec helper gram (current_whole,to_be_treated) =
-   let possibly_new = direct_rightmost_ancestors_for_several gram to_be_treated in 
+   let possibly_new = direct_rightmost_ancestors_for_several gram (Ordered.to_list to_be_treated) in 
    let really_new = str_setminus possibly_new current_whole in 
-   if really_new = []
+   if Ordered.to_list really_new = []
    then current_whole 
    else helper gram (str_merge current_whole really_new,really_new) ;;   
 
-let compute_rightmost_ancestors_naively gram symb = helper gram ([],[symb]) ;;
+let compute_rightmost_ancestors_naively gram symb = helper gram (str_sort [],str_sort [symb]) ;;
 
 let hashtbl_for_rightmost_ancestors = Hashtbl.create 100;;
 
@@ -262,12 +262,12 @@ let direct_follow_set gram symb =
    let completions = completions_on_the_right_for_in_productions symb prods in 
    let (empty_completions,nonempty_completions) = List.partition (fun x->x=[]) completions in
    let rightmost_contribution = (if empty_completions=[] then [] else [end_marker]) in 
-   str_fold_merge (rightmost_contribution::
+   str_fold_merge ((str_sort rightmost_contribution)::
    (Image.image (Furst_set.furst_set_for_form gram) nonempty_completions)) ;;
 
 let compute_follow_set_naively gram symb =
    str_fold_merge (Image.image (direct_follow_set gram)
-    (symb::(Rightmost_ancestors.rightmost_ancestors gram symb))) ;;
+    (symb::(Ordered.to_list(Rightmost_ancestors.rightmost_ancestors gram symb)))) ;;
 
 let hashtbl_for_follow_set = Hashtbl.create 100;;
 

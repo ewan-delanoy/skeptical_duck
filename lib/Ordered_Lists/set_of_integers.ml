@@ -4,7 +4,9 @@
 
 *)
 
-let tr = ((fun x->Set_of_integers_t.S(x)),(fun (Set_of_integers_t.S(x))->x),Total_ordering.standard);;
+let tr = 
+  let i_order = Total_ordering.for_integers in 
+  ((fun x->Set_of_integers_t.S(Ordered.to_list x)),(fun (Set_of_integers_t.S(x))->Ordered.safe_set i_order x),i_order);;
 
 let fold_merge x = Functor_for_sets.fold_merge tr x;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
@@ -23,7 +25,7 @@ let setminus x y= Functor_for_sets.setminus tr x y;;
 let singleton a= Functor_for_sets.singleton tr a;;
 let size_of_intersection x y= Functor_for_sets.size_of_intersection tr x y;;
 let sort l= Functor_for_sets.sort tr l;;
-let unsafe_set l= Functor_for_sets.unsafe_set tr l;;
+let unsafe_set l= Set_of_integers_t.S l;;
 
 
 
