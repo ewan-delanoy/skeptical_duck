@@ -4,7 +4,7 @@
 
 *)
 
-(*
+
 module Private =struct 
 
 module type INTERFACE = sig 
@@ -13,8 +13,10 @@ module type INTERFACE = sig
 
     val all_vertices : 'a t -> 'a list
     val connected_components : 'a t -> 'a list list
+    val decompose_into_cycles : 'a t -> 'a list -> 'a list list
     val edges : 'a t -> ('a * 'a) list
-    val extract_cycle : 'a t -> 'a list -> 'a list
+    val extract_cycle_from_starting_at : 'a t -> 'a list -> 'a -> 'a list
+    val local_connected_components : 'a t -> 'a list -> 'a list list
     val make : 'a list -> ('a * 'a) list -> 'a t
     val make_from_indexation_and_neighbors :
       (int * 'a) list -> (int * int list) list -> (int * 'a) t
@@ -77,7 +79,7 @@ let memoize1 hashtbl f ug x=
     answer ;;
       
 
-let hashtbl_for_neighbors = (Hashtbl.create 100:(int*int, int list) Hashtbl.t) ;;
+let hashtbl_for_neighbors = (Hashtbl.create 100:(int*int, Set_of_integers_t.t) Hashtbl.t) ;;
 
 let unmemoized_neighbors (IG(_,_vertices,edges)) v =
    let temp = List.filter_map (fun (x,y)->
@@ -91,32 +93,43 @@ let neighbors = memoize1 hashtbl_for_neighbors unmemoized_neighbors ;;
 let neighbors_for_several iug vertices = i_fold_merge (Image.image (neighbors iug) vertices) ;;
 
 let rec helper_for_connected_component iug (treated,to_be_treated) =
-   if to_be_treated = []
+   let l_to_be_treated = Set_of_integers.forget_order to_be_treated in 
+   if l_to_be_treated = []
    then treated 
-   else let potential_novelties = neighbors_for_several iug to_be_treated in
+   else let potential_novelties = neighbors_for_several iug l_to_be_treated in
         let effective_novelties = i_setminus potential_novelties treated in 
         helper_for_connected_component iug (i_merge treated to_be_treated,effective_novelties) ;;
 
-let connected_component_at_point iug vertex = helper_for_connected_component iug ([],[vertex]) ;; 
+let connected_component_at_point iug vertex = helper_for_connected_component iug 
+ (Set_of_integers.empty_set,Set_of_integers.singleton vertex) ;; 
 
 let rec helper_for_connected_components iug (treated,to_be_treated) =
   match to_be_treated with 
   [] -> List.rev treated 
   |v::others ->
     let component = connected_component_at_point iug v in
-    helper_for_connected_components iug (component::treated,i_setminus others component) ;;
+    helper_for_connected_components iug (component::treated,
+      List.filter(fun v->not(Set_of_integers.mem v component)) others ) ;;
         
-let hashtbl_for_connected_components = (Hashtbl.create 100:(int, int list list) Hashtbl.t) ;;
+let hashtbl_for_connected_components = (Hashtbl.create 100:(int, Set_of_integers_t.t list) Hashtbl.t) ;;
 
 let unmemoized_connected_components iug =
   let (IG(_idx,vertices,_edges))= iug in 
-  helper_for_connected_components iug ([],vertices) ;;  
+  helper_for_connected_components iug ([],Set_of_integers.forget_order vertices) ;;  
 
 let connected_components = memoize0 hashtbl_for_connected_components unmemoized_connected_components ;; 
 
+let local_connected_components iug domain_in_imposed_order = 
+   let domain = Set_of_integers.sort domain_in_imposed_order in 
+   let (IG(_idx,old_vertices,old_edges))= iug in 
+   let restricted_vertices = i_intersect old_vertices domain 
+   and restricted_edges = List.filter (fun (x,y)->(i_mem x domain)&&(i_mem y domain)) old_edges  in 
+   let restricted_iug = (IG(UGI 0,restricted_vertices,restricted_edges)) in 
+   helper_for_connected_components restricted_iug ([],domain_in_imposed_order) ;;  
+
 let touches iug v1 v2 = i_mem v2 (neighbors iug v1);;
 
-let hashtbl_for_induced_neighborhoods = (Hashtbl.create 100:(int*(int list), (int*(int list)) list) Hashtbl.t) ;;
+let hashtbl_for_induced_neighborhoods = (Hashtbl.create 100:(int*(int list), (int*Set_of_integers_t.t) list) Hashtbl.t) ;;
 
 let unmemoized_induced_neighborhoods iug vertices =
    let sorted_vertices = i_sort vertices in 
@@ -126,22 +139,21 @@ let unmemoized_induced_neighborhoods iug vertices =
 let induced_neighborhoods = memoize1 hashtbl_for_induced_neighborhoods unmemoized_induced_neighborhoods ;; 
 
 let vertices_with_degree_at_least_three iug vertices =
-   List.filter (fun (_x,nx)->List.length(nx)>2) (induced_neighborhoods iug vertices) ;; 
+   List.filter (fun (_x,nx)->Set_of_integers.length(nx)>2) (induced_neighborhoods iug vertices) ;; 
 
 let degree_one_vertices iug vertices =
-   List.filter (fun (_x,nx)->List.length(nx)=1) (induced_neighborhoods iug vertices) ;; 
+   List.filter (fun (_x,nx)->Set_of_integers.length(nx)=1) (induced_neighborhoods iug vertices) ;; 
 
 let rec helper_for_cycle_extraction indneigh (treated,ordered_treated,cursor) =
    let temp = i_setminus (List.assoc cursor indneigh) ordered_treated in 
-   if List.length(temp)<>1
+   if Set_of_integers.length(temp)<>1
    then List.rev (cursor::treated)
-   else let new_cursor = List.hd temp in 
+   else let new_cursor = List.hd (Set_of_integers.forget_order temp) in 
         helper_for_cycle_extraction indneigh (cursor::treated,i_insert cursor ordered_treated,new_cursor) ;; 
 
-let extract_cycle iug vertices = 
+let extract_cycle_from_starting_at iug vertices starter= 
   let indneigh = induced_neighborhoods iug vertices in 
-  let (starter,_)=List.find (fun (_x,nx)->List.length(nx)=1) indneigh in 
-  helper_for_cycle_extraction indneigh ([],[],starter) ;;   
+  helper_for_cycle_extraction indneigh ([],Set_of_integers.empty_set,starter) ;;   
 
 let register (vertices,edges) =
    
@@ -152,7 +164,7 @@ let register (vertices,edges) =
 
 let image (G(UGI(idx),_,_,_)) = List.nth (!repository) (idx-1) ;;   
 
-let set_level_neighborhood iug domain = i_setminus (neighbors_for_several iug domain) domain ;;
+let set_level_neighborhood iug domain = i_setminus (neighbors_for_several iug domain) (i_sort domain) ;;
 
 end ;;  
 
@@ -178,19 +190,20 @@ let vertex_to_inner_index (G(_,_,_,associator)) v = Option.get(List_again.assoc_
 let connected_components ug = 
    let iug = Inner.image ug in 
    let i_connected_components = Inner.connected_components iug in 
-   Image.image (Image.image (vertex_of_inner_index ug)) i_connected_components;;
+   Image.image (Set_of_integers.image (vertex_of_inner_index ug)) i_connected_components;;
 
 let vertices_with_degree_at_least_three ug domain= 
    let iug = Inner.image ug in 
    let i_domain = Image.image (vertex_to_inner_index ug) domain in 
    let i_solutions = Inner.vertices_with_degree_at_least_three iug i_domain in 
    let g = vertex_of_inner_index ug  in  
-   (Image.image (fun (k,nk)->(g k,Image.image g nk))) i_solutions;;
+   (Image.image (fun (k,nk)->(g k,Set_of_integers.image g nk))) i_solutions;;
 
-let extract_cycle ug domain= 
+let extract_cycle_from_starting_at ug domain starter= 
    let iug = Inner.image ug in 
-   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
-   let i_solutions = Inner.extract_cycle iug i_domain in 
+   let i_domain = Image.image (vertex_to_inner_index ug) domain 
+   and i_starter = vertex_to_inner_index ug starter in 
+   let i_solutions = Inner.extract_cycle_from_starting_at iug i_domain i_starter in 
    let g = vertex_of_inner_index ug  in  
    Image.image g i_solutions;;
 
@@ -235,7 +248,7 @@ let set_level_neighborhood ug domain=
    let i_domain = Image.image (vertex_to_inner_index ug) domain in 
    let i_solutions = Inner.set_level_neighborhood iug i_domain in 
    let g = vertex_of_inner_index ug  in 
-   Image.image g i_solutions;;
+   Set_of_integers.image g i_solutions;;
 
 
 let all_vertices (G(_,vs,_,_)) = vs ;;
@@ -259,9 +272,35 @@ let neighbors ug v=
    let v_idx = vertex_to_inner_index ug v in
    let i_neighbors = Inner.neighbors iug v_idx in 
    let g = vertex_of_inner_index ug  in 
-   Image.image g i_neighbors ;;
+   Set_of_integers.image g i_neighbors ;;
    
 let edges (G(_,_,old_edges,_))= old_edges ;; 
+
+let local_connected_components ug domain_in_imposed_order= 
+   let iug = Inner.image ug in 
+   let i_imposed_order = Image.image (vertex_to_inner_index ug) domain_in_imposed_order in
+   let i_local_comps = Inner.local_connected_components iug i_imposed_order in 
+   let g = vertex_of_inner_index ug  in 
+   Image.image (Set_of_integers.image g) i_local_comps ;;
+
+let induced_neighborhoods ug domain =
+   let iug = Inner.image ug  in 
+   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_pairs = Inner.induced_neighborhoods iug i_domain in 
+   let g = vertex_of_inner_index ug  in 
+   Image.image (fun (k,z)->(g k,Set_of_integers.image g z))  i_pairs;;
+
+let extract_some_cycle ug domain =
+   if List.length(domain)=1 then domain else
+   let indnei = induced_neighborhoods ug domain in 
+   match List.find_opt (fun (_,l)->List.length(l)=1) indnei with 
+   None -> failwith("extract_some_cycle")
+   |Some(v0,_) -> extract_cycle_from_starting_at ug domain v0 ;;
+
+let decompose_into_cycles ug domain =
+   let comps = local_connected_components ug domain in 
+   Image.image (extract_some_cycle ug) comps ;;
+
 
 end ;;   
 
@@ -271,7 +310,4 @@ end ;;
 
 include Private.Constrained ;;
 
-*)
-
-let make_from_indexation_and_neighbors _x _y= () ;;
 

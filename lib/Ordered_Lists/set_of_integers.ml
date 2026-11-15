@@ -8,6 +8,7 @@ let tr =
   let i_order = Total_ordering.for_integers in 
   ((fun x->Set_of_integers_t.S(Ordered.to_list x)),(fun (Set_of_integers_t.S(x))->Ordered.safe_set i_order x),i_order);;
 
+let empty_set = Set_of_integers_t.S [] ;; 
 let fold_merge x = Functor_for_sets.fold_merge tr x;;
 let forget_order x= Functor_for_sets.forget_order tr x;;
 let image f x= Functor_for_sets.image tr f x;;
