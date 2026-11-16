@@ -184,7 +184,8 @@ let make_from_indexation_and_neighbors indexed_vertices i_neighbors =
 let vertex_of_inner_index (G(_,_,_,associator)) k = List.assoc k associator ;;
 
 
-let vertex_to_inner_index (G(_,_,_,associator)) v = Option.get(List_again.assoc_right_opt v associator) ;;
+let vertex_to_inner_index_opt (G(_,_,_,associator)) v = List_again.assoc_right_opt v associator ;;
+
 
 
 let connected_components ug = 
@@ -194,15 +195,17 @@ let connected_components ug =
 
 let vertices_with_degree_at_least_three ug domain= 
    let iug = Inner.image ug in 
-   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_domain = List.filter_map (vertex_to_inner_index_opt ug) domain in 
    let i_solutions = Inner.vertices_with_degree_at_least_three iug i_domain in 
    let g = vertex_of_inner_index ug  in  
    (Image.image (fun (k,nk)->(g k,Set_of_integers.image g nk))) i_solutions;;
 
 let extract_cycle_from_starting_at ug domain starter= 
    let iug = Inner.image ug in 
-   let i_domain = Image.image (vertex_to_inner_index ug) domain 
-   and i_starter = vertex_to_inner_index ug starter in 
+   let i_domain = List.filter_map (vertex_to_inner_index_opt ug) domain in 
+   match vertex_to_inner_index_opt ug starter with 
+   None -> failwith("Unknown starter in extract_cycle_from_starting_at")
+   |Some i_starter -> 
    let i_solutions = Inner.extract_cycle_from_starting_at iug i_domain i_starter in 
    let g = vertex_of_inner_index ug  in  
    Image.image g i_solutions;;
@@ -247,7 +250,7 @@ let rename_vertices old_ug f=
 
 let set_level_neighborhood ug domain= 
    let iug = Inner.image ug  in 
-   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_domain = List.filter_map (vertex_to_inner_index_opt ug) domain in 
    let i_solutions = Inner.set_level_neighborhood iug i_domain in 
    let g = vertex_of_inner_index ug  in 
    Set_of_integers.image g i_solutions;;
@@ -271,7 +274,9 @@ let merge_group_of_vertices ug group representative=
 
 let neighbors ug v= 
    let iug = Inner.image ug in 
-   let v_idx = vertex_to_inner_index ug v in
+    match vertex_to_inner_index_opt ug v with 
+   None -> []
+   |Some v_idx -> 
    let i_neighbors = Inner.neighbors iug v_idx in 
    let g = vertex_of_inner_index ug  in 
    Set_of_integers.image g i_neighbors ;;
@@ -280,14 +285,14 @@ let edges (G(_,_,old_edges,_))= old_edges ;;
 
 let local_connected_components ug domain_in_imposed_order= 
    let iug = Inner.image ug in 
-   let i_imposed_order = Image.image (vertex_to_inner_index ug) domain_in_imposed_order in
+   let i_imposed_order = List.filter_map (vertex_to_inner_index_opt ug) domain_in_imposed_order in 
    let i_local_comps = Inner.local_connected_components iug i_imposed_order in 
    let g = vertex_of_inner_index ug  in 
    Image.image (Set_of_integers.image g) i_local_comps ;;
 
 let induced_neighborhoods ug domain =
    let iug = Inner.image ug  in 
-   let i_domain = Image.image (vertex_to_inner_index ug) domain in 
+   let i_domain = List.filter_map (vertex_to_inner_index_opt ug) domain in 
    let i_pairs = Inner.induced_neighborhoods iug i_domain in 
    let g = vertex_of_inner_index ug  in 
    Image.image (fun (k,z)->(g k,Set_of_integers.image g z))  i_pairs;;
