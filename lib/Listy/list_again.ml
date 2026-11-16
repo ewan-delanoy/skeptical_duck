@@ -380,11 +380,11 @@ let pepper separator l =
   match l with 
   [] -> []
   |a :: others ->
-     a :: (List.flatten(Image.image (fun y->separator@[y]) others)) ;; 
+     a @ (List.flatten(Image.image (fun y->separator@y) others)) ;; 
 
 (*
 
-pepper [800;809] [1; 2; 3; 4; 5; 6; 7] ;;
+pepper [800;809] [[1]; [2]; [3]; [4]; [5]; [6]; [7]] ;;
 
 *)     
 
@@ -474,4 +474,21 @@ let universal_delta_list l=
   []->[]
   |u::v->sub_f([],u,v);;
 
+let universal_tridelta_list l=
+  let rec sub_f=(function (accu,a,b,rl)->match rl with
+      []->List.rev(accu)
+    |c::others->sub_f((a,b,c)::accu,b,c,others)
+  ) in
+  match l with
+  []->[]
+  |u1::others1->
+    match others1 with 
+     [] -> []
+     |u2::others2 ->sub_f([],u1,u2,others2);;
 
+
+(*
+
+universal_tridelta_list [1; 2; 3; 4; 5; 6; 7] ;;
+
+*)
