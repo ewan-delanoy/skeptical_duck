@@ -92,40 +92,38 @@ let neighbors = memoize1 hashtbl_for_neighbors unmemoized_neighbors ;;
 
 let neighbors_for_several iug vertices = i_fold_merge (Image.image (neighbors iug) vertices) ;;
 
-let rec helper_for_connected_component iug (treated,to_be_treated) =
+let rec generic_helper_for_connected_component neighbors_map (treated,to_be_treated) =
    let l_to_be_treated = Set_of_integers.forget_order to_be_treated in 
    if l_to_be_treated = []
    then treated 
-   else let potential_novelties = neighbors_for_several iug l_to_be_treated in
+   else let potential_novelties = i_fold_merge (Image.image neighbors_map l_to_be_treated) in
         let effective_novelties = i_setminus potential_novelties treated in 
-        helper_for_connected_component iug (i_merge treated to_be_treated,effective_novelties) ;;
+        generic_helper_for_connected_component neighbors_map (i_merge treated to_be_treated,effective_novelties) ;;
 
-let connected_component_at_point iug vertex = helper_for_connected_component iug 
- (Set_of_integers.empty_set,Set_of_integers.singleton vertex) ;; 
+let generic_connected_component_at_point neighbors_map vertex = generic_helper_for_connected_component neighbors_map 
+ (Set_of_integers.empty_set,Set_of_integers.singleton vertex) ;;
 
-let rec helper_for_connected_components iug (treated,to_be_treated) =
+let rec generic_helper_for_connected_components neighbors_map (treated,to_be_treated) =
   match to_be_treated with 
   [] -> List.rev treated 
   |v::others ->
-    let component = connected_component_at_point iug v in
-    helper_for_connected_components iug (component::treated,
+    let component = generic_connected_component_at_point neighbors_map v in
+    generic_helper_for_connected_components neighbors_map (component::treated,
       List.filter(fun v->not(Set_of_integers.mem v component)) others ) ;;
-        
+
+
 let hashtbl_for_connected_components = (Hashtbl.create 100:(int, Set_of_integers_t.t list) Hashtbl.t) ;;
 
 let unmemoized_connected_components iug =
-  let (IG(_idx,vertices,_edges))= iug in 
-  helper_for_connected_components iug ([],Set_of_integers.forget_order vertices) ;;  
+  let (IG(_idx,vertices,_edges))= iug in  
+  generic_helper_for_connected_components (neighbors iug) ([],Set_of_integers.forget_order vertices) ;;  
 
 let connected_components = memoize0 hashtbl_for_connected_components unmemoized_connected_components ;; 
 
 let local_connected_components iug domain_in_imposed_order = 
    let domain = Set_of_integers.sort domain_in_imposed_order in 
-   let (IG(_idx,old_vertices,old_edges))= iug in 
-   let restricted_vertices = i_intersect old_vertices domain 
-   and restricted_edges = List.filter (fun (x,y)->(i_mem x domain)&&(i_mem y domain)) old_edges  in 
-   let restricted_iug = (IG(UGI 0,restricted_vertices,restricted_edges)) in 
-   helper_for_connected_components restricted_iug ([],domain_in_imposed_order) ;;  
+   let local_neighbors = (fun v-> i_intersect (neighbors iug v) domain) in 
+   generic_helper_for_connected_components local_neighbors ([],domain_in_imposed_order) ;;   
 
 let touches iug v1 v2 = i_mem v2 (neighbors iug v1);;
 
@@ -185,7 +183,9 @@ let make_from_indexation_and_neighbors indexed_vertices i_neighbors =
 
 let vertex_of_inner_index (G(_,_,_,associator)) k = List.assoc k associator ;;
 
+
 let vertex_to_inner_index (G(_,_,_,associator)) v = Option.get(List_again.assoc_right_opt v associator) ;;
+
 
 let connected_components ug = 
    let iug = Inner.image ug in 
@@ -223,6 +223,8 @@ let remove_vertices old_ug domain=
 
 let split_vertex old_ug ~original:x x1 x2= 
    let (G(_,old_vertices,old_edges,_)) = old_ug in
+   if not(List.mem x old_vertices) then failwith("Splitting input is incorrect") else 
+   if (List.mem x1 old_vertices)||(List.mem x2 old_vertices) then failwith("Splitting output is incorrect") else   
    let new_vertices = List.flatten(Image.image (fun t->if t=x then [x1;x2] else [t]) old_vertices)
    and new_edges =  (x1,x2)::(List.flatten(Image.image (fun (a,b)->
      if a=x then [x1,b;x2,b] else 

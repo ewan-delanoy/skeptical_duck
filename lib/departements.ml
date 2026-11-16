@@ -41,7 +41,7 @@ let graph = Undirected_graph.make_from_indexation_and_neighbors
 (32,"Gers");
 (33,"Gironde");
 (34,"Hérault");
-(35,"Ille-et-Vilaine");
+(35,"Ile-et-Vilaine");
 (36,"Indre");
 (37,"Indre-et-Loire");
 (38,"Isère");

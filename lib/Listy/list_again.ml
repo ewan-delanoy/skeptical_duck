@@ -376,6 +376,18 @@ let nonredundant_version l=
   tempf([],l);;
 
 
+let pepper separator l = 
+  match l with 
+  [] -> []
+  |a :: others ->
+     a :: (List.flatten(Image.image (fun y->separator@[y]) others)) ;; 
+
+(*
+
+pepper [800;809] [1; 2; 3; 4; 5; 6; 7] ;;
+
+*)     
+
 let power_set l=
   let rec tempf=(function 
      (treated,to_be_treated)->match to_be_treated with
