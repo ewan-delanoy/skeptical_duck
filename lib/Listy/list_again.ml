@@ -337,14 +337,6 @@ let long_head r l=if (r>(List.length l)) then l else List.rev(fst(long_head_with
     
 let long_tail r l=if (r>(List.length l)) then [] else snd(long_head_with_tail(r)(l));;    
 
-let long_tail_with_head l s =
-  long_head_with_tail (List.length(l)-s) l ;;
-
-(*
-
-long_tail_with_head (Int_range.range 1 7) 3 ;; 
-
-*)
 
 
 let rec next_in_line_opt x0 l =
@@ -455,13 +447,15 @@ two_sided_common_parts [[107;24;7;1;2;3];[107;24;8;9;1;2;3];[107;24;10;11;12;1;2
 *)   
 
 let two_sided_cutting (length_before,length_after) l = 
-   let (left,temp) = long_head_with_tail length_before l in 
-   let (center,right)= long_tail_with_head temp length_after in 
-   (List.rev left,List.rev center,right) ;;
+   let (left,temp) = (List.take length_before l,List.drop length_before l) in 
+   let m = List.length(temp)-length_after in 
+   let (center,right)= (List.take m temp,List.drop m temp) in 
+   (left,center,right) ;;
   
 (*
 
 two_sided_cutting (2,3) (Int_range.range 1 9);;
+
 
 *)   
 

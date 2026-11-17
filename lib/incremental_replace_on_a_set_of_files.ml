@@ -13,7 +13,7 @@ let ocamlese_for_rep (a,b) = "(\""^(String.escaped a)^"\",\""^(String.escaped b)
 
 let ocamlese_for_replist l = 
   let lines = Image.image (fun rep->(String.make 3 ' ')^(ocamlese_for_rep rep)^";") l in 
-  "\n\n\nlet replacements = [\n"^(String.concat "\n" lines)^"\n];;\n\n\n" ;; 
+  "\n\n\nlet replacements =  Ordered.safe_set rep_order [\n"^(String.concat "\n" lines)^"\n];;\n\n\n" ;; 
 
 let string_order = Total_ordering.silex_for_strings ;;   
 let rep_order = Total_ordering.product string_order string_order ;;
