@@ -17,9 +17,11 @@ let modularize prefix ap=
       let name=Dfa_module.to_line naked_name in  
       let content=Io.read_whole_file(ap) in
       let new_name=String.capitalize_ascii(prefix^name) in
-      let new_content=
-       "\n\nmodule "^new_name^"=struct\n\n"^content^"\n\nend;"^";\n\n" in
-     new_content;;
+      let s_ap=Absolute_path.to_string ap in 
+      let shortened_s_ap = Replace_inside.replace_inside_text (Sys.getenv "HOME","~") s_ap in 
+      if String.ends_with s_ap ~suffix:".ml"
+      then "\n\nmodule "^new_name^"=struct\n\n"^content^"\n\nend;"^";\n\n"
+      else "\n\n(* Contents of "^shortened_s_ap^":\n\n "^content^"\n\n*) \n\n" ;;
      
 let modularize_several prefix l_ap=     
     let temp1=Image.image module_name_from_path l_ap in
