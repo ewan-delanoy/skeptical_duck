@@ -229,6 +229,12 @@ let connected_fibers = Private.connected_fibers ;;
 connected_fibers (fun x->int_of_float(floor(sqrt(float_of_int x)))) (Int_range.range 1 50) ;;
 *)
 
+let cut k l = (List.take k l,List.drop k l) ;;
+(*
+cut 3 [1; 2; 3; 4; 5; 6; 7; 8; 9; 10] ;;
+*)
+
+
 let filter_and_remember = Private.filter_and_remember ;;
 
 (*
