@@ -23,8 +23,8 @@ let push_dot_one_symbol symb (Item(p,l))=
   if (List.nth l j)<>symb 
   then None 
   else
-  let (head,tail)=List_again.long_head_with_tail (j-1) l in 
-  Some(Item(p,(List.rev head)@(symb::"."::(List.tl(List.tl tail)))))
+  let (head,tail)=List_again.cut (j-1) l in 
+  Some(Item(p,head@(symb::"."::(List.tl(List.tl tail)))))
   ;;
 
 (*

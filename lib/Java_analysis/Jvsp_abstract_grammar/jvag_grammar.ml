@@ -735,8 +735,7 @@ let extract_element_from_concat caller_name chain index_in_concat =
    if (index_in_concat<0)||(index_in_concat>List.length(chain))
   then raise (Bad_index_exn("index in concat",index_in_concat,caller_name))
   else
-  let (rev_before,temp) = List_again.long_head_with_tail (index_in_concat-1) chain in 
-  let before = List.rev rev_before in 
+  let (before,temp) = List_again.cut (index_in_concat-1) chain in 
   let (pivot,after) = List_again.head_with_tail temp in 
   (before,pivot,after) ;;
 
@@ -744,11 +743,10 @@ let extract_range_from_concat caller_name chain (range_start,range_end) =
    if (range_start<0)||(range_end<range_start)||(range_end>List.length(chain))
   then raise (Bad_range_exn("range in concat",range_start,range_end,caller_name))
   else
-  let (rev_before,temp) = List_again.long_head_with_tail (range_start-1) chain in 
-  let before = List.rev rev_before in 
+  let (before,temp) = List_again.cut (range_start-1) chain in 
   let d = range_end - range_start +1 in 
-  let (rev_between,after) = List_again.long_head_with_tail d temp in
-  (before,List.rev rev_between,after) ;; 
+  let (between,after) = List_again.cut d temp in
+  (before,between,after) ;; 
 
 
 exception Remove_left_recursive_line_in_disjunction_exn of string * string ;;
