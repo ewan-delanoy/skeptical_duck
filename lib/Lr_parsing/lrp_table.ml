@@ -118,7 +118,7 @@ let step tbl steps =
       Accept -> raise No_steps_after_acceptance_exn 
       |Shift(j) -> (j::state_stack,List.tl symbol_stack)
       |Reduce(Prod(aa,omega)) ->
-         let remaining_stack = List_again.long_tail (List.length omega) state_stack in 
+         let remaining_stack = List.drop (List.length omega) state_stack in 
          let remaining_head = List.hd remaining_stack in 
          let k = get_goto tbl remaining_head aa in 
          (k::remaining_stack,symbol_stack)

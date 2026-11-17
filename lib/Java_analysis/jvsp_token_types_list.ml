@@ -29,7 +29,7 @@ let construct l =(TTL l) ;;
 
 let find_and_forget_opt f (TTL l) = Option.map (fun z->TTL z)(Private.find_and_forget_opt f l);;
 
-let long_tail k (TTL l)= TTL(List_again.long_tail k l);;
+let long_tail k (TTL l)= TTL(List.drop k l);;
   
 (* This is a registered printer : print_out *)
 let print_out (fmt:Format.formatter) ttl=

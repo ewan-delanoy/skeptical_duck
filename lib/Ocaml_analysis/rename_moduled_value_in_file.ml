@@ -34,7 +34,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
      (itm.Ocaml_gsyntax_item.name)=s_new_full_name
    ) temp3_again in
    let k1=List_again.index_of_in temp4_again temp3_again in
-   let temp5=List_again.long_tail k1 temp3_again in
+   let temp5=List.drop k1 temp3_again in
    let temp6=List.filter_map(
       fun itm->
         let txt=itm.Ocaml_gsyntax_item.content in

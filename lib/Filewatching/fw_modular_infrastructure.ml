@@ -364,7 +364,7 @@ let order deps_ref=
    (Fw_module_details.compute_details_from_acolytes_list_for_several_modules nonoverlapping) in 
    
  let old_order =  ((!deps_ref).Fw_modular_infrastructure_t.order) in 
- let novel_details = List_again.long_tail (List.length old_order) new_details in
+ let novel_details = List.drop (List.length old_order) new_details in
  let novel_modules_in_order = Image.image fst (Fw_determine_order.main novel_details) in 
  let novel_details_in_order = Ordered.to_list(Ordered_misc.reorder_list_of_pairs_using_list_of_singles
      novel_details novel_modules_in_order) in 
