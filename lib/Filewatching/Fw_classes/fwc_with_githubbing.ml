@@ -55,6 +55,8 @@ module Inherited = struct
   
   let modules_using_value fw = Parent.modules_using_value (parent fw) ;; 
   
+  let modules_with_their_ancestors fw = Parent.modules_with_their_ancestors (parent fw) ;; 
+
   let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
   let number_of_modules fw = Parent.number_of_modules (parent fw) ;;
   
