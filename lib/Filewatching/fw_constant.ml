@@ -45,6 +45,10 @@ let debug_build_subdir= Dfa_subdirectory.extend build_subdir "_debug_build";;
 let exec_build_subdir=  Dfa_subdirectory.extend build_subdir "_exec_build";;  
 let parameters_subdir= Dfa_subdirectory.extend dune_lib_subdir "Compilation_management";;
 
+
+let standalone_subdir=
+  Dfa_subdirectory.extend watched_and_githubbed_subdir "Standalone_old_files";;
+
 let short_path_for_diary_file= Dfn_short.of_line"diary_archive.ml";;
 let short_path_for_loadingsfile= Dfn_short.of_line"my_loadings.ml";;
 let short_path_for_painful_debugging_file=Dfn_short.of_line"painful_debugging.ml";;
@@ -166,6 +170,7 @@ let minimal_set_of_needed_dirs =
     usual_build_subdir ;
     watched_not_githubbed_subdir;
     watched_and_githubbed_subdir;
+    standalone_subdir;
     githubbed_nonml_files_subdir;
     nongithubbed_nonml_files_subdir;
     directives_subdir
@@ -214,6 +219,7 @@ end ;;
  let rootless_path_for_parametersfile = Private.rootless_path_for_parametersfile ;;
  let rootless_path_for_printersfile = Private.rootless_path_for_printersfile ;;
  let rootless_path_for_targetfile = Private.rootless_path_for_targetfile ;;
+ let standalone_subdir = Private.standalone_subdir ;;
  let usual_build_subdir = Private.usual_build_subdir ;;
 
 
