@@ -489,6 +489,55 @@ let check_module_sequence_for_forgettability fw l=
  )(mod_order fw) in 
  List.filter (fun mn->not(List.mem mn l)) modules_below;;      
 
+  let extract_list_of_modules_from_specification fw = function 
+    Fw_standalone_block_specification_t.By_modules mods -> mods 
+    | Fw_standalone_block_specification_t.By_subdirectories subdirs -> 
+      let mlx_files =all_moduled_mlx_files fw in 
+      let involved_mlx_files = List.filter (
+        fun mlx -> List.mem (Dfn_full.to_subdirectory mlx) subdirs
+      ) mlx_files in 
+      let modules_in_order=Image.image fst (mod_order fw) 
+      and unordered_involved_modules = Image.image Dfn_full.to_module involved_mlx_files in 
+      List.filter (fun mn->List.mem mn unordered_involved_modules) modules_in_order ;;
+
+  let make_standalone_copy fw spec ~copy_name=
+    let all_mods_in_order = Image.image fst (mod_order fw) in 
+    let directly_involved_mods =  extract_list_of_modules_from_specification fw spec in    
+    let all_mlx_files = all_moduled_mlx_files fw in 
+    let directly_involved_mlx_files = List.filter (
+      fun fn -> List.mem (Dfn_full.to_module fn) directly_involved_mods
+    ) all_mlx_files in 
+    let dependencies_for_mlx_file =(fun mlx->
+      let nm_direct_deps = Look_for_module_names.names_in_mlx_file (Dfn_full.to_absolute_path mlx) in 
+            modules_with_their_ancestors fw nm_direct_deps ) in 
+    let nonnaggregated_dependencies = Image.image dependencies_for_mlx_file directly_involved_mlx_files in 
+    let all_dependencies = List.filter (fun nm->
+       List.exists (fun l->List.mem nm l) nonnaggregated_dependencies) all_mods_in_order in 
+    let involved_mlx_files = List.filter (
+       fun fn -> List.mem (Dfn_full.to_module fn) all_dependencies
+    ) all_mlx_files in  
+    let involved_paths = Image.image Dfn_full.to_absolute_path involved_mlx_files in 
+    let the_root = root fw in 
+    let main_path = 
+     (Replace_inside.replace_inside_text ((Sys.getenv "HOME")^"/","") (Dfa_root.connectable_to_subpath the_root))^
+     (Dfa_subdirectory.connectable_to_subpath Fw_constant.standalone_subdir)^"standalone_"^copy_name^".ml" in 
+     let prelude = String.concat "\n" [ 
+      "(*";
+      "";
+      "#directory \"+str\";;";
+      "#load \"str.cma\";;";
+      "#directory \"+unix\";;";
+      "#load \"unix.cma\";;";
+      "#use\""^main_path^"\";;";
+      "";
+      "*)";
+      "";"";""
+    ] in 
+    let main_text = prelude^(Modularize.modularize_several "Stdl_" involved_paths) in 
+    let ap = Absolute_path.create_file_if_absent ((Sys.getenv "HOME")^"/"^(main_path)) in  
+    let _ = Io.overwrite_with ap main_text in 
+    (directly_involved_mods,main_path);;   
+
 end ;;
 
 let above = Private.above ;;
@@ -514,6 +563,7 @@ let forget_modules = Private.Core.forget_modules ;;
 let infrastructure = Fwg_with_modular_infrastructure.infrastructure ;;
 let inspect_and_update = Private.Core.inspect_and_update ;;
 let list_values_from_module = Private.list_values_from_module ;; 
+let make_standalone_copy = Private.make_standalone_copy ;;
 let modules_using_value = Private.modules_using_value ;;
 let modules_with_their_ancestors = Private.modules_with_their_ancestors ;;
 let needed_libs_for_module fw mn = List.assoc mn (Private.mod_libs fw) ;;

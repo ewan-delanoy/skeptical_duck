@@ -52,7 +52,8 @@ module Inherited = struct
   
   let list_values_from_module fw = Parent.list_values_from_module(parent fw)  ;;
   
-  
+  let make_standalone_copy fw = Parent.make_standalone_copy(parent fw) ;;
+
   let modules_using_value fw = Parent.modules_using_value (parent fw) ;; 
   
   let modules_with_their_ancestors fw = Parent.modules_with_their_ancestors (parent fw) ;; 
