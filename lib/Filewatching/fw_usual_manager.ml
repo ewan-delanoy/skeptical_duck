@@ -155,12 +155,6 @@ let rename_string_or_value old_name new_name=
 
 let save_latest_changes opt=Fw_act_on_reference.save_latest_changes Private.main_ref opt;;
 
-
-let self_contained_module_copy ~prefix hm= 
-  let fw_git = (!(Private.main_ref)) in 
-  let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
-  Fw_self_contained_module_copy.copy fw_deps ~prefix hm ;;
-
 let set_internet_access bowl=Fw_act_on_reference.set_internet_access Private.main_ref bowl;;
 
 
