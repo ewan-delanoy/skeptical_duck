@@ -92,6 +92,9 @@ let current_state ()=
   let fw_git = (!(Private.main_ref)) in 
   fw_git;;
 
+let delete_empty_directories ()=
+  let fw_git = (!(Private.main_ref)) in 
+  Fwc_with_githubbing.Inherited.delete_empty_directories fw_git ;;
 
 let duplicate_module old_t1 old_t2=
   let fw_git = (!(Private.main_ref)) in 

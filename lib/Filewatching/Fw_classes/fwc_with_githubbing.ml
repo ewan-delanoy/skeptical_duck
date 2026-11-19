@@ -35,6 +35,7 @@ module Inherited = struct
   
   let decipher_module fw = Parent.decipher_module (parent fw) ;;
   let decipher_path fw = Parent.decipher_path (parent fw) ;;
+  let delete_empty_directories fw = Parent.delete_empty_directories (parent fw) ;;
   let dep_ordered_modules fw = Parent.dep_ordered_modules (parent fw) ;;
   let directly_below fw = Parent.directly_below (parent fw) ;;
   let direct_fathers_for_module fw = Parent.direct_fathers_for_module (parent fw) ;;
