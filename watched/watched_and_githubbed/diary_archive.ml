@@ -1,5 +1,106 @@
 open Skeptical_duck_lib ;; 
 open Needed_values ;;
+
+(************************************************************************************************************************
+ Entry 5 : Diary template
+************************************************************************************************************************)
+module Snip5 = struct 
+
+let text1 = rf "watched/watched_and_githubbed/diary_archive.ml" ;;
+
+let lines1 = Lines_in_text.lines text1 ;;
+
+let snip k =
+  let sk = string_of_int k in 
+  String.concat "\n"
+  [
+  "(************************************************************************************************************************";
+   " Entry "^sk^" : ";
+   "************************************************************************************************************************)";
+   "module Snip"^sk^" = struct "; ""; "  let var"^sk^" = "^sk^" ;;"; ""; "end;;\n"
+  ]  ;;
+
+let text1 = String.concat "\n" ("open Skeptical_duck_lib ;; "::"open Needed_values ;; "::""::(Int_range.scale (fun j->snip(8-j)) 1 7)) ;;  
+
+Io.overwrite_with Manage_diary.Private.Common.usual_container text1 ;;
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 4 : Debug Manage_diary module
+************************************************************************************************************************)
+module Snip4 = struct 
+
+let bad1 = Manage_diary.remove_at_indices [2;3] ;;
+
+let fn = Manage_diary.Private.Common.usual_container ;;
+
+let indices = [2;3] ;;
+
+open Manage_diary.Private ;;
+let bad2 = With_container.remove_at_indices fn indices ;;
+
+let old_dy = Parse.parse_whole_diary(Io.read_whole_file fn) ;;
+
+let new_dy = Modify.remove_at_indices old_dy indices ;;
+
+let unindexed_retained_ones = List.filter_map (
+    fun ent -> 
+       if List.mem ent.index indices 
+       then None 
+       else Some(Modify.unindexed_version ent) 
+  ) old_dy.entries ;;
+
+
+
+
+
+end;;
+
+(************************************************************************************************************************
+ Entry 3 : Compare two files line by line
+************************************************************************************************************************)
+module Snip3 = struct 
+
+let ap1 = Absolute_path.of_string ((Sys.getenv "HOME")^"/Teuliou/html_files/Text_files/candidatures.txt") ;;
+
+let ap3 = Absolute_path.of_string ((Sys.getenv "HOME")^"/Teuliou/html_files/Text_files/candy3.txt") ;;
+let text1 = Io.read_whole_file ap1 ;;
+let text3 = Io.read_whole_file ap3 ;;
+
+let lines_in_text1 = Lines_in_text.lines text1 ;;
+
+let lines_in_text3 = Lines_in_text.lines text3 ;;
+
+let paired_lines = List_again.best_effort_combine lines_in_text1 lines_in_text3 ;;
+
+let indexed_paired_lines = Int_range.index_everything paired_lines ;;
+
+let bad_paired_lines = List.drop_while (fun (idx,(line1,line2))->line1=line2) indexed_paired_lines ;;
+
+let v1 = List.take 20 bad_paired_lines ;;
+
+let look1 () = print_string( "\n\n\n" ^(String.concat "\n" (Image.image (fun (idx,(line1,line2))->line1) v1)) ^ "\n\n\n") ;;
+
+let look2 () = print_string( "\n\n\n" ^(String.concat "\n" (Image.image (fun (idx,(line1,line2))->line2) v1)) ^ "\n\n\n") ;;
+
+
+(*
+open Job_hunting.Private ;;
+
+let (chaotic_beginning_of_list,naive_list) = extract_naive_list_of_dated_items text1 ;;
+
+let regular_start_of_list = List.take_while (fun (_date,company_items)->List.length(company_items)<=2) naive_list
+and irregular_end_of_list = List.drop_while (fun (_date,company_items)->List.length(company_items)<=2) naive_list ;;
+
+
+*)
+
+
+
+end;;
+
 (************************************************************************************************************************
  Entry 2 : Another failed attempt to simplify the Departement graph
 ************************************************************************************************************************)

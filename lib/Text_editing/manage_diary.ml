@@ -35,7 +35,7 @@ module Common = struct
 let long_opener = "("^(String.make 120 '*') ;;
 let long_closer = (String.make 120 '*')^")" ;;  
 
-let index_entries_naturally unindexed_entries = 
+let index_entries_in_reverse_order unindexed_entries = 
   let temp = Int_range.index_everything unindexed_entries in 
   List.rev_map (
     fun (idx,uent)-> {
@@ -82,7 +82,7 @@ let remove_at_indices dy indices=
        then None 
        else Some(unindexed_version ent) 
   ) dy.entries in 
-  let retained_ones = Common.index_entries_naturally unindexed_retained_ones in 
+  let retained_ones = Common.index_entries_in_reverse_order (List.rev unindexed_retained_ones) in 
   { dy with entries=retained_ones} ;;  
 
 let diary_size dy = match dy.entries with 
@@ -187,7 +187,7 @@ let parse_whole_diary diary_text =
   |Some(before,_,after) ->
     {
         global_prologue = enforce_nonempty (String.concat "\n" before) ;
-        entries = Common.index_entries_naturally(
+        entries = Common.index_entries_in_reverse_order(
           helper_for_whole_diary_parsing ([],after)) ;
     } ;;       
 
@@ -197,7 +197,7 @@ module Write = struct
 
 let write_prologue = function 
   None -> ""
-  |Some prologue -> prologue^"\n" ;;
+  |Some prologue -> prologue^"\n\n" ;;
 
 let write_entry ent =
   Common.long_opener ^ "\n" ^
