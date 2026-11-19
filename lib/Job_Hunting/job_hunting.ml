@@ -5,10 +5,12 @@
 
 *)
 
-exception Uneven_list of (int * int) ;;
+exception Uneven_list ;;
 exception Bad_effective_date_format of int ;;
 
 module Private = struct
+
+let global_ap = Absolute_path.of_string ((Sys.getenv "HOME")^"/Teuliou/html_files/Text_files/candidatures.txt") ;;
 
 let extremal_line_indices l =
    (fst(List.hd l),fst(List.hd(List.rev l))) ;;  
@@ -16,7 +18,7 @@ let extremal_line_indices l =
 let convert_even_sized_list_to_list_of_pairs l =
   let m = List.length l in 
   if (m mod 2)<>0
-  then raise(Uneven_list(extremal_line_indices l))
+  then raise(Uneven_list)
   else 
     let nt = (fun j->List.nth l (j-1)) in 
     Int_range.scale (fun k-> (nt(2*k-1),nt(2*k)))  1 (m/2);; 
@@ -62,21 +64,117 @@ let rec helper_towards_unique_dates_for_each_company pair =
 let shorten_list_to_have_unique_dates_for_each_company l = 
   helper_towards_unique_dates_for_each_company ([],List.rev l) ;;
 
-let extract_list_of_dated_items text = 
+let regulate_list_of_dated_items irregular_end_of_list = 
+  let the_dates = Image.image fst irregular_end_of_list 
+  and the_items = List.flatten(Image.image snd irregular_end_of_list) in 
+  let items1 = Image.image (fun x->Some x) the_items in 
+  let items2 = (
+    if (List.length items1) mod 2 = 0 
+    then items1
+    else (items1)@[None] 
+  ) in 
+  let pairs_of_items = convert_even_sized_list_to_list_of_pairs items2 in 
+  let m = List.length pairs_of_items in 
+  if List.length(the_dates)<m
+  then failwith("There are not enough dates to store all the job applications. Please add more dates")
+  else
+  let core =  List.combine (List.take m the_dates)  pairs_of_items in 
+  let basic_form = Image.image (
+   fun (date,(opt1,opt2))->
+      let data1 = Option.get opt1 in 
+      let final_data =(match opt2 with 
+      None -> [data1]
+      |Some data2 -> [data1;data2]) in 
+      (date,final_data)
+  ) core in 
+  let writable_form =  core @ (Image.image (fun x->(x,(None,None))) (List.drop m the_dates)) in 
+  (basic_form,writable_form) ;;
+
+type company_item = CItem of (int * string) * (int * string) ;;
+
+
+let citem_constructor (x,y) = CItem(x,y) ;;
+
+let extract_naive_list_of_dated_items text = 
   let indexed_lines = Lines_in_text.indexed_lines text in 
-   let nonempty_lines = List.filter (fun (_line_idx,line)->line<>"") indexed_lines in 
+  let nonempty_lines = List.filter (fun (_line_idx,line)->line<>"") indexed_lines in 
   let temp1 = Image.image (fun (line_idx,line)->
     ((line_idx,line),Naive_parser.try_parse_at_index Jh_date.parser line 1)) nonempty_lines in 
-  let (_chaotic_beginning_of_list,normalized_end_of_list) = List_again.leaders_and_followers 
+  let (chaotic_beginning_of_list,normalized_end_of_list) = List_again.leaders_and_followers 
    (fun (_,date_at_beginning_opt) -> date_at_beginning_opt<>None)
   temp1 in
   let temp2 = Image.image (fun (leader,followers)->
     (fst(Option.get(snd leader)),Image.image fst followers)  
   ) normalized_end_of_list in 
-  Image.image (
+  (Image.image fst chaotic_beginning_of_list,Image.image (
     fun (official_date,followers)->
-    (official_date,convert_even_sized_list_to_list_of_pairs followers)
-  ) temp2 ;;
+    let paired_followers = convert_even_sized_list_to_list_of_pairs followers in 
+    (official_date,Image.image citem_constructor paired_followers)
+  ) temp2 );;
+
+let reconstruct_from_indexed_nonempty_lines indexed_nonempty_lines =
+   let start_idx = fst(List.hd indexed_nonempty_lines)
+   and end_idx =  fst(List.hd (List.rev indexed_nonempty_lines)) in 
+   let reconstructed_lines = Int_range.scale (fun 
+     line_idx -> match List.assoc_opt line_idx indexed_nonempty_lines with 
+     Some line -> line 
+     |None -> ""
+   ) start_idx end_idx in 
+   String.concat "\n" reconstructed_lines ;;  
+
+let write_company_item (CItem((_,line1),(_,line2)))= line1^"\n\n"^line2;;  
+
+let write_list_of_dated_strokes l =
+  let paragraphs = Image.image (fun 
+    (date,company_items) -> 
+      (Jh_date.to_string date) :: 
+      (Image.image write_company_item company_items)
+  ) l in 
+  let lines = List.flatten paragraphs in 
+  String.concat "\n" lines ;;
+
+let write_obo_pair obo =
+  if obo=(None,None) 
+  then "" 
+  else 
+  let (opt1,opt2) = obo in 
+  let part1 =  "\n\n"^write_company_item(Option.get opt1)
+  and part2 = (
+    match opt2 with 
+    None -> ""
+    |Some(item2) -> "\n"^(write_company_item item2)
+  ) in 
+  part1^part2^"\n" ;;
+
+
+let write_dated_obo_pair (date,obo_pair) = (Jh_date.to_string date)^(write_obo_pair obo_pair) ;;
+ 
+let write_list_of_dated_obo_pairs l = 
+   String.concat "\n" (Image.image write_dated_obo_pair l) ;;
+
+
+let write_main_triple chaotic_beginning_of_list regular_start_of_list writable_form_for_end_of_list =
+   (reconstruct_from_indexed_nonempty_lines chaotic_beginning_of_list)^"\n\n"^
+   (write_list_of_dated_strokes regular_start_of_list)^"\n\n"^
+   (write_list_of_dated_obo_pairs writable_form_for_end_of_list) ;; 
+
+let rectificative_message irregular_end_of_list = 
+  "Excess at "^(Jh_date.to_string(fst(List.hd irregular_end_of_list)))^". The list will be rewritten."
+
+let extract_list_of_dated_items text = 
+  let (chaotic_beginning_of_list,naive_list) = extract_naive_list_of_dated_items text in 
+  let regular_start_of_list = List.take_while (fun (_date,company_items)->List.length(company_items)<=2) naive_list
+  and irregular_end_of_list = List.drop_while (fun (_date,company_items)->List.length(company_items)<=2) naive_list in 
+  if irregular_end_of_list=[]
+  then naive_list
+  else
+  let _ = Basic.announce (rectificative_message irregular_end_of_list) in  
+  let (basic_form_for_end_of_list,writable_form_for_end_of_list) = regulate_list_of_dated_items irregular_end_of_list  in 
+  let fixed_text = write_main_triple chaotic_beginning_of_list regular_start_of_list writable_form_for_end_of_list 
+  and ap3 = Absolute_path.create_file_if_absent ((Sys.getenv "HOME")^"/Teuliou/html_files/Text_files/candy3.txt") in 
+  let _ = Io.overwrite_with ap3 fixed_text in 
+  regular_start_of_list @ basic_form_for_end_of_list;;
+
 
 let ref_for_current_list_of_dated_items = ref None ;;
 
@@ -84,15 +182,14 @@ let current_list_of_dated_items () =
     match !ref_for_current_list_of_dated_items with 
    (Some old_answer) -> old_answer 
     |None ->
-       let ap = Absolute_path.of_string ((Sys.getenv "HOME")^"//Teuliou/html_files/Text_files/candidatures.txt") in 
-      let text = Io.read_whole_file ap in 
+      let text = Io.read_whole_file global_ap in 
       let new_answer = extract_list_of_dated_items text in 
       ref_for_current_list_of_dated_items:=Some(new_answer);
       new_answer ;;
 
 let compute_effective_dates_and_shorten dated_items = 
   let unordered = List.flatten(Image.image (
-  fun  (official_date,jas)-> Image.image (fun (company_data,_)->
+  fun  (official_date,jas)-> Image.image (fun (CItem(company_data,_))->
     (get_effective_date_for_pair official_date company_data,
     extract_company_name (snd company_data))) jas
   ) dated_items) in 
@@ -148,12 +245,12 @@ let available_later_ordered_by_date () =
 let available_later_ordered_by_company_name () =
      reorder_by_company_name( available_later_ordered_by_date()) ;;
 
-let display_line_pair ((_,line1),(_,line2))= line1^"\n"^line2;;  
+
 
 let display_optional_line_pairs = function 
   None -> "No data found for today (perhaps it's the weekend ?)" 
  |Some line_pairs ->
-  (String.concat "\n\n" (Image.image display_line_pair line_pairs)) ;;
+  (String.concat "\n\n" (Image.image write_company_item line_pairs)) ;;
 
 let display_dated_item date line_pairs_opt = 
   "Data for today, "^(Jh_date.to_string date)^" :\n\n"^

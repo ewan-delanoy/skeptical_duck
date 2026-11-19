@@ -207,7 +207,14 @@ let filter_and_remember f l = match l with
      then helper1_for_filtering_and_remembering f x ([x],others) 
      else helper2_for_filtering_and_remembering f x ([x],others) ;;
    
-
+let rec helper_for_best_effort_combine (treated,l1,l2)=
+  match l1 with 
+  [] -> List.rev treated 
+  |x1 :: others1 -> 
+      match l2 with 
+     [] -> List.rev treated 
+    |x2 :: others2 -> helper_for_best_effort_combine ((x1,x2)::treated,others1,others2) ;;
+    
 
 end ;;    
 
@@ -218,6 +225,11 @@ let assoc_right_opt y l =
 assoc_right_opt 3 (Int_range.scale (fun t->(t*t,t)) 1 7) ;;
 *)
 
+let best_effort_combine l1 l2= Private.helper_for_best_effort_combine ([],l1,l2) ;;
+(*
+best_effort_combine [1; 2; 3; 4; 5; 6; 7] [83; 84; 85; 86; 87] ;;
+
+*)
 let common_initial_sublist ll = Private.iterator_for_common_initial_sublist ([],ll) ;;
 
 (*
