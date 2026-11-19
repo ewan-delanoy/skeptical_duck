@@ -224,10 +224,11 @@ let order deps_ref=
       (mn,Ordered.to_list(Ordered.sort Total_ordering.standard temp1))
     ) (old_deps.Fw_modular_infrastructure_t.order)  in 
     Setter.needed_libs deps_ref new_needed_libs;;
+
   let all_subdirectories deps_ref= 
     let old_deps=(!deps_ref) in  
     let details = old_deps.Fw_modular_infrastructure_t.modularized_details in 
-    let new_subdirectories = Ordered.to_list(Ordered.sort Total_ordering.standard (Image.image (
+    let new_subdirectories = Ordered.to_list(Ordered.sort Dfa_subdirectory.silex_order (Image.image (
       fun (_,details_on_mn) ->
       Fw_module_details.subdirectory(details_on_mn)
     ) details))  in 
@@ -374,8 +375,8 @@ let order deps_ref=
  let (_,novelties) = extra in 
  let possibly_new = Ordered.sort Total_ordering.standard 
    (Image.image (fun (rl,_)->Dfn_rootless.to_subdirectory rl  ) novelties) in 
- let new_subdirectories = Ordered.to_list(Ordered.merge Total_ordering.standard possibly_new 
-  (Ordered.safe_set Total_ordering.standard old_subdirectories)) in 
+ let new_subdirectories = Ordered.to_list(Ordered.merge Dfa_subdirectory.silex_order possibly_new 
+  (Ordered.safe_set Dfa_subdirectory.silex_order old_subdirectories)) in 
   (
   Setter.modularized_details deps_ref new_details;
   Setter.order deps_ref new_order;
