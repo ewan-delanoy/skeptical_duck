@@ -122,16 +122,15 @@ let reconstruct_from_indexed_nonempty_lines indexed_nonempty_lines =
    ) start_idx end_idx in 
    String.concat "\n" reconstructed_lines ;;  
 
-let write_company_item (CItem((_,line1),(_,line2)))= line1^"\n\n"^line2;;  
+let write_company_item (CItem((idx1,line1),(idx2,line2)))= line1^(String.make (idx2-idx1) '\n')^line2;;  
 
 let write_list_of_dated_strokes l =
   let paragraphs = Image.image (fun 
     (date,company_items) -> 
-      (Jh_date.to_string date) :: 
-      (Image.image write_company_item company_items)
+      String.concat "\n\n" ((Jh_date.to_string date) :: 
+      (Image.image write_company_item company_items))
   ) l in 
-  let lines = List.flatten paragraphs in 
-  String.concat "\n" lines ;;
+   String.concat "\n\n" paragraphs ;;
 
 let write_obo_pair obo =
   if obo=(None,None) 
@@ -142,15 +141,15 @@ let write_obo_pair obo =
   and part2 = (
     match opt2 with 
     None -> ""
-    |Some(item2) -> "\n"^(write_company_item item2)
+    |Some(item2) -> "\n\n"^(write_company_item item2)
   ) in 
-  part1^part2^"\n" ;;
+  part1^part2 ;;
 
 
 let write_dated_obo_pair (date,obo_pair) = (Jh_date.to_string date)^(write_obo_pair obo_pair) ;;
  
 let write_list_of_dated_obo_pairs l = 
-   String.concat "\n" (Image.image write_dated_obo_pair l) ;;
+   String.concat "\n\n" (Image.image write_dated_obo_pair l) ;;
 
 
 let write_main_triple chaotic_beginning_of_list regular_start_of_list writable_form_for_end_of_list =
@@ -168,11 +167,10 @@ let extract_list_of_dated_items text =
   if irregular_end_of_list=[]
   then naive_list
   else
-  let _ = Basic.announce (rectificative_message irregular_end_of_list) in  
+  let _ = Basic.display_message (rectificative_message irregular_end_of_list) in  
   let (basic_form_for_end_of_list,writable_form_for_end_of_list) = regulate_list_of_dated_items irregular_end_of_list  in 
-  let fixed_text = write_main_triple chaotic_beginning_of_list regular_start_of_list writable_form_for_end_of_list 
-  and ap3 = Absolute_path.create_file_if_absent ((Sys.getenv "HOME")^"/Teuliou/html_files/Text_files/candy3.txt") in 
-  let _ = Io.overwrite_with ap3 fixed_text in 
+  let fixed_text = write_main_triple chaotic_beginning_of_list regular_start_of_list writable_form_for_end_of_list  in 
+  let _ = Io.overwrite_with global_ap fixed_text in 
   regular_start_of_list @ basic_form_for_end_of_list;;
 
 
