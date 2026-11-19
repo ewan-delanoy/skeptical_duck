@@ -129,11 +129,33 @@ module Core = struct
   let infrastructure = Fwg_with_modular_infrastructure.infrastructure ;;
   let make fw_dets deps= Fwg_with_modular_infrastructure.make fw_dets  deps ;;
 
+  let rec helper_for_deleting_empty_subdirectories (the_root,deleted_already,to_be_treated) =
+   match to_be_treated with 
+   []-> let d = List.length deleted_already in 
+        if d<>0
+        then let quantity = (if d=1 then "subdirectory has" else "subdirectories have") in 
+             let msg = "The following empty "^quantity^" been deleted : "^
+           (String.concat ", " (List.rev_map Dfa_subdirectory.without_trailing_slash deleted_already)) in
+             Basic.display_message msg
+   |subdir :: other_subdirs ->
+       let path = (Dfa_root.connectable_to_subpath the_root)^
+   (Dfa_subdirectory.without_trailing_slash subdir) in 
+       let dir_contents = Unix_again.simple_ls (Directory_name.of_string path) in 
+       if dir_contents<>[]
+       then helper_for_deleting_empty_subdirectories (the_root,deleted_already,other_subdirs)
+       else
+       let _ = Unix_again.delete_directory (Dfa_root.of_line path) in 
+       helper_for_deleting_empty_subdirectories (the_root,subdir::deleted_already,other_subdirs) ;; 
+
+  let delete_empty_directories fw = 
+      helper_for_deleting_empty_subdirectories (Inherited.root fw,[],
+        List.rev((Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.all_subdirectories)) ;;
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (infrastructure old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_file_details.forget_modules old_fw_dets mods_to_be_erased in 
+ let _ = delete_empty_directories old_fw in 
  let _ = Fw_modular_infrastructure.ReactOnReference.forget_modules  deps_ref mods_to_be_erased in 
  (make new_fw_dets(!deps_ref),extra);;
 
@@ -190,6 +212,7 @@ let remove_files old_fw removed_rootless_paths =
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (infrastructure old_fw) in 
  let (new_fw_dets,extra) = Fwc_with_file_details.remove_files old_fw_dets removed_rootless_paths in 
+ let _ = delete_empty_directories old_fw in 
  let _ = Fw_modular_infrastructure.ReactOnReference.remove_files extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
@@ -538,26 +561,7 @@ let check_module_sequence_for_forgettability fw l=
     let _ = Io.overwrite_with ap main_text in 
     (directly_involved_mods,main_path);;   
 
-   let rec helper_for_deleting_empty_subdirectories (the_root,deleted_already,to_be_treated) =
-   match to_be_treated with 
-   []-> let d = List.length deleted_already in 
-        if d<>0
-        then let quantity = (if d=1 then "subdirectory has" else "subdirectories have") in 
-             let msg = "The following empty "^quantity^" been deleted : "^
-           (String.concat ", " (List.rev_map Dfa_subdirectory.without_trailing_slash deleted_already)) in
-             Basic.display_message msg
-   |subdir :: other_subdirs ->
-       let path = (Dfa_root.connectable_to_subpath the_root)^
-   (Dfa_subdirectory.without_trailing_slash subdir) in 
-       let dir_contents = Unix_again.simple_ls (Directory_name.of_string path) in 
-       if dir_contents<>[]
-       then helper_for_deleting_empty_subdirectories (the_root,deleted_already,other_subdirs)
-       else
-       let _ = Unix_again.delete_directory (Dfa_root.of_line path) in 
-       helper_for_deleting_empty_subdirectories (the_root,deleted_already,other_subdirs) ;; 
-
-  let delete_empty_directories fw = 
-      helper_for_deleting_empty_subdirectories (root fw,[],List.rev(mod_subdirs fw)) ;;
+   
 
 end ;;
 
@@ -575,7 +579,7 @@ let check_ending_on_module = Private.check_ending_on_module ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
-let delete_empty_directories = Private.delete_empty_directories ;;
+let delete_empty_directories = Private.Core.delete_empty_directories ;;
 let dep_ordered_modules fw = Image.image fst (Private.mod_order fw);;
 let directly_below = Private.directly_below ;;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.mod_order fw)) ;;
