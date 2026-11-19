@@ -45,6 +45,10 @@ let all_endinglesses ()=
   let fw_git = (!(Private.main_ref)) in 
   Fwc_with_githubbing.Inherited.all_endinglesses fw_git ;; 
 
+let all_subdirectories ()=
+  let fw_git = (!(Private.main_ref)) in 
+  Fwc_with_githubbing.Inherited.all_subdirectories fw_git ;;
+
 let changed_files_in_foreign_copy ()= 
    let fw_git = (!(Private.main_ref)) in 
    let temp1=Fwc_with_githubbing.Inherited.all_moduled_mlx_files fw_git in 
