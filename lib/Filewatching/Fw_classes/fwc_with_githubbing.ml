@@ -21,6 +21,7 @@ module Inherited = struct
   
   let all_endinglesses fw = Parent.all_endinglesses (parent fw) ;;
   let all_moduled_mlx_files fw = Parent.all_moduled_mlx_files (parent fw) ;;
+  let all_modules_in_dependency_order fw = Parent.all_modules_in_dependency_order (parent fw) ;;
   let all_subdirectories fw = Parent.all_subdirectories (parent fw) ;;
   let ancestors_for_module fw = Parent.ancestors_for_module (parent fw) ;;
   let below fw = Parent.below (parent fw) ;;
