@@ -37,6 +37,10 @@ let main_ref=
 
 end;;
 
+let all_modules_in_dependency_order ()=
+  let fw_git = (!(Private.main_ref)) in 
+  Fwc_with_githubbing.Inherited.all_modules_in_dependency_order fw_git ;; 
+
 let all_endinglesses ()=
   let fw_git = (!(Private.main_ref)) in 
   Fwc_with_githubbing.Inherited.all_endinglesses fw_git ;; 
