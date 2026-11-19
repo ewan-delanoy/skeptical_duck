@@ -545,6 +545,7 @@ let acolytes_at_module = Private.acolytes_at_module ;;
 let all_endinglesses = Private.all_endinglesses ;;
 let all_moduled_ml_absolute_paths = Private.all_moduled_ml_absolute_paths ;;
 let all_moduled_mlx_files = Private.all_moduled_mlx_files ;;
+let all_modules_in_dependency_order fw = Image.image fst (Private.mod_order fw);;
 let all_subdirectories fw = Private.mod_subdirs fw;;
 let ancestors_for_module fw mn = snd (List.assoc mn (Private.mod_order fw)) ;;
 let below = Private.below ;;
