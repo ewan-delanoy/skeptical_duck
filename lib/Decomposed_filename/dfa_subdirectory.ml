@@ -52,6 +52,10 @@ module Private = struct
       Dfa_subdirectory_t.SD(Crobj_converter.string_of_concrete_object arg1);;
    
    let of_line = Private.of_line ;;
+
+   let silex_order = ((fun (Dfa_subdirectory_t.SD subdir1) (Dfa_subdirectory_t.SD subdir2)->Total_ordering.silex_for_strings subdir1 subdir2) : 
+     Dfa_subdirectory_t.t Total_ordering_t.t
+   );;
    
    let rename_endsubdirectory (Dfa_subdirectory_t.SD(old_subdir),new_esdname) 
       (Dfa_subdirectory_t.SD s)=
