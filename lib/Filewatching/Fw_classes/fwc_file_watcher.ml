@@ -39,6 +39,7 @@ module Inherited = struct
 
    let to_fw_configuration fw = parent fw ;;
 
+
 end ;;   
 
 
@@ -388,6 +389,9 @@ let rename_files fw renaming_schemes =
 let plunge_fw_configuration config= 
    Fwg_file_watcher.make config [] ;;
  
+let set_fw_configuration fw new_config = Fwg_file_watcher.make new_config (Fwg_file_watcher.watched_files fw);; 
+
+
 end;;
 
 
@@ -403,6 +407,8 @@ let register_rootless_paths = Private.register_rootless_paths;;
 let remove_files = Private.remove_files;;
 let rename_files = Private.rename_files;;
 let rename_subdirectory_as = Private.rename_subdirectory_as;;
+
+let set_fw_configuration = Private.set_fw_configuration ;;
 let update_some_files = Private.update_some_files ;; 
 
 let watched_files = Fwg_file_watcher.watched_files ;;
