@@ -147,15 +147,16 @@ module Core = struct
        let _ = Unix_again.delete_directory (Dfa_root.of_line path) in 
        helper_for_deleting_empty_subdirectories (the_root,subdir::deleted_already,other_subdirs) ;; 
 
-  let delete_empty_directories fw = 
-      helper_for_deleting_empty_subdirectories (Inherited.root fw,[],
-        List.rev((Fwg_with_modular_infrastructure.infrastructure fw).Fw_modular_infrastructure_t.all_subdirectories)) ;;
+  let delete_empty_directories_in_list fw old_subdirectories= 
+      helper_for_deleting_empty_subdirectories (Inherited.root fw,[],old_subdirectories) ;;
+
 
 let forget_modules old_fw mods_to_be_erased =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (infrastructure old_fw) in 
+ let old_subdirectories = List.rev((Fwg_with_modular_infrastructure.infrastructure old_fw).Fw_modular_infrastructure_t.all_subdirectories) in
  let (new_fw_dets,extra) = Fwc_with_file_details.forget_modules old_fw_dets mods_to_be_erased in 
- let _ = delete_empty_directories old_fw in 
+ let _ = delete_empty_directories_in_list old_fw old_subdirectories in  
  let _ = Fw_modular_infrastructure.ReactOnReference.forget_modules  deps_ref mods_to_be_erased in 
  (make new_fw_dets(!deps_ref),extra);;
 
@@ -211,8 +212,9 @@ let relocate_modules_to old_fw (mod_names,new_subdir) =
 let remove_files old_fw removed_rootless_paths =  
  let old_fw_dets = parent old_fw 
  and deps_ref = ref (infrastructure old_fw) in 
+ let old_subdirectories = List.rev((Fwg_with_modular_infrastructure.infrastructure old_fw).Fw_modular_infrastructure_t.all_subdirectories) in
  let (new_fw_dets,extra) = Fwc_with_file_details.remove_files old_fw_dets removed_rootless_paths in 
- let _ = delete_empty_directories old_fw in 
+ let _ = delete_empty_directories_in_list old_fw old_subdirectories in  
  let _ = Fw_modular_infrastructure.ReactOnReference.remove_files extra new_fw_dets deps_ref  in 
  (make new_fw_dets(!deps_ref),extra);;
 
@@ -579,7 +581,6 @@ let check_ending_on_module = Private.check_ending_on_module ;;
 let check_module_sequence_for_forgettability = Private.check_module_sequence_for_forgettability ;;
 let decipher_module = Private.decipher_module ;;
 let decipher_path = Private.decipher_path ;;
-let delete_empty_directories = Private.Core.delete_empty_directories ;;
 let dep_ordered_modules fw = Image.image fst (Private.mod_order fw);;
 let directly_below = Private.directly_below ;;
 let direct_fathers_for_module fw mn = fst (List.assoc mn (Private.mod_order fw)) ;;
