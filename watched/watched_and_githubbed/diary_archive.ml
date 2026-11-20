@@ -2,6 +2,29 @@ open Skeptical_duck_lib ;;
 open Needed_values ;;
 
 (************************************************************************************************************************
+ Entry 6 :  Change configuration manually
+************************************************************************************************************************)
+module Snip6 = struct 
+   
+let old_fw_git = (!(Fw_usual_manager.Private.main_ref)) ;;
+
+let old_fw_config = Fwc_with_githubbing.Inherited.to_fw_configuration old_fw_git ;;
+
+let new_fw_config = {
+   old_fw_config with 
+   Fwg_configuration.ignored_subdirectories = 
+     Fw_constant.git_ignored_subdirectories
+} ;;
+
+
+let new_fw_git = Fwc_with_githubbing.set_fw_configuration old_fw_git new_fw_config ;;
+
+Fw_persisting.persist new_fw_git ;;
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 5 : Diary template
 ************************************************************************************************************************)
 module Snip5 = struct 

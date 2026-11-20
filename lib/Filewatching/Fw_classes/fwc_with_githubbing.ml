@@ -284,15 +284,13 @@ let replace_value fw
       Dircopy_diff.empty_one all_changes in 
       let _ = backup fw diff (Some msg) in 
       Inherited.make 
-       new_fw_deps (github_configuration fw)  ;;
- 
-   
+       new_fw_deps (github_configuration fw) ;;   
 
-      
-
- 
-
-    
+let set_fw_configuration fw new_config = 
+      Fwg_with_githubbing.make 
+       (Inherited.Parent.set_fw_configuration (parent fw) new_config) 
+          (Fwg_with_githubbing.github_configuration fw);; 
+         
 
 end ;; 
 
@@ -310,5 +308,6 @@ let rename_module = Private.rename_module ;;
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
 let replace_string = Private.replace_string ;;  
 let replace_value = Private.replace_value ;;    
+let set_fw_configuration = Private.set_fw_configuration ;;
 
 

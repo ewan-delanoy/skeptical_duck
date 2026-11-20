@@ -13,6 +13,7 @@ exception Module_not_found_exn of string ;;
 
 module Inherited = struct 
 
+  module Parent = Fwc_with_file_details ;;
   module Ancestry = Fwc_with_file_details.Inherited ;;
   let parent = Fwg_with_modular_infrastructure.parent ;;
   
@@ -47,6 +48,8 @@ module Inherited = struct
 
   let to_fw_with_archives fw = Ancestry.to_fw_with_archives (parent fw) ;;
   let  usual_compilable_files fw = Ancestry.usual_compilable_files(parent fw)  ;;  
+
+   
 
 end ;;  
 
@@ -563,7 +566,10 @@ let check_module_sequence_for_forgettability fw l=
     let _ = Io.overwrite_with ap main_text in 
     (directly_involved_mods,main_path);;   
 
-   
+   let set_fw_configuration fw new_config = 
+      Fwg_with_modular_infrastructure.make 
+       (Inherited.Parent.set_fw_configuration (parent fw) new_config) 
+          (Fwg_with_modular_infrastructure.infrastructure fw);; 
 
 end ;;
 
@@ -610,6 +616,7 @@ let rename_module_on_filename_level_and_in_files = Private.Core.rename_module_on
 let rename_subdirectory_as = Private.Core.rename_subdirectory_as ;;
 let replace_string = Private.Core.replace_string ;;
 let replace_value = Private.Core.replace_value ;;
+let set_fw_configuration = Private.set_fw_configuration ;;
 let show_value_occurrences = Private.show_value_occurrences ;;
 let subdir_for_module fw mn = Fw_module_details.subdirectory (Private.details_for_module fw mn) ;;
 let usual_compilable_files fw = Fwc_with_file_details.usual_compilable_files (Private.parent fw) ;;

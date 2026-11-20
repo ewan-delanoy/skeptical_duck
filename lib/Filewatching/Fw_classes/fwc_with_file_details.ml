@@ -309,6 +309,13 @@ module Private = struct
    
       let latest_changes fw = Fwc_with_archives.latest_changes (parent fw) ;;   
          
+
+      let set_fw_configuration fw new_config = 
+      Fwg_with_file_details.make 
+       (Inherited.Parent.set_fw_configuration (parent fw) new_config) 
+          (Fwg_with_file_details.file_details fw);; 
+   
+
    end ;;
    
    
@@ -326,6 +333,7 @@ module Private = struct
    let rename_subdirectory_as = Private.rename_subdirectory_as;;
    let replace_string = Private.replace_string;;
    let replace_value = Private.replace_value;;
+   let set_fw_configuration = Private.set_fw_configuration ;;
    let file_details = Private.file_details ;;
    let usual_compilable_files fw = Fwc_with_archives.usual_compilable_files (Private.parent fw) ;;
     

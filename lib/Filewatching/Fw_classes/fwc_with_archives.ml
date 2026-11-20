@@ -20,6 +20,8 @@ module Inherited = struct
    let test_for_admissibility fw = Ancestry.test_for_admissibility (parent fw) ;;
    let to_fw_configuration fw = Ancestry.to_fw_configuration (parent fw) ;;
 
+   
+
    let test_equality fw1 fw2 = 
       (
         Ancestry.test_equality (parent fw1) (parent fw2)
@@ -293,6 +295,12 @@ module Private = struct
      
    let check_that_no_change_has_occurred fw =
       Fwc_file_watcher.check_that_no_change_has_occurred (parent fw) ;; 
+
+   let set_fw_configuration fw new_config = 
+      Fwg_with_archives.make 
+       (Inherited.Parent.set_fw_configuration (parent fw) new_config) 
+          (Fwg_with_archives.subdirs_for_archived_mlx_files fw);; 
+   
       
 end ;;
 
@@ -316,4 +324,5 @@ let rename_module_on_filename_level_and_in_files = Private.rename_module_on_file
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;
 let replace_string = Private.replace_string;;
 let replace_value = Private.replace_value;;
+let set_fw_configuration = Private.set_fw_configuration ;;
 let usual_compilable_files = Private.usual_compilable_files ;; 
