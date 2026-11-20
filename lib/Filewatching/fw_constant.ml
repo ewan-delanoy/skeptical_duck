@@ -18,6 +18,9 @@ let watched_subdir=
 let outer_subdir=
   Dfa_subdirectory.of_line "qfff";;
 
+let vscode_subdir=
+  Dfa_subdirectory.of_line ".vscode";;  
+
 let dune_bin_subdir= Dfa_subdirectory.of_line "bin";;  
 let dune_build_subdir= Dfa_subdirectory.of_line "_build";;
 let dune_lib_subdir= Dfa_subdirectory.of_line "lib";;
@@ -96,7 +99,8 @@ let git_ignored_subdirectories =
      nongithubbed_nonml_files_subdir;
      directives_subdir;
      debugging_subdir;
-     outer_subdir
+     outer_subdir;
+     vscode_subdir
   ];;
 
 
