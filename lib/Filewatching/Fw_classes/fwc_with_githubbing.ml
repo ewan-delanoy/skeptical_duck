@@ -61,7 +61,7 @@ module Inherited = struct
 
   let needed_libs_for_module fw = Parent.needed_libs_for_module (parent fw);;
 
-  let  noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
+  let noncompilable_files fw = Ancestry.noncompilable_files(parent fw)  ;; 
   let number_of_modules fw = Parent.number_of_modules (parent fw) ;;
   
   let registered_printers fw = Parent.registered_printers (parent fw) ;;
