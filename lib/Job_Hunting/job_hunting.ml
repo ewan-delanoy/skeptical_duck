@@ -5,8 +5,9 @@
 
 *)
 
-exception Uneven_list ;;
-exception Bad_effective_date_format of int ;;
+exception Uneven_list_exn ;;
+exception Bad_effective_date_format_exn of int ;;
+exception Uneven_list_during_naive_extraction_exn of string * ((int * string) list) ;; 
 
 module Private = struct
 
@@ -18,10 +19,14 @@ let extremal_line_indices l =
 let convert_even_sized_list_to_list_of_pairs l =
   let m = List.length l in 
   if (m mod 2)<>0
-  then raise(Uneven_list)
+  then raise(Uneven_list_exn)
   else 
     let nt = (fun j->List.nth l (j-1)) in 
     Int_range.scale (fun k-> (nt(2*k-1),nt(2*k)))  1 (m/2);; 
+
+let convert_even_sized_list_to_list_of_pairs_during_naive_extraction official_date followers =
+  try convert_even_sized_list_to_list_of_pairs followers  with 
+  _ -> raise(Uneven_list_during_naive_extraction_exn(Jh_date.to_string official_date,followers));; 
 
 let get_effective_date_for_pair default_date (line_idx,company_name)=
   match Substring.leftmost_index_of_in_from_opt "(g: " company_name 1 with 
@@ -29,7 +34,7 @@ let get_effective_date_for_pair default_date (line_idx,company_name)=
   |Some (t) ->
      let yearless = Jh_date.yearless_parser default_date.Jh_date_t.year in 
      match Naive_parser.try_parse_at_index yearless company_name (t+4) with 
-     None -> raise(Bad_effective_date_format(line_idx))
+     None -> raise(Bad_effective_date_format_exn(line_idx))
      |Some(effective_date,_) -> effective_date
 
 let extract_company_name company_data = 
@@ -108,7 +113,7 @@ let extract_naive_list_of_dated_items text =
   ) normalized_end_of_list in 
   (Image.image fst chaotic_beginning_of_list,Image.image (
     fun (official_date,followers)->
-    let paired_followers = convert_even_sized_list_to_list_of_pairs followers in 
+    let paired_followers = convert_even_sized_list_to_list_of_pairs_during_naive_extraction official_date followers in 
     (official_date,Image.image citem_constructor paired_followers)
   ) temp2 );;
 

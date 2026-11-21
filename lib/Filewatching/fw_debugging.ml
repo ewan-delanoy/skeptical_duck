@@ -32,15 +32,23 @@ module Private = struct
     Io.overwrite_with ap "" ;;  
 
    module Command = struct 
-      
+  
+  let searchdir_for_lib lib_name = 
+     let lib = Ocaml_library.file_for_library(lib_name) in 
+    " -I $(ocamlfind query "^lib^")" ;;
+
+  let location_for_lib lib_name = 
+     let lib = Ocaml_library.file_for_library(lib_name) in 
+     "$(ocamlfind query "^lib^")/"^lib^".cma" ;;  
+
   let line_for_libs lib_names = 
-        let extension=".cma" in
-        (* Before OCaml 5.0, this used to be : *)
-          String.concat(" ") (Image.image(fun z->
+        (* Since OCaml 5.5 *)
+        String.concat(" ") (Image.image searchdir_for_lib lib_names) 
+         (* BetwennOCaml 5.0 and 5.5, this used to be : *)
+        (* String.concat(" ") (Image.image(fun z->
             let lib = Ocaml_library.file_for_library(z)in 
-            "-I +"^lib^" "^lib^extension) lib_names) 
-        
-        (* Since OCaml 5.0 *)
+            "-I +"^lib^" "^lib^".cma") lib_names) *)
+        (* Before OCaml 5.0, this used to be : *)
         (* String.concat(" ") (Image.image(fun z->"-I +"^(Ocaml_library.file_for_library(z))) lib_names *);;
     
 
@@ -257,6 +265,7 @@ module Private = struct
         and ending=".cmo" 
         and last_ending=".cmo"
         and product_ending=".ocaml_debuggable "  in
+        
         let cm_elements_but_the_last = Image.image (
          fun (_subdir,nm)->(Dfa_module.to_line nm)^ending
         ) nm_deps_with_subdirs in 
@@ -272,12 +281,14 @@ module Private = struct
         (fun (_,nm) -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
        let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
        let libs=line_for_libs pre_libs2 in 
+       let library_locations = Image.image location_for_lib pre_libs2 in 
          Option_again.argument_on_the_right (fun x y->x@[y])  
        [ 
-         (
+         
           "ocamlc -g  -I "^s_root^workdir^" "^
           libs^" -o "^nm_name^product_ending^
-           (String.concat " " all_cm_elements));
+            (String.concat " " library_locations)^" "^
+            (String.concat " " (all_cm_elements));
        ]
        (
          Unix_command.mv ((Sys.getcwd())^"/"^nm_name^product_ending) (s_root^workdir)
@@ -290,7 +301,7 @@ module Private = struct
    module Ocaml_target_making = struct 
 
      let prepare_pretty_printers_for_ocamldebug fw deps = 
-        let temp1 = "load_printer str.cma"::(Image.image (fun mname->
+        let temp1 = (Image.image (fun mname->
           let s= Dfa_module.to_line mname in 
           "load_printer "^s^".cmo"
         ) deps) 

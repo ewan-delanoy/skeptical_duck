@@ -274,6 +274,19 @@ let compute_with_time_constraint f x timeout =
       with
       | e  -> ignore (Unix.alarm 0); raise e ;; 
 
+let get_command_output cmd =
+  let ic = Unix.open_process_in cmd in
+  let buffer = Buffer.create 1024 in
+  (try
+     while true do
+       let line = input_line ic in
+       Buffer.add_string buffer line;
+       Buffer.add_char buffer '\n'
+     done
+   with End_of_file -> ());
+  ignore (Unix.close_process_in ic);
+  Buffer.contents buffer ;;
+
 end;;    
 
 
@@ -298,6 +311,7 @@ let create_subdirs_and_fill_files = Private.create_subdirs_and_fill_files;;
 let create_subdirs_and_fill_files_if_necessary = Private.create_subdirs_and_fill_files_if_necessary;;
 let delete_directory = Private.delete_directory ;;
 let empty_directory = Private.empty_directory ;;
+let get_command_output = Private.get_command_output ;;
 let is_a_directory=Private.is_a_directory;;   
 let quick_beheaded_complete_ls=Private.quick_beheaded_complete_ls;;           
 let simple_ls=Private.ls;;

@@ -4,7 +4,7 @@
 
 *)
 
-
+module Private = struct
 let correspondances=[
    Ocaml_library_t.ZarithLib,"zarith";
    Ocaml_library_t.StrLib,"str";
@@ -28,9 +28,7 @@ let short_name lib =
 
 let ocaml_name lib=
   (*cutting the name as always, to avoid a circular definition *)
-  "Ocaml"^"_library."^(short_name lib);;
-
-let file_for_library lib =to_string lib;;  
+  "Ocaml"^"_library."^(short_name lib);; 
 
 let modules_telling_a_library_away =function
 Ocaml_library_t.ZarithLib->["z";"q"] 
@@ -43,15 +41,24 @@ let all_libraries=[
   Ocaml_library_t.StrLib;
   Ocaml_library_t.UnixLib];;  
 
+end ;;  
+
 let compute_needed_libraries_from_uncapitalized_modules_list l=
    List.filter (
       fun lib->List.exists(
-        fun z->List.mem z (modules_telling_a_library_away lib)
+        fun z->List.mem z (Private.modules_telling_a_library_away lib)
       ) l
-   ) all_libraries;;
+   ) Private.all_libraries;;
            
+let file_for_library lib =Private.to_string lib;; 
+
+let location lib=
+  let ic = Unix.open_process_in ("ocamlfind query "^(Private.to_string lib)) in
+  let result = really_input_string ic (in_channel_length ic) in
+  ignore (Unix.close_process_in ic);
+  result ;;
 let of_concrete_object =Concrete_object.unwrap_lonely_variant 
-  capitalized_correspondances;;
+  Private.capitalized_correspondances;;
           
 let to_concrete_object =Concrete_object.wrap_lonely_variant 
-  capitalized_correspondances;;    
+  Private.capitalized_correspondances;;    
