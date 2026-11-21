@@ -33,17 +33,12 @@ module Private = struct
 
    module Command = struct 
   
-  let searchdir_for_lib lib_name = 
-     let lib = Ocaml_library.file_for_library(lib_name) in 
-    " -I $(ocamlfind query "^lib^")" ;;
+  let searchdir_for_lib lib = 
+    " -I "^(Ocaml_library.containing_dir lib);;
 
-  let location_for_lib lib_name = 
-     let lib = Ocaml_library.file_for_library(lib_name) in 
-     "$(ocamlfind query "^lib^")/"^lib^".cma" ;;  
-
-  let line_for_libs lib_names = 
+  let line_for_libs libs = 
         (* Since OCaml 5.5 *)
-        String.concat(" ") (Image.image searchdir_for_lib lib_names) 
+        String.concat(" ") (Image.image searchdir_for_lib libs) 
          (* BetwennOCaml 5.0 and 5.5, this used to be : *)
         (* String.concat(" ") (Image.image(fun z->
             let lib = Ocaml_library.file_for_library(z)in 
@@ -52,7 +47,7 @@ module Private = struct
         (* String.concat(" ") (Image.image(fun z->"-I +"^(Ocaml_library.file_for_library(z))) lib_names *);;
     
 
-  let needed_dirs_and_libs_in_dbg_command fw mn=
+  let needed_dirs_and_libs_for_single_module_in_dbg_command fw mn=
      let s_root=Dfa_root.connectable_to_subpath(Fwc_with_modular_infrastructure.Inherited.root fw) in
      let dirs=
      "-I "^s_root^(Dfa_subdirectory.connectable_to_subpath(Fw_constant.debug_build_subdir))
@@ -69,7 +64,7 @@ module Private = struct
      let workdir = Dfa_subdirectory.connectable_to_subpath (Fw_constant.debug_build_subdir) in 
      let central_cmd=
          "ocamlc -g"^
-         (needed_dirs_and_libs_in_dbg_command fw nm)^
+         (needed_dirs_and_libs_for_single_module_in_dbg_command fw nm)^
              " -c "^s_fhm^ending in
      let full_mli=s_fhm^".mli" in
      if (not mli_reg)
@@ -113,7 +108,7 @@ module Private = struct
          let nm=Dfn_endingless.to_module eless in
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
-         let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
+         let dir_and_libs=needed_dirs_and_libs_for_single_module_in_dbg_command fw nm in
          let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
@@ -132,7 +127,7 @@ module Private = struct
          let nm=Dfn_endingless.to_module eless in
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
-         let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
+         let dir_and_libs=needed_dirs_and_libs_for_single_module_in_dbg_command fw nm in
          let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
@@ -153,7 +148,7 @@ module Private = struct
          let nm=Dfn_endingless.to_module eless in
          let s_root=Dfa_root.connectable_to_subpath(dir) in
          let s_eless=Dfn_endingless.to_line eless in
-         let dir_and_libs=needed_dirs_and_libs_in_dbg_command fw nm in
+         let dir_and_libs=needed_dirs_and_libs_for_single_module_in_dbg_command fw nm in
          let mli_reg=Fwc_with_modular_infrastructure.check_ending_on_module fw Dfa_ocaml_ending_t.Mli nm in 
          let full_mli=s_eless^".mli" in
          let workdir = Dfa_subdirectory.connectable_to_subpath Fw_constant.debug_build_subdir in 
@@ -224,11 +219,6 @@ module Private = struct
             s_root^short_path) in 
         let nm_direct_deps = Look_for_module_names.names_in_mlx_file full_path in 
         let nm_deps = Fwc_with_modular_infrastructure.modules_with_their_ancestors fw nm_direct_deps in 
-        let nm_deps_with_subdirs = Image.image (
-           fun nm->
-                   let subdir=Fwc_with_modular_infrastructure.subdir_for_module fw nm in 
-            (subdir,nm)
-        ) nm_deps in 
         let workdir=
           (Dfa_subdirectory.connectable_to_subpath (Fw_constant.debug_build_subdir)) in
         let unpointed_short_path = Cull_string.before_rightmost short_path '.' in 
@@ -237,7 +227,7 @@ module Private = struct
           Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
             (Image.image Dfa_module.to_line nm_direct_deps)) in 
         let pre_libs1=Image.image 
-         (fun (_,nm) -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
+         (fun nm -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps in
         let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
         let libs=line_for_libs pre_libs2 in 
           Option_again.argument_on_the_right (fun x y->x@[y])  
@@ -281,7 +271,7 @@ module Private = struct
         (fun (_,nm) -> Set_of_polys.sort(Fwc_with_modular_infrastructure.needed_libs_for_module fw nm)) nm_deps_with_subdirs in
        let pre_libs2=Set_of_polys.forget_order (Set_of_polys.fold_merge (libs_for_prow::pre_libs1)) in 
        let libs=line_for_libs pre_libs2 in 
-       let library_locations = Image.image location_for_lib pre_libs2 in 
+       let library_locations = Image.image Ocaml_library.exact_location pre_libs2 in 
          Option_again.argument_on_the_right (fun x y->x@[y])  
        [ 
          
@@ -301,15 +291,22 @@ module Private = struct
    module Ocaml_target_making = struct 
 
      let prepare_pretty_printers_for_ocamldebug fw deps = 
-        let temp1 = (Image.image (fun mname->
+        let all_needed_libs = 
+         Set_of_polys.sort(
+         Ocaml_library.compute_needed_libraries_from_uncapitalized_modules_list
+           (Image.image Dfa_module.to_line deps)) in 
+        let temp1 = Set_of_polys.image (fun lib->
+          "load_printer "^(Ocaml_library.exact_location lib)
+        ) all_needed_libs in   
+        let temp2 = (Image.image (fun mname->
           let s= Dfa_module.to_line mname in 
           "load_printer "^s^".cmo"
         ) deps) 
         and registered_printers = Fwc_with_modular_infrastructure.registered_printers fw  in 
-        let temp2 = Image.image (fun (_idx,printer_path)->
+        let temp3 = Image.image (fun (_idx,printer_path)->
           "install_printer "^printer_path
         ) registered_printers in 
-        let full_text = String.concat "\n" (temp1@temp2) in 
+        let full_text = String.concat "\n" (temp1@temp2@temp3) in 
         let ppodbg_path = ocamldebug_printersfile_path (Fwc_with_modular_infrastructure.Inherited.root fw) in 
         Io.overwrite_with (Absolute_path.of_string ppodbg_path) full_text;;
 

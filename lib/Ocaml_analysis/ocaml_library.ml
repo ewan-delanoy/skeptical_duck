@@ -41,6 +41,13 @@ let all_libraries=[
   Ocaml_library_t.StrLib;
   Ocaml_library_t.UnixLib];;  
 
+let containing_dir lib=
+ let s = (Unix_again.get_command_output("ocamlfind query "^(to_string lib))) in 
+ let n = String.length s in 
+ if String.get s (n-1)='\n'
+ then String.sub s 0 (n-1) 
+ else s;;
+
 end ;;  
 
 let compute_needed_libraries_from_uncapitalized_modules_list l=
@@ -49,14 +56,12 @@ let compute_needed_libraries_from_uncapitalized_modules_list l=
         fun z->List.mem z (Private.modules_telling_a_library_away lib)
       ) l
    ) Private.all_libraries;;
-           
-let file_for_library lib =Private.to_string lib;; 
 
-let location lib=
-  let ic = Unix.open_process_in ("ocamlfind query "^(Private.to_string lib)) in
-  let result = really_input_string ic (in_channel_length ic) in
-  ignore (Unix.close_process_in ic);
-  result ;;
+let containing_dir = Private.containing_dir ;;
+
+let exact_location lib = (Private.containing_dir lib)^"/"^(Private.to_string lib)^".cma" ;;
+
+
 let of_concrete_object =Concrete_object.unwrap_lonely_variant 
   Private.capitalized_correspondances;;
           
