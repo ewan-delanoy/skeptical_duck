@@ -566,7 +566,7 @@ let check_module_sequence_for_forgettability fw l=
     let main_text = prelude^(Modularize.modularize_several "Stdl_" involved_paths) in 
     let ap = Absolute_path.create_file_if_absent ((Sys.getenv "HOME")^"/"^(main_path)) in  
     let _ = Io.overwrite_with ap main_text in 
-    (directly_involved_mods,Dfn_rootless.of_line main_path);;   
+    (directly_involved_mods,Dfn_rootless.of_line main_subpath);;   
 
    let set_fw_configuration fw new_config = 
       Fwg_with_modular_infrastructure.make 
