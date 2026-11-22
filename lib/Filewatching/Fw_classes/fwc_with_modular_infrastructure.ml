@@ -546,9 +546,11 @@ let check_module_sequence_for_forgettability fw l=
     ) all_mlx_files in  
     let involved_paths = Image.image Dfn_full.to_absolute_path involved_mlx_files in 
     let the_root = root fw in 
+    let main_subpath = 
+     (Dfa_subdirectory.connectable_to_subpath Fw_constant.standalone_subdir)^"standalone_"^copy_name^".ml" in 
     let main_path = 
      (Replace_inside.replace_inside_text ((Sys.getenv "HOME")^"/","") (Dfa_root.connectable_to_subpath the_root))^
-     (Dfa_subdirectory.connectable_to_subpath Fw_constant.standalone_subdir)^"standalone_"^copy_name^".ml" in 
+     main_subpath in 
      let prelude = String.concat "\n" [ 
       "(*";
       "";
@@ -564,7 +566,7 @@ let check_module_sequence_for_forgettability fw l=
     let main_text = prelude^(Modularize.modularize_several "Stdl_" involved_paths) in 
     let ap = Absolute_path.create_file_if_absent ((Sys.getenv "HOME")^"/"^(main_path)) in  
     let _ = Io.overwrite_with ap main_text in 
-    (directly_involved_mods,main_path);;   
+    (directly_involved_mods,Dfn_rootless.of_line main_path);;   
 
    let set_fw_configuration fw new_config = 
       Fwg_with_modular_infrastructure.make 

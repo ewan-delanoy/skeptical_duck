@@ -30,9 +30,9 @@ let main_ref=
          "cp "^next_root^path^" "^this_root^path 
    ) l;;    
 
-   let make_standalone_copy spec ~copy_name = 
+   let register_standalone_copy spec ~copy_name = 
     let fw_git = (!(main_ref)) in 
-    Fwc_with_githubbing.Inherited.make_standalone_copy fw_git spec ~copy_name ;;
+    Fwc_with_githubbing.register_standalone_copy fw_git spec ~copy_name ;;
     
 
 end;;
@@ -178,8 +178,8 @@ let fw_git = (!(Private.main_ref)) in
 let fw_deps = Fwc_with_githubbing.Inherited.to_fw_with_dependencies fw_git in 
   Fw_debugging.start_debugging fw_deps;;
 
-let standalone_copy_from_modules mods= Private.make_standalone_copy (Fw_standalone_block_specification_t.By_modules mods) ;;   
-let standalone_copy_from_subdirectories subdirs= Private.make_standalone_copy (Fw_standalone_block_specification_t.By_subdirectories subdirs) ;; 
+let standalone_copy_from_modules mods= Private.register_standalone_copy (Fw_standalone_block_specification_t.By_modules mods) ;;   
+let standalone_copy_from_subdirectories subdirs= Private.register_standalone_copy (Fw_standalone_block_specification_t.By_subdirectories subdirs) ;; 
 
 let sugared_above capitalized_or_not_module_name=
    

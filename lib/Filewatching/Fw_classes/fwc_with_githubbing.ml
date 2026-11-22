@@ -52,8 +52,6 @@ module Inherited = struct
   let  latest_changes fw = Ancestry.latest_changes(parent fw)  ;;    
   
   let list_values_from_module fw = Parent.list_values_from_module(parent fw)  ;;
-  
-  let make_standalone_copy fw = Parent.make_standalone_copy(parent fw) ;;
 
   let modules_using_value fw = Parent.modules_using_value (parent fw) ;; 
   
@@ -293,6 +291,13 @@ let set_fw_configuration fw new_config =
        (Inherited.Parent.set_fw_configuration (parent fw) new_config) 
           (Fwg_with_githubbing.github_configuration fw);; 
          
+let register_standalone_copy fw spec ~copy_name= 
+   let (modules_inside,path_inside_home)=
+     Fwc_with_modular_infrastructure.make_standalone_copy(parent fw) spec ~copy_name in 
+     let _ =register_rootless_paths fw [path_inside_home] in 
+     (modules_inside,path_inside_home);;
+   ;;
+
 
 end ;; 
 
@@ -304,7 +309,8 @@ let inspect_and_update = Private.inspect_and_update ;;
 
 let plunge_fw_config_with_github_config = Private.plunge_fw_config_with_github_config ;;
 let refresh = Private.refresh ;;
-let register_rootless_paths = Private.register_rootless_paths ;;      
+let register_rootless_paths = Private.register_rootless_paths ;;   
+let register_standalone_copy = Private.register_standalone_copy ;;
 let relocate_modules_to  = Private.relocate_modules_to ;;         
 let rename_module = Private.rename_module ;;   
 let rename_subdirectory_as = Private.rename_subdirectory_as ;;     
