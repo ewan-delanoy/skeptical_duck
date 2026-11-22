@@ -139,7 +139,7 @@ module Private = struct
             not(List.mem (String.get line (j-1)) [' ';'\t']) 
           )(Int_range.range 1 n) with 
         None -> (line,"")
-        |Some (j0) -> (Cull_string.beginning (j0-1) line,Cull_string.cobeginning (j0-1) line) ;;
+        |Some (j0) -> (String.take_first (j0-1) line,String.drop_first (j0-1) line) ;;
 
     (*
     
@@ -157,7 +157,7 @@ module Private = struct
         and (indent,bare_text) = indentation_decomposition line in 
         let m = String.length indent in 
         if m>=positive_amplitude
-        then (Cull_string.cobeginning positive_amplitude indent)^bare_text
+        then (String.drop_first positive_amplitude indent)^bare_text
         else     
         if forced 
         then bare_text 
@@ -404,7 +404,7 @@ let pusher_for_lines_inside_or_outside_cee_comments_or_dq_strings (_,walker) =
         whole_text next_idx_to_be_treated unfinished_comment_or_dqs with
   None -> 
       let rest_of_text = 
-        Cull_string.cobeginning (next_idx_to_be_treated-1) whole_text  in 
+        String.drop_first (next_idx_to_be_treated-1) whole_text  in 
       (Some(List.rev ((rest_of_text,unfinished_comment_or_dqs) 
       :: treated_lines)),walker) 
   |Some(newline_idx,unfinished_comment2) ->
@@ -487,7 +487,7 @@ lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;;
       else
       let s= Cull_string.two_sided_cutting ("let ","") line in 
       let i = String.index s ' ' in 
-      Some(Cull_string.beginning i s)
+      Some(String.take_first i s)
     ) lines ;;
 
     let extract_ocaml_names_in_file ap i j =
@@ -511,7 +511,7 @@ lines_inside_or_outside_cee_comments_or_dq_strings txt3 ;;
           (fun c->List.mem c [' ';':']) line 1 with 
           None -> None
           |Some i->
-          Some(Cull_string.beginning (i-1) line)
+          Some(String.take_first (i-1) line)
         ) lines ;;
         
   let extract_field_names_from_type_definition_in_file ap i j =

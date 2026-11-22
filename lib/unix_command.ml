@@ -27,16 +27,16 @@ let command cmd=
    and rvp_prefix =prefix_for_reverse_replacing_patterns 
    and pt_prefix =prefix_for_printing_text in 
    if String.starts_with ~prefix:cd_prefix cmd 
-   then let  _=Sys.chdir(Cull_string.cobeginning (String.length cd_prefix) cmd) in 0
+   then let  _=Sys.chdir(String.drop_first (String.length cd_prefix) cmd) in 0
    else 
    if String.starts_with ~prefix:rp_prefix cmd 
-   then let  _= Compact_replacer.execute(Cull_string.cobeginning (String.length rp_prefix) cmd) in 0 
+   then let  _= Compact_replacer.execute(String.drop_first (String.length rp_prefix) cmd) in 0 
    else 
    if String.starts_with ~prefix:rvp_prefix cmd 
-   then let  _= Compact_replacer.reverse_execute(Cull_string.cobeginning (String.length rvp_prefix) cmd) in 0 
+   then let  _= Compact_replacer.reverse_execute(String.drop_first (String.length rvp_prefix) cmd) in 0 
    else 
    if String.starts_with ~prefix:pt_prefix cmd 
-   then let  _= (print_string("\n"^(Cull_string.cobeginning (String.length pt_prefix) cmd));flush stdout) in 0 
+   then let  _= (print_string("\n"^(String.drop_first (String.length pt_prefix) cmd));flush stdout) in 0 
    else    
    Sys.command cmd;;
 

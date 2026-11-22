@@ -127,7 +127,7 @@ let parse_summary unparsed_summary =
       if String.get unparsed_summary (j+1)=' '
       then j+2
       else j+1) in 
-    Cull_string.cobeginning k unparsed_summary;;
+    String.drop_first k unparsed_summary;;
 
 let remove_module_wrapper possibly_wrapped_text = 
   let indexed_lines = Lines_in_text.indexed_lines possibly_wrapped_text in 

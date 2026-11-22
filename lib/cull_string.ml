@@ -4,7 +4,7 @@
 
 *)
 
-exception Absent_beginning_marker of string;;
+exception Absent_beginning_marker of string;; 
 exception Absent_ending_marker of string;; 
 exception Beginning_failure;;
 exception Ending_failure;;   
@@ -57,22 +57,6 @@ tripartition_using_markers ("backdoor","man") "123backdoor45man678" ;;
    if i<0
    then ("",s)
    else (String.sub s 0 i,String.sub s (i+1) ((String.length s)-i-1) );;  
-
-  let beginning k s=
-   if k<1 then "" else
-   let n=String.length(s) in
-   if (k>n)
-   then raise(Beginning_failure)
-   else String.sub s 0 k;;
-   
- let ending k s=
-   if k<1 then "" else
-   let n=String.length(s) in
-   if (k>n)
-   then raise(Ending_failure)
-   else String.sub s (n-k) k;; 
-
- let cobeginning k s=ending (String.length(s)-k) s;; 
    
  
 
@@ -98,8 +82,8 @@ let before_and_after w x=
   let j_opt=Substring.leftmost_index_of_in_from_opt(w)(x) 1 in
   if j_opt=None then None else 
    let j = Option.get j_opt in 
-   Some(  Private.beginning (j-1) x,
-    Private.cobeginning (j+String.length(w)-1) x);;
+   Some(  String.take_first (j-1) x,
+    String.drop_first (j+String.length(w)-1) x);;
 
 (*
 
@@ -118,10 +102,6 @@ let before_rightmost_possibly_all s c=
    else String.sub s 0 i;;
 
 
-
-let beginning = Private.beginning;;
-   
-
 let between_markers markers text=
   let (_,middle,_) = Private.tripartition_using_markers markers text in 
   middle;; 
@@ -135,11 +115,6 @@ between_markers ("aaa","bb") "123aaa45bb678";;
 
 *)     
 
- let cobeginning k s=Private.cobeginning k s;; 
- 
- let coending k s=beginning (String.length(s)-k) s;; 
-
- let ending = Private.ending ;;
 
 let interval =Private.interval;;
 
@@ -157,7 +132,7 @@ let remove_chars_in_set_on_the_left l s=
           not(List.mem (String.get s (j-1)) l)
       )(Int_range.range 1 n) with
       None->""
-      |Some(d)->cobeginning (d-1) s;;
+      |Some(d)->String.drop_first (d-1) s;;
 
 let remove_chars_in_set_on_the_right l s=
       let n=String.length s in
@@ -165,7 +140,7 @@ let remove_chars_in_set_on_the_right l s=
           not(List.mem (String.get s (n-j)) l)
       )(Int_range.range 1 n) with
       None->""
-      |Some(d)->coending (d-1) s;;
+      |Some(d)->String.drop_last (d-1) s;;
 
 let rec remove_suffixes_from_list_on_the_right str suffixes =
    match List.find_opt (fun suffix->String.ends_with str ~suffix) suffixes with 
@@ -186,13 +161,13 @@ remove_suffixes_from_list_on_the_right "A. I. V. C 2642.\\newline\n\n\\indent"
    let d=p-String.length(s) in
    if d>0
    then s^(String.make d c)
-   else beginning p s;;
+   else String.take_first p s;;
    
   let resize_from_right s p c=
    let d=p-String.length(s) in
    if d>0
    then (String.make d c)^s
-   else ending p s;;  
+   else String.take_last p s;;  
      
 
 
@@ -200,7 +175,7 @@ let shortened_version max_length s =
    let n = String.length s in 
    if n<=max_length 
    then s 
-   else (beginning max_length s)^"(...)" ;;    
+   else (String.take_first max_length s)^"(...)" ;;    
 
 let shorten_blanks s=
    let blanks = [' ';'\n';'\r';'\t'] in 

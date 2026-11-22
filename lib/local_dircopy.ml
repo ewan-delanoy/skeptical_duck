@@ -61,7 +61,7 @@ let standardized_name_opt ldc next_idx_opt filename =
    then raise(Empty_subpath(filename))
    else 
    let i2 = Option.get i2_opt in   
-   let standardized_name = standardized_start ^ (Cull_string.cobeginning (i2-1) filename) in 
+   let standardized_name = standardized_start ^ (String.drop_first (i2-1) filename) in 
    if  filename <> standardized_name
    then Some(standardized_name)
    else None ;;
@@ -87,7 +87,7 @@ let redundancies ldc =
    let p = ldc.Local_dircopy_config_t.allowed_number_of_digits in 
    let common_base = Image.image (fun s ->
      (int_of_string(Cull_string.interval s 2 (p+1)),
-     Cull_string.cobeginning (p+2) s) ) (remote_files ldc) in 
+     String.drop_first (p+2) s) ) (remote_files ldc) in 
    let nonredundant_filenames = 
       Ordered.sort Total_ordering.lex_for_strings 
        (Image.image snd common_base) in 
@@ -114,14 +114,14 @@ let redundancies ldc =
 
 let ordered_filenames ldc = 
    let temp0 = Image.image (fun s ->
-     (Cull_string.cobeginning (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s,s) ) (remote_files ldc) in 
+     (String.drop_first (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s,s) ) (remote_files ldc) in 
    let temp1 = Image.image fst temp0 in 
    let temp2 = Ordered.sort Total_ordering.lex_for_strings temp1 in 
    Ordered.image (fun s->List.assoc s temp0 ) temp2;; 
 
 let ordered_filenames_without_their_prefixed_indices ldc = 
    let temp1 = Image.image (fun s ->
-     Cull_string.cobeginning 
+     String.drop_first 
      (ldc.Local_dircopy_config_t.allowed_number_of_digits+2) s ) (remote_files ldc) in 
    Ordered.sort Total_ordering.lex_for_strings temp1 ;; 
 

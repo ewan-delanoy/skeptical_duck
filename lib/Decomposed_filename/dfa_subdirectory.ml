@@ -15,7 +15,7 @@ module Private = struct
       let limit_idx=(match List.find_opt(fun j->(Strung.get s j)<>'/')(indices) with 
          None -> 0 |Some(j)->j
       ) in 
-      Dfa_subdirectory_t.SD (Cull_string.beginning limit_idx s);;   
+      Dfa_subdirectory_t.SD (String.take_first limit_idx s);;   
    
    let without_trailing_slash (Dfa_subdirectory_t.SD s)=s;;
    
@@ -60,7 +60,7 @@ module Private = struct
    let rename_endsubdirectory (Dfa_subdirectory_t.SD(old_subdir),new_esdname) 
       (Dfa_subdirectory_t.SD s)=
       if String.starts_with ~prefix:old_subdir s 
-      then let sub_s=Cull_string.cobeginning (String.length old_subdir) s in
+      then let sub_s=String.drop_first (String.length old_subdir) s in
            let t=Cull_string.before_rightmost old_subdir '/' in
            let new_t=(if t="" then "" else t^"/") in
            Dfa_subdirectory_t.SD(new_t^new_esdname^sub_s)

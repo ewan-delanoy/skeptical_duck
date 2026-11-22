@@ -13,7 +13,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    then raise(No_module_given(old_name))
    else 
    let j = Option.get j_opt in  
-   let module_name=Cull_string.beginning (j-1) old_name in
+   let module_name=String.take_first (j-1) old_name in
    let temp3=Read_ocaml_files.read_ocaml_files preceding_files in
    let opt_temp4=List.find_opt (fun itm->
      (itm.Ocaml_gsyntax_item.name)=old_name
@@ -25,7 +25,7 @@ let rename_moduled_value_in_file preceding_files old_name new_name path=
    let (i1,j1)=temp4.Ocaml_gsyntax_item.interval_for_name in
    let _=Replace_inside.overwrite_at_intervals_inside_file [(i1,j1),new_name] path in
    let temp3_again=Read_ocaml_files.read_ocaml_files preceding_files in
-   let beheaded_name=Cull_string.cobeginning j old_name in
+   let beheaded_name=String.drop_first j old_name in
    let s_new_beheaded_name=(fun (fa,nn)->if fa="" then nn else fa^"."^nn)
    (Cull_string.before_rightmost beheaded_name '.',new_name) in
    let new_beheaded_name=s_new_beheaded_name in

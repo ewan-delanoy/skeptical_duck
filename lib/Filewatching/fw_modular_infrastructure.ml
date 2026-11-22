@@ -127,7 +127,7 @@ module Private = struct
 
    let module_from_printer_path printer_path = 
      let i = String.index printer_path '.' in 
-     Dfa_module.of_line (Cull_string.beginning i printer_path) ;; 
+     Dfa_module.of_line (String.take_first i printer_path) ;; 
 
    (*
    
@@ -137,9 +137,9 @@ module Private = struct
 
   let replace_module_in_printer_path (old_module,new_module) old_printer_path = 
     let i = String.index old_printer_path '.' in 
-    let current_module = Dfa_module.of_line (Cull_string.beginning i old_printer_path) in 
+    let current_module = Dfa_module.of_line (String.take_first i old_printer_path) in 
     if current_module = old_module 
-    then (Dfa_module.capitalized_form new_module) ^ (Cull_string.cobeginning i old_printer_path)  
+    then (Dfa_module.capitalized_form new_module) ^ (String.drop_first i old_printer_path)  
     else old_printer_path ;;   
 
   (*

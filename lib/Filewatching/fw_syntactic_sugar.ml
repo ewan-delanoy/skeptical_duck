@@ -59,7 +59,7 @@ let rename_string_or_value fw_ref old_sov new_sov =
    then raise(Rename_string_or_value_exn(old_sov))
    else 
    let j = Option.get j_opt in 
-   let module_name=Cull_string.beginning (j-1) old_sov in
+   let module_name=String.take_first (j-1) old_sov in
    let endingless= Fwc_with_githubbing.Inherited.decipher_module (!fw_ref)  module_name 
    and path= Fwc_with_githubbing.Inherited.decipher_path (!fw_ref)  module_name in 
    let nm=Dfn_endingless.to_module endingless in

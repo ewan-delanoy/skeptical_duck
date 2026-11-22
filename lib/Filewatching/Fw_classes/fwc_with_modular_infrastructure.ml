@@ -356,7 +356,7 @@ let show_value_occurrences fw t=
    else Some(ap,(text,occurrences)) 
  ) temp1 in 
  let temp3=Image.image (fun (ap,(text,occurrences))->
-  let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
+  let mname=String.drop_first(m)(Absolute_path.to_string ap) in
   Image.image (fun occ_idx ->
     let center_line_idx = (Strung.number_of_lines_before text occ_idx)+1 in 
     let closeup = Lines_in_text.closeup_around_index text occ_idx in 
@@ -453,7 +453,7 @@ let decipher_module fw capitalized_or_not_x=
     else let (Dfa_subdirectory_t.SD container) = List.hd temp2 in 
          let j1 = Option.get(Substring.leftmost_index_of_in_from_opt suffix container 1) in 
          let j2 = j1 + (String.length suffix) -1 in 
-        Dfa_subdirectory.of_line(Cull_string.beginning j2 container);;
+        Dfa_subdirectory.of_line(String.take_first j2 container);;
 
     let duplicate_module fw old_t1 old_t2=
         let t1=String.uncapitalize_ascii old_t1

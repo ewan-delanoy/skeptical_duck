@@ -91,7 +91,7 @@ let collect_naive_references text =
   match seek_naive_reference_after_index text 1 with 
   None -> (text,[])
   |Some(footnote_nbr,reference_start,reference_end) ->
-    (Cull_string.beginning (reference_start-1) text ,
+    (String.take_first (reference_start-1) text ,
     helper_for_naive_reference_collecting text ([],footnote_nbr,reference_end)) ;;
 
 

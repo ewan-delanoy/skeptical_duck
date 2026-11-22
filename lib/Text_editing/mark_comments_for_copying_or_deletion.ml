@@ -79,7 +79,7 @@ ranges_for_marked_comments
 
 let unmark_opening_line line = 
    let idx = Option.get(Substring.leftmost_index_of_in_from_opt opener line 1) in 
-   Cull_string.cobeginning (idx+(String.length opener)-1) line ;;
+   String.drop_first (idx+(String.length opener)-1) line ;;
 
 (*
 
@@ -89,7 +89,7 @@ unmark_opening_line "abc(*#defghi" ;;
 
 let unmark_closing_line line = 
     let idx = Option.get(Substring.rightmost_index_of_in_opt closer line) in 
-    Cull_string.coending (idx-1) line ;;
+    String.drop_last (idx-1) line ;;
 
 (*
 

@@ -12,7 +12,7 @@ module Private=struct
 let naive_extension ap=
    let s=Absolute_path.to_string ap in
    let i=String.rindex s '.' in
-   (Cull_string.cobeginning (i+1) s);; 
+   (String.drop_first (i+1) s);; 
    
 let extension x=try (naive_extension x) with 
   _any_exception->"";;
@@ -25,13 +25,13 @@ let extension x=try (naive_extension x) with
    let s=Absolute_path.to_string ap in
    let i=String.rindex s '/' in
    if i=0 then Directory_name.of_string"/" else
-   Directory_name.of_string (Cull_string.beginning i s);; 
+   Directory_name.of_string (String.take_first i s);; 
    
  let son dir=
    let s=Directory_name.connectable_to_subpath dir in
    let i=String.rindex s '/' in
    if i=0 then "" else
-   (Cull_string.cobeginning (i+1) s);; 
+   (String.drop_first (i+1) s);; 
   
  let is_a_nondirectory_or_a_nib x=
   if is_a_directory(x)
@@ -162,20 +162,20 @@ let complete_ls_with_directories_only x=
  let beheaded_ls_with_nondirectories_only x=
   let n0=String.length(Absolute_path.to_string x) in
   let temp1=List.filter(is_a_nondirectory_or_a_nib)(adhoc_ls x) in
-  let temp2=Image.image (fun ap->Cull_string.cobeginning n0 (Absolute_path.to_string ap)) temp1 in
+  let temp2=Image.image (fun ap->String.drop_first n0 (Absolute_path.to_string ap)) temp1 in
   temp2;; 
  
  let dir_substructure x=
     let n0=String.length(Absolute_path.to_string x) in
     let temp1=(Stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
     let temp2=List.filter(function x->extension(x)<>"nib")(temp1) in
-    List.rev_map(function ap->Cull_string.cobeginning n0 (Absolute_path.to_string ap))(temp2);;
+    List.rev_map(function ap->String.drop_first n0 (Absolute_path.to_string ap))(temp2);;
   
  let endfiles x=
     let n0=String.length(Absolute_path.to_string x)+1(*because of the slash!*) in
     let temp1=(Stabilize.explore_tree adhoc_ls (adhoc_ls x)) in
     let temp2=List.filter(is_a_nondirectory_or_a_nib)(temp1) in
-    List.rev_map(function ap->Cull_string.cobeginning n0 (Absolute_path.to_string ap))(temp2);;
+    List.rev_map(function ap->String.drop_first n0 (Absolute_path.to_string ap))(temp2);;
     
 let quick_complete_ls s=
   let x=Directory_name.of_string s in
@@ -188,13 +188,13 @@ let quick_beheaded_complete_ls s=
   let x=Directory_name.of_string s in
   let n=String.length(Directory_name.connectable_to_subpath x) in
   let temp1=complete_ls x in
-  Image.image (fun ap->Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
+  Image.image (fun ap->String.drop_first n (Absolute_path.to_string ap)) temp1;; 
   
 let beheaded_simple_ls dir=
   let n=String.length(Directory_name.connectable_to_subpath dir) in
   let temp1=ls dir in
   Image.image (fun ap->
-   Cull_string.cobeginning n (Absolute_path.to_string ap)) temp1;; 
+   String.drop_first n (Absolute_path.to_string ap)) temp1;; 
 
 
 let clear_directory_contents root =

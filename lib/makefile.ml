@@ -102,11 +102,11 @@ type instruction =
 
 let parse_next_rule first_eline next_elines sep_idx = 
    let (_c_idx,l_idx,line1) = first_eline in 
-   let tgts = Str.split (Str.regexp "[ \t\r]+") (Cull_string.beginning (sep_idx-1) line1) 
-   and prereqs = Str.split (Str.regexp "[ \t\r]+") (Cull_string.cobeginning sep_idx line1 ) in 
+   let tgts = Str.split (Str.regexp "[ \t\r]+") (String.take_first (sep_idx-1) line1) 
+   and prereqs = Str.split (Str.regexp "[ \t\r]+") (String.drop_first sep_idx line1 ) in 
    let (tabbed_elines,further_elines) = 
     Hurried.partition_in_two_parts (fun (_,_,line)->String.starts_with ~prefix:"\t" line)  next_elines in 
-   let cmds= Image.image (fun (_,_,line) -> Cull_string.cobeginning 1 line) tabbed_elines in 
+   let cmds= Image.image (fun (_,_,line) -> String.drop_first 1 line) tabbed_elines in 
    ({
       Makefile_t.ru_line_number = l_idx;
       targets = tgts ;
@@ -118,7 +118,7 @@ let parse_next_rule first_eline next_elines sep_idx =
 let parse_next_assignment first_eline next_elines sep_idx = 
    let (_c_idx,l_idx,line1) = first_eline in 
    let vname = Cull_string.trim_spaces (Cull_string.interval line1 1 (sep_idx-1)) 
-   and vcontent = Str.split (Str.regexp "[ \t\r]+") (Cull_string.cobeginning sep_idx line1 )  in 
+   and vcontent = Str.split (Str.regexp "[ \t\r]+") (String.drop_first sep_idx line1 )  in 
 
    ({
          Makefile_t.va_line_number = l_idx;
@@ -213,7 +213,7 @@ let rec helper_for_gluing (treated,current_head,current_tail) =
        let (c_idx1,l_idx1,line1) = current_head 
        and (_c_idx2,_l_idx2,line2) = next_head in 
        if String.ends_with ~suffix:"\\" line1 
-       then  let glued_line = (Cull_string.coending 1 line1)^" "^line2 in  
+       then  let glued_line = (String.drop_last 1 line1)^" "^line2 in  
              helper_for_gluing (treated,(c_idx1,l_idx1,glued_line),further_tail)
        else  helper_for_gluing (current_head::treated,next_head,further_tail) ;; 
 

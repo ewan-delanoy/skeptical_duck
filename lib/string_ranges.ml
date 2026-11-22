@@ -66,7 +66,7 @@ let remains = remove_next_ordered_occurrence_of_uple_in_from_opt ["bc";"f";"jk"]
 let rec helper_for_removing_all_occurrences patts (txt,treated,current_idx) =
   let (data,next_idx)= remove_next_ordered_occurrence_of_uple_in_from_opt patts txt current_idx in 
   if next_idx = current_idx 
-  then let remainder = Cull_string.cobeginning (current_idx-1) txt in 
+  then let remainder = String.drop_first (current_idx-1) txt in 
        (List.rev(treated),remainder)
   else helper_for_removing_all_occurrences patts (txt,data::treated,next_idx) ;;
     

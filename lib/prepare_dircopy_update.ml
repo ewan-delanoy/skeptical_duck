@@ -70,7 +70,7 @@ let restricted_list sourcedir (ignored_subdirs,ignored_files)=
    let ignored_subdirs1=Image.image Dfa_subdirectory.without_trailing_slash ignored_subdirs in 
    List.filter_map (fun ap->
      let s_ap = Absolute_path.to_string ap in 
-     let s_rootless = Cull_string.cobeginning (String.length(s_dir)+1) s_ap in 
+     let s_rootless = String.drop_first (String.length(s_dir)+1) s_ap in 
      if (List.exists(fun s ->String.starts_with ~prefix:s s_rootless) ignored_subdirs1) ||
         (List.mem s_rootless ignored_files)
      then None

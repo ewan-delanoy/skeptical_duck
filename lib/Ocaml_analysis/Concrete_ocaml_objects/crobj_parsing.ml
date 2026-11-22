@@ -127,7 +127,7 @@ exception Unreadable_increase of int * string ;;
 let next_basic_increase  s idx=
    let idx1_opt= Substring.leftmost_index_of_in_from_opt salt s idx in 
    if idx1_opt = None 
-   then let i=parse_int (Cull_string.cobeginning (idx-1) s) in
+   then let i=parse_int (String.drop_first (idx-1) s) in
         (Crobj_basic_increase_t.Push_int(i),String.length(s)+1)
    else      
    let idx1 = Option.get idx1_opt in    

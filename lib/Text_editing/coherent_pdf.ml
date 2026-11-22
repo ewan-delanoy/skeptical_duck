@@ -161,7 +161,7 @@ module Pqyz = struct
     if weight_opt = None then None else 
     let weight = Option.get weight_opt in 
     let middle_part = Cull_string.interval fn 2 i1 
-    and ending = Cull_string.cobeginning (i1+1) fn in 
+    and ending = String.drop_first (i1+1) fn in 
     let r_opt = analize_integer_string middle_part in 
     if r_opt = None then None else 
     let r = Option.get r_opt in 
@@ -186,7 +186,7 @@ module Pqyz = struct
 
   let pqyz_renamed_version fn = match analize_filename fn with 
     None -> fn 
-    |Some(_,i,_,_)->"p"^(string_of_int(i))^(Cull_string.ending 4 fn);;
+    |Some(_,i,_,_)->"p"^(string_of_int(i))^(String.take_last 4 fn);;
 
    (*  
   pqyz_renamed_version "v56.png" ;;

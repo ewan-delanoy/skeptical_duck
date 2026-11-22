@@ -68,7 +68,7 @@ let replace_if_present_in_file ~new_directive fn =
 let usual root ap =
     let s_ap=Absolute_path.to_string ap in 
     let s_cdir=Dfa_root.connectable_to_subpath root in 
-    let shortened_path=Cull_string.cobeginning (String.length s_cdir) s_ap in 
+    let shortened_path=String.drop_first (String.length s_cdir) s_ap in 
     "#use\""^shortened_path^"\";"^";" ;;
 
 let prepend_or_replace_with_usual root ap =

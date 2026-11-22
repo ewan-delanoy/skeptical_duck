@@ -233,8 +233,8 @@ let collect_footnotes text =
   let (main_text,footnotes) = (match idx_opt with 
     None -> (text,[]) 
     |Some idx -> 
-      let body = Cull_string.beginning idx text 
-      and appendix = Cull_string.cobeginning idx text  in 
+      let body = String.take_first idx text 
+      and appendix = String.drop_first idx text  in 
       let (_prologue2,pairs2) = Naive_footnote.collect appendix in 
       (body,Image.image fst pairs2)
   ) in 

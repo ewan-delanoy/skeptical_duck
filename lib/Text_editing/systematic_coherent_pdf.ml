@@ -18,7 +18,7 @@ let extract_rightmost_number name =
    |Some(k) ->
      if k =n 
      then (name,0)
-     else (Cull_string.beginning k name,int_of_string(Cull_string.cobeginning k name)) ;;
+     else (String.take_first k name,int_of_string(String.drop_first k name)) ;;
 
 (*
 
