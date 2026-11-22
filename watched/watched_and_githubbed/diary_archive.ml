@@ -2,6 +2,25 @@ open Skeptical_duck_lib ;;
 open Needed_values ;;
 
 (************************************************************************************************************************
+ Entry 7 : Using Fw_usual_manager.standalone_copy_from_subdirectories
+************************************************************************************************************************)
+module Snip7 = struct 
+
+
+let dirs1 = Fw_usual_manager.all_subdirectories () ;;
+
+let sd1 = Dfa_subdirectory_t.SD "lib/Cee_language" ;;
+
+let sd1 = Dfa_subdirectory_t.SD "lib/Lr_parsing" ;;
+let z1 = Fw_usual_manager.standalone_copy_from_subdirectories [sd1] ~copy_name:"lr_parsing";;
+let u1 = Image.image Dfa_module.to_line (fst z1) ;;
+let act1 () = fgs u1 ;;
+
+
+
+end;;
+
+(************************************************************************************************************************
  Entry 6 :  Change configuration manually
 ************************************************************************************************************************)
 module Snip6 = struct 

@@ -348,19 +348,26 @@ let all_mlx_paths fw = (archived_mlx_paths fw) @ (all_moduled_mlx_paths fw) ;;
 let show_value_occurrences fw t=
  let m=String.length(Dfa_root.connectable_to_subpath (root fw)) in
  let temp1=all_mlx_paths fw in
- let temp2=Image.image (fun ap->
-  let text = Io.read_whole_file ap in   
-  let temp3=Substring.occurrences_of_in t text in 
+ let temp2 = List.filter_map (fun ap->
+   let text = Io.read_whole_file ap in   
+  let occurrences=Substring.occurrences_of_in t text in 
+   if occurrences=[]
+   then None 
+   else Some(ap,(text,occurrences)) 
+ ) temp1 in 
+ let temp3=Image.image (fun (ap,(text,occurrences))->
   let mname=Cull_string.cobeginning(m)(Absolute_path.to_string ap) in
   Image.image (fun occ_idx ->
     let center_line_idx = (Strung.number_of_lines_before text occ_idx)+1 in 
     let closeup = Lines_in_text.closeup_around_index text occ_idx in 
     mname^", line "^(string_of_int center_line_idx)^" :\n"^closeup
-  ) temp3
-) temp1 in
- let temp4=List.flatten temp2 in
+  ) occurrences
+) temp2 in
+ let temp4=List.flatten temp3 in
  let temp5=String.concat "\n\n\n" (""::temp4@[""]) in 
- print_string temp5;; 
+ let _ = print_string temp5 in 
+ Image.image fst temp2
+ ;; 
 
 let number_of_modules fw = List.length (mod_order fw) ;;
 
