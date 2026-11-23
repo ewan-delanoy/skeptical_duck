@@ -2,6 +2,47 @@ open Skeptical_duck_lib ;;
 open Needed_values ;;
 
 (************************************************************************************************************************
+ Entry 8 : Careful renaming
+************************************************************************************************************************)
+module Snip8 = struct 
+
+let example_length = 3 ;;
+let example_string = "abcdefghijk" ;;
+
+String.take_first example_length example_string = Cull_string.beginning example_length example_string;;
+String.drop_first example_length example_string = Cull_string.cobeginning example_length example_string;;
+String.take_last example_length example_string = Cull_string.ending example_length example_string;;
+String.drop_last example_length example_string = Cull_string.coending example_length example_string;;
+
+let aps1 = sv "Cull_string.cobeginning";;
+let act1 () = List.iter (Replace_inside.replace_inside_file 
+                         ("Cull_string.cobeginning","String.drop_first")) aps1 ;;
+
+let aps2 = sv "Cull_string.coending";;
+let act2 () = List.iter (Replace_inside.replace_inside_file 
+                         ("Cull_string.coending","String.drop_last")) aps2 ;;
+
+let old_name3 = "Cull_string.beginning";;
+let aps3 = sv old_name3;;
+let act3 () = List.iter (Replace_inside.replace_inside_file 
+                         (old_name3,"String.take_first")) aps3 ;;
+
+let old_name4 = "Cull_string.ending";;
+let aps4 = sv old_name4;;
+let act4 () = List.iter (Replace_inside.replace_inside_file 
+                         (old_name4,"String.take_last")) aps4 ;;
+
+
+let ap1 = Absolute_path.of_string "lib/cull_string.ml" ;; 
+
+Replace_inside.replace_inside_file
+("Private.String.drop_first","String.drop_first") ap1 ;; 
+
+Replace_inside.replace_inside_file
+("Private.String.take_first","String.take_first") ap1 ;; 
+end;;
+
+(************************************************************************************************************************
  Entry 7 : Using Fw_usual_manager.standalone_copy_from_subdirectories
 ************************************************************************************************************************)
 module Snip7 = struct 
