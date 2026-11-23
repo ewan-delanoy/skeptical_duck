@@ -6,7 +6,7 @@
 
 module Private = struct 
 
-let snake_sequence = [
+let from_southeast_to_northwest = [
    6;90;68;67;57;   54;88;70;25;
    
    74;73;5;4;83;
@@ -21,11 +21,7 @@ let snake_sequence = [
    56;22;29;
 ] ;; 
 
-end ;;  
-
-
-let graph = Undirected_graph.make_from_indexation_and_neighbors
-
+let indexed_names = 
 [
 (1,"Ain");
 (2,"Aisne");
@@ -130,8 +126,10 @@ let graph = Undirected_graph.make_from_indexation_and_neighbors
 (206,"Bro-Spagn");
 (207,"Mor Kreizdouarel");
 (208,"Italia");
-] 
-[
+] ;;
+
+let rotating_neighbors = 
+  [
 (1,[74;201;39;71;69;38;73]);
 (2,[8;204;59;80;60;77;51]);
 (3,[71;58;18;23;63;42]);
@@ -236,4 +234,13 @@ let graph = Undirected_graph.make_from_indexation_and_neighbors
 (207,[206;66;11;34;30;13;83;6;208;20]);
 (208,[207;6;4;5;73;74;201]);
 ] ;;
+
+end ;;  
+
+let from_southeast_to_northwest = Private.from_southeast_to_northwest ;;
+let graph = Undirected_graph.make_from_indexation_and_neighbors Private.indexed_names Private.rotating_neighbors;;
+
+let indexed_names = Private.indexed_names ;;
+
+let rotating_neighbors = Private.rotating_neighbors ;;
  
