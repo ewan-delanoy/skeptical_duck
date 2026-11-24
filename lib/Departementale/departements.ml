@@ -1,6 +1,6 @@
 (*
 
-#use"lib/departements.ml";;
+#use"lib/Departementale/departements.ml";;
 
 *)
 
