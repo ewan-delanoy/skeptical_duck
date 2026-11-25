@@ -2,18 +2,40 @@ open Skeptical_duck_lib ;;
 open Needed_values ;;
 
 (************************************************************************************************************************
+ Entry 9 : List of abbreviations for departement names
+************************************************************************************************************************)
+module Snip9 = struct 
+
+let u1 = Departements.indexed_names ;;
+let u2 = Image.image (fun (idx,nm)->(nm,Str.split(Str.regexp "[- ']+") nm)) u1 ;;
+
+let u3 = List.filter (fun (dep,l)->List.length(l)>1) u2 ;;
+let u4 = Image.image (fun (dep,l)->(dep,String.concat "" (Image.image (fun w->
+  String.sub (String.uncapitalize_ascii w) 0 1) l))) u3 ;;
+
+let u5 = Ordered.to_list(Ordered.sort Total_ordering.silex_for_strings (Image.image snd u4)) ;;  
+
+let u6 = Image.image (fun abbr->(abbr,List.filter_map (fun (x,abbr2)->if abbr2=abbr then Some x else None) u4)) u5 ;;
+
+let check1 = List.filter (fun (abbr,reps)->List.length(reps)>1) u6 ;;
+
+let u7 = [] ;;
+let u8 = Image.image (fun (abbr,reps)->(abbr,List.hd(reps))) u7 ;;
+end;;
+
+(************************************************************************************************************************
  Entry 8 : Careful renaming
 ************************************************************************************************************************)
 module Snip8 = struct 
 
 let example_length = 3 ;;
 let example_string = "abcdefghijk" ;;
-
+(*
 String.take_first example_length example_string = Cull_string.beginning example_length example_string;;
 String.drop_first example_length example_string = Cull_string.cobeginning example_length example_string;;
 String.take_last example_length example_string = Cull_string.ending example_length example_string;;
 String.drop_last example_length example_string = Cull_string.coending example_length example_string;;
-
+*)
 let aps1 = sv "Cull_string.cobeginning";;
 let act1 () = List.iter (Replace_inside.replace_inside_file 
                          ("Cull_string.cobeginning","String.drop_first")) aps1 ;;
