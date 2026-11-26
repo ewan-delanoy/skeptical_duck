@@ -98,9 +98,14 @@ let constructor lname rcvr value_defns points =
     let env1 = add_value_definitions (empty_one lname rcvr) value_defns in 
     add_points env1 points;;
 
+let has_a_digit (VN vn) = String.exists(fun c->let i=int_of_char c in (48<=i)&&(i<=57)) vn ;;     
+
 let write_float fl = Printf.sprintf "%.2f" fl ;;
 
-let write_variable_name  (VN vn) =  "\\"^vn ;;
+let write_variable_name  (VN vn) =  
+  if has_a_digit(VN vn)
+  then "\\macroWithDigits{"^vn^"}"  
+  else "\\"^vn ;;
 
 let write_value_defn  defn = match defn with 
     Leaf(fl) -> write_float fl
@@ -108,9 +113,15 @@ let write_value_defn  defn = match defn with
    |Substract(vn1,vn2) -> (write_variable_name vn1) ^ "-" ^ (write_variable_name vn2)
    |Dot(lamb,vn) -> (write_float lamb) ^ "*" ^ (write_variable_name vn);;
 
+let pgfmath_prelude (VN vn) =
+    if has_a_digit(VN vn)
+    then  "\\expandafter\\pgfmathsetmacro\\csname "^vn^"\\endcsname"
+    else  "\\pgfmathsetmacro{\\"^vn^"}" ;;
+
+
 
 let write_value_definition (vn,(vdefn,new_val)) = 
-    "\\pgfmathsetmacro{"^(write_variable_name vn)^"}{"^(write_value_defn vdefn)^"} % "^(write_float new_val) ;;
+   (pgfmath_prelude vn)^"{"^(write_value_defn vdefn)^"} % "^(write_float new_val) ;;
 
 let write_value_definitions l =
     String.concat "\n" (List.rev_map write_value_definition l) ;; 
