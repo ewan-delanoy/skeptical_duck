@@ -34,14 +34,22 @@ type visit_result =
    |Familiarity_reached 
    |Full_mastery_reached;; 
 
-type mastering_item = Msti of departement * mastering_status;;   
+type mastering_item = Msti of departement * mastering_status;; 
+
+type mastering_manager = Mama of mastering_item list ;;
 
 type world = {
-  mastering_data : mastering_item list ;
+  mastering_data : mastering_manager ;
   plan : plan_for_the_future ; 
   timer : int ;
   news_archive : (departement * visit_result) list;
 } ;;
+
+let required_number_of_days_between_rare_visits = 15 ;;
+
+let required_number_of_rare_visits_for_mastery = 5 ;; 
+
+
 
 module Departement = struct 
 
@@ -160,7 +168,20 @@ module Data_for_incompletely_mastered_deps = struct
   
 end;; 
 
-let starter ={number_of_days_before_next_rare_visit=0 ; number_of_rare_visits_already_made=0;}
+module Private = struct 
+
+let write_days = function 
+  0 -> "today"
+  | 1 -> "tomorrow"
+  | d -> "in "^(string_of_int d)^" days" ;;
+
+end ;;  
+
+let starter ={number_of_days_before_next_rare_visit=0 ; number_of_rare_visits_already_made=0;} ;;
+
+let to_string dt = 
+  let d = required_number_of_rare_visits_for_mastery - dt.number_of_rare_visits_already_made in 
+  (string_of_int d)^" rare visits to go before mastery, starting "^(Private.write_days dt.number_of_days_before_next_rare_visit) ;; 
 
 end ;;  
 
@@ -171,7 +192,7 @@ let of_standardized (is_full,data_for_incomplete_mastery) =
 
 let to_standardized = function 
     Fully_mastered -> (true,{number_of_days_before_next_rare_visit =0 ; number_of_rare_visits_already_made= 0 ;})
-   |Not_mastered_yet (_dt) ->  (false,{number_of_days_before_next_rare_visit =0 ; number_of_rare_visits_already_made= 0 ;});;
+   |Not_mastered_yet (dt) ->  (false,dt);;
 
 
 module Crobj = struct 
@@ -188,6 +209,10 @@ let to_concrete_object item =
 
 end ;;   
 
+
+let to_string = function 
+  Fully_mastered -> "mastered"
+  |Not_mastered_yet dt ->  Data_for_incompletely_mastered_deps.to_string dt ;;
 
 end ;;  
 
@@ -207,20 +232,22 @@ end ;;
 end ;;  
 
 
-module Mastering_item_list = struct 
+module Mastering_manager = struct 
 
 module Crobj = struct 
 
-let of_concrete_object ccrt_obj= Crobj_converter_combinator.to_list Mastering_item.Crobj.of_concrete_object ccrt_obj;;
+let of_concrete_object ccrt_obj= Mama(Crobj_converter_combinator.to_list Mastering_item.Crobj.of_concrete_object ccrt_obj);;
 
-let to_concrete_object  l= Crobj_converter_combinator.of_list Mastering_item.Crobj.to_concrete_object l;;
+let to_concrete_object  (Mama l)= Crobj_converter_combinator.of_list Mastering_item.Crobj.to_concrete_object l;;
 
 end ;;   
 
-let starter = Image.image ( 
+let get (Mama l) dep=Option.get(List.find_map (fun(Msti(dep2,status)) ->if dep2=dep then Some status else None ) l) ;; 
+
+let starter = Mama(Image.image ( 
     fun k->let dep=Departement.of_int k in 
     Msti(dep,Not_mastered_yet(Data_for_incompletely_mastered_deps.starter))
-  )  Departements.from_southeast_to_northwest
+  )  Departements.from_southeast_to_northwest) ;;
 
 
 
@@ -257,10 +284,6 @@ end ;;
 
 
 module Update_mastering_data = struct 
-
-let required_number_of_days_between_rare_visits = 15 ;;
-
-let required_number_of_rare_visits_for_mastery = 5 ;; 
 
 
 let start = {
@@ -385,6 +408,16 @@ let react_to_visit (Pftf l) (Vi(visited_dep,visit_was_successful)) =
    
 let next_departement (Pftf l) = let (Pftfe(dep,_))= List.hd l in dep ;; 
 
+let get_status (Pftf l) dep= List.find_map (fun (Pftfe(dep2,k))->if dep2=dep then Some k else None) l ;;
+
+let write_visits = function 1 -> "one visit" |k->(string_of_int k)^" visits" 
+
+let status_to_string = function 
+   None -> "familiar"
+   |Some k ->(write_visits k)^" before familiarity" ;;
+   
+let write_status pftf dep = status_to_string(get_status pftf dep) ;;   
+
 module Crobj = struct 
 
 let of_concrete_object ccrt_obj= Pftf (Crobj_converter_combinator.to_list Pftf_element.Crobj.of_concrete_object ccrt_obj);;
@@ -430,7 +463,7 @@ let rec helper_for_qa_session total_number_of_questions user_was_always_correct_
           Ansi_terminal.remove_last_lines (total_number_of_questions+4);
           user_was_always_correct_so_far
   | (question_idx, dep_opt) :: rest ->
-      let input_from_user = Ansi_terminal.ask ~question:("Neighbor " ^ (string_of_int question_idx) ^ " : ") in
+      let input_from_user = Ansi_terminal.ask ~question:("Naighbor " ^ (string_of_int question_idx) ^ " : ") in
       let (expected,full_answer) = (match dep_opt with None->("","_(none)") |Some dep ->(Departement.name dep,Departement.to_string dep)) in 
       let user_was_correct = (expand_abbreviations(Cull_string.trim_spaces input_from_user) = expected) in 
       let feedback =(
@@ -442,24 +475,28 @@ let rec helper_for_qa_session total_number_of_questions user_was_always_correct_
       print_endline (feedback);
       helper_for_qa_session total_number_of_questions (user_was_always_correct_so_far && user_was_correct) rest  ;; 
 
-let qa_session dep =
+let qa_session (w,dep) =
   let (Dep(dep_nbr,_dep_name)) = dep in   
   let temp1 = List.assoc dep_nbr Departements.rotating_neighbors in 
   let temp2 = Image.image (fun dep_nbr ->
      let dep_name = List.assoc dep_nbr Departements.indexed_names in 
      Some(Dep(dep_nbr,dep_name))  
   ) temp1 in 
-  print_endline ("Current departement : " ^ (Departement.to_string dep) );
+  let mstatus = Mastering_manager.get w.mastering_data dep 
+  and pstatus = Plan_for_the_future.write_status w.plan dep in   
+  print_endline ("Current timer : " ^ (string_of_int w.timer));
+  print_endline ("Current departement : " ^ (Departement.to_string dep) ^ " [ " ^ pstatus ^ ", " ^ (Mastering_status.to_string mstatus) ^ " ]");
   helper_for_qa_session  (List.length temp2) true (Int_range.index_everything (temp2@[None])) ;;
 
 module World = struct 
 
    
 let next_departement w = 
+  let (Mama l)= w.mastering_data in 
   if w.timer mod 2 = 1
-  then let m = List.length w.mastering_data in 
+  then let m = List.length l in 
        let random_idx = Random.int m in 
-       let (Msti(dep,_)) = List.nth w.mastering_data random_idx in 
+       let (Msti(dep,_)) = List.nth l random_idx in 
        dep
   else Plan_for_the_future.next_departement w.plan ;;  
 
@@ -473,7 +510,7 @@ module Crobj = struct
   let of_concrete_object ccrt_obj = 
     let g=Concrete_object.get_record ccrt_obj in 
     {
-    mastering_data =  Mastering_item_list.Crobj.of_concrete_object (g label_for_mastering_data);
+    mastering_data =  Mastering_manager.Crobj.of_concrete_object (g label_for_mastering_data);
     plan = Plan_for_the_future.Crobj.of_concrete_object (g label_for_plan) ; 
     timer = Crobj_converter.int_of_concrete_object (g label_for_timer);
     news_archive = News_archive.Crobj.list_of_concrete_object(g label_for_news_archive);
@@ -482,7 +519,7 @@ module Crobj = struct
   let to_concrete_object w = 
    let items =  
    [
-     label_for_mastering_data, Mastering_item_list.Crobj.to_concrete_object w.mastering_data ;
+     label_for_mastering_data, Mastering_manager.Crobj.to_concrete_object w.mastering_data ;
      label_for_plan, Plan_for_the_future.Crobj.to_concrete_object w.plan ;
      label_for_timer, Crobj_converter.int_to_concrete_object ( w.timer ) ;
      label_for_news_archive,News_archive.Crobj.list_to_concrete_object (w.news_archive) ;
@@ -492,13 +529,23 @@ module Crobj = struct
   
 end;; 
 
-let ap_for_persistent_storage = Absolute_path.create_file_if_absent "nonml_files/nongithubbed_nonml_files/departements_q_and_a.txt" ;;
+let ng_nml = (Dfa_root.connectable_to_subpath Fw_big_constant.This_World.root) ^ 
+(Dfa_subdirectory.connectable_to_subpath Fw_constant.nongithubbed_nonml_files_subdir) ;; 
 
-let read () = Crobj.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file ap_for_persistent_storage)) ;;
+let ap_for_persistent_storage = Absolute_path.create_file_if_absent (ng_nml^"departements_q_and_a.txt") ;;
+let ap2_for_persistent_storage = Absolute_path.create_file_if_absent (ng_nml^"departements_q_and_a2.txt") ;;
+
+let read () = 
+  let text = Io.read_whole_file ap_for_persistent_storage in 
+  let answer = Crobj.of_concrete_object(Crobj_parsing.parse(text)) in 
+  let _ = Io.append_string_to_file ("Just read timer with value "^(string_of_int answer.timer)^"\n") ap2_for_persistent_storage  in 
+  answer ;;
+
+(* let read () = Crobj.of_concrete_object(Crobj_parsing.parse(Io.read_whole_file ap_for_persistent_storage)) ;; *)
 
 
 let default_starter = {
-    mastering_data = Mastering_item_list.starter ;
+    mastering_data = Mastering_manager.starter ;
     plan =  Plan_for_the_future.starter ; 
     timer = 0;
     news_archive=[];
@@ -509,17 +556,19 @@ let main_ref = ref (try read() with _->default_starter) ;;
 
 let write () = 
   let text = Crobj_parsing.unparse(Crobj.to_concrete_object (!main_ref)) in 
+  let _ = Io.append_string_to_file ("Just wrote timer with value "^(string_of_int (!main_ref).timer)^"\n") ap2_for_persistent_storage  in 
   Io.overwrite_with ap_for_persistent_storage text;;
 
 let react_to_visit w visit =
-   let (new_mastering_data,news1) = Update_mastering_data.react_collectively_to_visit visit w.mastering_data in
+   let (Mama old_mastering_data) = w.mastering_data in 
+   let (new_mastering_data,news1) = Update_mastering_data.react_collectively_to_visit visit old_mastering_data in
    let (new_plan,news2) = Plan_for_the_future.react_to_visit w.plan visit in 
    let recent_news = news1 @ news2 in
    let retained_news = News_archive.react_to_recent_news w.news_archive recent_news in  
    let _ = Ansi_terminal.remove_last_lines (List.length w.news_archive) in 
    let _ = Visit.tell_several (retained_news) in 
    ({
-    mastering_data =  new_mastering_data;
+    mastering_data =  Mama new_mastering_data;
     plan = new_plan ; 
     timer = w.timer + 1;
     news_archive = retained_news ;
@@ -527,18 +576,21 @@ let react_to_visit w visit =
 
 let update w =
    let dep = next_departement w in 
-   let visit_was_successful = qa_session dep in 
+   let visit_was_successful = qa_session (w,dep) in 
    let visit = Vi(dep,visit_was_successful) in 
    react_to_visit w visit;;
 
 let update_main_ref () =
     let (new_w,_) = update (!main_ref) in 
-    main_ref:=new_w;write()   ;; 
+    main_ref:=new_w;
+    print_endline "Before writing ...";
+    write();
+    print_endline "After writing ...";   ;; 
 
 let reset () = (main_ref:=default_starter;write()) ;;
 
 let go () = 
-   let _ = (main_ref := (try read() with _->default_starter)) in 
+   let _ = (main_ref := read() ) in 
    while true do update_main_ref () done ;;
 
 
